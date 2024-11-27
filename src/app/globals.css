@@ -19,3 +19,61 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.preserve-line-breaks {
+  white-space: pre-line;
+}
+
+.bold-first-line::first-line {
+  font-weight: bold;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar {
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #6b7280;
+  /* Color del pulgar de la barra de scroll en dark mode */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #374151;
+  /* Color del fondo de la barra de scroll en dark mode */
+  border-radius: 4px;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Truco para que no se impriman los modales de Headlessui */
+@media print {
+  #headlessui-portal-root {
+    display: none;
+  }
+}
+
+/* Estilo personalizado para el doblez */
+.postit::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.6
+  ); /* Color para simular el doblez de papel */
+  border-bottom-left-radius: 12px;
+  box-shadow: -3px -3px 4px rgba(0, 0, 0, 0.2);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}

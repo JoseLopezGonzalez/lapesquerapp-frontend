@@ -13,98 +13,23 @@ import { TbTruckLoading, TbFishHook } from 'react-icons/tb';
 import { BsDiagram3 } from 'react-icons/bs';
 import { GrBucket } from 'react-icons/gr';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
-import { NAVBAR_LOGO } from '@/configs/config'; 
+import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
+import { navigation } from '@/data/Navbar/navgation';
 
 
 /* Cambiar en un futuro las img por Image de next */
-/* Cambiar a otro archivo el navigation */
 /* Cambiar ubicación Logo + convertir en editables datos de empresa en general */
 
 
-const navigation = [
-    {
-        name: 'Inicio',
-        icon: HomeIcon,
-        current: true,
-        href: '/home',
-    },
-    {
-        name: 'Recepciones',
-        icon: TbFishHook,
-        current: false,
-        children: [
-            { name: 'Materia Prima', href: '/raw_material_receptions' },
-            { name: 'Ingredientes y Aditivos', href: '#' },
-            { name: 'Envases y embalajes', href: '#' },
-        ],
-    },
-    {
-        name: 'Cebo',
-        icon: GrBucket,
-        current: false,
-        href: '/cebo_dispatches',
-    },
-    {
-        name: 'Producciones',
-        icon: BsDiagram3,
-        current: false,
-        children: [
-            { name: 'Todas las producciones', href: '/productions' },
-            { name: 'Añadir Producción', href: '/insert_production' },
-        ],
-    },
-    {
-        name: 'Almacenes',
-        icon: TbTruckLoading,
-        current: false,
-        children: [
-            { name: 'Gestor de Almacenes', href: '/stores_manager' },
-            { name: 'Todos los Palets', href: '/pallets' },
-        ],
-    },
-    {
-        name: 'Pedidos',
-        icon: TruckIcon,
-        current: false,
-        children: [
-            { name: 'Pedidos Activos', href: '/orders_manager' },
-            { name: 'Todos los Pedidos', href: '/orders' },
-            { name: 'Añadir Pedido', href: '/insert_order' },
-        ],
-    },
-    {
-        name: 'Etiquetas',
-        icon: TicketIcon,
-        current: false,
-        href: '/labels_manager',
-    },
-    {
-        name: 'Conversor A3ERP',
-        icon: PiMicrosoftExcelLogoFill,
-        current: false,
-        href: '/isla_cristina_reception_converter',
-    },
-    {
-        name: 'Otros',
-        icon: EllipsisHorizontalCircleIcon,
-        current: false,
-        children: [
-            { name: 'Especies', href: '#' },
-            { name: 'Zonas de capturas', href: '#' },
-        ],
-    },
-];
-
 export default function Navbar() {
-    const currentPath =
-        typeof window !== 'undefined' ? window.location.pathname : '';
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
     return (
         <>
             <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
                 <div className="mt-3 flex flex-shrink-0 items-center px-7">
-                    <img className="h-8 w-auto" src={NAVBAR_LOGO} alt="Your Company" />
+                    <img className="h-14 w-auto" src={NAVBAR_LOGO} alt="BlueApp" />
                 </div>
 
                 <div className="mt-5 flex flex-grow flex-col">
@@ -205,7 +130,7 @@ export default function Navbar() {
                         <div>
                             <img
                                 className="inline-block h-9 w-9 rounded-full"
-                                src="/user.svg"
+                                src="/app/user.png"
                                 alt=""
                             />
                         </div>
