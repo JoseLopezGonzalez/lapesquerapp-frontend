@@ -1,5 +1,4 @@
 import Home from "@/components/Admin/Home";
-import { CodeBracketIcon } from "@heroicons/react/24/outline";
 
 export default function AdminPage() {
   return (
