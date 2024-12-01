@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { PiChartLineUp } from 'react-icons/pi';
-import { getTotalInventoryByProducts } from '@/app/services/stores/stats/getTotalInventoryByProducts';
+import { getTotalInventoryByProducts } from '@/services/stores/stats/getTotalInventoryByProducts';
 
 
 const ProductsInventoryOverview = () => {

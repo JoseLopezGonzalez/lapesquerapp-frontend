@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { PiChartLineUp } from 'react-icons/pi'
-import { getRawMaterialReceptionAnnualStats } from '@/app/services/rawMaterialReception/stats/getRawMatertialReceptionAnnualStats'
+import { getRawMaterialReceptionAnnualStats } from '@/services/rawMaterialReception/stats/getRawMatertialReceptionAnnualStats'
 import { years } from '@/data/dates/years'
 import { currentYear } from '@/helpers/dates/years'
 

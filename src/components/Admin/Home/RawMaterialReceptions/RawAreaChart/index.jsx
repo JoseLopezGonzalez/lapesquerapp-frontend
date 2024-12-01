@@ -6,7 +6,7 @@ import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon } from '@heroicons/react/2
 import { classNames } from '@/helpers/styles/classNames'
 import MonthlyChart from './MonthlyChart'
 import AnnualChart from './AnnualChart'
-import { getSpecies } from '@/app/services/species/getSpecies'
+import { getSpecies } from '@/services/species/getSpecies'
 
 const RawAreaChart = () => {
 
@@ -64,7 +64,7 @@ const RawAreaChart = () => {
                             <select
                                 onChange={(e) => setSpecies(e.target.value)}
                                 value={species}
-                                className="border text-xs rounded-lg block  p-1.5 px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500">
+                                className="border text-xs rounded-lg block  p-1.5 px-1 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500">
                                 <option value="all">Todas las especies</option>
                                 {speciesOptions.map(specie => <option key={specie.id} value={specie.id}>{specie.name}</option>)}
                             </select>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { PiChartLineUp } from 'react-icons/pi';
-import { getTotalInventoryBySpecies } from '@/app/services/stores/stats/getTotalInventoryBySpecies';
+import { getTotalInventoryBySpecies } from '@/services/stores/stats/getTotalInventoryBySpecies';
 
 
 

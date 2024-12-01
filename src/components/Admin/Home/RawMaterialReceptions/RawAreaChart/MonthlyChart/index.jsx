@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { PiChartLineUp } from "react-icons/pi";
-import { getRawMaterialReceptionMonthlyStats } from '@/app/services/rawMaterialReception/stats/getRawMatertialReceptionMonthlyStats';
+import { getRawMaterialReceptionMonthlyStats } from '@/services/rawMaterialReception/stats/getRawMatertialReceptionMonthlyStats';
 
 
 const MonthlyChart = ({ species, setDataFilterUi, setNetWeight, setPercentageChange }) => {
@@ -41,12 +41,12 @@ const MonthlyChart = ({ species, setDataFilterUi, setNetWeight, setPercentageCha
             return (
                 <div className="bg-neutral-800/45 border border-neutral-700 p-3 rounded-lg backdrop-blur-lg drop-shadow-lg	">
                     {payload.map((data, index) => (
-                        <>
+                        <di key={index}>
                             <p className=' text-sm'>{data.payload.name}</p>
                             <p className="text-sm font-semibold" key={index} style={{ color: data.color, margin: 0 }}>
                                 {`${data.value.toFixed(2)} kg`}
                             </p>
-                        </>
+                        </di>
                     ))}
                 </div>
             );

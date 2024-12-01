@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
 import { PiChartLineUp } from 'react-icons/pi';
-import { getRawMatertialReceptionDailybyProductsStats } from '@/app/services/rawMaterialReception/stats/getRawMatertialReceptionDailybyProductsStats';
-import { getSpecies } from '@/app/services/species/getSpecies';
+import { getRawMatertialReceptionDailybyProductsStats } from '@/services/rawMaterialReception/stats/getRawMatertialReceptionDailybyProductsStats';
+import { getSpecies } from '@/services/species/getSpecies';
 
 
 /* add fill key to stats.totalNetWeightByProducts */

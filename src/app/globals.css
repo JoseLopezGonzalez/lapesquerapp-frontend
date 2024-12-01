@@ -17,7 +17,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
 }
 
 .preserve-line-breaks {
@@ -67,13 +67,37 @@ body {
   right: 0;
   width: 50px;
   height: 50px;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.6
-  ); /* Color para simular el doblez de papel */
+  background-color: rgba(255,
+      255,
+      255,
+      0.6);
+  /* Color para simular el doblez de papel */
   border-bottom-left-radius: 12px;
   box-shadow: -3px -3px 4px rgba(0, 0, 0, 0.2);
   clip-path: polygon(0 0, 100% 0, 0 100%);
 }
+
+
+/* Mas CSS */
+.flash {
+  animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.z-max {
+  z-index: 9999;
+}
+
