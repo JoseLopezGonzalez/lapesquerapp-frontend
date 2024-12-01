@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { GenericTable } from "@/components/Admin/Tables/GenericTable";
 import { GenericFilters } from "@/components/Admin/Filters/GenericFilters";
-/* import { Pagination } from "@/components/Admin/Tables/Pagination"; */
+import { Pagination } from "@/components/Admin/Tables/Pagination";
+import { Header } from "@/components/Admin/Tables/GenericTable/Header";
+import { Body } from "@/components/Admin/Tables/GenericTable/Body";
+import { Footer } from "@/components/Admin/Tables/GenericTable/Footer";
 
 export default function EntityClient({ config }) {
     const [data, setData] = useState({ loading: true, rows: [] });
@@ -64,7 +67,7 @@ export default function EntityClient({ config }) {
                     totalItems: result.meta.total,
                     perPage: result.meta.per_page,
                 });
-                
+
             } catch (error) {
                 console.error("Error al cargar los datos:", error);
                 setData({ loading: false, rows: [] });
@@ -77,20 +80,17 @@ export default function EntityClient({ config }) {
     const handlePageChange = (newPage) => {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage) }));
     };
-    
+
+    const headerData = {
+        title: config.title,
+        description: config.description,
+    }
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-white">{config.title}</h1>
-            <p className="text-neutral-400">{config.description}</p>
+        <div className="">
 
             {/* Botón y Modal de Filtros */}
-            <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className="py-2 px-3 bg-blue-500 text-white rounded-md mb-4"
-            >
-                Filtros
-            </button>
+
             <GenericFilters
                 config={config.filters}
                 open={isFilterModalOpen}
@@ -104,14 +104,28 @@ export default function EntityClient({ config }) {
 
             {/* Tabla genérica */}
             <GenericTable
-                data={data}
-                config={config}
-                onAction={(action, payload) => console.log(action, payload)}
-            />
+            /* data={data}
+            headerData={headerData}
+            config={config}
+            onAction={(action, payload) => console.log(action, payload)} */
+            >
+                <Header data={headerData} />
+                <Body table={config.table} data={data} />
+                <Footer >
+                    {/* Paginación */}
+                    <button
+                        onClick={() => setIsFilterModalOpen(true)}
+                        className="py-2 px-3 bg-blue-500 text-white rounded-md mb-4"
+                    >
+                        Filtros
+                    </button>
+                    <Pagination meta={paginationMeta} onPageChange={(page) => handlePageChange(page)} />
+                </Footer>
+
+            </GenericTable >
 
             {/* Paginación */}
-           {/*  <Pagination meta={paginationMeta} onPageChange={(page) => handlePageChange(page)} /> */}
 
-        </div>
+        </div >
     );
 }
