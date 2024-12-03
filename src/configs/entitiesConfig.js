@@ -1,8 +1,10 @@
 export const configs = {
-    rawMaterialReceptions: {
-      title: "Recepciones de Materia Prima",
-      description: "Gestión de recepciones de materia prima.",
-      endpoint: "https://api.congeladosbrisamar.es/api/v1/raw-material-receptions",
+    'raw-material-receptions': {
+      title: "Recepciones de materia prima",
+      description: "Crea, edita, genera reportes y más.",
+      endpoint: "raw-material-receptions",
+      viewRoute: "/admin/raw-material-receptions/:id", // Endpoint para ver
+      deleteEndpoint: "/raw-material-receptions/:id", // Endpoint para eliminar
       filters: [
         {
           name: "supplier",
@@ -36,7 +38,7 @@ export const configs = {
     suppliers: {
       title: "Proveedores",
       description: "Gestión de proveedores.",
-      endpoint: "/api/suppliers",
+      endpoint: "suppliers",
       filters: [
         {
           name: "name",
