@@ -20,14 +20,14 @@ export const GenericFilters = ({ data }) => {
                 >
                     <IoFilter className="h-4 w-4" />
                     Filtros
-                    {data.numberOfActiveFilters > 0 && (
+                    {data?.numberOfActiveFilters > 0 && (
                         <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-neutral-700 text-neutral-300">
                             {data.numberOfActiveFilters}
                         </span>
                     )}
                 </button>
             </div>
-            <GenericFiltersModal data={data} isOpen={isModalOpen} onClose={closeModal} />
+            <GenericFiltersModal data={data} isOpen={isModalOpen} onBack={closeModal} />
         </>
     );
 };

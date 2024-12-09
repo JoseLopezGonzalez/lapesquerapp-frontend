@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { Children } from 'react'
 
-export const Header = ({data}) => {
+export const Header = ({data , children}) => {
 
     const { title, description } = data;
 
@@ -17,7 +17,7 @@ export const Header = ({data}) => {
 
             <div>
                 <div className="inline-flex gap-x-2">
-                    {/* {data.headerButtons} */}
+                    {children}
                 </div>
             </div>
         </div>

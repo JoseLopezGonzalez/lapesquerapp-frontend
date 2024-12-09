@@ -26,50 +26,11 @@ export const configs = {
     ],
     table: {
       headers: [
-        { name: "id", label: "ID", type: "text" },
-        { name: "supplier", label: "Proveedor", type: "text" },
-        { name: "notes", label: "Notas", type: "text" },
-        { name: "netWeight", label: "Peso Neto", type: "text" },
-        { name: "date", label: "Fecha", type: "text" },
-        { name: "actions", label: "Acciones", type: "button" },
-      ],
-    },
-  },
-  orders: {
-    title: "Pedidos",
-    description: "Gestiona pedidos, edita detalles y más.",
-    endpoint: "orders",
-    viewRoute: "/admin/orders/:id",
-    deleteEndpoint: "/orders/:id",
-    filters: [
-      {
-        name: "status",
-        label: "Estado",
-        type: "pairSelectBox",
-        options: [
-          { name: "pending", label: "Pendiente" },
-          { name: "completed", label: "Completado" },
-        ],
-      },
-      {
-        name: "customer",
-        label: "Cliente",
-        type: "autocomplete",
-        placeholder: "Buscar por cliente",
-      },
-      {
-        name: "date",
-        label: "Fecha",
-        type: "dateRange",
-      },
-    ],
-    table: {
-      headers: [
-        { name: "id", label: "ID", type: "text" },
-        { name: "status", label: "Estado", type: "text" },
-        { name: "customer", label: "Cliente", type: "text" },
-        { name: "total", label: "Total", type: "text" },
-        { name: "date", label: "Fecha", type: "text" },
+        { name: "id", label: "ID", type: "text", path: "id" },
+        { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
+        { name: "notes", label: "Notas", type: "text", path: "notes" },
+        { name: "netWeight", label: "Peso Neto", type: "text", path: "netWeight" },
+        { name: "date", label: "Fecha", type: "text", path: "date" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
