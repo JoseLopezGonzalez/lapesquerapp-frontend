@@ -7,6 +7,7 @@ import { GenericTable } from "@/components/Admin/Tables/GenericTable";
 import { GenericFilters } from "@/components/Admin/Filters/GenericFilters";
 import { Pagination } from "@/components/Admin/Tables/Pagination";
 import { Header } from "@/components/Admin/Tables/GenericTable/Header";
+/* Cambiar rutas como en Modal, para de una acceder a todo */
 import { Body } from "@/components/Admin/Tables/GenericTable/Body";
 import { Footer } from "@/components/Admin/Tables/GenericTable/Footer";
 import { API_URL_V1 } from "@/configs/config";

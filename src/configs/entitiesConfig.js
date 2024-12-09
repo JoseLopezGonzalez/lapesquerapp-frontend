@@ -35,34 +35,5 @@ export const configs = {
         ],
       },
     },
-    suppliers: {
-      title: "Proveedores",
-      description: "Gestión de proveedores.",
-      endpoint: "suppliers",
-      filters: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Buscar por nombre",
-        },
-        {
-          name: "email",
-          label: "Email",
-          type: "text",
-          placeholder: "Buscar por email",
-        },
-      ],
-      table: {
-        headers: [
-          { name: "id", label: "ID", type: "text" },
-          { name: "name", label: "Nombre", type: "text" },
-          { name: "email", label: "Email", type: "text" },
-          { name: "phone", label: "Teléfono", type: "text" },
-          { name: "actions", label: "Acciones", type: "button" },
-        ],
-      },
-    },
-    // Agrega más entidades aquí...
   };
   

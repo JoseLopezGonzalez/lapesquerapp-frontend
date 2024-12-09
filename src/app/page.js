@@ -1,6 +1,19 @@
+'use client'
+
+import { Modal, Header, Body, Footer } from "@/components/Admin/Modals/GenericModal";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Home() {
+
+  const [isOpen, setIsOpen] = useState(true);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    console.log("Modal cerrado");
+  };
+
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
@@ -96,6 +109,41 @@ export default function Home() {
           Go to nextjs.org →
         </a>
       </footer>
+
+
+
+
+      <div>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+        >
+          Abrir Modal
+        </button>
+
+        <Modal isOpen={isOpen} onClose={handleClose} size="xl">
+          <Header onBack={handleClose}>Ejemplo de Modal</Header>
+          <Body>
+            <p>Este es el contenido del modal.</p>
+          </Body>
+          <Footer>
+            <button
+              onClick={handleClose}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg"
+            >
+              Cerrar
+            </button>
+            <button
+              onClick={() => console.log("Aplicar")}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg"
+            >
+              Aplicar
+            </button>
+          </Footer>
+        </Modal>
+      </div>
+
+
     </div>
   );
 }
