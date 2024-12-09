@@ -1,13 +1,11 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-
 import { useState, useEffect } from "react";
 import { GenericTable } from "@/components/Admin/Tables/GenericTable";
 import { GenericFilters } from "@/components/Admin/Filters/GenericFilters";
 import { Pagination } from "@/components/Admin/Tables/Pagination";
 import { Header } from "@/components/Admin/Tables/GenericTable/Header";
-/* Cambiar rutas como en Modal, para de una acceder a todo */
 import { Body } from "@/components/Admin/Tables/GenericTable/Body";
 import { Footer } from "@/components/Admin/Tables/GenericTable/Footer";
 import { API_URL_V1 } from "@/configs/config";
@@ -38,15 +36,14 @@ export default function EntityClient({ config }) {
 
             const queryParams = new URLSearchParams({
                 page: paginationMeta.currentPage,
-                ...filters, // Agregamos los filtros como parámetros
+                ...filters, // Pasamos los filtros como parámetros
             });
 
-            const url = `${API_URL_V1}${config.endpoint}?${queryParams.toString()}`
+            const url = `${API_URL_V1}${config.endpoint}?${queryParams.toString()}`;
 
             return await fetch(url)
                 .then(response => response.json())
                 .then(result => {
-
                     const processedRows = result.data.map((row) => ({
                         id: row.id,
                         supplier: row.supplier?.name || "Desconocido",
@@ -58,7 +55,6 @@ export default function EntityClient({ config }) {
                                 label: "Ver",
                                 onClick: () => {
                                     const viewUrl = config.viewRoute.replace(":id", row.id);
-                                    /* window.location.href = viewUrl; // Redirigir al usuario */
                                     router.push(viewUrl); // Redirigir con Next.js
                                 },
                             },
@@ -92,15 +88,13 @@ export default function EntityClient({ config }) {
                                         }
                                     }
                                 },
-                            }
-                        }
+                            },
+                        },
                     }));
 
-                    setData(prevData => {
-                        return {
-                            ...prevData,
-                            rows: processedRows,
-                        }
+                    setData({
+                        rows: processedRows,
+                        loading: false,
                     });
 
                     setPaginationMeta({
@@ -109,51 +103,45 @@ export default function EntityClient({ config }) {
                         totalItems: result.meta.total,
                         perPage: result.meta.per_page,
                     });
-
                 })
-                /* IMPLEMENTAR: Error con hot toast */
-                .catch(error => console.log(error))
+                .catch((error) => console.error("Error:", error))
                 .finally(() => {
-                    setData(prevData => {
-                        return {
-                            ...prevData,
-                            loading: false,
-                        }
-                    })
+                    setData((prevData) => ({ ...prevData, loading: false }));
                 });
-
-
         };
 
         fetchData();
-
     }, [config.endpoint, filters, paginationMeta.currentPage]);
 
     const handlePageChange = (newPage) => {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage) }));
     };
 
+    const handleApplyFilters = (appliedFilters) => {
+        setFilters(appliedFilters);
+        setPaginationMeta(initialPaginationMeta); // Reiniciar a la primera página
+        setIsFilterModalOpen(false);
+    };
+
+    const handleResetFilters = () => {
+        setFilters({});
+        setPaginationMeta(initialPaginationMeta); // Reiniciar a la primera página
+    };
+
     const headerData = {
         title: config.title,
         description: config.description,
-    }
+    };
 
     return (
         <div>
             <GenericFilters
-                config={config.filters}
+                filters={config.filters}
                 open={isFilterModalOpen}
-                onApply={(appliedFilters) => { setFilters(appliedFilters); setIsFilterModalOpen(false); }}
-                onReset={() => setFilters({})}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
                 onClose={() => setIsFilterModalOpen(false)}
             />
-
-            {/* <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className="py-2 px-3 bg-blue-500 text-white rounded-md mb-4"
-            >
-                Filtros
-            </button> */}
 
             <GenericTable>
                 <Header data={headerData} />
