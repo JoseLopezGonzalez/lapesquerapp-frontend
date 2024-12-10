@@ -1,7 +1,6 @@
 import React from "react";
 
 export const Pagination = ({ meta, onPageChange }) => {
-    if (!meta || meta.totalPages <= 1) return null; // Si no hay múltiples páginas, no renderizar
 
     const currentPage = meta.currentPage;
     const totalPages = meta.totalPages;

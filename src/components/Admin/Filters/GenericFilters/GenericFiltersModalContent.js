@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { TextFilter } from './Types/TextFilter';
@@ -11,41 +11,29 @@ import { SelectBoxesFilter } from './Types/SelectBoxesFilter';
 import { DateFilter } from './Types/DateFilter';
 import { DateRangeFilter } from './Types/DateRangeFilter';
 import { AutocompleteFilter } from './Types/AutocompleteFilter';
+import { SearchFilter } from './Types/SearchFilter';
 
-export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFiltersChange }) => {
-    const [localFilters, setLocalFilters] = useState({});
-
-    useEffect(() => {
-        // Inicializar el estado local de filtros
-        const initialFilters = {};
-        filtersGroup.forEach((filter) => {
-            initialFilters[filter.name] = filter.value || ''; // Valor inicial
-        });
-        setLocalFilters(initialFilters);
-    }, [filtersGroup]);
-
-    const handleFilterChange = (name, value) => {
-        setLocalFilters((prev) => ({ ...prev, [name]: value }));
-        onFiltersChange?.(name, value); // Propaga el cambio si se define
-    };
-
-    if (!filtersGroup || filtersGroup.length === 0) {
+export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
+    if (!filters || filters.length === 0) {
         return <p className="text-gray-500">No hay filtros disponibles.</p>;
     }
 
+    // Extraer el filtro de tipo `search` y los demás
+    const searchFilter = filters.find((filter) => filter.type === 'search');
+    const otherFilters = filters.filter((filter) => filter.type !== 'search');
+    
+    console.log('filters', filters);
     return (
         <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4">
+            {/* Renderizar el filtro de tipo `search` si existe */}
             {searchFilter && (
                 <div>
-                    <label className="block mb-2 text-sm font-medium text-neutral-400">
-                        {searchFilter.label}
-                    </label>
-                    <input
-                        type="text"
-                        placeholder={searchFilter.placeholder}
-                        value={localFilters[searchFilter.name] || ''}
-                        onChange={(e) => handleFilterChange(searchFilter.name, e.target.value)}
-                        className="w-full p-2 border rounded-lg bg-neutral-50 dark:bg-neutral-700 border-neutral-300 text-neutral-900 dark:text-white"
+                    <SearchFilter
+                        filter={{
+                            ...searchFilter,
+                            value: searchFilter.value || '',
+                            onChange: (value) => onFilterChange(searchFilter.name, value),
+                        }}
                     />
                 </div>
             )}
@@ -53,7 +41,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
             <div className="px-2">
                 <div className="pb-4 divide-y divide-white/10">
                     <dl className="space-y-6 divide-y divide-white/10">
-                        {filtersGroup.map((filter) => (
+                        {otherFilters.map((filter) => (
                             <Disclosure as="div" key={filter.name || filter.label} className="pt-6">
                                 {({ open }) => (
                                     <>
@@ -79,14 +67,13 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                         </dt>
                                         <Disclosure.Panel as="dd" className="mt-2 px-4 py-4">
                                             <div>
-                                                {/* Renderizamos el tipo de filtro específico */}
                                                 {filter.type === 'text' && (
                                                     <TextFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || '',
+                                                            value: filter.value || '',
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -94,9 +81,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <TextAreaFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || '',
+                                                            value: filter.value || '',
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -104,16 +91,16 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <TextAccumulatorFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || [],
+                                                            value: filter.value || [],
                                                             onAdd: (item) =>
-                                                                handleFilterChange(filter.name, [
-                                                                    ...(localFilters[filter.name] || []),
+                                                                onFilterChange(filter.name, [
+                                                                    ...(filter.value || []),
                                                                     item,
                                                                 ]),
                                                             onDelete: (item) =>
-                                                                handleFilterChange(
+                                                                onFilterChange(
                                                                     filter.name,
-                                                                    (localFilters[filter.name] || []).filter(
+                                                                    (filter.value || []).filter(
                                                                         (i) => i !== item
                                                                     )
                                                                 ),
@@ -124,9 +111,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <NumberFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || '',
+                                                            value: filter.value || '',
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -134,9 +121,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <SelectBoxesFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || '',
+                                                            value: filter.value || '',
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -144,9 +131,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <DateFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || '',
+                                                            value: filter.value || '',
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -154,12 +141,12 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <DateRangeFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || {
+                                                            value: filter.value || {
                                                                 start: '',
                                                                 end: '',
                                                             },
                                                             onChange: (value) =>
-                                                                handleFilterChange(filter.name, value),
+                                                                onFilterChange(filter.name, value),
                                                         }}
                                                     />
                                                 )}
@@ -167,16 +154,16 @@ export const GenericFiltersModalContent = ({ filtersGroup, searchFilter, onFilte
                                                     <AutocompleteFilter
                                                         filter={{
                                                             ...filter,
-                                                            value: localFilters[filter.name] || [],
+                                                            value: filter.value || [],
                                                             onAdd: (item) =>
-                                                                handleFilterChange(filter.name, [
-                                                                    ...(localFilters[filter.name] || []),
+                                                                onFilterChange(filter.name, [
+                                                                    ...(filter.value || []),
                                                                     item,
                                                                 ]),
                                                             onDelete: (item) =>
-                                                                handleFilterChange(
+                                                                onFilterChange(
                                                                     filter.name,
-                                                                    (localFilters[filter.name] || []).filter(
+                                                                    (filter.value || []).filter(
                                                                         (i) => i.id !== item.id
                                                                     )
                                                                 ),

@@ -5,7 +5,14 @@ export const configs = {
     endpoint: "raw-material-receptions",
     viewRoute: "/admin/raw-material-receptions/:id",
     deleteEndpoint: "/raw-material-receptions/:id",
+    createPath: "/admin/raw-material-receptions/create",
     filters: [
+      {
+        name: "id",
+        label: "Buscar",
+        type: "search",
+        placeholder: "Buscar por ID, proveedor o notas",
+      },
       {
         name: "supplier",
         label: "Proveedor",

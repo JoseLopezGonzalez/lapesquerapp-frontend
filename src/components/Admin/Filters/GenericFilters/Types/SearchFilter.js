@@ -10,7 +10,7 @@ export const SearchFilter = ({ filter }) => {
                 </div>
                 <input
                     type="search"
-                    onChange={filter.onChange}
+                    onChange={(e) => filter.onChange(e.target.value)}
                     value={filter.value}
                     className="block w-full px-4 py-2.5 ps-10 text-sm text-neutral-900 border border-neutral-300 rounded-xl bg-neutral-50 focus:ring-sky-500 focus:border-sky-500 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
                     placeholder={filter.placeholder}

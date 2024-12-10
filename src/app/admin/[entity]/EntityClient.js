@@ -9,6 +9,7 @@ import { Header } from '@/components/Admin/Tables/GenericTable/Header';
 import { Body } from '@/components/Admin/Tables/GenericTable/Body';
 import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
 import { API_URL_V1 } from '@/configs/config';
+import { PlusIcon } from '@heroicons/react/20/solid';
 
 const initialPaginationMeta = {
     currentPage: 1,
@@ -40,9 +41,41 @@ export default function EntityClient({ config }) {
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
 
+            /* formatear filtros a partir de [
+    {
+        "name": "search",
+        "value": "12"
+    },
+    {
+        "name": "supplier",
+        "value": ""
+    },
+    {
+        "name": "notes",
+        "value": ""
+    },
+    {
+        "name": "date",
+        "value": {
+            "start": "",
+            "end": ""
+        }
+    }
+] */
+            const formattedFilters = filters.length > 0 ? filters.reduce((acc, filter) => {
+                if (filter.type === 'dateRange') {
+                    if (filter.value.start) acc[filter.name + '_start'] = filter.value.start;
+                    if (filter.value.end) acc[filter.name + '_end'] = filter.value.end;
+                }
+                else if (filter.value) acc[filter.name] = filter.value;
+                return acc;
+            }, {}) : {};
+
+
+
             const queryParams = new URLSearchParams({
                 page: paginationMeta.currentPage,
-                ...filters,
+                ...formattedFilters,
             });
 
             const url = `${API_URL_V1}${config.endpoint}?${queryParams.toString()}`;
@@ -100,7 +133,7 @@ export default function EntityClient({ config }) {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));
     };
 
-    const handleFiltersApply = (appliedFilters) => {
+    /* const handleFiltersApply = (appliedFilters) => {
         setFilters(appliedFilters);
         setPaginationMeta((prev) => ({ ...prev, currentPage: 1 }));
     };
@@ -108,7 +141,7 @@ export default function EntityClient({ config }) {
     const handleFiltersReset = () => {
         setFilters({});
         setPaginationMeta((prev) => ({ ...prev, currentPage: 1 }));
-    };
+    }; */
 
     const handleDelete = async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
@@ -140,6 +173,8 @@ export default function EntityClient({ config }) {
         description: config.description,
     };
 
+    console.log(filters);
+
     return (
         <div>
 
@@ -148,14 +183,19 @@ export default function EntityClient({ config }) {
                 <Header data={headerData} >
                     <GenericFilters
                         data={{
-                            filters: config.filters,
-                            onClick: {
-                                submit: handleFiltersApply,
-                                reset: handleFiltersReset,
-                            },
-                            numberOfActiveFilters: Object.keys(filters).length,
+                            configFilters: config.filters,
+                            updateFilters: (filters) => setFilters(filters),
                         }}
                     />
+                    <div>
+                        <button
+                            /* Redirect to config.createPath */
+                            onClick={() => router.push(config.createPath)}
+                            type="button" className="py-1.5 px-3 inline-flex items-center gap-1 text-sm  rounded-lg bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none border-2 border-neutral-800">
+                            <PlusIcon className="h-5 w-5" aria-hidden="true" />
+                            Nuevo
+                        </button>
+                    </div>
 
                 </Header>
                 <Body table={config.table} data={data} />

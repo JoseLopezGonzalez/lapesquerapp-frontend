@@ -6,22 +6,29 @@ import { GenericFiltersModalContent } from './GenericFiltersModalContent';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
-export const GenericFiltersModal = ({ data, isOpen, onBack }) => {
+export const GenericFiltersModal = ({ filters, isOpen, onClose, onFilterChange , onSubmit, onReset }) => {
+
     const applyFilters = () => {
-        data.onClick.submit();
+        /* data.onClick.submit(); */
+        onSubmit();
         onClose();
     };
 
     const resetFilters = () => {
-        data.onClick.reset();
+        /* data.onClick.reset(); */
+        onReset();
         onClose();
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onBack} size="xl">
-            <Header title="Filtros" onBack={onBack}/>
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+            <Header title="Filtros" onBack={onClose} />
             <Body>
-                <GenericFiltersModalContent filtersGroup={data.filters} searchFilter={data.search} />
+                <GenericFiltersModalContent
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                    /* searchFilter={data.search} */
+                />
             </Body>
             <Footer>
                 <button
