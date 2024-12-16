@@ -3,8 +3,7 @@
 import React from 'react';
 import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { TextFilter } from './Types/TextFilter';
-import { TextAreaFilter } from './Types/TextAreaFilter';
+import TextAreaFilter from './Types/TextAreaFilter';
 import { TextAccumulatorFilter } from './Types/TextAccumulatorFilter';
 import { NumberFilter } from './Types/NumberFilter';
 import { SelectBoxesFilter } from './Types/SelectBoxesFilter';
@@ -12,6 +11,7 @@ import { DateFilter } from './Types/DateFilter';
 import { DateRangeFilter } from './Types/DateRangeFilter';
 import { AutocompleteFilter } from './Types/AutocompleteFilter';
 import { SearchFilter } from './Types/SearchFilter';
+import TextFilter from './Types/TextFilter';
 
 export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
     if (!filters || filters.length === 0) {
@@ -80,12 +80,13 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                                 )}
                                                 {filter.type === 'textarea' && (
                                                     <TextAreaFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || '',
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        placeholder={filter.placeholder}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'textAccumulator' && (
