@@ -30,6 +30,13 @@ export const configs = {
         label: "Fecha",
         type: "dateRange",
       },
+      /* Text accumulator */
+      {
+        name: "ids",
+        label: "Numeros de ID",
+        type: "textAccumulator",
+        placeholder: "Buscar por IDs",
+      },
     ],
     table: {
       headers: [

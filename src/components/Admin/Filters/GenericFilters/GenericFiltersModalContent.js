@@ -4,7 +4,7 @@ import React from 'react';
 import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import TextAreaFilter from './Types/TextAreaFilter';
-import { TextAccumulatorFilter } from './Types/TextAccumulatorFilter';
+import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
 import { NumberFilter } from './Types/NumberFilter';
 import { SelectBoxesFilter } from './Types/SelectBoxesFilter';
 import { DateFilter } from './Types/DateFilter';
@@ -91,22 +91,24 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                                 )}
                                                 {filter.type === 'textAccumulator' && (
                                                     <TextAccumulatorFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || [],
-                                                            onAdd: (item) =>
-                                                                onFilterChange(filter.name, [
-                                                                    ...(filter.value || []),
-                                                                    item,
-                                                                ]),
-                                                            onDelete: (item) =>
-                                                                onFilterChange(
-                                                                    filter.name,
-                                                                    (filter.value || []).filter(
-                                                                        (i) => i !== item
-                                                                    )
-                                                                ),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value || []}
+                                                        placeholder={filter.placeholder}
+                                                        onAdd={(item) =>
+                                                            onFilterChange(filter.name, [
+                                                                ...(filter.value || []),
+                                                                item,
+                                                            ])
+                                                        }
+                                                        onDelete={(item) =>
+                                                            onFilterChange(
+                                                                filter.name,
+                                                                (filter.value || []).filter(
+                                                                    (i) => i !== item
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'number' && (
