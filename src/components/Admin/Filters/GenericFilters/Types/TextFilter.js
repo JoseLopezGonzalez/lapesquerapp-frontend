@@ -1,13 +1,14 @@
 'use client';
 
-export const TextFilter = ({ label, name, value, placeholder, onChange }) => {
+import React, { memo } from 'react';
 
+const TextFilter = ({ label, name, value, placeholder, onChange }) => {
     const handleOnChange = (e) => {
         onChange(e.target.value);
-    }
+    };
 
     return (
-        <div key={name} className="col-span-2">
+        <div className="col-span-2">
             <div className="flex w-full flex-col">
                 <label
                     htmlFor={name}
@@ -27,3 +28,5 @@ export const TextFilter = ({ label, name, value, placeholder, onChange }) => {
         </div>
     );
 };
+
+export default memo(TextFilter);

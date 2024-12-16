@@ -1,11 +1,11 @@
 # TextFilter Component
 
 ## Descripción
-`TextFilter` es un componente reutilizable de React que proporciona un filtro basado en un campo de entrada de texto. Este componente es útil para filtrar datos o capturar entradas de texto dentro de formularios o interfaces de usuario.
+`TextFilter` es un componente reutilizable de React diseñado para proporcionar un campo de entrada de texto, optimizado con `React.memo` para evitar renderizados innecesarios. Este componente es ideal para formularios o filtros dinámicos dentro de interfaces complejas.
 
 ---
 
-## Propiedades (Props)
+## Props
 | Propiedad     | Tipo       | Requerido | Descripción                                                                                  |
 |---------------|------------|-----------|----------------------------------------------------------------------------------------------|
 | `label`       | `string`   | Sí        | Etiqueta que se mostrará encima del campo de texto.                                           |
@@ -16,13 +16,21 @@
 
 ---
 
+## Optimización con `React.memo`
+Este componente está envuelto en `React.memo`, lo que significa que:
+- Solo se volverá a renderizar si alguna de sus props cambia.
+- Es ideal para listas dinámicas de filtros o formularios donde el rendimiento es crucial.
+
+---
+
 ## Uso
 ### Ejemplo de implementación:
 ```jsx
-import { TextFilter } from './TextFilter';
+import React, { useState } from 'react';
+import TextFilter from './TextFilter';
 
 const Example = () => {
-    const [filterValue, setFilterValue] = React.useState("");
+    const [filterValue, setFilterValue] = useState("");
 
     const handleFilterChange = (newValue) => {
         setFilterValue(newValue);
@@ -39,3 +47,5 @@ const Example = () => {
         />
     );
 };
+
+export default Example;
