@@ -69,12 +69,13 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                             <div>
                                                 {filter.type === 'text' && (
                                                     <TextFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || '',
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        placeholder={filter.placeholder}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'textarea' && (

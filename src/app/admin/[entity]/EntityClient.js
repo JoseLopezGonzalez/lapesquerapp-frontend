@@ -41,27 +41,30 @@ export default function EntityClient({ config }) {
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
 
-            /* formatear filtros a partir de [
-    {
-        "name": "search",
-        "value": "12"
-    },
-    {
-        "name": "supplier",
-        "value": ""
-    },
-    {
-        "name": "notes",
-        "value": ""
-    },
-    {
-        "name": "date",
-        "value": {
-            "start": "",
-            "end": ""
-        }
-    }
-] */
+            /* formatear filtros a partir de 
+                [
+                    {
+                        "name": "search",
+                        "value": "12"
+                    },
+                    {
+                        "name": "supplier",
+                        "value": ""
+                    },
+                    {
+                        "name": "notes",
+                        "value": ""
+                    },
+                    {
+                        "name": "date",
+                        "value": {
+                            "start": "",
+                            "end": ""
+                        }
+                    }
+                ] 
+            */
+           
             const formattedFilters = filters.length > 0 ? filters.reduce((acc, filter) => {
                 if (filter.type === 'dateRange') {
                     if (filter.value.start) acc[filter.name + '_start'] = filter.value.start;
@@ -133,16 +136,6 @@ export default function EntityClient({ config }) {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));
     };
 
-    /* const handleFiltersApply = (appliedFilters) => {
-        setFilters(appliedFilters);
-        setPaginationMeta((prev) => ({ ...prev, currentPage: 1 }));
-    };
-
-    const handleFiltersReset = () => {
-        setFilters({});
-        setPaginationMeta((prev) => ({ ...prev, currentPage: 1 }));
-    }; */
-
     const handleDelete = async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
 
@@ -173,12 +166,8 @@ export default function EntityClient({ config }) {
         description: config.description,
     };
 
-    console.log(filters);
-
     return (
         <div>
-
-
             <GenericTable>
                 <Header data={headerData} >
                     <GenericFilters
@@ -196,7 +185,6 @@ export default function EntityClient({ config }) {
                             Nuevo
                         </button>
                     </div>
-
                 </Header>
                 <Body table={config.table} data={data} />
                 <Footer>
