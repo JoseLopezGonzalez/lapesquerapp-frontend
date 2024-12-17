@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 
-export const TextAreaFilter = ({ label, name, value, placeholder, onChange }) => {
+const TextAreaFilter = ({ label, name, value, placeholder, onChange }) => {
 
     const handleOnChange = (e) => {
         onChange(e.target.value);

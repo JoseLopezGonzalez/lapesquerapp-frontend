@@ -37,6 +37,31 @@ export const configs = {
         type: "textAccumulator",
         placeholder: "Buscar por IDs",
       },
+      /* SelectBoxes */
+      {
+        name: "status",
+        label: "Estado",
+        type: "pairSelectBoxes",
+        options: [
+          { name: "pending", label: "Pendiente", value: false },
+          { name: "completed", label: "Completado", value: false },
+        ],
+      },
+      /* Numbers */
+      {
+        name: "netWeight",
+        label: "Peso Neto",
+        type: "number",
+        placeholder: "Buscar por peso neto",
+      },
+      /* Date */
+      {
+        name: "dateTest",
+        label: "Fecha",
+        type: "date",
+        placeholder: "Buscar por fecha",
+      },
+      
     ],
     table: {
       headers: [

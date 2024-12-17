@@ -5,12 +5,12 @@ import { Disclosure } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import TextAreaFilter from './Types/TextAreaFilter';
 import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
-import { NumberFilter } from './Types/NumberFilter';
-import { SelectBoxesFilter } from './Types/SelectBoxesFilter';
-import { DateFilter } from './Types/DateFilter';
-import { DateRangeFilter } from './Types/DateRangeFilter';
+import NumberFilter from './Types/NumberFilter';
+import PairSelectBoxesFilter from './Types/PairSelectBoxesFilter';
+import DateFilter from './Types/DateFilter';
+import DateRangeFilter from './Types/DateRangeFilter';
 import { AutocompleteFilter } from './Types/AutocompleteFilter';
-import { SearchFilter } from './Types/SearchFilter';
+import SearchFilter from './Types/SearchFilter';
 import TextFilter from './Types/TextFilter';
 
 export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
@@ -29,11 +29,12 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
             {searchFilter && (
                 <div>
                     <SearchFilter
-                        filter={{
-                            ...searchFilter,
-                            value: searchFilter.value || '',
-                            onChange: (value) => onFilterChange(searchFilter.name, value),
-                        }}
+                        label={searchFilter.label}
+                        name={searchFilter.name}
+                        value={searchFilter.value}
+                        placeholder={searchFilter.placeholder}
+                        onChange={(value) => onFilterChange(searchFilter.name, value)}
+                        onKeyDown={() => console.log('Buscar')} /* IMPLEMENTAR */
                     />
                 </div>
             )}
@@ -113,45 +114,45 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                                 )}
                                                 {filter.type === 'number' && (
                                                     <NumberFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || '',
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        placeholder={filter.placeholder}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
-                                                {filter.type === 'pairSelectBox' && (
-                                                    <SelectBoxesFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || '',
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                {filter.type === 'pairSelectBoxes' && (
+                                                    <PairSelectBoxesFilter
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        options={filter.options}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'date' && (
                                                     <DateFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || '',
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        placeholder={filter.placeholder}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'dateRange' && (
                                                     <DateRangeFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || {
-                                                                start: '',
-                                                                end: '',
-                                                            },
-                                                            onChange: (value) =>
-                                                                onFilterChange(filter.name, value),
-                                                        }}
+                                                        label={filter.label}
+                                                        name={filter.name}
+                                                        value={filter.value}
+                                                        onChange={(value) =>
+                                                            onFilterChange(filter.name, value)
+                                                        }
                                                     />
                                                 )}
                                                 {filter.type === 'autocomplete' && (

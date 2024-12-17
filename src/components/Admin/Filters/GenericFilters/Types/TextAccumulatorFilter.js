@@ -3,7 +3,7 @@
 import React, { useState, memo } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-export const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDelete }) => {
+const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDelete }) => {
     const [temporalValue, setTemporalValue] = useState("");
 
     const handleOnChangeInput = (event) => {
