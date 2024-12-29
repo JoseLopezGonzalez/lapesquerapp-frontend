@@ -64,21 +64,32 @@ export default function EntityClient({ config }) {
                     }
                 ] 
             */
-           
+
             const formattedFilters = filters.length > 0 ? filters.reduce((acc, filter) => {
                 if (filter.type === 'dateRange') {
                     if (filter.value.start) acc[filter.name + '_start'] = filter.value.start;
                     if (filter.value.end) acc[filter.name + '_end'] = filter.value.end;
                 }
+                else if (filter.type === 'autocomplete' && filter.value)
+                    acc[filter.name] = filter.value.map((item) => item.id);
                 else if (filter.value) acc[filter.name] = filter.value;
                 return acc;
             }, {}) : {};
 
-
-
             const queryParams = new URLSearchParams({
                 page: paginationMeta.currentPage,
-                ...formattedFilters,
+            });
+
+            // Si hay arrays, agrégales manualmente al query string
+            Object.keys(formattedFilters).forEach((key) => {
+                const value = formattedFilters[key];
+                if (Array.isArray(value)) {
+                    value.forEach((item) => {
+                        queryParams.append(`${key}[]`, item);
+                    });
+                } else {
+                    queryParams.append(key, value);
+                }
             });
 
             const url = `${API_URL_V1}${config.endpoint}?${queryParams.toString()}`;

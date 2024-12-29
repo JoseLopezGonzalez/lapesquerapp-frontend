@@ -157,22 +157,24 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                                 )}
                                                 {filter.type === 'autocomplete' && (
                                                     <AutocompleteFilter
-                                                        filter={{
-                                                            ...filter,
-                                                            value: filter.value || [],
-                                                            onAdd: (item) =>
-                                                                onFilterChange(filter.name, [
-                                                                    ...(filter.value || []),
-                                                                    item,
-                                                                ]),
-                                                            onDelete: (item) =>
-                                                                onFilterChange(
-                                                                    filter.name,
-                                                                    (filter.value || []).filter(
-                                                                        (i) => i.id !== item.id
-                                                                    )
-                                                                ),
-                                                        }}
+                                                    label={filter.label}
+                                                    placeholder={filter.placeholder}
+                                                    endpoint={filter.endpoint}
+                                                    onAdd={(item) =>
+                                                        onFilterChange(filter.name, [
+                                                            ...(filter.value || []),
+                                                            item,
+                                                        ])
+                                                    }
+                                                    onDelete={(item) =>
+                                                        onFilterChange(
+                                                            filter.name,
+                                                            (filter.value || []).filter(
+                                                                (i) => i !== item
+                                                            )
+                                                        )
+                                                    }
+                                                    value={filter.value || []}
                                                     />
                                                 )}
                                             </div>
