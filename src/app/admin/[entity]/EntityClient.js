@@ -30,7 +30,7 @@ function getValueByPath(object, path) {
 
 export default function EntityClient({ config }) {
     const [data, setData] = useState(initialData);
-    const [filters, setFilters] = useState({});
+    const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
     const router = useRouter();
 
@@ -41,40 +41,20 @@ export default function EntityClient({ config }) {
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
 
-            /* formatear filtros a partir de 
-                [
-                    {
-                        "name": "search",
-                        "value": "12"
-                    },
-                    {
-                        "name": "supplier",
-                        "value": ""
-                    },
-                    {
-                        "name": "notes",
-                        "value": ""
-                    },
-                    {
-                        "name": "date",
-                        "value": {
-                            "start": "",
-                            "end": ""
-                        }
-                    }
-                ] 
-            */
+            console.log('filters', filters);
 
-            const formattedFilters = filters.length > 0 ? filters.reduce((acc, filter) => {
-                if (filter.type === 'dateRange') {
-                    if (filter.value.start) acc[filter.name + '_start'] = filter.value.start;
-                    if (filter.value.end) acc[filter.name + '_end'] = filter.value.end;
-                }
-                else if (filter.type === 'autocomplete' && filter.value)
+            const formattedFilters = filters.reduce((acc, filter) => {
+                if (filter.type === 'dateRange' && filter.value) {
+                    if (filter.value.start) acc[`${filter.name}_start`] = filter.value.start;
+                    if (filter.value.end) acc[`${filter.name}_end`] = filter.value.end;
+                } else if (filter.type === 'autocomplete' && filter.value) {
                     acc[filter.name] = filter.value.map((item) => item.id);
-                else if (filter.value) acc[filter.name] = filter.value;
+                } else if (filter.value) {
+                    acc[filter.name] = filter.value;
+                }
                 return acc;
-            }, {}) : {};
+            }, {});
+
 
             const queryParams = new URLSearchParams({
                 page: paginationMeta.currentPage,
@@ -101,11 +81,9 @@ export default function EntityClient({ config }) {
 
                 const processedRows = result.data.map((row) => {
                     const rowData = config.table.headers.reduce((acc, header) => {
-                        if (header.path) {
-                            acc[header.name] = getValueByPath(row, header.path);
-                        } else {
-                            acc[header.name] = row[header.name] || 'N/A';
-                        }
+                        acc[header.name] = header.path
+                            ? getValueByPath(row, header.path)
+                            : row[header.name] || 'N/A';
                         return acc;
                     }, {});
 
@@ -180,29 +158,25 @@ export default function EntityClient({ config }) {
     return (
         <div>
             <GenericTable>
-                <Header data={headerData} >
+                <Header data={headerData}>
                     <GenericFilters
                         data={{
-                            configFilters: config.filters,
-                            updateFilters: (filters) => setFilters(filters),
+                            configFiltersGroup: config.filtersGroup, // Pasa los filtros agrupados
+                            updateFilters: (updatedFilters) => setFilters(updatedFilters),
                         }}
                     />
-                    <div>
-                        <button
-                            /* Redirect to config.createPath */
-                            onClick={() => router.push(config.createPath)}
-                            type="button" className="py-1.5 px-3 inline-flex items-center gap-1 text-sm  rounded-lg bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none border-2 border-neutral-800">
-                            <PlusIcon className="h-5 w-5" aria-hidden="true" />
-                            Nuevo
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => router.push(config.createPath)}
+                        type="button"
+                        className="py-1.5 px-3 inline-flex items-center gap-1 text-sm rounded-lg bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none border-2 border-neutral-800"
+                    >
+                        <PlusIcon className="h-5 w-5" aria-hidden="true" />
+                        Nuevo
+                    </button>
                 </Header>
                 <Body table={config.table} data={data} />
                 <Footer>
-                    <Pagination
-                        meta={paginationMeta}
-                        onPageChange={handlePageChange}
-                    />
+                    <Pagination meta={paginationMeta} onPageChange={handlePageChange} />
                 </Footer>
             </GenericTable>
         </div>

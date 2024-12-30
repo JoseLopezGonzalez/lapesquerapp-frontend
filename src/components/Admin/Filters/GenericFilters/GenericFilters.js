@@ -5,40 +5,55 @@ import { IoFilter } from 'react-icons/io5';
 import { GenericFiltersModal } from './GenericFiltersModal';
 
 export const GenericFilters = ({ data }) => {
-    const { configFilters, updateFilters } = data;
+    const { configFiltersGroup, updateFilters } = data;
 
-    const [localFilters, setLocalFilters] = useState([]);
+    const [localFiltersGroup, setLocalFiltersGroup] = useState([]);
     const [numberOfActiveFilters, setNumberOfActiveFilters] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        // Inicializar el estado local de filtros
-        const initialFilters = configFilters.map((filter) => ({
-            ...filter,
-            value: filter.value || (filter.type === 'dateRange' ? { start: '', end: '' } : ''), // Inicializamos valores
+        // Inicializar los filtros locales agrupados
+        const initialFiltersGroup = configFiltersGroup.map((group) => ({
+            ...group,
+            filters: group.filters.map((filter) => ({
+                ...filter,
+                value: filter.value || (filter.type === 'dateRange' ? { start: '', end: '' } : ''), // Inicializamos valores
+            })),
         }));
-        setLocalFilters(initialFilters);
-    }, [configFilters]);
+        setLocalFiltersGroup(initialFiltersGroup);
+    }, [configFiltersGroup]);
 
     /* Actualizar NumberOfActiveFilters */
     useEffect(() => {
-        const activeFiltersCount = localFilters.reduce((count, filter) => {
-            if (filter.type === 'dateRange') {
-                if (filter.value.start || filter.value.end) count++;
-            } else if (Array.isArray(filter.value)) {
-                if (filter.value.length > 0) count++;
-            } else if (filter.value) {
-                count++;
-            }
-            return count;
+        const activeFiltersCount = localFiltersGroup.reduce((count, group) => {
+            return (
+                count +
+                group.filters.reduce((groupCount, filter) => {
+                    if (filter.type === 'dateRange') {
+                        if (filter.value.start || filter.value.end) groupCount++;
+                    } else if (Array.isArray(filter.value)) {
+                        if (filter.value.length > 0) groupCount++;
+                    } else if (filter.value) {
+                        groupCount++;
+                    }
+                    return groupCount;
+                }, 0)
+            );
         }, 0);
         setNumberOfActiveFilters(activeFiltersCount);
-    }, [localFilters]);
+    }, [localFiltersGroup]);
 
-    const handleFilterChange = (name, value) => {
-        setLocalFilters((prevFilters) =>
-            prevFilters.map((filter) =>
-                filter.name === name ? { ...filter, value } : filter
+    const handleFilterChange = (groupName, filterName, value) => {
+        setLocalFiltersGroup((prevGroups) =>
+            prevGroups.map((group) =>
+                group.name === groupName
+                    ? {
+                          ...group,
+                          filters: group.filters.map((filter) =>
+                              filter.name === filterName ? { ...filter, value } : filter
+                          ),
+                      }
+                    : group
             )
         );
     };
@@ -47,27 +62,28 @@ export const GenericFilters = ({ data }) => {
     const closeModal = () => setIsModalOpen(false);
 
     const handleFiltersSubmit = () => {
-        // Actualizar filtros globales
-
-        /* Formatear Local Filters para que solo contengan name y value y type*/
-        const formattedFilters = localFilters.map(({ name, value, type }) => ({
-            name,
-            value,
-            type,
-        }));
+        // Formatear los filtros para enviarlos globalmente
+        const formattedFilters = localFiltersGroup.flatMap((group) =>
+            group.filters.map(({ name, value, type }) => ({
+                name,
+                value,
+                type,
+            }))
+        );
         updateFilters(formattedFilters);
-
-
         closeModal();
     };
 
     const handleFiltersReset = () => {
-        const resetFilters = configFilters.map((filter) => ({
-            ...filter,
-            value: filter.value || (filter.type === 'dateRange' ? { start: '', end: '' } : ''), // Inicializamos valores
+        const resetFiltersGroup = configFiltersGroup.map((group) => ({
+            ...group,
+            filters: group.filters.map((filter) => ({
+                ...filter,
+                value: filter.value || (filter.type === 'dateRange' ? { start: '', end: '' } : ''), // Inicializamos valores
+            })),
         }));
-        setLocalFilters(resetFilters);
-        updateFilters(resetFilters);
+        setLocalFiltersGroup(resetFiltersGroup);
+        updateFilters(resetFiltersGroup.flatMap((group) => group.filters));
         closeModal();
     };
 
@@ -89,7 +105,7 @@ export const GenericFilters = ({ data }) => {
                 </button>
             </div>
             <GenericFiltersModal
-                filters={localFilters}
+                filtersGroup={localFiltersGroup}
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 onSubmit={handleFiltersSubmit}

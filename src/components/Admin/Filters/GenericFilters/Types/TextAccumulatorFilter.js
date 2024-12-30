@@ -15,7 +15,7 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDele
             event.preventDefault();
             const newValue = temporalValue.trim();
 
-            if (newValue) {
+            if (newValue && !value.includes(newValue)) {
                 onAdd(newValue); // Añade el nuevo valor si no está vacío
                 setTemporalValue(''); // Limpia el campo después de agregar
             }
@@ -43,9 +43,9 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDele
                     />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                    {value.map((item) => (
+                    {value.map((item, index) => (
                         <div
-                            key={item}
+                            key={index}
                             className="italic flex justify-center gap-1 text-xs font-medium pr-2 pl-2.5 py-0.5 rounded-full bg-sky-900 text-sky-300 items-center"
                         >
                             {item}

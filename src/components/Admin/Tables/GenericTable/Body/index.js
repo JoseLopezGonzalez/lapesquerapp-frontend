@@ -1,11 +1,47 @@
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React from 'react'
+import React from 'react';
+
+// Predefinir los colores y estilos para los badges
+const badgeStyles = {
+    primary: {
+        base: " text-blue-800",
+        outline: "text-blue-400 border border-blue-300 bg-blue-800/25",
+    },
+    success: {
+        base: " text-green-800",
+        outline: "text-green-400 border border-green-300 bg-green-800/25",
+    },
+    warning: {
+        base: " text-yellow-500",
+        outline: "text-yellow-400 border border-yellow-300 bg-yellow-800/25",
+    },
+    danger: {
+        base: " text-red-800",
+        outline: "text-red-400 border border-red-300 bg-red-800/25 ",
+    },
+    neutral: {
+        base: " text-gray-800",
+        outline: "text-gray-400 border border-gray-300 bg-gray-800/25",
+    },
+};
 
 export const Body = ({ table, data }) => {
     const { headers } = table;
 
+    const renderBadge = (header, value) => {
+        const option = header.options[value] || header.options.default;
+        const style = badgeStyles[option.color] || badgeStyles.neutral; // Default color: neutral
+        const className = option.outline ? style.outline : style.base;
+
+        return (
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}>
+                {option.label}
+            </span>
+        );
+    };
+
     return (
-        <div className='grow overflow-y-auto overflow-x-auto w-full'>
+        <div className="grow overflow-y-auto overflow-x-auto w-full">
             <table className="min-w-full divide-y divide-neutral-700">
                 {/* Head sticky */}
                 <thead className="bg-neutral-800 sticky top-0 z-10">
@@ -37,7 +73,6 @@ export const Body = ({ table, data }) => {
                             <tr key={index}>
                                 {headers.map((_, index) => (
                                     <td key={index} className="px-6 py-3">
-                                        {/* IMPLEMENTAR: skeleton */}
                                         <div className="w-full h-6 bg-neutral-600 rounded-md animate-pulse"></div>
                                     </td>
                                 ))}
@@ -52,22 +87,10 @@ export const Body = ({ table, data }) => {
                                 {headers.map((header, index) => (
                                     <td
                                         key={header.name}
-                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm text-white sm:w-auto sm:max-w-none sm:pl-6 `}>
-
+                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm text-white sm:w-auto sm:max-w-none sm:pl-6 `}
+                                    >
                                         {/* Badge type */}
-                                        {header.type === 'badge' && (
-                                            header.options[row[header.name]].type === 'warning' ? (
-                                                <span className="cursor-pointer flex items-center text-xs text-orange-500">
-                                                    <span className="flex w-1.5 h-1.5 bg-orange-600 rounded-full mr-1.5 flex-shrink-0"></span>
-                                                    {header.options[row[header.name]].label}
-                                                </span>
-                                            ) : header.options[row[header.name]].type === 'success' ? (
-                                                <span className="cursor-pointer flex items-center text-xs text-lime-500">
-                                                    <span className="flex w-1.5 h-1.5 bg-lime-600 rounded-full mr-1.5 flex-shrink-0"></span>
-                                                    {header.options[row[header.name]].label}
-                                                </span>
-                                            ) : null
-                                        )}
+                                        {header.type === 'badge' && renderBadge(header, row[header.name])}
 
                                         {/* Button type */}
                                         {header.type === 'button' && (
@@ -78,8 +101,8 @@ export const Body = ({ table, data }) => {
                                                 <button onClick={row[header.name].view.onClick} type="button" className="group inline-flex items-center px-2 py-1 text-sm font-medium   border  rounded-r-md  bg-neutral-700 border-neutral-600 hover:border-sky-600 text-white hover:text-white hover:bg-sky-700 ">
                                                     <ArrowRightIcon className="h-4 w-4 text-white" aria-hidden="true" />
                                                 </button>
-                                            </div>)
-                                        }
+                                            </div>
+                                        )}
 
                                         {/* Text type */}
                                         {header.type === 'text' && (
@@ -87,7 +110,6 @@ export const Body = ({ table, data }) => {
                                                 {row[header.name]}
                                             </span>
                                         )}
-
                                     </td>
                                 ))}
                             </tr>
@@ -95,16 +117,15 @@ export const Body = ({ table, data }) => {
                     ) : (
                         <tr>
                             {/* Empty State */}
-                            <td className="h-full py-48" colSpan={headers.length}> {/* colSpan calculado desde columnas */}
+                            <td className="h-full py-48" colSpan={headers.length}>
                                 <div className="flex flex-col items-center justify-center mb-4">
-                                    {/* IMPLEMENTAR: EmptyState */}
-                                    {/* <EmptyState title="No existen pedidos con esas características" description="Intenta con otros filtros o crea un nuevo pedido." /> */}
+                                    {/* EmptyState placeholder */}
                                 </div>
                             </td>
                         </tr>
                     )}
                 </tbody>
             </table>
-        </div >
-    )
-}
+        </div>
+    );
+};

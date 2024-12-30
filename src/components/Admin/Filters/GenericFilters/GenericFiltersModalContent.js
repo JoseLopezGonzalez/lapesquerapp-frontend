@@ -13,27 +13,27 @@ import { AutocompleteFilter } from './Types/AutocompleteFilter';
 import SearchFilter from './Types/SearchFilter';
 import TextFilter from './Types/TextFilter';
 
-export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
-    if (!filters || filters.length === 0) {
+export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
+    if (!filtersGroup || filtersGroup.length === 0) {
         return <p className="text-gray-500">No hay filtros disponibles.</p>;
     }
 
-    // Extraer el filtro de tipo `search` y los demás
-    const searchFilter = filters.find((filter) => filter.type === 'search');
-    const otherFilters = filters.filter((filter) => filter.type !== 'search');
-    
-    console.log('filters', filters);
+    // Extraer cualquier filtro de tipo `search` desde el primer nivel de `filtersGroup`
+    const searchFilter = filtersGroup
+        .flatMap((group) => group.filters)
+        .find((filter) => filter.type === 'search');
+
     return (
         <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4">
             {/* Renderizar el filtro de tipo `search` si existe */}
             {searchFilter && (
-                <div>
+                <div className="mb-4">
                     <SearchFilter
                         label={searchFilter.label}
                         name={searchFilter.name}
                         value={searchFilter.value}
                         placeholder={searchFilter.placeholder}
-                        onChange={(value) => onFilterChange(searchFilter.name, value)}
+                        onChange={(value) => onFilterChange(null, searchFilter.name, value)}
                         onKeyDown={() => console.log('Buscar')} /* IMPLEMENTAR */
                     />
                 </div>
@@ -42,14 +42,14 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
             <div className="px-2">
                 <div className="pb-4 divide-y divide-white/10">
                     <dl className="space-y-6 divide-y divide-white/10">
-                        {otherFilters.map((filter) => (
-                            <Disclosure as="div" key={filter.name || filter.label} className="pt-6">
+                        {filtersGroup.map((group) => (
+                            <Disclosure key={group.name || group.label} as="div" className="pt-6">
                                 {({ open }) => (
                                     <>
                                         <dt>
                                             <Disclosure.Button className="flex w-full items-start justify-between text-left text-neutral-300 hover:text-white">
                                                 <span className="text-lg font-light leading-7">
-                                                    {filter.label || 'Filtro sin nombre'}
+                                                    {group.label || 'Grupo sin nombre'}
                                                 </span>
                                                 <span className="ml-6 flex p-1.5 items-center border-0 rounded-xl border-neutral-600 text-neutral-300 hover:bg-white/20">
                                                     {open ? (
@@ -68,115 +68,121 @@ export const GenericFiltersModalContent = ({ filters , onFilterChange }) => {
                                         </dt>
                                         <Disclosure.Panel as="dd" className="mt-2 px-4 py-4">
                                             <div>
-                                                {filter.type === 'text' && (
-                                                    <TextFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        placeholder={filter.placeholder}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'textarea' && (
-                                                    <TextAreaFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        placeholder={filter.placeholder}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'textAccumulator' && (
-                                                    <TextAccumulatorFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value || []}
-                                                        placeholder={filter.placeholder}
-                                                        onAdd={(item) =>
-                                                            onFilterChange(filter.name, [
-                                                                ...(filter.value || []),
-                                                                item,
-                                                            ])
-                                                        }
-                                                        onDelete={(item) =>
-                                                            onFilterChange(
-                                                                filter.name,
-                                                                (filter.value || []).filter(
-                                                                    (i) => i !== item
-                                                                )
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'number' && (
-                                                    <NumberFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        placeholder={filter.placeholder}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'pairSelectBoxes' && (
-                                                    <PairSelectBoxesFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        options={filter.options}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'date' && (
-                                                    <DateFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        placeholder={filter.placeholder}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'dateRange' && (
-                                                    <DateRangeFilter
-                                                        label={filter.label}
-                                                        name={filter.name}
-                                                        value={filter.value}
-                                                        onChange={(value) =>
-                                                            onFilterChange(filter.name, value)
-                                                        }
-                                                    />
-                                                )}
-                                                {filter.type === 'autocomplete' && (
-                                                    <AutocompleteFilter
-                                                    label={filter.label}
-                                                    placeholder={filter.placeholder}
-                                                    endpoint={filter.endpoint}
-                                                    onAdd={(item) =>
-                                                        onFilterChange(filter.name, [
-                                                            ...(filter.value || []),
-                                                            item,
-                                                        ])
-                                                    }
-                                                    onDelete={(item) =>
-                                                        onFilterChange(
-                                                            filter.name,
-                                                            (filter.value || []).filter(
-                                                                (i) => i !== item
-                                                            )
-                                                        )
-                                                    }
-                                                    value={filter.value || []}
-                                                    />
-                                                )}
+                                                {group.filters.map((filter) => (
+                                                    <div key={filter.name || filter.label} className="mb-4">
+                                                        {filter.type === 'text' && (
+                                                            <TextFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                placeholder={filter.placeholder}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'textarea' && (
+                                                            <TextAreaFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                placeholder={filter.placeholder}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'textAccumulator' && (
+                                                            <TextAccumulatorFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value || []}
+                                                                placeholder={filter.placeholder}
+                                                                onAdd={(item) =>
+                                                                    onFilterChange(group.name, filter.name, [
+                                                                        ...(filter.value || []),
+                                                                        item,
+                                                                    ])
+                                                                }
+                                                                onDelete={(item) =>
+                                                                    onFilterChange(
+                                                                        group.name,
+                                                                        filter.name,
+                                                                        (filter.value || []).filter(
+                                                                            (i) => i !== item
+                                                                        )
+                                                                    )
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'number' && (
+                                                            <NumberFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                placeholder={filter.placeholder}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'pairSelectBoxes' && (
+                                                            <PairSelectBoxesFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                options={filter.options}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'date' && (
+                                                            <DateFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                placeholder={filter.placeholder}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'dateRange' && (
+                                                            <DateRangeFilter
+                                                                label={filter.label}
+                                                                name={filter.name}
+                                                                value={filter.value}
+                                                                onChange={(value) =>
+                                                                    onFilterChange(group.name, filter.name, value)
+                                                                }
+                                                            />
+                                                        )}
+                                                        {filter.type === 'autocomplete' && (
+                                                            <AutocompleteFilter
+                                                                label={filter.label}
+                                                                placeholder={filter.placeholder}
+                                                                endpoint={filter.endpoint}
+                                                                onAdd={(item) =>
+                                                                    onFilterChange(group.name, filter.name, [
+                                                                        ...(filter.value || []),
+                                                                        item,
+                                                                    ])
+                                                                }
+                                                                onDelete={(item) =>
+                                                                    onFilterChange(
+                                                                        group.name,
+                                                                        filter.name,
+                                                                        (filter.value || []).filter(
+                                                                            (i) => i.id !== item.id
+                                                                        )
+                                                                    )
+                                                                }
+                                                                value={filter.value || []}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </Disclosure.Panel>
                                     </>
