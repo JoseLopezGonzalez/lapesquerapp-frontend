@@ -41,8 +41,6 @@ export default function EntityClient({ config }) {
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
 
-            console.log('filters', filters);
-
             const formattedFilters = filters.reduce((acc, filter) => {
                 if (filter.type === 'dateRange' && filter.value) {
                     if (filter.value.start) acc[`${filter.name}_start`] = filter.value.start;
@@ -55,12 +53,17 @@ export default function EntityClient({ config }) {
                 return acc;
             }, {});
 
+            // Include search filter if present
+            const searchFilter = filters.find((filter) => filter.type === 'search');
+            if (searchFilter?.value) {
+                formattedFilters['search'] = searchFilter.value;
+            }
 
             const queryParams = new URLSearchParams({
                 page: paginationMeta.currentPage,
             });
 
-            // Si hay arrays, agrégales manualmente al query string
+            // Add filters to query string
             Object.keys(formattedFilters).forEach((key) => {
                 const value = formattedFilters[key];
                 if (Array.isArray(value)) {
@@ -161,7 +164,7 @@ export default function EntityClient({ config }) {
                 <Header data={headerData}>
                     <GenericFilters
                         data={{
-                            configFiltersGroup: config.filtersGroup, // Pasa los filtros agrupados
+                            configFiltersGroup: config.filtersGroup, // Pasa tanto `search` como `groups`
                             updateFilters: (updatedFilters) => setFilters(updatedFilters),
                         }}
                     />
@@ -174,7 +177,7 @@ export default function EntityClient({ config }) {
                         Nuevo
                     </button>
                 </Header>
-                <Body table={config.table} data={data} />
+                <Body table={config.table} data={data} emptyState={config.emptyState}/>
                 <Footer>
                     <Pagination meta={paginationMeta} onPageChange={handlePageChange} />
                 </Footer>

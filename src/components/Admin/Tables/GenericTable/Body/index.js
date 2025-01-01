@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 
@@ -25,7 +26,7 @@ const badgeStyles = {
     },
 };
 
-export const Body = ({ table, data }) => {
+export const Body = ({ table, data , emptyState}) => {
     const { headers } = table;
 
     const renderBadge = (header, value) => {
@@ -107,7 +108,14 @@ export const Body = ({ table, data }) => {
                                         {/* Text type */}
                                         {header.type === 'text' && (
                                             <span className="text-white">
-                                                {row[header.name]}
+                                                {row[header.name] === 'N/A' ? '-' : row[header.name]}
+                                            </span>
+                                        )}
+
+                                        {/* Date type */}
+                                        {header.type === 'date' && (
+                                            <span className="text-white">
+                                                {new Date(row[header.name]).toLocaleDateString()}
                                             </span>
                                         )}
                                     </td>
@@ -120,6 +128,12 @@ export const Body = ({ table, data }) => {
                             <td className="h-full py-48" colSpan={headers.length}>
                                 <div className="flex flex-col items-center justify-center mb-4">
                                     {/* EmptyState placeholder */}
+                                    <div className="w-full h-full flex flex-col items-center justify-center">
+                                        <EmptyState 
+                                        title={emptyState.title} 
+                                        description={emptyState.description}
+                                        />
+                                    </div>
                                 </div>
                             </td>
                         </tr>

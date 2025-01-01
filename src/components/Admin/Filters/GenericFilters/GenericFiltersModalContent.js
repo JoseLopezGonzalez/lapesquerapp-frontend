@@ -14,35 +14,35 @@ import SearchFilter from './Types/SearchFilter';
 import TextFilter from './Types/TextFilter';
 
 export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
-    if (!filtersGroup || filtersGroup.length === 0) {
+    if (!filtersGroup || (!filtersGroup.search && !filtersGroup.groups)) {
         return <p className="text-gray-500">No hay filtros disponibles.</p>;
     }
 
-    // Extraer cualquier filtro de tipo `search` desde el primer nivel de `filtersGroup`
-    const searchFilter = filtersGroup
-        .flatMap((group) => group.filters)
-        .find((filter) => filter.type === 'search');
+    const { search, groups } = filtersGroup;
 
     return (
         <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4">
             {/* Renderizar el filtro de tipo `search` si existe */}
-            {searchFilter && (
+            {search?.filters && search.filters.length > 0 && (
                 <div className="mb-4">
-                    <SearchFilter
-                        label={searchFilter.label}
-                        name={searchFilter.name}
-                        value={searchFilter.value}
-                        placeholder={searchFilter.placeholder}
-                        onChange={(value) => onFilterChange(null, searchFilter.name, value)}
-                        onKeyDown={() => console.log('Buscar')} /* IMPLEMENTAR */
-                    />
+                    {search.filters.map((filter) => (
+                        <SearchFilter
+                            key={filter.name}
+                            label={filter.label}
+                            name={filter.name}
+                            value={filter.value}
+                            placeholder={filter.placeholder}
+                            onChange={(value) => onFilterChange('search', filter.name, value)}
+                            onKeyDown={() => console.log('Buscar')} /* IMPLEMENTAR */
+                        />
+                    ))}
                 </div>
             )}
 
             <div className="px-2">
                 <div className="pb-4 divide-y divide-white/10">
                     <dl className="space-y-6 divide-y divide-white/10">
-                        {filtersGroup.map((group) => (
+                        {groups.map((group) => (
                             <Disclosure key={group.name || group.label} as="div" className="pt-6">
                                 {({ open }) => (
                                     <>

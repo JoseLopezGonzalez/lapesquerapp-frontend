@@ -48,7 +48,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                    {value.length > 0 && value?.map((item) => (
+                    {value?.length > 0 && value?.map((item) => (
                         <div
                             key={item.id}
                             className="italic bg-sky-100 flex justify-center gap-1 text-sky-800 text-xs font-medium pr-2 pl-2.5 py-0.5 rounded-full dark:bg-sky-900 dark:text-sky-300 items-center"

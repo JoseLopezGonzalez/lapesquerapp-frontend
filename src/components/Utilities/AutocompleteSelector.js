@@ -25,9 +25,11 @@ export default function AutocompleteSelector({
 
     const filteredElements =
         query === ''
-            ? elements
-            : elements.filter((element) =>
-                  element.name.toLowerCase().includes(query.toLowerCase())
+            ? elements.filter((element) => element && element.name) // Filtrar elementos inválidos
+            : elements.filter(
+                  (element) =>
+                      element &&
+                      element.name?.toLowerCase().includes(query.toLowerCase())
               );
 
     return (
@@ -36,9 +38,10 @@ export default function AutocompleteSelector({
             className="w-full"
             value={selectedElement}
             onChange={(element) => {
-                setSelectedElement(element);
-                onChange(element);
-                setSelectedElement(null);
+                if (element) {
+                    setSelectedElement(element);
+                    onChange(element);
+                }
             }}
         >
             <div className="relative w-full">
@@ -77,7 +80,7 @@ export default function AutocompleteSelector({
                                                 selected && 'font-semibold'
                                             )}
                                         >
-                                            {element.name}
+                                            {element.name || 'Elemento inválido'}
                                         </span>
 
                                         {selected && (
