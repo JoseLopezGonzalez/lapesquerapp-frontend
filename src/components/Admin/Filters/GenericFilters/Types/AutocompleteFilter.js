@@ -1,7 +1,7 @@
 'use client';
 
 import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector';
-import { API_URL_V1 } from '@/configs/config';
+import { API_URL_V2 } from '@/configs/config';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 
@@ -16,7 +16,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
         const fetchOptions = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL_V1}${endpoint}`);
+                const response = await fetch(`${API_URL_V2}${endpoint}`);
                 const data = await response.json();
                 setOptions(data.data.map((item) => ({ id: item.id, name: item.name })));
             } catch (error) {

@@ -1,4 +1,5 @@
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 
@@ -111,6 +112,15 @@ export const Body = ({ table, data , emptyState}) => {
                                                 {row[header.name] === 'N/A' ? '-' : row[header.name]}
                                             </span>
                                         )}
+
+                                        {/* weight type */}
+                                        {header.type === 'weight' && (
+                                            <span className="text-white">
+                                                {formatNumberEsKg(row[header.name])}
+                                            </span>
+                                        )}
+
+                                        {/* Number type */}
 
                                         {/* Date type */}
                                         {header.type === 'date' && (

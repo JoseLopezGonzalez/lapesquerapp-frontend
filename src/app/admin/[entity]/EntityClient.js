@@ -8,7 +8,7 @@ import { Pagination } from '@/components/Admin/Tables/Pagination';
 import { Header } from '@/components/Admin/Tables/GenericTable/Header';
 import { Body } from '@/components/Admin/Tables/GenericTable/Body';
 import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
-import { API_URL_V1 } from '@/configs/config';
+import { API_URL_V2 } from '@/configs/config';
 import { PlusIcon } from '@heroicons/react/20/solid';
 
 const initialPaginationMeta = {
@@ -43,8 +43,8 @@ export default function EntityClient({ config }) {
 
             const formattedFilters = filters.reduce((acc, filter) => {
                 if (filter.type === 'dateRange' && filter.value) {
-                    if (filter.value.start) acc[`${filter.name}_start`] = filter.value.start;
-                    if (filter.value.end) acc[`${filter.name}_end`] = filter.value.end;
+                    if (filter.value.start) acc[`${filter.name}[start]`] = filter.value.start;
+                    if (filter.value.end) acc[`${filter.name}[end]`] = filter.value.end;
                 } else if (filter.type === 'autocomplete' && filter.value) {
                     acc[filter.name] = filter.value.map((item) => item.id);
                 } else if (filter.value) {
@@ -75,7 +75,7 @@ export default function EntityClient({ config }) {
                 }
             });
 
-            const url = `${API_URL_V1}${config.endpoint}?${queryParams.toString()}`;
+            const url = `${API_URL_V2}${config.endpoint}?${queryParams.toString()}`;
 
             try {
                 const response = await fetch(url);
@@ -134,7 +134,7 @@ export default function EntityClient({ config }) {
         const deleteUrl = config.deleteEndpoint.replace(':id', id);
 
         try {
-            const response = await fetch(`${API_URL_V1}${deleteUrl}`, {
+            const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
             });
