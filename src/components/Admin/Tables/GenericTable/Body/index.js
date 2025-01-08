@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { Checkbox } from '@nextui-org/react';
 import React, { useEffect, useState } from 'react';
 
 // Predefinir los colores y estilos para los badges
@@ -79,14 +80,25 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                     <tr>
                         {isSelectable && (
                             <th className="py-3.5 px-4 text-left text-sm font-semibold text-white">
-                                <input
+                                {/* <input
                                     type="checkbox"
                                     onChange={(e) => toggleSelectAll(e.target.checked)}
                                     checked={
                                         selectedRows.length > 0 &&
                                         selectedRows.length === data.rows.length
                                     }
-                                />
+
+
+                                /> */}
+                                <Checkbox
+                                    onValueChange={toggleSelectAll}
+                                    isSelected={
+                                        selectedRows.length > 0 &&
+                                        selectedRows.length === data.rows.length
+                                    }
+                                    size="sm" />
+
+
                             </th>
                         )}
                         {headers.map((header) => header.type === 'button' ? (
@@ -126,15 +138,15 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                             <tr
                                 key={rowIndex}
                                 className="hover:bg-neutral-800 transition-colors"
+                                onClick={() => toggleSelectRow(row.id)}
                             >
 
                                 {isSelectable && (
                                     <td className="py-2 px-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRows.includes(row.id)}
-                                            onChange={() => toggleSelectRow(row.id)}
-                                        />
+                                        <Checkbox
+                                            onValueChange={() => toggleSelectRow(row.id)}
+                                            isSelected={selectedRows.includes(row.id)}
+                                            size="sm" />
                                     </td>
                                 )}
                                 {headers.map((header, index) => (

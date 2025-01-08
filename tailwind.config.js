@@ -10,6 +10,7 @@ module.exports = {
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}", /* Next UI */
   ],
   theme: {
+    
     extend: {
       colors: {
         background: "var(--background)",
@@ -18,5 +19,8 @@ module.exports = {
     },
   },
   darkMode: "class", /* Next UI */
-  plugins: [nextui()], /* Next UI */
+  plugins: [
+    nextui(),
+    /* require('@tailwindcss/forms'), */
+  ], /* Next UI */
 };

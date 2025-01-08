@@ -16,6 +16,7 @@ import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigation } from '@/data/Navbar/navgation';
+import { usePathname } from 'next/navigation';
 
 
 /* Cambiar en un futuro las img por Image de next */
@@ -23,7 +24,8 @@ import { navigation } from '@/data/Navbar/navgation';
 
 
 export default function Navbar() {
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const currentPath = usePathname();
+
 
     return (
         <>

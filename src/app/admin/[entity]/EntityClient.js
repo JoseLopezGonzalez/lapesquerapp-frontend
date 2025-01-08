@@ -123,9 +123,12 @@ const getEntityReport = async (url, fileName) => {
         .finally(() => console.log('Finalizado'));
 };
 
-/* POR IMPLEMENTAR */
-/* Ojo con Eliminar mas de un id */
-/* Modal Eliminar */
+/* POR IMPLEMENTAR_____________
+- Ojo con Eliminar mas de un id 
+- Modal Eliminar 
+- Skeleton
+*/
+
 
 export default function EntityClient({ config }) {
     const [data, setData] = useState(initialData);
@@ -368,6 +371,7 @@ export default function EntityClient({ config }) {
                             <button
                                 type="button"
                                 className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-red-700/50 text-red-500 hover:bg-neutral-800"
+                                onClick={handleSelectedRowsDelete}
                             >
                                 <TrashIcon className="h-4 w-4" aria-hidden="true" />
                                 Eliminar
