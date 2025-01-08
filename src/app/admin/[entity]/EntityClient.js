@@ -9,7 +9,13 @@ import { Header } from '@/components/Admin/Tables/GenericTable/Header';
 import { Body } from '@/components/Admin/Tables/GenericTable/Body';
 import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
 import { API_URL_V2 } from '@/configs/config';
-import { PlusIcon } from '@heroicons/react/20/solid';
+import { ArrowDownTrayIcon, ChartPieIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
+import { FaRegFilePdf } from "react-icons/fa";
+import toast from 'react-hot-toast';
+import { darkToastTheme } from '@/customs/reactHotToast';
+
 
 const initialPaginationMeta = {
     currentPage: 1,
@@ -28,10 +34,106 @@ function getValueByPath(object, path) {
     return path?.split('.').reduce((acc, key) => acc?.[key] ?? 'N/A', object);
 }
 
+// Reusable filter formatting function
+const formatFilters = (filters, paginationMeta) => {
+    const formattedFilters = filters.reduce((acc, filter) => {
+        if (filter.type === 'dateRange' && filter.value) {
+            if (filter.value.start) acc[`${filter.name}[start]`] = filter.value.start;
+            if (filter.value.end) acc[`${filter.name}[end]`] = filter.value.end;
+        } else if (filter.type === 'autocomplete' && filter.value) {
+            acc[filter.name] = filter.value.map((item) => item.id);
+        } else if (filter.value) {
+            acc[filter.name] = filter.value;
+        }
+        return acc;
+    }, {});
+
+    const searchFilter = filters.find((filter) => filter.type === 'search');
+    if (searchFilter?.value) {
+        formattedFilters['search'] = searchFilter.value;
+    }
+
+    const queryParams = new URLSearchParams({
+        page: paginationMeta.currentPage,
+    });
+
+    Object.keys(formattedFilters).forEach((key) => {
+        const value = formattedFilters[key];
+        if (Array.isArray(value)) {
+            value.forEach((item) => {
+                queryParams.append(`${key}[]`, item);
+            });
+        } else {
+            queryParams.append(key, value);
+        }
+    });
+
+    return queryParams.toString();
+};
+
+
+/* Fetch Export */
+const getEntityExport = async (url, fileName) => {
+    /* Current date formatted DD-MM-AAAA*/
+    const currentDate = new Date().toLocaleDateString().split('/').join('-');
+    return await fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = `${fileName} (${currentDate})`; // Nombre del archivo para guardar
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        })
+        /* .then(response => response.data) */
+        .catch(error => console.log(error))
+        .finally(() => console.log('Finalizado'));
+};
+
+const getEntityReport = async (url, fileName) => {
+    /* Current date formatted DD-MM-AAAA*/
+    const currentDate = new Date().toLocaleDateString().split('/').join('-');
+    return await fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = `${fileName} (${currentDate})`; // Nombre del archivo para guardar
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        })
+        /* .then(response => response.data) */
+        .catch(error => console.log(error))
+        .finally(() => console.log('Finalizado'));
+};
+
+/* POR IMPLEMENTAR */
+/* Ojo con Eliminar mas de un id */
+/* Modal Eliminar */
+
 export default function EntityClient({ config }) {
     const [data, setData] = useState(initialData);
     const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
+
+    const [selectedRows, setSelectedRows] = useState([]);
+
     const router = useRouter();
 
     // Fetch Data
@@ -40,42 +142,8 @@ export default function EntityClient({ config }) {
 
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
-
-            const formattedFilters = filters.reduce((acc, filter) => {
-                if (filter.type === 'dateRange' && filter.value) {
-                    if (filter.value.start) acc[`${filter.name}[start]`] = filter.value.start;
-                    if (filter.value.end) acc[`${filter.name}[end]`] = filter.value.end;
-                } else if (filter.type === 'autocomplete' && filter.value) {
-                    acc[filter.name] = filter.value.map((item) => item.id);
-                } else if (filter.value) {
-                    acc[filter.name] = filter.value;
-                }
-                return acc;
-            }, {});
-
-            // Include search filter if present
-            const searchFilter = filters.find((filter) => filter.type === 'search');
-            if (searchFilter?.value) {
-                formattedFilters['search'] = searchFilter.value;
-            }
-
-            const queryParams = new URLSearchParams({
-                page: paginationMeta.currentPage,
-            });
-
-            // Add filters to query string
-            Object.keys(formattedFilters).forEach((key) => {
-                const value = formattedFilters[key];
-                if (Array.isArray(value)) {
-                    value.forEach((item) => {
-                        queryParams.append(`${key}[]`, item);
-                    });
-                } else {
-                    queryParams.append(key, value);
-                }
-            });
-
-            const url = `${API_URL_V2}${config.endpoint}?${queryParams.toString()}`;
+            const queryString = formatFilters(filters, paginationMeta);
+            const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
 
             try {
                 const response = await fetch(url);
@@ -153,6 +221,139 @@ export default function EntityClient({ config }) {
         }
     };
 
+    const handleSelectedRowsDelete = async () => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar estos elementos?')) return;
+
+        const deleteUrl = config.deleteEndpoint;
+
+        try {
+            const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: selectedRows }),
+            });
+
+            if (response.ok) {
+                alert('Elementos eliminados con éxito.');
+                setData((prevData) => ({
+                    ...prevData,
+                    rows: prevData.rows.filter((item) => !selectedRows.includes(item.id)),
+                }));
+                setSelectedRows([]);
+            } else {
+                alert('Hubo un error al intentar eliminar los elementos.');
+            }
+        } catch (error) {
+            alert('No se pudo conectar al servidor.');
+        }
+    }
+
+
+
+    const handleExport = async (exportOption) => {
+        const { endpoint, fileName, type, waitingMessage } = exportOption;
+        const queryString = formatFilters(filters, paginationMeta);
+        const url = `${API_URL_V2}${endpoint}?${queryString}`;
+
+        const toastId = toast.loading((t) => (
+            <span className="flex gap-2 items-center justify-center" >
+                {type === 'pdf' ? (<FaRegFilePdf className="h-6 w-6 text-red-500" aria-hidden="true" />)
+                    : type === 'excel' ? (<PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" aria-hidden="true" />)
+                        : null}
+                {waitingMessage || 'Generando exportación...'}
+            </span>
+        ), darkToastTheme);
+
+        return await getEntityExport(url, fileName).then(() => {
+            toast.success((t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    {/* <PiMicrosoftExcelLogoFill className="h-6 w-6 text-white" aria-hidden="true" /> */}
+                    Exportación generada correctamente
+                </span>
+            ), { id: toastId });
+        }).catch((error) => {
+            toast.error('Error: ocurrió algo inesperado.', { id: toastId, });
+            throw new Error(error);
+        })
+    };
+
+    const handleReport = async (reportOption) => {
+        const { endpoint, fileName, waitingMessage } = reportOption;
+        const queryString = formatFilters(filters, paginationMeta);
+        const url = `${API_URL_V2}${endpoint}?${queryString}`;
+
+        const toastId = toast.loading((t) => (
+            <span className="flex gap-2 items-center justify-center" >
+                {waitingMessage || 'Generando reporte...'}
+            </span>
+        ), darkToastTheme);
+
+        return await getEntityReport(url, fileName).then(() => {
+            toast.success((t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    Reporte generado correctamente
+                </span>
+            ), { id: toastId });
+        }).catch((error) => {
+            toast.error('Error: ocurrió algo inesperado.', { id: toastId, });
+            throw new Error(error);
+        })
+    };
+
+    const handleSelectedRowsExport = async (exportOption) => {
+        const { endpoint, fileName, type, waitingMessage } = exportOption;
+        const queryString = `ids[]=${selectedRows.join('&ids[]=')}`;
+        const url = `${API_URL_V2}${endpoint}?${queryString}`;
+
+        const toastId = toast.loading((t) => (
+            <span className="flex gap-2 items-center justify-center" >
+                {type === 'pdf' ? (<FaRegFilePdf className="h-6 w-6 text-red-500" aria-hidden="true" />)
+                    : type === 'excel' ? (<PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" aria-hidden="true" />)
+                        : null}
+                {waitingMessage || 'Generando exportación...'}
+            </span>
+        ), darkToastTheme);
+
+        return await getEntityExport(url, fileName).then(() => {
+            toast.success((t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    {/* <PiMicrosoftExcelLogoFill className="h-6 w-6 text-white" aria-hidden="true" /> */}
+                    Exportación generada correctamente
+                </span>
+            ), { id: toastId });
+        }).catch((error) => {
+            toast.error('Error: ocurrió algo inesperado.', { id: toastId, });
+            throw new Error(error);
+        })
+    };
+
+    const handleSelectedRowsReport = async (reportOption) => {
+        const { endpoint, fileName, waitingMessage } = reportOption;
+        const queryString = `ids[]=${selectedRows.join('&ids[]=')}`;
+        const url = `${API_URL_V2}${endpoint}?${queryString}`;
+
+        const toastId = toast.loading((t) => (
+            <span className="flex gap-2 items-center justify-center" >
+                {waitingMessage || 'Generando reporte...'}
+            </span>
+        ), darkToastTheme);
+
+        return await getEntityReport(url, fileName).then(() => {
+            toast.success((t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    Reporte generado correctamente
+                </span>
+            ), { id: toastId });
+        }).catch((error) => {
+            toast.error('Error: ocurrió algo inesperado.', { id: toastId, });
+            throw new Error(error);
+        })
+    };
+
+    const handleOnSelectionChange = (selectedRows) => {
+        setSelectedRows(selectedRows);
+    }
+
     const headerData = {
         title: config.title,
         description: config.description,
@@ -162,6 +363,122 @@ export default function EntityClient({ config }) {
         <div>
             <GenericTable>
                 <Header data={headerData}>
+                    {selectedRows.length > 0 && (
+                        <>
+                            <button
+                                type="button"
+                                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-red-700/50 text-red-500 hover:bg-neutral-800"
+                            >
+                                <TrashIcon className="h-4 w-4" aria-hidden="true" />
+                                Eliminar
+                            </button>
+
+                            {/* Reports */}
+                            <Dropdown backdrop="opaque">
+                                <DropdownTrigger>
+                                    <button
+                                        type="button"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                    >
+                                        <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
+                                        Reportes
+                                    </button>
+                                </DropdownTrigger>
+                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                    {config.reports?.map((reportOption) => (
+                                        <DropdownItem
+                                            key={reportOption.title}
+                                            onClick={() => handleSelectedRowsReport(reportOption)}
+                                        >
+                                            {reportOption.title}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+
+                            {/* Export */}
+                            <Dropdown backdrop="opaque">
+                                <DropdownTrigger>
+                                    <button
+                                        type="button"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                    >
+                                        <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
+                                        Exportar
+                                    </button>
+                                </DropdownTrigger>
+                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                    {config.exports?.map((exportOption) => (
+                                        <DropdownItem
+                                            key={exportOption.title}
+                                            onClick={() => handleSelectedRowsExport(exportOption)}
+                                            startContent={
+                                                exportOption.type === 'excel'
+                                                    ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
+                                                    : <FaRegFilePdf className="text-red-800 w-5 h-5" />
+                                            }
+                                        >
+                                            {exportOption.title}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        </>
+                    )}
+
+                    {selectedRows.length === 0 && (
+                        <>
+                            {/* Reports */}
+                            <Dropdown backdrop="opaque">
+                                <DropdownTrigger>
+                                    <button
+                                        type="button"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
+                                    >
+                                        <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
+                                        Reportes
+                                    </button>
+                                </DropdownTrigger>
+                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                    {config.reports?.map((reportOption) => (
+                                        <DropdownItem
+                                            key={reportOption.title}
+                                            onClick={() => handleReport(reportOption)}
+                                        >
+                                            {reportOption.title}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                            {/* Export */}
+                            <Dropdown backdrop="opaque">
+                                <DropdownTrigger>
+                                    <button
+                                        type="button"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
+                                    >
+                                        <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
+                                        Exportar
+                                    </button>
+                                </DropdownTrigger>
+                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                    {config.exports?.map((exportOption) => (
+                                        <DropdownItem
+                                            key={exportOption.title}
+                                            onClick={() => handleExport(exportOption)}
+                                            startContent={
+                                                exportOption.type === 'excel'
+                                                    ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
+                                                    : <FaRegFilePdf className="text-red-800 w-5 h-5" />
+                                            }
+                                        >
+                                            {exportOption.title}
+                                        </DropdownItem>
+                                    ))}
+                                </DropdownMenu>
+                            </Dropdown>
+                        </>
+                    )}
                     <GenericFilters
                         data={{
                             configFiltersGroup: config.filtersGroup, // Pasa tanto `search` como `groups`
@@ -177,7 +494,7 @@ export default function EntityClient({ config }) {
                         Nuevo
                     </button>
                 </Header>
-                <Body table={config.table} data={data} emptyState={config.emptyState}/>
+                <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} onSelectionChange={handleOnSelectionChange} />
                 <Footer>
                     <Pagination meta={paginationMeta} onPageChange={handlePageChange} />
                 </Footer>

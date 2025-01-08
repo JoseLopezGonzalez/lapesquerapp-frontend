@@ -104,7 +104,7 @@ export const configs = {
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "text", path: "id" },
+        { name: "id", label: "ID", type: "id", path: "id" },
         { name: "date", label: "Fecha", type: "date", path: "date" },
         { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
         { name: "species", label: "Especie", type: "text", path: "species.name" },
@@ -125,6 +125,36 @@ export const configs = {
     viewRoute: "/admin/orders/:id",
     deleteEndpoint: "/orders/:id",
     createPath: "/admin/orders/create",
+    exports: [
+      {
+        title: "Exportar a Excel",
+        endpoint: "orders_report",
+        type: "excel",
+        waitingMessage: "Generando exportación a excel",
+        fileName: "export_pedidos",
+      },
+      {
+        title: "Exportar a PDF",
+        endpoint: "/exports/orders_report/pdf",
+        type: "pdf",
+        waitingMessage: "Generando exportación a pdf",
+        fileName: "export_pedidos",
+      },
+    ],
+    reports: [
+      {
+        title: "Reporte de pedidos",
+        endpoint: "/exports/orders_report/pdf",
+        waitingMessage: "Generando reporte pdf",
+        fileName: "report_pedidos",
+      },
+      {
+        title: "Reporte de pedidos (Excel)",
+        endpoint: "orders_report",
+        waitingMessage: "Generando reporte excel",
+        fileName: "report_pedidos",
+      }
+    ],
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -149,8 +179,8 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por IDs",
             },
-            
-            
+
+
             /* Buyer reference */
             {
               name: "buyerReference",
@@ -245,7 +275,7 @@ export const configs = {
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "text", path: "id" },
+        { name: "id", label: "ID", type: "id", path: "id" },
         { name: "loadDate", label: "Fecha Salida", type: "date", path: "loadDate" },
         { name: "customerName", label: "Cliente", type: "text", path: "customer.name" },
         { name: "buyerReference", label: "Referencia", type: "text", path: "buyerReference" },

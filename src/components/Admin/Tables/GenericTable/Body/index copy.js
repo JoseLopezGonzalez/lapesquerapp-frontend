@@ -1,13 +1,11 @@
 'use client'
 
-
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Predefinir los colores y estilos para los badges
 const badgeStyles = {
     primary: {
         base: " text-blue-800",
@@ -33,7 +31,6 @@ const badgeStyles = {
 
 export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange }) => {
     const { headers } = table;
-
     const [selectedRows, setSelectedRows] = useState([]);
 
     const toggleSelectAll = (checked) => {
@@ -61,7 +58,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
 
     const renderBadge = (header, value) => {
         const option = header.options[value] || header.options.default;
-        const style = badgeStyles[option.color] || badgeStyles.neutral; // Default color: neutral
+        const style = badgeStyles[option.color] || badgeStyles.neutral;
         const className = option.outline ? style.outline : style.base;
 
         return (
@@ -74,7 +71,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     return (
         <div className="grow overflow-y-auto overflow-x-auto w-full">
             <table className="min-w-full divide-y divide-neutral-700">
-                {/* Head sticky */}
                 <thead className="bg-neutral-800 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
@@ -89,33 +85,23 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 />
                             </th>
                         )}
-                        {headers.map((header) => header.type === 'button' ? (
-                            <th key={header.name} scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6 whitespace-nowrap">
-                                <span className="sr-only">{header.label}</span>
-                            </th>
-                        ) : (
+                        {headers.map((header) => (
                             <th key={header.name} scope="col" className="px-6 py-3 text-start">
                                 <a className="group inline-flex items-center gap-x-2" href="#">
                                     <span className="text-xs font-semibold uppercase tracking-wide text-neutral-200">
                                         {header.label}
                                     </span>
-                                    {header.label.length > 0 && (
-                                        <svg className="flex-shrink-0 size-3.5 text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" /></svg>
-                                    )}
                                 </a>
                             </th>
                         ))}
                     </tr>
                 </thead>
-
-                {/* Table Body */}
                 <tbody className="divide-y divide-neutral-700">
                     {data.loading ? (
-                        // Skeleton rows for loading state
                         [...Array(Object.keys(headers).length)].map((_, index) => (
                             <tr key={index}>
-                                {headers.map((_, index) => (
-                                    <td key={index} className="px-6 py-3">
+                                {headers.map((_, idx) => (
+                                    <td key={idx} className="px-6 py-3">
                                         <div className="w-full h-6 bg-neutral-600 rounded-md animate-pulse"></div>
                                     </td>
                                 ))}
@@ -125,9 +111,8 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                         data.rows.map((row, rowIndex) => (
                             <tr
                                 key={rowIndex}
-                                className="hover:bg-neutral-800 transition-colors"
+                                className={`hover:bg-neutral-800 transition-colors ${selectedRows.includes(row.id) ? 'bg-neutral-700' : ''}`}
                             >
-
                                 {isSelectable && (
                                     <td className="py-2 px-4">
                                         <input
@@ -138,73 +123,21 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                     </td>
                                 )}
                                 {headers.map((header, index) => (
-                                    <td
-                                        key={header.name}
-                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm text-white sm:w-auto sm:max-w-none sm:pl-6 `}
-                                    >
-                                        {/* Badge type */}
+                                    <td key={header.name} className="px-6 py-3 text-white">
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
-
-                                        {/* Button type */}
-                                        {header.type === 'button' && (
-                                            <div className="flex rounded-md shadow-sm">
-                                                <button onClick={row[header.name].delete.onClick} type="button" className=" group inline-flex items-center px-2 py-2 text-sm font-medium   border  rounded-l-lg  border-neutral-600 hover:border-red-600 text-white hover:text-white dark:hover:bg-red-700 ">
-                                                    <TrashIcon className="h-4 w-4 text-white" aria-hidden="true" />
-                                                </button>
-                                                <button onClick={row[header.name].view.onClick} type="button" className="group inline-flex items-center px-2 py-1 text-sm font-medium   border  rounded-r-md  bg-neutral-700 border-neutral-600 hover:border-sky-600 text-white hover:text-white hover:bg-sky-700 ">
-                                                    <ArrowRightIcon className="h-4 w-4 text-white" aria-hidden="true" />
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Text type */}
-                                        {header.type === 'text' && (
-                                            <span className="text-white">
-                                                {row[header.name] === 'N/A' ? '-' : row[header.name]}
-                                            </span>
-                                        )}
-
-                                        {/* id Type */}
-                                        {header.type === 'id' && (
-                                            <span className="text-wtite font-bold">
-                                                {row[header.name]}
-                                            </span>
-                                        )}
-
-                                        {/* weight type */}
-                                        {header.type === 'weight' && (
-                                            <span className="text-white">
-                                                {formatNumberEsKg(row[header.name])}
-                                            </span>
-                                        )}
-
-                                        {/* Number type */}
-
-                                        {/* Date type */}
-                                        {header.type === 'date' && (
-                                            <span className="text-white">
-                                                {formatDate(row[header.name])}
-                                                {/* {new Date(row[header.name]).toLocaleDateString()} 
-                                                    No muestra 0 a la izquierda en el mes y día
-                                                */}
-                                            </span>
-                                        )}
+                                        {header.type !== 'badge' && <span>{row[header.name]}</span>}
                                     </td>
                                 ))}
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            {/* Empty State */}
-                            <td className="h-full py-48" colSpan={headers.length}>
+                            <td className="h-full py-48" colSpan={headers.length + (isSelectable ? 1 : 0)}>
                                 <div className="flex flex-col items-center justify-center mb-4">
-                                    {/* EmptyState placeholder */}
-                                    <div className="w-full h-full flex flex-col items-center justify-center">
-                                        <EmptyState
-                                            title={emptyState.title}
-                                            description={emptyState.description}
-                                        />
-                                    </div>
+                                    <EmptyState
+                                        title={emptyState.title}
+                                        description={emptyState.description}
+                                    />
                                 </div>
                             </td>
                         </tr>

@@ -142,7 +142,7 @@ export const GenericFilters = ({ data }) => {
                 <button
                     onClick={openModal}
                     type="button"
-                    className="py-2 px-3 flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
+                    className="py-2 px-3 flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm bg-neutral-800 border-neutral-700/50 text-white hover:bg-neutral-600"
                 >
                     <IoFilter className="h-4 w-4" />
                     Filtros
