@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { getCsrfCookie, login, logout, getAuthenticatedUser } from "@/services/auth/auth";
 import { NAVBAR_LOGO } from "@/configs/config";
+import toast from "react-hot-toast";
+import { darkToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      setError(null);
       setLoading(true);
 
       // Obtener token CSRF y realizar login
@@ -21,9 +21,9 @@ export default function LoginPage() {
       await login(email, password);
 
       // Redirigir al usuario autenticado
-      window.location.href = "/admin/home";
+      window.location.href = "/admin";
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message , darkToastTheme);
     } finally {
       setLoading(false);
     }
@@ -77,10 +77,7 @@ export default function LoginPage() {
                 className="block w-full mt-1 rounded-md border border-neutral-600 bg-transparent px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
               />
             </div>
-            {/* Error Message */}
-            {error && (
-              <p className="mt-2 text-sm text-red-500">{error}</p>
-            )}
+            
             {/* Submit Button */}
             <div>
               <button
