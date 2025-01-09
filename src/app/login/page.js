@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth";
 import toast from "react-hot-toast";
 import { NAVBAR_LOGO } from "@/configs/config";
@@ -11,27 +11,32 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const searchParams = useSearchParams(); // Para obtener parámetros de la URL
   const router = useRouter();
 
-  // Obtener el valor del parámetro "from" o asignar un valor por defecto
-  const redirectTo = searchParams?.get("from") || "/admin";
+  // Obtener el parámetro "from" de la URL usando window.location
+  const getRedirectTo = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("from") || "/admin";
+    }
+    return "/admin";
+  };
 
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
         const user = await getAuthenticatedUser();
         if (user) {
-          // Redirigir al área protegida si ya está autenticado
-          router.push(redirectTo);
+          // Redirigir si ya está autenticado
+          router.push(getRedirectTo());
         }
       } catch {
-        // No hacer nada si no está autenticado
+        console.log("Usuario no autenticado, mostrando formulario de login.");
       }
     };
 
     checkAuthentication();
-  }, [redirectTo, router]);
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -43,11 +48,11 @@ export default function LoginPage() {
       await login(email, password);
 
       // Redirigir al área protegida
-      router.push(redirectTo);
+      router.push(getRedirectTo());
     } catch (err) {
       toast.error(err.message, darkToastTheme);
 
-      // Limpiar los campos tras un intento fallido
+      // Limpiar campos tras intento fallido
       setEmail("");
       setPassword("");
     } finally {
