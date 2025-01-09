@@ -134,8 +134,6 @@ const getEntityReport = async (url, fileName) => {
 
 export default function EntityClient({ config }) {
 
-    
-
     const [data, setData] = useState(initialData);
     const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
@@ -144,61 +142,9 @@ export default function EntityClient({ config }) {
 
     const router = useRouter();
 
-    
-
     // Fetch Data
     useEffect(() => {
         if (!config?.endpoint) return;
-
-        /* sIN AUTENTICACION */
-        /* const fetchData = async () => {
-            setData((prevData) => ({ ...prevData, loading: true }));
-            const queryString = formatFilters(filters, paginationMeta);
-            const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-                const result = await response.json();
-
-                const processedRows = result.data.map((row) => {
-                    const rowData = config.table.headers.reduce((acc, header) => {
-                        acc[header.name] = header.path
-                            ? getValueByPath(row, header.path)
-                            : row[header.name] || 'N/A';
-                        return acc;
-                    }, {});
-
-                    return {
-                        ...rowData,
-                        actions: {
-                            view: {
-                                label: 'Ver',
-                                onClick: () => {
-                                    const viewUrl = config.viewRoute.replace(':id', row.id);
-                                    router.push(viewUrl);
-                                },
-                            },
-                            delete: {
-                                label: 'Eliminar',
-                                onClick: async () => handleDelete(row.id),
-                            },
-                        },
-                    };
-                });
-
-                setData({ loading: false, rows: processedRows });
-                setPaginationMeta({
-                    currentPage: result.meta.current_page,
-                    totalPages: result.meta.last_page,
-                    totalItems: result.meta.total,
-                    perPage: result.meta.per_page,
-                });
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setData((prevData) => ({ ...prevData, loading: false }));
-            }
-        }; */
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
@@ -260,7 +206,6 @@ export default function EntityClient({ config }) {
                 });
             } catch (error) {
                 toast.error(error.message, darkToastTheme);
-                // /* console.error('Error fetching data:', error); */
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
@@ -435,7 +380,7 @@ export default function EntityClient({ config }) {
     };
 
     return (
-        <div>
+        <div className='h-full'>
             <GenericTable>
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (
