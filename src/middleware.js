@@ -29,7 +29,7 @@ export async function middleware(request) {
   } catch (err) {
     console.error('Error verificando la sesión:', err);
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', request.nextUrl.pathname);
+    loginUrl.searchParams.set('froma', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 }
