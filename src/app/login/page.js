@@ -49,6 +49,7 @@ export default function LoginPage() {
 
       // Redirigir al área protegida
       console.log("Redirigiendo a:", getRedirectTo());
+      window.location.href(getRedirectTo());
       router.push(getRedirectTo());
     } catch (err) {
       toast.error(err.message, darkToastTheme);
