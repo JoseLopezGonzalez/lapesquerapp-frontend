@@ -150,7 +150,8 @@ export default function EntityClient({ config }) {
     useEffect(() => {
         if (!config?.endpoint) return;
 
-        const fetchData = async () => {
+        /* sIN AUTENTICACION */
+        /* const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
             const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
@@ -197,7 +198,72 @@ export default function EntityClient({ config }) {
                 console.error('Error fetching data:', error);
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
+        }; */
+        const fetchData = async () => {
+            setData((prevData) => ({ ...prevData, loading: true }));
+            const queryString = formatFilters(filters, paginationMeta);
+            const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
+        
+            try {
+                // Solicitar datos
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'include', // Incluye cookies para autenticación
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+        
+                // Manejar errores HTTP
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('No estás autenticado. Por favor, inicia sesión.');
+                    }
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+        
+                // Procesar respuesta
+                const result = await response.json();
+        
+                const processedRows = result.data.map((row) => {
+                    const rowData = config.table.headers.reduce((acc, header) => {
+                        acc[header.name] = header.path
+                            ? getValueByPath(row, header.path)
+                            : row[header.name] || 'N/A';
+                        return acc;
+                    }, {});
+        
+                    return {
+                        ...rowData,
+                        actions: {
+                            view: {
+                                label: 'Ver',
+                                onClick: () => {
+                                    const viewUrl = config.viewRoute.replace(':id', row.id);
+                                    router.push(viewUrl);
+                                },
+                            },
+                            delete: {
+                                label: 'Eliminar',
+                                onClick: async () => handleDelete(row.id),
+                            },
+                        },
+                    };
+                });
+        
+                setData({ loading: false, rows: processedRows });
+                setPaginationMeta({
+                    currentPage: result.meta.current_page,
+                    totalPages: result.meta.last_page,
+                    totalItems: result.meta.total,
+                    perPage: result.meta.per_page,
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setData((prevData) => ({ ...prevData, loading: false }));
+            }
         };
+        
 
         fetchData();
     }, [config.endpoint, filters, paginationMeta.currentPage]);
