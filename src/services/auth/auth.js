@@ -54,12 +54,30 @@ export async function getAuthenticatedUser() {
 
 // Cerrar sesión
 export async function logout() {
+  // Obtén el token CSRF desde la cookie
+  const csrfToken = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('XSRF-TOKEN='))
+    ?.split('=')[1];
+
+  if (!csrfToken) {
+    throw new Error('Token CSRF no encontrado');
+  }
+
+  // Realiza la solicitud de logout
   const response = await fetch('https://api.congeladosbrisamar.es/api/v2/logout', {
     method: 'POST',
     credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': decodeURIComponent(csrfToken),
+    },
   });
 
   if (!response.ok) {
     throw new Error('Error al cerrar sesión');
   }
+
+  return response.json();
 }
+
