@@ -33,7 +33,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
     return (
         <div className="grid grid-cols-2 gap-y-6 gap-x-3">
             <div className="col-span-2">
-                <div className="flex w-full flex-col">
+                <div className="flex w-full flex-col  text-start">
                     <label
                         htmlFor="autocomplete-filter"
                         className="w-full mb-2 text-xs font-medium text-neutral-400"
@@ -51,13 +51,13 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     {value?.length > 0 && value?.map((item) => (
                         <div
                             key={item.id}
-                            className="italic bg-sky-100 flex justify-center gap-1 text-sky-800 text-xs font-medium pr-2 pl-2.5 py-0.5 rounded-full dark:bg-sky-900 dark:text-sky-300 items-center"
+                            className="italic flex justify-center gap-1 text-xs font-bold pr-2 pl-2.5 py-0.5 rounded-full bg-sky-500 text-white items-center"
                         >
                             {item.name}
                             <button
                                 onClick={() => onDelete(item)}
                                 type="button"
-                                className="hover:bg-sky-500 rounded-full text-md text-white shadow-sm"
+                                className="hover:bg-white/95 bg-white/70 rounded-full text-md font-bold text-sky-500  shadow-sm"
                             >
                                 <XMarkIcon className="h-4 w-4" aria-hidden="true" />
                             </button>

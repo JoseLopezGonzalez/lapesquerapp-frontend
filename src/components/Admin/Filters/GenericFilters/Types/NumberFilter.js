@@ -14,7 +14,7 @@ const NumberFilter = ({ label, name, value, placeholder, onChange }) => {
 
     return (
         <div key={name} className="col-span-2">
-            <div className="flex w-full flex-col">
+            <div className="flex w-full flex-col text-start">
                 <label
                     htmlFor={`number-filter-${name}`}
                     className="w-full mb-2 text-xs font-medium text-neutral-400 text-start"

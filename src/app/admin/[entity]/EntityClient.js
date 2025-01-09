@@ -17,16 +17,18 @@ import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 
 
+
+
+const initialData = {
+    loading: true,
+    rows: [],
+};
+
 const initialPaginationMeta = {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
     perPage: 10,
-};
-
-const initialData = {
-    loading: true,
-    rows: [],
 };
 
 // Helper function to handle nested paths
@@ -131,6 +133,9 @@ const getEntityReport = async (url, fileName) => {
 
 
 export default function EntityClient({ config }) {
+
+    
+
     const [data, setData] = useState(initialData);
     const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
@@ -138,6 +143,8 @@ export default function EntityClient({ config }) {
     const [selectedRows, setSelectedRows] = useState([]);
 
     const router = useRouter();
+
+    
 
     // Fetch Data
     useEffect(() => {
@@ -374,7 +381,7 @@ export default function EntityClient({ config }) {
                                 onClick={handleSelectedRowsDelete}
                             >
                                 <TrashIcon className="h-4 w-4" aria-hidden="true" />
-                                Eliminar
+                                <span className='hidden xl:flex'>Eliminar</span>
                             </button>
 
                             {/* Reports */}
@@ -385,7 +392,7 @@ export default function EntityClient({ config }) {
                                         className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
                                     >
                                         <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
-                                        Reportes
+                                        <span className='hidden xl:flex'>Reportes</span>
                                     </button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
@@ -408,7 +415,7 @@ export default function EntityClient({ config }) {
                                         className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
                                     >
                                         <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-                                        Exportar
+                                        <span className='hidden xl:flex'>Exportar</span>
                                     </button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
@@ -440,7 +447,7 @@ export default function EntityClient({ config }) {
                                         className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
                                     >
                                         <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
-                                        Reportes
+                                        <span className='hidden xl:flex'>Reportes</span>
                                     </button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
@@ -462,7 +469,7 @@ export default function EntityClient({ config }) {
                                         className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
                                     >
                                         <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-                                        Exportar
+                                        <span className='hidden xl:flex'>Exportar</span>
                                     </button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">

@@ -12,7 +12,6 @@ import DateRangeFilter from './Types/DateRangeFilter';
 import { AutocompleteFilter } from './Types/AutocompleteFilter';
 import SearchFilter from './Types/SearchFilter';
 import TextFilter from './Types/TextFilter';
-import MyComponent from './Types/DateRangeFilter copy';
 
 export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
     if (!filtersGroup || (!filtersGroup.search && !filtersGroup.groups)) {
@@ -151,7 +150,6 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                         )}
                                                         {filter.type === 'dateRange' && (
                                                             <>
-                                                                <MyComponent />
                                                                 <DateRangeFilter
                                                                     label={filter.label}
                                                                     name={filter.name}
@@ -159,6 +157,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                     onChange={(value) =>
                                                                         onFilterChange(group.name, filter.name, value)
                                                                     }
+                                                                    visibleMonths={filter.visibleMonths}
                                                                 />
                                                             </>
                                                         )}

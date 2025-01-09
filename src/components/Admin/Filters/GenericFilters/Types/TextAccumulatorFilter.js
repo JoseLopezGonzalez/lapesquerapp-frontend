@@ -1,7 +1,7 @@
 'use client';
 
+import { XMarkIcon } from '@heroicons/react/20/solid';
 import React, { useState, memo } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDelete }) => {
     const [temporalValue, setTemporalValue] = useState("");
@@ -38,7 +38,7 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDele
                         value={temporalValue}
                         onChange={handleOnChangeInput}
                         onKeyDown={handleKeyDown}
-                        className="w-full border text-sm rounded-lg block p-2.5 bg-neutral-900 border-neutral-400 placeholder-neutral-500 placeholder:italic text-white focus:ring-sky-500 focus:border-sky-500"
+                        className="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
                         placeholder={placeholder}
                     />
                 </div>
@@ -46,15 +46,15 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDele
                     {value.map((item, index) => (
                         <div
                             key={index}
-                            className="italic flex justify-center gap-1 text-xs font-medium pr-2 pl-2.5 py-0.5 rounded-full bg-sky-900 text-sky-300 items-center"
+                            className="italic flex justify-center gap-1 text-xs font-bold pr-2 pl-2.5 py-0.5 rounded-full bg-sky-500 text-white items-center"
                         >
                             {item}
                             <button
                                 onClick={() => onDelete(item)}
                                 type="button"
-                                className="hover:bg-sky-500 rounded-full text-md text-white shadow-sm"
+                                className="hover:bg-white/95 bg-white/70 rounded-full text-md font-bold text-sky-500  shadow-sm"
                             >
-                                <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+                                <XMarkIcon className="h-3 w-3 " aria-hidden="true" />
                             </button>
                         </div>
                     ))}

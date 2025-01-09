@@ -207,11 +207,13 @@ export const configs = {
               name: "entryDate",
               label: "Fecha de entrada",
               type: "dateRange",
+              visibleMonths: 1,
             },
             {
               name: "loadDate",
               label: "Fecha de carga",
               type: "dateRange",
+              visibleMonths: 1,
             },
           ],
         },

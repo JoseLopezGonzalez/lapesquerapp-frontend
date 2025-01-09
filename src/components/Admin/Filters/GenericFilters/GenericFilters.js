@@ -145,7 +145,7 @@ export const GenericFilters = ({ data }) => {
                     className="py-2 px-3 flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm bg-neutral-800 border-neutral-700/50 text-white hover:bg-neutral-600"
                 >
                     <IoFilter className="h-4 w-4" />
-                    Filtros
+                    <span className='hidden xl:flex'>Filtros</span>
                     {numberOfActiveFilters > 0 && (
                         <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-neutral-700 text-neutral-300">
                             {numberOfActiveFilters}
