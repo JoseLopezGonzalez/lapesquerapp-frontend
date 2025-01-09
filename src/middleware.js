@@ -17,6 +17,9 @@ export async function middleware(request) {
       credentials: 'include',
     });
 
+    console.log('Response status:', response.status);
+  console.log('Response body:', await response.text());
+
     if (response.ok) {
       // Sesión válida, continuar
       return NextResponse.next();
@@ -25,7 +28,7 @@ export async function middleware(request) {
     // Sesión inválida, redirigir al login
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl); /* Esto se ejecuta siempre si esta ya logeado tambien */
   } catch (err) {
     console.error('Error verificando la sesión:', err);
     const loginUrl = new URL('/login', request.url);
