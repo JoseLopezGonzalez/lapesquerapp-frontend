@@ -14,30 +14,27 @@ export async function middleware(request) {
   try {
     const response = await fetch('https://api.congeladosbrisamar.es/api/v2/me', {
       method: 'GET',
-      credentials: 'include', // Para enviar cookies automáticamente
+      credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        Cookie: `congelados_brisamar_app_session=${sessionCookie}`,
       },
     });
 
-    if (!response.ok) {
-      // Si la sesión no es válida, redirigir al login
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('from', request.nextUrl.pathname);
-      console.log('Sesión inválida, redirigiendo a:', loginUrl.toString());
-      /* return NextResponse.redirect(loginUrl); */
+    if (response.ok) {
+      // Sesión válida, continuar
+      return NextResponse.next();
     }
-  } catch (error) {
-    console.error('Error al verificar la sesión:', error);
 
-    // En caso de error al verificar la sesión, redirigir al login
+    // Sesión inválida, redirigir al login
     const loginUrl = new URL('/login', request.url);
-    console.log('Error al verificar la sesión, redirigiendo a:', loginUrl.toString());
     loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    /* return NextResponse.redirect(loginUrl); */
+    return NextResponse.redirect(loginUrl);
+  } catch (err) {
+    console.error('Error verificando la sesión:', err);
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
-
-  return NextResponse.next(); // Continuar con la solicitud si está autenticado
 }
 
 export const config = {
