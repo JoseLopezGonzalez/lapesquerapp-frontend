@@ -1,37 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth";
-import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
+import { NAVBAR_LOGO } from "@/configs/config";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams(); // Para obtener parámetros de la URL
   const router = useRouter();
 
-  // Obtener el parámetro "from" de la URL
-  const redirectTo = (() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("from") || "/admin";
-    }
-    return "/admin";
-  })();
+  // Obtener el valor del parámetro "from" o asignar un valor por defecto
+  const redirectTo = searchParams?.get("from") || "/admin";
 
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
         const user = await getAuthenticatedUser();
         if (user) {
-          // Si el usuario ya está autenticado, redirigir directamente
+          // Redirigir al área protegida si ya está autenticado
           router.push(redirectTo);
         }
-      } catch (err) {
-        console.log("Usuario no autenticado, mostrando formulario de login.");
+      } catch {
+        // No hacer nada si no está autenticado
       }
     };
 
@@ -47,18 +42,18 @@ export default function LoginPage() {
       await getCsrfCookie();
       await login(email, password);
 
-      // Redirigir al usuario autenticado
+      // Redirigir al área protegida
       router.push(redirectTo);
     } catch (err) {
       toast.error(err.message, darkToastTheme);
+
+      // Limpiar los campos tras un intento fallido
       setEmail("");
       setPassword("");
     } finally {
       setLoading(false);
     }
   };
-
-  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-900">
@@ -70,7 +65,6 @@ export default function LoginPage() {
             ¡Bienvenido! Introduce tus datos de acceso.
           </p>
           <form onSubmit={handleLogin} className="mt-8 space-y-6">
-            {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-sm text-neutral-200">
                 Usuario
@@ -87,7 +81,6 @@ export default function LoginPage() {
                 className="block w-full mt-1 rounded-md border border-neutral-600 bg-transparent px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
               />
             </div>
-            {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm text-neutral-200">
                 Contraseña
@@ -105,7 +98,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Submit Button */}
             <div>
               <button
                 type="submit"
