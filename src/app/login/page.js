@@ -28,9 +28,10 @@ export default function LoginPage() {
         const user = await getAuthenticatedUser();
         if (user) {
           // Redirigir si ya está autenticado
-          window.location.href = getRedirectTo();
+          /* window.location.href = getRedirectTo();
 
-          router.push(getRedirectTo());
+          router.push(getRedirectTo()); */
+          console.log("Usuario autenticado, redirigiendo a:", getRedirectTo());
         }
       } catch {
         console.log("Usuario no autenticado, mostrando formulario de login.");
