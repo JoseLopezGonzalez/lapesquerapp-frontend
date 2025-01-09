@@ -387,7 +387,7 @@ export default function EntityClient({ config }) {
                         <>
                             <button
                                 type="button"
-                                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-800 border-red-700/50 text-red-500 hover:bg-neutral-800"
+                                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-red-700/50 text-red-500 hover:bg-neutral-800"
                                 onClick={handleSelectedRowsDelete}
                             >
                                 <TrashIcon className="h-4 w-4" aria-hidden="true" />
@@ -399,7 +399,7 @@ export default function EntityClient({ config }) {
                                 <DropdownTrigger>
                                     <button
                                         type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-800 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
                                     >
                                         <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Reportes</span>
@@ -422,7 +422,7 @@ export default function EntityClient({ config }) {
                                 <DropdownTrigger>
                                     <button
                                         type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
                                     >
                                         <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Exportar</span>
