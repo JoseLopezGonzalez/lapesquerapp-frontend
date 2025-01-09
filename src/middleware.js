@@ -1,23 +1,20 @@
 import { NextResponse } from 'next/server';
 
 export async function middleware(request) {
-  const sessionCookie = request.cookies.get('congelados_brisamar_app_session'); // Cambia por el nombre exacto de tu cookie
+ /*  const sessionCookie = request.cookies.get('congelados_brisamar_app_session'); // Cambia por el nombre exacto de tu cookie
 
   // Si no hay cookie, redirigir al login
   if (!sessionCookie) {
     const loginUrl = new URL('/login', request.url); // Ruta de login
     loginUrl.searchParams.set('from', request.nextUrl.pathname); // Agregar la ruta original como parámetro
     return NextResponse.redirect(loginUrl);
-  }
+  } */
 
   // Verificar si la sesión es válida llamando al backend
   try {
     const response = await fetch('https://api.congeladosbrisamar.es/api/v2/me', {
       method: 'GET',
       credentials: 'include',
-      headers: {
-        Cookie: `congelados_brisamar_app_session=${sessionCookie}`,
-      },
     });
 
     if (response.ok) {
