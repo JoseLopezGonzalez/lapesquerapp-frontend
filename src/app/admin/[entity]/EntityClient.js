@@ -259,7 +259,8 @@ export default function EntityClient({ config }) {
                     perPage: result.meta.per_page,
                 });
             } catch (error) {
-                console.error('Error fetching data:', error);
+                toast.error(error.message, darkToastTheme);
+                // /* console.error('Error fetching data:', error); */
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
@@ -323,8 +324,6 @@ export default function EntityClient({ config }) {
             alert('No se pudo conectar al servidor.');
         }
     }
-
-
 
     const handleExport = async (exportOption) => {
         const { endpoint, fileName, type, waitingMessage } = exportOption;

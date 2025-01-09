@@ -24,6 +24,8 @@ export default function LoginPage() {
       window.location.href = "/admin";
     } catch (err) {
       toast.error(err.message , darkToastTheme);
+      setEmail("");
+      setPassword("");  
     } finally {
       setLoading(false);
     }
