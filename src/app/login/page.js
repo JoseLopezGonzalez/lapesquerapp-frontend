@@ -6,7 +6,6 @@ import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth
 import toast from "react-hot-toast";
 import { NAVBAR_LOGO } from "@/configs/config";
 import { darkToastTheme } from "@/customs/reactHotToast";
-import { Router } from "next/router";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,7 +28,7 @@ export default function LoginPage() {
         const user = await getAuthenticatedUser();
         if (user) {
           // Redirigir si ya está autenticado
-          Router.push(getRedirectTo());
+          router.push(getRedirectTo());
         }
       } catch {
         console.log("Usuario no autenticado, mostrando formulario de login.");
@@ -49,6 +48,7 @@ export default function LoginPage() {
       await login(email, password);
 
       // Redirigir al área protegida
+      console.log("Redirigiendo a:", getRedirectTo());
       router.push(getRedirectTo());
     } catch (err) {
       toast.error(err.message, darkToastTheme);
