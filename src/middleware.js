@@ -10,6 +10,31 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Verificar si la sesión es válida llamando al backend
+  try {
+    const response = await fetch('https://api.congeladosbrisamar.es/api/v2/me', {
+      method: 'GET',
+      credentials: 'include', // Para enviar cookies automáticamente
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      // Si la sesión no es válida, redirigir al login
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  } catch (error) {
+    console.error('Error al verificar la sesión:', error);
+
+    // En caso de error al verificar la sesión, redirigir al login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return NextResponse.next(); // Continuar con la solicitud si está autenticado
 }
 
