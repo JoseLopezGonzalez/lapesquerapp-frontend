@@ -28,11 +28,11 @@ export async function middleware(request) {
     // Sesión inválida, redirigir al login
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl); /* Esto se ejecuta siempre si esta ya logeado tambien */
+    /* return NextResponse.redirect(loginUrl); */ /* Esto se ejecuta siempre si esta ya logeado tambien */
   } catch (err) {
     console.error('Error verificando la sesión:', err);
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('froma', request.nextUrl.pathname);
+    loginUrl.searchParams.set('from', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 }
