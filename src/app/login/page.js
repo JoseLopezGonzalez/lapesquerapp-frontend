@@ -28,6 +28,8 @@ export default function LoginPage() {
         const user = await getAuthenticatedUser();
         if (user) {
           // Redirigir si ya está autenticado
+          window.location.href = getRedirectTo();
+
           router.push(getRedirectTo());
         }
       } catch {
@@ -49,7 +51,7 @@ export default function LoginPage() {
 
       // Redirigir al área protegida
       console.log("Redirigiendo a:", getRedirectTo());
-      window.location.href(getRedirectTo());
+      window.location.href = getRedirectTo();
       router.push(getRedirectTo());
     } catch (err) {
       toast.error(err.message, darkToastTheme);
@@ -109,9 +111,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
               </button>
