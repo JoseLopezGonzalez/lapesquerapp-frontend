@@ -78,7 +78,13 @@ const formatFilters = (filters, paginationMeta) => {
 const getEntityExport = async (url, fileName) => {
     /* Current date formatted DD-MM-AAAA*/
     const currentDate = new Date().toLocaleDateString().split('/').join('-');
-    return await fetch(url)
+    return await fetch(url, {
+        method: 'GET',
+        credentials: 'include', // Incluye cookies para autenticación
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -103,7 +109,13 @@ const getEntityExport = async (url, fileName) => {
 const getEntityReport = async (url, fileName) => {
     /* Current date formatted DD-MM-AAAA*/
     const currentDate = new Date().toLocaleDateString().split('/').join('-');
-    return await fetch(url)
+    return await fetch(url, {
+        method: 'GET',
+        credentials: 'include', // Incluye cookies para autenticación
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
