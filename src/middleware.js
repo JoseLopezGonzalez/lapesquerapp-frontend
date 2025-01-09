@@ -25,7 +25,7 @@ export async function middleware(request) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('from', request.nextUrl.pathname);
       console.log('Sesión inválida, redirigiendo a:', loginUrl.toString());
-      return NextResponse.redirect(loginUrl);
+      /* return NextResponse.redirect(loginUrl); */
     }
   } catch (error) {
     console.error('Error al verificar la sesión:', error);
@@ -34,7 +34,7 @@ export async function middleware(request) {
     const loginUrl = new URL('/login', request.url);
     console.log('Error al verificar la sesión, redirigiendo a:', loginUrl.toString());
     loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    /* return NextResponse.redirect(loginUrl); */
   }
 
   return NextResponse.next(); // Continuar con la solicitud si está autenticado
