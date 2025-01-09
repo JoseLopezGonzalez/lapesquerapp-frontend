@@ -17,6 +17,8 @@ import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigation } from '@/data/Navbar/navgation';
 import { usePathname } from 'next/navigation';
+import { logout } from '@/services/auth/auth';
+import toast from 'react-hot-toast';
 
 
 /* Cambiar en un futuro las img por Image de next */
@@ -25,6 +27,15 @@ import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
     const currentPath = usePathname();
+
+    const handleLogout = async () => {
+        try {
+          await logout();
+          router.push("/login");
+        } catch (err) {
+          toast.error(err.message, darkToastTheme);
+        }
+      };
 
 
     return (
@@ -144,7 +155,9 @@ export default function Navbar() {
                                     aria-hidden="true"
                                 />
                             </p>
-                            <p className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white">
+                            <p 
+                            onClick={handleLogout}
+                            className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white">
                                 Perfil
                             </p>
                         </div>

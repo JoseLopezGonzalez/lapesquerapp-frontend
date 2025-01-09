@@ -58,6 +58,8 @@ export default function LoginPage() {
     }
   };
 
+  
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-900">
       <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10 max-w-md w-full">
