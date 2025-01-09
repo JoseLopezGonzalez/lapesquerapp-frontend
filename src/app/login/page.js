@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth";
 import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
@@ -12,8 +12,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("from") || "/admin"; // Redirigir a "from" o a "/admin" por defecto
+
+  // Obtener el parámetro "from" de la URL
+  const redirectTo = (() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("from") || "/admin";
+    }
+    return "/admin";
+  })();
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -24,7 +31,6 @@ export default function LoginPage() {
           router.push(redirectTo);
         }
       } catch (err) {
-        // Si no está autenticado, permanece en la página de login
         console.log("Usuario no autenticado, mostrando formulario de login.");
       }
     };
