@@ -24,6 +24,7 @@ export async function middleware(request) {
       // Si la sesión no es válida, redirigir al login
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('from', request.nextUrl.pathname);
+      console.log('Sesión inválida, redirigiendo a:', loginUrl.toString());
       return NextResponse.redirect(loginUrl);
     }
   } catch (error) {
@@ -31,6 +32,7 @@ export async function middleware(request) {
 
     // En caso de error al verificar la sesión, redirigir al login
     const loginUrl = new URL('/login', request.url);
+    console.log('Error al verificar la sesión, redirigiendo a:', loginUrl.toString());
     loginUrl.searchParams.set('from', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
