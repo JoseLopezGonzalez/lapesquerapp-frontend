@@ -68,7 +68,7 @@ export default function LoginPage() {
             </div>
             <div className="mt-10">
               <div className="mt-6">
-                <form onSubmit={handleLogin} className="space-y-6">
+                <form  className="space-y-6">
                   <div>
                     <label htmlFor="email" className="block text-sm text-neutral-200">
                       Usuario
@@ -108,6 +108,7 @@ export default function LoginPage() {
                   <div>
                     <button
                       type="submit"
+                      onClick={handleLogin}
                       className="flex w-full justify-center rounded-lg border border-transparent bg-sky-500 py-2.5 px-4 font-semibold text-sm text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
                     >
                       Iniciar Sesión
