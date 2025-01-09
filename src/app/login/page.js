@@ -38,7 +38,7 @@ export default function LoginPage() {
     };
 
     checkAuthentication();
-  }, [router]);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
