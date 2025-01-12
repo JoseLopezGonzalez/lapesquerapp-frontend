@@ -15,6 +15,7 @@ import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
+import { getSession } from 'next-auth/react';
 
 
 
@@ -154,35 +155,41 @@ export default function EntityClient({ config }) {
 
     const router = useRouter();
 
+    
+
     // Fetch Data
     useEffect(() => {
         if (!config?.endpoint) return;
+    
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
             const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
-        
+    
             try {
-                // Solicitar datos
+                const session = await getSession(); // Obtener sesión actual
+                console.log("Token:", session?.user?.accessToken); // Verificar el token en consola
+    
                 const response = await fetch(url, {
                     method: 'GET',
-                    credentials: 'include', // Incluye cookies para autenticación
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
                     },
                 });
-        
-                // Manejar errores HTTP
+    
                 if (!response.ok) {
                     if (response.status === 401) {
                         throw new Error('No estás autenticado. Por favor, inicia sesión.');
                     }
+                    if (response.status === 403) {
+                        throw new Error('No tienes permiso para acceder a esta ruta.');
+                    }
                     throw new Error(`Error: ${response.statusText}`);
                 }
-        
-                // Procesar respuesta
+    
                 const result = await response.json();
-        
+    
                 const processedRows = result.data.map((row) => {
                     const rowData = config.table.headers.reduce((acc, header) => {
                         acc[header.name] = header.path
@@ -190,7 +197,7 @@ export default function EntityClient({ config }) {
                             : row[header.name] || 'N/A';
                         return acc;
                     }, {});
-        
+    
                     return {
                         ...rowData,
                         actions: {
@@ -208,7 +215,7 @@ export default function EntityClient({ config }) {
                         },
                     };
                 });
-        
+    
                 setData({ loading: false, rows: processedRows });
                 setPaginationMeta({
                     currentPage: result.meta.current_page,
@@ -221,10 +228,11 @@ export default function EntityClient({ config }) {
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
-        
-
+    
         fetchData();
     }, [config.endpoint, filters, paginationMeta.currentPage]);
+    
+    
 
     const handlePageChange = (newPage) => {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));

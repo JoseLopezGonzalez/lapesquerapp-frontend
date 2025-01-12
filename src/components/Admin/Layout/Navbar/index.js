@@ -19,6 +19,8 @@ import { navigation } from '@/data/Navbar/navgation';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/services/auth/auth';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/router';
+import { signOut } from 'next-auth/react';
 
 
 /* Cambiar en un futuro las img por Image de next */
@@ -30,10 +32,15 @@ export default function Navbar() {
 
     const handleLogout = async () => {
         try {
-          await logout();
-          router.push("/login");
+          // Invalidar sesión en NextAuth
+          await signOut({ redirect: false });
+      
+          // Redirigir al usuario a la página de inicio de sesión
+          window.location.href = "/login";
+      
+          toast.success("Sesión cerrada correctamente", darkToastTheme);
         } catch (err) {
-          toast.error(err.message, darkToastTheme);
+          toast.error(err.message || "Error al cerrar sesión", darkToastTheme);
         }
       };
 

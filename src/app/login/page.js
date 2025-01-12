@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
@@ -11,28 +10,29 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-  
+
       // Intentar iniciar sesión
       const result = await signIn("credentials", {
         redirect: false, // No redirige automáticamente
         email,
         password,
       });
-      console.log(result)
+
+      console.log("Resultado del inicio de sesión:", result);
+
       // Comprobar si hay error
       if (!result || result.error) {
         throw new Error(result?.error || "Error al iniciar sesión");
       }
-  
+
       // Si no hay error, inicio de sesión exitoso
       toast.success("Inicio de sesión exitoso", darkToastTheme);
-      router.push("/admin"); // Redirigir al dashboard
+      window.location.href = "/admin"; // Redirigir al dashboard
     } catch (err) {
       // Mostrar mensaje de error
       toast.error(err.message, darkToastTheme);
@@ -40,7 +40,6 @@ export default function LoginPage() {
       setLoading(false); // Restaurar estado de carga
     }
   };
-  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-900">

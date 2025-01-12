@@ -4,9 +4,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'Laravel API',
+      name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
@@ -19,36 +19,40 @@ const handler = NextAuth({
 
           const data = await res.json();
 
-          if (!res.ok) {
-            throw new Error(data.message || 'Credenciales inválidas');
+          if (res.ok && data.access_token) {
+            return { ...data.user, accessToken: data.access_token };
           }
 
-          // Si el inicio de sesión es exitoso, devolver los datos del usuario
-          return { ...data.user, token: data.access_token };
+          throw new Error(data.message || 'Error al iniciar sesión');
         } catch (err) {
-          console.error('Error during login:', err.message);
-          return null; // Devuelve null para indicar que no se autorizó
+          console.error('Error al autenticar:', err);
+          return null;
         }
       },
     }),
   ],
+  session: {
+    strategy: 'jwt', // Usar JWT para almacenar la sesión
+    maxAge: 60 * 60 * 24 * 7, // Tiempo de vida del token en segundos (7 días)
+    updateAge: 60 * 60 * 24, // Tiempo en segundos para actualizar el token (1 día)
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.token;
-        token.role = user.role; // Incluye el rol si está disponible en la respuesta
+        token.accessToken = user.accessToken;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = token; // Incluye el token en la sesión
+      session.user = token;
       return session;
     },
   },
   pages: {
-    signIn: '/login', // Página personalizada de login
+    signIn: '/login',
   },
-  secret: process.env.NEXTAUTH_SECRET, // Genera un valor secreto en .env.local
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };
