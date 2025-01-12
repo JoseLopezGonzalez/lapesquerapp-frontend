@@ -302,6 +302,78 @@ export const configs = {
       ],
     },
   },
+  users: {
+    title: "Usuarios",
+    description: "Gestiona, edita y consulta usuarios.",
+    emptyState: {
+      title: "No existen usuarios según los filtros",
+      description: "Ajusta los filtros o crea un nuevo usuario.",
+    },
+    endpoint: "users",
+    viewRoute: "/admin/users/:id",
+    deleteEndpoint: "/users/:id",
+    createPath: "/admin/users/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "name",
+            label: "Nombre",
+            type: "search",
+            placeholder: "Buscar por nombre",
+          },
+          
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "id",
+              label: "ID",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            {
+              name: "roles",
+              label: "Roles",
+              type: "autocomplete",
+              placeholder: "Seleccionar roles",
+              endpoint: "roles",
+            },
+          ],
+        },
+        {
+          name: "dates",
+          label: "Fechas",
+          filters: [
+            {
+              name: "created_at",
+              label: "Fecha de creación",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "email", label: "Correo electrónico", type: "text", path: "email" },
+        { name: "roles", label: "Rol", type: "text", path: "roles" },
+
+       
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
 };
 
 

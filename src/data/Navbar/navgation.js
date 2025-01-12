@@ -1,4 +1,4 @@
-import { HomeIcon, TicketIcon, EllipsisHorizontalCircleIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, TicketIcon, EllipsisHorizontalCircleIcon, TruckIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { TbTruckLoading, TbFishHook } from 'react-icons/tb';
 import { BsDiagram3 } from 'react-icons/bs';
 import { GrBucket } from 'react-icons/gr';
@@ -15,10 +15,12 @@ export const navigation = [
         icon: TbFishHook,
         children: [
             { name: 'Materia Prima', href: '/admin/raw-material-receptions' },
-           /*  { name: 'Ingredientes y Aditivos', href: '#' },
-            { name: 'Envases y embalajes', href: '#' }, */
+            /*  { name: 'Ingredientes y Aditivos', href: '#' },
+             { name: 'Envases y embalajes', href: '#' }, */
         ],
     },
+    /* Userts */
+   
     /* {
         name: 'Cebo',
         icon: GrBucket,
@@ -49,11 +51,11 @@ export const navigation = [
             /* { name: 'Añadir Pedido', href: '/insert_order' }, */
         ],
     },
-   /*  {
-        name: 'Etiquetas',
-        icon: TicketIcon,
-        href: '/labels_manager',
-    }, */
+    /*  {
+         name: 'Etiquetas',
+         icon: TicketIcon,
+         href: '/labels_manager',
+     }, */
     /* {
         name: 'Conversor A3ERP',
         icon: PiMicrosoftExcelLogoFill,
@@ -67,4 +69,11 @@ export const navigation = [
             { name: 'Zonas de capturas', href: '#' },
         ],
     }, */
+    {
+        name: 'Usuarios',
+        icon: UserGroupIcon,
+        children: [
+            { name: 'Todos los Usuarios', href: '/admin/users' },
+        ],
+    },
 ];
