@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { NAVBAR_LOGO } from "@/configs/config";
+import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth";
 import toast from "react-hot-toast";
+import { NAVBAR_LOGO } from "@/configs/config";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
@@ -13,34 +13,57 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Obtener el parámetro "from" de la URL usando window.location
+  const getRedirectTo = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("from") || "/admin";
+    }
+    return "/admin";
+  };
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const user = await getAuthenticatedUser();
+        if (user) {
+          // Redirigir si ya está autenticado
+          /* window.location.href = getRedirectTo();
+
+          router.push(getRedirectTo()); */
+          console.log("Usuario autenticado, redirigiendo a:", getRedirectTo());
+        }
+      } catch {
+        console.log("Usuario no autenticado, mostrando formulario de login.");
+      }
+    };
+
+    checkAuthentication();
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-  
-      // Intentar iniciar sesión
-      const result = await signIn("credentials", {
-        redirect: false, // No redirige automáticamente
-        email,
-        password,
-      });
-      console.log(result)
-      // Comprobar si hay error
-      if (!result || result.error) {
-        throw new Error(result?.error || "Error al iniciar sesión");
-      }
-  
-      // Si no hay error, inicio de sesión exitoso
-      toast.success("Inicio de sesión exitoso", darkToastTheme);
-      router.push("/admin"); // Redirigir al dashboard
+
+      // Obtener token CSRF y realizar login
+      await getCsrfCookie();
+      await login(email, password);
+
+      // Redirigir al área protegida
+      console.log("Redirigiendo a:", getRedirectTo());
+      window.location.href = getRedirectTo();
+      router.push(getRedirectTo());
     } catch (err) {
-      // Mostrar mensaje de error
       toast.error(err.message, darkToastTheme);
+
+      // Limpiar campos tras intento fallido
+      setEmail("");
+      setPassword("");
     } finally {
-      setLoading(false); // Restaurar estado de carga
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-900">
@@ -89,9 +112,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
               </button>

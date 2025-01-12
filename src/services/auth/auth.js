@@ -1,4 +1,4 @@
-// Obtener el token CSRF
+/* // Obtener el token CSRF
 export async function getCsrfCookie() {
   const response = await fetch('https://api.congeladosbrisamar.es/sanctum/csrf-cookie', {
     method: 'GET',
@@ -81,3 +81,4 @@ export async function logout() {
   return response.json();
 }
 
+ */
