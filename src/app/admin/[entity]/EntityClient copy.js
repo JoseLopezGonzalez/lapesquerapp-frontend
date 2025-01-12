@@ -15,7 +15,6 @@ import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
-import { getSession } from 'next-auth/react';
 
 
 
@@ -79,16 +78,11 @@ const formatFilters = (filters, paginationMeta) => {
 const getEntityExport = async (url, fileName) => {
     /* Current date formatted DD-MM-AAAA*/
     const currentDate = new Date().toLocaleDateString().split('/').join('-');
-
-    const session = await getSession(); // Obtener sesión actual
-
     return await fetch(url, {
         method: 'GET',
+        credentials: 'include', // Incluye cookies para autenticación
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-
         },
     })
         .then(response => {
@@ -115,17 +109,11 @@ const getEntityExport = async (url, fileName) => {
 const getEntityReport = async (url, fileName) => {
     /* Current date formatted DD-MM-AAAA*/
     const currentDate = new Date().toLocaleDateString().split('/').join('-');
-
-    const session = await getSession(); // Obtener sesión actual
-
-
     return await fetch(url, {
         method: 'GET',
+        credentials: 'include', // Incluye cookies para autenticación
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-
         },
     })
         .then(response => {
@@ -171,36 +159,32 @@ export default function EntityClient({ config }) {
     // Fetch Data
     useEffect(() => {
         if (!config?.endpoint) return;
-    
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
             const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
-    
+        
             try {
-                const session = await getSession(); // Obtener sesión actual
-    
+                // Solicitar datos
                 const response = await fetch(url, {
                     method: 'GET',
+                    credentials: 'include', // Incluye cookies para autenticación
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                        'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
                     },
                 });
-    
+        
+                // Manejar errores HTTP
                 if (!response.ok) {
                     if (response.status === 401) {
                         throw new Error('No estás autenticado. Por favor, inicia sesión.');
                     }
-                    if (response.status === 403) {
-                        throw new Error('No tienes permiso para acceder a esta ruta.');
-                    }
                     throw new Error(`Error: ${response.statusText}`);
                 }
-    
+        
+                // Procesar respuesta
                 const result = await response.json();
-    
+        
                 const processedRows = result.data.map((row) => {
                     const rowData = config.table.headers.reduce((acc, header) => {
                         acc[header.name] = header.path
@@ -208,7 +192,7 @@ export default function EntityClient({ config }) {
                             : row[header.name] || 'N/A';
                         return acc;
                     }, {});
-    
+        
                     return {
                         ...rowData,
                         actions: {
@@ -226,7 +210,7 @@ export default function EntityClient({ config }) {
                         },
                     };
                 });
-    
+        
                 setData({ loading: false, rows: processedRows });
                 setPaginationMeta({
                     currentPage: result.meta.current_page,
@@ -239,11 +223,10 @@ export default function EntityClient({ config }) {
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
-    
+        
+
         fetchData();
     }, [config.endpoint, filters, paginationMeta.currentPage]);
-    
-    
 
     const handlePageChange = (newPage) => {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));

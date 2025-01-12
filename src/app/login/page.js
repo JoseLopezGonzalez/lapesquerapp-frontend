@@ -16,6 +16,10 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
+      // Obtener la URL de redirección desde los parámetros de la URL
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get("from") || "/admin"; // Redirige a /admin si no se especifica una URL previa
+
       // Intentar iniciar sesión
       const result = await signIn("credentials", {
         redirect: false, // No redirige automáticamente
@@ -23,16 +27,19 @@ export default function LoginPage() {
         password,
       });
 
-      console.log("Resultado del inicio de sesión:", result);
-
       // Comprobar si hay error
       if (!result || result.error) {
-        throw new Error(result?.error || "Error al iniciar sesión");
+        if (result.error === "CredentialsSignin") {
+          setEmail("");
+          setPassword("");
+          throw new Error("Datos de acceso incorrectos");
+        }
+        throw new Error(result.error || "Error al iniciar sesión");
       }
 
       // Si no hay error, inicio de sesión exitoso
       toast.success("Inicio de sesión exitoso", darkToastTheme);
-      window.location.href = "/admin"; // Redirigir al dashboard
+      window.location.href = redirectTo; // Redirigir a la página solicitada o a /admin
     } catch (err) {
       // Mostrar mensaje de error
       toast.error(err.message, darkToastTheme);
@@ -40,6 +47,8 @@ export default function LoginPage() {
       setLoading(false); // Restaurar estado de carga
     }
   };
+
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-neutral-900">
@@ -88,9 +97,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex w-full justify-center rounded-lg bg-sky-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
               </button>
