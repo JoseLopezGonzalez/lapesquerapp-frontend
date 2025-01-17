@@ -1,44 +1,60 @@
 'use client';
 
-import { CalendarDaysIcon } from '@heroicons/react/20/solid';
-import { parseDate } from '@internationalized/date';
-import { DateRangePicker } from '@nextui-org/react';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
+import { useState } from "react";
+import { es } from "react-day-picker/locale";
+import { format } from "date-fns";
+import { DayPicker, getDefaultClassNames } from "react-day-picker";
+import "/src/customs/reactDayPicker/reactDayPickerStyles.css";
+import { CalendarDateRangeIcon } from "@heroicons/react/20/solid";
+import { CloseButton, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 
 const DateRangeFilter = ({
     label,
-    name,
     value = { start: '', end: '' },
     onChange,
-    min,
-    max,
-    placeholderStart = 'Fecha de inicio',
-    placeholderEnd = 'Fecha de fin',
     visibleMonths = 1,
 }) => {
 
-    // Función para manejar el cambio de fechas
-    const handleOnChange = (value) => {
-        const newValue = {
-            start: value.start ? value.start.toDate().toISOString().split('T')[0] : '',
-            end: value.end ? value.end.toDate().toISOString().split('T')[0] : '',
+    const defaultClassNames = getDefaultClassNames();
+
+    // Controla el mes actual del calendario
+    const [month, setMonth] = useState(new Date());
+    const [selectedRange, setSelectedRange] = useState({ from: undefined, to: undefined });
+    const [inputValue, setInputValue] = useState('');
+
+    useEffect(() => {
+        setSelectedRange({
+            from: value?.start ? new Date(value.start) : undefined,
+            to: value?.end ? new Date(value.end) : undefined,
+        });
+    }, [value]);
+
+    useEffect(() => {
+        setInputValue(value?.start && value?.end
+            ? `${format(new Date(value.start), "dd/MM/yyyy")} - ${format(new Date(value.end), "dd/MM/yyyy")}`
+            : "");
+    }, [value]);
+
+    // Maneja la selección de rango en el calendario
+    const handleOnRangeSelect = (range) => {
+        /* Convertir a {start,end} */
+        const formattedRange = {
+            start: range?.from ? format(range.from, "MM/dd/yyyy") : "",
+            end: range?.to ? format(range.to, "MM/dd/yyyy") : "",
         };
 
-        console.log('newValue', newValue);
-
-        onChange(newValue);
+        onChange(formattedRange);
     };
 
-    // Si las fechas están vacías, inicializarlas como null
-    const formattedDate = {
-        start: value.start ? parseDate(value.start) : null,
-        end: value.end ? parseDate(value.end) : null,
+    // Limpia las fechas seleccionadas
+    const clearDates = () => {
+        onChange({ start: "", end: "" });
     };
 
-    console.log('formattedDate', formattedDate);
 
     return (
-        <div className="grid grid-cols-2 gap-y-6 gap-x-3">
+        <div className="grid grid-cols-2 gap-y-6 gap-x-3 py-2">
             <div className="col-span-2">
                 <div className="flex w-full flex-col text-start">
                     <label
@@ -47,46 +63,58 @@ const DateRangeFilter = ({
                     >
                         {label}
                     </label>
-
-                    <DateRangePicker
-                        showMonthAndYearPickers
-                        selectorIcon={<CalendarDaysIcon />}
-                        visibleMonths={visibleMonths}
-
-                        value={formattedDate}
-                        onChange={handleOnChange}
-                        className="mb-4 dark:text-white"
-                        classNames={{
-                            innerWrapper: "bg-transparent dark:text-white",
-                            inputWrapper: [
-                                "border text-sm rounded-xl h-5 block w-full flex items-center bg-neutral-50 border-neutral-300 text-neutral-900 placeholder-neutral-500 focus:ring-sky-500 focus:border-sky-500 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500",
-                            ],
-                            selectorIcon: "h-5 w-5 dark:group-hover:text-white dark:text-neutral-400 ", /* dark:group-hover:text-sky-500 */
-                            selectorButton: " dark:hover:bg-transparent rounded-xl",
-
-                        }}
-                        calendarProps={{
-                            classNames: {
-                                base: "text-sm rounded-xl block w-full p-2.5 bg-neutral-50 text-neutral-900 placeholder-neutral-500 focus:ring-sky-500 focus:border-sky-500 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500",
-                                headerWrapper: "pt-4 bg-transparent dark:text-white",
-                                prevButton: "rounded-small ",
-                                nextButton: "rounded-small",
-                                gridHeader: "bg-transparent shadow-none ",
-                                cellButton: [
-                                    "data-[today=true]:dark:text-sky-500 data-[selected=true]:dark:bg-transparent rounded-small data-[selected=true]:dark:text-white",
-                                    "data-[range-start=true]:before:rounded-l-small",
-                                    "data-[selection-start=true]:before:rounded-l-small",
-                                    "data-[range-end=true]:before:rounded-r-small",
-                                    "data-[selection-end=true]:before:rounded-r-small",
-                                    "data-[selected=true]:data-[selection-start=true]:data-[range-selection=true]:rounded-small ",
-                                    "data-[selected=true]:data-[selection-start=true]:data-[range-selection=true]:dark:bg-sky-500",
-                                    "data-[selected=true]:data-[selection-end=true]:data-[range-selection=true]:rounded-small",
-                                    "data-[selected=true]:data-[selection-end=true]:data-[range-selection=true]:dark:bg-sky-500",
-                                    'data-[range-selection=true]:before:dark:bg-sky-900/50',
-                                ],
-                            },
-                        }}
-                    />
+                    <Popover className="w-full">
+                        <PopoverButton className="w-full">
+                            <div className="flex justify-between gap-2 w-full p-2.5 bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500 ">
+                                <input
+                                    className="bg-transparent"
+                                    id="date-input"
+                                    type="text"
+                                    value={inputValue}
+                                    placeholder="dd/mm/aaaa - dd/mm/aaaa"
+                                    readOnly
+                                />
+                                <div className="cursor-pointer">
+                                    <CalendarDateRangeIcon className="h-5 w-5 text-gray-400 dark:text-gray-400" aria-hidden="true" />
+                                </div>
+                            </div>
+                        </PopoverButton>
+                        <PopoverPanel anchor="bottom" className="flex flex-col">
+                            <div className=" text-xs z-50 rounded-lg shadow-lg bg-neutral-800 text-white p-3 border border-neutral-700">
+                                <DayPicker
+                                    captionLayout="dropdown"
+                                    mode="range"
+                                    month={month}
+                                    onMonthChange={setMonth}
+                                    selected={selectedRange}
+                                    onSelect={handleOnRangeSelect}
+                                    showOutsideDays
+                                    showWeekNumber
+                                    numberOfMonths={visibleMonths}
+                                    locale={es}
+                                    classNames={{
+                                        today: ` text-sky-500 font-bold`, // Día actual
+                                        root: `${defaultClassNames.root} pb-4 p-2 pt-0 bg-transparent text-gray-300`, // Contenedor principal
+                                        caption: "text-lg font-medium text-white", // Título del mes
+                                        chevron: `${defaultClassNames.chevron} dark:fill-sky-500`, // Flechas de navegación
+                                    }}
+                                />
+                                <div className="flex gap-2  justify-end text-xs">
+                                    <button
+                                        onClick={clearDates}
+                                        className=" py-1 px-3 bg-neutral-500 hover:bg-neutral-600 text-white rounded-md focus:ring-2 focus:ring-neutral-500"
+                                    >
+                                        Eliminar
+                                    </button>
+                                    <CloseButton
+                                        className=" py-1 px-3 bg-sky-500 hover:bg-sky-600 text-white rounded-md focus:ring-2 focus:ring-sky-500"
+                                    >
+                                        Aceptar
+                                    </CloseButton>
+                                </div>
+                            </div>
+                        </PopoverPanel>
+                    </Popover>
                 </div>
             </div>
         </div>
