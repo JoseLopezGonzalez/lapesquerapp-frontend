@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Disclosure } from '@headlessui/react';
+import { Disclosure, DisclosurePanel } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import TextAreaFilter from './Types/TextAreaFilter';
 import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
@@ -21,7 +21,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
     const { search, groups } = filtersGroup;
 
     return (
-        <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4">
+        <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
             {/* Renderizar el filtro de tipo `search` si existe */}
             {search?.filters && search.filters.length > 0 && (
                 <div className="mb-4">
@@ -66,7 +66,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                 </span>
                                             </Disclosure.Button>
                                         </dt>
-                                        <Disclosure.Panel as="dd" className="mt-2 px-4 py-4">
+                                        <DisclosurePanel as="dd" className="mt-2 px-4 py-4 ">
                                             <div>
                                                 {group.filters.map((filter) => (
                                                     <div key={filter.name || filter.label} className="mb-4">
@@ -187,7 +187,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                     </div>
                                                 ))}
                                             </div>
-                                        </Disclosure.Panel>
+                                        </DisclosurePanel>
                                     </>
                                 )}
                             </Disclosure>
