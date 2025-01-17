@@ -203,12 +203,12 @@ export const configs = {
           name: "dates",
           label: "Fechas",
           filters: [
-            {
+            /* {
               name: "entryDate",
               label: "Fecha de entrada",
               type: "dateRange",
               visibleMonths: 1,
-            },
+            }, */
             {
               name: "loadDate",
               label: "Fecha de carga",
