@@ -13,12 +13,16 @@ export async function middleware(req) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Obtener los roles permitidos para la ruta actual
-  const matchingRoute = Object.keys(roleConfig).find((route) =>
+  // Obtener las rutas que coinciden con la solicitada
+  const matchingRoutes = Object.keys(roleConfig).filter((route) =>
     pathname.startsWith(route)
   );
+
+  // Elegir la ruta más específica (la más larga)
+  const matchingRoute = matchingRoutes.sort((a, b) => b.length - a.length)[0];
   const rolesAllowed = matchingRoute ? roleConfig[matchingRoute] : [];
 
+  console.log("Ruta coincidente:", matchingRoute);
   console.log("Roles Permitidos:", rolesAllowed);
 
   // Obtener los roles del usuario y asegurarse de que sean un array
@@ -43,8 +47,7 @@ export async function middleware(req) {
 
 export const config = {
   matcher: [
-    "/admin/:path*", // Rutas protegidas para administradores
-    "/production/:path*", // Rutas protegidas para producción
-    // Agregar más rutas según sea necesario
+    "/admin/:path*",
+    "/production/:path*",
   ],
 };

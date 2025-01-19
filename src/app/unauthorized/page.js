@@ -1,4 +1,5 @@
 import { NAVBAR_LOGO } from "@/configs/config";
+import Link from "next/link";
 
 const UnauthorizedPage = () => {
     return (
@@ -17,12 +18,12 @@ const UnauthorizedPage = () => {
                     <p className="mt-3 text-gray-600 dark:text-neutral-400">Oops, parece que no estaś autorizado</p>
                     <p className="text-gray-600 dark:text-neutral-400">Contacta con el amdministrador del sistema</p>
                     <div className="mt-5 flex flex-col justify-center items-center gap-2 sm:flex-row sm:gap-3">
-                        <a 
+                        <Link 
                         className="w-full sm:w-auto py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-sky-500 text-white hover:bg-sky-700 focus:outline-none focus:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none" 
                         href="/admin">
                             <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                             Volver al inicio
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>

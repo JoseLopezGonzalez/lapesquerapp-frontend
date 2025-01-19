@@ -2,48 +2,45 @@
 
 import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
-import {
-    HomeIcon,
-    TicketIcon,
-    EllipsisHorizontalCircleIcon,
-    TruckIcon,
-    CheckBadgeIcon,
-} from '@heroicons/react/24/outline';
-import { TbTruckLoading, TbFishHook } from 'react-icons/tb';
-import { BsDiagram3 } from 'react-icons/bs';
-import { GrBucket } from 'react-icons/gr';
-import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
+import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import toast from 'react-hot-toast';
 import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
-import { navigation } from '@/data/Navbar/navgation';
-import { usePathname } from 'next/navigation';
-import { logout } from '@/services/auth/auth';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/router';
-import { signOut } from 'next-auth/react';
-
-
-/* Cambiar en un futuro las img por Image de next */
-/* Cambiar ubicación Logo + convertir en editables datos de empresa en general */
-
+import { navigationConfig } from '@/configs/navgationConfig';
 
 export default function Navbar() {
     const currentPath = usePathname();
+    const { data: session } = useSession();
+    const userRoles = session?.user?.role || []; // Roles del usuario actual
+    const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
 
     const handleLogout = async () => {
         try {
-          // Invalidar sesión en NextAuth
-          await signOut({ redirect: false });
-      
-          // Redirigir al usuario a la página de inicio de sesión
-          window.location.href = "/login";
-      
-          toast.success("Sesión cerrada correctamente", darkToastTheme);
+            await signOut({ redirect: false });
+            window.location.href = '/login';
+            toast.success('Sesión cerrada correctamente');
         } catch (err) {
-          toast.error(err.message || "Error al cerrar sesión", darkToastTheme);
+            toast.error(err.message || 'Error al cerrar sesión');
         }
-      };
+    };
 
+    // Filtrar elementos del menú basados en roles
+    const filterNavigation = (items) =>
+        items
+            .filter((item) =>
+                item.allowedRoles?.some((role) => roles.includes(role))
+            )
+            .map((item) => ({
+                ...item,
+                children: item.children
+                    ? item.children.filter((child) =>
+                          child.allowedRoles?.some((role) => roles.includes(role))
+                      )
+                    : null,
+            }));
+
+    const filteredNavigation = filterNavigation(navigationConfig);
 
     return (
         <>
@@ -57,7 +54,7 @@ export default function Navbar() {
                         Navegación
                     </div>
                     <nav className="flex-1 space-y-1 px-5" aria-label="Sidebar">
-                        {navigation.map((item) =>
+                        {filteredNavigation.map((item) =>
                             !item.children ? (
                                 <div key={item.name}>
                                     <Link
@@ -145,7 +142,7 @@ export default function Navbar() {
                 </div>
             </div>
             <div className="flex flex-shrink-0 p-4">
-                <Link href="/login" className="group block w-full flex-shrink-0">
+                <div className="group block w-full flex-shrink-0">
                     <div className="flex items-center">
                         <div>
                             <img
@@ -157,19 +154,16 @@ export default function Navbar() {
                         <div className="ml-3">
                             <p className="text-sm font-medium text-neutral dark:text-white inline-flex items-center justify-center">
                                 Administración{' '}
-                                <CheckBadgeIcon
-                                    className="ml-1 h-5 w-5 text-sky-600 dark:text-white"
-                                    aria-hidden="true"
-                                />
                             </p>
-                            <p 
-                            onClick={handleLogout}
-                            className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white">
+                            <p
+                                onClick={handleLogout}
+                                className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white"
+                            >
                                 Perfil
                             </p>
                         </div>
                     </div>
-                </Link>
+                </div>
             </div>
         </>
     );

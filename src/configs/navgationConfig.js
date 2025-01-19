@@ -4,23 +4,29 @@ import { BsDiagram3 } from 'react-icons/bs';
 import { GrBucket } from 'react-icons/gr';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 
-export const navigation = [
+export const navigationConfig = [
     {
         name: 'Inicio',
         icon: HomeIcon,
         href: '/home',
+        allowedRoles: ["admin", "manager", "superuser"],
     },
     {
         name: 'Recepciones',
         icon: TbFishHook,
+        allowedRoles: ["admin", "manager", "superuser"],
         children: [
-            { name: 'Materia Prima', href: '/admin/raw-material-receptions' },
+            {
+                name: 'Materia Prima',
+                href: '/admin/raw-material-receptions',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
             /*  { name: 'Ingredientes y Aditivos', href: '#' },
              { name: 'Envases y embalajes', href: '#' }, */
         ],
     },
     /* Userts */
-   
+
     /* {
         name: 'Cebo',
         icon: GrBucket,
@@ -45,9 +51,14 @@ export const navigation = [
     {
         name: 'Pedidos',
         icon: TruckIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
         children: [
             /* { name: 'Pedidos Activos', href: '/orders_manager' }, */
-            { name: 'Todos los Pedidos', href: '/admin/orders' },
+            {
+                name: 'Todos los Pedidos',
+                href: '/admin/orders',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
             /* { name: 'Añadir Pedido', href: '/insert_order' }, */
         ],
     },
@@ -72,8 +83,13 @@ export const navigation = [
     {
         name: 'Usuarios',
         icon: UserGroupIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
         children: [
-            { name: 'Todos los Usuarios', href: '/admin/users' },
+            {
+                name: 'Todos los Usuarios',
+                href: '/admin/users',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
         ],
     },
 ];
