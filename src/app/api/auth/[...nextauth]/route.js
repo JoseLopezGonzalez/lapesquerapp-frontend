@@ -20,6 +20,7 @@ const handler = NextAuth({
           const data = await res.json();
 
           if (res.ok && data.access_token) {
+            // El usuario debe tener un campo `role` en la respuesta de la API
             return { ...data.user, accessToken: data.access_token };
           }
 
@@ -40,19 +41,19 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
-        token.role = user.role;
+        token.role = user.role; // Almacena el rol del usuario
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = token;
+      session.user = token; // Pasa los datos del token a la sesión
       return session;
     },
   },
   pages: {
-    signIn: '/login',
+    signIn: '/login', // Página personalizada de inicio de sesión
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET, // Asegúrate de que esta variable esté configurada en tu entorno
 });
 
 export { handler as GET, handler as POST };
