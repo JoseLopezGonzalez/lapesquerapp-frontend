@@ -35,7 +35,7 @@ export const configs = {
               placeholder: "Buscar por notas",
             },
             {
-              name: "date",
+              name: "dates",
               label: "Fecha",
               type: "dateRange",
             },
@@ -51,27 +51,6 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por IDs",
             },
-            {
-              name: "status",
-              label: "Estado",
-              type: "pairSelectBoxes",
-              options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "completed", label: "Completado", value: false },
-              ],
-            },
-            {
-              name: "netWeight",
-              label: "Peso Neto",
-              type: "number",
-              placeholder: "Buscar por peso neto",
-            },
-            {
-              name: "dateTest",
-              label: "Fecha",
-              type: "date",
-              placeholder: "Buscar por fecha",
-            },
           ],
         },
         {
@@ -83,7 +62,7 @@ export const configs = {
               label: "Proveedor",
               type: "autocomplete",
               placeholder: "Buscar por proveedor",
-              endpoint: "suppliers",
+              endpoint: "suppliers/options",
             },
           ],
         },
@@ -96,7 +75,21 @@ export const configs = {
               label: "Especie",
               type: "autocomplete",
               placeholder: "Buscar por especie",
-              endpoint: "species",
+              endpoint: "species/options",
+            },
+          ],
+        },
+        /* Products */
+        {
+          name: "products",
+          label: "Productos",
+          filters: [
+            {
+              name: "products",
+              label: "Productos",
+              type: "autocomplete",
+              placeholder: "Buscar por producto",
+              endpoint: "products/options",
             },
           ],
         },
@@ -227,21 +220,21 @@ export const configs = {
               label: "Clientes",
               type: "autocomplete",
               placeholder: "Buscar por cliente",
-              endpoint: "customers",
+              endpoint: "customers/options",
             },
           ],
         },
         /* salesperson */
         {
-          name: "salesperson",
-          label: "Vendedor",
+          name: "salespeple",
+          label: "Comerciales",
           filters: [
             {
-              name: "salesperson",
-              label: "Vendedor",
+              name: "salespeople",
+              label: "Comerciales",
               type: "autocomplete",
-              placeholder: "Buscar por vendedor",
-              endpoint: "salespersons",
+              placeholder: "Buscar por comercial",
+              endpoint: "salespeople/options",
             },
           ],
         },
@@ -255,7 +248,7 @@ export const configs = {
               label: "Transporte",
               type: "autocomplete",
               placeholder: "Buscar por transporte",
-              endpoint: "transports",
+              endpoint: "transports/options",
             },
           ],
         },
@@ -269,7 +262,7 @@ export const configs = {
               label: "Incoterm",
               type: "autocomplete",
               placeholder: "Buscar por incoterm",
-              endpoint: "incoterms",
+              endpoint: "incoterms/options",
             },
           ],
         },
@@ -323,7 +316,7 @@ export const configs = {
             type: "search",
             placeholder: "Buscar por nombre",
           },
-          
+
         ],
       },
       groups: [
@@ -367,8 +360,58 @@ export const configs = {
         { name: "email", label: "Correo electrónico", type: "text", path: "email" },
         { name: "roles", label: "Rol", type: "text", path: "roles" },
 
-       
+
         { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* Transports */
+  transports: {
+    title: "Transportes",
+    description: "Gestiona, edita y consulta transportes.",
+    emptyState: {
+      title: "No existen transportes según los filtros",
+      description: "Ajusta los filtros o crea un nuevo transporte.",
+    },
+    endpoint: "transports",
+    viewRoute: "/admin/transports/:id",
+    deleteEndpoint: "/transports/:id",
+    createPath: "/admin/transports/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* Address */
+        { name: "address", label: "Dirección", type: "text", path: "address" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },

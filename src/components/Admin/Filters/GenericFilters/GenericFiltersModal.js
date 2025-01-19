@@ -45,7 +45,7 @@ export const GenericFiltersModal = ({
                 <button
                     onClick={applyFilters}
                     type="button"
-                    className="py-1.5 px-3 inline-flex items-center gap-1 text-sm rounded-lg bg-sky-600 text-white hover:bg-sky-700"
+                    className="font-bold py-1.5 px-3 inline-flex items-center gap-1 text-sm rounded-lg border border-neutral-800 bg-sky-500 text-white hover:bg-sky-600"
                 >
                     <CheckIcon className="h-4 w-4" />
                     Aplicar

@@ -3,9 +3,10 @@
 import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector';
 import { API_URL_V2 } from '@/configs/config';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { getSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete , value }) => {
+export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete, value }) => {
 
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -16,9 +17,22 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
         const fetchOptions = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL_V2}${endpoint}`);
+                const session = await getSession(); // Obtener sesión actual
+
+                console.log('url', `${API_URL_V2}${endpoint}`);
+
+                const response = await fetch(`${API_URL_V2}${endpoint}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                        },
+                    }
+                );
                 const data = await response.json();
-                setOptions(data.data.map((item) => ({ id: item.id, name: item.name })));
+                setOptions(data.map((item) => ({ id: item.id, name: item.name })));
             } catch (error) {
                 console.error("Error fetching options:", error);
             } finally {

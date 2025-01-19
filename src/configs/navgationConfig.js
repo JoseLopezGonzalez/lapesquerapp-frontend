@@ -81,6 +81,12 @@ export const navigationConfig = [
         ],
     }, */
     {
+        name: 'Transportes',
+        icon: TruckIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/transports',
+    },
+    {
         name: 'Usuarios',
         icon: UserGroupIcon,
         allowedRoles: ["admin", "manager", "superuser"],
