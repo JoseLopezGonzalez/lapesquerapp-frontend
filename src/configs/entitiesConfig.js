@@ -417,6 +417,155 @@ export const configs = {
     },
   },
 
+  /* Products */
+  products:{
+    title: "Productos",
+    description: "Gestiona, edita y consulta productos.",
+    emptyState: {
+      title: "No existen productos según los filtros",
+      description: "Ajusta los filtros o crea un nuevo producto.",
+    },
+    endpoint: "products",
+    viewRoute: "/admin/products/:id",
+    deleteEndpoint: "/products/:id",
+    createPath: "/admin/products/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            /* NAme */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+        /* Species */
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Buscar por especie",
+              endpoint: "species/options",
+            },
+          ],
+        },
+        /* Capture Zones */
+        {
+          name: "captureZones",
+          label: "Zonas de captura",
+          filters: [
+            {
+              name: "captureZones",
+              label: "Zonas de captura",
+              type: "autocomplete",
+              placeholder: "Buscar por zona de captura",
+              endpoint: "capture-zones/options",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* species */
+        { name: "species", label: "Especie", type: "text", path: "species.name" },
+        /* captureZone */
+        { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name" },
+        /* articleGtin */
+        { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin" },
+        /* boxGtin */
+        { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin" },
+        /* palletGtin */
+        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+  /* Stores */
+  stores: {
+    title: "Almacenes",
+    description: "Gestiona, edita y consulta almacenes.",
+    emptyState: {
+      title: "No existen almacenes según los filtros",
+      description: "Ajusta los filtros o crea un nuevo almacén.",
+    },
+    endpoint: "stores",
+    viewRoute: "/admin/stores/:id",
+    deleteEndpoint: "/stores/:id",
+    createPath: "/admin/stores/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* temperatur */
+        { name: "temperature", label: "Temperatura", type: "text", path: "temperature" },
+        /* totalNetWeight */
+        { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight" },
+        /* Capacity */
+        { name: "capacity", label: "Capacidad", type: "weight", path: "capacity" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
 };
 
 

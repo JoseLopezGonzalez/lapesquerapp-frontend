@@ -153,6 +153,8 @@ const getEntityReport = async (url, fileName) => {
 - Ojo con Eliminar mas de un id 
 - Modal Eliminar 
 - Skeleton
+- Poner pagina uno cuando se aplica un filtro.
+- cuando click en navegacion navbar se cierre le navbar en mobile
 */
 
 

@@ -1,6 +1,6 @@
 import { HomeIcon, TicketIcon, EllipsisHorizontalCircleIcon, TruckIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import { TbTruckLoading, TbFishHook } from 'react-icons/tb';
-import { BsDiagram3 } from 'react-icons/bs';
+import { TbTruckLoading, TbFishHook, TbBoxPadding } from 'react-icons/tb';
+import { BsBox, BsDiagram3 } from 'react-icons/bs';
 import { GrBucket } from 'react-icons/gr';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 
@@ -85,6 +85,18 @@ export const navigationConfig = [
         icon: TruckIcon,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/transports',
+    },
+    {
+        name: 'Productos',
+        icon: TbBoxPadding,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/products',
+    },
+    {
+        name: 'Almacenes',
+        icon: BsBox,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/stores',
     },
     {
         name: 'Usuarios',
