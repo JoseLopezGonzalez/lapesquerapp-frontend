@@ -190,6 +190,19 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </span>
                                         )}
 
+                                        {/* list type with bucle */}
+                                        {header.type === 'list' && (
+                                            <ul className="text-white text-nowrap">
+                                                {row[header.name].map((item, index) => (
+                                                    <li key={index}>
+                                                        {item}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+
+                                        {/* boolean type */}
+
                                         {/* Number type */}
 
                                         {/* Date type */}

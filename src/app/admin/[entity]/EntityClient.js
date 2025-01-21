@@ -177,6 +177,7 @@ export default function EntityClient({ config }) {
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
+            
             const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
     
             try {

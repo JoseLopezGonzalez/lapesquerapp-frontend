@@ -418,7 +418,7 @@ export const configs = {
   },
 
   /* Products */
-  products:{
+  products: {
     title: "Productos",
     description: "Gestiona, edita y consulta productos.",
     emptyState: {
@@ -565,7 +565,248 @@ export const configs = {
       ],
     },
   },
+  /* boxes */
+  boxes: {
+    title: "Cajas",
+    description: "Gestiona, edita y consulta cajas.",
+    emptyState: {
+      title: "No existen cajas según los filtros",
+      description: "Ajusta los filtros o crea una nueva caja.",
+    },
+    endpoint: "boxes",
+    viewRoute: "/admin/boxes/:id",
+    deleteEndpoint: "/boxes/:id",
+    createPath: "/admin/boxes/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
 
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "article.name" },
+        /* lot */
+        { name: "lot", label: "Lote", type: "text", path: "lot" },
+        /* gs1128 */
+        { name: "gs1128", label: "GS1128", type: "text", path: "gs1128" },
+        /* netWeight */
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* Pallets */
+  pallets: {
+    title: "Palets",
+    description: "Gestiona, edita y consulta palets.",
+    emptyState: {
+      title: "No existen palets según los filtros",
+      description: "Ajusta los filtros o crea un nuevo palet.",
+    },
+    endpoint: "pallets",
+    viewRoute: "/admin/pallets/:id",
+    deleteEndpoint: "/pallets/:id",
+    createPath: "/admin/pallets/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        /* articlesNames */
+        { name: "articlesNames", label: "Artículos", type: "list", path: "articlesNames" },
+        /* observations */
+        { name: "observations", label: "Observaciones", type: "text", path: "observations" },
+        /* store */
+        { name: "store", label: "Almacén", type: "text", path: "store" },
+        /* orderId*/
+        { name: "orderId", label: "Pedido", type: "text", path: "orderId" },
+        /* { name: "name", label: "Nombre", type: "text", path: "article.name" }, */
+        /* state type badge options: stored, shipped*/
+        {
+          name: "state", label: "Estado", type: "badge",
+          options:
+          {
+            almacenado: { label: "Almacenado", color: "warning", outline: true },
+            enviado: { label: "Enviado", color: "success", outline: true },
+            default: { label: "Desconocido", color: "secondary", outline: true },
+          }
+        },
+
+
+        /* netWeight */
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* customers */
+  customers: {
+    title: "Clientes",
+    description: "Gestiona, edita y consulta clientes.",
+    emptyState: {
+      title: "No existen clientes según los filtros",
+      description: "Ajusta los filtros o crea un nuevo cliente.",
+    },
+    endpoint: "customers",
+    viewRoute: "/admin/customers/:id",
+    deleteEndpoint: "/customers/:id",
+    createPath: "/admin/customers/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* vat_number */
+        { name: "vatNumber", label: "NIF", type: "text", path: "vatNumber" },
+        /* paymenTerm */
+        { name: "paymentTerm", label: "Plazo de pago", type: "text", path: "paymentTerm.name" },
+        /* salesperson */
+        { name: "salesperson", label: "Comercial", type: "text", path: "salesperson.name" },
+        /* Country */
+        { name: "country", label: "País", type: "text", path: "country.name" },
+
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* suppliers */
+  suppliers: {
+    title: "Proveedores",
+    description: "Gestiona, edita y consulta proveedores.",
+    emptyState: {
+      title: "No existen proveedores según los filtros",
+      description: "Ajusta los filtros o crea un nuevo proveedor.",
+    },
+    endpoint: "suppliers",
+    viewRoute: "/admin/suppliers/:id",
+    deleteEndpoint: "/suppliers/:id",
+    createPath: "/admin/suppliers/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* 'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'contact_person' => $this->contact_person,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'address' => $this->address,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at, */
+        /* email*/
+        { name: "email", label: "Correo electrónico", type: "text", path: "email" },
+
+
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
 };
 
 

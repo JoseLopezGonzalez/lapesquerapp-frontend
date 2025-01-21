@@ -3,6 +3,10 @@ import { TbTruckLoading, TbFishHook, TbBoxPadding } from 'react-icons/tb';
 import { BsBox, BsDiagram3 } from 'react-icons/bs';
 import { GrBucket } from 'react-icons/gr';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
+import { RiShieldUserLine } from "react-icons/ri";
+import { RiShieldUserFill } from "react-icons/ri";
+
+
 
 export const navigationConfig = [
     {
@@ -96,7 +100,39 @@ export const navigationConfig = [
         name: 'Almacenes',
         icon: BsBox,
         allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/stores',
+        children: [
+            {
+                name: 'Cajas',
+                href: '/admin/boxes',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
+                name: 'Palets',
+                href: '/admin/pallets',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            /* Almacenes */
+            {
+                name: 'Todos los Almacenes',
+                href: '/admin/stores',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
+    },
+    /* customers */
+    {
+        name: 'Clientes',
+        icon: RiShieldUserLine,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/customers',
+    },
+
+    /* Suppliers */
+    {
+        name: 'Proveedores',
+        icon: RiShieldUserFill,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/suppliers',
     },
     {
         name: 'Usuarios',
