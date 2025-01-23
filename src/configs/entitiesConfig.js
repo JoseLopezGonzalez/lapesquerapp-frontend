@@ -600,6 +600,56 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por ID",
             },
+            {
+              name: "lots",
+              label: "Lotes",
+              type: "textAccumulator",
+              placeholder: "Buscar por lotes",
+            },
+            /* gs1128 */
+            {
+              name: "gs1128",
+              label: "GS1128",
+              type: "textAccumulator",
+              placeholder: "Buscar por GS1128",
+            },
+
+            /* createdAt */
+            {
+              name: "createdAt",
+              label: "Fecha de lectura",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+
+          ],
+        },
+        /* Products */
+        {
+          name: "products",
+          label: "Productos",
+          filters: [
+            {
+              name: "products",
+              label: "Productos",
+              type: "autocomplete",
+              placeholder: "Buscar por producto",
+              endpoint: "products/options",
+            },
+          ],
+        },
+
+        /* Pallets */
+        {
+          name: "pallets",
+          label: "Palets",
+          filters: [
+            {
+              name: "pallets",
+              label: "Palets",
+              type: "textAccumulator",
+              placeholder: "Buscar por palet",
+            },
           ],
         },
 
@@ -608,13 +658,11 @@ export const configs = {
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "article.name" },
-        /* lot */
+        { name: "name", label: "Nombre", type: "text", path: "product.name" },
         { name: "lot", label: "Lote", type: "text", path: "lot" },
-        /* gs1128 */
         { name: "gs1128", label: "GS1128", type: "text", path: "gs1128" },
-        /* netWeight */
         { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        { name: "palletId", label: "Palet", type: "text", path: "palletId" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -1008,6 +1056,8 @@ export const configs = {
       ],
     },
   },
+
+
 
 };
 

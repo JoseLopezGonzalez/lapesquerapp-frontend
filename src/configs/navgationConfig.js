@@ -36,6 +36,7 @@ export const navigationConfig = [
             },
         ],
     },
+
     {
         name: 'Recepciones',
         icon: TbFishHook,
