@@ -1,11 +1,10 @@
-import { HomeIcon, TicketIcon, EllipsisHorizontalCircleIcon, TruckIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import { TbTruckLoading, TbFishHook, TbBoxPadding } from 'react-icons/tb';
-import { BsBox, BsDiagram3 } from 'react-icons/bs';
-import { GrBucket } from 'react-icons/gr';
-import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
+import { HomeIcon, TruckIcon, UserGroupIcon, ArchiveBoxIcon, PencilSquareIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
+import { TbFishHook } from 'react-icons/tb';
 import { RiShieldUserLine } from "react-icons/ri";
 import { RiShieldUserFill } from "react-icons/ri";
-
+import { RiShipLine } from "react-icons/ri";
+import { RiMapPinUserLine } from "react-icons/ri";
+import { IoReceiptOutline } from "react-icons/io5";
 
 
 export const navigationConfig = [
@@ -16,89 +15,8 @@ export const navigationConfig = [
         allowedRoles: ["admin", "manager", "superuser"],
     },
     {
-        name: 'Recepciones',
-        icon: TbFishHook,
-        allowedRoles: ["admin", "manager", "superuser"],
-        children: [
-            {
-                name: 'Materia Prima',
-                href: '/admin/raw-material-receptions',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-            /*  { name: 'Ingredientes y Aditivos', href: '#' },
-             { name: 'Envases y embalajes', href: '#' }, */
-        ],
-    },
-    /* Userts */
-
-    /* {
-        name: 'Cebo',
-        icon: GrBucket,
-        href: '/cebo_dispatches',
-    }, */
-    /* {
-        name: 'Producciones',
-        icon: BsDiagram3,
-        children: [
-            { name: 'Todas las producciones', href: '/productions' },
-            { name: 'Añadir Producción', href: '/insert_production' },
-        ],
-    }, */
-    /* {
         name: 'Almacenes',
-        icon: TbTruckLoading,
-        children: [
-            { name: 'Gestor de Almacenes', href: '/stores_manager' },
-            { name: 'Todos los Palets', href: '/pallets' },
-        ],
-    }, */
-    {
-        name: 'Pedidos',
-        icon: TruckIcon,
-        allowedRoles: ["admin", "manager", "superuser"],
-        children: [
-            /* { name: 'Pedidos Activos', href: '/orders_manager' }, */
-            {
-                name: 'Todos los Pedidos',
-                href: '/admin/orders',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-            /* { name: 'Añadir Pedido', href: '/insert_order' }, */
-        ],
-    },
-    /*  {
-         name: 'Etiquetas',
-         icon: TicketIcon,
-         href: '/labels_manager',
-     }, */
-    /* {
-        name: 'Conversor A3ERP',
-        icon: PiMicrosoftExcelLogoFill,
-        href: '/isla_cristina_reception_converter',
-    }, */
-    /* {
-        name: 'Otros',
-        icon: EllipsisHorizontalCircleIcon,
-        children: [
-            { name: 'Especies', href: '#' },
-            { name: 'Zonas de capturas', href: '#' },
-        ],
-    }, */
-    {
-        name: 'Transportes',
-        icon: TruckIcon,
-        allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/transports',
-    },
-    {
-        name: 'Productos',
-        icon: TbBoxPadding,
-        allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/products',
-    },
-    {
-        name: 'Almacenes',
-        icon: BsBox,
+        icon: ArchiveBoxIcon,
         allowedRoles: ["admin", "manager", "superuser"],
         children: [
             {
@@ -111,7 +29,6 @@ export const navigationConfig = [
                 href: '/admin/pallets',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            /* Almacenes */
             {
                 name: 'Todos los Almacenes',
                 href: '/admin/stores',
@@ -119,20 +36,88 @@ export const navigationConfig = [
             },
         ],
     },
-    /* customers */
+    {
+        name: 'Recepciones',
+        icon: TbFishHook,
+        allowedRoles: ["admin", "manager", "superuser"],
+        children: [
+            {
+                name: 'Materia Prima',
+                href: '/admin/raw-material-receptions',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
+    },
+    {
+        name: 'Pedidos',
+        icon: PencilSquareIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
+        children: [
+            {
+                name: 'Todos los Pedidos',
+                href: '/admin/orders',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
+    },
+    {
+        name: 'Productos',
+        icon: SquaresPlusIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/products',
+        children: [
+            {
+                name: 'Todos los Productos',
+                href: '/admin/products',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
+                name: 'Zonas de Captura',
+                href: '/admin/capture-zones',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
+                name: 'Especies',
+                href: '/admin/species',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
+    },
+    {
+        name: 'Transportes',
+        icon: TruckIcon,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/transports',
+    },
+    {
+        name: 'Incoterms',
+        icon: RiShipLine,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/incoterms',
+    },
+    {
+        name: 'Comerciales',
+        icon: RiMapPinUserLine,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/salespeople',
+    },
     {
         name: 'Clientes',
         icon: RiShieldUserLine,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/customers',
     },
-
-    /* Suppliers */
     {
         name: 'Proveedores',
         icon: RiShieldUserFill,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/suppliers',
+    },
+    {
+        name: 'Etiquetas',
+        icon: IoReceiptOutline,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/labels',
     },
     {
         name: 'Usuarios',

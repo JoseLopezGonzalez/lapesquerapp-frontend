@@ -807,6 +807,208 @@ export const configs = {
       ],
     },
   },
+  /* CaptureZones */
+  'capture-zones': {
+    title: "Zonas de captura",
+    description: "Gestiona, edita y consulta zonas de captura.",
+    emptyState: {
+      title: "No existen zonas de captura según los filtros",
+      description: "Ajusta los filtros o crea una nueva zona de captura.",
+    },
+    endpoint: "capture-zones",
+    viewRoute: "/admin/capture-zones/:id",
+    deleteEndpoint: "/capture-zones/:id",
+    createPath: "/admin/capture-zones/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* species */
+  species: {
+    title: "Especies",
+    description: "Gestiona, edita y consulta especies.",
+    emptyState: {
+      title: "No existen especies según los filtros",
+      description: "Ajusta los filtros o crea una nueva especie.",
+    },
+    endpoint: "species",
+    viewRoute: "/admin/species/:id",
+    deleteEndpoint: "/species/:id",
+    createPath: "/admin/species/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "scientificName", label: "Nombre científico", type: "text", path: "scientificName" },
+        /* fao */
+        { name: "fao", label: "FAO", type: "text", path: "fao" },
+        /* fishingGear */
+        { name: "fishingGear", label: "Arte de pesca", type: "text", path: "fishingGear.name" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+  /* incoterms */
+  incoterms: {
+    title: "Incoterms",
+    description: "Gestiona, edita y consulta incoterms.",
+    emptyState: {
+      title: "No existen incoterms según los filtros",
+      description: "Ajusta los filtros o crea un nuevo incoterm.",
+    },
+    endpoint: "incoterms",
+    viewRoute: "/admin/incoterms/:id",
+    deleteEndpoint: "/incoterms/:id",
+    createPath: "/admin/incoterms/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "code", label: "Código", type: "text", path: "code" },
+        /* description */
+        { name: "description", label: "Descripción", type: "text", path: "description" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* salespeople */
+  salespeople: {
+    title: "Comerciales",
+    description: "Gestiona, edita y consulta comerciales.",
+    emptyState: {
+      title: "No existen comerciales según los filtros",
+      description: "Ajusta los filtros o crea un nuevo comercial.",
+    },
+    endpoint: "salespeople",
+    viewRoute: "/admin/salespeople/:id",
+    deleteEndpoint: "/salespeople/:id",
+    createPath: "/admin/salespeople/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* email */
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
 };
 
 

@@ -31,7 +31,8 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                         },
                     }
                 );
-                const data = await response.json();
+                const data =await response.json();
+                console.log('data', data);
                 setOptions(data.map((item) => ({ id: item.id, name: item.name })));
             } catch (error) {
                 console.error("Error fetching options:", error);
