@@ -52,7 +52,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen ">
-      <div id="content" class="relative max-w-3xl h-[100vh] px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-0 before:start-1/2 before:bg-[url('/squared-bg-element.png')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
+      <div id="content" class="relative max-w-3xl h-[100vh] px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-0 before:start-1/2 before:bg-[url('https://preline.co/assets/svg/examples-dark/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
         <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10 max-w-md w-full">
           <img className="h-16 w-auto" src={NAVBAR_LOGO} alt="Your Company" />
           <div class="text-center py-8 px-4 sm:px-6 lg:px-8">
@@ -63,7 +63,7 @@ export default function LoginPage() {
               <span class="bg-clip-text bg-gradient-to-tr from-sky-600 to-green-400 text-transparent">BlueApp</span>
             </h2>
           </div>
-          <div className="w-full backdrop-blur-lg  sm:px-10 px-5 py-10 rounded-xl border border-neutral-700/50 shadow-lg">
+          <div className="w-full backdrop-blur-lg  sm:px-10 px-5 py-10 rounded-xl border border-white/5 shadow-lg">
            {/*  <h2 className="text-center text-2xl font-bold text-white">Iniciar Sesión</h2>
             <p className="text-center text-sm text-neutral-400 mt-2">
               ¡Bienvenido! Introduce tus datos de acceso.
@@ -77,12 +77,12 @@ export default function LoginPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="Email"
+                  placeholder="ejemplo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
                   required
-                  className="block w-full mt-1 rounded-md border bg-white/5 border-white/50  px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                  className="block w-full mt-1 rounded-md bg-white/5 border-white/50  px-3 py-2 placeholder-neutral-700 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                 />
               </div>
               <div>
@@ -93,12 +93,12 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Contraseña"
+                  placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  className="block w-full mt-1 rounded-md border border-neutral-600 bg-transparent px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
+                  className="block w-full mt-1 rounded-md bg-white/5 border-neutral-600 bg-transparent px-3 py-2 placeholder-neutral-700 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
                 />
               </div>
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex w-full justify-center rounded-lg bg-neutral-500 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  className={`flex w-full justify-center rounded-lg bg-neutral-700 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                 >
                   {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
