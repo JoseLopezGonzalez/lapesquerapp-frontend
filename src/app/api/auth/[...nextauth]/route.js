@@ -20,7 +20,6 @@ const handler = NextAuth({
           const data = await res.json();
 
           if (res.ok && data.access_token) {
-            // El usuario debe tener un campo `role` en la respuesta de la API
             return { ...data.user, accessToken: data.access_token };
           }
 
@@ -33,27 +32,47 @@ const handler = NextAuth({
     }),
   ],
   session: {
-    strategy: 'jwt', // Usar JWT para almacenar la sesión
-    maxAge: 60 * 60 * 24 * 7, // Tiempo de vida del token en segundos (7 días)
-    updateAge: 60 * 60 * 24, // Tiempo en segundos para actualizar el token (1 día)
+    strategy: 'jwt',
+    maxAge: 60 * 60 * 24 * 7, // 7 días
+    updateAge: 60 * 60 * 24, // Actualizar token cada 1 día
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Si el usuario está presente (inicia sesión), agregar datos al token
       if (user) {
         token.accessToken = user.accessToken;
-        token.role = user.role; // Almacena el rol del usuario
+        token.role = user.role;
       }
+
+      // Validar si el token ha expirado o es inválido (simular esto con un backend en el futuro)
+      const tokenIsExpired = false; // Implementa lógica de validación aquí si es necesario
+
+      if (tokenIsExpired) {
+        console.log('Token expirado');
+        return null;
+      }
+
       return token;
     },
     async session({ session, token }) {
-      session.user = token; // Pasa los datos del token a la sesión
+      // Si no hay token (por ejemplo, expiró), cerrar sesión automáticamente
+      if (!token) {
+        return null;
+      }
+      session.user = token;
       return session;
+    },
+  },
+  events: {
+    async signOut(message) {
+      console.log('Usuario deslogueado:', message);
     },
   },
   pages: {
     signIn: '/login', // Página personalizada de inicio de sesión
+    error: '/login', // Redirigir a login en caso de error
   },
-  secret: process.env.NEXTAUTH_SECRET, // Asegúrate de que esta variable esté configurada en tu entorno
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

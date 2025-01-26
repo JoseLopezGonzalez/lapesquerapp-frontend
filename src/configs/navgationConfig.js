@@ -5,9 +5,8 @@ import { RiShieldUserFill } from "react-icons/ri";
 import { RiShipLine } from "react-icons/ri";
 import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
-import { LuFlag } from "react-icons/lu";
 import { PiFishSimpleDuotone } from "react-icons/pi";
-
+import { TbPlugConnected } from "react-icons/tb";
 
 
 
@@ -22,7 +21,7 @@ export const navigationConfig = [
         name: 'Almacenes',
         icon: ArchiveBoxIcon,
         allowedRoles: ["admin", "manager", "superuser"],
-        children: [
+        childrens: [
             {
                 name: 'Cajas',
                 href: '/admin/boxes',
@@ -40,12 +39,11 @@ export const navigationConfig = [
             },
         ],
     },
-
     {
         name: 'Recepciones',
         icon: TbFishHook,
         allowedRoles: ["admin", "manager", "superuser"],
-        children: [
+        childrens: [
             {
                 name: 'Materia Prima',
                 href: '/admin/raw-material-receptions',
@@ -53,19 +51,17 @@ export const navigationConfig = [
             },
         ],
     },
-    /* CeboDispatches */
     {
         name: 'Salidas de Cebo',
         icon: PiFishSimpleDuotone,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/cebo-dispatches',
     },
-
     {
         name: 'Pedidos',
         icon: PencilSquareIcon,
         allowedRoles: ["admin", "manager", "superuser"],
-        children: [
+        childrens: [
             {
                 name: 'Todos los Pedidos',
                 href: '/admin/orders',
@@ -78,7 +74,7 @@ export const navigationConfig = [
         icon: SquaresPlusIcon,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/products',
-        children: [
+        childrens: [
             {
                 name: 'Todos los Productos',
                 href: '/admin/products',
@@ -94,7 +90,6 @@ export const navigationConfig = [
                 href: '/admin/species',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            /* fishing-gears */
             {
                 name: 'Artes de Pesca',
                 href: '/admin/fishing-gears',
@@ -124,20 +119,17 @@ export const navigationConfig = [
         name: 'Clientes',
         icon: RiShieldUserLine,
         allowedRoles: ["admin", "manager", "superuser"],
-        children: [
-            /* paymentTerms */
+        childrens: [
             {
                 name: 'Formas de Pago',
                 href: '/admin/payment-terms',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            /* Countries */
             {
                 name: 'Paises',
                 href: '/admin/countries',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            /* all customers */
             {
                 name: 'Todos los Clientes',
                 href: '/admin/customers',
@@ -161,12 +153,19 @@ export const navigationConfig = [
         name: 'Usuarios',
         icon: UserGroupIcon,
         allowedRoles: ["admin", "manager", "superuser"],
-        children: [
+        childrens: [
             {
                 name: 'Todos los Usuarios',
                 href: '/admin/users',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
         ],
+    },
+    /* sesions */
+    {
+        name: 'Sesiones',
+        icon: TbPlugConnected,
+        href: '/admin/sessions',
+        allowedRoles: ["admin", "manager", "superuser"],
     },
 ];

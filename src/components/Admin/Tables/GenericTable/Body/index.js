@@ -210,10 +210,8 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         {/* Date type */}
                                         {header.type === 'date' && (
                                             <span className="text-white">
-                                                {formatDate(row[header.name])}
-                                                {/* {new Date(row[header.name]).toLocaleDateString()} 
-                                                    No muestra 0 a la izquierda en el mes y día
-                                                */}
+                                                {/* si nes N/A devolver - */}
+                                                {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}                                              
                                             </span>
                                         )}
                                     </td>

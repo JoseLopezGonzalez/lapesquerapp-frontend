@@ -1,19 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { Disclosure } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
+import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
 
 export default function Navbar() {
     const currentPath = usePathname();
     const { data: session } = useSession();
     const userRoles = session?.user?.role || []; // Roles del usuario actual
     const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
+
+    const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
 
     const handleLogout = async () => {
         try {
@@ -33,8 +36,8 @@ export default function Navbar() {
             )
             .map((item) => ({
                 ...item,
-                children: item.children
-                    ? item.children.filter((child) =>
+                childrens: item.childrens
+                    ? item.childrens.filter((child) =>
                         child.allowedRoles?.some((role) => roles.includes(role))
                     )
                     : null,
@@ -54,7 +57,7 @@ export default function Navbar() {
                     </div>
                     <nav className="h-full flex-1 space-y-1 px-5 overflow-y-auto " >
                         {filteredNavigation.map((item) =>
-                            !item.children ? (
+                            !item.childrens ? (
                                 <div key={item.name}>
                                     <Link
                                         href={item.href}
@@ -81,9 +84,9 @@ export default function Navbar() {
                                 <Disclosure as="div" key={item.name} className="space-y-1">
                                     {({ open }) => (
                                         <>
-                                            <Disclosure.Button
+                                            <DisclosureButton
                                                 className={classNames(
-                                                    item.children.some(
+                                                    item.childrens.some(
                                                         (child) => child.href === currentPath
                                                     )
                                                         ? 'text-sky-600 dark:text-white'
@@ -93,7 +96,7 @@ export default function Navbar() {
                                             >
                                                 <item.icon
                                                     className={classNames(
-                                                        item.children.some(
+                                                        item.childrens.some(
                                                             (child) => child.href === currentPath
                                                         )
                                                             ? 'text-white group-hover:text-white'
@@ -115,9 +118,9 @@ export default function Navbar() {
                                                 >
                                                     <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                                                 </svg>
-                                            </Disclosure.Button>
-                                            <Disclosure.Panel className="space-y-1">
-                                                {item.children.map((subItem) => (
+                                            </DisclosureButton>
+                                            <DisclosurePanel className="space-y-1">
+                                                {item.childrens.map((subItem) => (
                                                     <Link
                                                         key={subItem.name}
                                                         href={subItem.href}
@@ -131,7 +134,7 @@ export default function Navbar() {
                                                         {subItem.name}
                                                     </Link>
                                                 ))}
-                                            </Disclosure.Panel>
+                                            </DisclosurePanel>
                                         </>
                                     )}
                                 </Disclosure>
@@ -151,14 +154,15 @@ export default function Navbar() {
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm font-medium text-neutral dark:text-white inline-flex items-center justify-center">
-                                    Administración{' '}
+                                    {username}{' '}
                                 </p>
-                                <p
+                                <button
                                     onClick={handleLogout}
-                                    className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white"
+                                    className="flex text-xs font-medium text-neutral-400  hover:text-red-500"
                                 >
-                                    Perfil
-                                </p>
+                                    Cerrar sesión
+                                    <ArrowRightStartOnRectangleIcon className="h-4 w-4 ml-1" />
+                                </button>
                             </div>
                         </div>
                     </div>

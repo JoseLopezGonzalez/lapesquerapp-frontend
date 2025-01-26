@@ -1630,6 +1630,71 @@ export const configs = {
     },
   },
 
+  /* Sessions */
+  sessions: {
+    title: "Sesiones",
+    description: "Gestiona, edita y consulta sesiones.",
+    emptyState: {
+      title: "No existen sesiones según los filtros",
+      description: "Ajusta los filtros o crea una nueva sesión.",
+    },
+    endpoint: "sessions",
+    viewRoute: "/admin/sessions/:id",
+    deleteEndpoint: "sessions/:id",
+    createPath: "/admin/sessions/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            /* ids */
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        /* user_name */
+        { name: "user_name", label: "Usuario", type: "text", path: "user_name" },
+        /* created_at */
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" },
+        /* last_used_at */
+        { name: "last_used_at", label: "Último uso", type: "date", path: "last_used_at" },
+        /* expires_at */
+        { name: "expires_at", label: "Expira", type: "date", path: "expires_at" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+
 
 
 

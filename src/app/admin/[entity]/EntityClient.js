@@ -258,9 +258,16 @@ export default function EntityClient({ config }) {
         const deleteUrl = config.deleteEndpoint.replace(':id', id);
 
         try {
+
+            const session = await getSession(); // Obtener sesión actual
+
+            
             const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                    'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                },
             });
 
             if (response.ok) {
@@ -273,7 +280,7 @@ export default function EntityClient({ config }) {
                 alert('Hubo un error al intentar eliminar el elemento.');
             }
         } catch (error) {
-            alert('No se pudo conectar al servidor.');
+            alert(error.message);
         }
     };
 

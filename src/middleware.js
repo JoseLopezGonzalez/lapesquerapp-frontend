@@ -8,8 +8,39 @@ export async function middleware(req) {
 
   // Si no hay token, redirigir al login
   if (!token) {
+    console.log("No hay token, redirigiendo al login.");
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("from", pathname); // Guardar la página actual para redirigir después del login
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Verificar si el token está expirado
+  const tokenExpiration = token?.exp * 1000; // Convertir de segundos a milisegundos
+  if (Date.now() > tokenExpiration) {
+    console.log("Token expirado, redirigiendo al login.");
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Validar token con el backend para detectar revocación/cancelación
+  try {
+    const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token.accessToken}`,
+      },
+    });
+
+    if (!verifyResponse.ok) {
+      console.log("Token inválido o sesión cancelada, redirigiendo al login.");
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  } catch (error) {
+    console.error("Error al validar el token con el backend:", error);
+    const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -33,11 +64,9 @@ export async function middleware(req) {
   // Verificar si al menos uno de los roles del usuario está permitido
   const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
 
-  console.log("¿Tiene acceso?", hasAccess);
-
   if (!rolesAllowed.length || !hasAccess) {
-    const unauthorizedUrl = new URL("/unauthorized", req.url);
     console.log("Acceso denegado para los roles:", userRoles);
+    const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);
   }
 
@@ -46,8 +75,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/production/:path*",
-  ],
+  matcher: ["/admin/:path*", "/production/:path*"], // Define las rutas protegidas
 };
