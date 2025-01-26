@@ -82,6 +82,12 @@ export const navigationConfig = [
                 href: '/admin/species',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
+            /* fishing-gears */
+            {
+                name: 'Artes de Pesca',
+                href: '/admin/fishing-gears',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
         ],
     },
     {

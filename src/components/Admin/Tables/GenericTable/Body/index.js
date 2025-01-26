@@ -193,7 +193,9 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         {/* list type with bucle */}
                                         {header.type === 'list' && (
                                             <ul className="text-white text-nowrap">
-                                                {row[header.name].map((item, index) => (
+                                                { row[header.name].length > 0 &&
+                                                
+                                                row[header.name].map((item, index) => (
                                                     <li key={index}>
                                                         {item}
                                                     </li>

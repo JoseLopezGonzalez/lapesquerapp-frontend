@@ -52,14 +52,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen ">
-      <div id="content" class="relative max-w-3xl h-[100vh] px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-0 before:start-1/2 before:bg-[url('https://preline.co/assets/svg/examples-dark/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
+      <div id="content" className="relative max-w-3xl h-[100vh] px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-0 before:start-1/2 before:bg-[url('https://preline.co/assets/svg/examples-dark/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
         <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10 max-w-md w-full">
           <img className="h-16 w-auto" src={NAVBAR_LOGO} alt="Your Company" />
-          <h1 class="text-2xl text-white sm:text-4xl text-nowrap">
+          <h1 className="text-2xl text-white sm:text-4xl text-nowrap">
             Get notified when we launch
           </h1>
-          <h2 class="mt-1 sm:mt-3 text-4xl font-bold text-white sm:text-6xl">
-            <span class="bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent">Preline Pro</span>
+          <h2 className="mt-1 sm:mt-3 text-4xl font-bold text-white sm:text-6xl">
+            <span className="bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-400 text-transparent">Preline Pro</span>
           </h2>
           <div className="w-full backdrop-blur-lg bg-white/5 sm:px-10 px-5 py-10 rounded-xl border border-neutral-700/50 shadow-lg">
             <h2 className="text-center text-2xl font-bold text-white">Iniciar Sesión</h2>

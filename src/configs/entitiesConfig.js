@@ -29,6 +29,12 @@ export const configs = {
           label: "Generales",
           filters: [
             {
+              name: "ids",
+              label: "Números de ID",
+              type: "textAccumulator",
+              placeholder: "Buscar por IDs",
+            },
+            {
               name: "notes",
               label: "Notas",
               type: "textarea",
@@ -38,18 +44,6 @@ export const configs = {
               name: "dates",
               label: "Fecha",
               type: "dateRange",
-            },
-          ],
-        },
-        {
-          name: "ids",
-          label: "Números de ID",
-          filters: [
-            {
-              name: "ids",
-              label: "Números de ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por IDs",
             },
           ],
         },
@@ -172,7 +166,12 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por IDs",
             },
-
+            {
+              name: "loadDate",
+              label: "Fecha de carga",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
 
             /* Buyer reference */
             {
@@ -192,24 +191,7 @@ export const configs = {
             },
           ],
         },
-        {
-          name: "dates",
-          label: "Fechas",
-          filters: [
-            /* {
-              name: "entryDate",
-              label: "Fecha de entrada",
-              type: "dateRange",
-              visibleMonths: 1,
-            }, */
-            {
-              name: "loadDate",
-              label: "Fecha de carga",
-              type: "dateRange",
-              visibleMonths: 1,
-            },
-          ],
-        },
+
         /* Customers */
         {
           name: "customers",
@@ -388,6 +370,7 @@ export const configs = {
             type: "search",
             placeholder: "Buscar por id",
           },
+
         ],
       },
       groups: [
@@ -400,6 +383,20 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            /* address text area*/
+            {
+              name: "address",
+              label: "Dirección",
+              type: "textarea",
+              placeholder: "Buscar por dirección",
             },
           ],
         },
@@ -458,6 +455,27 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* articleGtin */
+            {
+              name: "articleGtin",
+              label: "GTIN",
+              type: "text",
+              placeholder: "Buscar por GTIN",
+            },
+            /* boxGtin */
+            {
+              name: "boxGtin",
+              label: "GTIN Caja",
+              type: "text",
+              placeholder: "Buscar por GTIN Caja",
+            },
+            /* palletGtin */
+            {
+              name: "palletGtin",
+              label: "GTIN Palet",
+              type: "text",
+              placeholder: "Buscar por GTIN Palet",
             },
           ],
         },
@@ -545,6 +563,13 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
             },
           ],
         },
@@ -702,9 +727,105 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por ID",
             },
+            /* state */
+            {
+              name: "state",
+              label: "Estado",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "stored", label: "Almacenado", value: false },
+                { name: "shipped", label: "Enviado", value: false },
+              ]
+            },
+            /* orderState */
+            {
+              name: "orderState",
+              label: "Estado del pedido",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "pending", label: "Pendiente", value: false },
+                { name: "finished", label: "Finalizado", value: false },
+              ]
+            },
+            /*  Position; locatd, unlocated*/
+            {
+              name: "position",
+              label: "Posición",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "located", label: "Ubicado", value: false },
+                { name: "unlocated", label: "No ubicado", value: false },
+              ]
+            },
+            /* Notes */
+            {
+              name: "notes",
+              label: "Notas",
+              type: "textarea",
+              placeholder: "Buscar por notas",
+            },
+            /* lots */
+            {
+              name: "lots",
+              label: "Lotes",
+              type: "textAccumulator",
+              placeholder: "Buscar por lotes",
+            },
           ],
         },
-
+        {
+          name: "dates",
+          label: "Fechas",
+          filters: [
+            {
+              name: "dates",
+              label: "Fecha de creación",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+          ],
+        },
+        /* products */
+        {
+          name: "products",
+          label: "Productos",
+          filters: [
+            {
+              name: "products",
+              label: "Productos",
+              type: "autocomplete",
+              placeholder: "Buscar por producto",
+              endpoint: "products/options",
+            },
+          ],
+        },
+        /* Stores */
+        {
+          name: "stores",
+          label: "Almacenes",
+          filters: [
+            {
+              name: "stores",
+              label: "Almacenes",
+              type: "autocomplete",
+              placeholder: "Buscar por almacén",
+              endpoint: "stores/options",
+            },
+          ],
+        },
+        /* Order */
+        {
+          name: "orders",
+          label: "Pedidos",
+          filters: [
+            {
+              name: "orders",
+              label: "Pedidos",
+              type: "textAccumulator",
+              placeholder: "Buscar por pedidos",
+            },
+          ],
+        },
       ],
     },
     table: {
@@ -712,6 +833,8 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         /* articlesNames */
         { name: "articlesNames", label: "Artículos", type: "list", path: "articlesNames" },
+        /* lots */
+        { name: "lots", label: "Lotes", type: "list", path: "lots" },
         /* observations */
         { name: "observations", label: "Observaciones", type: "text", path: "observations" },
         /* store */
@@ -719,7 +842,6 @@ export const configs = {
         /* orderId*/
         { name: "orderId", label: "Pedido", type: "text", path: "orderId" },
         /* { name: "name", label: "Nombre", type: "text", path: "article.name" }, */
-        /* state type badge options: stored, shipped*/
         {
           name: "state", label: "Estado", type: "badge",
           options:
@@ -729,8 +851,8 @@ export const configs = {
             default: { label: "Desconocido", color: "secondary", outline: true },
           }
         },
-
-
+        /* numberOfBoxes */
+        { name: "numberOfBoxes", label: "Cajas", type: "text", path: "numberOfBoxes" },
         /* netWeight */
         { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
         { name: "actions", label: "Acciones", type: "button" },
@@ -890,6 +1012,13 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por ID",
             },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
           ],
         },
 
@@ -937,6 +1066,41 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            /* scientificName */
+            {
+              name: "scientificName",
+              label: "Nombre científico",
+              type: "text",
+              placeholder: "Buscar por nombre científico",
+            },
+            /* fao */
+            {
+              name: "fao",
+              label: "FAO",
+              type: "text",
+              placeholder: "Buscar por FAO",
+            },
+          ],
+        },
+        /* fishingGears */
+        {
+          name: "fishingGears",
+          label: "Artes de pesca",
+          filters: [
+            {
+              name: "fishingGears",
+              label: "Artes de pesca",
+              type: "autocomplete",
+              placeholder: "Buscar por arte de pesca",
+              endpoint: "fishing-gears/options",
             },
           ],
         },
@@ -991,6 +1155,20 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* code */
+            {
+              name: "code",
+              label: "Código",
+              type: "text",
+              placeholder: "Buscar por código",
+            },
+            /* description */
+            {
+              name: "description",
+              label: "Descripción",
+              type: "text",
+              placeholder: "Buscar por descripción",
             },
           ],
         },
@@ -1053,6 +1231,109 @@ export const configs = {
         { name: "name", label: "Nombre", type: "text", path: "name" },
         /* email */
         { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* fishing-gears */
+  'fishing-gears': {
+    title: "Artes de pesca",
+    description: "Gestiona, edita y consulta artes de pesca.",
+    emptyState: {
+      title: "No existen artes de pesca según los filtros",
+      description: "Ajusta los filtros o crea un nuevo arte de pesca.",
+    },
+    endpoint: "fishing-gears",
+    viewRoute: "/admin/fishing-gears/:id",
+    deleteEndpoint: "/fishing-gears/:id",
+    createPath: "/admin/fishing-gears/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  /* payment-terms */
+  'payment-terms': {
+    title: "Plazos de pago",
+    description: "Gestiona, edita y consulta plazos de pago.",
+    emptyState: {
+      title: "No existen plazos de pago según los filtros",
+      description: "Ajusta los filtros o crea un nuevo plazo de pago.",
+    },
+    endpoint: "payment-terms",
+    viewRoute: "/admin/payment-terms/:id",
+    deleteEndpoint: "/payment-terms/:id",
+    createPath: "/admin/payment-terms/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
       ],
     },
   },
