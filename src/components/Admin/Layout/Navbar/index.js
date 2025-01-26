@@ -35,8 +35,8 @@ export default function Navbar() {
                 ...item,
                 children: item.children
                     ? item.children.filter((child) =>
-                          child.allowedRoles?.some((role) => roles.includes(role))
-                      )
+                        child.allowedRoles?.some((role) => roles.includes(role))
+                    )
                     : null,
             }));
 
@@ -44,16 +44,15 @@ export default function Navbar() {
 
     return (
         <>
-            <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
+            <div className="flex flex-grow flex-col  pt-5 pb-4 gap-5 justify-between h-full" >
                 <div className="mt-3 flex flex-shrink-0 items-center px-7">
                     <img className="h-14 w-auto" src={NAVBAR_LOGO} alt="BlueApp" />
                 </div>
-
-                <div className="mt-5 flex flex-grow flex-col">
-                    <div className="text-sm font-medium px-8 mb-2 mt-8 text-neutral-400">
+                <div className="mb-5 flex flex-grow flex-col overflow-y-auto  pr-4">
+                    <div className=" text-sm font-medium px-8 mb-2 mt-8 text-neutral-400">
                         Navegación
                     </div>
-                    <nav className="flex-1 space-y-1 px-5" aria-label="Sidebar">
+                    <nav className="h-full flex-1 space-y-1 px-5 overflow-y-auto " >
                         {filteredNavigation.map((item) =>
                             !item.children ? (
                                 <div key={item.name}>
@@ -140,27 +139,27 @@ export default function Navbar() {
                         )}
                     </nav>
                 </div>
-            </div>
-            <div className="flex flex-shrink-0 p-4">
-                <div className="group block w-full flex-shrink-0">
-                    <div className="flex items-center">
-                        <div>
-                            <img
-                                className="inline-block h-9 w-9 rounded-full"
-                                src="/app/user.png"
-                                alt=""
-                            />
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm font-medium text-neutral dark:text-white inline-flex items-center justify-center">
-                                Administración{' '}
-                            </p>
-                            <p
-                                onClick={handleLogout}
-                                className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white"
-                            >
-                                Perfil
-                            </p>
+                <div className="flex flex-shrink-0 p-4">
+                    <div className="group block w-full flex-shrink-0">
+                        <div className="flex items-center">
+                            <div>
+                                <img
+                                    className="inline-block h-9 w-9 rounded-full"
+                                    src="/app/user.png"
+                                    alt=""
+                                />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm font-medium text-neutral dark:text-white inline-flex items-center justify-center">
+                                    Administración{' '}
+                                </p>
+                                <p
+                                    onClick={handleLogout}
+                                    className="text-xs font-medium text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white"
+                                >
+                                    Perfil
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
