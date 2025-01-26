@@ -894,6 +894,70 @@ export const configs = {
               type: "textAccumulator",
               placeholder: "Buscar por ID",
             },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            /* vat_number */
+            {
+              name: "vatNumber",
+              label: "NIF",
+              type: "text",
+              placeholder: "Buscar por NIF",
+            },
+            /* country */
+            {
+              name: "country",
+              label: "País",
+              type: "text",
+              placeholder: "Buscar por país",
+            },
+          ],
+        },
+        /* Salespeople */
+        {
+          name: "salespeople",
+          label: "Comerciales",
+          filters: [
+            {
+              name: "salespeople",
+              label: "Comerciales",
+              type: "autocomplete",
+              placeholder: "Buscar por comercial",
+              endpoint: "salespeople/options",
+            },
+          ],
+        },
+
+        /* countries */
+        {
+          name: "countries",
+          label: "Países",
+          filters: [
+            {
+              name: "countries",
+              label: "Países",
+              type: "autocomplete",
+              placeholder: "Buscar por país",
+              endpoint: "countries/options",
+            },
+          ],
+        },
+        /* paymentTerms */
+        {
+          name: "paymentTerms",
+          label: "Formas de pago",
+          filters: [
+            {
+              name: "paymentTerms",
+              label: "Formas de pago",
+              type: "autocomplete",
+              placeholder: "Buscar por forma de pago",
+              endpoint: "payment-terms/options",
+            },
           ],
         },
 
@@ -950,6 +1014,13 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
             },
           ],
         },
@@ -1207,6 +1278,7 @@ export const configs = {
             type: "search",
             placeholder: "Buscar por id",
           },
+
         ],
       },
       groups: [
@@ -1219,6 +1291,13 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
             },
           ],
         },
@@ -1337,6 +1416,221 @@ export const configs = {
       ],
     },
   },
+  /* countries */
+  countries: {
+    title: "Países",
+    description: "Gestiona, edita y consulta países.",
+    emptyState: {
+      title: "No existen países según los filtros",
+      description: "Ajusta los filtros o crea un nuevo país.",
+    },
+    endpoint: "countries",
+    viewRoute: "/admin/countries/:id",
+    deleteEndpoint: "/countries/:id",
+    createPath: "/admin/countries/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        /* action */
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+  /* paymentTerms */
+  'payment-terms': {
+    title: "Plazos de pago",
+    description: "Gestiona, edita y consulta plazos de pago.",
+    emptyState: {
+      title: "No existen plazos de pago según los filtros",
+      description: "Ajusta los filtros o crea un nuevo plazo de pago.",
+    },
+    endpoint: "payment-terms",
+    viewRoute: "/admin/payment-terms/:id",
+    deleteEndpoint: "/payment-terms/:id",
+    createPath: "/admin/payment-terms/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            /* ids */
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* name */
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+          ],
+        },
+
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        /* name */
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+  /* ceboDispatches*/
+  'cebo-dispatches': {
+    title: "Envíos de cebo",
+    description: "Gestiona, edita y consulta envíos de cebo.",
+    emptyState: {
+      title: "No existen envíos de cebo según los filtros",
+      description: "Ajusta los filtros o crea un nuevo envío de cebo.",
+    },
+    endpoint: "cebo-dispatches",
+    viewRoute: "/admin/cebo-dispatches/:id",
+    deleteEndpoint: "/cebo-dispatches/:id",
+    createPath: "/admin/cebo-dispatches/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            /* ids */
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* notes */
+            {
+              name: "notes",
+              label: "Notas",
+              type: "textarea",
+              placeholder: "Buscar por notas",
+            },
+            /* dates */
+            {
+              name: "dates",
+              label: "Fecha",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+          ],
+        },
+        /* suppliers */
+        {
+          name: "suppliers",
+          label: "Proveedores",
+          filters: [
+            {
+              name: "suppliers",
+              label: "Proveedores",
+              type: "autocomplete",
+              placeholder: "Buscar por proveedor",
+              endpoint: "suppliers/options",
+            },
+          ],
+        },
+        /* products */
+        {
+          name: "products",
+          label: "Productos",
+          filters: [
+            {
+              name: "products",
+              label: "Productos",
+              type: "autocomplete",
+              placeholder: "Buscar por producto",
+              endpoint: "products/options",
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        /* date */
+        { name: "date", label: "Fecha", type: "date", path: "date" },
+        /* supplier */
+        { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
+        /* notes */
+        { name: "notes", label: "Notas", type: "text", path: "notes" },
+        /* netWeight */
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+
+
 
 
 

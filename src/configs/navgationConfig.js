@@ -5,6 +5,10 @@ import { RiShieldUserFill } from "react-icons/ri";
 import { RiShipLine } from "react-icons/ri";
 import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
+import { LuFlag } from "react-icons/lu";
+import { PiFishSimpleDuotone } from "react-icons/pi";
+
+
 
 
 export const navigationConfig = [
@@ -49,6 +53,14 @@ export const navigationConfig = [
             },
         ],
     },
+    /* CeboDispatches */
+    {
+        name: 'Salidas de Cebo',
+        icon: PiFishSimpleDuotone,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/cebo-dispatches',
+    },
+
     {
         name: 'Pedidos',
         icon: PencilSquareIcon,
@@ -112,7 +124,26 @@ export const navigationConfig = [
         name: 'Clientes',
         icon: RiShieldUserLine,
         allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/customers',
+        children: [
+            /* paymentTerms */
+            {
+                name: 'Formas de Pago',
+                href: '/admin/payment-terms',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            /* Countries */
+            {
+                name: 'Paises',
+                href: '/admin/countries',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            /* all customers */
+            {
+                name: 'Todos los Clientes',
+                href: '/admin/customers',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
     },
     {
         name: 'Proveedores',
