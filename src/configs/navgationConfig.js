@@ -167,5 +167,19 @@ export const navigationConfig = [
         icon: TbPlugConnected,
         href: '/admin/sessions',
         allowedRoles: ["admin", "manager", "superuser"],
+        childrens: [
+            {
+                name: 'Todas las Sesiones',
+                href: '/admin/sessions',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            /* activity-logs        
+             */
+            {
+                name: 'Registros de Actividad',
+                href: '/admin/activity-logs',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
     },
 ];

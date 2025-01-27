@@ -2,7 +2,7 @@
 
 
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import { formatDate } from '@/helpers/formats/dates/formatDates';
+import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@nextui-org/react';
@@ -214,6 +214,17 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}                                              
                                             </span>
                                         )}
+
+                                        {/* DateHour type DD/MM/YYYY - HH:MM */}
+                                        {header.type === 'dateHour' && (
+                                            <span className="text-white text-nowrap">
+                                                {row[header.name] === 'N/A' ? '-' : formatDateHour(row[header.name])}
+                                            </span>
+                                        )}
+
+                                        
+
+                                        {/* DateHour type */}
                                     </td>
                                 ))}
                             </tr>

@@ -1693,7 +1693,120 @@ export const configs = {
       ],
     },
   },
+  /* activity-logs */
+  'activity-logs': {
+    title: "Registros de actividad",
+    description: "Gestiona, edita y consulta registros de actividad.",
+    emptyState: {
+      title: "No existen registros de actividad según los filtros",
+      description: "Ajusta los filtros o crea un nuevo registro de actividad.",
+    },
+    endpoint: "activity-logs",
+    viewRoute: "/admin/activity-logs/:id",
+    deleteEndpoint: "activity-logs/:id",
+    createPath: "/admin/activity-logs/create",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          },
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            /* ids */
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            /* path */
+            {
+              name: "path",
+              label: "Ruta",
+              type: "text",
+              placeholder: "Buscar por ruta",
+            },
 
+        
+            /* created_at */
+            {
+              name: "dates",
+              label: "Fecha",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+          ],
+        },
+        /* users */
+        {
+          name: "users",
+          label: "Usuarios",
+          filters: [
+            {
+              name: "users",
+              label: "Usuarios",
+              type: "autocomplete",
+              placeholder: "Buscar por usuario",
+              endpoint: "users/options",
+            },
+          ],
+        },
+        
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        /* id Primaria	
+	2	user_id 
+	3	ip_address	
+	4	device	
+	5	browser		
+	6	location		
+	7	created_at	
+	8	updated_at	
+	9	country		
+	10	city		
+	11	region		
+	12	platform		
+	13	path		
+	14	method */
+        
+        /* user */
+        { name: "user", label: "Usuario", type: "text", path: "user.name" },
+        /* tokenId */
+        { name: "tokenId", label: "Token", type: "text", path: "tokenId" },
+        /* created_at */
+        { name: "created_at", label: "Fecha de creación", type: "dateHour", path: "createdAt" },
+        /* ip_address */
+        { name: "ip_address", label: "Dirección IP", type: "text", path: "ipAddress" },
+        /* browser */
+        { name: "browser", label: "Navegador", type: "text", path: "browser" },
+        /* location */
+        { name: "location", label: "Ubicación", type: "text", path: "location" },
+        /* region */
+        { name: "region", label: "Región", type: "text", path: "region" },
+        /* platform */
+        { name: "platform", label: "Plataforma", type: "text", path: "platform" },
+        /* path */
+        { name: "path", label: "Ruta", type: "text", path: "path" },
+        /* method */
+        { name: "method", label: "Método", type: "text", path: "method" },
+        { name: "actions", label: "Acciones", type: "button" },
+      ],
+    },
+  },
+  
 
 
 
