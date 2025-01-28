@@ -8,8 +8,6 @@ import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
 
-
-
 export const navigationConfig = [
     {
         name: 'Inicio',
@@ -161,7 +159,6 @@ export const navigationConfig = [
             },
         ],
     },
-    /* sesions */
     {
         name: 'Sesiones',
         icon: TbPlugConnected,
@@ -173,8 +170,6 @@ export const navigationConfig = [
                 href: '/admin/sessions',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            /* activity-logs        
-             */
             {
                 name: 'Registros de Actividad',
                 href: '/admin/activity-logs',

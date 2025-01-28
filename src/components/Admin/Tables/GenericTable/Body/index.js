@@ -1,6 +1,5 @@
 'use client'
 
-
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
@@ -80,16 +79,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                     <tr>
                         {isSelectable && (
                             <th className="py-3.5 px-4 text-left text-sm font-semibold text-white">
-                                {/* <input
-                                    type="checkbox"
-                                    onChange={(e) => toggleSelectAll(e.target.checked)}
-                                    checked={
-                                        selectedRows.length > 0 &&
-                                        selectedRows.length === data.rows.length
-                                    }
-
-
-                                /> */}
                                 <Checkbox
                                     onValueChange={toggleSelectAll}
                                     isSelected={
@@ -97,8 +86,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         selectedRows.length === data.rows.length
                                     }
                                     size="sm" />
-
-
                             </th>
                         )}
                         {headers.map((header) => header.type === 'button' ? (
@@ -124,11 +111,16 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                 <tbody className="divide-y divide-neutral-700">
                     {data.loading ? (
                         // Skeleton rows for loading state
-                        [...Array(Object.keys(headers).length)].map((_, index) => (
+                        [...Array(12)].map((_, index) => (
                             <tr key={index}>
+                                <td className="py-2 px-4">
+                                    <Checkbox
+                                        disabled
+                                        size="sm" />
+                                </td>
                                 {headers.map((_, index) => (
                                     <td key={index} className="px-6 py-3">
-                                        <div className="w-full h-6 bg-neutral-600 rounded-md animate-pulse"></div>
+                                        <div className="w-full h-6 bg-neutral-600 rounded-lg animate-pulse"></div>
                                     </td>
                                 ))}
                             </tr>
@@ -140,7 +132,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 className="hover:bg-neutral-800 transition-colors"
                                 onClick={() => toggleSelectRow(row.id)}
                             >
-
                                 {isSelectable && (
                                     <td className="py-2 px-4">
                                         <Checkbox
@@ -193,25 +184,21 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         {/* list type with bucle */}
                                         {header.type === 'list' && (
                                             <ul className="text-white text-nowrap">
-                                                { row[header.name].length > 0 &&
-                                                
-                                                row[header.name].map((item, index) => (
-                                                    <li key={index}>
-                                                        {item}
-                                                    </li>
-                                                ))}
+                                                {row[header.name].length > 0 &&
+
+                                                    row[header.name].map((item, index) => (
+                                                        <li key={index}>
+                                                            {item}
+                                                        </li>
+                                                    ))}
                                             </ul>
                                         )}
-
-                                        {/* boolean type */}
-
-                                        {/* Number type */}
 
                                         {/* Date type */}
                                         {header.type === 'date' && (
                                             <span className="text-white">
                                                 {/* si nes N/A devolver - */}
-                                                {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}                                              
+                                                {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}
                                             </span>
                                         )}
 
@@ -222,9 +209,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </span>
                                         )}
 
-                                        
-
-                                        {/* DateHour type */}
                                     </td>
                                 ))}
                             </tr>

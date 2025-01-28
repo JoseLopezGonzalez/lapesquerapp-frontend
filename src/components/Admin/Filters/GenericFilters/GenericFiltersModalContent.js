@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Disclosure, DisclosurePanel } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import TextAreaFilter from './Types/TextAreaFilter';
 import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
@@ -22,7 +22,6 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
 
     return (
         <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
-            {/* Renderizar el filtro de tipo `search` si existe */}
             {search?.filters && search.filters.length > 0 && (
                 <div className="mb-4">
                     {search.filters.map((filter) => (
@@ -47,7 +46,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                 {({ open }) => (
                                     <>
                                         <dt>
-                                            <Disclosure.Button className="flex w-full items-start justify-between text-left text-neutral-300 hover:text-white">
+                                            <DisclosureButton className="flex w-full items-start justify-between text-left text-neutral-300 hover:text-white">
                                                 <span className="text-lg font-light leading-7">
                                                     {group.label || 'Grupo sin nombre'}
                                                 </span>
@@ -64,7 +63,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                         />
                                                     )}
                                                 </span>
-                                            </Disclosure.Button>
+                                            </DisclosureButton>
                                         </dt>
                                         <DisclosurePanel as="dd" className="mt-2 px-4 py-4 ">
                                             <div>
