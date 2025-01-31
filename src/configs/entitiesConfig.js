@@ -100,6 +100,61 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+     // 🔹 Nueva configuración para la creación de la entidad
+     createForm: {
+      title: "Nueva recepción de materia prima",
+      endpoint: "/api/raw-material-receptions",
+      method: "POST",
+      fields: [
+        /* Autocomplete */
+        {
+          name: "supplier",
+          label: "Proveedor",
+          type: "Autocomplete",
+          endpoint: "suppliers/options",
+          required: true,
+        },
+        {
+          name: "date",
+          label: "Fecha",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          label: "Notas",
+          type: "textarea",
+        },
+        {
+          name: "netWeight",
+          label: "Peso Neto (kg)",
+          type: "number",
+          required: true,
+        },
+        /* select */
+        {
+          name: "species",
+          label: "Especie",
+          type: "select",
+          options: [
+            { value: "1", label: "Especie 1" },
+            { value: "2", label: "Especie 2" },
+            { value: "3", label: "Especie 3" },
+          ],
+          required: true,
+        },
+        /* Autocomplete */
+        {
+          name: "products",
+          label: "Productos",
+          type: "Autocomplete",
+          endpoint: "products/options",
+          required: true,
+        },
+      ],
+    },
+
+
   },
   orders: {
     title: "Pedidos",
@@ -275,6 +330,111 @@ export const configs = {
         { name: "transport", label: "Transporte", type: "text", path: "transport.name" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
+    },
+    createForm: {
+      title: "Crear Pedido",
+      endpoint: "orders",
+      method: "POST",
+      fields:[
+        /* Cliente Autocomplete */
+        {
+          name: "customer",
+          label: "Cliente",
+          type: "Autocomplete",
+          endpoint: "customers/options",
+          required: true,
+        },
+        /* Incoterm  Autocomplete*/
+        {
+          name: "incoterm",
+          label: "Incoterm",
+          type: "Autocomplete",
+          endpoint: "incoterms/options",
+          required: true,
+        },
+        /* Buyer reference input */
+        {
+          name: "buyerReference",
+          label: "Referencia",
+          type: "text",
+          required: true,
+        },
+        /* entryDate */
+        {
+          name: "entryDate",
+          label: "Fecha de entrada",
+          type: "date",
+          required: true,
+        },
+        /* loadDate */
+        {
+          name: "loadDate",
+          label: "Fecha de carga",
+          type: "date",
+          required: true,
+        },
+        /* Salesperson Autocomplete */
+        {
+          name: "salesperson",
+          label: "Comercial",
+          type: "Autocomplete",
+          endpoint: "salespeople/options",
+          required: true,
+        },
+        /* Transport Autocomplete */
+        {
+          name: "transport",
+          label: "Transporte",
+          type: "Autocomplete",
+          endpoint: "transports/options",
+          required: true,
+        },
+        /* paymentTerm Autocomplete */
+        {
+          name: "paymentTerm",
+          label: "Forma de pago",
+          type: "Autocomplete",
+          endpoint: "payment-terms/options",
+          required: true,
+        },
+
+        /* billingAddress */
+        {
+          name: "billingAddress",
+          label: "Dirección de facturación",
+          type: "textarea",
+          required: true,
+        },
+        /* shippingAddress */
+        {
+          name: "shippingAddress",
+          label: "Dirección de envío",
+          type: "textarea",
+          required: true,
+        },
+        /* productionNotes */
+        {
+          name: "productionNotes",
+          label: "Notas de producción",
+          type: "textarea",
+          required: true,
+        },
+        /* accountingNotes */
+        {
+          name: "accountingNotes",
+          label: "Notas de contabilidad",
+          type: "textarea",
+          required: true,
+        },
+        /* emails */
+        {
+          name: "emails",
+          label: "Emails",
+          type: "textarea",
+          required: true,
+        },
+      ],
+
     },
   },
   users: {
