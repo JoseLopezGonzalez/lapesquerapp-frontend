@@ -100,8 +100,8 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
-     // 🔹 Nueva configuración para la creación de la entidad
-     createForm: {
+    // 🔹 Nueva configuración para la creación de la entidad
+    createForm: {
       title: "Nueva recepción de materia prima",
       endpoint: "/api/raw-material-receptions",
       method: "POST",
@@ -332,10 +332,10 @@ export const configs = {
       ],
     },
     createForm: {
-      title: "Crear Pedido",
-      endpoint: "orders",
+      title: "Nuevo Pedido",
+      endpoint: "v3/orders",
       method: "POST",
-      fields:[
+      fields: [
         /* Cliente Autocomplete */
         {
           name: "customer",
@@ -343,14 +343,15 @@ export const configs = {
           type: "Autocomplete",
           endpoint: "customers/options",
           required: true,
-        },
-        /* Incoterm  Autocomplete*/
-        {
-          name: "incoterm",
-          label: "Incoterm",
-          type: "Autocomplete",
-          endpoint: "incoterms/options",
-          required: true,
+          validation: {
+            required: "Seleccionar un cliente es obligatorio"
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 2,
+            xl: 2,
+          }
         },
         /* Buyer reference input */
         {
@@ -358,6 +359,40 @@ export const configs = {
           label: "Referencia",
           type: "text",
           required: true,
+          validation: {
+            required: "La referencia es obligatoria",
+            minLength: {
+              value: 3,
+              message: "La referencia debe tener al menos 3 caracteres"
+            },
+            maxLength: {
+              value: 20,
+              message: "La referencia no puede tener más de 20 caracteres"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 2,
+            xl: 1,
+          }
+        },
+        /* Incoterm Autocomplete */
+        {
+          name: "incoterm",
+          label: "Incoterm",
+          type: "Autocomplete",
+          endpoint: "incoterms/options",
+          required: true,
+          validation: {
+            required: "Seleccionar un Incoterm es obligatorio"
+          },
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 2,
+            xl: 1,
+          }
         },
         /* entryDate */
         {
@@ -365,6 +400,18 @@ export const configs = {
           label: "Fecha de entrada",
           type: "date",
           required: true,
+          /* validation: {
+            required: "La fecha de entrada es obligatoria",
+            validate: {
+              validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
+            }
+          }, */
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 1,
+          }
         },
         /* loadDate */
         {
@@ -372,6 +419,18 @@ export const configs = {
           label: "Fecha de carga",
           type: "date",
           required: true,
+         /*  validation: {
+            required: "La fecha de carga es obligatoria",
+            validate: {
+              validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
+            }
+          }, */
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 1,
+          }
         },
         /* Salesperson Autocomplete */
         {
@@ -380,6 +439,15 @@ export const configs = {
           type: "Autocomplete",
           endpoint: "salespeople/options",
           required: true,
+          validation: {
+            required: "Seleccionar un comercial es obligatorio"
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
         },
         /* Transport Autocomplete */
         {
@@ -388,6 +456,15 @@ export const configs = {
           type: "Autocomplete",
           endpoint: "transports/options",
           required: true,
+          validation: {
+            required: "Seleccionar un transporte es obligatorio"
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
         },
         /* paymentTerm Autocomplete */
         {
@@ -396,14 +473,35 @@ export const configs = {
           type: "Autocomplete",
           endpoint: "payment-terms/options",
           required: true,
+          validation: {
+            required: "Seleccionar una forma de pago es obligatorio"
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
         },
-
         /* billingAddress */
         {
           name: "billingAddress",
           label: "Dirección de facturación",
           type: "textarea",
           required: true,
+          validation: {
+            required: "La dirección de facturación es obligatoria",
+            minLength: {
+              value: 10,
+              message: "Debe contener al menos 10 caracteres"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
         },
         /* shippingAddress */
         {
@@ -411,20 +509,57 @@ export const configs = {
           label: "Dirección de envío",
           type: "textarea",
           required: true,
+          validation: {
+            required: "La dirección de envío es obligatoria",
+            minLength: {
+              value: 10,
+              message: "Debe contener al menos 10 caracteres"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
         },
         /* productionNotes */
         {
           name: "productionNotes",
           label: "Notas de producción",
           type: "textarea",
-          required: true,
+          required: false,
+          validation: {
+            maxLength: {
+              value: 200,
+              message: "No puede exceder los 200 caracteres"
+            }
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
         },
         /* accountingNotes */
         {
           name: "accountingNotes",
           label: "Notas de contabilidad",
           type: "textarea",
-          required: true,
+          required: false,
+          validation: {
+            maxLength: {
+              value: 200,
+              message: "No puede exceder los 200 caracteres"
+            }
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
         },
         /* emails */
         {
@@ -432,10 +567,23 @@ export const configs = {
           label: "Emails",
           type: "textarea",
           required: true,
-        },
-      ],
+          validation: {
+            required: "El campo de emails es obligatorio",
+            pattern: {
+              value: "/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/",
+              message: "Formato de email no válido"
+            }
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
+        }
+      ]
+    }
 
-    },
   },
   users: {
     title: "Usuarios",
@@ -1897,7 +2045,7 @@ export const configs = {
               placeholder: "Buscar por ruta",
             },
 
-        
+
             /* created_at */
             {
               name: "dates",
@@ -1921,27 +2069,27 @@ export const configs = {
             },
           ],
         },
-        
+
       ],
     },
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         /* id Primaria	
-	2	user_id 
-	3	ip_address	
-	4	device	
-	5	browser		
-	6	location		
-	7	created_at	
-	8	updated_at	
-	9	country		
-	10	city		
-	11	region		
-	12	platform		
-	13	path		
-	14	method */
-        
+  2	user_id 
+  3	ip_address	
+  4	device	
+  5	browser		
+  6	location		
+  7	created_at	
+  8	updated_at	
+  9	country		
+  10	city		
+  11	region		
+  12	platform		
+  13	path		
+  14	method */
+
         /* user */
         { name: "user", label: "Usuario", type: "text", path: "user.name" },
         /* tokenId */
@@ -1966,7 +2114,7 @@ export const configs = {
       ],
     },
   },
-  
+
 
 
 
