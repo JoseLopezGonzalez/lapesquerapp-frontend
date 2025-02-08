@@ -5,6 +5,10 @@ import { signIn } from "next-auth/react";
 import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
+import RotatingText from "@/components/Utilities/RotatingText";
+import StarBorder from "@/components/Utilities/StarBorder";
+import ShinyText from "@/components/Utilities/ShinyText";
+import Squares from "@/components/Utilities/Squares";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -52,23 +56,44 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen ">
-      <div id="content" className="before:opacity-20 relative max-w-3xl h-[100vh] px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-20 before:start-1/2 before:bg-[url('/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
-        <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10 max-w-md w-full">
+      
+      <div id="content" className="h-full before:opacity-20 relative max-w-3xl px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-20 before:start-1/2 before:bg-[url('/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
+        <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10  w-full">
           <img className="h-16 w-auto" src={NAVBAR_LOGO} alt="Your Company" />
+
           <div className="text-center py-8 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-2xl text-white sm:text-3xl text-nowrap">
+
+            {/*  <h1 className="text-2xl text-white sm:text-3xl text-nowrap">
               Manten tu producción al día.
-            </h1>
+            </h1> */}
+            <div className="flex items-center justify-center text-nowrap gap-2">
+              <span className="text-2xl sm:text-3xl text-white">Manten tu producción</span>
+              <RotatingText
+                texts={['al día.', 'segura.', 'eficiente.', 'organizada.']}
+                mainClassName="text-nowrap text-white text-2xl sm:text-3xl font-medium overflow-hidden  justify-center"
+                staggerFrom={"last"}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.025}
+                splitLevelClassName="text-nowrap overflow-hidden "
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                rotationInterval={6000}
+              />
+            </div>
             <h2 className="mt-1 sm:mt-3 text-3xl font-bold text-white sm:text-[2.5rem]">
-              <span className="bg-clip-text bg-gradient-to-tr from-sky-600 to-green-400 text-transparent">BlueApp</span>
+              <span className="bg-clip-text bg-gradient-to-tr from-sky-600 to-green-400 text-transparent">
+                BlueApp</span>
+
+
             </h2>
           </div>
-          <div className="w-full backdrop-blur-lg sm:px-10 px-5 py-10 rounded-xl border border-white/5 shadow-lg">
-           {/*  <h2 className="text-center text-2xl font-bold text-white">Iniciar Sesión</h2>
+          <div className="w-full max-w-sm backdrop-blur-lg sm:px-10 px-5 py-10 rounded-xl border border-white/5 shadow-lg">
+            {/*  <h2 className="text-center text-2xl font-bold text-white">Iniciar Sesión</h2>
             <p className="text-center text-sm text-neutral-400 mt-2">
               ¡Bienvenido! Introduce tus datos de acceso.
             </p> */}
-            <form onSubmit={handleLogin} className=" space-y-6">
+            <form onSubmit={handleLogin} className=" space-y-6 ">
               <div>
                 <label htmlFor="email" className="block text-sm text-neutral-200">
                   Usuario
@@ -106,11 +131,12 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex w-full justify-center rounded-lg bg-neutral-700 py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  className={`border border-neutral-800 hover:border-neutral-700 flex w-full justify-center rounded-lg bg-transparent py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                 >
                   {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                 </button>
+               
               </div>
             </form>
           </div>
