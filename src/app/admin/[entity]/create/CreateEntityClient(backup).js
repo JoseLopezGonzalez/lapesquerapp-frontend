@@ -8,8 +8,7 @@ import { createPortal } from "react-dom";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function CreateEntityClient({ config }) {
-    if (!config?.createForm)
-        return <p className="text-red-500">No se encontró la configuración de creación.</p>;
+   
 
     const { title, endpoint, method, fields } = config.createForm;
 
@@ -17,6 +16,10 @@ export default function CreateEntityClient({ config }) {
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
 
+
+    if (!config?.createForm)
+        return <p className="text-red-500">No se encontró la configuración de creación.</p>;
+    
     // Manejar cambios en los inputs
     const handleChange = (e) => {
         setFormData({
