@@ -8,8 +8,7 @@ import { createPortal } from "react-dom";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function CreateEntityClient({ config }) {
-    if (!config?.createForm)
-        return <p className="text-red-500">No se encontró la configuración de creación.</p>;
+
 
     const { title, endpoint, method, fields } = config.createForm;
 
@@ -22,6 +21,9 @@ export default function CreateEntityClient({ config }) {
         reset,
         formState: { errors, isSubmitting },
     } = useForm();
+
+    if (!config?.createForm)
+        return <p className="text-red-500">No se encontró la configuración de creación.</p>;
 
     // Manejar envío del formulario
     const onSubmit = async (data) => {
@@ -67,7 +69,7 @@ export default function CreateEntityClient({ config }) {
                 <div className="flex flex-col w-full h-full bg-neutral-800 rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
                     <h1 className="text-xl text-white p-2">{title}</h1>
                     <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5">
-                    {console.log(errors)}
+                        {console.log(errors)}
                         {fields.map((field) => (
                             <div
                                 key={field.name}
