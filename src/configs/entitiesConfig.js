@@ -668,7 +668,7 @@ export const configs = {
           name: "roles",
           label: "Roles",
           type: "Autocomplete",
-          endpoint: "roles",
+          endpoint: "roles/options",
           validation: {
             required: "Seleccionar un rol es obligatorio"
           },

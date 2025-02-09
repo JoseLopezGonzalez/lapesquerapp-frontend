@@ -6,11 +6,13 @@ import { classNames } from "@/helpers/styles/classNames";
 import { useForm, Controller } from "react-hook-form";
 import { createPortal } from "react-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { API_URL_V2 } from "@/configs/config";
+import { getSession } from "next-auth/react";
 
 export default function CreateEntityClient({ config }) {
 
 
-    const { title, endpoint, method, fields , successMessage , errorMessage } = config.createForm;
+    const { title, endpoint, method, fields, successMessage, errorMessage } = config.createForm;
 
     const {
         register,
@@ -26,105 +28,119 @@ export default function CreateEntityClient({ config }) {
     // Manejar envío del formulario
     const onSubmit = async (data) => {
         try {
-            const response = await fetch(endpoint, {
-                method,
-                headers: { "Content-Type": "application/json" },
+
+            const session = await getSession(); // Obtener sesión actual
+
+
+            const url = `${API_URL_V2}${endpoint}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                    'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                },
                 body: JSON.stringify(data),
             });
 
             if (response.ok) {
                 toast.success(successMessage);
                 reset(); // Resetear el formulario
-            }else{
+            } else {
                 toast.error(errorMessage);
             }
         } catch (error) {
-            console.error("Error:", error);
-            toast.error(errorMessage);
+            /* console.error("Error:", error); */
+            /* toast.error(error); */
+            /* mostrar el error capturado no el errorMessage*/
+            console.log(error);
+
+
         }
     };
 
     return (
         <div className="h-full">
-            
-                <div className="flex flex-col w-full h-full bg-neutral-800 rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
-                    <h1 className="text-xl text-white p-2">{title}</h1>
-                    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5">
-                        {fields.map((field, index) => (
-                            <div
-                                key={`${field.name}-${index}`}
-                                className={classNames(
-                                    "p-2",
-                                    field.cols?.sm ? `sm:col-span-${field.cols.sm}` : "",
-                                    field.cols?.md ? `md:col-span-${field.cols.md}` : "",
-                                    field.cols?.lg ? `lg:col-span-${field.cols.lg}` : "",
-                                    field.cols?.xl ? `xl:col-span-${field.cols.xl}` : ""
-                                )}
-                            >
-                                <label className="block mb-2 text-sm text-neutral-300">{field.label}</label>
 
-                                {field.type === "Autocomplete" && (
-                                    <Controller
-                                        name={field.name}
-                                        control={control}
-                                        rules={field.validation || {}}
-                                        render={({ field: inputField }) => (
-                                            <AutocompleteInput {...inputField} endpoint={field.endpoint} />
-                                        )}
-                                    />
-                                )}
+            <div className="flex flex-col w-full h-full bg-neutral-800 rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
+                <h1 className="text-xl text-white p-2">{title}</h1>
+                <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5">
+                    {fields.map((field, index) => (
+                        <div
+                            key={`${field.name}-${index}`}
+                            className={classNames(
+                                "p-2",
+                                field.cols?.sm ? `sm:col-span-${field.cols.sm}` : "",
+                                field.cols?.md ? `md:col-span-${field.cols.md}` : "",
+                                field.cols?.lg ? `lg:col-span-${field.cols.lg}` : "",
+                                field.cols?.xl ? `xl:col-span-${field.cols.xl}` : ""
+                            )}
+                        >
+                            <label className="block mb-2 text-sm text-neutral-300">{field.label}</label>
 
-                                 {field.type === "select" && (
-                                    <Controller
-                                        name={field.name}
-                                        control={control}
-                                        rules={field.validation || {}}
-                                        render={({ field: inputField }) => (
-                                            <SelectInput {...inputField} options={field.options} />
-                                        )}
-                                    />
-                                )}
+                            {field.type === "Autocomplete" && (
+                                <Controller
+                                    name={field.name}
+                                    control={control}
+                                    rules={field.validation || {}}
+                                    render={({ field: inputField }) => (
+                                        <AutocompleteInput {...inputField} endpoint={field.endpoint} />
+                                    )}
+                                />
+                            )}
 
-                                {field.type === "textarea" && (
-                                    <textarea
+                            {field.type === "select" && (
+                                <Controller
+                                    name={field.name}
+                                    control={control}
+                                    rules={field.validation || {}}
+                                    render={({ field: inputField }) => (
+                                        <SelectInput {...inputField} options={field.options} />
+                                    )}
+                                />
+                            )}
+
+                            {field.type === "textarea" && (
+                                <textarea
+                                    {...register(field.name, field.validation || {})}
+                                    placeholder={field.placeholder}
+                                    className="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
+                                    rows="3"
+                                />
+                            )}
+
+
+
+                            {(field.type !== "Autocomplete" && field.type !== "select" && field.type !== "textarea" && field.type !== 'password') &&
+                                (
+                                    <input
                                         {...register(field.name, field.validation || {})}
+                                        type={field.type}
                                         placeholder={field.placeholder}
+                                        name={field.name}
                                         className="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-                                        rows="3"
                                     />
-                                )}
+                                )
+                            }
 
-                                
-
-                                {(field.type !== "Autocomplete" && field.type !== "select" && field.type !== "textarea" && field.type !== 'password') &&
-                                    (
-                                        <input
-                                            {...register(field.name, field.validation || {})}
-                                            type={field.type}
-                                            placeholder={field.placeholder}
-                                            name={field.name}
-                                            className="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-                                        />
-                                    )
-                                }
-
-                                {errors[field.name] && <p className="text-red-400 font-regular text-xs pt-1">* {errors[field.name].message}</p>}
-                            </div>
-                        ))}
-
-                        <div className="sm:col-span-6 flex justify-end p-4">
-                            <button
-                                type="submit"
-                                className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-1.5 rounded-lg"
-                                disabled={isSubmitting}
-                            >
-                                Agregar
-                            </button>
+                            {errors[field.name] && <p className="text-red-400 font-regular text-xs pt-1">* {errors[field.name].message}</p>}
                         </div>
-                    </form>
-                </div>
+                    ))}
 
-            
+                    <div className="sm:col-span-6 flex justify-end p-4">
+                        <button
+                            type="submit"
+                            className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-1.5 rounded-lg"
+                            disabled={isSubmitting}
+                        >
+                            Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+
         </div>
     );
 }
