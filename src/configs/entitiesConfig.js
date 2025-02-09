@@ -100,59 +100,6 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
-    // 🔹 Nueva configuración para la creación de la entidad
-    createForm: {
-      title: "Nueva recepción de materia prima",
-      endpoint: "/api/raw-material-receptions",
-      method: "POST",
-      fields: [
-        /* Autocomplete */
-        {
-          name: "supplier",
-          label: "Proveedor",
-          type: "Autocomplete",
-          endpoint: "suppliers/options",
-          required: true,
-        },
-        {
-          name: "date",
-          label: "Fecha",
-          type: "date",
-          required: true,
-        },
-        {
-          name: "notes",
-          label: "Notas",
-          type: "textarea",
-        },
-        {
-          name: "netWeight",
-          label: "Peso Neto (kg)",
-          type: "number",
-          required: true,
-        },
-        /* select */
-        {
-          name: "species",
-          label: "Especie",
-          type: "select",
-          options: [
-            { value: "1", label: "Especie 1" },
-            { value: "2", label: "Especie 2" },
-            { value: "3", label: "Especie 3" },
-          ],
-          required: true,
-        },
-        /* Autocomplete */
-        {
-          name: "products",
-          label: "Productos",
-          type: "Autocomplete",
-          endpoint: "products/options",
-          required: true,
-        },
-      ],
-    },
 
 
   },
@@ -335,6 +282,10 @@ export const configs = {
       title: "Nuevo Pedido",
       endpoint: "v3/orders",
       method: "POST",
+      /* success Message */
+      successMessage: "Pedido creado con éxito",
+      /* error message */
+      errorMessage: "Error al crear el pedido",
       fields: [
         /* Cliente Autocomplete */
         {
@@ -342,7 +293,6 @@ export const configs = {
           label: "Cliente",
           type: "Autocomplete",
           endpoint: "customers/options",
-          required: true,
           validation: {
             required: "Seleccionar un cliente es obligatorio"
           },
@@ -358,7 +308,6 @@ export const configs = {
           name: "buyerReference",
           label: "Referencia",
           type: "text",
-          required: true,
           validation: {
             required: "La referencia es obligatoria",
             minLength: {
@@ -377,13 +326,13 @@ export const configs = {
             xl: 1,
           }
         },
+        
         /* Incoterm Autocomplete */
         {
           name: "incoterm",
           label: "Incoterm",
           type: "Autocomplete",
           endpoint: "incoterms/options",
-          required: true,
           validation: {
             required: "Seleccionar un Incoterm es obligatorio"
           },
@@ -399,13 +348,12 @@ export const configs = {
           name: "entryDate",
           label: "Fecha de entrada",
           type: "date",
-          required: true,
-          /* validation: {
+          validation: {
             required: "La fecha de entrada es obligatoria",
-            validate: {
+            /* validate: {
               validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
-            }
-          }, */
+            } */
+          },
           cols: {
             sm: 3,
             md: 3,
@@ -418,13 +366,12 @@ export const configs = {
           name: "loadDate",
           label: "Fecha de carga",
           type: "date",
-          required: true,
-         /*  validation: {
+          validation: {
             required: "La fecha de carga es obligatoria",
-            validate: {
+            /* validate: {
               validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
-            }
-          }, */
+            } */
+          },
           cols: {
             sm: 3,
             md: 3,
@@ -438,7 +385,6 @@ export const configs = {
           label: "Comercial",
           type: "Autocomplete",
           endpoint: "salespeople/options",
-          required: true,
           validation: {
             required: "Seleccionar un comercial es obligatorio"
           },
@@ -455,7 +401,6 @@ export const configs = {
           label: "Transporte",
           type: "Autocomplete",
           endpoint: "transports/options",
-          required: true,
           validation: {
             required: "Seleccionar un transporte es obligatorio"
           },
@@ -472,7 +417,6 @@ export const configs = {
           label: "Forma de pago",
           type: "Autocomplete",
           endpoint: "payment-terms/options",
-          required: true,
           validation: {
             required: "Seleccionar una forma de pago es obligatorio"
           },
@@ -488,7 +432,6 @@ export const configs = {
           name: "billingAddress",
           label: "Dirección de facturación",
           type: "textarea",
-          required: true,
           validation: {
             required: "La dirección de facturación es obligatoria",
             minLength: {
@@ -508,7 +451,6 @@ export const configs = {
           name: "shippingAddress",
           label: "Dirección de envío",
           type: "textarea",
-          required: true,
           validation: {
             required: "La dirección de envío es obligatoria",
             minLength: {
@@ -528,7 +470,6 @@ export const configs = {
           name: "productionNotes",
           label: "Notas de producción",
           type: "textarea",
-          required: false,
           validation: {
             maxLength: {
               value: 200,
@@ -547,7 +488,6 @@ export const configs = {
           name: "accountingNotes",
           label: "Notas de contabilidad",
           type: "textarea",
-          required: false,
           validation: {
             maxLength: {
               value: 200,
@@ -566,7 +506,6 @@ export const configs = {
           name: "emails",
           label: "Emails",
           type: "textarea",
-          required: true,
           validation: {
             required: "El campo de emails es obligatorio",
             pattern: {
@@ -655,6 +594,93 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    /* createForm */
+    createForm: {
+      title: "Nuevo Usuario",
+      endpoint: "users",
+      method: "POST",
+      successMessage: "Usuario creado con éxito",
+      errorMessage: "Error al crear el usuario",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: {
+              value: 3,
+              message: "El nombre debe tener al menos 3 caracteres"
+            },
+            maxLength: {
+              value: 50,
+              message: "El nombre no puede tener más de 50 caracteres"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
+          name: "email",
+          label: "Correo electrónico",
+          type: "text",
+          validation: {
+            required: "El correo electrónico es obligatorio",
+            pattern: {
+              value: "/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/",
+              message: "Formato de email no válido"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
+          name: "password",
+          label: "Contraseña",
+          type: "text",
+          validation: {
+            required: "La contraseña es obligatoria",
+            minLength: {
+              value: 6,
+              message: "La contraseña debe tener al menos 6 caracteres"
+            },
+            maxLength: {
+              value: 20,
+              message: "La contraseña no puede tener más de 20 caracteres"
+            }
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
+          name: "roles",
+          label: "Roles",
+          type: "Autocomplete",
+          endpoint: "roles",
+          validation: {
+            required: "Seleccionar un rol es obligatorio"
+          },
+          cols: {
+            sm: 3,
+            md: 3,
+            lg: 3,
+            xl: 3,
+          }
+        },
+      ]
+    }
   },
   /* Transports */
   transports: {
@@ -1563,6 +1589,40 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    /* createForm */
+    createForm: {
+      title: "Crear incoterm",
+      fields: [
+        {
+          name: "code",
+          label: "Código",
+          type: "text",
+          validations: {
+            required: "El código es obligatorio",
+          },
+          cols: {
+            sm: 2,
+            md: 2,
+            lg: 2,
+            xl: 2,
+          }
+        },
+        {
+          name: "description",
+          label: "Descripción",
+          type: "text",
+          validations: {
+            required: "La descripción es obligatoria",
+          },
+          cols: {
+            sm: 4,
+            md: 4,
+            lg: 4,
+            xl: 4,
+          }
+        }
+      ]
+    }
   },
   /* salespeople */
   salespeople: {
@@ -1784,8 +1844,8 @@ export const configs = {
 
   /* paymentTerms */
   'payment-terms': {
-    title: "Plazos de pago",
-    description: "Gestiona, edita y consulta plazos de pago.",
+    title: "Métodos de pago",
+    description: "Gestiona, edita y consulta métodos de pago.",
     emptyState: {
       title: "No existen plazos de pago según los filtros",
       description: "Ajusta los filtros o crea un nuevo plazo de pago.",
@@ -1838,6 +1898,28 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    /* CreateForm */
+    createForm: {
+      title: "Crear método de pago",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Introduce el nombre",
+          validation: {
+            required: "El nombre es obligatorio",
+          },
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          }
+        },
+      ],
+    },
+    
   },
 
   /* ceboDispatches*/
