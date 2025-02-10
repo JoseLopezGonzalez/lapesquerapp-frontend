@@ -32,7 +32,9 @@ export default function CreateEntityClient({ config }) {
             const session = await getSession(); // Obtener sesión actual
 
 
-            const url = `${API_URL_V2}${endpoint}`;
+            /* const url = `${API_URL_V2}${endpoint}`; */
+
+            const url = 'https://api.congeladosbrisamar.es/api/v1/productions';
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -41,7 +43,7 @@ export default function CreateEntityClient({ config }) {
                     Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
                     'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
                 },
-                body: JSON.stringify(data),
+              /*   body: JSON.stringify(data), */
             });
 
             if (response.ok) {
