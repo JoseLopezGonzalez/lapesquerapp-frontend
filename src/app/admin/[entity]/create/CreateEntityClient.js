@@ -26,41 +26,19 @@ export default function CreateEntityClient({ config }) {
     });
 
     // Manejar envío del formulario
-    const onSubmit = async (data) => {
-        try {
+    const onSubmit = async (production) => {
 
-            const session = await getSession(); // Obtener sesión actual
+        return await fetch(`https://api.congeladosbrisamar.es/api/v1/productions`, {
+            method: 'POST',
+            /* headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(production) */
+        })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => {throw new Error(error)})
+            .finally(() => console.log('Finalizado'));
+    }
 
-
-            /* const url = `${API_URL_V2}${endpoint}`; */
-
-            const url = 'https://api.congeladosbrisamar.es/api/v1/productions';
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                    'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-                },
-              /*   body: JSON.stringify(data), */
-            });
-
-            if (response.ok) {
-                toast.success(successMessage);
-                reset(); // Resetear el formulario
-            } else {
-                toast.error(errorMessage);
-            }
-        } catch (error) {
-            /* console.error("Error:", error); */
-            /* toast.error(error); */
-            /* mostrar el error capturado no el errorMessage*/
-            console.log(error);
-
-
-        }
-    };
 
     return (
         <div className="h-full">
