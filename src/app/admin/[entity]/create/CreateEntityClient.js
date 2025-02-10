@@ -30,8 +30,8 @@ export default function CreateEntityClient({ config }) {
 
         return await fetch(`https://api.congeladosbrisamar.es/api/v1/productions`, {
             method: 'POST',
-            /* headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(production) */
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(production)
         })
             .then(response => response.json())
             .then(data => console.log(data))
