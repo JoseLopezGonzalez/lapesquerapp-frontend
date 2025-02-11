@@ -8,6 +8,8 @@ import { createPortal } from "react-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
+import { submitEntity } from "@/app/actions/submitEntity";
+import { useEffect } from "react";
 
 export default function CreateEntityClient({ config }) {
 
@@ -19,25 +21,70 @@ export default function CreateEntityClient({ config }) {
         handleSubmit,
         control,
         reset,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting , },
     } = useForm({
         mode: 'onChange', // Valida al enviar el formulario
         reValidateMode: 'onChange', // Vuelve a validar al cambiar el valor
     });
 
     // Manejar envío del formulario
-    const onSubmit = async (production) => {
 
-        return await fetch(`https://api.congeladosbrisamar.es/api/v1/productions`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(production)
-        })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => {throw new Error(error)})
-            .finally(() => console.log('Finalizado'));
-    }
+    useEffect(() => {
+        async function fetchPosts() {
+
+            const session = await getSession(); // Obtener sesión actual
+
+
+            const res = await fetch('https://api.congeladosbrisamar.es/api/v2/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                     Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                        'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+
+                },
+                body: JSON.stringify({ 
+                        name: 'test',
+                }),
+            }
+            )
+            const data = await res.json()
+            setPosts(data)
+          }
+          fetchPosts()
+    }, [])
+
+
+
+    const onSubmit = async (data) => {
+        try {
+            const response = await fetch('/api/submit-entity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    endpoint,
+                    data,
+                }),  // Enviamos el endpoint y los datos del formulario
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                toast.success(successMessage || "Entidad creada con éxito!");
+                reset();  // Resetear el formulario después del éxito
+            } else {
+                toast.error(result.error || errorMessage || "Error al crear la entidad");
+            }
+        } catch (error) {
+            console.error('Error al enviar el formulario:', error);
+            toast.error("Ocurrió un error inesperado");
+        }
+    };
+
+
+
 
 
     return (
