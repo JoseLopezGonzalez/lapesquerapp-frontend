@@ -10,6 +10,7 @@ import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
 import { submitEntity } from "@/app/actions/submitEntity";
 import { useEffect } from "react";
+import { insertProduction } from "@/services/test";
 
 export default function CreateEntityClient({ config }) {
 
@@ -30,7 +31,7 @@ export default function CreateEntityClient({ config }) {
     // Manejar envío del formulario
 
     useEffect(() => {
-        async function fetchPosts() {
+        /* async function fetchPosts() {
             const session = await getSession(); // Obtener sesión actual
     
             const res = await fetch('https://api.congeladosbrisamar.es/api/v1/productions', {
@@ -40,7 +41,7 @@ export default function CreateEntityClient({ config }) {
                     Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
                     'User-Agent': navigator.userAgent,  // Eliminar este encabezado
                 },
-                body: JSON.stringify({nam:'gdsf'}),  // Enviar un cuerpo vacío
+                body: JSON.stringify({nam:'gdsf'}), 
             });
     
             if (!res.ok) {
@@ -48,10 +49,25 @@ export default function CreateEntityClient({ config }) {
             }
     
             const data = await res.json();
-            setPosts(data);
+            console.log(data);
         }
     
-        fetchPosts();
+        fetchPosts(); */
+
+        const fetchData = async () => {
+            /* insertProduction */
+            return await insertProduction({ nam: 'Producción de prueba' })
+            .then((productionId) => {
+                toast.success('Producción abierta correctamente');
+               console.log(productionId);
+            })
+            .catch((error) => {
+                toast.error(`${error}`);
+                throw new Error(error);
+            });
+        }
+
+       /*  fetchData(); */
     }, []);
     
 

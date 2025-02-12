@@ -18,37 +18,48 @@ export async function POST(req) {
         console.log(`🌐 Enviando datos a: ${API_URL_V2}${body.endpoint}`);
         console.log("📦 Datos enviados:", body.data);
 
-        const session = await getSession(); // Obtener sesión actual
+         // Obtener sesión actual
 
-
-        const apiResponse = await fetch(`${API_URL_V2}/${body.endpoint}`, {
+        /* ${API_URL_V2}/${body.endpoint} */
+        const apiResponse = await fetch(`https://api.congeladosbrisamar.es/api/v1/productions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-               /*  'User-Agent': navigator.userAgent, */  // Incluye el User-Agent del cliente
+                /* Authorization: `Bearer ${session?.user?.accessToken}`, */ // Enviar el token
+                /*  'User-Agent': navigator.userAgent, */  // Incluye el User-Agent del cliente
+                'Accept': 'application/json'  // <- Este es el header que necesitas
 
             },
             body: JSON.stringify(body.data),
         });
 
-        console.log("🔄 Esperando respuesta del backend...");
+        console.log("🔄 Esperando respuesta del backend...", apiResponse);
 
-        /* mostrar por consola la respuesta antes de json() */
-        await console.log("🔄 Esperando respuesta del backend...", apiResponse);
-        const responseData = await apiResponse.json(); 
-        console.log("📤 Respuesta del backend:", responseData);
+        const contentType = apiResponse.headers.get('content-type');
 
-        if (!apiResponse.ok) {
-            console.error('❌ Error al enviar al backend:', responseData);
-            return NextResponse.json({ error: responseData }, { status: apiResponse.status });
+        if (contentType && contentType.includes('application/json')) {
+            const responseData = await apiResponse.json();
+            console.log("📤 Respuesta del backend (JSON):", responseData);
+
+            if (!apiResponse.ok) {
+                console.error('❌ Error al enviar al backend:', responseData);
+                return NextResponse.json({ error: responseData }, { status: apiResponse.status });
+            }
+
+            return NextResponse.json({ success: true, data: responseData }, { status: 200 });
+        } else {
+            const responseText = await apiResponse.text();
+            console.error('❌ Respuesta no JSON del backend:', responseText);
+
+            return NextResponse.json({ error: "La respuesta no es JSON", details: responseText }, { status: 500 });
         }
 
-        // Paso 5: Responder al cliente
-        return NextResponse.json({ success: true, data: responseData }, { status: 200 });
 
-    } catch (error) {
-        console.log('💥 Error interno en la API Route:', error);
+    }
+    catch (error) {
+        console.error("❌ Error en la API Route:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
+
