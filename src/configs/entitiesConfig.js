@@ -665,8 +665,8 @@ export const configs = {
           }
         },
         {
-          name: "roles",
-          label: "Roles",
+          name: "role",
+          label: "Rol",
           type: "Autocomplete",
           endpoint: "roles/options",
           validation: {

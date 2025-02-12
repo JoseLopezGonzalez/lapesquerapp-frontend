@@ -22,63 +22,26 @@ export default function CreateEntityClient({ config }) {
         handleSubmit,
         control,
         reset,
-        formState: { errors, isSubmitting , },
+        formState: { errors, isSubmitting, },
     } = useForm({
         mode: 'onChange', // Valida al enviar el formulario
         reValidateMode: 'onChange', // Vuelve a validar al cambiar el valor
     });
 
-    // Manejar envío del formulario
-
-    useEffect(() => {
-        /* async function fetchPosts() {
-            const session = await getSession(); // Obtener sesión actual
-    
-            const res = await fetch('https://api.congeladosbrisamar.es/api/v1/productions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                    'User-Agent': navigator.userAgent,  // Eliminar este encabezado
-                },
-                body: JSON.stringify({nam:'gdsf'}), 
-            });
-    
-            if (!res.ok) {
-                throw new Error(`Error ${res.status}: ${res.statusText}`);
-            }
-    
-            const data = await res.json();
-            console.log(data);
-        }
-    
-        fetchPosts(); */
-
-        const fetchData = async () => {
-            /* insertProduction */
-            return await insertProduction({ nam: 'Producción de prueba' })
-            .then((productionId) => {
-                toast.success('Producción abierta correctamente');
-               console.log(productionId);
-            })
-            .catch((error) => {
-                toast.error(`${error}`);
-                throw new Error(error);
-            });
-        }
-
-       /*  fetchData(); */
-    }, []);
-    
-
-
 
     const onSubmit = async (data) => {
         try {
+
+            const session = await getSession(); // Obtener sesión actual
+
             const response = await fetch('/api/submit-entity', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',  // <- Este es el header que necesitas
+                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                    'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+
                 },
                 body: JSON.stringify({
                     endpoint,
@@ -92,15 +55,13 @@ export default function CreateEntityClient({ config }) {
                 toast.success(successMessage || "Entidad creada con éxito!");
                 reset();  // Resetear el formulario después del éxito
             } else {
-                toast.error(result.error || errorMessage || "Error al crear la entidad");
+                toast.error("Error al crear la entidad"); /* result.error || errorMessage || */
             }
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
             toast.error("Ocurrió un error inesperado");
         }
     };
-
-
 
 
 

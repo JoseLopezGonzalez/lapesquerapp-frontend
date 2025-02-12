@@ -1,39 +1,40 @@
 import { NextResponse } from 'next/server';
 import { API_URL_V2 } from '@/configs/config';
-import { getSession } from 'next-auth/react';
 
 export async function POST(req) {
     try {
-        // Paso 1: Asegúrate de que la solicitud llega correctamente
+        // Obtener la sesión del usuario
+
+        // Leer el body de la solicitud
         const body = await req.json();
         console.log("📥 Datos recibidos en la API Route:", body);
 
-        // Paso 2: Validar que el endpoint y los datos existen
+        // Validar que 'endpoint' y 'data' están presentes
         if (!body.endpoint || !body.data) {
             console.error("❌ Faltan el 'endpoint' o los 'data' en la solicitud.");
             return NextResponse.json({ error: "Endpoint o datos faltantes." }, { status: 400 });
         }
 
-        // Paso 3: Hacer la solicitud al backend (Laravel)
+        // Obtener el User-Agent del cliente
+        const userAgent = req.headers.get('user-agent');
+        const authorization = req.headers.get('authorization');
+
+        // Hacer la solicitud al backend (Laravel)
         console.log(`🌐 Enviando datos a: ${API_URL_V2}${body.endpoint}`);
         console.log("📦 Datos enviados:", body.data);
 
-         // Obtener sesión actual
-
-        /* ${API_URL_V2}/${body.endpoint} */
-        const apiResponse = await fetch(`https://api.congeladosbrisamar.es/api/v1/productions`, {
+        const apiResponse = await fetch(`${API_URL_V2}${body.endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                /* Authorization: `Bearer ${session?.user?.accessToken}`, */ // Enviar el token
-                /*  'User-Agent': navigator.userAgent, */  // Incluye el User-Agent del cliente
-                'Accept': 'application/json'  // <- Este es el header que necesitas
-
+                'Authorization': authorization,  // Token de autenticación
+                'User-Agent': userAgent,  // User-Agent del cliente
+                'Accept': 'application/json'
             },
             body: JSON.stringify(body.data),
         });
 
-        console.log("🔄 Esperando respuesta del backend...", apiResponse);
+        console.log("🔄 Esperando respuesta del backend...");
 
         const contentType = apiResponse.headers.get('content-type');
 
@@ -53,13 +54,8 @@ export async function POST(req) {
 
             return NextResponse.json({ error: "La respuesta no es JSON", details: responseText }, { status: 500 });
         }
-
-
-    }
-    catch (error) {
+    } catch (error) {
         console.error("❌ Error en la API Route:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
-
-
