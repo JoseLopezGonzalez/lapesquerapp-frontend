@@ -31,28 +31,29 @@ export default function CreateEntityClient({ config }) {
 
     useEffect(() => {
         async function fetchPosts() {
-
             const session = await getSession(); // Obtener sesión actual
-
-
-            const res = await fetch('https://api.congeladosbrisamar.es/api/v2/users', {
+    
+            const res = await fetch('https://api.congeladosbrisamar.es/api/v1/productions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                     Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                        'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-
+                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
+                    'User-Agent': navigator.userAgent,  // Eliminar este encabezado
                 },
-                body: JSON.stringify({ 
-                        name: 'test',
-                }),
+                body: JSON.stringify({nam:'gdsf'}),  // Enviar un cuerpo vacío
+            });
+    
+            if (!res.ok) {
+                throw new Error(`Error ${res.status}: ${res.statusText}`);
             }
-            )
-            const data = await res.json()
-            setPosts(data)
-          }
-          fetchPosts()
-    }, [])
+    
+            const data = await res.json();
+            setPosts(data);
+        }
+    
+        fetchPosts();
+    }, []);
+    
 
 
 
