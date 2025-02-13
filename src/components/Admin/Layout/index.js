@@ -10,8 +10,8 @@ export default function Layout({ children, title }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <>
-            <div>
+        <div className='p-2 h-full'>
+            <div className='bg-neutral-800 rounded-2xl h-full p-1 overflow-hidden'>
                 {/* Sidebar para dispositivos móviles */}
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog as="div" className="relative z-40 md:hidden" onClose={setSidebarOpen}>
@@ -67,55 +67,62 @@ export default function Layout({ children, title }) {
                     </Dialog>
                 </Transition.Root>
 
-                {/* Sidebar estático para pantallas grandes */}
-                <div className="hidden md:fixed md:inset-y-0 md:flex md:w-72 md:flex-col">
-                    <div className="flex min-h-0 flex-1 flex-col">
-                        <Navbar />
-                    </div>
-                </div>
+                <div className='flex flex-row h-full'>
 
-                {/* Contenido principal */}
-                <div className="h-screen flex flex-1 flex-col md:pl-72">
-                    {/* Barra superior para dispositivos móviles */}
-                    <div className="sticky top-0 z-10 bg-white dark:bg-neutral-800/70 px-3 py-3 sm:pl-3 sm:pt-3 md:hidden flex items-center justify-between backdrop-blur-sm">
-                        <button
-                            type="button"
-                            className="inline-flex px-2 py-2 items-center justify-center rounded-lg text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:text-neutral-300"
-                            onClick={goBack} // Usamos la función `goBack` basada en `window.history`
-                        >
-                            <span className="sr-only">Go Back</span>
-                            <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                        <button
-                            type="button"
-                            className="inline-flex px-2 py-2 items-center justify-center rounded-md text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:text-neutral-300"
-                            onClick={() => setSidebarOpen(true)}
-                        >
-                            <span className="sr-only">Open sidebar</span>
-                            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-                        </button>
+                    {/* Sidebar estático para pantallas grandes */}
+                    <div className="hidden h-full md:flex md:w-72 md:flex-col p-1">
+                        <div className="flex h-full w-full bg-neutral-950 rounded-2xl">
+                            <Navbar />
+                        </div>
                     </div>
-                    <main className="flex-1 bg-neutral-800 h-full w-full sm:rounded-l-3xl border-l border-neutral-900 shadow-md dark:shadow-lg dark:shadow-black/50 overflow-y-auto">
-                        <div className="absolute pl-5 pt-4 md:block hidden">
+
+                    {/* Contenido principal */}
+                    <div className="h-full flex flex-1 flex-col w-full">
+                        {/* Barra superior para dispositivos móviles */}
+                        <div className="sticky top-0 z-10 bg-white dark:bg-transparent px-3 py-3 sm:pl-3 sm:pt-3 md:hidden flex items-center justify-between backdrop-blur-sm">
                             <button
                                 type="button"
-                                className="inline-flex px-2 py-2 items-center justify-center rounded-lg text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:bg-neutral-600 dark:hover:text-neutral-300"
-                                onClick={goBack}
+                                className="inline-flex px-2 py-2 items-center justify-center rounded-lg text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:text-neutral-300"
+                                onClick={goBack} // Usamos la función `goBack` basada en `window.history`
                             >
                                 <span className="sr-only">Go Back</span>
                                 <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
                             </button>
+                            <button
+                                type="button"
+                                className="inline-flex px-2 py-2 items-center justify-center rounded-md text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:text-neutral-300"
+                                onClick={() => setSidebarOpen(true)}
+                            >
+                                <span className="sr-only">Open sidebar</span>
+                                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                            </button>
                         </div>
-
-                        <div className="h-full">
-                            <div className="h-full">
-                                {/* Contenido dinámico */}
-                                <div className="pt-2 md:pt-4 h-full">{children}</div>
+                        <main className="flex-1  h-full w-full shadow-md overflow-y-auto">
+                            <div className="absolute pl-5 pt-4 md:block hidden">
+                                <button
+                                    type="button"
+                                    className="inline-flex px-2 py-2 items-center justify-center rounded-lg text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:bg-neutral-600 dark:hover:text-neutral-300"
+                                    onClick={goBack}
+                                >
+                                    <span className="sr-only">Go Back</span>
+                                    <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
+                                </button>
                             </div>
-                        </div>
-                    </main>
+
+                            <div className="h-full">
+                                <div className="h-full">
+                                    {/* Contenido dinámico */}
+                                    <div className="pt-2 md:pt-4 h-full">{children}</div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+
                 </div>
+
+
+
             </div>
-        </>
+        </div>
     );
 }

@@ -3,8 +3,6 @@ import { API_URL_V2 } from '@/configs/config';
 
 export async function POST(req) {
     try {
-        // Obtener la sesión del usuario
-
         // Leer el body de la solicitud
         const body = await req.json();
         console.log("📥 Datos recibidos en la API Route:", body);

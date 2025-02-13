@@ -4,34 +4,26 @@ import { AutocompleteInput } from "@/components/Admin/Forms/GenericForm/InputTyp
 import SelectInput from "@/components/Admin/Forms/GenericForm/InputTypes/SelectInput";
 import { classNames } from "@/helpers/styles/classNames";
 import { useForm, Controller } from "react-hook-form";
-import { createPortal } from "react-dom";
-import toast, { Toaster } from "react-hot-toast";
-import { API_URL_V2 } from "@/configs/config";
+import toast from "react-hot-toast";
 import { getSession } from "next-auth/react";
-import { submitEntity } from "@/app/actions/submitEntity";
-import { useEffect } from "react";
-import { insertProduction } from "@/services/test";
 
 export default function CreateEntityClient({ config }) {
 
-
-    const { title, endpoint, method, fields, successMessage, errorMessage } = config.createForm;
+    const { title, endpoint, fields, successMessage, errorMessage } = config.createForm;
 
     const {
         register,
         handleSubmit,
         control,
         reset,
-        formState: { errors, isSubmitting, },
+        formState: { errors, isSubmitting },
     } = useForm({
-        mode: 'onChange', // Valida al enviar el formulario
-        reValidateMode: 'onChange', // Vuelve a validar al cambiar el valor
+        mode: 'onChange', 
+        reValidateMode: 'onChange', 
     });
-
 
     const onSubmit = async (data) => {
         try {
-
             const session = await getSession(); // Obtener sesión actual
 
             const response = await fetch('/api/submit-entity', {
@@ -41,7 +33,6 @@ export default function CreateEntityClient({ config }) {
                     'Accept': 'application/json',  // <- Este es el header que necesitas
                     Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
                     'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-
                 },
                 body: JSON.stringify({
                     endpoint,
@@ -55,7 +46,7 @@ export default function CreateEntityClient({ config }) {
                 toast.success(successMessage || "Entidad creada con éxito!");
                 reset();  // Resetear el formulario después del éxito
             } else {
-                toast.error("Error al crear la entidad"); /* result.error || errorMessage || */
+                toast.error(errorMessage); 
             }
         } catch (error) {
             console.error('Error al enviar el formulario:', error);
@@ -63,12 +54,9 @@ export default function CreateEntityClient({ config }) {
         }
     };
 
-
-
     return (
         <div className="h-full">
-
-            <div className="flex flex-col w-full h-full bg-neutral-800 rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
+            <div className="flex flex-col w-full h-full rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
                 <h1 className="text-xl text-white p-2">{title}</h1>
                 <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5">
                     {fields.map((field, index) => (
@@ -115,8 +103,6 @@ export default function CreateEntityClient({ config }) {
                                 />
                             )}
 
-
-
                             {(field.type !== "Autocomplete" && field.type !== "select" && field.type !== "textarea" && field.type !== 'password') &&
                                 (
                                     <input
@@ -144,8 +130,6 @@ export default function CreateEntityClient({ config }) {
                     </div>
                 </form>
             </div>
-
-
         </div>
     );
 }

@@ -47,7 +47,7 @@ export default function Navbar() {
 
     return (
         <>
-            <div className="flex flex-grow flex-col  pt-5 pb-4 gap-5 justify-between h-full" >
+            <div className="flex w-full flex-col pt-5 pb-4 gap-5 justify-between h-full" >
                 <div className="mt-3 flex flex-shrink-0 items-center px-7">
                     <img className="h-14 w-auto" src={NAVBAR_LOGO} alt="BlueApp" />
                 </div>

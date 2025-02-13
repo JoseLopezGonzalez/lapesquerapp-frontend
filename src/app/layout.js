@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
       <body
-        className={` bg-neutral-900 h-full w-full`}
+        className={` bg-neutral-950 h-screen w-full`}
       >
 
         <SessionProvider>{children}</SessionProvider>
