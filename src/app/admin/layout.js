@@ -7,8 +7,12 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
+    <div className='h-screen'>
+
     <Layout>
       {children}
     </Layout>
+
+    </div>
   );
 }
