@@ -1,29 +1,99 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import OrdersList from './OrdersList';
+import examples from './examples.json';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 
+const examplesOrders = examples.data;
+
+const initialCategories = [
+    {
+        label: 'Todos',
+        name: 'all',
+        current: true,
+    },
+    {
+        label: 'En producción',
+        name: 'pending',
+        current: false,
+    },
+    {
+        label: 'Terminados',
+        name: 'finished',
+        current: false,
+    }
+]
 
 export default function OrdersManager() {
 
-    const loading = false;
-
+    const [orders, setOrders] = useState([]);
+    const [categories, setCategories] = useState(initialCategories);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [searchText, setSearchText] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const [reloadList, setReloadList] = useState(false);
+    useEffect(() => {
+        /* Simular carga de datos */
+        setTimeout(() => {
+            setOrders(examplesOrders);
+            setLoading(false);
+        }, 2000);
+    }, [])
 
-    const onReloadList = () => {
-        setReloadList(!reloadList);
+    const filterOrders = orders.filter((order) => {
+        /* Añadir a order current, true o flase si coincide con selectedOrder */
+        order.current = selectedOrder === order.id;
+
+        /* categoria activa */
+        const activeCategory = categories.find((category) => category.current);
+
+        return (order.customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
+            order.id.toString().includes(searchText)) && (
+                activeCategory.name === 'all' ||
+                activeCategory.name === order.status
+            )
+    })
+
+    const sortOrdersByDate = filterOrders.sort((a, b) => {
+        return new Date(a.loadDate) - new Date(b.loadDate);
+    });
+
+    const handleOnClickOrderCard = (orderId) => {
+        if (selectedOrder === orderId) return setSelectedOrder(null);
+        setSelectedOrder(orderId);
     }
 
-    const handleOnClick = (order) => {
-        if (selectedOrder === order) return setSelectedOrder(null);
-        setSelectedOrder(order);
+    const handleOnClickCategory = (category) => {
+        setSelectedOrder(null);
+        setCategories(categories.map((cat) => {
+            if (cat.name === category.name) {
+                return {
+                    ...cat,
+                    current: true,
+                }
+            } else {
+                return {
+                    ...cat,
+                    current: false,
+                }
+            }
+        }))
     }
 
-    const isOrderSelected = (order) => {
-        return selectedOrder?.id === order.id;
+    const handleOnChangeSearch = (value) => {
+        /* Set current true category.name all  */
+        setCategories(categories.map((cat) => {
+            return {
+                ...cat,
+                current: cat.name === 'all',
+            }
+        }));
+
+        setSearchText(value);
+        setSelectedOrder(null);
     }
+
 
 
     return (
@@ -45,16 +115,23 @@ export default function OrdersManager() {
                 <div className="h-full">
                     <div className="flex flex-col xl:flex-row h-full">
                         <div className='xl:h-full'>
-                            <OrdersList/>
+                            <OrdersList
+                                onClickOrderCard={handleOnClickOrderCard}
+                                orders={sortOrdersByDate}
+                                categories={categories}
+                                onClickCategory={handleOnClickCategory}
+                                onChangeSearch={handleOnChangeSearch}
+                                searchText={searchText}
+                            />
                         </div>
                         <div className='grow p-5 pt-0 lg:pl-0'>
                             {selectedOrder ? (
                                 <div className='h-full text-white'>
-                                   {/*  <Order orderId={selectedOrder.id} onReloadList={onReloadList} /> */}
+                                    {/*  <Order orderId={selectedOrder.id} onReloadList={onReloadList} /> */}
                                 </div>
                             ) : (
-                                <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center'>
-                                    {/* <EmptyState title='Seleccione un pedido' description='Seleccione un pedido para ver los detalles' /> */}
+                                <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center bg-black/20'>
+                                    <EmptyState title='Seleccione un pedido' description='Seleccione un pedido para ver los detalles' />
                                 </div>
                             )}
                         </div>

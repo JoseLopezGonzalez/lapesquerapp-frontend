@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 
-/* import example.json */
-import example from './examples.json';
 import OrderCard from './OrderCard';
-import { IoSearchCircle } from 'react-icons/io5';
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -17,44 +14,15 @@ const sortOrdersByDate = (orders) => {
 }
 
 /* convertir examples a objeto js */
-const examplesOrders = example.data;
-
-console.log(examplesOrders)
 
 
-const OrdersList = () => {
+
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard }) => {
 
     const [loading, setLoading] = useState(false);
-    const [categories, setCategories] = useState([
-        {
-            name: 'Todos',
-            current: true,
-        },
-        {
-            name: 'En producción',
-            current: false,
-        },
-        {
-            name: 'Terminados',
-            current: false,
-        }
-    ]);
 
-    const handleOnClickCategory = (category) => {
-        setCategories(categories.map((cat) => {
-            if (cat.name === category.name) {
-                return {
-                    ...cat,
-                    current: true,
-                }
-            } else {
-                return {
-                    ...cat,
-                    current: false,
-                }
-            }
-        }))
-    }
+
+
 
 
 
@@ -67,16 +35,6 @@ const OrdersList = () => {
                 <>
 
                 </>
-            ) : !examplesOrders?.length ? (
-                <>
-                    {/* Empty state */}
-                    <div className='pl-7 w-full h-full pb-7'>
-                        <div className=' h-full w-full rounded-lg border-2 flex flex-col items-center justify-center gap-2 border-dashed px-20'>
-                            <InboxIcon className='h-10 w-10 text-white' />
-                            <h2 className='text-white text-lg font-light'>No hay pedidos activos</h2>
-                        </div>
-                    </div>
-                </>
             ) : (
                 <>
                     {/* Filtro */}
@@ -84,26 +42,38 @@ const OrdersList = () => {
                         {/*  <OrderFilters categories={categories} /> */}
 
                         {/* input search  */}
-                        <div className='relative w-full'>
-                            <input type="text" placeholder='Buscar' className='w-full h-10 px-5  bg-black/15 text-white border border-neutral-600 rounded-2xl' />
+                        <div className='relative w-full text-sm'>
+                            <input onChange={(e) => onChangeSearch(e.target.value)} value={searchText}
+                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5 bg-black/15 text-white border border-neutral-600 rounded-2xl placeholder:text-neutral-500' />
                             <button className='absolute right-0 top-0 h-full w-10 flex items-center justify-center'>
-                                <MagnifyingGlassIcon className='h-4 w-4 text-white dark:text-white' />
+                                {searchText.length > 0 ? (
+                                    <XMarkIcon onClick={() => onChangeSearch('')} className='h-4 w-4 text-white dark:text-white' />
+                                )
+                                    : (
+                                        <MagnifyingGlassIcon className='h-4 w-4 text-white dark:text-white' />
+                                    )}
                             </button>
                         </div>
+
+                        {/* <select class="mt-2 py-2 px-3 pe-9 block w-full border rounded-2xl text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-black/15 dark:border-neutral-600 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                            <option>Esta Semana</option>
+                            <option>Hoy</option>
+                            <option>Mañana</option>
+                        </select> */}
 
                         <div className='flex gap-3 mt-5 bg-neutral-600 rounded-full p-1'>
                             {/* Boton de caegorias */}
                             {categories.map((category, index) => category.current ? (
                                 <span key={category.name} class="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-black bg-white">
-                                    {category.name}
+                                    {category.label}
                                 </span>
                             ) : (
-                                <span 
-                                onClick={() => handleOnClickCategory(category)}
-                                key={category.name} 
-                                class=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-white bg-neutral-600"
+                                <span
+                                    onClick={() => onClickCategory(category)}
+                                    key={category.name}
+                                    className=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-white bg-neutral-600"
                                 >
-                                    {category.name}
+                                    {category.label}
                                 </span>
                             ))}
 
@@ -124,13 +94,72 @@ const OrdersList = () => {
                     </ScrollShadow> */}
 
                     {/* Lista de orders */}
-                    <div className='flex flex-col gap-3 '>
-                        {examplesOrders.map((order, index) => (
-                            <div key={index} className='' >
-                                <OrderCard order={order} isOrderSelected={() => false} />
+
+                    {orders?.length > 0 ? (
+                        <div className='grow overflow-y-auto xl:pr-2 pb-4 mb-5  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden'>
+                            {orders.map((order, index) => (
+                                <div key={index} className='' >
+                                    <OrderCard
+                                        onClick={() => onClickOrderCard(order.id)}
+                                        order={order} isOrderSelected={() => false} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className='flex flex-col items-center justify-start gap-6 h-full w-full '>
+                            <div className='flex flex-col items-center gap-2 w-full'>
+                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                    <div className=' flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
+                                        <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
+                                            <span className="me-1 relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-neutral-500"></span>
+                                            </span>
+                                            {/*  En producción */}
+                                        </div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-36 rounded-full'></div>
+                                        <div className='text-xl font-medium h-2 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-32 rounded-full'></div>
+                                    </div>
+                                </div>
+                                <div className='w-full opacity-25 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                    <div className='flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
+                                        <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
+                                            <span className="me-1 relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-neutral-500"></span>
+                                            </span>
+                                            {/*  En producción */}
+                                        </div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-36 rounded-full'></div>
+                                        <div className='text-xl font-medium h-2 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-32 rounded-full'></div>
+                                    </div>
+                                </div>
+                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                    <div className='flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
+                                        <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
+                                            <span className="me-1 relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-neutral-500"></span>
+                                            </span>
+                                            {/*  En producción */}
+                                        </div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-36 rounded-full'></div>
+                                        <div className='text-xl font-medium h-2 bg-neutral-400 w-20 rounded-full'></div>
+                                        <div className='text-xl font-medium h-4 bg-neutral-400 w-32 rounded-full'></div>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
-                    </div>
+                            {/* <div className='flex items-center flex-col gap-1 py-1 px-5'>
+                                <span className='text-neutral-300 dark:text-neutral-400 font-medium text-md'>No existen pedidos</span>
+                                <p className='text-neutral-300 dark:text-neutral-500 font-light text-sm'>Intenta introducir otros parámetros</p>
+                            </div> */}
+                        </div>
+                    )}
 
                     {/* Lista Movil */}
                     {/*  <ScrollShadow orientation='horizontal' className='grow overflow-y-auto  pb-4 mb-5 flex  gap-3 scrollbar-hide xl:hidden'>

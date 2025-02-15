@@ -1,25 +1,48 @@
 
-const OrderCard = ({ order, isOrderSelected }) => {
+const OrderCard = ({ order, onClick}) => {
 
     const orderId = order.id.toString().padStart(5, '0');
     const loadDate = order.loadDate.split('-').reverse().join('/'); //convertir fecha a dd/mm/yyyy
+
+    const today = new Date();
+    const loadDateObj = new Date(order.loadDate);
+    const isToday = today.toDateString() === loadDateObj.toDateString();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const isTomorrow = tomorrow.toDateString() === loadDateObj.toDateString();
+
+    
+
+
 
 
     return (
         <div
             className={`
-             flex cursor-pointer rounded-3xl p-5 border-l-4 
-            ${isOrderSelected(order) && order.status === 'finished' ?
+             relative flex cursor-pointer rounded-3xl p-5 border-l-4 
+            ${order.current && order.status === 'finished' ?
                     'border-green-500 bg-green-400/70 hover:bg-green-400/80' :
-                    isOrderSelected(order) && order.status === 'pending' ?
+                    order.current && order.status === 'pending' ?
                         'border-orange-500 bg-orange-400/90 hover:bg-orange-400' :
                         order.status === 'finished' ?
                             'border-green-400 bg-neutral-700 hover:bg-neutral-600' :
                             'border-orange-400 bg-neutral-700 hover:bg-neutral-600'
                 }
             `}
+            onClick = {onClick}
         >
-            <div className='grow dark:text-white xl:w-48 space-y-2'>
+            {isToday && (
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-black">
+                    {isToday && 'Hoy'}
+                </span>)}
+
+            {isTomorrow && (
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/20 text-black">
+                    {isTomorrow && 'Mañana'}
+                </span>)}
+
+            < div className='grow dark:text-white xl:w-48 space-y-2'>
 
                 {order.status === 'pending' && (
                     <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300">
@@ -38,14 +61,16 @@ const OrderCard = ({ order, isOrderSelected }) => {
                     </span>
                 )}
 
-                <h3 className='text-xl font-medium '>#{orderId}</h3>
+                <h3 className='text-xl font-medium'>#{orderId}</h3>
                 <div>
-                    <p className=' text-xs font-light text-white'>Cliente:</p>
+                    {/* <p className=' text-xs font-light text-white'>Cliente:</p> */}
                     <p className='font-medium text-lg whitespace-nowrap xl:whitespace-normal'>{order.customer.name}</p>
                 </div>
                 <div className=''>
                     <p className='text-xs font-light text-white'>Fecha de Carga:</p>
-                    <p className='font-medium text-lg'>{loadDate}</p>
+                    <p className='font-medium text-lg '>
+                        {loadDate}
+                    </p>
                 </div>
 
                 {/* <div className=''>
@@ -53,9 +78,11 @@ const OrderCard = ({ order, isOrderSelected }) => {
                     <p className='font-medium text-sm'>{order.transport.name}</p>
                 </div> */}
 
-            </div>
+
+
+            </div >
         </div>
-    )
+            )
 }
 
-export default OrderCard
+            export default OrderCard
