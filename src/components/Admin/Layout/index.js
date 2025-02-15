@@ -67,10 +67,10 @@ export default function Layout({ children, title }) {
                     </Dialog>
                 </Transition.Root>
 
-                <div className='flex flex-row h-full'>
+                <div className='flex flex-row h-full  p-1 gap-2'>
 
                     {/* Sidebar estático para pantallas grandes */}
-                    <div className="hidden h-full md:flex md:w-72 md:flex-col p-1">
+                    <div className="hidden h-full md:flex md:w-72 md:flex-col ">
                         <div className="flex h-full w-full bg-neutral-950 rounded-2xl">
                             <Navbar />
                         </div>
@@ -97,8 +97,8 @@ export default function Layout({ children, title }) {
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                             </button>
                         </div>
-                        <main className="flex-1  h-full w-full shadow-md overflow-y-auto">
-                            <div className="absolute pl-5 pt-4 md:block hidden">
+                        <main className="flex-1 h-full w-full overflow-y-auto">
+                            {/* <div className="absolute pl-5 pt-4 md:block hidden">
                                 <button
                                     type="button"
                                     className="inline-flex px-2 py-2 items-center justify-center rounded-lg text-neutral-500 dark:text-white hover:text-neutral-900 dark:hover:bg-neutral-600 dark:hover:text-neutral-300"
@@ -107,12 +107,12 @@ export default function Layout({ children, title }) {
                                     <span className="sr-only">Go Back</span>
                                     <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
                                 </button>
-                            </div>
+                            </div> */}
 
                             <div className="h-full">
                                 <div className="h-full">
                                     {/* Contenido dinámico */}
-                                    <div className="pt-2 md:pt-4 h-full">{children}</div>
+                                    <div className=" h-full  overflow-y-auto rounded-2xl p-2">{children}</div>
                                 </div>
                             </div>
                         </main>

@@ -1,0 +1,917 @@
+{
+    "data": [
+        {
+            "id": 1358,
+            "buyerReference": "000042",
+            "customer": {
+                "id": 9,
+                "name": "Valencamar, Unipessoal LDA",
+                "alias": "Cliente N\u00ba106",
+                "vatNumber": "PT507535014",
+                "paymentTerm": {
+                    "id": 3,
+                    "name": "Transferencia bancaria 30 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "Valencamar, Unipessoal LDA\r\nPT507535014\r\nRua dos Crasto, 61\r\n4930-504 S.Pedro da Torre (Valen\u00e7a)\r\nPortugal",
+                "shippingAddress": "Valencamar, Unipessoal LDA\r\nRua dos Crasto, 61\r\n4930-504 S.Pedro da Torre (Valen\u00e7a)\r\nPortugal",
+                "transportationNotes": null,
+                "productionNotes": "Enviar muestra de etiquetas por cada producto y lote con la documentaci\u00f3n.",
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 2,
+                    "name": "Administraci\u00f3n",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "emails": "mike@metichgroup.com;\r\nCC:mike@valencamar.com;\r\nCC:accounting@brisatlantic.com;",
+                "contactInfo": "Michael - mike@metichgroup.com\r\nmike@valencamar.com",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 4,
+                    "name": "TPO Unipessoal, LDA",
+                    "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                    "createdAt": "2024-01-03T19:33:44.000000Z",
+                    "updatedAt": "2024-01-03T19:33:44.000000Z"
+                },
+                "createdAt": "2024-01-03T19:26:08.000000Z",
+                "updatedAt": "2024-01-03T19:26:08.000000Z"
+            },
+            "paymentTerm": {
+                "id": 3,
+                "name": "Transferencia bancaria 30 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "Valencamar, Unipessoal LDA\r\nPT507535014\r\nRua dos Crasto, 61\r\n4930-504 S.Pedro da Torre (Valen\u00e7a)\r\nPortugal",
+            "shippingAddress": "Valencamar, Unipessoal LDA\r\nRua dos Crasto, 61\r\n4930-504 S.Pedro da Torre (Valen\u00e7a)\r\nPortugal",
+            "transportationNotes": null,
+            "productionNotes": "Pulpo eviscerado congelado IQF T1: 300kg\nPulpo eviscerado congelado IQF T2: 250kg\nPulpo eviscerado congelado IQF T3: 50kg",
+            "accountingNotes": "Precios\nPulpo eviscerado congelado IQF T1: 15,00\u20ac\/kg\nPulpo eviscerado congelado IQF T2: 14,00\u20ac\/kg\nPulpo eviscerado congelado IQF T3: 13,00\u20ac\/kg",
+            "salesperson": {
+                "id": 3,
+                "name": "Michael",
+                "createdAt": "2024-01-23T18:06:05.000000Z",
+                "updatedAt": "2024-01-23T18:06:05.000000Z"
+            },
+            "emails": "mike@metichgroup.com;\r\nCC:mike@valencamar.com;\r\nCC:accounting@brisatlantic.com;",
+            "transport": {
+                "id": 4,
+                "name": "TPO Unipessoal, LDA",
+                "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                "createdAt": "2024-01-03T19:33:44.000000Z",
+                "updatedAt": "2024-01-03T19:33:44.000000Z"
+            },
+            "entryDate": "2024-12-11",
+            "loadDate": "2025-03-03",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2024-12-11T17:23:12.000000Z",
+            "updatedAt": "2025-02-07T09:04:04.000000Z"
+        },
+        {
+            "id": 1466,
+            "buyerReference": "-",
+            "customer": {
+                "id": 56,
+                "name": "Mariscos Terranosa S.L.",
+                "alias": "Cliente N\u00ba 186",
+                "vatNumber": "ESB70528203",
+                "paymentTerm": {
+                    "id": 10,
+                    "name": "Transferencia bancaria 45 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "Mariscos Terranosa S.L.\r\nESB70528203\r\nRua Parroquia de Guisamo N\u00ba5\r\nParcela A-5,Nave 4, Pol. Ind Bergondo\r\n15166 Bergondo - (Coru\u00f1a)\r\nEspa\u00f1a",
+                "shippingAddress": "Mariscos Terranosa S.L.\r\nRua Parroquia de Guisamo N\u00ba5\r\nParcela A-5,Nave 4, Pol. Ind Bergondo\r\n15166 Bergondo - (Coru\u00f1a)\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "terranosa@terranosa.es;\r\nCC:contabilidad@congeladosbrisamar.es",
+                "contactInfo": "",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 4,
+                    "name": "TPO Unipessoal, LDA",
+                    "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                    "createdAt": "2024-01-03T19:33:44.000000Z",
+                    "updatedAt": "2024-01-03T19:33:44.000000Z"
+                },
+                "createdAt": "2024-05-07T13:54:53.000000Z",
+                "updatedAt": "2024-05-07T13:54:53.000000Z"
+            },
+            "paymentTerm": {
+                "id": 10,
+                "name": "Transferencia bancaria 45 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "Mariscos Terranosa S.L.\r\nESB70528203\r\nRua Parroquia de Guisamo N\u00ba5\r\nParcela A-5,Nave 4, Pol. Ind Bergondo\r\n15166 Bergondo - (Coru\u00f1a)\r\nEspa\u00f1a",
+            "shippingAddress": "Mariscos Terranosa S.L.\r\nRua Parroquia de Guisamo N\u00ba5\r\nParcela A-5,Nave 4, Pol. Ind Bergondo\r\n15166 Bergondo - (Coru\u00f1a)\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "1 PALET DE T3 IQF EN BOLSA CON 15% DE AGUA\n200 KILOS DE T4 IQF EN BOLSA 15% DE AGUA",
+            "accountingNotes": "T3 A 13.10\u20ac\nT4 A 11.80\u20ac",
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "terranosa@terranosa.es;\r\nCC:contabilidad@congeladosbrisamar.es",
+            "transport": {
+                "id": 4,
+                "name": "TPO Unipessoal, LDA",
+                "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                "createdAt": "2024-01-03T19:33:44.000000Z",
+                "updatedAt": "2024-01-03T19:33:44.000000Z"
+            },
+            "entryDate": "2025-01-20",
+            "loadDate": "2025-02-17",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-01-20T09:08:44.000000Z",
+            "updatedAt": "2025-02-11T16:53:08.000000Z"
+        },
+        {
+            "id": 1468,
+            "buyerReference": "-",
+            "customer": {
+                "id": 55,
+                "name": "Congelados Juan Sabaris S.L.",
+                "alias": "Cliente N\u00ba 96",
+                "vatNumber": "ESB36375350",
+                "paymentTerm": {
+                    "id": 8,
+                    "name": "Pagar\u00e9 45 d\u00edas",
+                    "createdAt": "2024-02-19T10:57:38.000000Z",
+                    "updatedAt": "2024-02-19T10:57:38.000000Z"
+                },
+                "billingAddress": "Congelados Juan Sabaris S.L.\r\nESB36375350\r\nA Cancela 1 A Portela\r\n36191 Barro (Pontevedra)\r\nEspa\u00f1a\r\n\r\n",
+                "shippingAddress": "Congelados Juan Sabaris S.L.\r\nA Cancela 1 A Portela\r\n36191 Barro (Pontevedra)\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "info@conjusa.es;\r\nbeatriz@conjusa.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+                "contactInfo": "Tlf 986714804\r\nMovil 659999322\r\nPersona De Contacto - Juan Sabaris",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 4,
+                    "name": "TPO Unipessoal, LDA",
+                    "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                    "createdAt": "2024-01-03T19:33:44.000000Z",
+                    "updatedAt": "2024-01-03T19:33:44.000000Z"
+                },
+                "createdAt": "2024-05-01T10:07:03.000000Z",
+                "updatedAt": "2024-05-01T10:07:03.000000Z"
+            },
+            "paymentTerm": {
+                "id": 8,
+                "name": "Pagar\u00e9 45 d\u00edas",
+                "createdAt": "2024-02-19T10:57:38.000000Z",
+                "updatedAt": "2024-02-19T10:57:38.000000Z"
+            },
+            "billingAddress": "Congelados Juan Sabaris S.L.\r\nESB36375350\r\nA Cancela 1 A Portela\r\n36191 Barro (Pontevedra)\r\nEspa\u00f1a",
+            "shippingAddress": "Congelados Juan Sabaris S.L.\r\nA Cancela 1 A Portela\r\n36191 Barro (Pontevedra)\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "1 PALET DE T3 IQF EN BOLSA \n1 PALET DE T2 IQF EM BOLSA \n1 PALET DE T4 IQF EN BOLSA",
+            "accountingNotes": "T3 A 14.50\u20ac\nT2 A 15.50\u20ac\nT4 A 13.50\u20ac",
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "info@conjusa.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 4,
+                "name": "TPO Unipessoal, LDA",
+                "address": "Rua Do Soldador Lote 6\r\nApartado 1010 - Olhao\r\nPortugal",
+                "createdAt": "2024-01-03T19:33:44.000000Z",
+                "updatedAt": "2024-01-03T19:33:44.000000Z"
+            },
+            "entryDate": "2025-01-20",
+            "loadDate": "2025-02-17",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-01-20T09:30:11.000000Z",
+            "updatedAt": "2025-02-11T15:38:40.000000Z"
+        },
+        {
+            "id": 1506,
+            "buyerReference": "-",
+            "customer": {
+                "id": 101,
+                "name": "Aframar S.L.",
+                "alias": "Cliente N\u00ba 101",
+                "vatNumber": "ESB35018332",
+                "paymentTerm": {
+                    "id": 9,
+                    "name": "Pago al contado",
+                    "createdAt": "2024-05-29T13:15:27.000000Z",
+                    "updatedAt": "2024-05-29T13:15:27.000000Z"
+                },
+                "billingAddress": "Aframar S.L.\r\nESB35018332\r\nCalle Parsi 5 N 10\r\nPoligono Industrial El Parsi\r\n41016 Sevilla\r\nEspa\u00f1a\r\n",
+                "shippingAddress": "Aframar S.L.\r\nCalle Parsi 5 N 10\r\nPoligono Industrial El Parsi\r\n41016 Sevilla\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "aframar@aframar.es;\r\nCC:aframar.sevilla@aframar.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+                "contactInfo": "",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 12,
+                    "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                    "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                    "createdAt": "2024-06-14T13:37:03.000000Z",
+                    "updatedAt": "2024-06-14T13:37:03.000000Z"
+                },
+                "createdAt": "2025-02-11T11:34:40.000000Z",
+                "updatedAt": "2025-02-11T11:34:40.000000Z"
+            },
+            "paymentTerm": {
+                "id": 9,
+                "name": "Pago al contado",
+                "createdAt": "2024-05-29T13:15:27.000000Z",
+                "updatedAt": "2024-05-29T13:15:27.000000Z"
+            },
+            "billingAddress": "Aframar S.L.\r\nESB35018332\r\nCalle Parsi 5 N 10\r\nPoligono Industrial El Parsi\r\n41016 Sevilla\r\nEspa\u00f1a",
+            "shippingAddress": "Aframar S.L.\r\nCalle Parsi 5 N 10\r\nPoligono Industrial El Parsi\r\n41016 Sevilla\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "10 PALETS DE T5",
+            "accountingNotes": "T5 A 12.60\u20ac",
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "aframar@aframar.es;\r\nCC:aframar.sevilla@aframar.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 12,
+                "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                "createdAt": "2024-06-14T13:37:03.000000Z",
+                "updatedAt": "2024-06-14T13:37:03.000000Z"
+            },
+            "entryDate": "2025-02-07",
+            "loadDate": "2025-02-18",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-11T10:39:35.000000Z",
+            "updatedAt": "2025-02-13T09:10:50.000000Z"
+        },
+        {
+            "id": 1508,
+            "buyerReference": "-",
+            "customer": {
+                "id": 13,
+                "name": "Pescados Pulponor S.L",
+                "alias": "Cliente N\u00ba 111",
+                "vatNumber": "ESB70518691\r\n\r\n\r\n",
+                "paymentTerm": {
+                    "id": 3,
+                    "name": "Transferencia bancaria 30 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "Pescados Pulponor S.L\r\nB70518691\r\nCalle Insuela N\u00ba17\r\n15240 - Esteiro Muros(La Coru\u00f1a)\r\nEspa\u00f1a",
+                "shippingAddress": "Pulponor Santiago\r\nRua Xubris, N\u00ba31\r\nMarrazos (Santiago de Compostela)\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": "Banco: Bankinter",
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "info@pulponor.com;\r\nCC:miguel@congeladosbrisamar.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+                "contactInfo": "",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 3,
+                    "name": "Distran Oromana Sl",
+                    "address": "Lugar Poligono Fridex\r\nAlcala de Guadaira, 41500\r\nSevilla",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "createdAt": "2024-01-15T16:53:17.000000Z",
+                "updatedAt": "2024-01-15T16:53:17.000000Z"
+            },
+            "paymentTerm": {
+                "id": 3,
+                "name": "Transferencia bancaria 30 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "Pescados Pulponor S.L\r\nB70518691\r\nCalle Insuela N\u00ba17\r\n15240 - Esteiro Muros(La Coru\u00f1a)\r\nEspa\u00f1a",
+            "shippingAddress": "Pulponor Santiago\r\nRua Xubris, N\u00ba31\r\nMarrazos (Santiago de Compostela)\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "2 PALETS DE T3",
+            "accountingNotes": "Banco: Bankinter\nT3 A 14.50\u20ac",
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "info@pulponor.com;\r\nCC:miguel@congeladosbrisamar.es;\r\nCC:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 12,
+                "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                "createdAt": "2024-06-14T13:37:03.000000Z",
+                "updatedAt": "2024-06-14T13:37:03.000000Z"
+            },
+            "entryDate": "2025-02-11",
+            "loadDate": "2025-02-18",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-11T12:37:50.000000Z",
+            "updatedAt": "2025-02-11T12:37:50.000000Z"
+        },
+        {
+            "id": 1510,
+            "buyerReference": "-",
+            "customer": {
+                "id": 75,
+                "name": "Pulpo del Cantabrico S.L.",
+                "alias": "Cliente N\u00ba 201",
+                "vatNumber": "ESB74347931",
+                "paymentTerm": {
+                    "id": 6,
+                    "name": "Transferencia bancaria, recepci\u00f3n mercanc\u00eda",
+                    "createdAt": "2024-01-15T17:16:20.000000Z",
+                    "updatedAt": "2024-01-15T17:16:20.000000Z"
+                },
+                "billingAddress": "Pulpo Del Cantabrico S.L\r\nAvd De Lugo 88\r\nAviles 33401 (Asturias)\r\nEspa\u00f1a",
+                "shippingAddress": "Pulpo Del Cantabrico S.L\r\nAvd De Lugo 88\r\nAviles 33401 (Asturias)\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "pulpocantabrico@gmail.com;\r\nCC:contabilidad@congeladosbrisamar.es;",
+                "contactInfo": "678902990",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 11,
+                    "name": "Stef Iberia, S.A.U.",
+                    "address": "C\/ L\u00edmite, 6 (Pol. Ind. Las Fronteras)\r\n28850 Torrej\u00f3n de Ardoz (Madrid)",
+                    "createdAt": "2024-05-15T17:44:13.000000Z",
+                    "updatedAt": "2024-05-15T17:44:13.000000Z"
+                },
+                "createdAt": "2024-07-08T12:53:46.000000Z",
+                "updatedAt": "2024-07-08T12:53:46.000000Z"
+            },
+            "paymentTerm": {
+                "id": 6,
+                "name": "Transferencia bancaria, recepci\u00f3n mercanc\u00eda",
+                "createdAt": "2024-01-15T17:16:20.000000Z",
+                "updatedAt": "2024-01-15T17:16:20.000000Z"
+            },
+            "billingAddress": "Pulpo Del Cantabrico S.L\r\nAvd De Lugo 88\r\nAviles 33401 (Asturias)\r\nEspa\u00f1a",
+            "shippingAddress": "Pulpo Del Cantabrico S.L\r\nAvd De Lugo 88\r\nAviles 33401 (Asturias)\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "1 PALET DE T4 EN BLOQUE \n1 PALET DE TR MENOS DE 1.5 EN BLOQUE",
+            "accountingNotes": "T4 A 13.80\u20ac\nROTO A 8.50\u20ac",
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "pulpocantabrico@gmail.com;\r\nCC:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 12,
+                "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                "createdAt": "2024-06-14T13:37:03.000000Z",
+                "updatedAt": "2024-06-14T13:37:03.000000Z"
+            },
+            "entryDate": "2025-02-12",
+            "loadDate": "2025-02-19",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-12T11:30:08.000000Z",
+            "updatedAt": "2025-02-12T11:30:08.000000Z"
+        },
+        {
+            "id": 1511,
+            "buyerReference": "-",
+            "customer": {
+                "id": 102,
+                "name": "Frioborben S.L.",
+                "alias": "Cliente N\u00ba 102",
+                "vatNumber": "ESB94139052",
+                "paymentTerm": {
+                    "id": 9,
+                    "name": "Pago al contado",
+                    "createdAt": "2024-05-29T13:15:27.000000Z",
+                    "updatedAt": "2024-05-29T13:15:27.000000Z"
+                },
+                "billingAddress": "Frioborben S.L.\r\nESB94139052\r\nPol Bergondo\r\nC\/P\u00e0rroquia Corti\u00f1an . Par.I-11\r\n15165 Bergondo (Coru\u00f1a)\r\nEspa\u00f1a\r\n\r\n",
+                "shippingAddress": "Frioborben S.L.\r\nPol Bergondo\r\nC\/P\u00e0rroquia Corti\u00f1an . Par.I-11\r\n15165 Bergondo (Coru\u00f1a)\r\nEspa\u00f1a",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 7,
+                    "name": "Miguel Nieto",
+                    "createdAt": "2024-04-25T10:33:58.000000Z",
+                    "updatedAt": "2024-04-25T10:33:58.000000Z"
+                },
+                "emails": "frioborben@gmail.com;\r\nCC:contabilidad@congeladosbrisamar.es;",
+                "contactInfo": "TEL 981795476",
+                "country": {
+                    "id": 1,
+                    "name": "Espa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 12,
+                    "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                    "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                    "createdAt": "2024-06-14T13:37:03.000000Z",
+                    "updatedAt": "2024-06-14T13:37:03.000000Z"
+                },
+                "createdAt": "2025-02-11T11:37:40.000000Z",
+                "updatedAt": "2025-02-11T11:37:40.000000Z"
+            },
+            "paymentTerm": {
+                "id": 9,
+                "name": "Pago al contado",
+                "createdAt": "2024-05-29T13:15:27.000000Z",
+                "updatedAt": "2024-05-29T13:15:27.000000Z"
+            },
+            "billingAddress": "Frioborben S.L.\r\nESB94139052\r\nPol Bergondo\r\nC\/P\u00e0rroquia Corti\u00f1an . Par.I-11\r\n15165 Bergondo (Coru\u00f1a)\r\nEspa\u00f1a",
+            "shippingAddress": "Frioborben S.L.\r\nPol Bergondo\r\nC\/P\u00e0rroquia Corti\u00f1an . Par.I-11\r\n15165 Bergondo (Coru\u00f1a)\r\nEspa\u00f1a",
+            "transportationNotes": null,
+            "productionNotes": "1 PALET DE T2 PULPO DA LUA\n2 PALET DE T3 PULPO DA LUA\n2 PALET DE T4 PULPO DA LUA \n2 PALET DE T5 PULPO DA LUA",
+            "accountingNotes": null,
+            "salesperson": {
+                "id": 7,
+                "name": "Miguel Nieto",
+                "createdAt": "2024-04-25T10:33:58.000000Z",
+                "updatedAt": "2024-04-25T10:33:58.000000Z"
+            },
+            "emails": "frioborben@gmail.com;\r\nCC:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 12,
+                "name": "Transportes Frigor\u00edficos Narval, S.L.",
+                "address": "Centro de Transportes de Madrid, Ctra. Villaverde a Vallecas, Km. 3.5, 28053 \r\nMadrid",
+                "createdAt": "2024-06-14T13:37:03.000000Z",
+                "updatedAt": "2024-06-14T13:37:03.000000Z"
+            },
+            "entryDate": "2025-02-11",
+            "loadDate": "2025-02-18",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-13T11:05:06.000000Z",
+            "updatedAt": "2025-02-13T11:05:06.000000Z"
+        },
+        {
+            "id": 1513,
+            "buyerReference": "377",
+            "customer": {
+                "id": 2,
+                "name": "Circeo Pesca S.R.L.",
+                "alias": "Cliente N\u00ba217",
+                "vatNumber": "IT00656120540",
+                "paymentTerm": {
+                    "id": 3,
+                    "name": "Transferencia bancaria 30 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "Circeo Pesca S.R.L.\r\nIT00656120540\r\nVia Gagarin 1 \r\n06074 San Mariano Di Corciano (Perugia)\r\nItalia",
+                "shippingAddress": "Circeo Pesca S.R.L.\r\nVia Gagarin 1 \r\n06074 San Mariano Di Corciano (Perugia)\r\nItalia",
+                "transportationNotes": null,
+                "productionNotes": "",
+                "accountingNotes": "",
+                "salesperson": {
+                    "id": 2,
+                    "name": "Administraci\u00f3n",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "emails": "amministrazione@circeopesca.it;\r\nCC:alessandromonaldi@circeopesca.it;\r\nCC:desyreetrottolini@circeopesca.it;\r\nCC:alfonso@brisatlantic.com;\r\nCC:accounting@brisatlantic.com;",
+                "contactInfo": "Alessandro",
+                "country": {
+                    "id": 2,
+                    "name": "Italia",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 2,
+                    "name": "Tir Sevilla S.L.\r\n",
+                    "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "createdAt": "2024-04-22T10:33:14.000000Z",
+                "updatedAt": "2024-04-22T10:33:14.000000Z"
+            },
+            "paymentTerm": {
+                "id": 3,
+                "name": "Transferencia bancaria 30 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "Circeo Pesca S.R.L.\r\nIT00656120540\r\nVia Gagarin 1 \r\n06074 San Mariano Di Corciano (Perugia)\r\nItalia",
+            "shippingAddress": "Circeo Pesca S.R.L.\r\nVia Gagarin 1 \r\n06074 San Mariano Di Corciano (Perugia)\r\nItalia",
+            "transportationNotes": null,
+            "productionNotes": "Pulpo fresco rizado +\/-\n30 cajas x 5kg: 150kg\nEtiqueta \"CIR\"",
+            "accountingNotes": "Precio: 12.30\u20ac\/kg",
+            "salesperson": {
+                "id": 2,
+                "name": "Administraci\u00f3n",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "emails": "amministrazione@circeopesca.it;\r\nCC:alessandromonaldi@circeopesca.it;\r\nCC:desyreetrottolini@circeopesca.it;\r\nCC:alfonso@brisatlantic.com;\r\nCC:accounting@brisatlantic.com;",
+            "transport": {
+                "id": 2,
+                "name": "Tir Sevilla S.L.\r\n",
+                "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "entryDate": "2025-02-14",
+            "loadDate": "2025-02-17",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-14T08:41:59.000000Z",
+            "updatedAt": "2025-02-14T08:41:59.000000Z"
+        },
+        {
+            "id": 1515,
+            "buyerReference": "202500044062",
+            "customer": {
+                "id": 48,
+                "name": "Nederlof Italia SRL (Unicom)\r\n",
+                "alias": "Cliente N\u00ba 185",
+                "vatNumber": "IT04722860261",
+                "paymentTerm": {
+                    "id": 3,
+                    "name": "Transferencia bancaria 30 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "Nederlof Italia SRL\r\nIT04722860261\r\nP.Zza Giustinian Recanati, 7\r\n31100 Treviso - (TV)\r\nItalia",
+                "shippingAddress": "Nederlof Italia SRL\r\nMed Sealog Venezia c\/o Dep.\r\nMEDITERRANEA TRASPORTI SRL\r\nVia Ist.St.Maria della Piet\u00e0 21-23\r\nItalia",
+                "transportationNotes": null,
+                "productionNotes": "(Agua, nieve, pulpo)",
+                "accountingNotes": "",
+                "salesperson": {
+                    "id": 2,
+                    "name": "Administraci\u00f3n",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "emails": "office@nederlof.fish;\r\nuff.pesce@unicomm.it;\r\nptf.unicomm.venezia@medsealog.com;\r\nCC:paco@brisatlantic.com;\r\nCC:accounting@brisatlantic.com;",
+                "contactInfo": "",
+                "country": {
+                    "id": 2,
+                    "name": "Italia",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 2,
+                    "name": "Tir Sevilla S.L.\r\n",
+                    "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "createdAt": "2024-04-04T18:34:05.000000Z",
+                "updatedAt": "2024-04-04T18:34:05.000000Z"
+            },
+            "paymentTerm": {
+                "id": 3,
+                "name": "Transferencia bancaria 30 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "Nederlof Italia SRL\r\nIT04722860261\r\nP.Zza Giustinian Recanati, 7\r\n31100 Treviso - (TV)\r\nItalia",
+            "shippingAddress": "Nederlof Italia SRL\r\nMed Sealog Venezia c\/o Dep.\r\nMEDITERRANEA TRASPORTI SRL\r\nVia Ist.St.Maria della Piet\u00e0 21-23\r\nItalia",
+            "transportationNotes": null,
+            "productionNotes": "Pulpo fresco rizado +\/-\n25 cajas x 5kg: 125kg\nEtiqueta \"Brisatlantic\"",
+            "accountingNotes": "Precio: 12.30\u20ac\/kg",
+            "salesperson": {
+                "id": 2,
+                "name": "Administraci\u00f3n",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "emails": "office@nederlof.fish;\r\nuff.pesce@unicomm.it;\r\nptf.unicomm.venezia@medsealog.com;\r\nCC:paco@brisatlantic.com;\r\nCC:accounting@brisatlantic.com;",
+            "transport": {
+                "id": 2,
+                "name": "Tir Sevilla S.L.\r\n",
+                "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "entryDate": "2025-02-14",
+            "loadDate": "2025-02-17",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-14T08:48:50.000000Z",
+            "updatedAt": "2025-02-14T08:48:50.000000Z"
+        },
+        {
+            "id": 1517,
+            "buyerReference": "-",
+            "customer": {
+                "id": 42,
+                "name": "VRM Srl",
+                "alias": "Cliente N\u00ba 90",
+                "vatNumber": "IT02779360243",
+                "paymentTerm": {
+                    "id": 2,
+                    "name": "Transferencia bancaria 15 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "VRM Srl\r\nVia Sommacampagna 63\/D\r\n37137 Verona\r\nItalia",
+                "shippingAddress": "VRM Srl\r\nVia Sommacampagna 63\/d\r\n37137 Verona\r\nc\/o Centro Agroalimentare\r\nItalia",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": null,
+                "salesperson": {
+                    "id": 2,
+                    "name": "Administraci\u00f3n",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "emails": "fornitori@vrmazzurro.com;\r\nmonica_magrinelli@vrmazzurro.com;\r\nCC:accounting@brisatlantic.com;\r\nCC:paco@brisatlantic.com;",
+                "contactInfo": "Telefono  045 8627600 r.a.\r\nTelefax 045 8627686",
+                "country": {
+                    "id": 2,
+                    "name": "Italia",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "transport": {
+                    "id": 2,
+                    "name": "Tir Sevilla S.L.\r\n",
+                    "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "createdAt": "2024-03-14T11:13:23.000000Z",
+                "updatedAt": "2024-03-14T11:13:23.000000Z"
+            },
+            "paymentTerm": {
+                "id": 2,
+                "name": "Transferencia bancaria 15 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "VRM Srl\r\nVia Sommacampagna 63\/D\r\n37137 Verona\r\nItalia",
+            "shippingAddress": "VRM Srl\r\nVia Sommacampagna 63\/d\r\n37137 Verona\r\nc\/o Centro Agroalimentare\r\nItalia",
+            "transportationNotes": null,
+            "productionNotes": "Pulpo fresco rizado +\/-\n20 cajas x 5kg: 100kg\nEtiqueta \"Brisatlantic\"",
+            "accountingNotes": "Precio: 12.30\u20ac\/kg",
+            "salesperson": {
+                "id": 2,
+                "name": "Administraci\u00f3n",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "emails": "fornitori@vrmazzurro.com;\r\nmonica_magrinelli@vrmazzurro.com;\r\nCC:accounting@brisatlantic.com;\r\nCC:paco@brisatlantic.com;",
+            "transport": {
+                "id": 2,
+                "name": "Tir Sevilla S.L.\r\n",
+                "address": "Lugar Paraje Cerro alto, S\/N\r\n04620 Vera (Almeria) \r\nEspa\u00f1a",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "entryDate": "2025-02-14",
+            "loadDate": "2025-02-17",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-14T08:51:54.000000Z",
+            "updatedAt": "2025-02-14T08:51:54.000000Z"
+        },
+        {
+            "id": 1518,
+            "buyerReference": "-",
+            "customer": {
+                "id": 86,
+                "name": "RF&RM OCTOPUS, Lda.",
+                "alias": "Cliente N\u00ba 136",
+                "vatNumber": "PT515058637",
+                "paymentTerm": {
+                    "id": 1,
+                    "name": "Transferencia bancaria 10 d\u00edas",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "billingAddress": "RF&RM OCTOPUS, Lda.\r\nZona Industrial Olh\u00e3o Lote 22, Apartado 1051\r\n8700 - 910 Olh\u00e3o\r\nPortugal",
+                "shippingAddress": "RF&RM OCTOPUS, Lda.\r\nCongelagos\r\nVale de Coitos, Odiaxere \u2013 PO Box 482 \u2013 X\r\n8600-001 Lagos\r\nPortugal",
+                "transportationNotes": null,
+                "productionNotes": null,
+                "accountingNotes": "Fact. La Pesca del Meridi\u00f3n",
+                "salesperson": {
+                    "id": 2,
+                    "name": "Administraci\u00f3n",
+                    "createdAt": null,
+                    "updatedAt": null
+                },
+                "emails": "cc:contabilidad@congeladosbrisamar.es;\r\n",
+                "contactInfo": "-",
+                "country": {
+                    "id": 5,
+                    "name": "Portugal",
+                    "createdAt": "2024-02-15T10:23:53.000000Z",
+                    "updatedAt": "2024-02-15T10:23:53.000000Z"
+                },
+                "transport": {
+                    "id": 5,
+                    "name": "Congelados Brisamar S.L.",
+                    "address": "Poligono Vista Hermosa, Nave 11A\r\n21410 Isla Cristina (Huelva)\r\nEspa\u00f1a",
+                    "createdAt": "2024-01-11T13:03:22.000000Z",
+                    "updatedAt": "2024-01-11T13:03:22.000000Z"
+                },
+                "createdAt": "2024-09-19T09:51:49.000000Z",
+                "updatedAt": "2024-09-19T09:51:49.000000Z"
+            },
+            "paymentTerm": {
+                "id": 1,
+                "name": "Transferencia bancaria 10 d\u00edas",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "billingAddress": "RF&RM OCTOPUS, Lda.\r\nZona Industrial Olh\u00e3o Lote 22, Apartado 1051\r\n8700 - 910 Olh\u00e3o\r\nPortugal",
+            "shippingAddress": "RF&RM OCTOPUS, Lda.\r\nCongelagos\r\nVale de Coitos, Odiaxere \u2013 PO Box 482 \u2013 X\r\n8600-001 Lagos\r\nPortugal",
+            "transportationNotes": null,
+            "productionNotes": "5 PALETS PULPO EN BANDEJA 3\/4",
+            "accountingNotes": "Fact. La Pesca del Meridi\u00f3n\nBANDEJA 10.00\u20ac",
+            "salesperson": {
+                "id": 2,
+                "name": "Administraci\u00f3n",
+                "createdAt": null,
+                "updatedAt": null
+            },
+            "emails": "cc:contabilidad@congeladosbrisamar.es;",
+            "transport": {
+                "id": 5,
+                "name": "Congelados Brisamar S.L.",
+                "address": "Poligono Vista Hermosa, Nave 11A\r\n21410 Isla Cristina (Huelva)\r\nEspa\u00f1a",
+                "createdAt": "2024-01-11T13:03:22.000000Z",
+                "updatedAt": "2024-01-11T13:03:22.000000Z"
+            },
+            "entryDate": "2025-02-14",
+            "loadDate": "2025-02-18",
+            "status": "pending",
+            "numberOfPallets": 0,
+            "hasPalletsOnStorage": false,
+            "incoterm": {
+                "id": 1,
+                "code": "DDP",
+                "description": "Delivery Duty Paid",
+                "createdAt": "2024-04-26T13:23:04.000000Z",
+                "updatedAt": "2024-04-26T13:23:04.000000Z"
+            },
+            "createdAt": "2025-02-14T10:16:54.000000Z",
+            "updatedAt": "2025-02-14T10:16:54.000000Z"
+        }
+    ]
+}
