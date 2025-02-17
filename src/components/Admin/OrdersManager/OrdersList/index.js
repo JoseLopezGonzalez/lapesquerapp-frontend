@@ -55,7 +55,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             </button>
                         </div>
 
-                        {/* <select class="mt-2 py-2 px-3 pe-9 block w-full border rounded-2xl text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-black/15 dark:border-neutral-600 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                        {/* <select className="mt-2 py-2 px-3 pe-9 block w-full border rounded-2xl text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-black/15 dark:border-neutral-600 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
                             <option>Esta Semana</option>
                             <option>Hoy</option>
                             <option>Mañana</option>
@@ -64,7 +64,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         <div className='flex gap-3 mt-5 bg-neutral-600 rounded-full p-1'>
                             {/* Boton de caegorias */}
                             {categories.map((category, index) => category.current ? (
-                                <span key={category.name} class="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-black bg-white">
+                                <span key={category.name} className="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-black bg-white">
                                     {category.label}
                                 </span>
                             ) : (

@@ -1,22 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import OrderDropdown from './OrderDropdown';
-import { ArrowPathIcon, ArrowsUpDownIcon, BookmarkIcon, CheckBadgeIcon, ClipboardDocumentListIcon, CurrencyEuroIcon, DocumentTextIcon, EnvelopeIcon, NoSymbolIcon, TagIcon, TrashIcon, WalletIcon } from '@heroicons/react/24/outline';
-import toast, { Toaster } from 'react-hot-toast';
+import { AdjustmentsHorizontalIcon, ArchiveBoxIcon, ArrowPathIcon, ClipboardDocumentIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { Toaster } from 'react-hot-toast';
 import { createPortal } from 'react-dom';
-import { useOrder } from '../../../../../hooks/orders/useOrder';
 import { MdPallet } from 'react-icons/md';
-import Dropdown from '../../../../Shared/Dropdowns/OptionsDropdown';
-import OptionsDropdown from '../../../../Shared/Dropdowns/OptionsDropdown';
 import { Button } from '@nextui-org/react';
-import DropdownWithSections from '../../../../Shared/Dropdowns/DropdownWithSections';
-import { CheckIcon, EllipsisVerticalIcon } from '@heroicons/react/20/solid';
 
-import { GiSave } from "react-icons/gi";
 import { TfiSave } from "react-icons/tfi";
 
-import example from '../example.json';
+import example from './example.json';
 
-const exampleOrder = example.data[0]
+const exampleOrder = example.data;
 
 
 const Order = ({ orderId, onReloadList }) => {
@@ -41,7 +34,7 @@ const Order = ({ orderId, onReloadList }) => {
       {loading ? (
         <>
           {/* Loader */}
-          <div className="py-3 h-full bg-neutral-700 rounded-lg">
+          <div className="h-full ">
             <div role="status" className="flex justify-center pt-96">
               <svg aria-hidden="true" className=" inline w-12 h-12 mr-2 text-neutral-200 animate-spin dark:text-neutral-600 fill-sky-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
@@ -54,13 +47,13 @@ const Order = ({ orderId, onReloadList }) => {
         </>
       ) : (
         <>
-          <div className='h-full w-full bg-neutral-700 p-5 lg:pt-4 lg:p-7 rounded-lg '>
+          <div className='h-full w-full '>
 
             <div className='h-full flex flex-col'>
 
               {/* options button section */}
               <div className='flex w-full justify-end items-center'>
-                <DropdownWithSections title={<EllipsisVerticalIcon className='h-5 w-5' />} data={modifiedDropdownOptions} />
+                {/*  <DropdownWithSections title={<EllipsisVerticalIcon className='h-5 w-5' />} data={modifiedDropdownOptions} /> */}
 
               </div>
 
@@ -83,24 +76,20 @@ const Order = ({ orderId, onReloadList }) => {
                     </span>)
                   }
 
-                  <h3 className='text-xl font-medium text-white'>#{formattedOrder.id}</h3>
+                  <h3 className='text-xl font-medium text-white'>#{order.id}</h3>
                   <div className='text-white'>
                     <p className=''>
-                      <span className='font-light text-3xl'>{formattedOrder.customer.name}</span> <br />
-                      {formattedOrder.customer.alias && (<span className='text-lg font-medium'>{formattedOrder.customer.alias}</span>)}
+                      <span className='font-light text-3xl'>{order.customer.name}</span> <br />
+                      {order.customer.alias && (<span className='text-lg font-medium'>{order.customer.alias}</span>)}
                     </p>
                   </div>
                   <div className='text-white'>
                     <p className='font-medium text-xs text-neutral-300'>Fecha de Carga:</p>
-                    <p className='font-medium text-lg'>{formattedOrder.loadDate}</p>
-                  </div>
-                  <div className='text-white'>
-                    <p className='font-medium text-xs text-neutral-300'>Palets:</p>
-                    <p className='font-medium text-lg'>{formattedOrder.numberOfPallets}</p>
+                    <p className='font-medium text-lg'>{order.loadDate}</p>
                   </div>
                   <div className='text-white'>
                     <p className='font-medium text-xs text-neutral-300'>Buyer Reference:</p>
-                    <p className='font-medium text-lg'>{formattedOrder.buyerReference || '-'}</p>
+                    <p className='font-medium text-lg'>{order.buyerReference || '-'}</p>
                   </div>
                 </div>
                 <div className='hidden lg:flex flex-row gap-2 h-fit p-5'>
@@ -124,13 +113,36 @@ const Order = ({ orderId, onReloadList }) => {
                 </div>
               </div>
 
+              {/* Tab */}
+              <div className='flex gap-5 bg-black/20 w-fit p-1 rounded-2xl'>
+                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
+                  <ArchiveBoxIcon className='w-4 h-4 text-white' />
+                  <span className=' text-white text-sm '>Producción</span>
+                </div>
+                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
+                  <AdjustmentsHorizontalIcon className='w-4 h-4 text-white' />
+                  <span className=' text-white text-sm'>Generales</span>
+                </div>
+                <div className='flex  gap-2 py-2 px-6 rounded-2xl items-center justify-center bg-black/30'>
+                  <MapPinIcon className='w-4 h-4 text-white' />
+                  <span className=' text-white text-sm'>Direcciones</span>
+                </div>
+                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
+                  <ClipboardDocumentIcon className='w-4 h-4 text-white' />
+                  <span className=' text-white text-sm'>Observaciones</span>
+                </div>
+
+              </div>
+             
+
+
               {/* Form */}
               <div className='grow w-full grid grid-cols-2 pr-0 lg:pr-2 mt-5 gap-y-4 gap-x-4 overflow-y-auto'>
 
                 {/* Tablas */}
                 <div className='flex flex-col col-span-2 gap-10'> {/* gap-2 mt-5  mb-5 */}
 
-                  {order.pallets.length === 0 ? (
+                  {1 === 0 ? (
                     <div className='h-full bg-neutral-700 rounded-lg'>
                       <div className=' h-full w-full flex flex-col justify-center items-center border-2 rounded-lg border-dashed border-neutral-400 p-5'>
                         <MdPallet className='w-7 h-7 text-neutral-400' />
@@ -174,11 +186,9 @@ const Order = ({ orderId, onReloadList }) => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
 
-                                  {formattedOrder.summary.pallets().map((item, index) => (
+                                  {/* {formattedOrder.summary.pallets().map((item, index) => (
                                     <tr key={index}>
                                       <td className="size-px whitespace-nowrap px-6 py-3">
-                                        {/* <tr key={index} className="mb-3 bg-neutral-800/80  hover:bg-neutral-800 border-4 border-neutral-600 rounded-xl">
-                                      <th scope="row" className="px-6 py-4 font-medium text-neutral-900 whitespace-nowrap dark:text-white rounded-l-xl"> */}
                                         <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
                                           {item.article.name}
                                         </span>
@@ -194,7 +204,7 @@ const Order = ({ orderId, onReloadList }) => {
                                         </span>
                                       </td>
                                     </tr>
-                                  ))}
+                                  ))} */}
                                 </tbody>
                               </table>
                             </div>
@@ -217,7 +227,6 @@ const Order = ({ orderId, onReloadList }) => {
                                     Detalles de los palets vinculados al pedido.
                                   </p>
                                 </div>
-                                {/* <!-- End Header --> */}
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                                   <thead className="bg-gray-50 dark:bg-white/5">
                                     <tr>
@@ -253,7 +262,7 @@ const Order = ({ orderId, onReloadList }) => {
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-                                    {formattedOrder.pallets.map((pallet, index) => (
+                                    {order?.pallets.map((pallet, index) => (
                                       <tr key={index}>
                                         <td className="size-px whitespace-nowrap px-6 py-3">
                                           <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
@@ -263,22 +272,22 @@ const Order = ({ orderId, onReloadList }) => {
                                         <td className="size-px whitespace-nowrap px-6 py-3">
                                           <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
                                             <ul>
-                                              {pallet.articles.map((articulo, index) =>
+                                              {/* {pallet.articles.map((articulo, index) =>
                                                 <li key={index} className='mb-1'>
                                                   <span key={index} className=" bg-sky-100 mr-1 text-sky-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-sky-900 dark:text-sky-300 truncate">{articulo}</span>
                                                 </li>
-                                              )}
+                                              )} */}
                                             </ul>
                                           </span>
                                         </td>
                                         <td className="size-px whitespace-nowrap px-6 py-3">
                                           <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
                                             <ul>
-                                              {pallet.lots.map((lote, index) =>
+                                              {/* {pallet.lots.map((lote, index) =>
                                                 <li key={index} className='mb-1'>
                                                   <span key={index} className="bg-slate-100 mr-1 text-slate-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-slate-900 dark:text-slate-300 truncate">{lote}</span>
                                                 </li>
-                                              )}
+                                              )} */}
                                             </ul>
                                           </span>
                                         </td>
@@ -309,8 +318,7 @@ const Order = ({ orderId, onReloadList }) => {
 
                 </div>
 
-                {/* Resto del Form */}
-                <div className='col-span-2 lg:col-span-1 '>
+                {/* <div className='col-span-2 lg:col-span-1 '>
                   <label className="block mb-2 text-sm font-medium text-white">Empresa de transporte:</label>
                   <select onChange={handleOnChangeTransport} name="transport" className=" border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
                     {transports.map((transport, index) =>
@@ -321,9 +329,9 @@ const Order = ({ orderId, onReloadList }) => {
                       ))
                     }
                   </select>
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1 '>
+                {/* <div className='col-span-2 lg:col-span-1 '>
                   <label className="block mb-2 text-sm font-medium text-white">Incoterm:</label>
                   <select onChange={handleOnChangeIncoterm} name="incoterm" className=" border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
                     {incoterms.map((incoterm, index) =>
@@ -334,9 +342,9 @@ const Order = ({ orderId, onReloadList }) => {
                       ))
                     }
                   </select>
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <label className="block mb-2 text-sm font-medium text-white">Comercial:</label>
                   <select onChange={handleOnChangeSalesperson} name="salesperson" className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
                     {salespeople.map((salesperson, index) =>
@@ -347,9 +355,9 @@ const Order = ({ orderId, onReloadList }) => {
                       ))
                     }
                   </select>
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <label className="block mb-2 text-sm font-medium text-white">Forma de pago:</label>
                   <select onChange={handleOnChangePaymentTerm} name="paymentTerm" className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
                     {paymentTerms.map((paymentTerm, index) =>
@@ -360,9 +368,9 @@ const Order = ({ orderId, onReloadList }) => {
                       ))
                     }
                   </select>
-                </div>
+                </div> */}
 
-                <div className='col-span-2'>
+                {/* <div className='col-span-2'>
                   <label className="block mb-2 text-sm font-medium text-white">Buyer Reference:</label>
                   <input onChange={handleOnChange} name="buyerReference" type="text" value={temporalOrder.buyerReference} className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 focus:border-sky-500" placeholder="John" required />
                 </div>
@@ -375,9 +383,9 @@ const Order = ({ orderId, onReloadList }) => {
                 <div className='col-span-2 lg:col-span-1'>
                   <label className="block mb-2 text-sm font-medium text-white">Fecha de salida:</label>
                   <input onChange={handleOnChange} name="loadDate" type="date" value={temporalOrder.loadDate} className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 focus:border-sky-500" placeholder="John" required />
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <p className='block mb-2 text-sm font-medium text-white'>Dirección de Facturación:</p>
                   <textarea
                     id="message"
@@ -388,11 +396,9 @@ const Order = ({ orderId, onReloadList }) => {
                     placeholder="Introduce la información..."
                     value={temporalOrder.billingAddress}
                   />
+                </div> */}
 
-
-                </div>
-
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <p className='block mb-2 text-sm font-medium text-white'>Dirección de Entrega:</p>
                   <textarea
                     id="message"
@@ -402,11 +408,10 @@ const Order = ({ orderId, onReloadList }) => {
                     className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
                     placeholder="Introduce la información..."
                     value={temporalOrder.shippingAddress}
-
                   />
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <p className='block mb-2 text-sm font-medium text-white'>Observaciones de Producción:</p>
                   <textarea
                     id="message"
@@ -417,9 +422,9 @@ const Order = ({ orderId, onReloadList }) => {
                     placeholder="Introduce la información..."
                     value={temporalOrder.productionNotes}
                   />
-                </div>
+                </div> */}
 
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <p className='block mb-2 text-sm font-medium text-white'>Observaciones de Contabilidad:</p>
                   <textarea
                     id="message"
@@ -430,10 +435,9 @@ const Order = ({ orderId, onReloadList }) => {
                     placeholder="Introduce la información..."
                     value={temporalOrder.accountingNotes}
                   />
+                </div> */}
 
-                </div>
-
-                <div className='col-span-2 lg:col-span-1'>
+                {/* <div className='col-span-2 lg:col-span-1'>
                   <p className='block mb-2 text-sm font-medium text-white'>Emails:</p>
                   <textarea
                     id="message"
@@ -444,8 +448,7 @@ const Order = ({ orderId, onReloadList }) => {
                     placeholder="Introduce la información..."
                     value={temporalOrder.emails}
                   />
-
-                </div>
+                </div> */}
 
 
               </div>
@@ -454,7 +457,7 @@ const Order = ({ orderId, onReloadList }) => {
 
               {/* Button Footer */}
               <div className='w-full flex flex-col md:flex-row items-center justify-end pt-5 gap-2'>
-                {!isOrderUpdated() && (
+                {/* {!isOrderUpdated() && (
                   <>
                     <Button
                       color="primary"
@@ -475,7 +478,7 @@ const Order = ({ orderId, onReloadList }) => {
                       Guardar
                     </Button>
                   </>
-                )}
+                )} */}
               </div>
 
             </div>
@@ -484,9 +487,9 @@ const Order = ({ orderId, onReloadList }) => {
 
 
           {/* Print Container (All documents) */}
-          {OrderPrintContainer}
+          {/* {OrderPrintContainer}
 
-          {createPortal(<Toaster />, document.body)}
+          {createPortal(<Toaster />, document.body)} */}
 
 
         </>

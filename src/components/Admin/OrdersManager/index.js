@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import OrdersList from './OrdersList';
 import examples from './examples.json';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import Order from './Order';
 
 const examplesOrders = examples.data;
 
@@ -126,8 +127,8 @@ export default function OrdersManager() {
                         </div>
                         <div className='grow p-5 pt-0 lg:pl-0'>
                             {selectedOrder ? (
-                                <div className='h-full text-white'>
-                                    {/*  <Order orderId={selectedOrder.id} onReloadList={onReloadList} /> */}
+                                <div className='h-full text-white p-9 bg-neutral-700 rounded-2xl'>
+                                     <Order/>
                                 </div>
                             ) : (
                                 <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center bg-black/20'>
