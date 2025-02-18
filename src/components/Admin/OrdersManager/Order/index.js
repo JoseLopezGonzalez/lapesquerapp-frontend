@@ -3,11 +3,15 @@ import { AdjustmentsHorizontalIcon, ArchiveBoxIcon, ArrowPathIcon, ClipboardDocu
 import { Toaster } from 'react-hot-toast';
 import { createPortal } from 'react-dom';
 import { MdPallet } from 'react-icons/md';
-import { Button } from '@nextui-org/react';
+import { Button, ScrollShadow } from '@nextui-org/react';
+
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
+
 
 import { TfiSave } from "react-icons/tfi";
 
 import example from './example.json';
+import SlidingPanel from '../../SlidingPanel';
 
 const exampleOrder = example.data;
 
@@ -113,342 +117,23 @@ const Order = ({ orderId, onReloadList }) => {
                 </div>
               </div>
 
-              {/* Tab */}
-              <div className='flex gap-5 bg-black/20 w-fit p-1 rounded-2xl'>
-                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
-                  <ArchiveBoxIcon className='w-4 h-4 text-white' />
-                  <span className=' text-white text-sm '>Producción</span>
-                </div>
-                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
-                  <AdjustmentsHorizontalIcon className='w-4 h-4 text-white' />
-                  <span className=' text-white text-sm'>Generales</span>
-                </div>
-                <div className='flex  gap-2 py-2 px-6 rounded-2xl items-center justify-center bg-black/30'>
-                  <MapPinIcon className='w-4 h-4 text-white' />
-                  <span className=' text-white text-sm'>Direcciones</span>
-                </div>
-                <div className='flex  gap-2 py-2 px-6 rounded-t-2xl items-center justify-center'>
-                  <ClipboardDocumentIcon className='w-4 h-4 text-white' />
-                  <span className=' text-white text-sm'>Observaciones</span>
-                </div>
 
-              </div>
-             
+
+
 
 
               {/* Form */}
-              <div className='grow w-full grid grid-cols-2 pr-0 lg:pr-2 mt-5 gap-y-4 gap-x-4 overflow-y-auto'>
-
-                {/* Tablas */}
-                <div className='flex flex-col col-span-2 gap-10'> {/* gap-2 mt-5  mb-5 */}
-
-                  {1 === 0 ? (
-                    <div className='h-full bg-neutral-700 rounded-lg'>
-                      <div className=' h-full w-full flex flex-col justify-center items-center border-2 rounded-lg border-dashed border-neutral-400 p-5'>
-                        <MdPallet className='w-7 h-7 text-neutral-400' />
-                        <p className='text-md text-center font-light text-neutral-400'>No existen palets asociados a este pedido</p>
-                      </div>
-                    </div>) : (
-                    <>
-                      <div className="w-full">
-                        <div className="-m-1.5 overflow-x-auto">
-                          <div className="p-1.5 min-w-full inline-block align-middle">
-                            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                              {/* <!-- Header --> */}
-                              <div className="px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
-                                <h2 className="text-xl font-semibold text-gray-800 dark:text-neutral-200">
-                                  Resumen
-                                </h2>
-                                <p className="text-sm text-gray-600 dark:text-neutral-400">
-                                  Detalles de los articulos y cantidades vinculados al pedido.
-                                </p>
-                              </div>
-                              {/* <!-- End Header --> */}
-                              <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                                <thead className="bg-gray-50 dark:bg-white/5">
-                                  <tr>
-                                    <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                        Articulo
-                                      </span>
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                        Cajas
-                                      </span>
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                        Cantidad
-                                      </span>
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-
-                                  {/* {formattedOrder.summary.pallets().map((item, index) => (
-                                    <tr key={index}>
-                                      <td className="size-px whitespace-nowrap px-6 py-3">
-                                        <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                          {item.article.name}
-                                        </span>
-                                      </td>
-                                      <td className="size-px whitespace-nowrap px-6 py-3">
-                                        <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                          {item.boxes}
-                                        </span>
-                                      </td>
-                                      <td className="size-px whitespace-nowrap px-6 py-3">
-                                        <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                          {item.netWeight.toFixed(2)} kg
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  ))} */}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-
-                      <div className=' col-span-2'>
-                        <div className="w-full">
-                          <div className="-m-1.5 overflow-x-auto">
-                            <div className="p-1.5 min-w-full inline-block align-middle">
-                              <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                                {/* <!-- Header --> */}
-                                <div className="px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
-                                  <h2 className="text-xl font-semibold text-gray-800 dark:text-neutral-200">
-                                    Palets
-                                  </h2>
-                                  <p className="text-sm text-gray-600 dark:text-neutral-400">
-                                    Detalles de los palets vinculados al pedido.
-                                  </p>
-                                </div>
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                                  <thead className="bg-gray-50 dark:bg-white/5">
-                                    <tr>
-                                      <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                          Numero
-                                        </span>
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-
-                                          Productos
-                                        </span>
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-
-                                          Lotes
-                                        </span>
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-
-                                          Cajas
-                                        </span>
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
-                                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-
-                                          Peso
-                                        </span>
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-                                    {order?.pallets.map((pallet, index) => (
-                                      <tr key={index}>
-                                        <td className="size-px whitespace-nowrap px-6 py-3">
-                                          <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                            {pallet.id}
-                                          </span>
-                                        </td>
-                                        <td className="size-px whitespace-nowrap px-6 py-3">
-                                          <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                            <ul>
-                                              {/* {pallet.articles.map((articulo, index) =>
-                                                <li key={index} className='mb-1'>
-                                                  <span key={index} className=" bg-sky-100 mr-1 text-sky-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-sky-900 dark:text-sky-300 truncate">{articulo}</span>
-                                                </li>
-                                              )} */}
-                                            </ul>
-                                          </span>
-                                        </td>
-                                        <td className="size-px whitespace-nowrap px-6 py-3">
-                                          <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                            <ul>
-                                              {/* {pallet.lots.map((lote, index) =>
-                                                <li key={index} className='mb-1'>
-                                                  <span key={index} className="bg-slate-100 mr-1 text-slate-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-slate-900 dark:text-slate-300 truncate">{lote}</span>
-                                                </li>
-                                              )} */}
-                                            </ul>
-                                          </span>
-                                        </td>
-                                        <td className="size-px whitespace-nowrap px-6 py-3">
-                                          <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                            {pallet.boxes.length}
-                                          </span>
-                                        </td>
-                                        <td className="size-px whitespace-nowrap px-6 py-3">
-                                          <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
-                                            {pallet.netWeight.toFixed(2)} kg
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-
-                        </div>
-                      </div>
-                    </>
-                  )}
+              <div className='grow w-full h-full '>
 
 
 
-                </div>
 
-                {/* <div className='col-span-2 lg:col-span-1 '>
-                  <label className="block mb-2 text-sm font-medium text-white">Empresa de transporte:</label>
-                  <select onChange={handleOnChangeTransport} name="transport" className=" border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
-                    {transports.map((transport, index) =>
-                      transport.id === order.transport.id ? (
-                        <option key={index} value={transport.id} selected>{transport.name}</option>
-                      ) : (
-                        <option key={index} value={transport.id}>{transport.name}</option>
-                      ))
-                    }
-                  </select>
-                </div> */}
 
-                {/* <div className='col-span-2 lg:col-span-1 '>
-                  <label className="block mb-2 text-sm font-medium text-white">Incoterm:</label>
-                  <select onChange={handleOnChangeIncoterm} name="incoterm" className=" border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
-                    {incoterms.map((incoterm, index) =>
-                      incoterm.id === order.incoterm.id ? (
-                        <option key={index} value={incoterm.id} selected>{incoterm.code} - ({incoterm.description})</option>
-                      ) : (
-                        <option key={index} value={incoterm.id}>{incoterm.code} - ({incoterm.description})</option>
-                      ))
-                    }
-                  </select>
-                </div> */}
 
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <label className="block mb-2 text-sm font-medium text-white">Comercial:</label>
-                  <select onChange={handleOnChangeSalesperson} name="salesperson" className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
-                    {salespeople.map((salesperson, index) =>
-                      salesperson.id === order.salesperson.id ? (
-                        <option key={index} value={salesperson.id} selected>{salesperson.name}</option>
-                      ) : (
-                        <option key={index} value={salesperson.id}>{salesperson.name}</option>
-                      ))
-                    }
-                  </select>
-                </div> */}
 
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <label className="block mb-2 text-sm font-medium text-white">Forma de pago:</label>
-                  <select onChange={handleOnChangePaymentTerm} name="paymentTerm" className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500">
-                    {paymentTerms.map((paymentTerm, index) =>
-                      paymentTerm.id === order.paymentTerm.id ? (
-                        <option key={index} value={paymentTerm.id} selected>{paymentTerm.name}</option>
-                      ) : (
-                        <option key={index} value={paymentTerm.id}>{paymentTerm.name}</option>
-                      ))
-                    }
-                  </select>
-                </div> */}
 
-                {/* <div className='col-span-2'>
-                  <label className="block mb-2 text-sm font-medium text-white">Buyer Reference:</label>
-                  <input onChange={handleOnChange} name="buyerReference" type="text" value={temporalOrder.buyerReference} className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 focus:border-sky-500" placeholder="John" required />
-                </div>
 
-                <div className='col-span-2 lg:col-span-1'>
-                  <label className="block mb-2 text-sm font-medium text-white">Fecha de entrada:</label>
-                  <input onChange={handleOnChange} name="entryDate" type="date" value={temporalOrder.entryDate} className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 focus:border-sky-500" placeholder="John" required />
-                </div>
 
-                <div className='col-span-2 lg:col-span-1'>
-                  <label className="block mb-2 text-sm font-medium text-white">Fecha de salida:</label>
-                  <input onChange={handleOnChange} name="loadDate" type="date" value={temporalOrder.loadDate} className="border text-sm rounded-lg block w-full p-2.5 bg-neutral-600 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 focus:border-sky-500" placeholder="John" required />
-                </div> */}
-
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <p className='block mb-2 text-sm font-medium text-white'>Dirección de Facturación:</p>
-                  <textarea
-                    id="message"
-                    name="billingAddress"
-                    onChange={handleOnChange}
-                    rows="4"
-                    className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Introduce la información..."
-                    value={temporalOrder.billingAddress}
-                  />
-                </div> */}
-
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <p className='block mb-2 text-sm font-medium text-white'>Dirección de Entrega:</p>
-                  <textarea
-                    id="message"
-                    name="shippingAddress"
-                    onChange={handleOnChange}
-                    rows="4"
-                    className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Introduce la información..."
-                    value={temporalOrder.shippingAddress}
-                  />
-                </div> */}
-
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <p className='block mb-2 text-sm font-medium text-white'>Observaciones de Producción:</p>
-                  <textarea
-                    id="message"
-                    name="productionNotes"
-                    onChange={handleOnChange}
-                    rows="4"
-                    className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Introduce la información..."
-                    value={temporalOrder.productionNotes}
-                  />
-                </div> */}
-
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <p className='block mb-2 text-sm font-medium text-white'>Observaciones de Contabilidad:</p>
-                  <textarea
-                    id="message"
-                    name="accountingNotes"
-                    onChange={handleOnChange}
-                    rows="4"
-                    className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Introduce la información..."
-                    value={temporalOrder.accountingNotes}
-                  />
-                </div> */}
-
-                {/* <div className='col-span-2 lg:col-span-1'>
-                  <p className='block mb-2 text-sm font-medium text-white'>Emails:</p>
-                  <textarea
-                    id="message"
-                    name="emails"
-                    onChange={handleOnChange}
-                    rows="4"
-                    className="block p-2.5 w-full text-sm rounded-lg border bg-neutral-600 border-neutral-600 placeholder-neutral-400 text-white focus:ring-sky-500 focus:border-sky-500"
-                    placeholder="Introduce la información..."
-                    value={temporalOrder.emails}
-                  />
-                </div> */}
 
 
               </div>
@@ -457,28 +142,373 @@ const Order = ({ orderId, onReloadList }) => {
 
               {/* Button Footer */}
               <div className='w-full flex flex-col md:flex-row items-center justify-end pt-5 gap-2'>
-                {/* {!isOrderUpdated() && (
-                  <>
-                    <Button
-                      color="primary"
-                      onClick={handleReset}
-                      startContent={<ArrowPathIcon className='w-5 h-5' />}
-                      className=' text-white w-full md:w-auto'
 
+                <SlidingPanel
+                  title="Editar Pedido"
+                  buttonTitle="Editar"
+                  className={`bg-white text-neutral-900 font-medium px-4 py-2 w-fit rounded-2xl text-sm`}
+                >
+                  {/* Tabs */}
+                  <TabGroup>
+                    <ScrollShadow
+                      onWheel={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.scrollLeft += e.deltaY; // Permite desplazamiento horizontal con la rueda
+                      }}
+                      orientation='horizontal'
+                      hideScrollBar
                     >
-                      Restablecer
-                    </Button>
+                      <TabList className="flex items-center gap-1  w-full p-1 rounded-2xl ">
+                        <Tab className="
+                  data-[selected]:bg-white/40 data-[selected]:text-white 
+                  data-[hover]:bg-white/30
+                  bg-white/10
+                  flex gap-2 py-1.5 px-4 rounded-2xl items-center justify-center
+                  ">
+                          <ArchiveBoxIcon className='w-4 h-4 text-white' />
+                          <span className=' text-white text-sm '>Producción</span>
+                        </Tab>
+                        <Tab className="
+                  data-[selected]:bg-white/40 data-[selected]:text-white 
+                  data-[hover]:bg-white/30
+                  bg-white/10
+                  flex gap-2 py-1.5 px-4 rounded-2xl items-center justify-center
+                  ">
+                          <AdjustmentsHorizontalIcon className='w-4 h-4 text-white' />
+                          <span className=' text-white text-sm'>Generales</span>
+                        </Tab>
+                        <Tab className="
+                  data-[selected]:bg-white/40 data-[selected]:text-white 
+                  data-[hover]:bg-white/30
+                  bg-white/10
+                  flex gap-2 py-1.5 px-4 rounded-2xl items-center justify-center
+                  ">
+                          <MapPinIcon className='w-4 h-4 text-white' />
+                          <span className=' text-white text-sm'>Direcciones</span>
+                        </Tab>
+                        <Tab className="
+                  data-[selected]:bg-white/40 data-[selected]:text-white 
+                  data-[hover]:bg-white/30
+                  bg-white/10
+                  flex gap-2 py-1.5 px-4 rounded-2xl items-center justify-center
+                  ">
+                          <ClipboardDocumentIcon className='w-4 h-4 text-white' />
+                          <span className=' text-white text-sm'>Observaciones</span>
+                        </Tab>
+                      </TabList>
+                    </ScrollShadow>
+                    <TabPanels>
+                      {/* Producción */}
+                      <TabPanel className='py-4'>
+                        {/* Tablas */}
+                        <div className='flex flex-col col-span-2 gap-10'> {/* gap-2 mt-5  mb-5 */}
 
-                    <Button
-                      color="success"
-                      startContent={<TfiSave className='w-4 h-4' />}
-                      className='animate-pulse text-white w-full md:w-auto'
-                      onClick={handleOnClickSave}
-                    >
-                      Guardar
-                    </Button>
-                  </>
-                )} */}
+                          {1 === 0 ? (
+                            <div className='h-full bg-neutral-700 rounded-lg'>
+                              <div className=' h-full w-full flex flex-col justify-center items-center border-2 rounded-lg border-dashed border-neutral-400 p-5'>
+                                <MdPallet className='w-7 h-7 text-neutral-400' />
+                                <p className='text-md text-center font-light text-neutral-400'>No existen palets asociados a este pedido</p>
+                              </div>
+                            </div>) : (
+                            <>
+                              <div className="w-full">
+                                <div className="-m-1.5 overflow-x-auto">
+                                  <div className="p-1.5 min-w-full inline-block align-middle">
+                                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
+                                      {/* <!-- Header --> */}
+                                      <div className="px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
+                                        <h2 className="text-xl font-semibold text-gray-800 dark:text-neutral-200">
+                                          Resumen
+                                        </h2>
+                                        <p className="text-sm text-gray-600 dark:text-neutral-400">
+                                          Detalles de los articulos y cantidades vinculados al pedido.
+                                        </p>
+                                      </div>
+                                      {/* <!-- End Header --> */}
+                                      <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                        <thead className="bg-gray-50 dark:bg-white/5">
+                                          <tr>
+                                            <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                              <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                Articulo
+                                              </span>
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                              <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                Cajas
+                                              </span>
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                              <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                Cantidad
+                                              </span>
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
+
+                                          {/* {formattedOrder.summary.pallets().map((item, index) => (
+                  <tr key={index}>
+                    <td className="size-px whitespace-nowrap px-6 py-3">
+                      <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                        {item.article.name}
+                      </span>
+                    </td>
+                    <td className="size-px whitespace-nowrap px-6 py-3">
+                      <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                        {item.boxes}
+                      </span>
+                    </td>
+                    <td className="size-px whitespace-nowrap px-6 py-3">
+                      <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                        {item.netWeight.toFixed(2)} kg
+                      </span>
+                    </td>
+                  </tr>
+                ))} */}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className=' col-span-2'>
+                                <div className="w-full">
+                                  <div className="-m-1.5 overflow-x-auto">
+                                    <div className="p-1.5 min-w-full inline-block align-middle">
+                                      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
+                                        {/* <!-- Header --> */}
+                                        <div className="px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
+                                          <h2 className="text-xl font-semibold text-gray-800 dark:text-neutral-200">
+                                            Palets
+                                          </h2>
+                                          <p className="text-sm text-gray-600 dark:text-neutral-400">
+                                            Detalles de los palets vinculados al pedido.
+                                          </p>
+                                        </div>
+                                        <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                          <thead className="bg-gray-50 dark:bg-white/5">
+                                            <tr>
+                                              <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                  Numero
+                                                </span>
+                                              </th>
+                                              <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+
+                                                  Productos
+                                                </span>
+                                              </th>
+                                              <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+
+                                                  Lotes
+                                                </span>
+                                              </th>
+                                              <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+
+                                                  Cajas
+                                                </span>
+                                              </th>
+                                              <th scope="col" className="px-6 py-3 text-start whitespace-nowrap">
+                                                <span className="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+
+                                                  Peso
+                                                </span>
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
+                                            {order?.pallets.map((pallet, index) => (
+                                              <tr key={index}>
+                                                <td className="size-px whitespace-nowrap px-6 py-3">
+                                                  <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    {pallet.id}
+                                                  </span>
+                                                </td>
+                                                <td className="size-px whitespace-nowrap px-6 py-3">
+                                                  <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    <ul>
+                                                      {/* {pallet.articles.map((articulo, index) =>
+                              <li key={index} className='mb-1'>
+                                <span key={index} className=" bg-sky-100 mr-1 text-sky-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-sky-900 dark:text-sky-300 truncate">{articulo}</span>
+                              </li>
+                            )} */}
+                                                    </ul>
+                                                  </span>
+                                                </td>
+                                                <td className="size-px whitespace-nowrap px-6 py-3">
+                                                  <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    <ul>
+                                                      {/* {pallet.lots.map((lote, index) =>
+                              <li key={index} className='mb-1'>
+                                <span key={index} className="bg-slate-100 mr-1 text-slate-800 text-xs font-medium  px-2.5 py-0.5 rounded-full dark:bg-slate-900 dark:text-slate-300 truncate">{lote}</span>
+                              </li>
+                            )} */}
+                                                    </ul>
+                                                  </span>
+                                                </td>
+                                                <td className="size-px whitespace-nowrap px-6 py-3">
+                                                  <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    {pallet.boxes.length}
+                                                  </span>
+                                                </td>
+                                                <td className="size-px whitespace-nowrap px-6 py-3">
+                                                  <span className="text-sm font-semibold tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    {pallet.netWeight.toFixed(2)} kg
+                                                  </span>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </TabPanel>
+                      {/* Generales */}
+                      <TabPanel className='py-4'>
+                        <div className='w-full grid grid-cols-2 gap-y-4 gap-x-2'>
+
+                          <div className='col-span-2 flex flex-col gap-1.5 '>
+                            <label className="text-xs text-neutral-300">Empresa de transporte</label>
+                            <select
+                              name="transport"
+                              className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500"
+                            >
+                              <option value="Prueba1">Prueba 1</option>
+                              <option value="Prueba2">Prueba 2</option>
+                              <option value="Prueba3">Prueba 3</option>
+                            </select>
+                          </div>
+
+                          <div className='col-span-1 flex flex-col gap-1.5 '>
+                            <label className="text-xs text-neutral-300">Incoterm</label>
+                            <select name="incoterm" className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500">
+                              <option value="Prueba1">Prueba 1</option>
+                              <option value="Prueba2">Prueba 2</option>
+                              <option value="Prueba3">Prueba 3</option>
+                            </select>
+                          </div>
+
+                          <div className='col-span-1 flex flex-col gap-1.5'>
+                            <label className="text-xs text-neutral-300">Comercial</label>
+                            <select name="salesperson" className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500">
+                              <option value="Prueba1">Prueba 1</option>
+                              <option value="Prueba2">Prueba 2</option>
+                              <option value="Prueba3">Prueba 3</option>
+                            </select>
+                          </div>
+
+                          <div className='col-span-2 flex flex-col gap-1.5'>
+                            <label className="text-xs text-neutral-300">Forma de pago</label>
+                            <select name="paymentTerm" className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500">
+                              <option value="Prueba1">Prueba 1</option>
+                              <option value="Prueba2">Prueba 2</option>
+                            </select>
+                          </div>
+
+                          <div className='col-span-2 flex flex-col gap-1.5'>
+                            <label className="text-xs text-neutral-300">Buyer Reference</label>
+                            <input
+                              name="buyerReference"
+                              type="text"
+                              className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500"
+                              placeholder="186987236"
+                              required
+                            />
+                          </div>
+
+                          <div className='col-span-1 flex flex-col gap-1.5'>
+                            <label className="text-xs text-neutral-300">Fecha de entrada</label>
+                            <input
+                              name="entryDate"
+                              type="date"
+                              className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500"
+                              required
+                            />
+                          </div>
+
+                          <div className='col-span-1 flex flex-col gap-1.5'>
+                            <label className="text-xs text-neutral-300">Fecha de salida</label>
+                            <input
+                              name="loadDate"
+                              type="date"
+                              className="border text-sm rounded-2xl w-full p-2 bg-black/35 border-neutral-600 placeholder-neutral-600 text-white focus:ring-sky-500 focus:border-sky-500"
+                              required />
+                          </div>
+                        </div>
+
+                        <div className='col-span-1 flex flex-col gap-1.5 py-2.5'>
+                          <p className='text-xs text-neutral-300'>Emails</p>
+                          <textarea
+                            name="emails"
+                            rows="4"
+                            className="border text-sm rounded-2xl w-full p-2.5 bg-black/35 border-neutral-600 placeholder-neutral-600 placeholder:font-light text-white focus:ring-sky-500 focus:border-sky-500"
+                            placeholder={`ejemplo@ejemplo.com;\nejemplo2@ejemplo.com;\nCC:ejemplo3@ejemplo.com;\n`}
+                          />
+                        </div>
+                      </TabPanel>
+                      {/* Direcciones */}
+                      <TabPanel className='py-4'>
+                        <div className='w-full grid grid-cols-2 gap-y-4 gap-x-2'>
+
+                          <div className='col-span-2 flex flex-col gap-1.5 '>
+                            <p className='text-xs text-neutral-300'>Dirección de Facturación</p>
+                            <textarea
+                              name="billingAddress"
+                              rows="5"
+                              className="border text-sm rounded-2xl w-full p-2.5 bg-black/35 border-neutral-600 placeholder-neutral-600 placeholder:font-light text-white focus:ring-sky-500 focus:border-sky-500"
+                              placeholder={`Ejemplo S.L.\nB215468698 \nC/ Ejemplo, 1\n28000 Madrid \nEspaña`}
+                            />
+                          </div>
+
+                          <div className='col-span-2 flex flex-col gap-1.5 '>
+                            <p className='text-xs text-neutral-300'>Dirección de Entrega</p>
+                            <textarea
+                              name="shippingAddress"
+                              rows="5"
+                              className="border text-sm rounded-2xl w-full p-2.5 bg-black/35 border-neutral-600 placeholder-neutral-600 placeholder:font-light text-white focus:ring-sky-500 focus:border-sky-500"
+                              placeholder={`Ejemplo S.L. \nC/ Ejemplo, 1\n28000 Madrid \nEspaña`}
+                            />
+                          </div>
+                        </div>
+                      </TabPanel>
+                      {/* Observaciones */}
+                      <TabPanel>
+                        <div className='grow w-full grid grid-cols-2 pr-0 lg:pr-2 mt-5 gap-y-4 gap-x-4 overflow-y-auto'>
+                          <div className='col-span-2 flex flex-col gap-1.5 '>
+                            <p className='text-xs text-neutral-300'>Observaciones de Producción</p>
+                            <textarea
+                              name="productionNotes"
+                              rows="4"
+                              className="border text-sm rounded-2xl w-full p-2.5 bg-black/35 border-neutral-600 placeholder-neutral-600 placeholder:font-light text-white focus:ring-sky-500 focus:border-sky-500"
+                              placeholder={`Pulpo eviscerado T3: 56 cajas x 20kg \nHasta 1.000kg\nEtiqueta española`}
+                            />
+                          </div>
+                          <div className='col-span-2 flex flex-col gap-1.5 '>
+                            <p className='text-xs text-neutral-300'>Observaciones de Contabilidad</p>
+                            <textarea
+                              name="accountingNotes"
+                              rows="4"
+                              className="border text-sm rounded-2xl w-full p-2.5 bg-black/35 border-neutral-600 placeholder-neutral-600 placeholder:font-light text-white focus:ring-sky-500 focus:border-sky-500"
+                              placeholder={`Precio: 12,30$/kg\nComision: 4%`}
+                            />
+                          </div>
+                        </div>
+                      </TabPanel>
+                    </TabPanels>
+                  </TabGroup>
+                </SlidingPanel>
+
+
               </div>
 
             </div>
