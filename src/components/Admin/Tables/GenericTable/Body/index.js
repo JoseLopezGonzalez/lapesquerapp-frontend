@@ -2,7 +2,7 @@
 
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
-import { formatNumberEsKg } from '@/helpers/formats/numbers/formatNumberES';
+import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@nextui-org/react';
 import React, { useEffect, useState } from 'react';
@@ -177,7 +177,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         {/* weight type */}
                                         {header.type === 'weight' && (
                                             <span className="text-white">
-                                                {formatNumberEsKg(row[header.name])}
+                                                {formatDecimalWeight(row[header.name])}
                                             </span>
                                         )}
 

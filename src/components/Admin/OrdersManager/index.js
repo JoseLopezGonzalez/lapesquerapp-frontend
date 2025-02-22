@@ -95,6 +95,7 @@ export default function OrdersManager() {
         setSelectedOrder(null);
     }
 
+    console.log('selectedOrder', selectedOrder);
 
 
     return (
@@ -128,7 +129,7 @@ export default function OrdersManager() {
                         <div className='grow p-5 pt-0 lg:pl-0'>
                             {selectedOrder ? (
                                 <div className='h-full text-white p-9 bg-neutral-950 rounded-2xl'>
-                                     <Order/>
+                                     <Order orderId={selectedOrder}/>
                                 </div>
                             ) : (
                                 <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center bg-black/20'>
