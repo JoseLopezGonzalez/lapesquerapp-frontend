@@ -21,5 +21,19 @@ export function useOrder(orderId) {
             .finally(() => setLoading(false));
     }, [orderId, session, status]);
 
-    return { order, loading, error };
+    // Función para actualizar el pedido a través de la API
+    const updateOrderData = async (updateData) => {
+        setLoading(true);
+        try {
+            const updated = await updateOrder(orderId, updateData, token);
+            setOrder(updated);
+            return updated;
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+    return { order, loading, error , updateOrderData };
 }

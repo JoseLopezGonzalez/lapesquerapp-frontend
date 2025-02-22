@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';
-import { useOrder } from '@/hooks/useOrder';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import DatePicker from '@/components/Shadcn/Dates/DatePicker';
@@ -12,60 +11,21 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Edit, Save } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { useOrderContext } from '@/context/OrderContext';
 
-const OrderEditSheet = () => {
-    // Usamos nuestro hook useOrder para obtener el pedido y defaultValues
-    const { order, updateOrderData } = useOrderContext()
-    // También usamos la configuración de form (sin defaultValues, si la separas) o, si usas useOrderFormConfig,
-    // ésta puede seguir devolviendo la estructura de grupos. Por simplicidad, aquí solo usaremos el objeto de config.
-    const { formGroups , defaultValues } = useOrderFormConfig({ orderData: order });
+const OrderEditSheet = ({ orderData }) => {
+    const { defaultValues, formGroups } = useOrderFormConfig(orderData);
+    const { register, handleSubmit, setValue, watch } = useForm({ defaultValues });
 
-    const { register, handleSubmit, setValue, watch, reset } = useForm({
-        defaultValues,
-        mode: 'onChange',
-    });
-
-    useEffect(() => {
-        if (order?.id) {
-            reset({
-                entryDate: order.entryDate || '',
-                loadDate: order.loadDate || '',
-                commercial: order.commercial || '',
-                payment: order.payment || '',
-                incoterm: order.incoterm || '',
-                transport: order.transport?.name || '',
-                billingAddress: order.billingAddress || '',
-                shippingAddress: order.shippingAddress || '',
-                productionNotes: order.productionNotes || '',
-                accountingNotes: order.accountingNotes || '',
-                transportNotes: order.transportNotes || '',
-                emails: order.emails || '',
-            });
-        }
-    }, [order?.id, reset, order]);
-
-    // Cuando defaultValues cambien, reiniciamos el formulario
-    /* useEffect(() => {
-        reset(defaultValues);
-    }, [defaultValues, reset]); */
-
-    const onSubmit = async (data) => {
-        try {
-            const updated = await updateOrderData(data);
-            console.log('Pedido actualizado:', updated);
-            // Mostrar toast o cerrar el Sheet, según corresponda
-        } catch (err) {
-            console.error('Error al actualizar el pedido:', err);
-            // Mostrar mensaje de error
-        }
+    const onSubmit = (data) => {
+        console.log('Datos del formulario:', data);
+        // Aquí llamas al service para actualizar el pedido
     };
 
     const renderField = (field) => {
         const commonProps = {
             id: field.name,
             placeholder: field.props?.placeholder || '',
-            ...register(field.name, field.rules),
+            ...register(field.name),
         };
 
         switch (field.component) {
@@ -79,7 +39,7 @@ const OrderEditSheet = () => {
                 );
             case 'Select':
                 return (
-                    <Select defaultValue={defaultValues[field.name]} >
+                    <Select defaultValue={defaultValues[field.name]}>
                         <SelectTrigger>
                             <SelectValue placeholder={field.props?.placeholder} />
                         </SelectTrigger>
@@ -120,23 +80,20 @@ const OrderEditSheet = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7">
                 <SheetHeader>
-                    <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
+                    <SheetTitle>Editar Pedido #{defaultValues.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
                     <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto">
                         {formGroups.map((group) => (
-                            <div key={group.group} className="mb-6">
+                            <div key={group.group}>
                                 <h3 className="text-sm font-medium">{group.group}</h3>
                                 <Separator className="my-2" />
-                                <div className={`grid py-4 ${group.grid || 'grid-cols-1 gap-4'}`}>
-                                    {group.fields.map((field) => (
-                                        <div key={field.name} className="grid gap-2">
-                                            <Label htmlFor={field.name}>{field.label}</Label>
-                                            {renderField(field)}
-                                            {/* Aquí podrías renderizar errores si lo deseas */}
-                                        </div>
-                                    ))}
-                                </div>
+                                {group.fields.map((field) => (
+                                    <div key={field.name} className="grid gap-2 mb-4">
+                                        <Label htmlFor={field.name}>{field.label}</Label>
+                                        {renderField(field)}
+                                    </div>
+                                ))}
                             </div>
                         ))}
                     </div>
