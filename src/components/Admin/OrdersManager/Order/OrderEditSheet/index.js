@@ -19,7 +19,7 @@ const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
     // También usamos la configuración de form (sin defaultValues, si la separas) o, si usas useOrderFormConfig,
     // ésta puede seguir devolviendo la estructura de grupos. Por simplicidad, aquí solo usaremos el objeto de config.
-    const { formGroups , defaultValues } = useOrderFormConfig({ orderData: order });
+    const { formGroups, defaultValues } = useOrderFormConfig({ orderData: order });
 
     const { register, handleSubmit, setValue, watch, reset } = useForm({
         defaultValues,
@@ -27,23 +27,8 @@ const OrderEditSheet = () => {
     });
 
     useEffect(() => {
-        if (order?.id) {
-            reset({
-                entryDate: order.entryDate || '',
-                loadDate: order.loadDate || '',
-                commercial: order.commercial || '',
-                payment: order.payment || '',
-                incoterm: order.incoterm || '',
-                transport: order.transport?.name || '',
-                billingAddress: order.billingAddress || '',
-                shippingAddress: order.shippingAddress || '',
-                productionNotes: order.productionNotes || '',
-                accountingNotes: order.accountingNotes || '',
-                transportNotes: order.transportNotes || '',
-                emails: order.emails || '',
-            });
-        }
-    }, [order?.id, reset, order]);
+        reset(defaultValues);
+    }, [defaultValues]);
 
     // Cuando defaultValues cambien, reiniciamos el formulario
     /* useEffect(() => {
@@ -79,7 +64,8 @@ const OrderEditSheet = () => {
                 );
             case 'Select':
                 return (
-                    <Select defaultValue={defaultValues[field.name]} >
+                    <Select defaultValue={defaultValues[field.name]}  > 
+                    {console.log(watch(field.name))}
                         <SelectTrigger>
                             <SelectValue placeholder={field.props?.placeholder} />
                         </SelectTrigger>
