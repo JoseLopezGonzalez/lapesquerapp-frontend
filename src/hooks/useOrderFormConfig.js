@@ -1,4 +1,9 @@
 // /src/hooks/useOrderFormConfig.js
+import { getIncotermsOptions } from '@/services/incotermService';
+import { getPaymentTermsOptions } from '@/services/paymentTernService';
+import { getSalespeopleOptions } from '@/services/salespersonService';
+import { getTransportsOptions } from '@/services/transportService';
+import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
 
 const initialDefaultValues = {
@@ -209,21 +214,26 @@ const initialFormGroups = [
     },
 ]
 
-export function useOrderFormConfig({orderData}) {
-const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
-const [formGroups, setFormGroups] = useState(initialFormGroups);
-const [loading, setLoading] = useState(true);
+export function useOrderFormConfig({ orderData }) {
+    const { data: session, status } = useSession();
 
 
-   useEffect(() => {
+    const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
+    const [formGroups, setFormGroups] = useState(initialFormGroups);
+    const [loading, setLoading] = useState(true);
+
+    const [salespeople, setSalespeople] = useState([]);
+
+
+    useEffect(() => {
         if (orderData) {
             setDefaultValues({
                 entryDate: orderData.entryDate || '',
                 loadDate: orderData.loadDate || '',
                 salesperson: orderData.salesperson.id || '',
-                payment: orderData.paymentTerm || '',
-                incoterm: orderData.incoterm || '',
-                transport: orderData.transport?.name || '',
+                payment: orderData.paymentTerm.id || '',
+                incoterm: orderData.incoterm.id || '',
+                transport: orderData.transport?.id || '',
                 billingAddress: orderData.billingAddress || '',
                 shippingAddress: orderData.shippingAddress || '',
                 productionNotes: orderData.productionNotes || '',
@@ -232,14 +242,114 @@ const [loading, setLoading] = useState(true);
                 emails: orderData.emails || '',
             });
         }
-        setFormGroups(initialFormGroups);
+
+        const token = session?.user?.accessToken;
+        getSalespeopleOptions(token)
+            .then((data) => setFormGroups((prev) =>
+                prev.map((group) => {
+                    if (group.group === 'Información Comercial') {
+                        return {
+                            ...group,
+                            fields: group.fields.map((field) => {
+                                if (field.name === 'salesperson') {
+                                    return {
+                                        ...field,
+                                        options: data.map((sp) => ({
+                                            value: sp.id,
+                                            label: `${sp.name}`,
+                                        })),
+                                    };
+                                }
+                                return field;
+                            }),
+                        };
+                    }
+                    return group;
+                }
+                )))
+            .catch((err) => console.error(err))
+        getIncotermsOptions(token)
+            .then((data) => setFormGroups((prev) =>
+                prev.map((group) => {
+                    if (group.group === 'Información Comercial') {
+                        return {
+                            ...group,
+                            fields: group.fields.map((field) => {
+                                if (field.name === 'incoterm') {
+                                    return {
+                                        ...field,
+                                        options: data.map((inc) => ({
+                                            value: inc.id,
+                                            label: `${inc.name}`,
+                                        })),
+                                    };
+                                }
+                                return field;
+                            }),
+                        };
+                    }
+                    return group;
+                }
+                )))
+            .catch((err) => console.error(err))
+
+        getPaymentTermsOptions(token)
+            .then((data) => setFormGroups((prev) =>
+                prev.map((group) => {
+                    if (group.group === 'Información Comercial') {
+                        return {
+                            ...group,
+                            fields: group.fields.map((field) => {
+                                if (field.name === 'payment') {
+                                    return {
+                                        ...field,
+                                        options: data.map((pt) => ({
+                                            value: pt.id,
+                                            label: `${pt.name}`,
+                                        })),
+                                    };
+                                }
+                                return field;
+                            }),
+                        };
+                    }
+                    return group;
+                }
+                )))
+            .catch((err) => console.error(err))
+
+        getTransportsOptions(token)
+            .then((data) => setFormGroups((prev) =>
+                prev.map((group) => {
+                    if (group.group === 'Transporte') {
+                        return {
+                            ...group,
+                            fields: group.fields.map((field) => {
+                                if (field.name === 'transport') {
+                                    return {
+                                        ...field,
+                                        options: data.map((tr) => ({
+                                            value: tr.id,
+                                            label: `${tr.name}`,
+                                        })),
+                                    };
+                                }
+                                return field;
+                            }),
+                        };
+                    }
+                    return group;
+                }
+                )))
+            .catch((err) => console.error(err))
+
         setLoading(false);
     }, [orderData]);
 
 
-    
 
-    return { defaultValues, formGroups , loading};
+
+    return { defaultValues, formGroups, loading };
 }
 
 

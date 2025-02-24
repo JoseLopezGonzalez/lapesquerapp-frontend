@@ -21,9 +21,9 @@ import {
 
 
 
-export function Combobox({options , placeholder, searchPlaceholder , notFoundMessage , className}) {
+export function Combobox({options , placeholder, searchPlaceholder , notFoundMessage , className ,defaultValue}) {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const [value, setValue] = React.useState(defaultValue || "")
 
   return (
     <Popover open={open} onOpenChange={setOpen} className={className || ""}>
@@ -51,6 +51,9 @@ export function Combobox({options , placeholder, searchPlaceholder , notFoundMes
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
+                    console.log(option.value)
+                    console.log(currentValue)
+                    console.log(value)
                     setValue(currentValue === value ? "" : currentValue)
                     setOpen(false)
                   }}

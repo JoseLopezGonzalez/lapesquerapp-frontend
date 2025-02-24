@@ -19,7 +19,7 @@ const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
     // También usamos la configuración de form (sin defaultValues, si la separas) o, si usas useOrderFormConfig,
     // ésta puede seguir devolviendo la estructura de grupos. Por simplicidad, aquí solo usaremos el objeto de config.
-    const { formGroups, defaultValues } = useOrderFormConfig({ orderData: order });
+    const { formGroups, defaultValues, loading } = useOrderFormConfig({ orderData: order });
 
     const { register, handleSubmit, setValue, watch, reset } = useForm({
         defaultValues,
@@ -64,8 +64,7 @@ const OrderEditSheet = () => {
                 );
             case 'Select':
                 return (
-                    <Select defaultValue={defaultValues[field.name]}  > 
-                    {console.log(watch(field.name))}
+                    <Select defaultValue={defaultValues[field.name]}  >
                         <SelectTrigger>
                             <SelectValue placeholder={field.props?.placeholder} />
                         </SelectTrigger>
@@ -85,6 +84,7 @@ const OrderEditSheet = () => {
                         placeholder={field.props?.placeholder}
                         searchPlaceholder={field.props?.searchPlaceholder}
                         notFoundMessage={field.props?.notFoundMessage}
+                        defaultValue={defaultValues[field.name]}
                         {...commonProps}
                     />
                 );
@@ -108,36 +108,38 @@ const OrderEditSheet = () => {
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
-                    <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto">
-                        {formGroups.map((group) => (
-                            <div key={group.group} className="mb-6">
-                                <h3 className="text-sm font-medium">{group.group}</h3>
-                                <Separator className="my-2" />
-                                <div className={`grid py-4 ${group.grid || 'grid-cols-1 gap-4'}`}>
-                                    {group.fields.map((field) => (
-                                        <div key={field.name} className="grid gap-2">
-                                            <Label htmlFor={field.name}>{field.label}</Label>
-                                            {renderField(field)}
-                                            {/* Aquí podrías renderizar errores si lo deseas */}
-                                        </div>
-                                    ))}
+                {loading ? <div>Cargando...</div> :
+                    <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
+                        <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto">
+                            {formGroups.map((group) => (
+                                <div key={group.group} className="mb-6">
+                                    <h3 className="text-sm font-medium">{group.group}</h3>
+                                    <Separator className="my-2" />
+                                    <div className={`grid py-4 ${group.grid || 'grid-cols-1 gap-4'}`}>
+                                        {group.fields.map((field) => (
+                                            <div key={field.name} className="grid gap-2">
+                                                <Label htmlFor={field.name}>{field.label}</Label>
+                                                {renderField(field)}
+                                                {/* Aquí podrías renderizar errores si lo deseas */}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-end gap-4 pt-4">
-                        <SheetTrigger asChild>
-                            <Button variant="outline" type="button">
-                                Cancelar
+                            ))}
+                        </div>
+                        <div className="flex justify-end gap-4 pt-4">
+                            <SheetTrigger asChild>
+                                <Button variant="outline" type="button">
+                                    Cancelar
+                                </Button>
+                            </SheetTrigger>
+                            <Button type="submit">
+                                <Save className="h-4 w-4 mr-2" />
+                                Guardar cambios
                             </Button>
-                        </SheetTrigger>
-                        <Button type="submit">
-                            <Save className="h-4 w-4 mr-2" />
-                            Guardar cambios
-                        </Button>
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                }
             </SheetContent>
         </Sheet>
     );
