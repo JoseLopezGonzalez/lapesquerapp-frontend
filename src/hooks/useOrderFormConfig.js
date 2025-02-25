@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 const initialDefaultValues = {
     entryDate: '',
     loadDate: '',
-    salesperson: null,
+    salesperson: '',
     payment: '',
     incoterm: '',
     transport: '',
@@ -51,11 +51,7 @@ const initialFormGroups = [
                 label: 'Comercial',
                 component: 'Select',
                 rules: { required: 'Seleccione un comercial' },
-                options: [
-                    { value: 1, label: 'Juan Pérez' },
-                    { value: 2, label: 'María García' },
-                    { value: 3, label: 'Carlos López' },
-                ],
+                options: [],
                 props: { placeholder: 'Seleccionar comercial' },
             },
             {
@@ -63,12 +59,7 @@ const initialFormGroups = [
                 label: 'Forma de pago',
                 component: 'Select',
                 rules: { required: 'Seleccione la forma de pago' },
-                options: [
-                    { value: 'transfer', label: 'Transferencia bancaria' },
-                    { value: 'credit', label: 'Crédito 30 días' },
-                    { value: 'cash', label: 'Efectivo' },
-                    { value: 'check', label: 'Cheque' },
-                ],
+                options: [],
                 props: { placeholder: 'Seleccionar forma de pago' },
             },
             {
@@ -76,12 +67,7 @@ const initialFormGroups = [
                 label: 'Incoterm',
                 component: 'Select',
                 rules: { required: 'Seleccione un incoterm' },
-                options: [
-                    { value: 'exw', label: 'EXW - Ex Works' },
-                    { value: 'fob', label: 'FOB - Free on Board' },
-                    { value: 'cif', label: 'CIF - Cost, Insurance & Freight' },
-                    { value: 'dap', label: 'DAP - Delivered at Place' },
-                ],
+                options: [],
                 props: { placeholder: 'Seleccionar Incoterm' },
             },
         ],
@@ -95,12 +81,7 @@ const initialFormGroups = [
                 label: 'Empresa de transporte',
                 component: 'Combobox',
                 rules: { required: 'Seleccione una empresa de transporte' },
-                options: [
-                    { value: 'seur', label: 'SEUR' },
-                    { value: 'dhl', label: 'DHL' },
-                    { value: 'ups', label: 'UPS' },
-                    { value: 'propio', label: 'Transporte Propio' },
-                ],
+                options: [],
                 props: {
                     placeholder: 'Seleccionar transporte',
                     searchPlaceholder: 'Buscar transporte...',
@@ -216,24 +197,19 @@ const initialFormGroups = [
 
 export function useOrderFormConfig({ orderData }) {
     const { data: session, status } = useSession();
-
-
     const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
     const [formGroups, setFormGroups] = useState(initialFormGroups);
     const [loading, setLoading] = useState(true);
-
-    const [salespeople, setSalespeople] = useState([]);
-
 
     useEffect(() => {
         if (orderData) {
             setDefaultValues({
                 entryDate: orderData.entryDate || '',
                 loadDate: orderData.loadDate || '',
-                salesperson: orderData.salesperson.id || '',
-                payment: orderData.paymentTerm.id || '',
-                incoterm: orderData.incoterm.id || '',
-                transport: orderData.transport?.id || '',
+                salesperson: `${orderData.salesperson.id}` || '',
+                payment: `${orderData.paymentTerm.id}` || '',
+                incoterm: `${orderData.incoterm.id}` || '',
+                transport: `${orderData.transport?.id}` || '',
                 billingAddress: orderData.billingAddress || '',
                 shippingAddress: orderData.shippingAddress || '',
                 productionNotes: orderData.productionNotes || '',
@@ -255,7 +231,7 @@ export function useOrderFormConfig({ orderData }) {
                                     return {
                                         ...field,
                                         options: data.map((sp) => ({
-                                            value: sp.id,
+                                            value: `${sp.id}`,
                                             label: `${sp.name}`,
                                         })),
                                     };
@@ -279,7 +255,7 @@ export function useOrderFormConfig({ orderData }) {
                                     return {
                                         ...field,
                                         options: data.map((inc) => ({
-                                            value: inc.id,
+                                            value: `${inc.id}`,
                                             label: `${inc.name}`,
                                         })),
                                     };
@@ -304,7 +280,7 @@ export function useOrderFormConfig({ orderData }) {
                                     return {
                                         ...field,
                                         options: data.map((pt) => ({
-                                            value: pt.id,
+                                            value: `${pt.id}`,
                                             label: `${pt.name}`,
                                         })),
                                     };
@@ -329,7 +305,7 @@ export function useOrderFormConfig({ orderData }) {
                                     return {
                                         ...field,
                                         options: data.map((tr) => ({
-                                            value: tr.id,
+                                            value: `${tr.id}`,
                                             label: `${tr.name}`,
                                         })),
                                     };

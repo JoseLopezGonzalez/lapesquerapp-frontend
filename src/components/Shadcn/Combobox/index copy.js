@@ -21,8 +21,9 @@ import {
 
 
 
-export function Combobox({ options, placeholder, searchPlaceholder, notFoundMessage, className, value, onChange }) {
+export function Combobox({ options, placeholder, searchPlaceholder, notFoundMessage, className, defaultValue }) {
   const [open, setOpen] = React.useState(false)
+  const [value, setValue] = React.useState(defaultValue || "")
 
   return (
     <Popover open={open} onOpenChange={setOpen} className={className || ""}>
@@ -31,7 +32,8 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className=" justify-between w-full overflow-hidden"
+          className=" justify-between w-full overflow-x-hidden"
+
         >
           <div className="w-full  truncate text-start">
             {value
@@ -45,25 +47,19 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
       <PopoverContent className="w-full p-0 ">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
-          <CommandList
-            /* scroll con rueda de raton forzado */
-            onWheel={(e) => {
-              e.currentTarget.scrollBy({
-                top: e.deltaY * 2,
-                left: 0,
-                behavior: "smooth",
-              })
-            }}
-          >
+          <CommandList>
             <CommandEmpty>{notFoundMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label}
+                  value={option.value}
                   onSelect={(currentValue) => {
-                    onChange(option.value === value ? "" : option.value)
+                    /* CurrentValue devuelve el label y no el value */
+                    setValue(currentValue === value ? "" : currentValue)
+                    /* setValue(option.value) */
                     setOpen(false)
+
                   }}
                 >
                   <Check

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';
-import { useOrder } from '@/hooks/useOrder';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import DatePicker from '@/components/Shadcn/Dates/DatePicker';
@@ -15,13 +14,10 @@ import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
 
 const OrderEditSheet = () => {
-    // Usamos nuestro hook useOrder para obtener el pedido y defaultValues
     const { order, updateOrderData } = useOrderContext()
-    // También usamos la configuración de form (sin defaultValues, si la separas) o, si usas useOrderFormConfig,
-    // ésta puede seguir devolviendo la estructura de grupos. Por simplicidad, aquí solo usaremos el objeto de config.
     const { formGroups, defaultValues, loading } = useOrderFormConfig({ orderData: order });
 
-    const { register, handleSubmit, setValue, watch, reset } = useForm({
+    const { register, handleSubmit, watch, reset, control, formState: { errors } } = useForm({
         defaultValues,
         mode: 'onChange',
     });
@@ -30,18 +26,22 @@ const OrderEditSheet = () => {
         reset(defaultValues);
     }, [defaultValues]);
 
-    // Cuando defaultValues cambien, reiniciamos el formulario
-    /* useEffect(() => {
+    const onCloseSheet = () => {
         reset(defaultValues);
-    }, [defaultValues, reset]); */
+    };
+
+    const allValues = watch();
+
+    useEffect(() => {
+        console.log("Valores del formulario cambiaron:", allValues);
+    }, [allValues]);
 
     const onSubmit = async (data) => {
         try {
-            const updated = await updateOrderData(data);
-            console.log('Pedido actualizado:', updated);
+            console.log('Datos a enviar:', data);
+            toast.success('Pedido actualizado correctamente');
             // Mostrar toast o cerrar el Sheet, según corresponda
         } catch (err) {
-            console.error('Error al actualizar el pedido:', err);
             // Mostrar mensaje de error
         }
     };
@@ -56,36 +56,74 @@ const OrderEditSheet = () => {
         switch (field.component) {
             case 'DatePicker':
                 return (
-                    <DatePicker
-                        value={watch(field.name)}
-                        onChange={(value) => setValue(field.name, value)}
-                        {...field.props}
+                    <Controller
+                        name={field.name}
+                        control={control} // proviene de useForm o useFormContext
+                        rules={field.rules}
+                        render={({ field: { onChange, value, onBlur } }) => {
+                            // Aquí renderizas el componente, por ejemplo un Select
+                            // y usas onChange / value / onBlur para la sincronización
+                            return (
+                                <DatePicker
+                                    value={value}
+                                    onChange={onChange}
+                                    onBlur={onBlur}
+                                    {...field.props}
+                                />
+                            )
+                        }}
                     />
                 );
             case 'Select':
                 return (
-                    <Select defaultValue={defaultValues[field.name]}  >
-                        <SelectTrigger>
-                            <SelectValue placeholder={field.props?.placeholder} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {field.options.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <Controller
+                        name={field.name}
+                        control={control} // proviene de useForm o useFormContext
+                        rules={field.rules}
+                        render={({ field: { onChange, value, onBlur } }) => {
+                            // Aquí renderizas el componente, por ejemplo un Select
+                            // y usas onChange / value / onBlur para la sincronización
+                            return (
+                                <Select value={value} onValueChange={onChange} onBlur={onBlur}>
+                                    <SelectTrigger className="w-full overflow-hidden">
+                                        <div className="w-full overflow-hidden truncate text-start">
+                                            <SelectValue placeholder={field.props?.placeholder} />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {/* empty item */}
+                                        {field.options.map((opt) => (
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )
+                        }}
+                    />
                 );
             case 'Combobox':
                 return (
-                    <Combobox
-                        options={field.options}
-                        placeholder={field.props?.placeholder}
-                        searchPlaceholder={field.props?.searchPlaceholder}
-                        notFoundMessage={field.props?.notFoundMessage}
-                        defaultValue={defaultValues[field.name]}
-                        {...commonProps}
+                    <Controller
+                        name={field.name}
+                        control={control} // proviene de useForm o useFormContext
+                        rules={field.rules}
+                        render={({ field: { onChange, value, onBlur } }) => {
+                            // Aquí renderizas el componente, por ejemplo un Select
+                            // y usas onChange / value / onBlur para la sincronización
+                            return (
+                                <Combobox
+                                    options={field.options}
+                                    placeholder={field.props?.placeholder}
+                                    searchPlaceholder={field.props?.searchPlaceholder}
+                                    notFoundMessage={field.props?.notFoundMessage}
+                                    value={value}
+                                    onChange={onChange}
+                                    onBlur={onBlur}
+                                />
+                            )
+                        }}
                     />
                 );
             case 'Textarea':
@@ -104,23 +142,29 @@ const OrderEditSheet = () => {
                     Editar Pedido
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7">
+            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7" >
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
                 {loading ? <div>Cargando...</div> :
-                    <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
-                        <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto">
+                    <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col w-full">
+                        <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
                             {formGroups.map((group) => (
-                                <div key={group.group} className="mb-6">
+                                <div key={group.group} className=" w-full">
                                     <h3 className="text-sm font-medium">{group.group}</h3>
                                     <Separator className="my-2" />
-                                    <div className={`grid py-4 ${group.grid || 'grid-cols-1 gap-4'}`}>
+                                    <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
                                         {group.fields.map((field) => (
-                                            <div key={field.name} className="grid gap-2">
+                                            <div key={field.name} className="grid gap-2 w-full">
                                                 <Label htmlFor={field.name}>{field.label}</Label>
                                                 {renderField(field)}
                                                 {/* Aquí podrías renderizar errores si lo deseas */}
+                                                {/* Mensaje de error */}
+                                                {errors[field.name] && (
+                                                    <p className="text-red-500 text-sm">
+                                                        {errors[field.name].message}
+                                                    </p>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -129,7 +173,9 @@ const OrderEditSheet = () => {
                         </div>
                         <div className="flex justify-end gap-4 pt-4">
                             <SheetTrigger asChild>
-                                <Button variant="outline" type="button">
+                                <Button
+                                    onClick={onCloseSheet}
+                                    variant="outline" type="button">
                                     Cancelar
                                 </Button>
                             </SheetTrigger>

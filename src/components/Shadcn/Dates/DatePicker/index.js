@@ -5,10 +5,11 @@ import { formatDate } from '@/helpers/formats/dates/formatDates'
 import { CalendarIcon } from 'lucide-react'
 import React from 'react'
 
-const DatePicker = ({value, onChange}) => {
+const DatePicker = ({ value, onChange }) => {
+    const [open, setOpen] = React.useState(false);
 
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
@@ -22,11 +23,15 @@ const DatePicker = ({value, onChange}) => {
                 <Calendar
                     mode="single"
                     selected={value}
-                    onSelect={onChange}
+                    onSelect={(date) => {
+                        onChange(date)
+                        setOpen(false)
+                    }}
                     initialFocus
                 />
             </PopoverContent>
-        </Popover>)
+        </Popover>
+    )
 }
 
 export default DatePicker

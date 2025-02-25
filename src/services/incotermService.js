@@ -1,6 +1,6 @@
 // /src/services/orderService.js
 
-import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { API_URL_V2 } from "@/configs/config";
 
 
 /**
