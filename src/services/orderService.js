@@ -66,6 +66,9 @@ export function updateOrder(orderId, orderData, token) {
             }
             return response.json();
         })
+        .then((data) => {
+            return data.data;
+        })
         .catch((error) => {
             // Manejo adicional de errores, si lo requieres
             throw error;

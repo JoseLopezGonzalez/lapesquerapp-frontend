@@ -1,6 +1,6 @@
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
-import { getOrder } from '@/services/orderService';
+import { getOrder, updateOrder } from '@/services/orderService';
 import { useSession } from 'next-auth/react';
 
 export function useOrder(orderId) {
@@ -24,6 +24,7 @@ export function useOrder(orderId) {
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
         setLoading(true);
+        const token = session?.user?.accessToken;
         try {
             const updated = await updateOrder(orderId, updateData, token);
             setOrder(updated);

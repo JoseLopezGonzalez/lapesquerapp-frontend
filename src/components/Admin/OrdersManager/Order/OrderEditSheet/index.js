@@ -12,6 +12,8 @@ import { Edit, Save } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
+import toast from 'react-hot-toast';
+import { darkToastTheme } from '@/customs/reactHotToast';
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
@@ -37,13 +39,19 @@ const OrderEditSheet = () => {
     }, [allValues]);
 
     const onSubmit = async (data) => {
-        try {
-            console.log('Datos a enviar:', data);
-            toast.success('Pedido actualizado correctamente');
-            // Mostrar toast o cerrar el Sheet, según corresponda
-        } catch (err) {
-            // Mostrar mensaje de error
-        }
+        /* toast fetch */
+        const toastId = toast.loading('Actualizando pedido...' , darkToastTheme);
+        
+        updateOrderData(data)
+            .then((updatedData) => {
+                console.log('Pedido actualizado:', updatedData);
+                toast.success('Pedido actualizado correctamente', { id: toastId });
+            })
+            .catch((error) => {
+                console.error('Error al actualizar el pedido:', error);
+                toast.error('Error al actualizar el pedido', { id: toastId });
+            });
+
     };
 
     const renderField = (field) => {
@@ -142,7 +150,7 @@ const OrderEditSheet = () => {
                     Editar Pedido
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7" >
+            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14" >
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
