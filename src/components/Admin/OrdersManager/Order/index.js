@@ -79,8 +79,8 @@ const OrderContent = () => {
                     <p className='font-medium text-lg'>{order.loadDate}</p>
                   </div>
                   <div className='text-white'>
-                    <p className='font-medium text-xs text-neutral-300'>Buyer Reference:</p>
-                    <p className='font-medium text-lg'>{order.buyerReference || '-'}</p>
+                    <p className='font-medium text-xs text-neutral-300'>Palets:</p>
+                    <p className='font-medium text-lg'>{order.numberOfPallets || '-'}</p>
                   </div>
                 </div>
                 <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>

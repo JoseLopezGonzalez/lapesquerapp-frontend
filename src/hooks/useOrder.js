@@ -9,6 +9,8 @@ export function useOrder(orderId) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const pallets = order?.pallets || [];
+
     useEffect(() => {
         // Espera a que la sesión esté lista
         if (!orderId || status === 'loading') return;
@@ -19,22 +21,30 @@ export function useOrder(orderId) {
             .then((data) => setOrder(data))
             .catch((err) => setError(err))
             .finally(() => setLoading(false));
-    }, [orderId, session, status]);
+    }, [orderId]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
-        setLoading(true);
+        /* setLoading(true); */
         const token = session?.user?.accessToken;
-        try {
-            const updated = await updateOrder(orderId, updateData, token);
-            setOrder(updated);
-            return updated;
-        } catch (err) {
-            setError(err);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        updateOrder(orderId, updateData, token)
+            .then((updated) => {
+                setOrder(updated);
+                return updated;
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
     };
-    return { order, loading, error , updateOrderData };
+
+
+
+    return {
+        pallets,
+        order,
+        loading,
+        error,
+        updateOrderData
+    };
 }

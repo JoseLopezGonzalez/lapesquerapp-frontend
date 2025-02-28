@@ -32,16 +32,11 @@ const OrderEditSheet = () => {
         reset(defaultValues);
     };
 
-    const allValues = watch();
-
-    useEffect(() => {
-        console.log("Valores del formulario cambiaron:", allValues);
-    }, [allValues]);
 
     const onSubmit = async (data) => {
         /* toast fetch */
-        const toastId = toast.loading('Actualizando pedido...' , darkToastTheme);
-        
+        const toastId = toast.loading('Actualizando pedido...', darkToastTheme);
+
         updateOrderData(data)
             .then((updatedData) => {
                 console.log('Pedido actualizado:', updatedData);
@@ -51,6 +46,7 @@ const OrderEditSheet = () => {
                 console.error('Error al actualizar el pedido:', error);
                 toast.error('Error al actualizar el pedido', { id: toastId });
             });
+
 
     };
 
@@ -187,10 +183,12 @@ const OrderEditSheet = () => {
                                     Cancelar
                                 </Button>
                             </SheetTrigger>
-                            <Button type="submit">
-                                <Save className="h-4 w-4 mr-2" />
-                                Guardar cambios
-                            </Button>
+                            <SheetTrigger asChild>
+                                <Button type="submit">
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Guardar cambios
+                                </Button>
+                            </SheetTrigger>
                         </div>
                     </form>
                 }

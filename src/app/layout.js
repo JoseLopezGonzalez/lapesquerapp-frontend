@@ -11,11 +11,9 @@ export default function RootLayout({ children }) {
       <body
         className={` bg-neutral-950  w-full`}
       >
-
         <SessionProvider>{children}</SessionProvider>
         <Toaster />
       </body>
-
     </html>
   );
 }

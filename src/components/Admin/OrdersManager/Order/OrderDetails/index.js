@@ -50,6 +50,10 @@ const OrderDetails = () => {
                         <div className="text-sm text-muted-foreground">Carga prevista</div>
                         <div className="font-medium">{formatDate(order.loadDate)}</div>
                     </div>
+                    <div>
+                        <div className="text-sm text-muted-foreground">Referencia Cliente</div>
+                        <div className="font-medium">{order.buyerReference}</div>
+                    </div>
                 </CardContent>
             </Card>
 

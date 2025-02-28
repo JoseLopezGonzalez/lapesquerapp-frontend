@@ -30,7 +30,7 @@ export const formatInteger = (number) => {
   }
   
   export const formatDecimalWeight = (number) => {
-    return `${formatDecimal(number)} Kg`;
+    return `${formatDecimal(number)} kg`;
   }
   
   
