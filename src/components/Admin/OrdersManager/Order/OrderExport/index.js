@@ -7,84 +7,87 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
+import { getSession } from 'next-auth/react';
+import { API_URL_V2 } from '@/configs/config';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import PDFSHEET from './pdf';
 
 
 const documents = [
     {
-        name: 'Nota de Carga',
+        name: 'loading-note',
         label: 'Nota de Carga',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
-        name: 'Nota de Carga (Restringida)',
+        name: 'restricted-loading-note',
         label: 'Nota de Carga (Restringida)',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
-        name: 'Documento de trazabilidad',
+        name: 'traceability-document',
         label: 'Documento de trazabilidad',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
     },
     {
-        name: 'Documento de transporte (CMR)',
+        name: 'transport-document-cmr',
         label: 'Documento de transporte (CMR)',
         types: ['PDF'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'transportes'],
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
     },
     {
-        name: 'Documento confirmación de pedido',
+        name: 'order-confirmation-document',
         label: 'Documento confirmación de pedido',
         types: ['PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
     },
     {
-        name: 'Letreros de transporte',
+        name: 'transport-signs',
         label: 'Letreros de transporte',
         types: ['PDF'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'transportes'],
-
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
     },
     {
-        name: 'Packing List',
+        name: 'packing-list',
         label: 'Packing List',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
-        name: 'Hoja de pedido',
+        name: 'order-sheet',
         label: 'Hoja de pedido',
         types: ['PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Productos'],
-
     },
     {
-        name: 'Reporte de Articulos',
-        label: 'Reporte de Articulos',
+        name: 'article-report',
+        label: 'Reporte de Artículos',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
     },
     {
-        name: 'Reporte de palets',
-        label: 'Reporte de palets',
+        name: 'pallet-report',
+        label: 'Reporte de Palets',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
-        name: 'Reporte de lotes',
-        label: 'Reporte de lotes',
+        name: 'batch-report',
+        label: 'Reporte de Lotes',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
     },
     {
-        name: 'Reporte Logs de diferencias',
+        name: 'logs-differences-report',
         label: 'Reporte Logs de diferencias',
         types: ['Excel', 'PDF'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
     }
-]
+];
+
 
 const fastExport = [
     /* Nota de carga */
@@ -130,9 +133,57 @@ const OrderExport = () => {
         setSelectedType(documents.find((doc) => doc.name === selectedDocument)?.types[0])
     }, [selectedDocument])
 
+    const handleExport = async () => {
+        try {
+            const session = await getSession();
+
+            const response = await fetch(`${API_URL_V2}orders/${order.id}/order_sheet`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/pdf', // Solicita un PDF
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                    'User-Agent': navigator.userAgent,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al exportar la hoja de pedido');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `HojaPedido_${order.id}.pdf`; // Nombre del archivo de descarga
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url); // Liberar memoria
+
+            console.log('Exportación exitosa');
+
+        } catch (error) {
+            console.error('Error al exportar la hoja de pedido:', error);
+        }
+    };
+
+
     return (
         <div className='h-full'>
             <Card className='h-full flex flex-col'>
+                <Button onClick={handleExport}>Exportar</Button>
+                <Dialog>
+                    <DialogTrigger>Open</DialogTrigger>
+                    <DialogContent className=' h-[70vh]'>
+                        <DialogHeader>
+                            <DialogTitle>Are you absolutely sure?</DialogTitle>
+                            <div className='w-[800px] h-[70vh] overflow-y-scroll'>
+
+                                <PDFSHEET />
+                            </div>
+                        </DialogHeader>
+                    </DialogContent>
+                </Dialog>
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">Exportar Datos</CardTitle>
                     <CardDescription>Exporta los datos del pedido en diferentes formatos</CardDescription>
