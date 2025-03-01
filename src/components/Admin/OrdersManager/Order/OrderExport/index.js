@@ -11,114 +11,122 @@ import { getSession } from 'next-auth/react';
 import { API_URL_V2 } from '@/configs/config';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import PDFSHEET from './pdf';
+import toast from 'react-hot-toast';
+import { darkToastTheme } from '@/customs/reactHotToast';
 
 
 const documents = [
     {
         name: 'loading-note',
         label: 'Nota de Carga',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
         name: 'restricted-loading-note',
         label: 'Nota de Carga (Restringida)',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
         name: 'traceability-document',
         label: 'Documento de trazabilidad',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
     },
     {
         name: 'transport-document-cmr',
         label: 'Documento de transporte (CMR)',
-        types: ['PDF'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
     },
     {
         name: 'order-confirmation-document',
         label: 'Documento confirmación de pedido',
-        types: ['PDF'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
     },
     {
         name: 'transport-signs',
         label: 'Letreros de transporte',
-        types: ['PDF'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
     },
     {
         name: 'packing-list',
         label: 'Packing List',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
         name: 'order-sheet',
         label: 'Hoja de pedido',
-        types: ['PDF'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Productos'],
     },
     {
         name: 'article-report',
         label: 'Reporte de Artículos',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
     },
     {
         name: 'pallet-report',
         label: 'Reporte de Palets',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
         name: 'batch-report',
         label: 'Reporte de Lotes',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
     },
     {
         name: 'logs-differences-report',
         label: 'Reporte Logs de diferencias',
-        types: ['Excel', 'PDF'],
+        types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
     }
 ];
 
 
 const fastExport = [
+    /* Hoja de pedido */
+    {
+        name: 'order-sheet',
+        label: 'Hoja de pedido',
+        type: 'pdf',
+    },
     /* Nota de carga */
     {
         name: 'Nota de carga',
         label: 'Nota de carga',
-        type: 'PDF',
+        type: 'pdf',
     },
     /* Nota de carga restringida */
     {
         name: 'Nota de carga restringida',
         label: 'Nota de carga restringida',
-        type: 'PDF',
+        type: 'pdf',
     },
     /* Documento de transporte (CMR) */
     {
         name: 'Documento de transporte (CMR)',
         label: 'Documento de transporte (CMR)',
-        type: 'PDF',
+        type: 'pdf',
     },
     /* Letreros de transporte */
     {
         name: 'Letreros de transporte',
         label: 'Letreros de transporte',
-        type: 'PDF',
+        type: 'pdf',
     },
     /* Reporte de lotes */
     {
         name: 'Reporte de lotes',
         label: 'Reporte de lotes',
-        type: 'Excel',
+        type: 'excel',
     }
 ]
 
@@ -133,14 +141,13 @@ const OrderExport = () => {
         setSelectedType(documents.find((doc) => doc.name === selectedDocument)?.types[0])
     }, [selectedDocument])
 
-    const handleExport = async () => {
+    const handleExportDocument = async (documentName, type) => {
+        const toastId = toast.loading(`Exportando ${type} ...`, darkToastTheme);
         try {
             const session = await getSession();
-
-            const response = await fetch(`${API_URL_V2}orders/${order.id}/order_sheet`, {
+            const response = await fetch(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/pdf', // Solicita un PDF
                     'Authorization': `Bearer ${session.user.accessToken}`,
                     'User-Agent': navigator.userAgent,
                 }
@@ -160,18 +167,25 @@ const OrderExport = () => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url); // Liberar memoria
 
-            console.log('Exportación exitosa');
+            toast.success('Exportación exitosa', { id: toastId });
 
         } catch (error) {
-            console.error('Error al exportar la hoja de pedido:', error);
+            toast.error('Error al exportar', { id: toastId });
         }
     };
+
+    const handleOnClickFastExport = (documentName, type) => {
+        handleExportDocument(documentName, type);
+    }
+
+    const handleOnClickSelectExport = () => {
+        handleExportDocument(selectedDocument, selectedType);
+    }
 
 
     return (
         <div className='h-full'>
             <Card className='h-full flex flex-col'>
-                <Button onClick={handleExport}>Exportar</Button>
                 <Dialog>
                     <DialogTrigger>Open</DialogTrigger>
                     <DialogContent className=' h-[70vh]'>
@@ -226,7 +240,7 @@ const OrderExport = () => {
                                     <Badge key={field} variant="outline">{field}</Badge>
                                 ))}
                             </div>
-                            <Button className="w-full">
+                            <Button className="w-full" onClick={handleOnClickSelectExport}>
                                 <Download className="h-4 w-4" />
                                 Exportar selección
                             </Button>
@@ -240,10 +254,10 @@ const OrderExport = () => {
                                             key={doc.name}
                                             variant="outline"
                                             className="justify-start"
-                                            onClick={() => console.log(`Exportando ${doc.name}...`)}
+                                            onClick={() => handleOnClickFastExport(doc.name, doc.type)}
                                         >
-                                            {doc.type === 'PDF' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
-                                            {doc.type === 'Excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
+                                            {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
+                                            {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
                                             {doc.label}
                                         </Button>
                                     ))
