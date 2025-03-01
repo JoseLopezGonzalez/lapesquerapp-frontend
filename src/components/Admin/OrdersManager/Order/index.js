@@ -141,7 +141,7 @@ const OrderContent = () => {
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
                       <TabsTrigger value="documents">Documentos</TabsTrigger>
                       <TabsTrigger value="export">Exportar</TabsTrigger>
-                      <TabsTrigger value="labels">Etiquetas</TabsTrigger>
+                     {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                     </TabsList>
 
                     <div className="flex-1 overflow-y-hidden">

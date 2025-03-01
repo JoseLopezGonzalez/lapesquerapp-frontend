@@ -47,13 +47,13 @@ const documents = [
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
     },
     {
-        name: 'transport-signs',
+        name: 'order-signs',
         label: 'Letreros de transporte',
         types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
     },
     {
-        name: 'packing-list',
+        name: 'order-packing-list',
         label: 'Packing List',
         types: ['excel', 'pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
@@ -118,8 +118,14 @@ const fastExport = [
     },
     /* Letreros de transporte */
     {
-        name: 'Letreros de transporte',
+        name: 'order-signs',
         label: 'Letreros de transporte',
+        type: 'pdf',
+    },
+    /* PAcking list */
+    {
+        name: 'order-packing-list',
+        label: 'Packing List',
         type: 'pdf',
     },
     /* Reporte de lotes */
@@ -142,6 +148,8 @@ const OrderExport = () => {
     }, [selectedDocument])
 
     const handleExportDocument = async (documentName, type) => {
+
+        const label = documents.find((doc) => doc.name === documentName)?.label;
         const toastId = toast.loading(`Exportando ${type} ...`, darkToastTheme);
         try {
             const session = await getSession();
@@ -161,7 +169,7 @@ const OrderExport = () => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `HojaPedido_${order.id}.pdf`; // Nombre del archivo de descarga
+            a.download = `${label}_${order.id}.pdf`; // Nombre del archivo de descarga
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -186,23 +194,11 @@ const OrderExport = () => {
     return (
         <div className='h-full'>
             <Card className='h-full flex flex-col'>
-                <Dialog>
-                    <DialogTrigger>Open</DialogTrigger>
-                    <DialogContent className=' h-[70vh]'>
-                        <DialogHeader>
-                            <DialogTitle>Are you absolutely sure?</DialogTitle>
-                            <div className='w-[800px] h-[70vh] overflow-y-scroll'>
-
-                                <PDFSHEET />
-                            </div>
-                        </DialogHeader>
-                    </DialogContent>
-                </Dialog>
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">Exportar Datos</CardTitle>
                     <CardDescription>Exporta los datos del pedido en diferentes formatos</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-y-scroll">
+                <CardContent className="flex-1 overflow-y-scroll py-2">
                     <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
@@ -244,6 +240,20 @@ const OrderExport = () => {
                                 <Download className="h-4 w-4" />
                                 Exportar selección
                             </Button>
+                            <Dialog>
+                                <DialogTrigger>
+                                        Pruebas
+                                </DialogTrigger>
+                                <DialogContent className=' h-[70vh]'>
+                                    <DialogHeader>
+                                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                                        <div className='w-[800px] h-[70vh] overflow-y-scroll'>
+
+                                            <PDFSHEET />
+                                        </div>
+                                    </DialogHeader>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                         <div className="border rounded-lg p-4 space-y-3">
                             <div className="text-sm font-medium">Exportación rápida</div>
