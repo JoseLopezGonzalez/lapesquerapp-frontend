@@ -48,19 +48,19 @@ const OrderPallets = () => {
                                     <TableBody>
                                         {
                                             pallets.map((pallet, index) => (
-                                                <TableRow>
+                                                <TableRow key={index}>
                                                     <TableCell>{pallet.id}</TableCell>
                                                     <TableCell>
                                                         <div className="space-y-1">
                                                             {pallet.productsNames.map((product) => (
-                                                                <div>{product}</div>
+                                                                <div key={product}>{product}</div>
                                                             ))}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="space-y-1">
                                                             {pallet.lots.map((lot) => (
-                                                                <div>{lot}</div>
+                                                                <div key={lot}>{lot}</div>
                                                             ))}
                                                         </div>
                                                     </TableCell>
