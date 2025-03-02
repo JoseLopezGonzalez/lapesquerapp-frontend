@@ -100,7 +100,7 @@ const fastExport = [
     },
     /* Nota de carga */
     {
-        name: 'Nota de carga',
+        name: 'loading-note',
         label: 'Nota de carga',
         type: 'pdf',
     },
