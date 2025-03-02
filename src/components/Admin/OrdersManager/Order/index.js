@@ -88,10 +88,10 @@ const OrderContent = () => {
 
                     <div className="flex gap-2">
                       <OrderEditSheet />
-                      <Button variant="outline">
+                      {/* <Button variant="outline">
                         <Printer className="h-4 w-4 mr-2" />
                         Imprimir
-                      </Button>
+                      </Button> */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline">
@@ -141,7 +141,7 @@ const OrderContent = () => {
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
                       <TabsTrigger value="documents">Documentos</TabsTrigger>
                       <TabsTrigger value="export">Exportar</TabsTrigger>
-                     {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
+                      {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                     </TabsList>
 
                     <div className="flex-1 overflow-y-hidden">

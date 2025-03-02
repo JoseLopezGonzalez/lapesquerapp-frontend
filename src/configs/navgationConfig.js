@@ -65,6 +65,11 @@ export const navigationConfig = [
                 href: '/admin/orders',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
+            {
+                name: 'Gestor de Pedidos',
+                href: '/admin/orders-manager',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
         ],
     },
     {

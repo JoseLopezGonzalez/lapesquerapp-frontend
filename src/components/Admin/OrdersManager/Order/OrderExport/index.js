@@ -1,5 +1,5 @@
 import React, { use, useEffect, useState } from 'react'
-import { Download } from 'lucide-react';
+import { Download, Layers } from 'lucide-react';
 import { BsFileEarmarkPdf } from "react-icons/bs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -7,35 +7,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
-import { getSession } from 'next-auth/react';
-import { API_URL_V2 } from '@/configs/config';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import PDFSHEET from './pdf';
-import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+
 
 
 const documents = [
     {
         name: 'loading-note',
         label: 'Nota de Carga',
-        types: ['excel', 'pdf'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
         name: 'restricted-loading-note',
         label: 'Nota de Carga (Restringida)',
-        types: ['excel', 'pdf'],
+        types: ['pdf'],
         fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
     },
     {
         name: 'traceability-document',
         label: 'Documento de trazabilidad',
-        types: ['excel', 'pdf'],
+        types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
     },
     {
-        name: 'transport-document-cmr',
+        name: 'order-cmr',
         label: 'Documento de transporte (CMR)',
         types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
@@ -55,7 +50,7 @@ const documents = [
     {
         name: 'order-packing-list',
         label: 'Packing List',
-        types: ['excel', 'pdf'],
+        types: ['pdf', 'xls'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
@@ -67,25 +62,25 @@ const documents = [
     {
         name: 'article-report',
         label: 'Reporte de Artículos',
-        types: ['excel', 'pdf'],
+        types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
     },
     {
         name: 'pallet-report',
         label: 'Reporte de Palets',
-        types: ['excel', 'pdf'],
+        types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
     },
     {
-        name: 'batch-report',
+        name: 'lots-report',
         label: 'Reporte de Lotes',
-        types: ['excel', 'pdf'],
+        types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
     },
     {
         name: 'logs-differences-report',
         label: 'Reporte Logs de diferencias',
-        types: ['excel', 'pdf'],
+        types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
     }
 ];
@@ -106,13 +101,13 @@ const fastExport = [
     },
     /* Nota de carga restringida */
     {
-        name: 'Nota de carga restringida',
-        label: 'Nota de carga restringida',
+        name: 'restricted-loading-note',
+        label: 'Nota de carga (Restringida)',
         type: 'pdf',
     },
     /* Documento de transporte (CMR) */
     {
-        name: 'Documento de transporte (CMR)',
+        name: 'order-cmr',
         label: 'Documento de transporte (CMR)',
         type: 'pdf',
     },
@@ -128,17 +123,11 @@ const fastExport = [
         label: 'Packing List',
         type: 'pdf',
     },
-    /* Reporte de lotes */
-    {
-        name: 'Reporte de lotes',
-        label: 'Reporte de lotes',
-        type: 'excel',
-    }
 ]
 
 const OrderExport = () => {
 
-    const { order } = useOrderContext();
+    const { exportDocument } = useOrderContext();
     const [selectedDocument, setSelectedDocument] = useState(documents[0]?.name || '');
     const [selectedType, setSelectedType] = useState(documents[0]?.types[0] || '');
 
@@ -147,59 +136,55 @@ const OrderExport = () => {
         setSelectedType(documents.find((doc) => doc.name === selectedDocument)?.types[0])
     }, [selectedDocument])
 
-    const handleExportDocument = async (documentName, type) => {
-
-        const label = documents.find((doc) => doc.name === documentName)?.label;
-        const toastId = toast.loading(`Exportando ${type} ...`, darkToastTheme);
-        try {
-            const session = await getSession();
-            const response = await fetch(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                    'User-Agent': navigator.userAgent,
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al exportar la hoja de pedido');
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${label}_${order.id}.pdf`; // Nombre del archivo de descarga
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url); // Liberar memoria
-
-            toast.success('Exportación exitosa', { id: toastId });
-
-        } catch (error) {
-            toast.error('Error al exportar', { id: toastId });
+    /* Funcion para exportar de una vex todos los docuentos de fastExport */
+    const handleOnClickExportAll = async () => {
+        for (const doc of fastExport) {
+            await exportDocument(doc.name, doc.type, doc.label);
         }
     };
 
-    const handleOnClickFastExport = (documentName, type) => {
-        handleExportDocument(documentName, type);
+    const handleOnClickFastExport = (documentName, type, documentLabel) => {
+        exportDocument(documentName, type, documentLabel);
     }
 
     const handleOnClickSelectExport = () => {
-        handleExportDocument(selectedDocument, selectedType);
+        const documentLabel = documents.find((doc) => doc.name === selectedDocument)?.label;
+        exportDocument(selectedDocument, selectedType, documentLabel);
     }
 
 
     return (
-        <div className='h-full'>
+        <div className='h-full pb-2'>
             <Card className='h-full flex flex-col'>
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">Exportar Datos</CardTitle>
                     <CardDescription>Exporta los datos del pedido en diferentes formatos</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-y-scroll py-2">
+                <CardContent className="flex-1 overflow-y-auto py-2">
                     <div className="grid md:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4 space-y-3">
+                            <div className="text-sm font-medium">Exportación rápida</div>
+                            <div className="grid gap-2">
+                                {
+                                    fastExport.map((doc) => (
+                                        <Button
+                                            key={doc.name}
+                                            variant="outline"
+                                            className="justify-start"
+                                            onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
+                                        >
+                                            {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
+                                            {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
+                                            {doc.label}
+                                        </Button>
+                                    ))
+                                }
+                            </div>
+                            <Button className="w-full" onClick={handleOnClickExportAll}>
+                                <Layers className="h-4 w-4" />
+                                Exportar todos
+                            </Button>
+                        </div>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
                                 <div className="flex-1">
@@ -240,39 +225,6 @@ const OrderExport = () => {
                                 <Download className="h-4 w-4" />
                                 Exportar selección
                             </Button>
-                            <Dialog>
-                                <DialogTrigger>
-                                        Pruebas
-                                </DialogTrigger>
-                                <DialogContent className=' h-[70vh]'>
-                                    <DialogHeader>
-                                        <DialogTitle>Are you absolutely sure?</DialogTitle>
-                                        <div className='w-[800px] h-[70vh] overflow-y-scroll'>
-
-                                            <PDFSHEET />
-                                        </div>
-                                    </DialogHeader>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                        <div className="border rounded-lg p-4 space-y-3">
-                            <div className="text-sm font-medium">Exportación rápida</div>
-                            <div className="grid gap-2">
-                                {
-                                    fastExport.map((doc) => (
-                                        <Button
-                                            key={doc.name}
-                                            variant="outline"
-                                            className="justify-start"
-                                            onClick={() => handleOnClickFastExport(doc.name, doc.type)}
-                                        >
-                                            {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
-                                            {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
-                                            {doc.label}
-                                        </Button>
-                                    ))
-                                }
-                            </div>
                         </div>
                     </div>
                 </CardContent>

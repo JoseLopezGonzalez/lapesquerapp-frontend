@@ -5,6 +5,7 @@ import OrdersList from './OrdersList';
 import examples from './examples.json';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Order from './Order';
+import { getActiveOrders } from '@/services/orderService';
 
 const examplesOrders = examples.data;
 
@@ -36,10 +37,22 @@ export default function OrdersManager() {
 
     useEffect(() => {
         /* Simular carga de datos */
-        setTimeout(() => {
-            setOrders(examplesOrders);
-            setLoading(false);
-        }, 2000);
+        /*  setTimeout(() => {
+             setOrders(examplesOrders);
+             setLoading(false);
+         }, 2000); */
+
+        getActiveOrders()
+            .then((data) => {
+                setOrders(data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error al obtener los pedidos activos', error);
+                setLoading(false);
+            });
+
+
     }, [])
 
     const filterOrders = orders.filter((order) => {
@@ -129,7 +142,7 @@ export default function OrdersManager() {
                         <div className='grow p-5 pt-0 lg:pl-0'>
                             {selectedOrder ? (
                                 <div className='h-full text-white p-9 bg-neutral-950 rounded-2xl'>
-                                     <Order orderId={selectedOrder}/>
+                                    <Order orderId={selectedOrder} />
                                 </div>
                             ) : (
                                 <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center bg-black/20'>
