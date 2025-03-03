@@ -1,3 +1,5 @@
+'use client'
+
 import React, { use, useEffect, useState } from 'react'
 import { Download, Layers } from 'lucide-react';
 import { BsFileEarmarkPdf } from "react-icons/bs";

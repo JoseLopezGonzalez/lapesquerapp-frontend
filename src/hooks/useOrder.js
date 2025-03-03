@@ -16,15 +16,25 @@ export function useOrder(orderId) {
 
     useEffect(() => {
         // Espera a que la sesión esté lista
-        if (!orderId || status === 'loading') return;
+        if (!orderId || status === "loading") return; // Espera a que la sesión esté lista
+
+
+        if (!orderId ) return;
+        console.log('useOrder', orderId, status);
 
         const token = session?.user?.accessToken;
+
+        console.log('token', token);
         setLoading(true);
         getOrder(orderId, token)
-            .then((data) => setOrder(data))
+            .then((data) => {
+                setOrder(data);
+                setLoading(false);
+            }
+            )
             .catch((err) => setError(err))
-            .finally(() => setLoading(false));
-    }, [orderId]);
+            .finally();
+    }, [orderId , status]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {

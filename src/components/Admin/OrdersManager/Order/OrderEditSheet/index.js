@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';

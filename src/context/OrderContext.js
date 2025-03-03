@@ -1,4 +1,5 @@
 // /src/context/OrderContext.js
+'use client'
 import React, { createContext, useContext } from 'react';
 import { useOrder } from '@/hooks/useOrder';
 

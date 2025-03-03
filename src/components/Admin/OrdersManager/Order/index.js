@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import example from './example.json';
 import { AlertCircle, MoreVertical, Printer } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -20,6 +20,7 @@ const OrderContent = () => {
   const { order, loading, error } = useOrderContext();
 
   console.log(order)
+
   return (
     <>
       {loading ? (
