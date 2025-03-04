@@ -20,7 +20,7 @@ const OrderCard = ({ order, onClick}) => {
     return (
         <div
             className={`
-             relative flex cursor-pointer rounded-3xl p-5 border-l-4 
+             relative flex cursor-pointer rounded-xl p-5 border-l-4 
             ${order.current && order.status === 'finished' ?
                     'border-green-500 bg-green-400/70 hover:bg-green-400/80' :
                     order.current && order.status === 'pending' ?
