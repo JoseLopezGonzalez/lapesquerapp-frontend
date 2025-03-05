@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from "react";
 import { FileText, Mail, Truck, User, Users, Check, Send, Ban, CheckCheck } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
