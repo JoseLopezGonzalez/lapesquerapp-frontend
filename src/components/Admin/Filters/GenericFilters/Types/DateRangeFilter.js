@@ -2,7 +2,7 @@
 
 import { memo, useEffect } from 'react';
 import { useState } from "react";
-/* import { es } from "react-day-picker/locale"; */
+import { es } from "react-day-picker/locale";
 import { format } from "date-fns";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import "/src/customs/reactDayPicker/reactDayPickerStyles.css";
