@@ -79,6 +79,13 @@ const documents = [
         types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
     },
+    /* Boxes report */
+    {
+        name: 'boxes-report',
+        label: 'Reporte de Cajas',
+        types: ['xlsx'],
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Cajas', 'Productos'],
+    },
     {
         name: 'logs-differences-report',
         label: 'Reporte Logs de diferencias',
