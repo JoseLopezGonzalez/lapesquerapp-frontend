@@ -13,6 +13,7 @@ import OrderExport from './OrderExport';
 import OrderLabels from './OrderLabels';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { classNames } from '@/helpers/styles/classNames';
+import OrderMap from './OrderMap';
 
 const exampleOrder = example.data;
 
@@ -142,6 +143,8 @@ const OrderContent = () => {
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
                       <TabsTrigger value="documents">Documentos</TabsTrigger>
                       <TabsTrigger value="export">Exportar</TabsTrigger>
+                      {/* Map */}
+                      <TabsTrigger value="map">Mapa</TabsTrigger>
                       {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                     </TabsList>
 
@@ -169,6 +172,10 @@ const OrderContent = () => {
 
                       <TabsContent value="labels" className='h-full'>
                         <OrderLabels />
+                      </TabsContent>
+
+                      <TabsContent value="map" className='h-full'>
+                        <OrderMap />
                       </TabsContent>
 
                     </div>

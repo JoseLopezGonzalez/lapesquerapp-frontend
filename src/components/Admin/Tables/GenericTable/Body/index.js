@@ -18,8 +18,8 @@ const badgeStyles = {
         outline: "text-green-400 border border-green-300 bg-green-800/25",
     },
     warning: {
-        base: " text-yellow-500",
-        outline: "text-yellow-400 border border-yellow-300 bg-yellow-800/25",
+        base: " text-orange-500",
+        outline: "text-orange-400 border border-orange-300 bg-orange-800/25",
     },
     danger: {
         base: " text-red-800",
