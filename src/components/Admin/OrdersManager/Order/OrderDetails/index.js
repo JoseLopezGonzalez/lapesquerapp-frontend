@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatInteger, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import Map from './map';
 
 const OrderDetails = () => {
 
@@ -12,29 +11,32 @@ const OrderDetails = () => {
 
     const encodedAddress = encodeURIComponent(order.shippingAddress);
 
+    const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Cliente
+                        <FileText className="h-4 w-4" />
+                        Comercial
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3">
+
                     <div>
-                        <div className="text-sm text-muted-foreground">Empresa</div>
-                        <p className="font-medium whitespace-pre-line">{order.billingAddress}</p>
+                        <div className="text-sm text-muted-foreground">Vendedor</div>
+                        <div className="font-medium">{order.salesperson.name}</div>
                     </div>
-                    {/* <div>
-                        <div className="text-sm text-muted-foreground">CIF</div>
-                        <div className="font-medium">B12345678</div>
-                    </div> */}
-                    {/* <div>
-                        <div className="text-sm text-muted-foreground">Contacto</div>
-                        <div className="font-medium">+34 555 123 456</div>
-                    </div> */}
+                    <div>
+                        <div className="text-sm text-muted-foreground">Forma de pago</div>
+                        <div className="font-medium">{order.paymentTerm.name}</div>
+                    </div>
+                    <div>
+                        <div className="text-sm text-muted-foreground">Incoterm</div>
+                        <div className="font-medium">{`${order.incoterm.code} - ${order.incoterm.description}`}</div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -118,31 +120,41 @@ const OrderDetails = () => {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader className="pb-2">
+            <Card className='overflow-hidden'>
+                {/* <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Comercial
+                        <User className="h-4 w-4" />
+                        Cliente
                     </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3">
+                </CardHeader> */}
+                <CardContent className="grid p-0 ">
                     <div className="map-container">
-                       <Map order={order} />
+                        <iframe
+                            width="100%"
+                            height="270"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            // Reemplaza TU_API_KEY por tu clave real
+                            src={`https://www.google.com/maps/embed/v1/place?key=${googleApiKey}&q=${encodedAddress}`}
+                        />
                     </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Vendedor</div>
-                        <div className="font-medium">{order.salesperson.name}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Forma de pago</div>
-                        <div className="font-medium">{order.paymentTerm.name}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Incoterm</div>
-                        <div className="font-medium">{`${order.incoterm.code} - ${order.incoterm.description}`}</div>
-                    </div>
+                    {/* <div>
+                        <div className="text-sm text-muted-foreground">Empresa</div>
+                        <p className="font-medium whitespace-pre-line">{order.billingAddress}</p>
+                    </div> */}
+                    {/* <div>
+                        <div className="text-sm text-muted-foreground">CIF</div>
+                        <div className="font-medium">B12345678</div>
+                    </div> */}
+                    {/* <div>
+                        <div className="text-sm text-muted-foreground">Contacto</div>
+                        <div className="font-medium">+34 555 123 456</div>
+                    </div> */}
                 </CardContent>
             </Card>
+
+
         </div>
     )
 }
