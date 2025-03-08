@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatInteger, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
+import Map from './map';
 
 const OrderDetails = () => {
 
     const { order } = useOrderContext();
+
+    const encodedAddress = encodeURIComponent(order.shippingAddress);
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -122,6 +126,9 @@ const OrderDetails = () => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3">
+                    <div className="map-container">
+                       <Map order={order} />
+                    </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Vendedor</div>
                         <div className="font-medium">{order.salesperson.name}</div>

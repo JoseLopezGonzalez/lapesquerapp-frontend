@@ -3,6 +3,7 @@ import { InboxIcon } from '@heroicons/react/24/outline';
 
 import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import { ScrollShadow } from '@nextui-org/react';
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -96,15 +97,16 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     {/* Lista de orders */}
 
                     {orders?.length > 0 ? (
-                        <div className='grow overflow-y-auto xl:pr-2 pb-4 mb-5  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden'>
-                            {orders.map((order, index) => (
-                                <div key={index} className='' >
-                                    <OrderCard
-                                        onClick={() => onClickOrderCard(order.id)}
-                                        order={order} isOrderSelected={() => false} />
-                                </div>
-                            ))}
-                        </div>
+                            <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto xl:pr-2 pb-4 mb-4  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden">
+
+                                {orders.map((order, index) => (
+                                    <div key={index} className='' >
+                                        <OrderCard
+                                            onClick={() => onClickOrderCard(order.id)}
+                                            order={order} isOrderSelected={() => false} />
+                                    </div>
+                                ))}
+                            </ScrollShadow>
                     ) : (
                         <div className='flex flex-col items-center justify-start gap-6 h-full w-full '>
                             <div className='flex flex-col items-center gap-2 w-full'>

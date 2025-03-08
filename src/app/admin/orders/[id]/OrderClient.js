@@ -5,7 +5,7 @@ import React from 'react'
 
 const OrderClient = ({ orderId }) => {
     return (
-        <div className="h-full w-full p-14">
+        <div className="h-full w-full overflow-hidden rounded-xl">
             <Order orderId={orderId} />
         </div>
     )

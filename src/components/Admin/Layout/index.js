@@ -11,7 +11,7 @@ export default function Layout({ children, title }) {
 
     return (
         <div className='p-2 h-full'>
-            <div className='bg-neutral-800 rounded-2xl h-full p-1 overflow-hidden'>
+            <div className='bg-neutral-900 rounded-2xl h-full p-1 overflow-hidden'>
                 {/* Sidebar para dispositivos móviles */}
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog as="div" className="relative z-40 md:hidden" onClose={setSidebarOpen}>
@@ -112,7 +112,7 @@ export default function Layout({ children, title }) {
                             <div className="h-full">
                                 <div className="h-full">
                                     {/* Contenido dinámico */}
-                                    <div className=" h-full  overflow-y-auto rounded-2xl p-2">{children}</div>
+                                    <div className=" h-full  overflow-y-auto rounded-2xl ">{children}</div>
                                 </div>
                             </div>
                         </main>
