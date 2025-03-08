@@ -141,7 +141,7 @@ export default function OrdersManager() {
                         </div>
                         <div className='grow p-5 pt-0 lg:pl-0'>
                             {selectedOrder ? (
-                                <div className='h-full text-white p-9 bg-neutral-950 rounded-2xl'>
+                                <div className='h-full text-white bg-neutral-950 rounded-2xl overflow-hidden'>
                                     <Order orderId={selectedOrder} />
                                 </div>
                             ) : (

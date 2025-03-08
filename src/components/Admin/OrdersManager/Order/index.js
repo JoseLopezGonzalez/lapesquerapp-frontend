@@ -12,6 +12,7 @@ import OrderDocuments from './OrderDocuments';
 import OrderExport from './OrderExport';
 import OrderLabels from './OrderLabels';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
+import { classNames } from '@/helpers/styles/classNames';
 
 const exampleOrder = example.data;
 
@@ -39,21 +40,20 @@ const OrderContent = () => {
         </>
       ) : (
         <>
-          <div className='h-full w-full '>
-
+          <div
+            className={`
+                p-9 h-full w-full bg-gradient-to-b 
+                ${order.status === 'pending' && 'from-orange-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90%'}
+                ${order.status === 'finished' && 'from-green-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90%'}`
+            }
+          >
             <div className='h-full flex flex-col'>
-
-              {/* options button section */}
-              <div className='flex w-full justify-end items-center'>
-                {/*  <DropdownWithSections title={<EllipsisVerticalIcon className='h-5 w-5' />} data={modifiedDropdownOptions} /> */}
-
-              </div>
 
               {/* Order  Header */}
               <div className='flex justify-between -mt-6 lg:-mt-2'>
                 <div className='space-y-1 '>
                   {order.status === 'pending' && (
-                    <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300">
+                    <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 dark:border-orange-300 border-2">
                       <span className="me-1 relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
@@ -62,7 +62,7 @@ const OrderContent = () => {
                     </span>)
                   }
                   {order.status === 'finished' && (
-                    <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+                    <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:border-green-500 border-2 dark:text-green-300">
                       <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
                       Terminado
                     </span>)

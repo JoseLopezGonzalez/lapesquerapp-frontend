@@ -61,7 +61,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <option>Mañana</option>
                         </select> */}
 
-                        <div className='flex gap-3 mt-5 bg-neutral-600 rounded-full p-1'>
+                        <div className='flex gap-3 mt-5 bg-neutral-600 rounded-full p-1 text-nowrap'>
                             {/* Boton de caegorias */}
                             {categories.map((category, index) => category.current ? (
                                 <span key={category.name} className="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-black bg-white">

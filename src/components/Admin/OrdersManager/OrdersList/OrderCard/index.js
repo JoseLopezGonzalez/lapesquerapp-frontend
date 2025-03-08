@@ -26,26 +26,26 @@ const OrderCard = ({ order, onClick}) => {
                     order.current && order.status === 'pending' ?
                         'border-orange-500 bg-orange-400/90 hover:bg-orange-400' :
                         order.status === 'finished' ?
-                            'border-green-400 bg-neutral-700 hover:bg-neutral-600' :
-                            'border-orange-400 bg-neutral-700 hover:bg-neutral-600'
+                            'border-green-500 bg-neutral-700 hover:bg-neutral-600' :
+                            'border-orange-500 bg-neutral-700 hover:bg-neutral-600'
                 }
             `}
             onClick = {onClick}
         >
             {isToday && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-black">
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-white">
                     {isToday && 'Hoy'}
                 </span>)}
 
             {isTomorrow && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/20 text-black">
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/20 text-white">
                     {isTomorrow && 'Mañana'}
                 </span>)}
 
             < div className='grow dark:text-white xl:w-48 space-y-2'>
 
                 {order.status === 'pending' && (
-                    <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300">
+                    <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 border dark:border-orange-300">
                         <span className="me-1 relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
@@ -55,7 +55,7 @@ const OrderCard = ({ order, onClick}) => {
                 )}
 
                 {order.status === 'finished' && (
-                    <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+                    <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 border dark:border-green-300">
                         <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
                         Terminado
                     </span>
