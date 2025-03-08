@@ -13,6 +13,8 @@ const OrderDetails = () => {
 
     const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
 
+    const origin = 'Congelados Brisamar S.L. '
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -153,6 +155,21 @@ const OrderDetails = () => {
                     </div> */}
                 </CardContent>
             </Card>
+
+            {/* <Card className='overflow-hidden p-0'>
+                <CardContent className="grid p-0 ">
+                    <div className="map-container">
+                        <iframe
+                            width="100%"
+                            height="300"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            src={`https://www.google.com/maps/embed/v1/directions?key=${googleApiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(order.shippingAddress)}&mode=driving`}
+                        />
+                    </div>
+                </CardContent>
+            </Card> */}
 
 
         </div>
