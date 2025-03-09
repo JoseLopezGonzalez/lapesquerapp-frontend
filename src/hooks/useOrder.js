@@ -19,7 +19,7 @@ export function useOrder(orderId) {
         if (!orderId || status === "loading") return; // Espera a que la sesión esté lista
 
 
-        if (!orderId ) return;
+        if (!orderId) return;
         console.log('useOrder', orderId, status);
 
         const token = session?.user?.accessToken;
@@ -34,7 +34,7 @@ export function useOrder(orderId) {
             )
             .catch((err) => setError(err))
             .finally();
-    }, [orderId , status]);
+    }, [orderId, status]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
@@ -84,6 +84,55 @@ export function useOrder(orderId) {
         }
     };
 
+    console.log('realDetails', order?.realDetails)
+
+    const mergeOrderDetails = (details, realDetails) => {
+        const resultMap = new Map();
+
+        // Añadir productos previstos primero
+        details?.forEach(detail => {
+            resultMap.set(detail.product_id, {
+                product_id: detail.product_id,
+                product_name: detail.product_name,
+                quantityPlanned: parseFloat(detail.quantity),
+                boxesPlanned: parseFloat(detail.boxes),
+                palletsPlanned: parseFloat(detail.pallets),
+                unit_price: detail.unit_price,
+                line_base: detail.line_base,
+                line_total: detail.line_total,
+                tax_id: detail.tax_id,
+                quantityReal: 0.0,
+                boxesReal: 0.0,
+                
+            });
+        });
+
+        // Añadir datos reales desde pallets
+        realDetails?.forEach(real => {
+            const existing = resultMap.get(real.product.id);
+            if (existing) {
+                existing.quantityReal += parseFloat(real.netWeight);
+                existing.boxesReal += parseFloat(real.boxes);
+            } else {
+                resultMap.set(real.product.id, {
+                    product_name: real.product_name,
+                    quantityPlanned: 0,
+                    boxesPlanned: 0,
+                    product_id: real.product.id,
+                    quantity: 0,
+                    boxes: 0,
+                    quantityReal: real.netWeight,
+                    boxesReal: real.boxes,
+                    productExtra: true, // Marca para identificar que es producto no previsto inicialmente
+                });
+            }
+        });
+
+        return Array.from(resultMap.values());
+    };
+
+    const mergedDetails = mergeOrderDetails(order?.details, order?.realDetails);
+
 
 
     return {
@@ -93,5 +142,6 @@ export function useOrder(orderId) {
         error,
         updateOrderData,
         exportDocument,
+        mergedDetails,
     };
 }
