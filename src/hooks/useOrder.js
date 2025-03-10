@@ -5,12 +5,14 @@ import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 import { API_URL_V2 } from '@/configs/config';
+import { getProductOptions } from '@/services/productService';
 
 export function useOrder(orderId) {
     const { data: session, status } = useSession();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [productOptions, setProductOptions] = useState([]);
 
     const pallets = order?.pallets || [];
 
@@ -34,6 +36,18 @@ export function useOrder(orderId) {
             )
             .catch((err) => setError(err))
             .finally();
+
+        getProductOptions(token)
+            .then((data) => {
+                setProductOptions(data.map((product) => ({
+                    value: product.id,
+                    label: product.name,
+                }))
+                );
+            })
+            .catch((err) => setError(err))
+            .finally();
+
     }, [orderId, status]);
 
     // Función para actualizar el pedido a través de la API
@@ -86,11 +100,11 @@ export function useOrder(orderId) {
 
     console.log('realDetails', order?.realDetails)
 
-    const mergeOrderDetails = (details, realDetails) => {
+    const mergeOrderDetails = (plannedProductDetails, realDetails) => {
         const resultMap = new Map();
 
         // Añadir productos previstos primero
-        details?.forEach(detail => {
+        plannedProductDetails?.forEach(detail => {
             resultMap.set(detail.product_id, {
                 product_id: detail.product_id,
                 product_name: detail.product_name,
@@ -103,7 +117,7 @@ export function useOrder(orderId) {
                 tax_id: detail.tax_id,
                 quantityReal: 0.0,
                 boxesReal: 0.0,
-                
+
             });
         });
 
@@ -131,7 +145,7 @@ export function useOrder(orderId) {
         return Array.from(resultMap.values());
     };
 
-    const mergedDetails = mergeOrderDetails(order?.details, order?.realDetails);
+    const mergedDetails = mergeOrderDetails(order?.plannedProductDetails, order?.realDetails);
 
 
 
@@ -143,5 +157,6 @@ export function useOrder(orderId) {
         updateOrderData,
         exportDocument,
         mergedDetails,
+        productOptions,
     };
 }

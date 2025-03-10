@@ -11,7 +11,7 @@ export default function Layout({ children, title }) {
 
     return (
         <div className='p-2 h-full'>
-            <div className='bg-neutral-900 rounded-2xl h-full p-1 overflow-hidden'>
+            <div className='bg-neutral-800 rounded-2xl h-full p-1 overflow-hidden'>
                 {/* Sidebar para dispositivos móviles */}
                 <Transition.Root show={sidebarOpen} as={Fragment}>
                     <Dialog as="div" className="relative z-40 md:hidden" onClose={setSidebarOpen}>

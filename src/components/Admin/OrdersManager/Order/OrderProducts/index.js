@@ -1,127 +1,183 @@
-import React from 'react'
-
-import { AlertTriangle, Check, HelpCircle, Package, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
-import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import { DeleteIcon, EditIcon, SaveIcon } from 'lucide-react';
+import { Combobox } from '@/components/Shadcn/Combobox';
+
+
 
 const OrderProducts = () => {
 
-    const { order , mergedDetails } = useOrderContext()
+    const { order , productOptions } = useOrderContext();
 
-    console.log(mergedDetails)
+    const [details, setDetails] = useState(order.plannedProductDetails);
+    const [editIndex, setEditIndex] = useState(null);
+
+    const addLine = () => {
+        setDetails([...details, {
+            product: { name: "", id: null },
+            boxes: 0,
+            quantity: 0,
+            unitPrice: 0,
+            tax: { rate: 0 }
+        }]);
+        setEditIndex(details.length);
+    };
+
+    const handleInputChange = (index, field, value) => {
+        const updatedDetails = [...details];
+        if (field.includes("product")) {
+            updatedDetails[index].product.id = value;
+            updatedDetails[index].product.name = productOptions.find(option => option.value === value).label;
+        } else if (field.includes("tax")) {
+            updatedDetails[index].tax.rate = Number(value);
+        } else {
+            updatedDetails[index][field] = Number(value);
+        }
+        setDetails(updatedDetails);
+    };
+
+    const deleteLine = (index) => {
+        setDetails(details.filter((_, i) => i !== index));
+        setEditIndex(null);
+    };
+
+    const clearAllLines = () => {
+        setDetails([]);
+        setEditIndex(null);
+    };
+
+    const totals = details.reduce(
+        (acc, item) => {
+            const quantity = Number(item.quantity);
+            const unitPrice = Number(item.unitPrice);
+            const boxes = Number(item.boxes);
+
+            acc.quantity += quantity;
+            acc.boxes += boxes;
+            acc.totalAmount += quantity * unitPrice;
+
+            return acc;
+        },
+        { quantity: 0, boxes: 0, totalAmount: 0 }
+    );
+
+    totals.averageUnitPrice = totals.quantity ? (totals.totalAmount / totals.quantity) : 0;
 
     return (
         <div className="h-full pb-2 ">
             <Card className='h-full flex flex-col'>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle className="text-lg font-medium">Productos del Pedido</CardTitle>
+                        <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Comparación entre productos registrados y paletizados
+                            Tabla con los productos previstos en el pedido
                         </p>
                     </div>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon">
-                                    <HelpCircle className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="max-w-xs">
-                                    Verde: Cantidades coinciden
-                                    <br />
-                                    Amarillo: Diferencia en cantidades
-                                    <br />
-                                    Rojo: Producto faltante
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <div className="space-x-2">
+                        <Button onClick={addLine}>Añadir línea</Button>
+                        <Button variant="destructive" onClick={clearAllLines}>Eliminar todo</Button>
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                   
 
+                <CardContent className="space-y-6 flex-1 overflow-y-auto">
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="">Artículo</TableHead>
+                                    <TableHead>Artículo</TableHead>
                                     <TableHead>Cajas</TableHead>
-                                    <TableHead>Produccion</TableHead>
-
-                                    {/* Precio */}
+                                    <TableHead>Cantidad</TableHead>
                                     <TableHead>Precio</TableHead>
-                                    {/* Descuento */}
-                                    {/* Descuento */}
-                                    <TableHead>Descuento</TableHead>
-                                    <TableHead> Base</TableHead>
-                                   <TableHead>Impuesto</TableHead> 
-                                    {/* Total */}
-                                    <TableHead>Total</TableHead>
+                                    <TableHead>Impuesto (%)</TableHead>
+                                    <TableHead>Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mergedDetails.map((detail, index) => (
+                                {details.map((detail, index) => (
                                     <TableRow key={index} className='text-nowrap'>
-                                        <TableCell className="font-medium">{detail.product_name}</TableCell>
                                         <TableCell>
-                                            {detail.boxesReal}
+                                            {editIndex === index ? (
+                                                <Combobox
+                                                    options={productOptions}
+                                                    value={detail.product.id}
+                                                    onChange={(e) => handleInputChange(index, 'product', e)}
+                                                />
+                                            ) : detail.product.name}
                                         </TableCell>
                                         <TableCell>
-                                               {detail.quantityReal} kg
+                                            {editIndex === index ? (
+                                                <Input
+                                                    type="number"
+                                                    value={detail.boxes}
+                                                    onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
+                                                />
+                                            ) : formatInteger(detail.boxes)}
                                         </TableCell>
-                                        
-                                        <TableCell>{detail.unit_price} €</TableCell>
-                                        <TableCell> - 0,15 €</TableCell>
-                                        <TableCell>{detail.line_base} €</TableCell>
-                                        <TableCell> 10%</TableCell>
-
-                                        <TableCell>{detail.line_total} €</TableCell>
-
-                                        
-                                        
+                                        <TableCell>
+                                            {editIndex === index ? (
+                                                <Input
+                                                    type="number"
+                                                    value={detail.quantity}
+                                                    onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
+                                                />
+                                            ) : formatDecimalWeight(detail.quantity)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {editIndex === index ? (
+                                                <Input
+                                                    type="number"
+                                                    value={detail.unitPrice}
+                                                    onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
+                                                />
+                                            ) : formatDecimalCurrency(detail.unitPrice)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {editIndex === index ? (
+                                                <Input
+                                                    type="number"
+                                                    value={detail.tax.rate}
+                                                    onChange={(e) => handleInputChange(index, 'tax', e.target.value)}
+                                                />
+                                            ) : `${detail.tax.rate}%`}
+                                        </TableCell>
+                                        <TableCell className="space-x-2">
+                                            {editIndex === index ? (
+                                                <Button onClick={() => setEditIndex(null)} size='icon'>
+                                                    <SaveIcon size={16} />
+                                                </Button>
+                                            ) : (
+                                                <Button onClick={() => setEditIndex(index)} size='icon' variant="outline">
+                                                    <EditIcon size={16} />
+                                                </Button>
+                                            )}
+                                            <Button variant="destructive" onClick={() => deleteLine(index)} size='icon'>
+                                                <DeleteIcon size={16} />
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
-                                
                             </TableBody>
-                            {/* TableFooter */}
                             <TableFooter>
                                 <TableRow>
-                                    <TableCell className="font-medium">Total</TableCell>
-                                    <TableCell>120</TableCell>
-                                    <TableCell>28.50 kg</TableCell>
-                                    <TableCell>-91.50 kg</TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
+                                    <TableCell>Total</TableCell>
+                                    <TableCell>{formatInteger(totals.boxes)}</TableCell>
+                                    <TableCell>{formatDecimalWeight(totals.quantity)}</TableCell>
+                                    <TableCell>{formatDecimalCurrency(totals.averageUnitPrice)}</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
                                 </TableRow>
-                            </TableFooter>    
-
-
+                            </TableFooter>
                         </Table>
                     </div>
-
-                   
-
-                   {/*  <div className="flex justify-end gap-4">
-                        <Button>
-                            <Package className="h-4 w-4 mr-2" />
-                            Gestionar productos
-                        </Button>
-                    </div> */}
                 </CardContent>
-
             </Card>
         </div>
-    )
-}
+    );
+};
 
-export default OrderProducts
+export default OrderProducts;
