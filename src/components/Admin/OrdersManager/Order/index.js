@@ -140,7 +140,7 @@ const OrderContent = () => {
                   <Tabs defaultValue="details" className='h-full flex flex-col'>
                     <TabsList className='w-fit'>
                       <TabsTrigger value="details">Detalles</TabsTrigger>
-                      <TabsTrigger value="products">Productos</TabsTrigger>
+                      <TabsTrigger value="products">Previsión</TabsTrigger>
                       <TabsTrigger value="production">Producción</TabsTrigger>
 
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
