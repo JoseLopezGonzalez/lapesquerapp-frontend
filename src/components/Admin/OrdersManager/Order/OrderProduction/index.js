@@ -14,7 +14,6 @@ const OrderProduction = () => {
 
     const { order, mergedDetails } = useOrderContext()
 
-    console.log(mergedDetails)
 
     return (
         <div className="h-full pb-2 ">
@@ -70,33 +69,33 @@ const OrderProduction = () => {
                             <TableBody>
                                 {mergedDetails.map((detail, index) => (
                                     <TableRow key={index} className='text-nowrap'>
-                                        <TableCell className="font-medium">{detail.product_name}</TableCell>
+                                        <TableCell className="font-medium">{detail.product.name}</TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
-                                                <div>{detail.quantityPlanned} kg</div>
-                                                <div className="text-sm text-muted-foreground">{detail.boxesPlanned} cajas</div>
+                                                <div>{detail.plannedQuantity} kg</div>
+                                                <div className="text-sm text-muted-foreground">{detail.plannedBoxes} cajas</div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
-                                                <div>{detail.quantityReal} kg</div>
-                                                <div className="text-sm text-muted-foreground">{detail.boxesReal} cajas</div>
+                                                <div>{detail.productionQuantity} kg</div>
+                                                <div className="text-sm text-muted-foreground">{detail.productionBoxes} cajas</div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{formatDecimalWeight(detail.quantityReal - detail.quantityPlanned)} </TableCell>
+                                        <TableCell>{formatDecimalWeight(detail.productionQuantity - detail.plannedQuantity)} </TableCell>
                                         <TableCell>
                                             <div className="flex items-end gap-2">
-                                                {detail.quantityPlanned === detail.quantityReal ? (
+                                                {detail.plannedQuantity === detail.productionQuantity ? (
                                                     <Badge variant="success" className="bg-green-500">
                                                         <Check className="h-3 w-3 mr-1" />
                                                         Correcto
                                                     </Badge>
-                                                ) : (detail.quantityReal - detail.quantityPlanned) > -30 && (detail.quantityReal - detail.quantityPlanned) < 30 ? (
+                                                ) : (detail.productionQuantity - detail.plannedQuantity) > -30 && (detail.productionQuantity - detail.plannedQuantity) < 30 ? (
                                                     <Badge variant="warning" className="bg-amber-500">
                                                         <AlertTriangle className="h-3 w-3 mr-1" />
                                                         Diferencia
                                                     </Badge>
-                                                ) : (detail.quantityReal - detail.quantityPlanned) > 30 ? (
+                                                ) : (detail.productionQuantity - detail.plannedQuantity) > 30 ? (
                                                     <Badge>
                                                         <X className="h-3 w-3 mr-1" />
                                                         No programado

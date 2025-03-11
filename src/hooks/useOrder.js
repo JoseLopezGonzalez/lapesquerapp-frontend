@@ -181,44 +181,35 @@ export function useOrder(orderId) {
     };
 
 
-    const mergeOrderDetails = (plannedProductDetails, realDetails) => {
+    const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
         const resultMap = new Map();
 
         // Añadir productos previstos primero
         plannedProductDetails?.forEach(detail => {
-            resultMap.set(detail.product_id, {
-                product_id: detail.product_id,
-                product_name: detail.product_name,
-                quantityPlanned: parseFloat(detail.quantity),
-                boxesPlanned: parseFloat(detail.boxes),
-                palletsPlanned: parseFloat(detail.pallets),
-                unit_price: detail.unit_price,
-                line_base: detail.line_base,
-                line_total: detail.line_total,
-                tax_id: detail.tax_id,
-                quantityReal: 0.0,
-                boxesReal: 0.0,
+            resultMap.set(detail.product.id, {
+                product: detail.product,
+                plannedQuantity: parseFloat(detail.quantity),
+                plannedBoxes: parseFloat(detail.boxes),
+                productionQuantity: 0.0,
+                productionBoxes: 0.0,
 
             });
         });
 
+        console.log('productionProductDetails', productionProductDetails);
         // Añadir datos reales desde pallets
-        realDetails?.forEach(real => {
-            const existing = resultMap.get(real.product.id);
+        productionProductDetails?.forEach(production => {
+            const existing = resultMap.get(production.product.id);
             if (existing) {
-                existing.quantityReal += parseFloat(real.netWeight);
-                existing.boxesReal += parseFloat(real.boxes);
+                existing.productionQuantity += parseFloat(production.netWeight);
+                existing.productionBoxes += parseFloat(production.boxes);
             } else {
-                resultMap.set(real.product.id, {
-                    product_name: real.product_name,
-                    quantityPlanned: 0,
-                    boxesPlanned: 0,
-                    product_id: real.product.id,
-                    quantity: 0,
-                    boxes: 0,
-                    quantityReal: real.netWeight,
-                    boxesReal: real.boxes,
-                    productExtra: true, // Marca para identificar que es producto no previsto inicialmente
+                resultMap.set(production.product.id, {
+                    product: production.product,
+                    plannedQuantity: 0.0,
+                    plannedBoxes: 0.0,
+                    productionQuantity: parseFloat(production.netWeight),
+                    productionBoxes: parseFloat(production.boxes),
                 });
             }
         });
@@ -226,7 +217,7 @@ export function useOrder(orderId) {
         return Array.from(resultMap.values());
     };
 
-    const mergedDetails = mergeOrderDetails(order?.plannedProductDetails, order?.realDetails);
+    const mergedDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
 
     const options = {
         taxOptions,

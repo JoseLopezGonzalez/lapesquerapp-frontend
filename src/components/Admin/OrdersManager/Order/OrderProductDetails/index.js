@@ -18,6 +18,18 @@ const OrderProductDetails = () => {
 
     const { order } = useOrderContext();
 
+    const totals = order.productDetails.reduce((acc, detail) => {
+        /* boxes */
+        acc.boxes += detail.boxes;
+        acc.netWeight += detail.netWeight;
+        acc.subtotal += detail.subtotal;
+        acc.total += detail.total;
+        return acc;
+    }
+        , { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
+
+    totals.averagePrice = totals.total / totals.netWeight;
+
 
     return (
         <div className="h-full pb-2 ">
@@ -29,7 +41,7 @@ const OrderProductDetails = () => {
                             Tabla con los productos previstos en el pedido
                         </p>
                     </div>
-                   {/*  <div className="space-x-2">
+                    {/*  <div className="space-x-2">
                         <Button >
                             <Plus size={16} />
                             Añadir línea
@@ -81,12 +93,12 @@ const OrderProductDetails = () => {
                             <TableFooter>
                                 <TableRow>
                                     <TableCell>Total</TableCell>
+                                    <TableCell>{formatInteger(totals.boxes)}</TableCell>
+                                    <TableCell>{formatDecimalWeight(totals.netWeight)}</TableCell>
+                                    <TableCell>{formatDecimalCurrency(totals.averagePrice)}</TableCell>
                                     <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
+                                    <TableCell>{formatDecimalCurrency(totals.subtotal)}</TableCell>
+                                    <TableCell>{formatDecimalCurrency(totals.total)}</TableCell>
                                 </TableRow>
                             </TableFooter>
                         </Table>
