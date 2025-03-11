@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import example from './example.json';
 import { AlertCircle, MoreVertical, Printer } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -21,8 +23,8 @@ const exampleOrder = example.data;
 const OrderContent = () => {
 
   const { order, loading, error } = useOrderContext();
+  const [activeTab, setActiveTab] = useState('details');
 
-  console.log(order)
 
   return (
     <>
@@ -137,7 +139,7 @@ const OrderContent = () => {
                   {/* Header Section */}
 
                   {/* Main Content */}
-                  <Tabs defaultValue="details" className='h-full flex flex-col'>
+                  <Tabs  value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col'>
                     <TabsList className='w-fit'>
                       <TabsTrigger value="details">Detalles</TabsTrigger>
                       <TabsTrigger value="products">Previsión</TabsTrigger>

@@ -58,6 +58,8 @@ const OrderEditSheet = () => {
             ...register(field.name, field.rules),
         };
 
+        console.log('field', field);
+
         switch (field.component) {
             case 'DatePicker':
                 return (
@@ -132,7 +134,7 @@ const OrderEditSheet = () => {
                     />
                 );
             case 'Textarea':
-                return <Textarea {...commonProps} className={field.props?.className} />;
+                return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
             case 'Input':
             default:
                 return <Input {...commonProps} />;

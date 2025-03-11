@@ -109,3 +109,98 @@ export function getActiveOrders(token) {
             console.log('getActiveOrders finalizado');
         });
 }
+
+/* Update OrderPlannedProductDetail */
+export async function updateOrderPlannedProductDetail(detailId, detailData, token) {
+
+    return fetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',  // <- Este es el header que necesitas
+            'Authorization': `Bearer ${token}`, // Enviar el token
+            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+        },
+        body: JSON.stringify(detailData),
+    }).then((response) => {
+        if (!response.ok) {
+            return response.json().then((errorData) => {
+                throw new Error(errorData.message || 'Error al actualizar la linea del pedido');
+            });
+        }
+        return response.json();
+    })
+        .then((data) => {
+            return data.data;
+        })
+        .catch((error) => {
+            // Manejo adicional de errores, si lo requieres
+            throw error;
+        })
+        .finally(() => {
+            console.log('updateOrder finalizado');
+        });
+}
+
+/* Delete OrderPlannedProductDetail */
+export async function deleteOrderPlannedProductDetail(detailId, token) {
+
+    return fetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',  // <- Este es el header que necesitas
+            'Authorization': `Bearer ${token}`, // Enviar el token
+            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+        },
+    }).then((response) => {
+        if (!response.ok) {
+            return response.json().then((errorData) => {
+                throw new Error(errorData.message || 'Error al eliminar la linea del pedido');
+            });
+        }
+        return response.json();
+    })
+        .then((data) => {
+            return data.data;
+        })
+        .catch((error) => {
+            // Manejo adicional de errores, si lo requieres
+            throw error;
+        })
+        .finally(() => {
+            console.log('updateOrder finalizado');
+        });
+}
+
+/* Create OrderPlannedProductDetail */
+export async function createOrderPlannedProductDetail(detailData, token) {
+
+    return fetch(`${API_URL_V2}order-planned-product-details`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',  // <- Este es el header que necesitas
+            'Authorization': `Bearer ${token}`, // Enviar el token
+            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+        },
+        body: JSON.stringify(detailData),
+    }).then((response) => {
+        if (!response.ok) {
+            return response.json().then((errorData) => {
+                throw new Error(errorData.message || 'Error al crear la linea del pedido');
+            });
+        }
+        return response.json();
+    })
+        .then((data) => {
+            return data.data;
+        })
+        .catch((error) => {
+            // Manejo adicional de errores, si lo requieres
+            throw error;
+        })
+        .finally(() => {
+            console.log('updateOrder finalizado');
+        });
+}

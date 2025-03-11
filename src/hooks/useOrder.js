@@ -1,11 +1,12 @@
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
-import { getOrder, updateOrder } from '@/services/orderService';
+import { createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, getOrder, updateOrder, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
+import { getTaxOptions } from '@/services/taxService';
 
 export function useOrder(orderId) {
     const { data: session, status } = useSession();
@@ -13,6 +14,7 @@ export function useOrder(orderId) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [productOptions, setProductOptions] = useState([]);
+    const [taxOptions, setTaxOptions] = useState([]);
 
     const pallets = order?.pallets || [];
 
@@ -47,6 +49,16 @@ export function useOrder(orderId) {
             })
             .catch((err) => setError(err))
             .finally();
+        getTaxOptions(token)
+            .then((data) => {
+                setTaxOptions(data.map((tax) => ({
+                    value: tax.id,
+                    label: tax.rate,
+                }))
+                );
+            })
+            .catch((err) => setError(err))
+            .finally();
 
     }, [orderId, status]);
 
@@ -64,6 +76,76 @@ export function useOrder(orderId) {
                 throw err;
             });
     };
+
+    /* plannedProductDetail */
+
+    const updatePlannedProductDetail = async (id, updateData) => {
+        const token = session?.user?.accessToken;
+        updateOrderPlannedProductDetail(id, updateData, token)
+            .then((updated) => {
+                setOrder(prevOrder => {
+                    return {
+                        ...prevOrder,
+                        plannedProductDetails: prevOrder.plannedProductDetails.map((detail) => {
+                            if (detail.id === updated.id) {
+                                return updated;
+                            } else {
+                                return detail;
+                            }
+                        })
+                    }
+                })
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    };
+
+    const deletePlannedProductDetail = async (id) => {
+        const token = session?.user?.accessToken;
+        deleteOrderPlannedProductDetail(id, token)
+            .then(() => {
+                setOrder(prevOrder => {
+                    return {
+                        ...prevOrder,
+                        plannedProductDetails: prevOrder.plannedProductDetails.filter((detail) => detail.id !== id)
+                    }
+                })
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    }
+
+    const createPlannedProductDetail = async (detailData) => {
+        const token = session?.user?.accessToken;
+        createOrderPlannedProductDetail(detailData, token)
+            .then((created) => {
+                setOrder(prevOrder => {
+                    return {
+                        ...prevOrder,
+                        plannedProductDetails: [...prevOrder.plannedProductDetails, created]
+                    }
+                })
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    }
+
+    const plannedProductDetailActions = {
+        update: updatePlannedProductDetail,
+        delete: deletePlannedProductDetail,
+        create: createPlannedProductDetail,
+    }
+
+    const plannedProductDetails = order?.plannedProductDetails || [];
+
+
+    /* ---------------------- */
 
     const exportDocument = async (documentName, type, documentLabel) => {
         const toastId = toast.loading(`Exportando ${documentLabel}.${type}`, darkToastTheme);
@@ -98,7 +180,6 @@ export function useOrder(orderId) {
         }
     };
 
-    console.log('realDetails', order?.realDetails)
 
     const mergeOrderDetails = (plannedProductDetails, realDetails) => {
         const resultMap = new Map();
@@ -147,6 +228,12 @@ export function useOrder(orderId) {
 
     const mergedDetails = mergeOrderDetails(order?.plannedProductDetails, order?.realDetails);
 
+    const options = {
+        taxOptions,
+        productOptions,
+    }
+
+
 
 
     return {
@@ -157,6 +244,8 @@ export function useOrder(orderId) {
         updateOrderData,
         exportDocument,
         mergedDetails,
-        productOptions,
+        options,
+        plannedProductDetailActions,
+        plannedProductDetails,
     };
 }

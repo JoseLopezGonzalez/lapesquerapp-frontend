@@ -102,6 +102,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'Nombre / Empresa, Calle, Ciudad, etc.',
                     className: 'min-h-[100px]',
+                    rows:5,
                 },
             },
             {
@@ -112,6 +113,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'Nombre / Empresa, Calle, Ciudad, etc.',
                     className: 'min-h-[100px]',
+                    rows: 5,
                 },
             },
         ],
@@ -128,6 +130,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'Instrucciones especiales para producción...',
                     className: 'min-h-[100px]',
+                    rows: 4,
                 },
             },
             {
@@ -137,7 +140,8 @@ const initialFormGroups = [
                 rules: { maxLength: { value: 500, message: 'Máximo 500 caracteres' } },
                 props: {
                     placeholder: 'Notas para contabilidad...',
-                    className: 'min-h-[100px]',
+                    className: 'min-h-[200px]',
+                    rows: 4,
                 },
             },
             {
@@ -148,6 +152,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'Instrucciones especiales para el transporte...',
                     className: 'min-h-[50px]',
+                    rows: 4,
                 },
             },
         ],
@@ -189,6 +194,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'ejemplo1@dominio.com\nejemplo2@dominio.com\nejemplo3@dominio.com',
                     className: 'min-h-[100px]',
+                    rows: 4,
                 },
             },
         ],
