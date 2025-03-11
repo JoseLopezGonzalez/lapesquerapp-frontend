@@ -234,6 +234,9 @@ export function useOrder(orderId) {
     }
 
 
+    console.log('productDetails', order?.productDetails)
+
+
 
 
     return {

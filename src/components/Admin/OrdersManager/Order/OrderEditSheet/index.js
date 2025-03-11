@@ -58,7 +58,6 @@ const OrderEditSheet = () => {
             ...register(field.name, field.rules),
         };
 
-        console.log('field', field);
 
         switch (field.component) {
             case 'DatePicker':

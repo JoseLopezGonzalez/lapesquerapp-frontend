@@ -2,7 +2,7 @@ import React from 'react'
 import { CalendarIcon, FileText, Package, Truck, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderContext } from '@/context/OrderContext';
-import { formatInteger, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatInteger, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 
 const OrderDetails = () => {
@@ -87,7 +87,7 @@ const OrderDetails = () => {
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Importe</div>
-                        <div className="font-medium">-</div>
+                        <div className="font-medium">{formatDecimalCurrency(order.totalAmount)}</div>
                     </div>
                 </CardContent>
             </Card>

@@ -1,0 +1,100 @@
+'use client'
+
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useOrderContext } from '@/context/OrderContext';
+import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import { Delete, Pencil, Plus, SaveIcon, X } from 'lucide-react';
+import { Combobox } from '@/components/Shadcn/Combobox';
+import toast from 'react-hot-toast';
+import { darkToastTheme } from '@/customs/reactHotToast';
+
+
+
+const OrderProductDetails = () => {
+
+    const { order } = useOrderContext();
+
+
+    return (
+        <div className="h-full pb-2 ">
+            <Card className='h-full flex flex-col'>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Tabla con los productos previstos en el pedido
+                        </p>
+                    </div>
+                   {/*  <div className="space-x-2">
+                        <Button >
+                            <Plus size={16} />
+                            Añadir línea
+                        </Button>
+                    </div> */}
+                </CardHeader>
+                <CardContent className="space-y-6 flex-1 overflow-y-auto">
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className='text-nowrap'>
+                                    <TableHead>Artículo</TableHead>
+                                    <TableHead>Cajas</TableHead>
+                                    <TableHead>Cantidad</TableHead>
+                                    <TableHead>Precio</TableHead>
+                                    <TableHead>Impuesto (%)</TableHead>
+                                    <TableHead>Subtotal</TableHead>
+                                    <TableHead>Total</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {order.productDetails.map((detail, index) => (
+                                    <TableRow key={index} className='text-nowrap'>
+                                        <TableCell>
+                                            {detail.product.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatInteger(detail.boxes)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalWeight(detail.netWeight)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalCurrency(detail.unitPrice)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {`${detail.tax.rate}%`}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalCurrency(detail.subtotal)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalCurrency(detail.total)}
+                                        </TableCell>
+
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell>Total</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </TableFooter>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+};
+
+export default OrderProductDetails;
