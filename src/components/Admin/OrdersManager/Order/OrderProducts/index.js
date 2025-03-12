@@ -16,7 +16,7 @@ import { darkToastTheme } from '@/customs/reactHotToast';
 
 const OrderProducts = () => {
 
-    const { options, plannedProductDetailActions , plannedProductDetails } = useOrderContext();
+    const { options, plannedProductDetailActions , plannedProductDetails , order } = useOrderContext();
 
     const { productOptions, taxOptions } = options;
 
@@ -63,6 +63,7 @@ const OrderProducts = () => {
         detail.unitPrice = Number(detail.unitPrice);
 
         if (!detail.id) {
+            detail.orderId = order.id;
             const toastId = toast.loading('Creando nueva linea...', darkToastTheme);
             plannedProductDetailActions.create(detail)
                 .then(() => {

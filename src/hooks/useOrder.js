@@ -192,6 +192,8 @@ export function useOrder(orderId) {
                 plannedBoxes: parseFloat(detail.boxes),
                 productionQuantity: 0.0,
                 productionBoxes: 0.0,
+                quantityDifference: parseFloat(detail.quantity)*-1,
+                status: 'pending'
 
             });
         });
@@ -203,6 +205,12 @@ export function useOrder(orderId) {
             if (existing) {
                 existing.productionQuantity += parseFloat(production.netWeight);
                 existing.productionBoxes += parseFloat(production.boxes);
+                existing.quantityDifference = existing.plannedQuantity - existing.productionQuantity;
+                existing.boxesDifference = existing.plannedBoxes - existing.productionBoxes;
+                existing.status = existing.quantityDifference == 0
+                    ? 'suceess'
+                    : existing.quantityDifference <= 30 && existing.quantityDifference >= -30 ? 'difference' : 'pending';
+
             } else {
                 resultMap.set(production.product.id, {
                     product: production.product,
@@ -210,6 +218,9 @@ export function useOrder(orderId) {
                     plannedBoxes: 0.0,
                     productionQuantity: parseFloat(production.netWeight),
                     productionBoxes: parseFloat(production.boxes),
+                    quantityDifference: parseFloat(production.netWeight),
+                    boxesDifference: parseFloat(production.boxes),
+                    status: 'noPlanned',
                 });
             }
         });

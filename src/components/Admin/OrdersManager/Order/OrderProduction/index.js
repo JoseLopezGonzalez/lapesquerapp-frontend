@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { AlertTriangle, Check, HelpCircle, Package, X } from 'lucide-react';
+import { AlertTriangle, Check, CircleAlert, HelpCircle, Package, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,11 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useOrderContext } from '@/context/OrderContext';
-import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 
 const OrderProduction = () => {
 
-    const { order, mergedDetails } = useOrderContext()
+    const { mergedDetails } = useOrderContext();
+
+    const hasDiscrepancy = mergedDetails.some(detail => detail.status !== 'success');
+
+    const totals = mergedDetails.reduce((acc, detail) => {
+        acc.plannedQuantity += detail.plannedQuantity;
+        acc.productionQuantity += detail.productionQuantity;
+        acc.quantityDifference += detail.quantityDifference;
+        return acc;
+    }, { plannedQuantity: 0, productionQuantity: 0, quantityDifference: 0 });
 
 
     return (
@@ -45,13 +54,14 @@ const OrderProduction = () => {
                     </TooltipProvider>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                    <Alert>
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Discrepancia detectada</AlertTitle>
-                        <AlertDescription>
-                            Se han encontrado diferencias entre los productos registrados y los paletizados.
-                        </AlertDescription>
-                    </Alert>
+                    {hasDiscrepancy && (
+                        <Alert className='animate-pulse'>
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Discrepancia detectada</AlertTitle>
+                            <AlertDescription>
+                                Se han encontrado diferencias entre los productos registrados y los paletizados.
+                            </AlertDescription>
+                        </Alert>)}
 
                     <div className="rounded-md border">
                         <Table>
@@ -71,39 +81,47 @@ const OrderProduction = () => {
                                     <TableRow key={index} className='text-nowrap'>
                                         <TableCell className="font-medium">{detail.product.name}</TableCell>
                                         <TableCell>
-                                            <div className="space-y-1">
-                                                <div>{detail.plannedQuantity} kg</div>
-                                                <div className="text-sm text-muted-foreground">{detail.plannedBoxes} cajas</div>
-                                            </div>
+                                            {detail.status === 'noPlanned' ? (
+                                                <div className="space-y-1">
+                                                    <div>-</div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-1">
+                                                    <div>{formatDecimalWeight(detail.plannedQuantity)}</div>
+                                                    <div className="text-sm text-muted-foreground">{formatInteger(detail.plannedBoxes)} cajas</div>
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="space-y-1">
-                                                <div>{detail.productionQuantity} kg</div>
-                                                <div className="text-sm text-muted-foreground">{detail.productionBoxes} cajas</div>
-                                            </div>
+                                            {detail.productionQuantity === 0 && detail.productionBoxes === 0
+                                                ? '-'
+                                                : (
+                                                    <div className="space-y-1">
+                                                        <div>{formatDecimalWeight(detail.productionQuantity)}</div>
+                                                        <div className="text-sm text-muted-foreground">{formatInteger(detail.productionBoxes)} cajas</div>
+                                                    </div>
+                                                )}
                                         </TableCell>
-                                        <TableCell>{formatDecimalWeight(detail.productionQuantity - detail.plannedQuantity)} </TableCell>
+                                        <TableCell>
+                                            {detail.status === 'noPlanned' ? '-' : formatDecimalWeight(detail.quantityDifference)}
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-end gap-2">
-                                                {detail.plannedQuantity === detail.productionQuantity ? (
+                                                {detail.status === 'success' ? (
                                                     <Badge variant="success" className="bg-green-500">
-                                                        <Check className="h-3 w-3 mr-1" />
                                                         Correcto
                                                     </Badge>
-                                                ) : (detail.productionQuantity - detail.plannedQuantity) > -30 && (detail.productionQuantity - detail.plannedQuantity) < 30 ? (
-                                                    <Badge variant="warning" className="bg-amber-500">
-                                                        <AlertTriangle className="h-3 w-3 mr-1" />
+                                                ) : detail.status === 'difference' ? (
+                                                    <Badge variant="warning" className="bg-orange-500">
                                                         Diferencia
                                                     </Badge>
-                                                ) : (detail.productionQuantity - detail.plannedQuantity) > 30 ? (
-                                                    <Badge>
-                                                        <X className="h-3 w-3 mr-1" />
-                                                        No programado
+                                                ) : detail.status === 'noPlanned' ? (
+                                                    <Badge variant="destructive">
+                                                        No previsto
                                                     </Badge>
                                                 ) : (
-                                                    <Badge variant="destructive">
-                                                        <X className="h-3 w-3 mr-1" />
-                                                        Faltante
+                                                    <Badge >
+                                                        Pendiente
                                                     </Badge>
                                                 )}
                                             </div>
@@ -121,8 +139,8 @@ const OrderProduction = () => {
                                                     </TooltipTrigger>
                                                     <TooltipContent className='bg-neutral-950 text-white'>
                                                         <p className="max-w-xs ">
-                                                           Crear palet 
-                                                           automáticamente
+                                                            Crear palet
+                                                            automáticamente
                                                         </p>
                                                     </TooltipContent>
                                                 </Tooltip>
@@ -134,15 +152,21 @@ const OrderProduction = () => {
 
                             </TableBody>
                             {/* TableFooter */}
-                            <TableFooter>
+                            <TableFooter className='text-nowrap'>
                                 <TableRow>
                                     <TableCell className="font-medium">Total</TableCell>
-                                    <TableCell>120.00 kg</TableCell>
-                                    <TableCell>28.50 kg</TableCell>
-                                    <TableCell>-91.50 kg</TableCell>
-                                    <TableCell> </TableCell>
-                                    <TableCell> </TableCell>
-
+                                    <TableCell>
+                                        {formatDecimalWeight(totals.plannedQuantity)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {formatDecimalWeight(totals.productionQuantity)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {formatDecimalWeight(totals.quantityDifference)}
+                                    </TableCell>
+                                    <TableCell>
+                                    </TableCell>
+                                    <TableCell></TableCell>
 
                                 </TableRow>
                             </TableFooter>
