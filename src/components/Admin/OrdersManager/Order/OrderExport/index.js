@@ -91,7 +91,13 @@ const documents = [
         label: 'Reporte Logs de diferencias',
         types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
-    }
+    },
+    {
+        name: 'A3ERP-sales-delivery-note',
+        label: 'Albarán de venta A3ERP',
+        types: ['xlsx'],
+        fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
+    },
 ];
 
 
