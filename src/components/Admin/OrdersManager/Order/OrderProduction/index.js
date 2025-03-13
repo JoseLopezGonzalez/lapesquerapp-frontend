@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { AlertTriangle, Check, CircleAlert, HelpCircle, Package, X } from 'lucide-react';
+import { AlertTriangle, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -11,7 +11,6 @@ import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 
 const OrderProduction = () => {
-
     const { mergedProductDetails } = useOrderContext();
 
     const hasDiscrepancy = mergedProductDetails.some(detail => detail.status !== 'success');
@@ -23,7 +22,6 @@ const OrderProduction = () => {
         return acc;
     }, { plannedQuantity: 0, productionQuantity: 0, quantityDifference: 0 });
 
-
     return (
         <div className="h-full pb-2 ">
             <Card className='h-full flex flex-col'>
@@ -34,24 +32,6 @@ const OrderProduction = () => {
                             Comparación entre productos registrados y paletizados
                         </p>
                     </div>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon">
-                                    <HelpCircle className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="max-w-xs">
-                                    Verde: Cantidades coinciden
-                                    <br />
-                                    Amarillo: Diferencia en cantidades
-                                    <br />
-                                    Rojo: Producto faltante
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
                     {hasDiscrepancy && (
@@ -62,7 +42,6 @@ const OrderProduction = () => {
                                 Se han encontrado diferencias entre los productos registrados y los paletizados.
                             </AlertDescription>
                         </Alert>)}
-
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
@@ -73,7 +52,6 @@ const OrderProduction = () => {
                                     <TableHead>Diferencia</TableHead>
                                     <TableHead>Estado</TableHead>
                                     <TableHead></TableHead>
-
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -127,9 +105,6 @@ const OrderProduction = () => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            {/* <Button variant="outline" size="icon">
-                                            </Button> */}
-
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -145,13 +120,10 @@ const OrderProduction = () => {
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
-
                                         </TableCell>
                                     </TableRow>
                                 ))}
-
                             </TableBody>
-                            {/* TableFooter */}
                             <TableFooter className='text-nowrap'>
                                 <TableRow>
                                     <TableCell className="font-medium">Total</TableCell>
@@ -167,19 +139,11 @@ const OrderProduction = () => {
                                     <TableCell>
                                     </TableCell>
                                     <TableCell></TableCell>
-
                                 </TableRow>
                             </TableFooter>
-
-
                         </Table>
                     </div>
-
-
-
-
                 </CardContent>
-
             </Card>
         </div>
     )

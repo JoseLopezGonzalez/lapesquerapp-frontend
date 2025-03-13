@@ -2,14 +2,13 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, SaveIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 
 
 const OrderPallets = () => {
     const { pallets } = useOrderContext()
-
 
     return (
         <>
@@ -46,34 +45,31 @@ const OrderPallets = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {
-                                            pallets.map((pallet, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>{pallet.id}</TableCell>
-                                                    <TableCell>
-                                                        <div className="space-y-1">
-                                                            {pallet.productsNames.map((product) => (
-                                                                <div key={product}>{product}</div>
-                                                            ))}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="space-y-1">
-                                                            {pallet.lots.map((lot) => (
-                                                                <div key={lot}>{lot}</div>
-                                                            ))}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {pallet.numberOfBoxes}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {formatDecimalWeight(pallet.netWeight)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        }
-
+                                        {pallets.map((pallet, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{pallet.id}</TableCell>
+                                                <TableCell>
+                                                    <div className="space-y-1">
+                                                        {pallet.productsNames.map((product) => (
+                                                            <div key={product}>{product}</div>
+                                                        ))}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="space-y-1">
+                                                        {pallet.lots.map((lot) => (
+                                                            <div key={lot}>{lot}</div>
+                                                        ))}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {pallet.numberOfBoxes}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDecimalWeight(pallet.netWeight)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table>
                             </CardContent>

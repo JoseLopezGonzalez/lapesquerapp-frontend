@@ -8,6 +8,52 @@ import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
 import { getTaxOptions } from '@/services/taxService';
 
+const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
+    const resultMap = new Map();
+
+    // Añadir productos previstos primero
+    plannedProductDetails?.forEach(detail => {
+        resultMap.set(detail.product.id, {
+            product: detail.product,
+            plannedQuantity: parseFloat(detail.quantity),
+            plannedBoxes: parseFloat(detail.boxes),
+            productionQuantity: 0.0,
+            productionBoxes: 0.0,
+            quantityDifference: parseFloat(detail.quantity) * -1,
+            status: 'pending'
+
+        });
+    });
+
+    // Añadir datos reales desde pallets
+    productionProductDetails?.forEach(production => {
+        const existing = resultMap.get(production.product.id);
+        if (existing) {
+            existing.productionQuantity += parseFloat(production.netWeight);
+            existing.productionBoxes += parseFloat(production.boxes);
+            existing.quantityDifference = existing.plannedQuantity - existing.productionQuantity;
+            existing.boxesDifference = existing.plannedBoxes - existing.productionBoxes;
+            existing.status = existing.quantityDifference == 0
+                ? 'success'
+                : existing.quantityDifference <= 30 && existing.quantityDifference >= -30 ? 'difference' : 'pending';
+
+        } else {
+            resultMap.set(production.product.id, {
+                product: production.product,
+                plannedQuantity: 0.0,
+                plannedBoxes: 0.0,
+                productionQuantity: parseFloat(production.netWeight),
+                productionBoxes: parseFloat(production.boxes),
+                quantityDifference: parseFloat(production.netWeight),
+                boxesDifference: parseFloat(production.boxes),
+                status: 'noPlanned',
+            });
+        }
+    });
+
+    return Array.from(resultMap.values());
+};
+
 export function useOrder(orderId) {
     const { data: session, status } = useSession();
     const [order, setOrder] = useState(null);
@@ -15,6 +61,7 @@ export function useOrder(orderId) {
     const [error, setError] = useState(null);
     const [productOptions, setProductOptions] = useState([]);
     const [taxOptions, setTaxOptions] = useState([]);
+
 
     const pallets = order?.pallets || [];
 
@@ -60,7 +107,23 @@ export function useOrder(orderId) {
             .catch((err) => setError(err))
             .finally();
 
+        
+
     }, [orderId, status]);
+
+    const reload = async () => {
+        const token = session?.user?.accessToken;
+        getOrder(orderId, token)
+            .then((data) => {
+                setOrder(data);
+            }
+            )
+            .catch((err) => setError(err))
+            .finally();
+
+    }
+
+    const mergedProductDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
@@ -95,6 +158,7 @@ export function useOrder(orderId) {
                         })
                     }
                 })
+                reload();
             })
             .catch((err) => {
                 setError(err);
@@ -112,6 +176,7 @@ export function useOrder(orderId) {
                         plannedProductDetails: prevOrder.plannedProductDetails.filter((detail) => detail.id !== id)
                     }
                 })
+                reload();
             })
             .catch((err) => {
                 setError(err);
@@ -129,6 +194,7 @@ export function useOrder(orderId) {
                         plannedProductDetails: [...prevOrder.plannedProductDetails, created]
                     }
                 })
+                reload();
             })
             .catch((err) => {
                 setError(err);
@@ -180,66 +246,10 @@ export function useOrder(orderId) {
         }
     };
 
-
-    const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
-        const resultMap = new Map();
-
-        // Añadir productos previstos primero
-        plannedProductDetails?.forEach(detail => {
-            resultMap.set(detail.product.id, {
-                product: detail.product,
-                plannedQuantity: parseFloat(detail.quantity),
-                plannedBoxes: parseFloat(detail.boxes),
-                productionQuantity: 0.0,
-                productionBoxes: 0.0,
-                quantityDifference: parseFloat(detail.quantity)*-1,
-                status: 'pending'
-
-            });
-        });
-
-        console.log('productionProductDetails', productionProductDetails);
-        // Añadir datos reales desde pallets
-        productionProductDetails?.forEach(production => {
-            const existing = resultMap.get(production.product.id);
-            if (existing) {
-                existing.productionQuantity += parseFloat(production.netWeight);
-                existing.productionBoxes += parseFloat(production.boxes);
-                existing.quantityDifference = existing.plannedQuantity - existing.productionQuantity;
-                existing.boxesDifference = existing.plannedBoxes - existing.productionBoxes;
-                existing.status = existing.quantityDifference == 0
-                    ? 'success'
-                    : existing.quantityDifference <= 30 && existing.quantityDifference >= -30 ? 'difference' : 'pending';
-
-            } else {
-                resultMap.set(production.product.id, {
-                    product: production.product,
-                    plannedQuantity: 0.0,
-                    plannedBoxes: 0.0,
-                    productionQuantity: parseFloat(production.netWeight),
-                    productionBoxes: parseFloat(production.boxes),
-                    quantityDifference: parseFloat(production.netWeight),
-                    boxesDifference: parseFloat(production.boxes),
-                    status: 'noPlanned',
-                });
-            }
-        });
-
-        return Array.from(resultMap.values());
-    };
-
-    const mergedProductDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
-
     const options = {
         taxOptions,
         productOptions,
     }
-
-
-    console.log('productDetails', order?.productDetails)
-
-
-
 
     return {
         pallets,

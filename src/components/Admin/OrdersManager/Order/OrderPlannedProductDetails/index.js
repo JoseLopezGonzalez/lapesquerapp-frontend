@@ -11,7 +11,6 @@ import { Delete, GitBranchPlus, Pencil, Plus, SaveIcon, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
-import { set } from 'date-fns';
 
 
 
@@ -33,9 +32,9 @@ const OrderPlannedProductDetails = () => {
 
         setDetails([...details, {
             product: { name: "", id: null },
-            boxes: 0,
-            quantity: 0,
-            unitPrice: 0,
+            boxes: '',
+            quantity: '',
+            unitPrice: '',
             tax: { rate: 0 }
         }]);
         setEditIndex(details.length);
@@ -50,7 +49,7 @@ const OrderPlannedProductDetails = () => {
             updatedDetails[index].tax.id = Number(value);
             updatedDetails[index].tax.rate = taxOptions.find(option => option.value === value).label;
         } else {
-            updatedDetails[index][field] = Number(value);
+            updatedDetails[index][field] = value == '' ? '' : Number(value);
         }
         setDetails(updatedDetails);
     };
@@ -117,6 +116,8 @@ const OrderPlannedProductDetails = () => {
     };
 
     const handleOnClickAddDetectedProducts = () => {
+        if (editIndex !== null) return;
+
         const detail = mergedProductDetails.find((productDetail) => productDetail.status === 'noPlanned');
         if (!detail) {
             toast.error('No hay productos detectados ', darkToastTheme);
@@ -128,15 +129,13 @@ const OrderPlannedProductDetails = () => {
             product: { name: product.name, id: product.id },
             boxes: detail.productionBoxes,
             quantity: detail.productionQuantity,
-            unitPrice: 0,
+            unitPrice: '',
             tax: { rate: 0 }
         }]);
         setEditIndex(details.length);
     };
 
-    /* Encontrar si existe algun producto detectado que seria un producto cuyo detalle.status en mergeProductDetails sea noPlanned */
     const isSomeProductDetected = mergedProductDetails.some((productDetail) => productDetail.status === 'noPlanned');
-
 
     const totals = details.reduce(
         (acc, item) => {
@@ -259,7 +258,6 @@ const OrderPlannedProductDetails = () => {
                                                     </Button>
                                                 </>
                                             )}
-
                                         </TableCell>
                                     </TableRow>
                                 ))}

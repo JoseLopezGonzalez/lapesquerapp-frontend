@@ -1,16 +1,9 @@
 'use client'
 
-import React, { useState } from "react";
-
-import {
-    Card,
-    CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { useOrderContext } from "@/context/OrderContext";
 
-// Eliminamos tipos TypeScript y usamos solo JavaScript
-// (Antes teníamos DocumentStatus, Document, Recipient, etc.)
 
 const OrderMap = () => {
     const { order } = useOrderContext();
@@ -19,15 +12,9 @@ const OrderMap = () => {
 
     const origin = 'Congelados Brisamar S.L. '
 
-
-
     return (
         <div className='h-full pb-2'>
             <Card className='h-full overflow-hidden'>
-                {/*  <CardHeader>
-                    <CardTitle className="text-lg font-medium">Documentación</CardTitle>
-                    <CardDescription>Envía los documentos a los diferentes destinatarios</CardDescription>
-                </CardHeader> */}
                 <CardContent className="h-full w-full p-0">
                     <iframe
                         width="100%"

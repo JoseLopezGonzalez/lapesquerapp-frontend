@@ -1,17 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { Delete, Pencil, Plus, SaveIcon, X } from 'lucide-react';
-import { Combobox } from '@/components/Shadcn/Combobox';
-import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
-
 
 
 const OrderProductDetails = () => {
@@ -28,7 +20,7 @@ const OrderProductDetails = () => {
     }
         , { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
 
-    totals.averagePrice = totals.total / totals.netWeight;
+    totals.averagePrice = totals.subtotal / totals.netWeight;
 
 
     return (
@@ -36,17 +28,19 @@ const OrderProductDetails = () => {
             <Card className='h-full flex flex-col'>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
+                        <CardTitle className="text-lg font-medium">Detalle de productos</CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Tabla con los productos previstos en el pedido
+                            Desglose de productos con precio y cantidad
                         </p>
                     </div>
-                    {/*  <div className="space-x-2">
+                    {/*  
+                    <div className="space-x-2">
                         <Button >
                             <Plus size={16} />
                             Añadir línea
                         </Button>
-                    </div> */}
+                    </div> 
+                    */}
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
                     <div className="rounded-md border">
@@ -86,7 +80,6 @@ const OrderProductDetails = () => {
                                         <TableCell>
                                             {formatDecimalCurrency(detail.total)}
                                         </TableCell>
-
                                     </TableRow>
                                 ))}
                             </TableBody>
