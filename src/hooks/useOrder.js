@@ -208,7 +208,7 @@ export function useOrder(orderId) {
                 existing.quantityDifference = existing.plannedQuantity - existing.productionQuantity;
                 existing.boxesDifference = existing.plannedBoxes - existing.productionBoxes;
                 existing.status = existing.quantityDifference == 0
-                    ? 'suceess'
+                    ? 'success'
                     : existing.quantityDifference <= 30 && existing.quantityDifference >= -30 ? 'difference' : 'pending';
 
             } else {
@@ -228,7 +228,7 @@ export function useOrder(orderId) {
         return Array.from(resultMap.values());
     };
 
-    const mergedDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
+    const mergedProductDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
 
     const options = {
         taxOptions,
@@ -248,7 +248,7 @@ export function useOrder(orderId) {
         error,
         updateOrderData,
         exportDocument,
-        mergedDetails,
+        mergedProductDetails,
         options,
         plannedProductDetailActions,
         plannedProductDetails,

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import OrderDetails from './OrderDetails';
-import OrderProducts from './OrderProducts';
+
 import OrderPallets from './OrderPallets';
 import OrderDocuments from './OrderDocuments';
 import OrderExport from './OrderExport';
@@ -17,8 +17,8 @@ import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { classNames } from '@/helpers/styles/classNames';
 import OrderMap from './OrderMap';
 import OrderProduction from './OrderProduction';
-import OrderProductsDetails from './OrderProductDetails';
 import OrderProductDetails from './OrderProductDetails';
+import OrderPlannedProductDetails from './OrderPlannedProductDetails';
 
 const exampleOrder = example.data;
 
@@ -141,18 +141,15 @@ const OrderContent = () => {
                   {/* Header Section */}
 
                   {/* Main Content */}
-                  <Tabs  value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col'>
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col'>
                     <TabsList className='w-fit'>
                       <TabsTrigger value="details">Detalles</TabsTrigger>
                       <TabsTrigger value="products">Previsión</TabsTrigger>
-                      {/* Detalle de productos */}
                       <TabsTrigger value="productDetails">Detalle productos</TabsTrigger>
                       <TabsTrigger value="production">Producción</TabsTrigger>
-
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
                       <TabsTrigger value="documents">Documentos</TabsTrigger>
                       <TabsTrigger value="export">Exportar</TabsTrigger>
-                      {/* Map */}
                       <TabsTrigger value="map">Mapa</TabsTrigger>
                       {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                     </TabsList>
@@ -164,7 +161,7 @@ const OrderContent = () => {
                       </TabsContent>
 
                       <TabsContent value="products" className="space-y-4 w-full h-full ">
-                        <OrderProducts />
+                        <OrderPlannedProductDetails />
                       </TabsContent>
 
                       <TabsContent value="productDetails" className="space-y-4 w-full h-full ">

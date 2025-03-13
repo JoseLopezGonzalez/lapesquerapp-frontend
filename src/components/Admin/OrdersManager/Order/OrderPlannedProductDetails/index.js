@@ -7,16 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { Delete, Pencil, Plus, SaveIcon, X } from 'lucide-react';
+import { Delete, GitBranchPlus, Pencil, Plus, SaveIcon, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
+import { set } from 'date-fns';
 
 
 
-const OrderProducts = () => {
+const OrderPlannedProductDetails = () => {
 
-    const { options, plannedProductDetailActions , plannedProductDetails , order } = useOrderContext();
+    const { options, plannedProductDetailActions, plannedProductDetails, order, mergedProductDetails } = useOrderContext();
 
     const { productOptions, taxOptions } = options;
 
@@ -115,6 +116,27 @@ const OrderProducts = () => {
         setEditIndex(null);
     };
 
+    const handleOnClickAddDetectedProducts = () => {
+        const detail = mergedProductDetails.find((productDetail) => productDetail.status === 'noPlanned');
+        if (!detail) {
+            toast.error('No hay productos detectados ', darkToastTheme);
+            return;
+        }
+        const product = detail.product;
+        console.log('product', product);
+        setDetails([...details, {
+            product: { name: product.name, id: product.id },
+            boxes: detail.productionBoxes,
+            quantity: detail.productionQuantity,
+            unitPrice: 0,
+            tax: { rate: 0 }
+        }]);
+        setEditIndex(details.length);
+    };
+
+    /* Encontrar si existe algun producto detectado que seria un producto cuyo detalle.status en mergeProductDetails sea noPlanned */
+    const isSomeProductDetected = mergedProductDetails.some((productDetail) => productDetail.status === 'noPlanned');
+
 
     const totals = details.reduce(
         (acc, item) => {
@@ -148,6 +170,12 @@ const OrderProducts = () => {
                             <Plus size={16} />
                             Añadir línea
                         </Button>
+                        {isSomeProductDetected && (
+                            <Button variant="secondary" className='animate-pulse' onClick={handleOnClickAddDetectedProducts}>
+                                <GitBranchPlus size={16} />
+                                Añadir productos detectados
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
@@ -254,4 +282,4 @@ const OrderProducts = () => {
     );
 };
 
-export default OrderProducts;
+export default OrderPlannedProductDetails;

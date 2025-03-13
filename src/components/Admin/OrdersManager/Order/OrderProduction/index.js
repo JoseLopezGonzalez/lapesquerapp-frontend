@@ -12,11 +12,11 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 
 const OrderProduction = () => {
 
-    const { mergedDetails } = useOrderContext();
+    const { mergedProductDetails } = useOrderContext();
 
-    const hasDiscrepancy = mergedDetails.some(detail => detail.status !== 'success');
+    const hasDiscrepancy = mergedProductDetails.some(detail => detail.status !== 'success');
 
-    const totals = mergedDetails.reduce((acc, detail) => {
+    const totals = mergedProductDetails.reduce((acc, detail) => {
         acc.plannedQuantity += detail.plannedQuantity;
         acc.productionQuantity += detail.productionQuantity;
         acc.quantityDifference += detail.quantityDifference;
@@ -77,7 +77,7 @@ const OrderProduction = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mergedDetails.map((detail, index) => (
+                                {mergedProductDetails.map((detail, index) => (
                                     <TableRow key={index} className='text-nowrap'>
                                         <TableCell className="font-medium">{detail.product.name}</TableCell>
                                         <TableCell>
