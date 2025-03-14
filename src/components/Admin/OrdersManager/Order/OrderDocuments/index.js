@@ -20,11 +20,20 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Order from "..";
+import { useOrderContext } from "@/context/OrderContext";
+import { useSession } from "next-auth/react";
+import { API_URL_V2 } from "@/configs/config";
+import toast from "react-hot-toast";
+import { darkToastTheme } from "@/customs/reactHotToast";
 
 // Eliminamos tipos TypeScript y usamos solo JavaScript
 // (Antes teníamos DocumentStatus, Document, Recipient, etc.)
 
 const OrderDocuments = () => {
+
+    const { order } = useOrderContext();
+
     // Estado para los documentos seleccionados (estructura de objetos)
     const [selectedDocs, setSelectedDocs] = useState({
         cliente: { "doc-trazabilidad": false, "albaran-entrega": false },
@@ -167,10 +176,49 @@ const OrderDocuments = () => {
             : "  ";
     };
 
+    const { data: session, status } = useSession();
+
+    const sendStandarDocuments = async () => {
+        /* setLoading(true); */
+        const token = session?.user?.accessToken;
+        const toastId = toast.loading("Enviando documentos estándar...", darkToastTheme);
+
+        return fetch(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',  // <- Este es el header que necesitas
+                'Authorization': `Bearer ${token}`, // Enviar el token
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+            body: JSON.stringify({}),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message || 'Error ');
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                toast.success('Documentos enviados correctamente', { id: toastId });
+                return data.data;
+            })
+            .catch((error) => {
+                // Manejo adicional de errores, si lo requieres
+                toast.error('Error al enviar documentos', { id: toastId });
+                throw error;
+            })
+            .finally(() => {
+                console.log('  finalizado');
+            });
+    };
+
     return (
         <div className='h-full pb-2'>
             <Card className='h-full flex flex-col'>
-               {/*  <CardHeader>
+                {/*  <CardHeader>
                     <CardTitle className="text-lg font-medium">Documentación</CardTitle>
                     <CardDescription>Envía los documentos a los diferentes destinatarios</CardDescription>
                 </CardHeader> */}
@@ -377,12 +425,12 @@ const OrderDocuments = () => {
                                             </li>
                                             <li className="flex items-center">
                                                 <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
-                                                <span>Paacking list ➜ Comercial</span>
+                                                <span>Packing list ➜ Comercial</span>
                                             </li>
                                         </ul>
                                     </CardContent>
                                     <CardFooter className="p-4 pt-0">
-                                        <Button onClick={sendStandard} className="w-full">
+                                        <Button onClick={sendStandarDocuments} className="w-full"> {/* onClick={sendStandard} */}
                                             <Send className="h-3.5 w-3.5 mr-1" />
                                             Enviar Estándar
                                         </Button>
