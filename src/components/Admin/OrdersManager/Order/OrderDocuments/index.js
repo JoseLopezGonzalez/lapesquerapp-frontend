@@ -88,9 +88,9 @@ const OrderDocuments = () => {
 
     // Documentos disponibles para el envío múltiple
     const availableDocuments = [
-        { id: "cmr", name: "CMR" },
-        { id: "factura-proforma", name: "Factura Proforma" },
-        { id: "inventario-parcial", name: "Inventario Parcial" },
+        { id: "CMR", name: "CMR" },
+        { id: "loading-note", name: "Nota de Carga" },
+        { id: 'packing-list', name: 'Packing List' },
     ];
 
     // Alternar la selección de un documento para un destinatario
@@ -119,7 +119,7 @@ const OrderDocuments = () => {
     };
 
     // Envío múltiple
-    const sendMultiple = () => {
+    const sendMultiple = async () => {
         if (!selectedDocument) {
             alert("Por favor seleccione un documento");
             return;
@@ -138,16 +138,73 @@ const OrderDocuments = () => {
                 ", "
             )}`
         );
+
+        /* format:
+        {
+  "documents": [
+    {
+      "type": "nota_carga",
+      "recipients": ["cliente", "comercial"]
+    },
+    {
+      "type": "packing_list",
+      "recipients": ["transporte"]
+    }
+  ]
+}
+
+         */
+
+        const json = {
+            documents: [
+                {
+                    type: selectedDocument,
+                    recipients: selectedRecipientsArray
+                }
+            ]
+        }
+
+
+        /* setLoading(true); */
+        const token = session?.user?.accessToken;
+        const toastId = toast.loading("Enviando documentos a multiples destinatarios...", darkToastTheme);
+
+        console.log('json', json);
+
+        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',  // <- Este es el header que necesitas
+                'Authorization': `Bearer ${token}`, // Enviar el token
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+            body: JSON.stringify(json),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message || 'Error ');
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                toast.success('Documentos enviados correctamente', { id: toastId });
+                return data.data;
+            })
+            .catch((error) => {
+                // Manejo adicional de errores, si lo requieres
+                toast.error('Error al enviar documentos', { id: toastId });
+                throw error;
+            })
+            .finally(() => {
+                console.log('  finalizado');
+            });
         // Aquí iría la lógica para enviar y actualizar estados
     };
 
-    // Envío estándar
-    const sendStandard = () => {
-        alert(
-            "Enviando documentos estándar (Ficha Técnica al Cliente y Tarjeta de Garantía al Comercial)"
-        );
-        // Aquí iría la lógica para enviar y actualizar estados
-    };
+
 
     // Contar documentos seleccionados
     const countSelectedDocuments = () => {
