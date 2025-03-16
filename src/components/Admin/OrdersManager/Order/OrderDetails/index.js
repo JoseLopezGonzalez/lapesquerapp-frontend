@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatInteger, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
+import { Badge } from '@/components/ui/badge';
 
 const OrderDetails = () => {
 
@@ -109,7 +110,27 @@ const OrderDetails = () => {
                             <div className="text-sm font-medium mb-1.5">Transporte</div>
                             <div className="text-sm">{order.transport.name}</div>
                             <p className="text-sm text-muted-foreground whitespace-pre-line">
-                                {order.transport.emails.replace(/;/g, "")}
+                               {/*  {order.transport.emails.replace(/;/g, "")} */}
+                                <ul className="list-disc px-5 pl-8">
+                                    {order.transport.emailsArray.map((email) => (
+                                        <li key={email} className="text-xs font-medium">
+                                            <a href={`mailto:${email}`} className=" hover:underline">
+                                                {email}
+                                            </a>
+                                        </li>
+                                    ))}
+
+                                    {order.transport.ccEmailsArray.map((copyEmail) => (
+                                        <li key={copyEmail} className="text-xs font-medium">
+                                            <div className="flex gap-1 items-center">
+                                                <Badge variant="outline" className="px-1">CC</Badge>
+                                                <a href={`mailto:${copyEmail}`} className=" hover:underline">
+                                                    {copyEmail}
+                                                </a>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
                             </p>
                         </div>
                     </div>

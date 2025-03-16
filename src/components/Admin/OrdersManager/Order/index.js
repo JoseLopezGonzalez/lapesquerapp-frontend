@@ -148,7 +148,7 @@ const OrderContent = () => {
                       <TabsTrigger value="productDetails">Detalle productos</TabsTrigger>
                       <TabsTrigger value="production">Producción</TabsTrigger>
                       <TabsTrigger value="pallets">Palets</TabsTrigger>
-                      <TabsTrigger value="documents">Documentos</TabsTrigger>
+                      <TabsTrigger value="documents">Envio de Documentos</TabsTrigger>
                       <TabsTrigger value="export">Exportar</TabsTrigger>
                       <TabsTrigger value="map">Mapa</TabsTrigger>
                       {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}

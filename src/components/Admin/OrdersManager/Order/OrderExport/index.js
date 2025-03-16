@@ -98,6 +98,28 @@ const documents = [
         types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
     },
+    /* valued Delivery Note */
+    {
+        name: 'valued-loading-note',
+        label: 'Nota de carga valorada',
+        types: ['pdf'],
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+    },
+    /* order confirmation */
+    {
+        name: 'order-confirmation',
+        label: 'Confirmación de pedido',
+        types: ['pdf'],
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+    },
+    /* transport pickup request */
+    {
+        name: 'transport-pickup-request',
+        label: 'Solicitud de recogida de transporte',
+        types: ['pdf'],
+        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+    },
+
 ];
 
 

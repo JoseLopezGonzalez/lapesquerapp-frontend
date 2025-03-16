@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from "react";
-import { FileText, Mail, Truck, User, Users, Check, Send, Ban, CheckCheck } from "lucide-react";
+import { Truck, User, Users, Send, Ban } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
     Select,
@@ -20,19 +20,15 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Order from "..";
 import { useOrderContext } from "@/context/OrderContext";
 import { useSession } from "next-auth/react";
-import { API_URL_V2 } from "@/configs/config";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
-// Eliminamos tipos TypeScript y usamos solo JavaScript
-// (Antes teníamos DocumentStatus, Document, Recipient, etc.)
 
 const OrderDocuments = () => {
 
-    const { order } = useOrderContext();
+    const { order, sendDocuments } = useOrderContext();
 
     // Estado para los documentos seleccionados (estructura de objetos)
     const [selectedDocs, setSelectedDocs] = useState({
@@ -44,45 +40,50 @@ const OrderDocuments = () => {
     // Estado para el envío múltiple (documento y destinatarios marcados)
     const [selectedDocument, setSelectedDocument] = useState("");
     const [selectedRecipients, setSelectedRecipients] = useState({
-        cliente: false,
-        transporte: false,
-        comercial: false,
+        customer: false,
+        transport: false,
+        salesperson: false,
     });
 
-    // Datos de ejemplo
     const recipients = [
         {
             name: "customer",
             label: "Cliente",
             icon: <User className="h-4 w-4" />,
-            email: "cliente@empresa.com",
-            copyEmail: "supervisión@empresa.com",
+            email: order.emailsArray,
+            copyEmail: order.ccEmailsArray,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
+                { name: "valued-loading-note", label: "Nota de carga valorada" },
+                { name: "order-confirmation", label: "Confirmación de pedido" },
             ],
         },
         {
             name: "transport",
             label: "Transporte",
             icon: <Truck className="h-4 w-4" />,
-            email: "logistica@transportesxyz.com",
-            copyEmail: "seguimiento@transportesxyz.com",
+            email: order.transport.emailsArray,
+            copyEmail: order.transport.ccEmailsArray,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
                 { name: "CMR", label: "Documento de transporte (CMR)" },
+                { name: "transport-pickup-request", label: "Solicitud de recogida" },
+
             ],
         },
         {
             name: "salesperson",
             label: "Comercial",
             icon: <Users className="h-4 w-4" />,
-            email: "comercial@empresa.com",
-            copyEmail: "",
+            email: order.salesperson.emailsArray,
+            copyEmail: order.salesperson.ccEmailsArray,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
+                { name: "valued-loading-note", label: "Nota de carga valorada" },
+                { name: "order-confirmation", label: "Confirmación de pedido" },
             ],
         },
     ];
@@ -92,6 +93,9 @@ const OrderDocuments = () => {
         { id: "CMR", name: "CMR" },
         { id: "loading-note", name: "Nota de Carga" },
         { id: 'packing-list', name: 'Packing List' },
+        { id: 'valued-loading-note', name: 'Nota de Carga Valorada' },
+        { id: 'order-confirmation', name: 'Confirmación de Pedido' },
+        { id: 'transport-pickup-request', name: 'Solicitud de Recogida' },
     ];
 
     // Alternar la selección de un documento para un destinatario
@@ -124,16 +128,10 @@ const OrderDocuments = () => {
         }));
     };
 
-    // Enviar todos los documentos seleccionados
-    const sendAllSelected = () => {
-        alert("Enviando todos los documentos seleccionados");
-        // Aquí iría la lógica para enviar y actualizar estados
-    };
-
     // Envío múltiple
-    const sendMultiple = async () => {
+    const handleOnClickSendMultiple = async () => {
         if (!selectedDocument) {
-            alert("Por favor seleccione un documento");
+            toast.error("Por favor seleccione un documento", darkToastTheme);
             return;
         }
         const selectedRecipientsArray = Object.entries(selectedRecipients)
@@ -141,31 +139,9 @@ const OrderDocuments = () => {
             .map(([id]) => id);
 
         if (selectedRecipientsArray.length === 0) {
-            alert("Por favor seleccione al menos un destinatario");
+            toast.error("Por favor seleccione al menos un destinatario", darkToastTheme);
             return;
         }
-
-        alert(
-            `Enviando documento "${selectedDocument}" a: ${selectedRecipientsArray.join(
-                ", "
-            )}`
-        );
-
-        /* format:
-        {
-  "documents": [
-    {
-      "type": "nota_carga",
-      "recipients": ["cliente", "comercial"]
-    },
-    {
-      "type": "packing_list",
-      "recipients": ["transporte"]
-    }
-  ]
-}
-
-         */
 
         const json = {
             documents: [
@@ -176,64 +152,19 @@ const OrderDocuments = () => {
             ]
         }
 
-
-        /* setLoading(true); */
-        const token = session?.user?.accessToken;
         const toastId = toast.loading("Enviando documentos a multiples destinatarios...", darkToastTheme);
 
-        console.log('json', json);
-
-        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',  // <- Este es el header que necesitas
-                'Authorization': `Bearer ${token}`, // Enviar el token
-                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-            },
-            body: JSON.stringify(json),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((errorData) => {
-                        throw new Error(errorData.message || 'Error ');
-                    });
-                }
-                return response.json();
-            })
-            .then((data) => {
+        sendDocuments.customDocuments(json)
+            .then(() => {
                 toast.success('Documentos enviados correctamente', { id: toastId });
-                return data.data;
             })
             .catch((error) => {
-                // Manejo adicional de errores, si lo requieres
                 toast.error('Error al enviar documentos', { id: toastId });
-                throw error;
+                console.log('Error al enviar documentos', error);
             })
-            .finally(() => {
-                console.log('  finalizado');
-            });
-        // Aquí iría la lógica para enviar y actualizar estados
     };
 
-    const sendSelectedDocuments = async () => {
-
-
-        /* format:
-        {
-  "documents": [
-    {
-      "type": "nota_carga",
-      "recipients": ["cliente", "comercial"]
-    },
-    {
-      "type": "packing_list",
-      "recipients": ["transporte"]
-    }
-  ]
-}
-
-         */
+    const handleOnClickSendSelectedDocuments = async () => {
 
         /* Agrupar por recipients por documento */
         const recipientsByDocuments = Object.entries(selectedDocs).reduce((acc, [recipient, documents]) => {
@@ -253,59 +184,35 @@ const OrderDocuments = () => {
             }))
         }
 
-        console.log('json', json);
-
-
-        /* setLoading(true); */
-        const token = session?.user?.accessToken;
         const toastId = toast.loading("Enviando documentos...", darkToastTheme);
 
-        console.log('json', json);
-
-        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',  // <- Este es el header que necesitas
-                'Authorization': `Bearer ${token}`, // Enviar el token
-                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-            },
-            body: JSON.stringify(json),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((errorData) => {
-                        throw new Error(errorData.message || 'Error ');
-                    });
-                }
-                return response.json();
-            })
-            .then((data) => {
+        sendDocuments.customDocuments(json)
+            .then(() => {
                 toast.success('Documentos enviados correctamente', { id: toastId });
                 handleOnClickResetSelectedDocs();
             })
             .catch((error) => {
-                // Manejo adicional de errores, si lo requieres
                 toast.error('Error al enviar documentos', { id: toastId });
-                throw error;
+                console.log('Error al enviar documentos', error);
             })
-            .finally(() => {
-                console.log('  finalizado');
 
-            });
-        // Aquí iría la lógica para enviar y actualizar estados
+    };
+
+    const handleOnClickSendStandarDocuments = async () => {
+        const toastId = toast.loading("Enviando documentos estándar...", darkToastTheme);
+
+        sendDocuments.standardDocuments()
+            .then(() => {
+                toast.success('Documentos enviados correctamente', { id: toastId });
+            })
+            .catch((error) => {
+                toast.error('Error al enviar documentos', { id: toastId });
+                console.log('Error al enviar documentos', error);
+            })
     };
 
 
-
-
-    // Contar documentos seleccionados
-    const countSelectedDocuments = () => {
-        /* contar selectedDocuments uniendo el tamaño de customer, transport, salesperson */
-        return Object.values(selectedDocs).reduce((acc, curr) => acc + Object.values(curr).filter(Boolean).length, 0);
-    };
-
-
+    const numberOfSelectedDocuments = Object.values(selectedDocs).reduce((acc, curr) => acc + Object.values(curr).filter(Boolean).length, 0);
 
     // Determinar la clase de color para el badge según el estado
     const getBadgeClass = (recipientName, docName) => {
@@ -315,69 +222,21 @@ const OrderDocuments = () => {
         }
     };
 
-    const { data: session, status } = useSession();
-
-    const sendStandarDocuments = async () => {
-        /* setLoading(true); */
-        const token = session?.user?.accessToken;
-        const toastId = toast.loading("Enviando documentos estándar...", darkToastTheme);
-
-        return fetch(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',  // <- Este es el header que necesitas
-                'Authorization': `Bearer ${token}`, // Enviar el token
-                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-            },
-            body: JSON.stringify({}),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((errorData) => {
-                        throw new Error(errorData.message || 'Error ');
-                    });
-                }
-                return response.json();
-            })
-            .then((data) => {
-                toast.success('Documentos enviados correctamente', { id: toastId });
-                return data.data;
-            })
-            .catch((error) => {
-                // Manejo adicional de errores, si lo requieres
-                toast.error('Error al enviar documentos', { id: toastId });
-                throw error;
-            })
-            .finally(() => {
-                console.log('  finalizado');
-            });
-    };
-
-
 
     const handleOnClickResetSelectedDocs = () => {
         setSelectedDocs({
             customer: [],
             transport: [],
-            salesPerson: []
-
+            salesperson: []
         });
     }
 
     return (
         <div className='h-full pb-2'>
             <Card className='h-full flex flex-col'>
-                {/*  <CardHeader>
-                    <CardTitle className="text-lg font-medium">Documentación</CardTitle>
-                    <CardDescription>Envía los documentos a los diferentes destinatarios</CardDescription>
-                </CardHeader> */}
                 <CardContent className="flex-1 overflow-y-auto py-6 ">
                     <div className="space-y-6 ">
-                        {/* Sección 1: Selección por Destinatario */}
                         <div>
-
-
                             <Card className="border  shadow-sm " >
                                 <CardHeader className="p-4 pb-2">
                                     <CardTitle className="text-lg">
@@ -407,17 +266,38 @@ const OrderDocuments = () => {
                                                 <CardContent className="p-3 pt-0 ">
                                                     {/* Información de contacto */}
                                                     <div className="mb-2">
-                                                        <p className="text-xs font-medium">Correo: {recipient.email}</p>
-                                                        {recipient.copyEmail && (
-                                                            <p className="text-xs font-medium">CC: {recipient.copyEmail}</p>
-                                                        )}
+                                                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                                            <ul className="list-disc px-5 pl-8">
+                                                                {recipient.email.map((email) => (
+                                                                    <li key={email} className="text-xs font-medium">
+                                                                        <a href={`mailto:${email}`} className=" hover:underline">
+                                                                            {email}
+                                                                        </a>
+                                                                    </li>
+                                                                ))}
+
+                                                                {recipient.copyEmail.map((copyEmail) => (
+                                                                    <li key={copyEmail} className="text-xs font-medium">
+                                                                        <div className="flex gap-1 items-center">
+                                                                            <Badge variant="outline" className="px-1">CC</Badge>
+                                                                            <a href={`mailto:${copyEmail}`} className=" hover:underline">
+                                                                                {copyEmail}
+                                                                            </a>
+                                                                        </div>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+
+
+                                                        </p>
+
                                                     </div>
                                                 </CardContent>
 
                                                 <Separator />
 
                                                 <CardFooter className="p-3 min-h-[80px] flex flex-col items-start flex-grow">
-                                                    <p className="text-xs font-medium text-gray-500 mb-2">Documentos:</p>
+                                                    <p className="text-xs font-medium text-gray-500 mb-2">Documentos</p>
                                                     {recipient.documents.length > 0 ? (
                                                         <div className="flex flex-wrap gap-2">
                                                             {recipient.documents.map((doc) => (
@@ -451,19 +331,20 @@ const OrderDocuments = () => {
 
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm font-medium">
-                                    {countSelectedDocuments()} documentos seleccionados
+                                    {numberOfSelectedDocuments} documentos seleccionados
                                 </p>
                                 <div className="flex items-center gap-2">
-                                    {selectedDocs &&
+                                    {numberOfSelectedDocuments > 0 &&
                                         <Button
                                             variant="outline"
                                             onClick={handleOnClickResetSelectedDocs}
+                                            className='animate-pulse'
                                         >
                                             <Ban className="h-4 w-4 mr-2" />
                                             Cancelar selección
                                         </Button>
                                     }
-                                    <Button onClick={sendSelectedDocuments}>
+                                    <Button onClick={handleOnClickSendSelectedDocuments}>
                                         <Send className="h-4 w-4 mr-2" />
                                         Enviar selección
                                     </Button>
@@ -538,7 +419,7 @@ const OrderDocuments = () => {
                                         </div>
                                     </CardContent>
                                     <CardFooter className="p-4 pt-0">
-                                        <Button onClick={sendMultiple}>
+                                        <Button onClick={handleOnClickSendMultiple}>
                                             <Send className="h-4 w-4 mr-2" />
                                             Enviar documento
                                         </Button>
@@ -580,7 +461,7 @@ const OrderDocuments = () => {
                                         </ul>
                                     </CardContent>
                                     <CardFooter className="p-4 pt-0">
-                                        <Button onClick={sendStandarDocuments} className="w-full">
+                                        <Button onClick={handleOnClickSendStandarDocuments} className="w-full">
                                             <Send className="h-3.5 w-3.5 mr-1" />
                                             Enviar Estándar
                                         </Button>

@@ -107,7 +107,7 @@ export function useOrder(orderId) {
             .catch((err) => setError(err))
             .finally();
 
-        
+
 
     }, [orderId, status]);
 
@@ -246,6 +246,68 @@ export function useOrder(orderId) {
         }
     };
 
+    /*--------------------------*/
+
+    const sendCustomDocuments = async (json) => {
+
+        const token = session?.user?.accessToken;
+
+        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',  // <- Este es el header que necesitas
+                'Authorization': `Bearer ${token}`, // Enviar el token
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+            body: JSON.stringify(json),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message || 'Error ');
+                    });
+                }
+                return response.json();
+            })
+            .catch((error) => {
+                throw error;
+            })
+    };
+
+    const sendStandarDocuments = async () => {
+        const token = session?.user?.accessToken;
+
+        return fetch(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',  // <- Este es el header que necesitas
+                'Authorization': `Bearer ${token}`, // Enviar el token
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message || 'Error ');
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                return data.data;
+            })
+            .catch((error) => {
+                throw error;
+            })
+    };
+
+    const sendDocuments = {
+        customDocuments: sendCustomDocuments,
+        standarDocuments: sendStandarDocuments,
+    }
+
     const options = {
         taxOptions,
         productOptions,
@@ -262,5 +324,6 @@ export function useOrder(orderId) {
         options,
         plannedProductDetailActions,
         plannedProductDetails,
+        sendDocuments,
     };
 }
