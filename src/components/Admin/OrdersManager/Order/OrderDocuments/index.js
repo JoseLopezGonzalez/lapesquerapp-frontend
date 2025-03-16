@@ -36,8 +36,9 @@ const OrderDocuments = () => {
 
     // Estado para los documentos seleccionados (estructura de objetos)
     const [selectedDocs, setSelectedDocs] = useState({
-        cliente: { "doc-trazabilidad": false, "albaran-entrega": false },
-        transporte: { "doc-transporte": false, "certificado-calidad": false },
+        customer: [],
+        transport: [],
+        salesperson: []
     });
 
     // Estado para el envío múltiple (documento y destinatarios marcados)
@@ -51,37 +52,37 @@ const OrderDocuments = () => {
     // Datos de ejemplo
     const recipients = [
         {
-            id: "cliente",
-            name: "Cliente",
+            name: "customer",
+            label: "Cliente",
             icon: <User className="h-4 w-4" />,
             email: "cliente@empresa.com",
             copyEmail: "supervisión@empresa.com",
             documents: [
-                { id: "loading-note", name: "Nota de carga", status: 1 },
-                { id: "packing-list", name: "Packing List", status: 0 },
+                { name: "loading-note", label: "Nota de carga" },
+                { name: "packing-list", label: "Packing List" },
             ],
         },
         {
-            id: "transporte",
-            name: "Transporte",
+            name: "transport",
+            label: "Transporte",
             icon: <Truck className="h-4 w-4" />,
             email: "logistica@transportesxyz.com",
             copyEmail: "seguimiento@transportesxyz.com",
             documents: [
-                { id: "loading-note", name: "Nota de carga", status: 0 },
-                { id: "packing-list", name: "Packing List", status: 1 },
-                { id: "CMR", name: "Documento de transporte (CMR)", status: 1 },
+                { name: "loading-note", label: "Nota de carga" },
+                { name: "packing-list", label: "Packing List" },
+                { name: "CMR", label: "Documento de transporte (CMR)" },
             ],
         },
         {
-            id: "comercial",
-            name: "Comercial",
+            name: "salesperson",
+            label: "Comercial",
             icon: <Users className="h-4 w-4" />,
             email: "comercial@empresa.com",
             copyEmail: "",
             documents: [
-                { id: "loading-note", name: "Nota de carga", status: 1 },
-                { id: "packing-list", name: "Packing List", status: 0 },
+                { name: "loading-note", label: "Nota de carga" },
+                { name: "packing-list", label: "Packing List" },
             ],
         },
     ];
@@ -94,21 +95,32 @@ const OrderDocuments = () => {
     ];
 
     // Alternar la selección de un documento para un destinatario
-    const toggleDocumentSelection = (recipientId, documentId) => {
-        setSelectedDocs((prev) => ({
-            ...prev,
-            [recipientId]: {
-                ...prev[recipientId],
-                [documentId]: !prev[recipientId]?.[documentId],
-            },
-        }));
+    const toggleDocumentSelection = (recipientName, documentName) => {
+
+        const isSelected = selectedDocs[recipientName].includes(documentName);
+
+        if (isSelected) {
+            setSelectedDocs((prev) => ({
+                ...prev,
+                [recipientName]: prev[recipientName].filter((doc) => doc !== documentName),
+            }));
+        } else {
+            setSelectedDocs((prev) => ({
+                ...prev,
+                [recipientName]: [
+                    ...prev[recipientName],
+                    documentName,
+                ],
+            }));
+        }
+
     };
 
     // Alternar la selección de un destinatario en envío múltiple
-    const toggleRecipientSelection = (recipientId) => {
+    const toggleRecipientSelection = (recipientName) => {
         setSelectedRecipients((prev) => ({
             ...prev,
-            [recipientId]: !prev[recipientId],
+            [recipientName]: !prev[recipientName],
         }));
     };
 
@@ -204,33 +216,103 @@ const OrderDocuments = () => {
         // Aquí iría la lógica para enviar y actualizar estados
     };
 
+    const sendSelectedDocuments = async () => {
+
+
+        /* format:
+        {
+  "documents": [
+    {
+      "type": "nota_carga",
+      "recipients": ["cliente", "comercial"]
+    },
+    {
+      "type": "packing_list",
+      "recipients": ["transporte"]
+    }
+  ]
+}
+
+         */
+
+        /* Agrupar por recipients por documento */
+        const recipientsByDocuments = Object.entries(selectedDocs).reduce((acc, [recipient, documents]) => {
+            documents.forEach((doc) => {
+                if (!acc[doc]) {
+                    acc[doc] = [];
+                }
+                acc[doc].push(recipient);
+            });
+            return acc;
+        }, {});
+
+        const json = {
+            documents: Object.entries(recipientsByDocuments).map(([doc, recipients]) => ({
+                type: doc,
+                recipients
+            }))
+        }
+
+        console.log('json', json);
+
+
+        /* setLoading(true); */
+        const token = session?.user?.accessToken;
+        const toastId = toast.loading("Enviando documentos...", darkToastTheme);
+
+        console.log('json', json);
+
+        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',  // <- Este es el header que necesitas
+                'Authorization': `Bearer ${token}`, // Enviar el token
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+            body: JSON.stringify(json),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message || 'Error ');
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                toast.success('Documentos enviados correctamente', { id: toastId });
+                handleOnClickResetSelectedDocs();
+            })
+            .catch((error) => {
+                // Manejo adicional de errores, si lo requieres
+                toast.error('Error al enviar documentos', { id: toastId });
+                throw error;
+            })
+            .finally(() => {
+                console.log('  finalizado');
+
+            });
+        // Aquí iría la lógica para enviar y actualizar estados
+    };
+
+
 
 
     // Contar documentos seleccionados
     const countSelectedDocuments = () => {
-        let count = 0;
-        Object.values(selectedDocs).forEach((docs) => {
-            Object.values(docs).forEach((selected) => {
-                if (selected) count++;
-            });
-        });
-        return count;
+        /* contar selectedDocuments uniendo el tamaño de customer, transport, salesperson */
+        return Object.values(selectedDocs).reduce((acc, curr) => acc + Object.values(curr).filter(Boolean).length, 0);
     };
 
-    // Renderizar indicador de estado (simplificado)
-    const renderStatusIndicator = (status) => {
-        return status === 1 ? <CheckCheck className="h-3.5 w-3.5" /> : null;
-    };
+
 
     // Determinar la clase de color para el badge según el estado
-    const getBadgeClass = (recipientId, docId, status) => {
-        const isSelected = selectedDocs[recipientId]?.[docId];
+    const getBadgeClass = (recipientName, docName) => {
+        const isSelected = selectedDocs[recipientName]?.includes(docName);
         if (isSelected) {
             return "bg-primary text-primary-foreground hover:bg-primary/90 border-primary";
         }
-        return status === 1
-            ? " text-sky-500  "
-            : "  ";
     };
 
     const { data: session, status } = useSession();
@@ -272,6 +354,17 @@ const OrderDocuments = () => {
             });
     };
 
+
+
+    const handleOnClickResetSelectedDocs = () => {
+        setSelectedDocs({
+            customer: [],
+            transport: [],
+            salesPerson: []
+
+        });
+    }
+
     return (
         <div className='h-full pb-2'>
             <Card className='h-full flex flex-col'>
@@ -307,7 +400,7 @@ const OrderDocuments = () => {
                                                         <div className=" p-1.5 rounded-full">
                                                             {recipient.icon}
                                                         </div>
-                                                        <CardTitle className="text-base">{recipient.name}</CardTitle>
+                                                        <CardTitle className="text-base">{recipient.label}</CardTitle>
                                                     </div>
                                                 </CardHeader>
 
@@ -329,17 +422,17 @@ const OrderDocuments = () => {
                                                         <div className="flex flex-wrap gap-2">
                                                             {recipient.documents.map((doc) => (
                                                                 <Badge
-                                                                    key={doc.id}
+                                                                    key={doc.name}
                                                                     variant="outline"
-                                                                    className={`cursor-pointer flex items-center gap-1.5 py-1 px-2.5 font-medium text-xs rounded-md shadow-sm transition-all ${getBadgeClass(
-                                                                        recipient.id,
-                                                                        doc.id,
-                                                                        doc.status
-                                                                    )}`}
-                                                                    onClick={() => toggleDocumentSelection(recipient.id, doc.id)}
+                                                                    className={`cursor-pointer flex items-center gap-1.5 py-1 px-2.5 font-medium text-xs rounded-md shadow-sm transition-all 
+                                                                        ${getBadgeClass(
+                                                                        recipient.name,
+                                                                        doc.name,
+                                                                    )}
+                                                                    `}
+                                                                    onClick={() => toggleDocumentSelection(recipient.name, doc.name)}
                                                                 >
-                                                                    {doc.name}
-                                                                    {renderStatusIndicator(doc.status)}
+                                                                    {doc.label}
                                                                 </Badge>
                                                             ))}
                                                         </div>
@@ -364,13 +457,13 @@ const OrderDocuments = () => {
                                     {selectedDocs &&
                                         <Button
                                             variant="outline"
-                                            onClick={() => setSelectedDocs({ cliente: {}, transporte: {} })}
+                                            onClick={handleOnClickResetSelectedDocs}
                                         >
                                             <Ban className="h-4 w-4 mr-2" />
                                             Cancelar selección
                                         </Button>
                                     }
-                                    <Button onClick={sendAllSelected}>
+                                    <Button onClick={sendSelectedDocuments}>
                                         <Send className="h-4 w-4 mr-2" />
                                         Enviar selección
                                     </Button>
@@ -387,7 +480,7 @@ const OrderDocuments = () => {
                                 <Card className="border  shadow-sm">
                                     <CardHeader className="p-4 pb-2">
                                         <CardTitle className="text-lg">
-                                            Envío Múltiple de Documentos
+                                            Envío Múltiple Destinatario
                                         </CardTitle>
                                         <p className="text-gray-500 text-sm">
                                             Seleccione un documento para enviarlo a múltiples destinatarios
@@ -420,23 +513,23 @@ const OrderDocuments = () => {
                                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                                     {recipients.map((recipient) => (
                                                         <div
-                                                            key={recipient.id}
-                                                            className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.id]
-                                                                ? "border-primary bg-primary/10"
+                                                            key={recipient.name}
+                                                            className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.name]
+                                                                ? " bg-primary/20"
                                                                 : ""
                                                                 }`}
-                                                            onClick={() => toggleRecipientSelection(recipient.id)}
+                                                            onClick={() => toggleRecipientSelection(recipient.name)}
                                                         >
                                                             <div
-                                                                className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.id]
-                                                                    ? "bg-primary/20"
+                                                                className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.name]
+                                                                    ? ""
                                                                     : ""
                                                                     }`}
                                                             >
                                                                 {recipient.icon}
                                                             </div>
                                                             <span className="text-sm font-medium">
-                                                                {recipient.name}
+                                                                {recipient.label}
                                                             </span>
                                                         </div>
                                                     ))}
@@ -487,7 +580,7 @@ const OrderDocuments = () => {
                                         </ul>
                                     </CardContent>
                                     <CardFooter className="p-4 pt-0">
-                                        <Button onClick={sendStandarDocuments} className="w-full"> {/* onClick={sendStandard} */}
+                                        <Button onClick={sendStandarDocuments} className="w-full">
                                             <Send className="h-3.5 w-3.5 mr-1" />
                                             Enviar Estándar
                                         </Button>
