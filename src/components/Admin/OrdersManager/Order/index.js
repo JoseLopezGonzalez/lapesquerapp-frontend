@@ -49,10 +49,11 @@ const OrderContent = () => {
           <div
             className={`
                 p-9 h-full w-full bg-gradient-to-b 
-                ${order.status === 'pending' && 'from-orange-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90%'}
-                ${order.status === 'finished' && 'from-green-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90%'}`
+                bg-neutral-950   rounded-2xl
+                ${order.status === 'pending' && 'border-orange-500/30'} 
+                ${order.status === 'finished' && 'border-green-500/30'}`
             }
-          >
+          >{/*  from-orange-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90% */}
             <div className='h-full flex flex-col'>
 
               {/* Order  Header */}

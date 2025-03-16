@@ -9,6 +9,7 @@ import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
 import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
+import { UserIcon } from 'lucide-react';
 
 export default function Navbar() {
     const currentPath = usePathname();
@@ -145,12 +146,9 @@ export default function Navbar() {
                 <div className="flex flex-shrink-0 p-4">
                     <div className="group block w-full flex-shrink-0">
                         <div className="flex items-center">
-                            <div>
-                                <img
-                                    className="inline-block h-9 w-9 rounded-full"
-                                    src="/app/user.png"
-                                    alt=""
-                                />
+                            <div className='bg-neutral-400 rounded-xl p-1'>
+                                <UserIcon className="h-8 w-8 text-neutral-900 dark:text-white" />
+
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm font-medium text-neutral dark:text-white inline-flex items-center justify-center">
