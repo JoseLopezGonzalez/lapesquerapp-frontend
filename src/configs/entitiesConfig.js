@@ -110,6 +110,7 @@ export const configs = {
       title: "No existen pedidos según los filtros",
       description: "Modifica los filtros o crea un nuevo pedido.",
     },
+    perPage: 12,
     endpoint: "orders",
     viewRoute: "/admin/orders/:id",
     deleteEndpoint: "/orders/:id",

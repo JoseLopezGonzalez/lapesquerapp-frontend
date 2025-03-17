@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { IoFilter } from 'react-icons/io5';
 import { GenericFiltersModal } from './GenericFiltersModal';
+import { Button } from '@/components/ui/button';
 
 export const GenericFilters = ({ data }) => {
     const { configFiltersGroup, updateFilters } = data;
@@ -139,10 +140,9 @@ export const GenericFilters = ({ data }) => {
     return (
         <>
             <div className="flex justify-between items-center">
-                <button
+                <Button
                     onClick={openModal}
-                    type="button"
-                    className="py-2 px-3 flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm bg-neutral-800 border-neutral-700/50 text-white hover:bg-neutral-600"
+                    variant="secondary"
                 >
                     <IoFilter className="h-4 w-4" />
                     <span className='hidden xl:flex'>Filtros</span>
@@ -151,7 +151,7 @@ export const GenericFilters = ({ data }) => {
                             {numberOfActiveFilters}
                         </span>
                     )}
-                </button>
+                </Button>
             </div>
             <GenericFiltersModal
                 filtersGroup={localFiltersGroup}

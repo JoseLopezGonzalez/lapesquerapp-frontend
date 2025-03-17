@@ -16,6 +16,7 @@ import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 import { getSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 
 
 
@@ -29,7 +30,7 @@ const initialPaginationMeta = {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    perPage: 10,
+    perPage: 12,
 };
 
 // Helper function to handle nested paths
@@ -168,21 +169,24 @@ export default function EntityClient({ config }) {
 
     const router = useRouter();
 
-    
+
 
     // Fetch Data
     useEffect(() => {
         if (!config?.endpoint) return;
-    
+
         const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
             const queryString = formatFilters(filters, paginationMeta);
-            
-            const url = `${API_URL_V2}${config.endpoint}?${queryString}`;
-    
+
+            /* añadir al queryString el perPage */
+            const perPage = config?.perPage || 12;
+
+            const url = `${API_URL_V2}${config.endpoint}?${queryString}&perPage=${perPage}`;
+
             try {
                 const session = await getSession(); // Obtener sesión actual
-    
+
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -191,7 +195,7 @@ export default function EntityClient({ config }) {
                         'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
                     },
                 });
-    
+
                 if (!response.ok) {
                     if (response.status === 401) {
                         throw new Error('No estás autenticado. Por favor, inicia sesión.');
@@ -201,9 +205,9 @@ export default function EntityClient({ config }) {
                     }
                     throw new Error(`Error: ${response.statusText}`);
                 }
-    
+
                 const result = await response.json();
-    
+
                 const processedRows = result.data.map((row) => {
                     const rowData = config.table.headers.reduce((acc, header) => {
                         acc[header.name] = header.path
@@ -211,7 +215,7 @@ export default function EntityClient({ config }) {
                             : row[header.name] || 'N/A';
                         return acc;
                     }, {});
-    
+
                     return {
                         ...rowData,
                         actions: {
@@ -229,7 +233,7 @@ export default function EntityClient({ config }) {
                         },
                     };
                 });
-    
+
                 setData({ loading: false, rows: processedRows });
                 setPaginationMeta({
                     currentPage: result.meta.current_page,
@@ -242,11 +246,11 @@ export default function EntityClient({ config }) {
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
-    
+
         fetchData();
     }, [config.endpoint, filters, paginationMeta.currentPage]);
-    
-    
+
+
 
     const handlePageChange = (newPage) => {
         setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));
@@ -261,7 +265,7 @@ export default function EntityClient({ config }) {
 
             const session = await getSession(); // Obtener sesión actual
 
-            
+
             const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
                 headers: {
@@ -426,25 +430,23 @@ export default function EntityClient({ config }) {
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (
                         <>
-                            <button
-                                type="button"
-                                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-red-700/50 text-red-500 hover:bg-neutral-800"
+                            <Button
                                 onClick={handleSelectedRowsDelete}
+                                variant='destructive'
                             >
                                 <TrashIcon className="h-4 w-4" aria-hidden="true" />
                                 <span className='hidden xl:flex'>Eliminar</span>
-                            </button>
+                            </Button>
 
                             {/* Reports */}
                             <Dropdown backdrop="opaque">
                                 <DropdownTrigger>
-                                    <button
-                                        type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                    <Button
+                                        variant='outline'
                                     >
                                         <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Reportes</span>
-                                    </button>
+                                    </Button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
                                     {config.reports?.map((reportOption) => (
@@ -461,13 +463,12 @@ export default function EntityClient({ config }) {
                             {/* Export */}
                             <Dropdown backdrop="opaque">
                                 <DropdownTrigger>
-                                    <button
-                                        type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900/50 border-sky-700/50 text-sky-500 hover:bg-neutral-800"
+                                    <Button
+                                        variant='outline'
                                     >
                                         <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Exportar</span>
-                                    </button>
+                                    </Button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
                                     {config.exports?.map((exportOption) => (
@@ -493,13 +494,12 @@ export default function EntityClient({ config }) {
                             {/* Reports */}
                             <Dropdown backdrop="opaque">
                                 <DropdownTrigger>
-                                    <button
-                                        type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
+                                    <Button
+                                        variant='outline'
                                     >
                                         <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Reportes</span>
-                                    </button>
+                                    </Button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
                                     {config.reports?.map((reportOption) => (
@@ -515,13 +515,12 @@ export default function EntityClient({ config }) {
                             {/* Export */}
                             <Dropdown backdrop="opaque">
                                 <DropdownTrigger>
-                                    <button
-                                        type="button"
-                                        className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border shadow-sm disabled:opacity-50 disabled:pointer-events-none bg-neutral-900 border-neutral-700 text-white hover:bg-neutral-800"
+                                    <Button
+                                        variant='outline'
                                     >
                                         <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
                                         <span className='hidden xl:flex'>Exportar</span>
-                                    </button>
+                                    </Button>
                                 </DropdownTrigger>
                                 <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
                                     {config.exports?.map((exportOption) => (
@@ -547,14 +546,12 @@ export default function EntityClient({ config }) {
                             updateFilters: (updatedFilters) => setFilters(updatedFilters),
                         }}
                     />
-                    <button
+                    <Button
                         onClick={() => router.push(config.createPath)}
-                        type="button"
-                        className="py-1.5 px-3 inline-flex items-center gap-1 text-sm rounded-lg bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none border-2 border-neutral-800"
                     >
                         <PlusIcon className="h-5 w-5" aria-hidden="true" />
                         Nuevo
-                    </button>
+                    </Button>
                 </Header>
                 <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} onSelectionChange={handleOnSelectionChange} />
                 <Footer>

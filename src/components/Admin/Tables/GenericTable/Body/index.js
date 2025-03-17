@@ -73,7 +73,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
 
     return (
         <div className="grow overflow-y-auto overflow-x-auto w-full">
-            <table className="min-w-full divide-y divide-neutral-700">
+            <table className="min-w-full divide-y divide-neutral-700/20"> {/* divide-y divide-neutral-700 */}
                 {/* Head sticky */}
                 <thead className="bg-black sticky top-0 z-10">
                     <tr>
@@ -108,10 +108,10 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                 </thead>
 
                 {/* Table Body */}
-                <tbody className="divide-y divide-neutral-700">
+                <tbody className="divide-y divide-neutral-700/20">
                     {data.loading ? (
                         // Skeleton rows for loading state
-                        [...Array(12)].map((_, index) => (
+                        [...Array(14)].map((_, index) => (
                             <tr key={index}>
                                 <td className="py-2 px-4">
                                     <Checkbox

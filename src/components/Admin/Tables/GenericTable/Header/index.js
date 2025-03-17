@@ -5,7 +5,7 @@ export const Header = ({data , children}) => {
     const { title, description } = data;
 
     return (
-        <div className="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b ">
+        <div className="px-6 py-4 pt-6 grid gap-3 md:flex md:justify-between md:items-center  ">
             <div>
                 <h2 className="text-xl font-semibold text-neutral-200">
                     {title}
