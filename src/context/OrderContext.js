@@ -7,9 +7,9 @@ import { useOrder } from '@/hooks/useOrder';
 const OrderContext = createContext();
 
 // Componente proveedor del contexto
-export function OrderProvider({ orderId, children }) {
+export function OrderProvider({ orderId, children ,onChange }) {
   // Se obtienen los datos del pedido utilizando el hook
-  const orderData = useOrder(orderId);
+  const orderData = useOrder(orderId , onChange);
 
   return (
     <OrderContext.Provider value={orderData}>

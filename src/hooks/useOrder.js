@@ -1,6 +1,6 @@
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
-import { createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, getOrder, updateOrder, updateOrderPlannedProductDetail } from '@/services/orderService';
+import { createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, getOrder, setOrderStatus, updateOrder, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
@@ -54,7 +54,7 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     return Array.from(resultMap.values());
 };
 
-export function useOrder(orderId) {
+export function useOrder(orderId , onChange) {
     const { data: session, status } = useSession();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -132,6 +132,21 @@ export function useOrder(orderId) {
         updateOrder(orderId, updateData, token)
             .then((updated) => {
                 setOrder(updated);
+                onChange();
+                return updated;
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    };
+
+    const updateOrderStatus = async (status) => {
+        const token = session?.user?.accessToken;
+        setOrderStatus(orderId, status, token)
+            .then((updated) => {
+                setOrder(updated);
+                onChange();
                 return updated;
             })
             .catch((err) => {
@@ -325,5 +340,6 @@ export function useOrder(orderId) {
         plannedProductDetailActions,
         plannedProductDetails,
         sendDocuments,
+        updateOrderStatus,
     };
 }

@@ -7,7 +7,6 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import Order from './Order';
 import { getActiveOrders } from '@/services/orderService';
 
-const examplesOrders = examples.data;
 
 const initialCategories = [
     {
@@ -34,14 +33,15 @@ export default function OrdersManager() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [loading, setLoading] = useState(true);
+    const [reload, setReload] = useState(false);
+
+   
+    const handleOnChange = () => {
+        setTimeout(() => setReload(prev => !prev), 0);
+    }
 
     useEffect(() => {
-        /* Simular carga de datos */
-        /*  setTimeout(() => {
-             setOrders(examplesOrders);
-             setLoading(false);
-         }, 2000); */
-
+        console.log('OrdersManager - useEffect');
         getActiveOrders()
             .then((data) => {
                 setOrders(data);
@@ -51,9 +51,7 @@ export default function OrdersManager() {
                 console.error('Error al obtener los pedidos activos', error);
                 setLoading(false);
             });
-
-
-    }, [])
+    }, [reload]);
 
     const filterOrders = orders.filter((order) => {
         /* Añadir a order current, true o flase si coincide con selectedOrder */
@@ -108,7 +106,6 @@ export default function OrdersManager() {
         setSelectedOrder(null);
     }
 
-    console.log('selectedOrder', selectedOrder);
 
 
     return (
@@ -142,7 +139,7 @@ export default function OrdersManager() {
                         <div className='grow  lg:pl-0'>
                             {selectedOrder ? (
                                 <div className='h-full text-white bg-neutral-950 rounded-2xl overflow-hidden'>
-                                    <Order orderId={selectedOrder} />
+                                    <Order orderId={selectedOrder} onChange={handleOnChange} />
                                 </div>
                             ) : (
                                 <div className='h-full  rounded-3xl p-7 flex flex-col justify-center items-center bg-black/20'>
