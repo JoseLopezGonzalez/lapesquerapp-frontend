@@ -12,155 +12,16 @@ import { useOrderContext } from '@/context/OrderContext';
 
 
 
-const documents = [
-    {
-        name: 'loading-note',
-        label: 'Nota de Carga',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
-    },
-    {
-        name: 'restricted-loading-note',
-        label: 'Nota de Carga (Restringida)',
-        types: ['pdf'],
-        fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
-    },
-    {
-        name: 'traceability-document',
-        label: 'Documento de trazabilidad',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
-    },
-    {
-        name: 'order-cmr',
-        label: 'Documento de transporte (CMR)',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
-    },
-    {
-        name: 'order-confirmation-document',
-        label: 'Documento confirmación de pedido',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
-    },
-    {
-        name: 'order-signs',
-        label: 'Letreros de transporte',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
-    },
-    {
-        name: 'order-packing-list',
-        label: 'Packing List',
-        types: ['pdf', 'xls'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
-    },
-    {
-        name: 'order-sheet',
-        label: 'Hoja de pedido',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Productos'],
-    },
-    {
-        name: 'article-report',
-        label: 'Reporte de Artículos',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
-    },
-    {
-        name: 'pallet-report',
-        label: 'Reporte de Palets',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
-    },
-    {
-        name: 'lots-report',
-        label: 'Reporte de Lotes',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
-    },
-    {
-        name: 'boxes-report',
-        label: 'Reporte de Cajas',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Cajas', 'Productos'],
-    },
-    {
-        name: 'logs-differences-report',
-        label: 'Reporte Logs de diferencias',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
-    },
-    {
-        name: 'A3ERP-sales-delivery-note',
-        label: 'Albarán de venta A3ERP',
-        types: ['xlsx'],
-        fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
-    },
-    {
-        name: 'valued-loading-note',
-        label: 'Nota de carga valorada',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
-    },
-    {
-        name: 'order-confirmation',
-        label: 'Confirmación de pedido',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
-    },
-    {
-        name: 'transport-pickup-request',
-        label: 'Solicitud de recogida de transporte',
-        types: ['pdf'],
-        fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
-    },
-
-];
-
-
-const fastExport = [
-    {
-        name: 'order-sheet',
-        label: 'Hoja de pedido',
-        type: 'pdf',
-    },
-    {
-        name: 'loading-note',
-        label: 'Nota de carga',
-        type: 'pdf',
-    },
-    {
-        name: 'restricted-loading-note',
-        label: 'Nota de carga (Restringida)',
-        type: 'pdf',
-    },
-    {
-        name: 'order-cmr',
-        label: 'Documento de transporte (CMR)',
-        type: 'pdf',
-    },
-    {
-        name: 'order-signs',
-        label: 'Letreros de transporte',
-        type: 'pdf',
-    },
-    {
-        name: 'order-packing-list',
-        label: 'Packing List',
-        type: 'pdf',
-    },
-]
 
 const OrderExport = () => {
 
-    const { exportDocument } = useOrderContext();
-    const [selectedDocument, setSelectedDocument] = useState(documents[0]?.name || '');
-    const [selectedType, setSelectedType] = useState(documents[0]?.types[0] || '');
+    const { exportDocument ,  exportDocuments, fastExportDocuments } = useOrderContext();
+    const [selectedDocument, setSelectedDocument] = useState(exportDocuments[0]?.name || '');
+    const [selectedType, setSelectedType] = useState(exportDocuments[0]?.types[0] || '');
 
 
     useEffect(() => {
-        setSelectedType(documents.find((doc) => doc.name === selectedDocument)?.types[0])
+        setSelectedType(exportDocuments.find((doc) => doc.name === selectedDocument)?.types[0])
     }, [selectedDocument])
 
     const handleOnClickExportAll = async () => {
@@ -174,7 +35,7 @@ const OrderExport = () => {
     }
 
     const handleOnClickSelectExport = () => {
-        const documentLabel = documents.find((doc) => doc.name === selectedDocument)?.label;
+        const documentLabel = exportDocuments.find((doc) => doc.name === selectedDocument)?.label;
         exportDocument(selectedDocument, selectedType, documentLabel);
     }
 
@@ -192,7 +53,7 @@ const OrderExport = () => {
                             <div className="text-sm font-medium">Exportación rápida</div>
                             <div className="grid gap-2">
                                 {
-                                    fastExport.map((doc) => (
+                                    fastExportDocuments.map((doc) => (
                                         <Button
                                             key={doc.name}
                                             variant="outline"
@@ -219,7 +80,7 @@ const OrderExport = () => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {documents.map((doc) => (
+                                            {exportDocuments.map((doc) => (
                                                 <SelectItem key={doc.name} value={doc.name}>
                                                     {doc.label}
                                                 </SelectItem>
@@ -233,7 +94,7 @@ const OrderExport = () => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent align="end">
-                                            {documents.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
+                                            {exportDocuments.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
                                                 <SelectItem key={type} value={type} >
                                                     {type}
                                                 </SelectItem>
@@ -243,7 +104,7 @@ const OrderExport = () => {
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {documents.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
+                                {exportDocuments.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
                                     <Badge key={field} variant="outline">{field}</Badge>
                                 ))}
                             </div>

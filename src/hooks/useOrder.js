@@ -54,13 +54,14 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     return Array.from(resultMap.values());
 };
 
-export function useOrder(orderId , onChange) {
+export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [productOptions, setProductOptions] = useState([]);
     const [taxOptions, setTaxOptions] = useState([]);
+    const [activeTab, setActiveTab] = useState('details');
 
 
     const pallets = order?.pallets || [];
@@ -68,7 +69,7 @@ export function useOrder(orderId , onChange) {
     useEffect(() => {
         // Espera a que la sesión esté lista
         if (!orderId || status === "loading") return; // Espera a que la sesión esté lista
-
+        setActiveTab('details');
 
         if (!orderId) return;
         console.log('useOrder', orderId, status);
@@ -328,6 +329,148 @@ export function useOrder(orderId , onChange) {
         productOptions,
     }
 
+    const exportDocuments = [
+        {
+            name: 'loading-note',
+            label: 'Nota de Carga',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
+        },
+        {
+            name: 'restricted-loading-note',
+            label: 'Nota de Carga (Restringida)',
+            types: ['pdf'],
+            fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
+        },
+        {
+            name: 'traceability-document',
+            label: 'Documento de trazabilidad',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
+        },
+        {
+            name: 'order-cmr',
+            label: 'Documento de transporte (CMR)',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
+        },
+        {
+            name: 'order-confirmation-document',
+            label: 'Documento confirmación de pedido',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
+        },
+        {
+            name: 'order-signs',
+            label: 'Letreros de transporte',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
+        },
+        {
+            name: 'order-packing-list',
+            label: 'Packing List',
+            types: ['pdf', 'xls'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
+        },
+        {
+            name: 'order-sheet',
+            label: 'Hoja de pedido',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Productos'],
+        },
+        {
+            name: 'article-report',
+            label: 'Reporte de Artículos',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+        },
+        {
+            name: 'pallet-report',
+            label: 'Reporte de Palets',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
+        },
+        {
+            name: 'lots-report',
+            label: 'Reporte de Lotes',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
+        },
+        {
+            name: 'boxes-report',
+            label: 'Reporte de Cajas',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Cajas', 'Productos'],
+        },
+        {
+            name: 'logs-differences-report',
+            label: 'Reporte Logs de diferencias',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
+        },
+        {
+            name: 'A3ERP-sales-delivery-note',
+            label: 'Albarán de venta A3ERP',
+            types: ['xlsx'],
+            fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
+        },
+        {
+            name: 'valued-loading-note',
+            label: 'Nota de carga valorada',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+        },
+        {
+            name: 'order-confirmation',
+            label: 'Confirmación de pedido',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+        },
+        {
+            name: 'transport-pickup-request',
+            label: 'Solicitud de recogida de transporte',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
+        },
+
+    ];
+
+
+    const fastExportDocuments = [
+        {
+            name: 'order-sheet',
+            label: 'Hoja de pedido',
+            type: 'pdf',
+        },
+        {
+            name: 'loading-note',
+            label: 'Nota de carga',
+            type: 'pdf',
+        },
+        {
+            name: 'restricted-loading-note',
+            label: 'Nota de carga (Restringida)',
+            type: 'pdf',
+        },
+        {
+            name: 'order-cmr',
+            label: 'Documento de transporte (CMR)',
+            type: 'pdf',
+        },
+        {
+            name: 'order-signs',
+            label: 'Letreros de transporte',
+            type: 'pdf',
+        },
+        {
+            name: 'order-packing-list',
+            label: 'Packing List',
+            type: 'pdf',
+        },
+    ];
+
+
+
     return {
         pallets,
         order,
@@ -341,5 +484,9 @@ export function useOrder(orderId , onChange) {
         plannedProductDetails,
         sendDocuments,
         updateOrderStatus,
+        exportDocuments,
+        fastExportDocuments,
+        activeTab,
+        setActiveTab
     };
 }
