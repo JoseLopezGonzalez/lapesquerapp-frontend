@@ -1,16 +1,14 @@
 'use client'
 
 import { Card, CardContent } from "@/components/ui/card";
-
+import { COMPANY_NAME } from "@/configs/config";
 import { useOrderContext } from "@/context/OrderContext";
-
 
 const OrderMap = () => {
     const { order } = useOrderContext();
 
     const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
-
-    const origin = 'Congelados Brisamar S.L. '
+    const origin = COMPANY_NAME
 
     return (
         <div className='h-full pb-2'>

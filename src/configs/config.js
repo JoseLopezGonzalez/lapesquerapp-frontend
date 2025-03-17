@@ -8,3 +8,7 @@ export const API_URL_V2 = `${API_URL}v2/`;
 export const LOGIN_FORM_LOGO = '/brisapp.svg'; 
 
 export const NAVBAR_LOGO = '/logos/blueapp-logo-horizontal.png';
+
+/* Nombre de empresa */
+export const COMPANY_NAME = 'Congelados Brisamar S.L.';
+

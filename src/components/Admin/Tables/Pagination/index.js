@@ -48,8 +48,8 @@ export const Pagination = ({ meta, onPageChange }) => {
     return (
         <div className="w-full flex flex-col gap-4 sm:gap-0 sm:flex-row justify-between sm:items-center">
             <div>
-                <p className="text-sm text-gray-600 dark:text-neutral-400">
-                    <span className="font-semibold text-gray-800 dark:text-neutral-200 mr-1">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 mr-1">
                         {totalElements}
                     </span>
                     resultados
@@ -63,8 +63,8 @@ export const Pagination = ({ meta, onPageChange }) => {
                             disabled={currentPage === 1}
                             className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight border border-e-0 rounded-s-lg  border-neutral-700 text-neutral-400  
                                 ${currentPage === 1
-                                    ? "cursor-not-allowed text-gray-400 bg-neutral-900"
-                                    : "text-gray-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
+                                    ? "cursor-not-allowed text-neutral-400 bg-neutral-900"
+                                    : "text-neutral-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
                                 } `}
                         >
                             <svg className="w-2.5 h-2.5 text-neutral-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 10 16">
@@ -78,8 +78,8 @@ export const Pagination = ({ meta, onPageChange }) => {
                             disabled={currentPage === 1}
                             className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight border  border-neutral-700 text-neutral-400  
                                 ${currentPage === 1
-                                    ? "cursor-not-allowed text-gray-400 bg-neutral-900"
-                                    : "text-gray-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
+                                    ? "cursor-not-allowed text-neutral-400 bg-neutral-900"
+                                    : "text-neutral-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
                                 } `}
                         >
                             <svg className="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
@@ -93,8 +93,8 @@ export const Pagination = ({ meta, onPageChange }) => {
                                 onClick={() => handleChangePage(page)}
                                 className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight border  border-neutral-700 text-neutral-400  
                                         ${page === currentPage
-                                        ? "cursor-not-allowed text-gray-400 bg-neutral-900"
-                                        : "text-gray-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
+                                        ? "cursor-not-allowed text-neutral-400 bg-neutral-900"
+                                        : "text-neutral-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
                                     } `}
                             >
                                 {page}
@@ -107,8 +107,8 @@ export const Pagination = ({ meta, onPageChange }) => {
                             disabled={currentPage === totalPages}
                             className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight border  border-neutral-700 text-neutral-400  
                                 ${currentPage === totalPages
-                                    ? "cursor-not-allowed text-gray-400 bg-neutral-900"
-                                    : "text-gray-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
+                                    ? "cursor-not-allowed text-neutral-400 bg-neutral-900"
+                                    : "text-neutral-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
                                 } `}
                         >
                             <svg className="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
@@ -122,8 +122,8 @@ export const Pagination = ({ meta, onPageChange }) => {
                             disabled={currentPage === totalPages}
                             className={`flex items-center justify-center px-3 h-8 ms-0 leading-tight border  rounded-e-lg  border-neutral-700 text-neutral-400  
                                 ${currentPage === totalPages
-                                    ? "cursor-not-allowed text-gray-400 bg-neutral-900"
-                                    : "text-gray-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
+                                    ? "cursor-not-allowed text-neutral-400 bg-neutral-900"
+                                    : "text-neutral-600 bg-neutral-800 hover:bg-neutral-700 hover:text-white "
                                 } `}
                         >
                             <svg className="w-2.5 h-2.5 text-neutral-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 10 16">

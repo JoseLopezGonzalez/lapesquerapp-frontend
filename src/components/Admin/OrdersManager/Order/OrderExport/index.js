@@ -79,7 +79,6 @@ const documents = [
         types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Lotes', 'Productos'],
     },
-    /* Boxes report */
     {
         name: 'boxes-report',
         label: 'Reporte de Cajas',
@@ -98,21 +97,18 @@ const documents = [
         types: ['xlsx'],
         fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
     },
-    /* valued Delivery Note */
     {
         name: 'valued-loading-note',
         label: 'Nota de carga valorada',
         types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
     },
-    /* order confirmation */
     {
         name: 'order-confirmation',
         label: 'Confirmación de pedido',
         types: ['pdf'],
         fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
     },
-    /* transport pickup request */
     {
         name: 'transport-pickup-request',
         label: 'Solicitud de recogida de transporte',
@@ -124,37 +120,31 @@ const documents = [
 
 
 const fastExport = [
-    /* Hoja de pedido */
     {
         name: 'order-sheet',
         label: 'Hoja de pedido',
         type: 'pdf',
     },
-    /* Nota de carga */
     {
         name: 'loading-note',
         label: 'Nota de carga',
         type: 'pdf',
     },
-    /* Nota de carga restringida */
     {
         name: 'restricted-loading-note',
         label: 'Nota de carga (Restringida)',
         type: 'pdf',
     },
-    /* Documento de transporte (CMR) */
     {
         name: 'order-cmr',
         label: 'Documento de transporte (CMR)',
         type: 'pdf',
     },
-    /* Letreros de transporte */
     {
         name: 'order-signs',
         label: 'Letreros de transporte',
         type: 'pdf',
     },
-    /* PAcking list */
     {
         name: 'order-packing-list',
         label: 'Packing List',
@@ -173,7 +163,6 @@ const OrderExport = () => {
         setSelectedType(documents.find((doc) => doc.name === selectedDocument)?.types[0])
     }, [selectedDocument])
 
-    /* Funcion para exportar de una vex todos los docuentos de fastExport */
     const handleOnClickExportAll = async () => {
         for (const doc of fastExport) {
             await exportDocument(doc.name, doc.type, doc.label);

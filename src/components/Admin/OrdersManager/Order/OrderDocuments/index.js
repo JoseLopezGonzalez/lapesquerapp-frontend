@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useOrderContext } from "@/context/OrderContext";
-import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
@@ -30,14 +29,12 @@ const OrderDocuments = () => {
 
     const { order, sendDocuments } = useOrderContext();
 
-    // Estado para los documentos seleccionados (estructura de objetos)
     const [selectedDocs, setSelectedDocs] = useState({
         customer: [],
         transport: [],
         salesperson: []
     });
 
-    // Estado para el envío múltiple (documento y destinatarios marcados)
     const [selectedDocument, setSelectedDocument] = useState("");
     const [selectedRecipients, setSelectedRecipients] = useState({
         customer: false,
@@ -88,7 +85,6 @@ const OrderDocuments = () => {
         },
     ];
 
-    // Documentos disponibles para el envío múltiple
     const availableDocuments = [
         { id: "CMR", name: "CMR" },
         { id: "loading-note", name: "Nota de Carga" },
@@ -98,7 +94,6 @@ const OrderDocuments = () => {
         { id: 'transport-pickup-request', name: 'Solicitud de Recogida' },
     ];
 
-    // Alternar la selección de un documento para un destinatario
     const toggleDocumentSelection = (recipientName, documentName) => {
 
         const isSelected = selectedDocs[recipientName].includes(documentName);
@@ -120,7 +115,6 @@ const OrderDocuments = () => {
 
     };
 
-    // Alternar la selección de un destinatario en envío múltiple
     const toggleRecipientSelection = (recipientName) => {
         setSelectedRecipients((prev) => ({
             ...prev,
@@ -128,7 +122,6 @@ const OrderDocuments = () => {
         }));
     };
 
-    // Envío múltiple
     const handleOnClickSendMultiple = async () => {
         if (!selectedDocument) {
             toast.error("Por favor seleccione un documento", darkToastTheme);
@@ -214,7 +207,7 @@ const OrderDocuments = () => {
 
     const numberOfSelectedDocuments = Object.values(selectedDocs).reduce((acc, curr) => acc + Object.values(curr).filter(Boolean).length, 0);
 
-    // Determinar la clase de color para el badge según el estado
+
     const getBadgeClass = (recipientName, docName) => {
         const isSelected = selectedDocs[recipientName]?.includes(docName);
         if (isSelected) {
@@ -242,16 +235,15 @@ const OrderDocuments = () => {
                                     <CardTitle className="text-lg">
                                         Envío Personalizado de Documentos
                                     </CardTitle>
-                                    <p className="text-gray-500 text-sm">
+                                    <p className="text-neutral-500 text-sm">
                                         Haz una selección personalizada de los documentos a enviar
                                     </p>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-2 flex w-full">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
                                         {recipients.map((recipient) => (
                                             <Card
-                                                key={recipient.id}
+                                                key={recipient.name}
                                                 className="border  flex flex-col shadow-sm bg-neutral-900"
                                             >
                                                 <CardHeader className="flex flex-row items-center p-3 pb-2 ">
@@ -262,11 +254,9 @@ const OrderDocuments = () => {
                                                         <CardTitle className="text-base">{recipient.label}</CardTitle>
                                                     </div>
                                                 </CardHeader>
-
                                                 <CardContent className="p-3 pt-0 ">
-                                                    {/* Información de contacto */}
                                                     <div className="mb-2">
-                                                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                                        <div className="text-sm text-muted-foreground whitespace-pre-line">
                                                             <ul className="list-disc px-5 pl-8">
                                                                 {recipient.email.map((email) => (
                                                                     <li key={email} className="text-xs font-medium">
@@ -275,7 +265,6 @@ const OrderDocuments = () => {
                                                                         </a>
                                                                     </li>
                                                                 ))}
-
                                                                 {recipient.copyEmail.map((copyEmail) => (
                                                                     <li key={copyEmail} className="text-xs font-medium">
                                                                         <div className="flex gap-1 items-center">
@@ -287,17 +276,12 @@ const OrderDocuments = () => {
                                                                     </li>
                                                                 ))}
                                                             </ul>
-
-
-                                                        </p>
-
+                                                        </div>
                                                     </div>
                                                 </CardContent>
-
                                                 <Separator />
-
                                                 <CardFooter className="p-3 min-h-[80px] flex flex-col items-start flex-grow">
-                                                    <p className="text-xs font-medium text-gray-500 mb-2">Documentos</p>
+                                                    <p className="text-xs font-medium text-neutral-500 mb-2">Documentos</p>
                                                     {recipient.documents.length > 0 ? (
                                                         <div className="flex flex-wrap gap-2">
                                                             {recipient.documents.map((doc) => (
@@ -317,7 +301,7 @@ const OrderDocuments = () => {
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <p className="text-xs text-gray-500">
+                                                        <p className="text-xs text-neutral-500">
                                                             No hay documentos disponibles
                                                         </p>
                                                     )}
@@ -327,8 +311,6 @@ const OrderDocuments = () => {
                                     </div>
                                 </CardContent>
                             </Card>
-
-
                             <div className="mt-4 flex items-center justify-between">
                                 <p className="text-sm font-medium">
                                     {numberOfSelectedDocuments} documentos seleccionados
@@ -351,19 +333,15 @@ const OrderDocuments = () => {
                                 </div>
                             </div>
                         </div>
-
                         <Separator />
-
-                        {/* Secciones 2 (Envío Múltiple) y 3 (Envío Estándar) */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Envío Múltiple */}
                             <div className="md:col-span-2">
                                 <Card className="border  shadow-sm">
                                     <CardHeader className="p-4 pb-2">
                                         <CardTitle className="text-lg">
                                             Envío Múltiple Destinatario
                                         </CardTitle>
-                                        <p className="text-gray-500 text-sm">
+                                        <p className="text-neutral-500 text-sm">
                                             Seleccione un documento para enviarlo a múltiples destinatarios
                                         </p>
                                     </CardHeader>
@@ -426,36 +404,32 @@ const OrderDocuments = () => {
                                     </CardFooter>
                                 </Card>
                             </div>
-
-                            {/* Envío Estándar */}
                             <div className="md:col-span-1">
                                 <Card className="border  bg-neutral-800 h-full shadow-sm flex flex-col">
                                     <CardHeader className="p-4 pb-2">
                                         <CardTitle className="text-lg">Envío Automático Estándar</CardTitle>
                                         <CardDescription>Envia automaticamente</CardDescription>
-
                                     </CardHeader>
                                     <CardContent className="p-4 pt-0 flex-1 flex flex-col justify-center">
-
                                         <ul className="text-sm space-y-1 mb-4">
                                             <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
+                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
                                                 <span>Nota de carga ➜ Cliente</span>
                                             </li>
                                             <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
+                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
                                                 <span>Paacking list ➜ Cliente</span>
                                             </li>
                                             <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
+                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
                                                 <span>Documento de transporte (CMR) ➜ Transporte</span>
                                             </li>
                                             <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
+                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
                                                 <span>Nota de carga ➜ Comercial</span>
                                             </li>
                                             <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-gray-400 rounded-full mr-1.5"></div>
+                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
                                                 <span>Packing list ➜ Comercial</span>
                                             </li>
                                         </ul>

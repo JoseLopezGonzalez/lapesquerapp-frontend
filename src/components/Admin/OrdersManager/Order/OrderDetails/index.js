@@ -7,15 +7,10 @@ import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Badge } from '@/components/ui/badge';
 
 const OrderDetails = () => {
-
     const { order } = useOrderContext();
 
     const encodedAddress = encodeURIComponent(order.shippingAddress);
-
     const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
-
-    const origin = 'Congelados Brisamar S.L. '
-
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -27,7 +22,6 @@ const OrderDetails = () => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3">
-
                     <div>
                         <div className="text-sm text-muted-foreground">Vendedor</div>
                         <div className="font-medium">{order.salesperson.name}</div>
@@ -42,7 +36,6 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
@@ -65,7 +58,6 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
@@ -92,7 +84,6 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-
             <Card className="md:col-span-2">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
@@ -109,8 +100,7 @@ const OrderDetails = () => {
                         <div>
                             <div className="text-sm font-medium mb-1.5">Transporte</div>
                             <div className="text-sm">{order.transport.name}</div>
-                            <p className="text-sm text-muted-foreground whitespace-pre-line">
-                               {/*  {order.transport.emails.replace(/;/g, "")} */}
+                            <div className="text-sm text-muted-foreground whitespace-pre-line">
                                 <ul className="list-disc px-5 pl-8">
                                     {order.transport.emailsArray.map((email) => (
                                         <li key={email} className="text-xs font-medium">
@@ -119,7 +109,6 @@ const OrderDetails = () => {
                                             </a>
                                         </li>
                                     ))}
-
                                     {order.transport.ccEmailsArray.map((copyEmail) => (
                                         <li key={copyEmail} className="text-xs font-medium">
                                             <div className="flex gap-1 items-center">
@@ -131,7 +120,7 @@ const OrderDetails = () => {
                                         </li>
                                     ))}
                                 </ul>
-                            </p>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -142,14 +131,7 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-
             <Card className='overflow-hidden'>
-                {/* <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-medium flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Cliente
-                    </CardTitle>
-                </CardHeader> */}
                 <CardContent className="grid p-0 ">
                     <div className="map-container">
                         <iframe
@@ -158,41 +140,11 @@ const OrderDetails = () => {
                             style={{ border: 0 }}
                             loading="lazy"
                             allowFullScreen
-                            // Reemplaza TU_API_KEY por tu clave real
                             src={`https://www.google.com/maps/embed/v1/place?key=${googleApiKey}&q=${encodedAddress}`}
                         />
                     </div>
-                    {/* <div>
-                        <div className="text-sm text-muted-foreground">Empresa</div>
-                        <p className="font-medium whitespace-pre-line">{order.billingAddress}</p>
-                    </div> */}
-                    {/* <div>
-                        <div className="text-sm text-muted-foreground">CIF</div>
-                        <div className="font-medium">B12345678</div>
-                    </div> */}
-                    {/* <div>
-                        <div className="text-sm text-muted-foreground">Contacto</div>
-                        <div className="font-medium">+34 555 123 456</div>
-                    </div> */}
                 </CardContent>
             </Card>
-
-            {/* <Card className='overflow-hidden p-0'>
-                <CardContent className="grid p-0 ">
-                    <div className="map-container">
-                        <iframe
-                            width="100%"
-                            height="300"
-                            style={{ border: 0 }}
-                            loading="lazy"
-                            allowFullScreen
-                            src={`https://www.google.com/maps/embed/v1/directions?key=${googleApiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(order.shippingAddress)}&mode=driving`}
-                        />
-                    </div>
-                </CardContent>
-            </Card> */}
-
-
         </div>
     )
 }

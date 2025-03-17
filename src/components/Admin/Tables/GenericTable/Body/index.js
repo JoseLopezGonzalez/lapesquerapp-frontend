@@ -26,8 +26,8 @@ const badgeStyles = {
         outline: "text-red-400 border border-red-300 bg-red-800/25 ",
     },
     neutral: {
-        base: " text-gray-800",
-        outline: "text-gray-400 border border-gray-300 bg-gray-800/25",
+        base: " text-neutral-800",
+        outline: "text-neutral-400 border border-neutral-300 bg-neutral-800/25",
     },
 };
 

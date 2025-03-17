@@ -15,7 +15,7 @@ import TextFilter from './Types/TextFilter';
 
 export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
     if (!filtersGroup || (!filtersGroup.search && !filtersGroup.groups)) {
-        return <p className="text-gray-500">No hay filtros disponibles.</p>;
+        return <p className="text-neutral-500">No hay filtros disponibles.</p>;
     }
 
     const { search, groups } = filtersGroup;

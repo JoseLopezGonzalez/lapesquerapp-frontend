@@ -51,7 +51,7 @@ export default function SlidingPanel({children, title, className , buttonTitle})
                                                     <div className="ml-3 flex h-7 items-center">
                                                         <button
                                                             type="button"
-                                                            className="rounded-md ¡ text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                                            className="rounded-md ¡ text-neutral-400 hover:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
                                                             onClick={() => setIsOpen(false)}
                                                         >
                                                             <span className="sr-only">Cerrar panel</span>

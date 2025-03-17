@@ -11,13 +11,13 @@ export const Header = ({ title, onClose, onBack, children }) => {
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                 )}
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title || children}</h3>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{title || children}</h3>
             </div>
             {
                 onClose && (
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-800 dark:text-white dark:hover:text-gray-300"
+                        className="text-neutral-500 hover:text-neutral-800 dark:text-white dark:hover:text-neutral-300"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>

@@ -75,7 +75,7 @@ const DateRangeFilter = ({
                                     readOnly
                                 />
                                 <div className="cursor-pointer">
-                                    <CalendarDateRangeIcon className="h-5 w-5 text-gray-400 dark:text-gray-400" aria-hidden="true" />
+                                    <CalendarDateRangeIcon className="h-5 w-5 text-neutral-400 dark:text-neutral-400" aria-hidden="true" />
                                 </div>
                             </div>
                         </PopoverButton>
@@ -94,7 +94,7 @@ const DateRangeFilter = ({
                                     locale={es}
                                     classNames={{
                                         today: ` text-sky-500 font-bold`, // Día actual
-                                        root: `${defaultClassNames.root} pb-4 p-2 pt-0 bg-transparent text-gray-300`, // Contenedor principal
+                                        root: `${defaultClassNames.root} pb-4 p-2 pt-0 bg-transparent text-neutral-300`, // Contenedor principal
                                         caption: "text-lg font-medium text-white", // Título del mes
                                         chevron: `${defaultClassNames.chevron} dark:fill-sky-500`, // Flechas de navegación
                                     }}

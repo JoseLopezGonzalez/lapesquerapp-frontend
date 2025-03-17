@@ -14,9 +14,9 @@ const UnauthorizedPage = () => {
 
             <div id="content">
                 <div className="text-center py-10 px-4 sm:px-6 lg:px-8">
-                    <h1 className="block text-7xl font-bold text-gray-800 sm:text-9xl dark:text-white">403</h1>
-                    <p className="mt-3 text-gray-600 dark:text-neutral-400">Oops, parece que no estaś autorizado</p>
-                    <p className="text-gray-600 dark:text-neutral-400">Contacta con el amdministrador del sistema</p>
+                    <h1 className="block text-7xl font-bold text-neutral-800 sm:text-9xl dark:text-white">403</h1>
+                    <p className="mt-3 text-neutral-600 dark:text-neutral-400">Oops, parece que no estaś autorizado</p>
+                    <p className="text-neutral-600 dark:text-neutral-400">Contacta con el amdministrador del sistema</p>
                     <div className="mt-5 flex flex-col justify-center items-center gap-2 sm:flex-row sm:gap-3">
                         <Link 
                         className="w-full sm:w-auto py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-sky-500 text-white hover:bg-sky-700 focus:outline-none focus:bg-sky-700 disabled:opacity-50 disabled:pointer-events-none" 
@@ -30,7 +30,7 @@ const UnauthorizedPage = () => {
 
             <div className="mt-auto text-center py-5">
                 <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
-                    <p className="text-sm text-gray-500 dark:text-neutral-500">PescApp© All Rights Reserved. 2025.</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-500">PescApp© All Rights Reserved. 2025.</p>
                 </div>
             </div>
         </div>

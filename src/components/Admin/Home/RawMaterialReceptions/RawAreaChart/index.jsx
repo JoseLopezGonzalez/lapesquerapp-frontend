@@ -29,11 +29,11 @@ const RawAreaChart = () => {
                     {/* <!-- Header --> */}
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-5">
                         <div className='flex flex-col items-start '>
-                            <h2 className="text-sm text-gray-500 dark:text-neutral-500 text-nowrap">
+                            <h2 className="text-sm text-neutral-500 dark:text-neutral-500 text-nowrap">
                                 Recepciones de materia prima
                             </h2>
                             <div className='flex items-center justify-center gap-2'>
-                                <p className="text-xl sm:text-xl font-medium text-gray-800 dark:text-neutral-200 text-nowrap">
+                                <p className="text-xl sm:text-xl font-medium text-neutral-800 dark:text-neutral-200 text-nowrap">
                                     {netWeight && netWeight === 0
                                         ? `0,00 kg`
                                         : new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(netWeight)} kg
