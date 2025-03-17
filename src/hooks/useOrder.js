@@ -321,7 +321,7 @@ export function useOrder(orderId, onChange) {
 
     const sendDocuments = {
         customDocuments: sendCustomDocuments,
-        standarDocuments: sendStandarDocuments,
+        standardDocuments: sendStandarDocuments,
     }
 
     const options = {
@@ -468,7 +468,6 @@ export function useOrder(orderId, onChange) {
             type: 'pdf',
         },
     ];
-
 
 
     return {
