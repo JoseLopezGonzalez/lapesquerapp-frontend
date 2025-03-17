@@ -137,7 +137,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                             />
                                                         )}
                                                         {filter.type === 'date' && (
-                                                            <DateFilter
+                                                            <>
+
+                                                            {/* <DateFilter
                                                                 label={filter.label}
                                                                 name={filter.name}
                                                                 value={filter.value}
@@ -145,11 +147,13 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                 onChange={(value) =>
                                                                     onFilterChange(group.name, filter.name, value)
                                                                 }
-                                                            />
+                                                            />  */}
+                                                            </>
+
                                                         )}
                                                         {filter.type === 'dateRange' && (
                                                             <>
-                                                                <DateRangeFilter
+                                                                {/* <DateRangeFilter
                                                                     label={filter.label}
                                                                     name={filter.name}
                                                                     value={filter.value}
@@ -157,7 +161,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                         onFilterChange(group.name, filter.name, value)
                                                                     }
                                                                     visibleMonths={filter.visibleMonths}
-                                                                />
+                                                                /> */}
                                                             </>
                                                         )}
                                                         {filter.type === 'autocomplete' && (

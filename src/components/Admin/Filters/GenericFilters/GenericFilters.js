@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { IoFilter } from 'react-icons/io5';
 import { GenericFiltersModal } from './GenericFiltersModal';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export const GenericFilters = ({ data }) => {
     const { configFiltersGroup, updateFilters } = data;
@@ -79,11 +80,11 @@ export const GenericFilters = ({ data }) => {
                 groups: prevGroups.groups.map((group) =>
                     group.name === groupName
                         ? {
-                              ...group,
-                              filters: group.filters.map((filter) =>
-                                  filter.name === filterName ? { ...filter, value } : filter
-                              ),
-                          }
+                            ...group,
+                            filters: group.filters.map((filter) =>
+                                filter.name === filterName ? { ...filter, value } : filter
+                            ),
+                        }
                         : group
                 ),
             };
@@ -139,28 +140,39 @@ export const GenericFilters = ({ data }) => {
 
     return (
         <>
-            <div className="flex justify-between items-center">
-                <Button
-                    onClick={openModal}
-                    variant="secondary"
-                >
-                    <IoFilter className="h-4 w-4" />
-                    <span className='hidden xl:flex'>Filtros</span>
-                    {numberOfActiveFilters > 0 && (
-                        <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-neutral-700 text-neutral-300">
-                            {numberOfActiveFilters}
-                        </span>
-                    )}
-                </Button>
-            </div>
-            <GenericFiltersModal
-                filtersGroup={localFiltersGroup}
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onSubmit={handleFiltersSubmit}
-                onReset={handleFiltersReset}
-                onFilterChange={handleFilterChange}
-            />
+            {/*  */}
+            <Dialog>
+                <DialogTrigger>
+                    <Button
+                        variant="secondary"
+                    >
+                        <IoFilter className="h-4 w-4" />
+                        <span className='hidden xl:flex'>Filtros</span>
+                        {numberOfActiveFilters > 0 && (
+                            <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-neutral-700 text-neutral-300">
+                                {numberOfActiveFilters}
+                            </span>
+                        )}
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Filtros</DialogTitle>
+                        <DialogDescription>
+                            <GenericFiltersModal
+                                filtersGroup={localFiltersGroup}
+                                isOpen={isModalOpen}
+                                onClose={closeModal}
+                                onSubmit={handleFiltersSubmit}
+                                onReset={handleFiltersReset}
+                                onFilterChange={handleFilterChange}
+                            />
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
+
+
         </>
     );
 };
