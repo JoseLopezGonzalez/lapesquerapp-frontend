@@ -114,6 +114,14 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -141,6 +149,14 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -180,5 +196,31 @@ body {
 
   .animate-shimmer {
     animation: shimmer 1.5s infinite;
+  }
+}
+
+
+/* Sidebar */
+@layer base {
+  :root {
+    --sidebar-background: 0 0% 98%; /* neutral-50 */
+    --sidebar-foreground: 0 0% 26.1%; /* neutral-800 */
+    --sidebar-primary: 0 0% 10%; /* neutral-900 */
+    --sidebar-primary-foreground: 0 0% 98%; /* neutral-50 */
+    --sidebar-accent: 0 0% 95.9%; /* neutral-100 */
+    --sidebar-accent-foreground: 0 0% 10%; /* neutral-900 */
+    --sidebar-border: 0 0% 91%; /* neutral-200 */
+    --sidebar-ring: 217.2 91.2% 59.8%; /* sin cambios */
+  }
+
+  .dark {
+    --sidebar-background: 0 0% 10%; /* neutral-900 */
+    --sidebar-foreground: 0 0% 95.9%; /* neutral-100 */
+    --sidebar-primary: 224.3 76.3% 48%; /* sin cambios */
+    --sidebar-primary-foreground: 0 0% 100%; /* neutral-50 */
+    --sidebar-accent: 0 0% 15.9%; /* neutral-800 */
+    --sidebar-accent-foreground: 0 0% 95.9%; /* neutral-100 */
+    --sidebar-border: 0 0% 15.9%; /* neutral-800 */
+    --sidebar-ring: 217.2 91.2% 59.8%; /* sin cambios */
   }
 }

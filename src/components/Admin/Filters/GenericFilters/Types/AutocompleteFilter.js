@@ -83,12 +83,13 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     {value?.length > 0 && value?.map((item) => (
                         <Badge
                             key={item.id}
+                            className='flex items-center gap-1'
                         >
                             {item.name}
                             <button
                                 onClick={() => onDelete(item)}
                                 type="button"
-                                className="hover:bg-white/95 bg-white/70 rounded-full text-md font-bold text-sky-500  shadow-sm"
+                                className="hover:bg-white/95 bg-black/20 rounded-full text-md font-bold text-black  shadow-sm"
                             >
                                 <XMarkIcon className="h-4 w-4" aria-hidden="true" />
                             </button>
