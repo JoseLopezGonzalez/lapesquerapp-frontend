@@ -142,7 +142,7 @@ export const GenericFilters = ({ data }) => {
         <>
             {/*  */}
             <Dialog>
-                <DialogTrigger>
+                <DialogTrigger asChild>
                     <Button
                         variant="secondary"
                     >
@@ -158,16 +158,14 @@ export const GenericFilters = ({ data }) => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Filtros</DialogTitle>
-                        <DialogDescription>
-                            <GenericFiltersModal
-                                filtersGroup={localFiltersGroup}
-                                isOpen={isModalOpen}
-                                onClose={closeModal}
-                                onSubmit={handleFiltersSubmit}
-                                onReset={handleFiltersReset}
-                                onFilterChange={handleFilterChange}
-                            />
-                        </DialogDescription>
+                        <GenericFiltersModal
+                            filtersGroup={localFiltersGroup}
+                            isOpen={isModalOpen}
+                            onClose={closeModal}
+                            onSubmit={handleFiltersSubmit}
+                            onReset={handleFiltersReset}
+                            onFilterChange={handleFilterChange}
+                        />
                     </DialogHeader>
                 </DialogContent>
             </Dialog>

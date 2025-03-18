@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
@@ -149,7 +150,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
 
                                         {/* Button type */}
-                                        {header.type === 'button' && (
+                                        {/* {header.type === 'button' && (
                                             <div className="flex rounded-md shadow-sm">
                                                 <button onClick={row[header.name].delete.onClick} type="button" className=" group inline-flex items-center px-2 py-2 text-sm font-medium   border  rounded-l-lg  border-neutral-600 hover:border-red-600 text-white hover:text-white dark:hover:bg-red-700 ">
                                                     <TrashIcon className="h-4 w-4 text-white" aria-hidden="true" />
@@ -157,6 +158,24 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 <button onClick={row[header.name].view.onClick} type="button" className="group inline-flex items-center px-2 py-1 text-sm font-medium   border  rounded-r-md  bg-neutral-700 border-neutral-600 hover:border-sky-600 text-white hover:text-white hover:bg-sky-700 ">
                                                     <ArrowRightIcon className="h-4 w-4 text-white" aria-hidden="true" />
                                                 </button>
+                                            </div>
+                                        )} */}
+
+                                        {header.type === "button" && (
+                                            <div className="flex min-w-14  items-center justify-center">
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    onClick={
+                                                        (e) => {
+                                                            e.stopPropagation();
+                                                            row[header.name].view.onClick()
+                                                        }
+                                                    }
+                                                    className="rounded-r-md"
+                                                >
+                                                    <ArrowRightIcon className="h-4 w-4" />
+                                                </Button>
                                             </div>
                                         )}
 

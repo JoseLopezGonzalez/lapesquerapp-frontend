@@ -21,9 +21,9 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
     const { search, groups } = filtersGroup;
 
     return (
-        <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+        <div className="px-2 sm:px-4 lg:px-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto ">
             {search?.filters && search.filters.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-4 pt-1">
                     {search.filters.map((filter) => (
                         <SearchFilter
                             key={filter.name}
@@ -170,10 +170,12 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                 placeholder={filter.placeholder}
                                                                 endpoint={filter.endpoint}
                                                                 onAdd={(item) =>
+                                                                { console.log('item', item);
                                                                     onFilterChange(group.name, filter.name, [
                                                                         ...(filter.value || []),
                                                                         item,
                                                                     ])
+                                                                }
                                                                 }
                                                                 onDelete={(item) =>
                                                                     onFilterChange(

@@ -1,5 +1,7 @@
 'use client';
 
+import { Combobox } from '@/components/Shadcn/Combobox/index';
+import { Badge } from '@/components/ui/badge';
 import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector';
 import { API_URL_V2 } from '@/configs/config';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -31,9 +33,9 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                         },
                     }
                 );
-                const data =await response.json();
+                const data = await response.json();
                 console.log('data', data);
-                setOptions(data.map((item) => ({ id: item.id, name: item.name })));
+                setOptions(data.map((item) => ({ value: item.id, label: item.name })));
             } catch (error) {
                 console.error("Error fetching options:", error);
             } finally {
@@ -43,6 +45,12 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
 
         fetchOptions();
     }, [endpoint]);
+
+    const handleOnAdd = (item) => {
+        const selectedOption = options.find((option) => option.value === item);
+        const newItem = { id: selectedOption.value, name: selectedOption.label };
+        onAdd(newItem);
+    }
 
 
     return (
@@ -55,18 +63,26 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     >
                         {label}
                     </label>
-                    <AutocompleteSelector
+                    <Combobox
+                        options={options}
+                        placeholder={placeholder || 'Escribe para buscar...'}
+                        searchPlaceholder={'Buscar...'}
+                        notFoundMessage={'No se encontraron resultados'}
+                        /* value={value} */
+                        onChange={handleOnAdd}
+                    /* onBlur={onBlur} */
+                    />
+                    {/*  <AutocompleteSelector
                         placeholder={placeholder || 'Escribe para buscar...'}
                         inputClassName="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
                         elements={options}
                         onChange={onAdd}
-                    />
+                    /> */}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {value?.length > 0 && value?.map((item) => (
-                        <div
+                        <Badge
                             key={item.id}
-                            className="italic flex justify-center gap-1 text-xs font-bold pr-2 pl-2.5 py-0.5 rounded-full bg-sky-500 text-white items-center"
                         >
                             {item.name}
                             <button
@@ -76,7 +92,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                             >
                                 <XMarkIcon className="h-4 w-4" aria-hidden="true" />
                             </button>
-                        </div>
+                        </Badge>
                     ))}
                 </div>
             </div>

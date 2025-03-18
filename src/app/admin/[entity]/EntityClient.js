@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { GenericTable } from '@/components/Admin/Tables/GenericTable';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
-import { Pagination } from '@/components/Admin/Tables/Pagination';
+import { PaginationFooter } from '@/components/Admin/Tables/PaginationFooter';
 import { Header } from '@/components/Admin/Tables/GenericTable/Header';
 import { Body } from '@/components/Admin/Tables/GenericTable/Body';
 import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
@@ -555,7 +555,7 @@ export default function EntityClient({ config }) {
                 </Header>
                 <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} onSelectionChange={handleOnSelectionChange} />
                 <Footer>
-                    <Pagination meta={paginationMeta} onPageChange={handlePageChange} />
+                    <PaginationFooter meta={paginationMeta} onPageChange={handlePageChange} />
                 </Footer>
             </GenericTable>
         </div>

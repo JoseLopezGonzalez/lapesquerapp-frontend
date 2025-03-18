@@ -1,5 +1,7 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import React, { useState, memo } from 'react';
 
@@ -32,31 +34,30 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd , onDele
                     >
                         {label}
                     </label>
-                    <input
+                    <Input
                         type="text"
                         id={name}
                         value={temporalValue}
                         onChange={handleOnChangeInput}
                         onKeyDown={handleKeyDown}
-                        className="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
                         placeholder={placeholder}
                     />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {value.map((item, index) => (
-                        <div
+                        <Badge
                             key={index}
-                            className="italic flex justify-center gap-1 text-xs font-bold pr-2 pl-2.5 py-0.5 rounded-full bg-sky-500 text-white items-center"
+                            className='flex items-center gap-1'
                         >
                             {item}
                             <button
                                 onClick={() => onDelete(item)}
                                 type="button"
-                                className="hover:bg-white/95 bg-white/70 rounded-full text-md font-bold text-sky-500  shadow-sm"
+                                className="hover:bg-white/95 bg-black/20 rounded-full text-md font-bold text-black-500 p-0.5 shadow-sm"
                             >
                                 <XMarkIcon className="h-3 w-3 " aria-hidden="true" />
                             </button>
-                        </div>
+                        </Badge>
                     ))}
                 </div>
             </div>

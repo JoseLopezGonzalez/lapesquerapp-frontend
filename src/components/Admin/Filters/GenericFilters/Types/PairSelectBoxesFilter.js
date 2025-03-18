@@ -1,8 +1,9 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { CheckIcon } from '@heroicons/react/20/solid';
 
-import React , { memo } from 'react';
+import React, { memo } from 'react';
 
 const PairSelectBoxesFilter = ({ label, name, value, onChange, options }) => {
 
@@ -31,22 +32,13 @@ const PairSelectBoxesFilter = ({ label, name, value, onChange, options }) => {
                 >
                     {options.map((item) => (
                         <div key={item.name} className="">
-                            <input
-                                type="checkbox"
-                                id={`${name}-${item.name}`}
-                                checked={item.name === value}
-                                onChange={() => handleOnClick(item)}
-                                className="hidden peer"
-                            />
-                            <label
-                                htmlFor={`${name}-${item.name}`}
-                                role="checkbox"
-                                aria-checked={item.name === value}
-                                className="flex gap-2 items-center justify-center px-4 whitespace-nowrap text-sm w-full sm:h-full py-1 border-2 rounded-xl cursor-pointer hover:text-white border-neutral-600 hover:border-sky-400 peer-checked:border-sky-500 peer-checked:text-white text-neutral-400 bg-neutral-800"
+                            <Badge
+                                onClick={() => handleOnClick(item)}
+                                variant={`${item.name === value ? '' : 'outline'}`}
+                                className='cursor-pointer'
                             >
-                                {item.name === value && <CheckIcon className="h-4 w-4" aria-hidden="true" />}
                                 {item.label}
-                            </label>
+                            </Badge>
                         </div>
                     ))}
                 </div>

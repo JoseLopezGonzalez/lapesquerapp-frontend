@@ -34,7 +34,6 @@ export const GenericFiltersModal = ({
                 />
             </div>
             <div className='flex justify-end gap-3 '>
-
                 <Button
                     onClick={resetFilters}
                     variant='outline'

@@ -23,13 +23,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #6b7280;
+  background-color: #737373;
   /* Color del pulgar de la barra de scroll en dark mode */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #374151;
+  background-color: #404040;
   /* Color del fondo de la barra de scroll en dark mode */
   border-radius: 4px;
 }
