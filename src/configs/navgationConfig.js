@@ -7,6 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
+import { LandPlot } from 'lucide-react';
 
 export const navigationConfig = [
     {
@@ -183,3 +184,30 @@ export const navigationConfig = [
         ],
     },
 ];
+
+export const navigationManagerConfig = [
+    {
+        name: 'Gestor de pedidos',
+        icon: PencilSquareIcon,
+        allowedRoles: ["manager"],
+        href: '/admin/orders-manager',
+    },
+    {
+        name: 'Almacenes interactivos',
+        icon: LandPlot,
+        allowedRoles: ["manager"],
+        href: '/admin/stores',
+    },
+    {
+        name: 'Recepciones de Materia Prima',
+        icon: TbFishHook,
+        allowedRoles: ["manager"],
+        href: '/admin/raw-material-receptions',
+    },
+    {
+        name: 'Salidas de Cebo',
+        icon: PiFishSimpleDuotone,
+        allowedRoles: ["manager"],
+        href: '/admin/cebo-dispatches',
+    },
+]

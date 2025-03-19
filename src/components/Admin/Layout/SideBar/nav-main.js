@@ -17,35 +17,37 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { navigationConfig } from "@/configs/navgationConfig"
+import Link from "next/link"
 
-export function NavMain({items}) {
+export function NavMain() {
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) => (
+                {navigationConfig.map((item) => (
                     <Collapsible
-                        key={item.title}
+                        key={item.name}
                         asChild
                         defaultOpen={item.isActive}
                         className="group/collapsible"
                     >
                         <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
-                                <SidebarMenuButton tooltip={item.title}>
+                                <SidebarMenuButton tooltip={item.name}>
                                     {item.icon && <item.icon />}
-                                    <span>{item.title}</span>
+                                    <span>{item.name}</span>
                                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                 </SidebarMenuButton>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <SidebarMenuSub>
-                                    {item.items?.map((subItem) => (
-                                        <SidebarMenuSubItem key={subItem.title}>
+                                    {item.childrens?.map((subItem) => (
+                                        <SidebarMenuSubItem key={subItem.name}>
                                             <SidebarMenuSubButton asChild>
-                                                <a href={subItem.url}>
-                                                    <span>{subItem.title}</span>
-                                                </a>
+                                                <Link href={subItem.href}>
+                                                    <span>{subItem.name}</span>
+                                                </Link>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                     ))}
@@ -55,6 +57,7 @@ export function NavMain({items}) {
                     </Collapsible>
                 ))}
             </SidebarMenu>
+            
         </SidebarGroup>
     )
 }

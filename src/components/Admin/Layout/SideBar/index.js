@@ -163,7 +163,7 @@ export function AppSidebar() {
                 <TeamSwitcher teams={data.teams} />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                <NavMain  />
                 <NavProjects projects={data.projects} />
             </SidebarContent>
             <SidebarFooter>
