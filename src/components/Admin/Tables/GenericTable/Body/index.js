@@ -76,7 +76,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
         <div className="grow overflow-y-auto overflow-x-auto w-full">
             <table className="min-w-full divide-y divide-neutral-700/20"> {/* divide-y divide-neutral-700 */}
                 {/* Head sticky */}
-                <thead className="bg-black sticky top-0 z-10">
+                <thead className="bg-neutral-950 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
                             <th className="py-3.5 px-4 text-left text-sm font-semibold text-white">

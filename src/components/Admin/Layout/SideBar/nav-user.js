@@ -33,6 +33,9 @@ import {
 export function NavUser({user}) {
     const { isMobile } = useSidebar()
 
+/* iniciales 2 caracteres en mayuscula */
+    const initials = user.name.split(' ').map((n) => n[0]).join('').toUpperCase()
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
@@ -44,7 +47,7 @@ export function NavUser({user}) {
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage src={user.avatar} alt={user.name} />
-                                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">{user.name}</span>
@@ -75,28 +78,24 @@ export function NavUser({user}) {
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <Sparkles />
-                                Upgrade to Pro
+                                Planes
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <BadgeCheck />
-                                Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCard />
-                                Billing
+                                Cuenta
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <Bell />
-                                Notifications
+                                Notificaciones
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={user.logout} className='cursor-pointer'>
                             <LogOut />
-                            Log out
+                            Cerrar Sesión
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

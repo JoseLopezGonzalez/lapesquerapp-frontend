@@ -425,7 +425,7 @@ export default function EntityClient({ config }) {
     };
 
     return (
-        <div className='h-full'>
+        <div className='h-full overflow-hidden'>
             <GenericTable>
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (

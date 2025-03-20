@@ -9,19 +9,23 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className='h-screen'>
+    <div className='h-screen bg-neutral-800'>
 
-    {/* <Layout>
+      {/* <Layout>
       {children}
     </Layout> */}
 
-    <SidebarProvider>
-      <AppSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
-    </SidebarProvider>
+      <SidebarProvider className='h-full'>
+        <AppSidebar />
+        <main className='flex flex-col h-full overflow-hidden w-full  p-2 '>
+          <div className='p-1'>
+            <SidebarTrigger />
+          </div>
+          <div className='flex-1 w-full overflow-hidden'>
+            {children}
+          </div>
+        </main>
+      </SidebarProvider>
 
     </div>
   );

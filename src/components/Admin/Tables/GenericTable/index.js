@@ -10,7 +10,7 @@ export const GenericTable = ({ children }) => {
       <div className="w-full h-full flex flex-col">
         <div className="w-full h-full">
           <div className="w-full h-full  min-w-full inline-block align-middle">
-            <div className="w-full h-full flex flex-col  rounded-2xl shadow-sm  bg-neutral-950 ">
+            <div className="w-full h-full flex flex-col  rounded-2xl shadow-sm  bg-neutral-900 ">
 
               {children}
 

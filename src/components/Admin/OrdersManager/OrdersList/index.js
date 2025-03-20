@@ -45,7 +45,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         {/* input search  */}
                         <div className='relative w-full text-sm'>
                             <input onChange={(e) => onChangeSearch(e.target.value)} value={searchText}
-                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5 bg-black/15 text-white border border-neutral-600 rounded-2xl placeholder:text-neutral-500' />
+                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5 bg-black/15 text-white border border-neutral-600 rounded-lg placeholder:text-neutral-500' />
                             <button className='absolute right-0 top-0 h-full w-10 flex items-center justify-center'>
                                 {searchText.length > 0 ? (
                                     <XMarkIcon onClick={() => onChangeSearch('')} className='h-4 w-4 text-white dark:text-white' />
@@ -62,17 +62,17 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <option>Mañana</option>
                         </select> */}
 
-                        <div className='flex gap-3 mt-5 bg-neutral-600 rounded-full p-1 text-nowrap'>
+                        <div className='flex gap-3 mt-5 bg-white/20 rounded-lg p-1 text-nowrap'>
                             {/* Boton de caegorias */}
                             {categories.map((category, index) => category.current ? (
-                                <span key={category.name} className="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-black bg-white">
+                                <span key={category.name} className="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-lg text-xs font-medium  text-black bg-white">
                                     {category.label}
                                 </span>
                             ) : (
                                 <span
                                     onClick={() => onClickCategory(category)}
                                     key={category.name}
-                                    className=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium  text-white bg-neutral-600"
+                                    className=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-lg text-xs font-medium  text-white bg-neutral-600"
                                 >
                                     {category.label}
                                 </span>

@@ -15,9 +15,9 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
-import { NavProjects } from "./nav-projects"
+import { NavManagers } from "./nav-managers"
 import { NavUser } from "./nav-user"
-import { TeamSwitcher } from "./team-switcher"
+import { AppSwitcher } from "./app-switcher"
 import {
     Sidebar,
     SidebarContent,
@@ -26,145 +26,87 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 
+import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import toast from 'react-hot-toast';
+import { darkToastTheme } from "@/customs/reactHotToast"
+import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
+
 // This is sample data.
-const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
-    teams: [
-        {
-            name: "Congelados Brisamar S.L.",
-            logo: GalleryVerticalEnd,
-            plan: "Administración",
-        },
-        {
-            name: "Congelados Brisamar S.L.",
-            logo: AudioWaveform,
-            plan: "Producción",
-        },
-        {
-            name: "Congelados Brisamar S.L.",
-            logo: Command,
-            plan: "World Trade",
-        },
-    ],
-    navMain: [
-        {
-            title: "Playground",
-            url: "#",
-            icon: SquareTerminal,
-            isActive: true,
-            items: [
-                {
-                    title: "History",
-                    url: "#",
-                },
-                {
-                    title: "Starred",
-                    url: "#",
-                },
-                {
-                    title: "Settings",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Models",
-            url: "#",
-            icon: Bot,
-            items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
-    ],
-}
+
 
 export function AppSidebar() {
+
+    const currentPath = usePathname();
+    const { data: session } = useSession();
+    const userRoles = session?.user?.role || []; // Roles del usuario actual
+    const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
+
+    console.log(session?.user)
+
+    const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
+    const email = session?.user?.email || 'Desconocido'; // Nombre del usuario actual
+
+    const handleLogout = async () => {
+        try {
+            await signOut({ redirect: false });
+            window.location.href = '/login';
+            toast.success('Sesión cerrada correctamente', darkToastTheme);
+        } catch (err) {
+            toast.error(err.message || 'Error al cerrar sesión');
+        }
+    };
+
+    const data = {
+        user: {
+            name: username,
+            email: email,
+            logout: handleLogout,
+            /* avatar: "/avatars/shadcn.jpg", */
+        },
+        apps: [
+            {
+                name: "Congelados Brisamar S.L.",
+                logo: GalleryVerticalEnd,
+                description: "Administración",
+                current: true,
+            },
+            {
+                name: "Congelados Brisamar S.L.",
+                logo: AudioWaveform,
+                description: "Producción",
+                current: false,
+            },
+            {
+                name: "Congelados Brisamar S.L.",
+                logo: Command,
+                description: "World Trade",
+                current: false,
+            },
+        ],
+        navigationItems: navigationConfig.map((item) =>
+            /* Add current */
+            item.href === currentPath
+                ? { ...item, current: true }
+                : item
+        ),
+        navigationManagersItems: navigationManagerConfig.map((item) =>
+            /* Add current */
+            item.href === currentPath
+                ? { ...item, current: true }
+                : item
+        ),
+    }
+
+
     return (
         <Sidebar collapsible="icon" variant='floating'>
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams} />
+                <AppSwitcher apps={data.apps} />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain  />
-                <NavProjects projects={data.projects} />
+                <NavMain items={data.navigationItems} />
+                <NavManagers items={data.navigationManagersItems} />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={data.user} />
