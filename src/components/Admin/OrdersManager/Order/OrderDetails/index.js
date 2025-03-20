@@ -14,7 +14,7 @@ const OrderDetails = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+            <Card className='bg-transparent'>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <FileText className="h-4 w-4" />
@@ -36,7 +36,7 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className='bg-transparent'>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <CalendarIcon className="h-4 w-4" />
@@ -58,7 +58,7 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className='bg-transparent'>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <Package className="h-4 w-4" />
@@ -84,14 +84,14 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card className="md:col-span-2">
+            <Card className="md:col-span-2 bg-transparent">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <Truck className="h-4 w-4" />
                         Envío
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4">
+                <CardContent className="grid gap-4 ">
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <div className="text-sm font-medium mb-1.5">Dirección de entrega</div>
@@ -131,7 +131,7 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card className='overflow-hidden'>
+            <Card className='overflow-hidden bg-transparent'>
                 <CardContent className="grid p-0 ">
                     <div className="map-container">
                         <iframe

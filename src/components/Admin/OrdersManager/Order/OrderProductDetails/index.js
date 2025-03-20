@@ -24,7 +24,7 @@ const OrderProductDetails = () => {
 
     return (
         <div className="h-full pb-2">
-            <Card className='h-full flex flex-col'>
+            <Card className='h-full flex flex-col bg-transparent' >
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-lg font-medium">Detalle de productos</CardTitle>

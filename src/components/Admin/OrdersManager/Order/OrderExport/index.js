@@ -42,7 +42,7 @@ const OrderExport = () => {
 
     return (
         <div className='h-full pb-2'>
-            <Card className='h-full flex flex-col'>
+            <Card className='h-full flex flex-col bg-transparent'>
                 <CardHeader>
                     <CardTitle className="text-lg font-medium">Exportar Datos</CardTitle>
                     <CardDescription>Exporta los datos del pedido en diferentes formatos</CardDescription>

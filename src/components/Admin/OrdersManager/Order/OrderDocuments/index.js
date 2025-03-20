@@ -226,11 +226,11 @@ const OrderDocuments = () => {
 
     return (
         <div className='h-full pb-2'>
-            <Card className='h-full flex flex-col'>
+            <Card className='h-full flex flex-col bg-transparent'>
                 <CardContent className="flex-1 overflow-y-auto py-6 ">
                     <div className="space-y-6 ">
                         <div>
-                            <Card className="border  shadow-sm " >
+                            <Card className="border  shadow-sm bg-transparent" >
                                 <CardHeader className="p-4 pb-2">
                                     <CardTitle className="text-lg">
                                         Envío Personalizado de Documentos
@@ -336,7 +336,7 @@ const OrderDocuments = () => {
                         <Separator />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="md:col-span-2">
-                                <Card className="border  shadow-sm">
+                                <Card className="border  shadow-sm bg-transparent">
                                     <CardHeader className="p-4 pb-2">
                                         <CardTitle className="text-lg">
                                             Envío Múltiple Destinatario

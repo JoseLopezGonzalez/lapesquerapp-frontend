@@ -141,14 +141,14 @@ const OrderEditSheet = () => {
     };
 
     return (
-        <Sheet>
+        <Sheet >
             <SheetTrigger asChild>
                 <Button variant="outline" className=''>
                     <Edit className="h-4 w-4 mr-2" />
                     Editar Pedido
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14" >
+            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg" >
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>

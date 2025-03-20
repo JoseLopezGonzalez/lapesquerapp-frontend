@@ -118,7 +118,7 @@ const OrderContent = () => {
         <div
           className={`
                 p-9 h-full w-full bg-gradient-to-b 
-                bg-neutral-950   rounded-2xl
+                bg-neutral-900   rounded-2xl
                 ${order?.status === 'pending' && 'border-orange-500/30'} 
                 ${order?.status === 'finished' && 'border-green-500/30'}`
           }
