@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot } from 'lucide-react';
+import { LandPlot, ScanSearch } from 'lucide-react';
 
 export const navigationConfig = [
     {
@@ -193,6 +193,12 @@ export const navigationManagerConfig = [
         href: '/admin/orders-manager',
     },
     {
+        name: 'Extracción de datos lonja',
+        icon: ScanSearch,
+        allowedRoles: ["manager"],
+        href: '/admin/market-data-extractor',
+    },
+    {
         name: 'Almacenes interactivos',
         icon: LandPlot,
         allowedRoles: ["manager"],
@@ -204,10 +210,10 @@ export const navigationManagerConfig = [
         allowedRoles: ["manager"],
         href: '/admin/raw-material-receptions',
     },
-    {
-        name: 'Salidas de Cebo',
-        icon: PiFishSimpleDuotone,
-        allowedRoles: ["manager"],
-        href: '/admin/cebo-dispatches',
-    },
+    /* {
+          name: 'Salidas de Cebo',
+          icon: PiFishSimpleDuotone,
+          allowedRoles: ["manager"],
+          href: '/admin/cebo-dispatches',
+      }, */
 ]
