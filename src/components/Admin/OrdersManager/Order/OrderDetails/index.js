@@ -5,6 +5,7 @@ import { useOrderContext } from '@/context/OrderContext';
 import { formatInteger, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 const OrderDetails = () => {
     const { order } = useOrderContext();
@@ -84,7 +85,7 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card>
-            <Card className="md:col-span-2 bg-transparent">
+            {/* <Card className="md:col-span-2 bg-transparent">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <Truck className="h-4 w-4" />
@@ -130,7 +131,101 @@ const OrderDetails = () => {
                         </div>
                     </div>
                 </CardContent>
+            </Card> */}
+            <Card className="md:col-span-2 bg-transparent">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-medium flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        Envío
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4 ">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <div className="text-sm font-medium mb-1.5">Dirección de entrega</div>
+                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress}</p>
+                        </div>
+                        <div>
+                            <div className="text-sm font-medium mb-1.5">Transporte</div>
+                            <div className="text-sm">{order.transport.name}</div>
+                            <div className="text-sm text-muted-foreground whitespace-pre-line">
+                                <ul className="list-disc px-5 pl-8">
+                                    {order.transport.emailsArray.map((email) => (
+                                        <li key={email} className="text-xs font-medium">
+                                            <a href={`mailto:${email}`} className=" hover:underline">
+                                                {email}
+                                            </a>
+                                        </li>
+                                    ))}
+                                    {order.transport.ccEmailsArray.map((copyEmail) => (
+                                        <li key={copyEmail} className="text-xs font-medium">
+                                            <div className="flex gap-1 items-center">
+                                                <Badge variant="outline" className="px-1">CC</Badge>
+                                                <a href={`mailto:${copyEmail}`} className=" hover:underline">
+                                                    {copyEmail}
+                                                </a>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+
+
+                        </div>
+                        <div>
+                            <div className="text-sm font-medium mb-1.5">Observaciones</div>
+                            <div className="text-sm text-muted-foreground">
+                                Temperatura controlada requerida durante el transporte
+                            </div>
+                        </div>
+
+                        {/* Matrículas de camión y remolque */}
+                        <div>
+                            <div className="text-sm font-medium mb-1.5">Matrículas</div>
+                            <div className=" grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {/* Matrícula del Camión */}
+
+                                <div>
+                                    {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
+                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-black h-fit bg-blue-700">
+                                        <div className=" text-white flex items-center justify-center px-1 py-1 h-full">
+                                            <div className="flex flex-col items-center text-xs leading-none gap-1">
+                                                <span className="text-[10px] font-bold">
+                                                    <Image src="/images/transports/eu-stars.svg" width={16} height={16} alt="Spain Flag" />
+                                                </span>
+                                                <span className="text-[10px] font-semibold">EU</span>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white text-black px-4 py-1.5 text-lg font-bold tracking-widest flex-1 text-center">
+                                            {order.truckPlate ? order.truckPlate
+                                                : (
+                                                    <span className="animate-pulse">0000 AAA</span>
+                                                )}
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Matrícula del Remolque */}
+                                <div>
+                                    {/* <div className="text-xs font-medium text-muted-foreground mb-1">Remolque</div> */}
+                                    <div className="w-full flex items-center rounded overflow-hidden shadow-md  border border-black bg-red-600">
+                                        <div className=" text-white px-4 py-1.5 text-lg font-bold tracking-widest text-center flex-1">
+                                            {order.trailerPlate ? order.trailerPlate
+                                                : (
+                                                    <span className="animate-pulse">R-0000 AAA</span>
+                                                )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </CardContent>
             </Card>
+
             <Card className='overflow-hidden bg-transparent'>
                 <CardContent className="grid p-0 ">
                     <div className="map-container">

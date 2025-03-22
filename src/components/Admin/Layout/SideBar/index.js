@@ -6,6 +6,7 @@ import {
     BookOpen,
     Bot,
     Command,
+    Earth,
     Frame,
     GalleryVerticalEnd,
     Map,
@@ -79,7 +80,7 @@ export function AppSidebar() {
             },
             {
                 name: "Congelados Brisamar S.L.",
-                logo: Command,
+                logo: Earth,
                 description: "World Trade",
                 current: false,
             },

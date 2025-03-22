@@ -470,6 +470,21 @@ export function useOrder(orderId, onChange) {
     ];
 
 
+    const updateTemperatureOrder = async (updatedTemperature) => {
+        const token = session?.user?.accessToken;
+        updateOrder(orderId, { temperature: updatedTemperature }, token)
+            .then((updated) => {
+                setOrder(updated);
+                onChange();
+                return updated;
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    }
+
+
     return {
         pallets,
         order,
@@ -486,6 +501,7 @@ export function useOrder(orderId, onChange) {
         exportDocuments,
         fastExportDocuments,
         activeTab,
-        setActiveTab
+        setActiveTab,
+        updateTemperatureOrder
     };
 }

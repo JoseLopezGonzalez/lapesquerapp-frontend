@@ -127,6 +127,7 @@ const OrderEditSheet = () => {
                                     value={value}
                                     onChange={onChange}
                                     onBlur={onBlur}
+                                    className={field.props?.className}
                                 />
                             )
                         }}
@@ -161,7 +162,7 @@ const OrderEditSheet = () => {
                                     <Separator className="my-2" />
                                     <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
                                         {group.fields.map((field) => (
-                                            <div key={field.name} className="grid gap-2 w-full">
+                                            <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
                                                 <Label htmlFor={field.name}>{field.label}</Label>
                                                 {renderField(field)}
                                                 {/* Aquí podrías renderizar errores si lo deseas */}

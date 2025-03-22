@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MoreVertical, Printer } from 'lucide-react';
+import { MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,11 @@ import OrderPlannedProductDetails from './OrderPlannedProductDetails';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
+import { formatDate } from '@/helpers/formats/dates/formatDates';
 
 const OrderContent = () => {
 
-  const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab } = useOrderContext();
+  const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab , updateTemperatureOrder } = useOrderContext();
 
   // Función para cambiar el estado del pedido
   const handleStatusChange = async (newStatus) => {
@@ -33,6 +34,17 @@ const OrderContent = () => {
       })
       .catch((error) => {
         toast.error(error.message || 'Error al actualizar el estado del pedido', { id: toastId, ...darkToastTheme });
+      });
+  };
+
+  const handleTemperatureChange = async (newTemperature) => {
+    const toastId = toast.loading('Actualizando temperatura del pedido...', darkToastTheme);
+    updateTemperatureOrder(newTemperature)
+      .then(() => {
+        toast.success('Temperatura del pedido actualizada', { id: toastId, ...darkToastTheme });
+      })
+      .catch((error) => {
+        toast.error(error.message || 'Error al actualizar la temperatura del pedido', { id: toastId, ...darkToastTheme });
       });
   };
 
@@ -112,7 +124,7 @@ const OrderContent = () => {
 
   return (
     <>
-      {loading  ? (
+      {loading ? (
         <OrderSkeleton />
       ) : (
         <div
@@ -152,11 +164,35 @@ const OrderContent = () => {
                 </div>
                 <div className='text-white'>
                   <p className='font-medium text-xs text-neutral-300'>Fecha de Carga:</p>
-                  <p className='font-medium text-lg'>{order.loadDate}</p>
+                  <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
                 </div>
                 <div className='text-white'>
-                  <p className='font-medium text-xs text-neutral-300'>Palets:</p>
-                  <p className='font-medium text-lg'>{order.numberOfPallets || '-'}</p>
+                  <p className='font-medium text-xs text-neutral-300'>Temperatura:</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="focus:outline-none">
+                      <span className='font-medium text-lg flex gap-1 items-center hover:text-neutral-300'>
+                        <ThermometerSnowflake className='h-5 w-5 inline-block' />
+                        {order.temperature || '0'} ºC
+
+                      </span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className='bg-neutral-950 '>
+                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
+                        0 ºC
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
+                        4 ºC
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
+                        - 18 ºC
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
+                        - 23 ºC
+                      </DropdownMenuItem>
+                      
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                 </div>
               </div>
               <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>

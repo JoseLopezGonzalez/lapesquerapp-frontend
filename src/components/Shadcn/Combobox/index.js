@@ -24,6 +24,7 @@ import {
 export function Combobox({ options, placeholder, searchPlaceholder, notFoundMessage, className, value, onChange }) {
   const [open, setOpen] = React.useState(false)
 
+  console.log('Classname:', className)
   return (
     <Popover open={open} onOpenChange={setOpen} className={className || ""}>
       <PopoverTrigger asChild>

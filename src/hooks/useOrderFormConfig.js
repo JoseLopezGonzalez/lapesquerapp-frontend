@@ -74,19 +74,33 @@ const initialFormGroups = [
     },
     {
         group: 'Transporte',
-        grid: 'grid-cols-1',
+        grid: 'grid-cols-2 gap-4',
         fields: [
             {
                 name: 'transport',
                 label: 'Empresa de transporte',
                 component: 'Combobox',
                 rules: { required: 'Seleccione una empresa de transporte' },
+                colSpan: 'col-span-2',
                 options: [],
                 props: {
                     placeholder: 'Seleccionar transporte',
                     searchPlaceholder: 'Buscar transporte...',
                     notFoundMessage: 'No se encontraron resultados',
                 },
+            },
+            /* truckPlate y trailerPlate */
+            {
+                name: 'truckPlate',
+                label: 'Matrícula camión',
+                component: 'Input',
+                props: { placeholder: '0000 AAA' },
+            },
+            {
+                name: 'trailerPlate',
+                label: 'Matrícula remolque',
+                component: 'Input',
+                props: { placeholder: 'R-0000 AAA' },
             },
         ],
     },
@@ -102,7 +116,7 @@ const initialFormGroups = [
                 props: {
                     placeholder: 'Nombre / Empresa, Calle, Ciudad, etc.',
                     className: 'min-h-[100px]',
-                    rows:5,
+                    rows: 5,
                 },
             },
             {
@@ -216,6 +230,8 @@ export function useOrderFormConfig({ orderData }) {
                 payment: `${orderData.paymentTerm.id}` || '',
                 incoterm: `${orderData.incoterm.id}` || '',
                 transport: `${orderData.transport?.id}` || '',
+                truckPlate: orderData.truckPlate || '',
+                trailerPlate: orderData.trailerPlate || '',
                 billingAddress: orderData.billingAddress || '',
                 shippingAddress: orderData.shippingAddress || '',
                 productionNotes: orderData.productionNotes || '',
