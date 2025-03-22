@@ -21,13 +21,13 @@ const OrderCard = ({ order, onClick }) => {
     } else if (order.current && order.status === 'pending') {
         statusClass = 'border-orange-500 bg-orange-400/90 hover:bg-orange-400'
     } else if (order.current && order.status === 'incident') {
-        statusClass = 'border-red-500 bg-red-400/80 hover:bg-red-400'
+        statusClass = 'border-red-900 bg-red-500 hover:bg-red-500/80'
     } else if (order.status === 'incident') {
-        statusClass = 'border-red-500 bg-neutral-700 hover:bg-neutral-600'
+        statusClass = 'border-red-500 bg-neutral-800 hover:bg-neutral-700'
     } else if (order.status === 'finished') {
-        statusClass = 'border-green-500 bg-neutral-700 hover:bg-neutral-600'
+        statusClass = 'border-green-500 bg-neutral-800 hover:bg-neutral-700'
     } else {
-        statusClass = 'border-orange-500 bg-neutral-700 hover:bg-neutral-600'
+        statusClass = 'border-orange-500 bg-neutral-800 hover:bg-neutral-700'
     }
     
     return (

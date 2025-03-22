@@ -4,6 +4,7 @@ import { InboxIcon } from '@heroicons/react/24/outline';
 import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { ScrollShadow } from '@nextui-org/react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -23,7 +24,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
     const [loading, setLoading] = useState(false);
 
 
-
+    const activeTab = categories.find((category) => category.current)?.name || 'all';
 
 
 
@@ -62,8 +63,18 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <option>Mañana</option>
                         </select> */}
 
-                        <div className='flex gap-3 mt-5 bg-white/20 rounded-lg p-1 text-nowrap'>
-                            {/* Boton de caegorias */}
+                        {/* Tab Shadcn categories */}
+                        <Tabs value={activeTab} onValueChange={onClickCategory} className='mt-5'>
+                            <TabsList>
+                                {categories.map((category) =>
+                                    <TabsTrigger key={category.name} value={category.name}>{category.label}</TabsTrigger>
+                                )}
+
+                            </TabsList>
+
+                        </Tabs>
+
+                        {/*  <div className='flex gap-3 mt-5 bg-white/20 rounded-lg p-1 text-nowrap'>
                             {categories.map((category, index) => category.current ? (
                                 <span key={category.name} className="cursor-not-allowed inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-lg text-xs font-medium  text-black bg-white">
                                     {category.label}
@@ -72,14 +83,14 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                 <span
                                     onClick={() => onClickCategory(category)}
                                     key={category.name}
-                                    className=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-lg text-xs font-medium  text-white bg-neutral-600"
+                                    className=" cursor-pointer inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-lg text-xs font-medium  text-neutral-400"
                                 >
                                     {category.label}
                                 </span>
                             ))}
 
 
-                        </div>
+                        </div> */}
                     </div>
                     {/* Lista PC */}
                     {/* <ScrollShadow className='grow overflow-y-auto xl:pr-2 pb-4 mb-5  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden'>
@@ -97,20 +108,20 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     {/* Lista de orders */}
 
                     {orders?.length > 0 ? (
-                            <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto xl:pr-2 pb-4 mb-4  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden">
+                        <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto xl:pr-2 pb-4 mb-4  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden">
 
-                                {orders.map((order, index) => (
-                                    <div key={index} className='' >
-                                        <OrderCard
-                                            onClick={() => onClickOrderCard(order.id)}
-                                            order={order} isOrderSelected={() => false} />
-                                    </div>
-                                ))}
-                            </ScrollShadow>
+                            {orders.map((order, index) => (
+                                <div key={index} className='' >
+                                    <OrderCard
+                                        onClick={() => onClickOrderCard(order.id)}
+                                        order={order} isOrderSelected={() => false} />
+                                </div>
+                            ))}
+                        </ScrollShadow>
                     ) : (
                         <div className='flex flex-col items-center justify-start gap-6 h-full w-full '>
                             <div className='flex flex-col items-center gap-2 w-full'>
-                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
                                     <div className=' flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
                                         <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
                                             <span className="me-1 relative flex h-2 w-2">
@@ -125,7 +136,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                         <div className='text-xl font-medium h-4 bg-neutral-400 w-32 rounded-full'></div>
                                     </div>
                                 </div>
-                                <div className='w-full opacity-25 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                <div className='w-full opacity-25 relative flex cursor-pointer rounded-xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
                                     <div className='flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
                                         <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
                                             <span className="me-1 relative flex h-2 w-2">
@@ -140,7 +151,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                         <div className='text-xl font-medium h-4 bg-neutral-400 w-32 rounded-full'></div>
                                     </div>
                                 </div>
-                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-3xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
+                                <div className='w-full opacity-10 relative flex cursor-pointer rounded-xl p-5 border-l-4 border-neutral-400 bg-neutral-700 hover:bg-neutral-600'>
                                     <div className='flex flex-col gap-1 grow dark:text-white xl:w-48 space-y-2'>
                                         <div className="w-24 h-5 inline-flex items-center bg-neutral-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
                                             <span className="me-1 relative flex h-2 w-2">
@@ -176,9 +187,10 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         }
                     </ScrollShadow> */}
                 </>
-            )}
+            )
+            }
 
-        </div>
+        </div >
     )
 }
 

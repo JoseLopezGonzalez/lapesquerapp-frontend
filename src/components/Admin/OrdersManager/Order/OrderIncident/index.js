@@ -12,7 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, CheckCircle, Delete, Trash } from "lucide-react"
+import { AlertCircle, Ban, CheckCircle, Delete, Trash } from "lucide-react"
 import { useOrderContext } from "@/context/OrderContext"
 import { toast } from "react-hot-toast"
 import { darkToastTheme } from "@/customs/reactHotToast"
@@ -84,9 +84,9 @@ export default function OrderIncidentPanel() {
                         <div className="flex gap-2">
                             {/* button delete */}
                             {incident && (
-                                <Button onClick={handleDelete} disabled={loading} variant="destructive">
-                                    <Trash className="h-5 w-5" />
-                                    Eliminar
+                                <Button onClick={handleDelete} disabled={loading} variant="">
+                                    <Ban className="h-5 w-5" />
+                                    Cancelar Incidencia
                                 </Button>
                             )}
                         </div>

@@ -28,6 +28,15 @@ const initialCategories = [
 
 export default function OrdersManager() {
 
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setLoading(false)
+        }, 6000)
+
+        return () => clearTimeout(timeout)
+    }, [])
+
+
     const [orders, setOrders] = useState([]);
     const [categories, setCategories] = useState(initialCategories);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -35,7 +44,7 @@ export default function OrdersManager() {
     const [loading, setLoading] = useState(true);
     const [reload, setReload] = useState(false);
 
-   
+
     const handleOnChange = () => {
         setTimeout(() => setReload(prev => !prev), 0);
     }
@@ -76,10 +85,10 @@ export default function OrdersManager() {
         setSelectedOrder(orderId);
     }
 
-    const handleOnClickCategory = (category) => {
+    const handleOnClickCategory = (categoryName) => {
         setSelectedOrder(null);
         setCategories(categories.map((cat) => {
-            if (cat.name === category.name) {
+            if (cat.name === categoryName) {
                 return {
                     ...cat,
                     current: true,
@@ -112,16 +121,35 @@ export default function OrdersManager() {
         <>
             {loading ? (
                 /* Loader */
-                <div className="py-3">
-                    <div role="status" className="flex justify-center pt-96">
-                        <svg aria-hidden="true" className="inline w-12 h-12 mr-2 text-neutral-200 animate-spin dark:text-neutral-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                        </svg>
-                        <br />
-                        <span className="text-white dark:text-neutral-400 pt-2 ml-2 sr-only">Cargando...</span>
+                <div className="w-full h-full flex items-center justify-center">
+
+                <div className="loader ">
+                    <div className="box">
+                        <div className="logo">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 94 94"
+                                className="svg"
+                            >
+                                <path
+                                    d="M38.0481 4.82927C38.0481 2.16214 40.018 0 42.4481 0H51.2391C53.6692 0 55.6391 2.16214 55.6391 4.82927V40.1401C55.6391 48.8912 53.2343 55.6657 48.4248 60.4636C43.6153 65.2277 36.7304 67.6098 27.7701 67.6098C18.8099 67.6098 11.925 65.2953 7.11548 60.6663C2.37183 56.0036 3.8147e-06 49.2967 3.8147e-06 40.5456V4.82927C3.8147e-06 2.16213 1.96995 0 4.4 0H13.2405C15.6705 0 17.6405 2.16214 17.6405 4.82927V39.1265C17.6405 43.7892 18.4805 47.2018 20.1605 49.3642C21.8735 51.5267 24.4759 52.6079 27.9678 52.6079C31.4596 52.6079 34.0127 51.5436 35.6268 49.4149C37.241 47.2863 38.0481 43.8399 38.0481 39.0758V4.82927Z"
+                                ></path>
+                                <path
+                                    d="M86.9 61.8682C86.9 64.5353 84.9301 66.6975 82.5 66.6975H73.6595C71.2295 66.6975 69.2595 64.5353 69.2595 61.8682V4.82927C69.2595 2.16214 71.2295 0 73.6595 0H82.5C84.9301 0 86.9 2.16214 86.9 4.82927V61.8682Z"
+                                ></path>
+                                <path
+                                    d="M2.86102e-06 83.2195C2.86102e-06 80.5524 1.96995 78.3902 4.4 78.3902H83.6C86.0301 78.3902 88 80.5524 88 83.2195V89.1707C88 91.8379 86.0301 94 83.6 94H4.4C1.96995 94 0 91.8379 0 89.1707L2.86102e-06 83.2195Z"
+                                ></path>
+                            </svg>
+                        </div>
                     </div>
+                    <div className="box"></div>
+                    <div className="box"></div>
+                    <div className="box"></div>
+                    <div className="box"></div>
                 </div>
+            </div>
             ) : (
                 /* Contenido */
                 <div className="h-full">
@@ -138,7 +166,7 @@ export default function OrdersManager() {
                         </div>
                         <div className='grow  lg:pl-0'>
                             {selectedOrder ? (
-                                <div className='h-full text-white bg-neutral-950 rounded-2xl overflow-hidden'>
+                                <div className='h-full p-2 overflow-hidden'>
                                     <Order orderId={selectedOrder} onChange={handleOnChange} />
                                 </div>
                             ) : (

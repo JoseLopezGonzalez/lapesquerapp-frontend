@@ -9,13 +9,17 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className='h-screen bg-neutral-800'>
+    <div className='h-screen ' style={{backgroundColor: '#0f0f0f'}}>
 
       {/* <Layout>
       {children}
     </Layout> */}
 
-      <SidebarProvider className='h-full'>
+      <SidebarProvider className='h-full'
+       style={{
+                      "--sidebar-width": "18rem",
+                      "--sidebar-width-mobile": "16rem",
+                  }}>
         <AppSidebar />
         <main className='flex flex-col h-full overflow-hidden w-full  p-2 '>
           <div className='p-1'>

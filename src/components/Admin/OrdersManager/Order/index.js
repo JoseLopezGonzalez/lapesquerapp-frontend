@@ -21,6 +21,7 @@ import { darkToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderIncident from './OrderIncident';
+import { Card } from '@/components/ui/card';
 
 const OrderContent = () => {
 
@@ -128,14 +129,7 @@ const OrderContent = () => {
       {loading ? (
         <OrderSkeleton />
       ) : (
-        <div
-          className={`
-                p-9 h-full w-full bg-gradient-to-b 
-                bg-neutral-900   rounded-2xl
-                ${order?.status === 'pending' && 'border-orange-500/30'} 
-                ${order?.status === 'finished' && 'border-green-500/30'}`
-          }
-        >{/*  from-orange-500/50 from-10% via-neutral-950 via-30% to-neutral-950 to-90% */}
+        <Card className='p-9 h-full w-full '>
           <div className='h-full flex flex-col'>
             <div className='flex justify-between -mt-6 lg:-mt-2'>
               <div className='space-y-1 '>
@@ -299,7 +293,7 @@ const OrderContent = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       )}
     </>
   )
