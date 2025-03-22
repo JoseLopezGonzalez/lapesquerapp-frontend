@@ -102,6 +102,19 @@ const initialFormGroups = [
                 component: 'Input',
                 props: { placeholder: 'R-0000 AAA' },
             },
+            /* transportationNotes */
+            {
+                name: 'transportationNotes',
+                label: 'Observaciones',
+                component: 'Textarea',
+                rules: { maxLength: { value: 300, message: 'Máximo 300 caracteres' } },
+                colSpan: 'col-span-2',
+                props: {
+                    placeholder: 'Instrucciones especiales para el transporte...',
+                    className: 'min-h-[50px]',
+                    rows: 4,
+                },
+            },
         ],
     },
     {
@@ -158,17 +171,7 @@ const initialFormGroups = [
                     rows: 4,
                 },
             },
-            {
-                name: 'transportNotes',
-                label: 'Observaciones de transporte',
-                component: 'Textarea',
-                rules: { maxLength: { value: 300, message: 'Máximo 300 caracteres' } },
-                props: {
-                    placeholder: 'Instrucciones especiales para el transporte...',
-                    className: 'min-h-[50px]',
-                    rows: 4,
-                },
-            },
+           
         ],
     },
     {
@@ -232,12 +235,14 @@ export function useOrderFormConfig({ orderData }) {
                 transport: `${orderData.transport?.id}` || '',
                 truckPlate: orderData.truckPlate || '',
                 trailerPlate: orderData.trailerPlate || '',
+                transportationNotes: orderData.transportationNotes || '',
                 billingAddress: orderData.billingAddress || '',
                 shippingAddress: orderData.shippingAddress || '',
                 productionNotes: orderData.productionNotes || '',
                 accountingNotes: orderData.accountingNotes || '',
                 transportNotes: orderData.transportNotes || '',
                 emails: orderData.emails || '',
+
             });
         }
 

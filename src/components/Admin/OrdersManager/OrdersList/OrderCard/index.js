@@ -38,7 +38,7 @@ const OrderCard = ({ order, onClick}) => {
                     {isTomorrow && 'Mañana'}
                 </span>)}
 
-            < div className='grow dark:text-white xl:w-48 space-y-2'>
+            < div className='grow dark:text-white xl:w-48 space-y-1'>
 
                 {order.status === 'pending' && (
                     <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 border-2 dark:border-orange-500">

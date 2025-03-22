@@ -176,7 +176,7 @@ const OrderDetails = () => {
                         <div>
                             <div className="text-sm font-medium mb-1.5">Observaciones</div>
                             <div className="text-sm text-muted-foreground">
-                                Temperatura controlada requerida durante el transporte
+                                {order.transportationNotes}
                             </div>
                         </div>
 
