@@ -20,10 +20,11 @@ import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
+import OrderIncident from './OrderIncident';
 
 const OrderContent = () => {
 
-  const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab , updateTemperatureOrder } = useOrderContext();
+  const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
 
   // Función para cambiar el estado del pedido
   const handleStatusChange = async (newStatus) => {
@@ -88,13 +89,13 @@ const OrderContent = () => {
     const colors = {
       pending: 'orange',
       finished: 'green',
-      canceled: 'red',
+      incident: 'red',
     };
 
     const statusText = {
       pending: 'En producción',
       finished: 'Terminado',
-      canceled: 'Cancelado',
+      incident: 'Incidencia',
       // otros textos
     };
 
@@ -110,8 +111,8 @@ const OrderContent = () => {
           <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('finished')}>
             <StatusBadge color="green" label="Terminado" />
           </DropdownMenuItem>
-          <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('canceled')} >
-            <StatusBadge color="red" label="Cancelado" />
+          <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('incident')} >
+            <StatusBadge color="red" label="Incidencia" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -189,7 +190,7 @@ const OrderContent = () => {
                       <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
                         - 23 ºC
                       </DropdownMenuItem>
-                      
+
                     </DropdownMenuContent>
                   </DropdownMenu>
 
@@ -247,6 +248,8 @@ const OrderContent = () => {
                     <TabsTrigger value="documents">Envio de Documentos</TabsTrigger>
                     <TabsTrigger value="export">Exportar</TabsTrigger>
                     <TabsTrigger value="map">Mapa</TabsTrigger>
+                    {/* Incident */}
+                    <TabsTrigger value="incident">Incidencia</TabsTrigger>
                     {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                   </TabsList>
                   <div className="flex-1 overflow-y-hidden">
@@ -285,6 +288,10 @@ const OrderContent = () => {
 
                     <TabsContent value="map" className='h-full'>
                       <OrderMap />
+                    </TabsContent>
+
+                    <TabsContent value="incident" className='h-full'>
+                      <OrderIncident />
                     </TabsContent>
 
                   </div>

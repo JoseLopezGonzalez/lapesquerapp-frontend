@@ -1,5 +1,5 @@
 
-const OrderCard = ({ order, onClick}) => {
+const OrderCard = ({ order, onClick }) => {
 
     const orderId = order.id.toString().padStart(5, '0');
     const loadDate = order.loadDate.split('-').reverse().join('/'); //convertir fecha a dd/mm/yyyy
@@ -12,21 +12,28 @@ const OrderCard = ({ order, onClick}) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = tomorrow.toDateString() === loadDateObj.toDateString();
 
+    const baseClass = "relative flex cursor-pointer rounded-xl p-5 border-l-4"
+
+    let statusClass = ''
+
+    if (order.current && order.status === 'finished') {
+        statusClass = 'border-green-500 bg-green-400/70 hover:bg-green-400/80'
+    } else if (order.current && order.status === 'pending') {
+        statusClass = 'border-orange-500 bg-orange-400/90 hover:bg-orange-400'
+    } else if (order.current && order.status === 'incident') {
+        statusClass = 'border-red-500 bg-red-400/80 hover:bg-red-400'
+    } else if (order.status === 'incident') {
+        statusClass = 'border-red-500 bg-neutral-700 hover:bg-neutral-600'
+    } else if (order.status === 'finished') {
+        statusClass = 'border-green-500 bg-neutral-700 hover:bg-neutral-600'
+    } else {
+        statusClass = 'border-orange-500 bg-neutral-700 hover:bg-neutral-600'
+    }
     
     return (
         <div
-            className={`
-             relative flex cursor-pointer rounded-xl p-5 border-l-4 
-            ${order.current && order.status === 'finished' ?
-                    'border-green-500 bg-green-400/70 hover:bg-green-400/80' :
-                    order.current && order.status === 'pending' ?
-                        'border-orange-500 bg-orange-400/90 hover:bg-orange-400' :
-                        order.status === 'finished' ?
-                            'border-green-500 bg-neutral-700 hover:bg-neutral-600' :
-                            'border-orange-500 bg-neutral-700 hover:bg-neutral-600'
-                }
-            `}
-            onClick = {onClick}
+            className={`${baseClass} ${statusClass}`}
+            onClick={onClick}
         >
             {isToday && (
                 <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-white">
@@ -78,7 +85,7 @@ const OrderCard = ({ order, onClick}) => {
 
             </div >
         </div>
-            )
+    )
 }
 
-            export default OrderCard
+export default OrderCard

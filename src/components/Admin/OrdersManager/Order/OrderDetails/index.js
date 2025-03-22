@@ -188,16 +188,16 @@ const OrderDetails = () => {
 
                                 <div>
                                     {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
-                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-black h-fit bg-blue-700">
-                                        <div className=" text-white flex items-center justify-center px-1 py-1 h-full">
-                                            <div className="flex flex-col items-center text-xs leading-none gap-1">
-                                                <span className="text-[10px] font-bold">
-                                                    <Image src="/images/transports/eu-stars.svg" width={16} height={16} alt="Spain Flag" />
+                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-white h-[40px] bg-blue-700">
+                                        <div className=" text-white flex items-center justify-center px-1 h-full">
+                                            <div className="flex flex-col items-center text-xs leading-none gap-0.5">
+                                                <span className=" ">
+                                                    <Image src="/images/transports/eu-stars.svg" width={15} height={15} alt="Spain Flag" />
                                                 </span>
-                                                <span className="text-[10px] font-semibold">EU</span>
+                                                <span className="text-[11px] font-semibold">EU</span>
                                             </div>
                                         </div>
-                                        <div className="bg-white text-black px-4 py-1.5 text-lg font-bold tracking-widest flex-1 text-center">
+                                        <div style={{fontFamily: 'OCR A Std, monospace', fontWeight:600}} className="flex items-center justify-center bg-white text-black h-full py-0.5 text-[26px]   lining-nums flex-1 text-center">
                                             {order.truckPlate ? order.truckPlate
                                                 : (
                                                     <span className="animate-pulse">0000 AAA</span>
@@ -210,8 +210,8 @@ const OrderDetails = () => {
                                 {/* Matrícula del Remolque */}
                                 <div>
                                     {/* <div className="text-xs font-medium text-muted-foreground mb-1">Remolque</div> */}
-                                    <div className="w-full flex items-center rounded overflow-hidden shadow-md  border border-black bg-red-600">
-                                        <div className=" text-white px-4 py-1.5 text-lg font-bold tracking-widest text-center flex-1">
+                                    <div className="w-full flex items-center rounded overflow-hidden shadow-md h-[40px] border-2 border-red-800 bg-red-600">
+                                        <div style={{fontFamily: 'OCR A Std, monospace', fontWeight:600}} className=" flex items-center justify-center  text-white h-full py-0.5 text-[26px] lining-nums flex-1 text-center">
                                             {order.trailerPlate ? order.trailerPlate
                                                 : (
                                                     <span className="animate-pulse">R-0000 AAA</span>

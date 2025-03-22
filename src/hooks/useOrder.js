@@ -1,6 +1,6 @@
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
-import { createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, getOrder, setOrderStatus, updateOrder, updateOrderPlannedProductDetail } from '@/services/orderService';
+import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';
@@ -484,6 +484,64 @@ export function useOrder(orderId, onChange) {
             });
     }
 
+    const openOrderIncident = async (description) => {
+        const token = session?.user?.accessToken;
+        createOrderIncident(order.id, description, token)
+            .then((updated) => {
+                console.log('updated', updated);
+                setOrder(prevOrder => {
+                    return {
+                        ...prevOrder,
+                        status: 'incident',
+                        incident: updated
+                    }
+                });
+                onChange();
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    }
+
+    const resolveOrderIncident = async (resolutionType, resolutionNotes) => {
+        const token = session?.user?.accessToken;
+
+        return updateOrderIncident(order.id, resolutionType, resolutionNotes, token)
+            .then((updatedIncident) => {
+                setOrder((prev) => ({
+                    ...prev,
+                    incident: updatedIncident,
+                }));
+                onChange?.();
+                return updatedIncident;
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    };
+
+    /* delete orderIncident */
+    const deleteOrderIncident = async () => {
+        const token = session?.user?.accessToken;
+
+        return destroyOrderIncident(order.id, token)
+            .then(() => {
+                setOrder((prev) => ({
+                    ...prev,
+                    status: 'finished',
+                    incident: null,
+                }));
+                onChange?.();
+            })
+            .catch((err) => {
+                setError(err);
+                throw err;
+            });
+    }
+
+
 
     return {
         pallets,
@@ -502,6 +560,9 @@ export function useOrder(orderId, onChange) {
         fastExportDocuments,
         activeTab,
         setActiveTab,
-        updateTemperatureOrder
+        updateTemperatureOrder,
+        openOrderIncident,
+        resolveOrderIncident,
+        deleteOrderIncident
     };
 }
