@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import { EmptyState } from '@/components/Utilities/EmptyState';
+import { EmptyState } from '@/components/Utilities/EmptyState/index';
 
 
 const OrderPallets = () => {

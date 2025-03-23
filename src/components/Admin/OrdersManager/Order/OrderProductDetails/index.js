@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { EmptyState } from '@/components/Utilities/EmptyState';
+import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 
@@ -41,8 +41,8 @@ const OrderProductDetails = () => {
                                     <TableRow className='text-nowrap'>
                                         <TableCell className='py-14'>
                                             <EmptyState
-                                                title={'No existen productos'}
-                                                description={'No se han añadido productos a este pedido'}
+                                                title={'No existen detalles'}
+                                                description={'No se ha producido actualmente nada para este pedido'}
                                             />
                                         </TableCell>
                                     </TableRow>

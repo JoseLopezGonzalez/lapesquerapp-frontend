@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderIncident from './OrderIncident';
 import { Card } from '@/components/ui/card';
+import Loader from '@/components/Utilities/Loader';
 
 const OrderContent = () => {
 
@@ -127,7 +128,9 @@ const OrderContent = () => {
   return (
     <>
       {loading ? (
-        <OrderSkeleton />
+        <div className="w-full h-full flex items-center justify-center">
+          <Loader />
+        </div>
       ) : (
         <Card className='p-9 h-full w-full '>
           <div className='h-full flex flex-col'>

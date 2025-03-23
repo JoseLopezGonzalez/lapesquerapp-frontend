@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { Delete, GitBranchPlus, Pencil, Plus, SaveIcon, X } from 'lucide-react';
+import { Delete, GitBranchPlus, Package, Pencil, Plus, PlusCircle, SaveIcon, SearchX, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from '@/customs/reactHotToast';

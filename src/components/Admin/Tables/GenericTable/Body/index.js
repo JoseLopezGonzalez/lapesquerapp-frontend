@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/Utilities/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -121,7 +122,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 </td>
                                 {headers.map((_, index) => (
                                     <td key={index} className="px-6 py-3">
-                                        <div className="w-full h-6 bg-neutral-600 rounded-lg animate-pulse"></div>
+                                        <Skeleton className="w-full h-6 rounded-lg "/>
                                     </td>
                                 ))}
                             </tr>

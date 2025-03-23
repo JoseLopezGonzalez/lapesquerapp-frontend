@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { EmptyState } from '@/components/Utilities/EmptyState';
+import { EmptyState } from '@/components/Utilities/EmptyState/index';
 
 const OrderProduction = () => {
     const { mergedProductDetails } = useOrderContext();
