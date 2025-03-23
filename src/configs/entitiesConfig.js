@@ -266,7 +266,7 @@ export const configs = {
           options: {
             pending: { label: "Pendiente", color: "warning", outline: true },
             finished: { label: "Finalizado", color: "success", outline: true },
-            canceled: { label: "Cancelado", color: "primary", outline: true },
+            incident: { label: "Incidencia", color: "danger", outline: true },
             default: { label: "Desconocido", color: "secondary", outline: true },
           },
         },
