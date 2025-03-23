@@ -17,8 +17,11 @@ import { getCustomer } from '@/services/customerService';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useTaxOptions } from '@/hooks/useTaxOptions';
 import Loader from '@/components/Utilities/Loader';
+import { darkToastTheme } from '@/customs/reactHotToast';
+import toast from 'react-hot-toast';
+import { API_URL_V2 } from '@/configs/config';
 
-const CreateOrderForm = () => {
+const CreateOrderForm = ({onCreate}) => {
     const { productOptions } = useProductOptions();
     const { taxOptions } = useTaxOptions();
 
@@ -78,9 +81,67 @@ const CreateOrderForm = () => {
         });
     }, [defaultValues]);
 
-    const handleCreate = async (data) => {
-        console.log('Pedido a crear:', data);
+
+    const handleCreate = async (formData) => {
+        const toastId = toast.loading('Creando pedido...', darkToastTheme);
+
+        try {
+            const payload = {
+                customer: parseInt(formData.customer),
+                entryDate: formData.entryDate,
+                loadDate: formData.loadDate,
+                salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
+                payment: formData.payment ? parseInt(formData.payment) : null,
+                incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
+                buyerReference: formData.buyerReference || null,
+                transport: formData.transport ? parseInt(formData.transport) : null,
+                truckPlate: formData.truckPlate || null,
+                trailerPlate: formData.trailerPlate || null,
+                temperature: formData.temperature || null,
+                billingAddress: formData.billingAddress || null,
+                shippingAddress: formData.shippingAddress || null,
+                transportationNotes: formData.transportationNotes || null,
+                productionNotes: formData.productionNotes || null,
+                accountingNotes: formData.accountingNotes || null,
+                emails: formData.emails || null,
+                plannedProducts: formData.plannedProducts.map((line) => ({
+                    product: parseInt(line.product),
+                    quantity: parseFloat(line.quantity),
+                    boxes: parseInt(line.boxes),
+                    unitPrice: parseFloat(line.unitPrice),
+                    tax: parseInt(line.tax),
+                })),
+            };
+
+            const res = await fetch(`${API_URL_V2}orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || 'Error al crear el pedido');
+            }
+
+            const data = await res.json();
+
+            toast.success('Pedido creado correctamente', { id: toastId });
+            console.log('Pedido creado:', data);
+
+            // Aquí podrías redirigir o limpiar el formulario
+            // reset(); // si quieres resetear
+            onCreate(data.data.id);
+
+        } catch (error) {
+            console.error('Error al crear el pedido:', error);
+            toast.error(error.message || 'Error desconocido', { id: toastId });
+        }
     };
+
 
     const renderField = (field) => {
         const commonProps = {

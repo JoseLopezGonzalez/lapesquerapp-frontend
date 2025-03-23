@@ -29,7 +29,42 @@ const OrderCard = ({ order, onClick }) => {
     } else {
         statusClass = 'border-orange-500 bg-neutral-800 hover:bg-neutral-700'
     }
-    
+
+    const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
+        const colorVariants = {
+            green: {
+                bg: 'bg-green-100 dark:bg-green-900',
+                text: 'text-green-800 dark:text-green-300',
+                border: 'border-2 dark:border-green-500',
+                dot: 'bg-green-500'
+            },
+            orange: {
+                bg: 'bg-orange-100 dark:bg-orange-900',
+                text: 'text-orange-800 dark:text-orange-300',
+                border: 'border-2 dark:border-orange-500',
+                dot: 'bg-orange-500'
+            },
+            red: {
+                bg: 'bg-red-100 dark:bg-red-900',
+                text: 'text-red-800 dark:text-red-300',
+                border: 'border-2 dark:border-red-500',
+                dot: 'bg-red-500'
+            },
+            // Puedes añadir más colores aquí
+        };
+
+        const { bg, text, border, dot } = colorVariants[color] || colorVariants.green; // Fallback a verde
+
+        return (
+            <span
+                className={`inline-flex items-center ${bg} ${text} text-xs font-medium px-2.5 py-0.5 rounded-full ${border}`}
+            >
+                <span className={`w-2 h-2 me-1 ${dot} rounded-full`} />
+                {label}
+            </span>
+        );
+    };
+
     return (
         <div
             className={`${baseClass} ${statusClass}`}
@@ -47,22 +82,12 @@ const OrderCard = ({ order, onClick }) => {
 
             < div className='grow dark:text-white xl:w-48 space-y-1'>
 
-                {order.status === 'pending' && (
-                    <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 border-2 dark:border-orange-500">
-                        <span className="me-1 relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        En producción
-                    </span>
-                )}
+                <StatusBadge
+                    color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
+                    label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
+                />
 
-                {order.status === 'finished' && (
-                    <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300 border-2 dark:border-green-500">
-                        <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
-                        Terminado
-                    </span>
-                )}
+                
 
                 <h3 className='text-xl font-medium'>#{orderId}</h3>
                 <div>

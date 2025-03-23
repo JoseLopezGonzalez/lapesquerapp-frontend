@@ -112,7 +112,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                 {/* Table Body */}
                 <tbody className="divide-y divide-neutral-700/20">
                     {data.loading ? (
-                        // Skeleton rows for loading state
                         [...Array(14)].map((_, index) => (
                             <tr key={index}>
                                 <td className="py-2 px-4">
@@ -147,21 +146,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         key={header.name}
                                         className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm text-white sm:w-auto sm:max-w-none sm:pl-6 `}
                                     >
-                                        {/* Badge type */}
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
-
-                                        {/* Button type */}
-                                        {/* {header.type === 'button' && (
-                                            <div className="flex rounded-md shadow-sm">
-                                                <button onClick={row[header.name].delete.onClick} type="button" className=" group inline-flex items-center px-2 py-2 text-sm font-medium   border  rounded-l-lg  border-neutral-600 hover:border-red-600 text-white hover:text-white dark:hover:bg-red-700 ">
-                                                    <TrashIcon className="h-4 w-4 text-white" aria-hidden="true" />
-                                                </button>
-                                                <button onClick={row[header.name].view.onClick} type="button" className="group inline-flex items-center px-2 py-1 text-sm font-medium   border  rounded-r-md  bg-neutral-700 border-neutral-600 hover:border-sky-600 text-white hover:text-white hover:bg-sky-700 ">
-                                                    <ArrowRightIcon className="h-4 w-4 text-white" aria-hidden="true" />
-                                                </button>
-                                            </div>
-                                        )} */}
-
                                         {header.type === "button" && (
                                             <div className="flex min-w-14  items-center justify-center">
                                                 <Button
@@ -179,29 +164,21 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 </Button>
                                             </div>
                                         )}
-
-                                        {/* Text type */}
                                         {header.type === 'text' && (
                                             <span className="text-white">
                                                 {row[header.name] === 'N/A' ? '-' : row[header.name]}
                                             </span>
                                         )}
-
-                                        {/* id Type */}
                                         {header.type === 'id' && (
                                             <span className="text-wtite font-bold">
                                                 {row[header.name]}
                                             </span>
                                         )}
-
-                                        {/* weight type */}
                                         {header.type === 'weight' && (
                                             <span className="text-white">
                                                 {formatDecimalWeight(row[header.name])}
                                             </span>
                                         )}
-
-                                        {/* list type with bucle */}
                                         {header.type === 'list' && (
                                             <ul className="text-white text-nowrap">
                                                 {row[header.name].length > 0 &&
@@ -213,32 +190,25 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                     ))}
                                             </ul>
                                         )}
-
-                                        {/* Date type */}
                                         {header.type === 'date' && (
                                             <span className="text-white">
                                                 {/* si nes N/A devolver - */}
                                                 {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}
                                             </span>
                                         )}
-
-                                        {/* DateHour type DD/MM/YYYY - HH:MM */}
                                         {header.type === 'dateHour' && (
                                             <span className="text-white text-nowrap">
                                                 {row[header.name] === 'N/A' ? '-' : formatDateHour(row[header.name])}
                                             </span>
                                         )}
-
                                     </td>
                                 ))}
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            {/* Empty State */}
                             <td className="h-full py-48" colSpan={headers.length}>
                                 <div className="flex flex-col items-center justify-center mb-4">
-                                    {/* EmptyState placeholder */}
                                     <div className="w-full h-full flex flex-col items-center justify-center">
                                         <EmptyState
                                             title={emptyState.title}

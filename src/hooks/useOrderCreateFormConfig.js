@@ -15,6 +15,7 @@ const initialDefaultValues = {
     salesperson: '',
     payment: '',
     incoterm: '',
+    buyerReference: '',
     transport: '',
     truckPlate: '',
     trailerPlate: '',
@@ -95,6 +96,14 @@ const initialFormGroups = [
                 options: [],
                 props: { placeholder: 'Seleccionar Incoterm' },
             },
+            /* buyerReference */
+            {
+                name: 'buyerReference',
+                label: 'Referencia del comprador',
+                component: 'Input',
+                props: { placeholder: 'Referencia del comprador' },
+
+            }
         ],
     },
     {

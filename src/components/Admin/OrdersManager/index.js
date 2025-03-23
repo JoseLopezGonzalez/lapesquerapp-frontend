@@ -142,6 +142,13 @@ export default function OrdersManager() {
         setOnCreatingNewOrder(true);
     }
 
+    const handleOnCreatedOrder = (id) => {
+        handleOnChange();
+        setOnCreatingNewOrder(false);
+        setSelectedOrder(id);
+    }
+
+
 
 
     return (
@@ -175,7 +182,7 @@ export default function OrdersManager() {
                                 onCreatingNewOrder ? (
                                     <Card className='h-full   p-7 flex flex-col justify-center items-center'>
                                         <div className='w-full h-full overflow-y-auto'>
-                                            <CreateOrderForm />
+                                            <CreateOrderForm onCreate={handleOnCreatedOrder} />
                                         </div>
                                     </Card>
                                 ) : (
