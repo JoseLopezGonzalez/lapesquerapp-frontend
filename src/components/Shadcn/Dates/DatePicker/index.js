@@ -8,6 +8,8 @@ import React from 'react'
 const DatePicker = ({ value, onChange }) => {
     const [open, setOpen] = React.useState(false);
 
+    const selectedDate = new Date(value);
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -22,10 +24,9 @@ const DatePicker = ({ value, onChange }) => {
             <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                     mode="single"
-                    selected={value}
+                    selected={selectedDate}
                     onSelect={(date) => {
                         if (!date) return; // Por seguridad
-
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0'); // Mes es 0-indexado
                         const day = String(date.getDate()).padStart(2, '0');

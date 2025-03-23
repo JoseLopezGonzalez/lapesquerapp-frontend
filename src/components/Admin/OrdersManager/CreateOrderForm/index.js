@@ -12,9 +12,20 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import DatePicker from '@/components/Shadcn/Dates/DatePicker';
 import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig';
+import { useSession } from 'next-auth/react';
+import { getCustomer } from '@/services/customerService';
+import { useProductOptions } from '@/hooks/useProductOptions';
+import { useTaxOptions } from '@/hooks/useTaxOptions';
+import Loader from '@/components/Utilities/Loader';
 
 const CreateOrderForm = () => {
-    const { defaultValues, formGroups, loading } = useOrderCreateFormConfig();
+    const { productOptions } = useProductOptions();
+    const { taxOptions } = useTaxOptions();
+
+    const { data: session } = useSession();
+    const token = session?.user?.accessToken;
+
+    const { defaultValues, formGroups, loading, handleGetCustomer } = useOrderCreateFormConfig();
 
     const {
         register,
@@ -22,6 +33,8 @@ const CreateOrderForm = () => {
         control,
         reset,
         formState: { errors },
+        watch,
+        setValue
     } = useForm({
         defaultValues: {
             ...defaultValues,
@@ -29,6 +42,29 @@ const CreateOrderForm = () => {
         },
         mode: 'onChange',
     });
+
+    useEffect(() => {
+        const selectedCustomerId = watch('customer');
+        if (!selectedCustomerId) return;
+
+
+        getCustomer(selectedCustomerId, token).then((customer) => {
+            console.log('Customer:', customer);
+            setValue('salesperson', customer.salesperson?.id?.toString() || '');
+            setValue('payment', customer.paymentTerm?.id?.toString() || '');
+            setValue('incoterm', customer.incoterm?.id?.toString() || '');
+            setValue('billingAddress', customer.billingAddress || '');
+            setValue('shippingAddress', customer.shippingAddress || '');
+            setValue('transportationNotes', customer.transportationNotes || '');
+            setValue('productionNotes', customer.productionNotes || '');
+            setValue('accountingNotes', customer.accountingNotes || '');
+            setValue('transport', customer.transport?.id?.toString() || '');
+            setValue('emails', customer.emails || '');
+        }).catch((err) => {
+            console.error('Error al cargar datos del cliente:', err);
+        });
+    }, [watch('customer')]);
+
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -123,10 +159,12 @@ const CreateOrderForm = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto py-6">
+        <div className="w-full h-full p-6">
             <h1 className="text-2xl font-semibold mb-4">Crear nuevo pedido</h1>
             {loading ? (
-                <div>Cargando formulario...</div>
+                <div className='w-full h-full flex items-center justify-center'>
+                    <Loader />
+                </div>
             ) : (
                 <form onSubmit={handleSubmit(handleCreate)} className="flex flex-col gap-8">
                     {formGroups.map((group) => (
@@ -154,14 +192,45 @@ const CreateOrderForm = () => {
                         <Separator className="my-2" />
                         <div className="flex flex-col gap-4">
                             {fields.map((item, index) => (
-                                <div key={item.id} className="grid grid-cols-6 gap-4 items-end">
-                                    <Input {...register(`plannedProducts.${index}.product`)} placeholder="Producto" />
-                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.quantity`)} placeholder="Kg" />
+                                <div key={item.id} className="flex items-center justify-center gap-2 ">
+                                    <Controller
+                                        control={control}
+                                        name={`plannedProducts.${index}.product`}
+                                        render={({ field: { onChange, value } }) => (
+                                            <Combobox
+                                                options={productOptions}
+                                                value={value}
+                                                onChange={onChange}
+                                                placeholder="Selecciona un producto"
+                                            />
+                                        )}
+                                    />
+                                    {/* <Input {...register(`plannedProducts.${index}.product`)} placeholder="Producto" /> */}
+                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.quantity`)} placeholder="Cantidad" />
                                     <Input type="number" step="any" {...register(`plannedProducts.${index}.boxes`)} placeholder="Cajas" />
-                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.unitPrice`)} placeholder="€/kg" />
-                                    <Input {...register(`plannedProducts.${index}.tax`)} placeholder="IVA" />
-                                    <Button type="button" variant="ghost" onClick={() => remove(index)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.unitPrice`)} placeholder="Precio" />
+
+                                    <Controller
+                                        control={control}
+                                        name={`plannedProducts.${index}.tax`}
+                                        render={({ field: { onChange, value } }) => (
+                                            <Select value={value} onValueChange={onChange}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="iva" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {taxOptions.map((tax) => (
+                                                        <SelectItem key={tax.value} value={tax.value}>
+                                                            {tax.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
+                                    {/* <Input {...register(`plannedProducts.${index}.tax`)} placeholder="IVA" /> */}
+                                    <Button type="button" variant="outline" onClick={() => remove(index)}>
+                                        <Trash2 className="h-4 w-4 " />
                                     </Button>
                                 </div>
                             ))}
