@@ -10,6 +10,7 @@ import { Loader2, Package, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
+import CreateOrderForm from './CreateOrderForm';
 
 
 const initialCategories = [
@@ -150,7 +151,7 @@ export default function OrdersManager() {
                             ) : (
                                 <Card className='h-full   p-7 flex flex-col justify-center items-center'>
 
-                                    <EmptyState
+                                    {/*  <EmptyState
                                         icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                                         title='Seleccione un pedido'
                                         description='Selecciona un pedido para ver los detalles y realizar cambios.'
@@ -158,7 +159,11 @@ export default function OrdersManager() {
                                             name: 'Crear pedido nuevo',
                                             onClick: () => console.log('Nuevo pedido'),
                                         }}
-                                    />
+                                    /> */}
+                                    <div className='w-full h-full overflow-y-auto'>
+
+                                        <CreateOrderForm />
+                                    </div>
                                 </Card>
                             )}
                         </div>
