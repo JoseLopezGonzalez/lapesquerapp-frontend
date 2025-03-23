@@ -133,7 +133,7 @@ const OrderContent = () => {
         </div>
       ) : (
         <Card className='p-9 h-full w-full '>
-          <div className='h-full flex flex-col'>
+          <div className='h-full flex flex-col w-full'>
             <div className='flex justify-between -mt-6 lg:-mt-2'>
               <div className='space-y-1 '>
                 {renderStatusBadge(order.status)} {/* Aquí le pasas el status actual */}
@@ -234,8 +234,8 @@ const OrderContent = () => {
               </div>
             </div>
             <div className='flex-1 w-full overflow-y-hidden '>
-              <div className="container mx-auto py-3 space-y-8 h-full">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col'>
+              <div className="container mx-auto py-3 space-y-8 h-full w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
                   <TabsList className='w-fit'>
                     <TabsTrigger value="details">Detalles</TabsTrigger>
                     <TabsTrigger value="products">Previsión</TabsTrigger>
@@ -249,7 +249,7 @@ const OrderContent = () => {
                     <TabsTrigger value="incident">Incidencia</TabsTrigger>
                     {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                   </TabsList>
-                  <div className="flex-1 overflow-y-hidden">
+                  <div className="flex-1 overflow-y-hidden w-full">
 
                     <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
                       <OrderDetails />
