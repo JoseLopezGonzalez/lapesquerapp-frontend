@@ -5,6 +5,8 @@ import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { ScrollShadow } from '@nextui-org/react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -19,7 +21,7 @@ const sortOrdersByDate = (orders) => {
 
 
 
-const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard }) => {
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard , onClickAddNewOrder }) => {
 
     const [loading, setLoading] = useState(false);
 
@@ -32,7 +34,13 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
     return (
         <div className='flex flex-col h-full pt-5   px-7'>
-            <h2 className='pb-7 text-xl  dark:text-white font-semibold'>Pedidos Activos</h2>
+            <div className='w-full flex items-center justify-between pb-3'>
+                <h2 className=' text-xl  dark:text-white font-semibold'>Pedidos Activos</h2>
+                <Button size="icon" variant='outline' onClick={onClickAddNewOrder}>
+                    <Plus className='h-5 w-5' />
+                    {/* <span className='text-sm'>Nuevo Pedido</span> */}
+                </Button>
+            </div>
             {loading ? (
                 <>
 

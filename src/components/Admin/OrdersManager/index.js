@@ -28,10 +28,14 @@ const initialCategories = [
         label: 'Terminados',
         name: 'finished',
         current: false,
-    }
+    },
+
 ]
 
 export default function OrdersManager() {
+
+    const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
+
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -86,12 +90,15 @@ export default function OrdersManager() {
     });
 
     const handleOnClickOrderCard = (orderId) => {
+        setOnCreatingNewOrder(false);
         if (selectedOrder === orderId) return setSelectedOrder(null);
         setSelectedOrder(orderId);
     }
 
     const handleOnClickCategory = (categoryName) => {
         setSelectedOrder(null);
+        setOnCreatingNewOrder(false);
+
         setCategories(categories.map((cat) => {
             if (cat.name === categoryName) {
                 return {
@@ -109,6 +116,7 @@ export default function OrdersManager() {
 
     const handleOnChangeSearch = (value) => {
         /* Set current true category.name all  */
+        setOnCreatingNewOrder(false);
         setCategories(categories.map((cat) => {
             return {
                 ...cat,
@@ -118,6 +126,20 @@ export default function OrdersManager() {
 
         setSearchText(value);
         setSelectedOrder(null);
+    }
+
+    const handleOnClickAddNewOrder = () => {
+        /* Set category current 'all' */
+        setCategories(categories.map((cat) => {
+            return {
+                ...cat,
+                current: cat.name === 'all',
+            }
+        }
+        ));
+        setSelectedOrder(null);
+        setSearchText('');
+        setOnCreatingNewOrder(true);
     }
 
 
@@ -135,6 +157,7 @@ export default function OrdersManager() {
                     <div className="flex flex-col xl:flex-row h-full">
                         <div className='xl:h-full'>
                             <OrdersList
+                                onClickAddNewOrder={handleOnClickAddNewOrder}
                                 onClickOrderCard={handleOnClickOrderCard}
                                 orders={sortOrdersByDate}
                                 categories={categories}
@@ -148,24 +171,26 @@ export default function OrdersManager() {
                                 <div className='h-full overflow-hidden'>
                                     <Order orderId={selectedOrder} onChange={handleOnChange} />
                                 </div>
-                            ) : (
-                                <Card className='h-full   p-7 flex flex-col justify-center items-center'>
-
-                                    {/*  <EmptyState
-                                        icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-                                        title='Seleccione un pedido'
-                                        description='Selecciona un pedido para ver los detalles y realizar cambios.'
-                                        button={{
-                                            name: 'Crear pedido nuevo',
-                                            onClick: () => console.log('Nuevo pedido'),
-                                        }}
-                                    /> */}
-                                    <div className='w-full h-full overflow-y-auto'>
-
-                                        <CreateOrderForm />
-                                    </div>
-                                </Card>
-                            )}
+                            ) :
+                                onCreatingNewOrder ? (
+                                    <Card className='h-full   p-7 flex flex-col justify-center items-center'>
+                                        <div className='w-full h-full overflow-y-auto'>
+                                            <CreateOrderForm />
+                                        </div>
+                                    </Card>
+                                ) : (
+                                    <Card className='h-full   p-7 flex flex-col justify-center items-center'>
+                                        <EmptyState
+                                            icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                            title='Seleccione un pedido'
+                                            description='Selecciona un pedido para ver los detalles y realizar cambios.'
+                                            button={{
+                                                name: 'Crear pedido nuevo',
+                                                onClick: handleOnClickAddNewOrder,
+                                            }}
+                                        />
+                                    </Card>
+                                )}
                         </div>
                     </div>
                 </div>
