@@ -66,11 +66,12 @@ export default function PdfExtractor() {
 
             // 4. Leer la respuesta JSON
             const data = await response.json();
-            const parsedData = parseDocumentAIResponse(data.entities);
+            console.log(data);
+            /* const parsedData = parseDocumentAIResponse(data.entities); */
 
             // Mostrar el objeto final en consola
-            console.log(parsedData);
-            setResult(parsedData);
+            /* console.log(parsedData); */
+            /* setResult(parsedData); */
         } catch (error) {
             console.error(error);
             alert("Ocurrió un error al extraer el texto del PDF");
