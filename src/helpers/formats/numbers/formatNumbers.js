@@ -22,7 +22,7 @@ export const formatInteger = (number) => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
       useGrouping: true
-    }).format(number);
+    }).format(Number(number));
   }
   
   export const formatDecimalCurrency = (number) => {

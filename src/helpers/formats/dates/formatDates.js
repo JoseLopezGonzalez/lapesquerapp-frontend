@@ -16,3 +16,11 @@ export const formatDateHour = (date) => {
     const minute = String(dateObj.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} - ${hour}:${minute}`;
 }
+
+export const formatDateShort = (dateString) => {
+    return new Date(dateString).toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }); // Resultado: 26 feb 2025
+};
