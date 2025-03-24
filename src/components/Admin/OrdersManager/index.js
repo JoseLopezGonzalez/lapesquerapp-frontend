@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import OrdersList from './OrdersList';
-import examples from './examples.json';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
 import { getActiveOrders } from '@/services/orderService';
