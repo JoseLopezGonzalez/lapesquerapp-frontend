@@ -23,6 +23,7 @@ import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderIncident from './OrderIncident';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
+import OrderCustomerHistory from './OrderCustomerHistory';
 
 const OrderContent = () => {
 
@@ -247,6 +248,7 @@ const OrderContent = () => {
                     <TabsTrigger value="map">Mapa</TabsTrigger>
                     {/* Incident */}
                     <TabsTrigger value="incident">Incidencia</TabsTrigger>
+                    <TabsTrigger value="customer-history">Histórico</TabsTrigger>
                     {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                   </TabsList>
                   <div className="flex-1 overflow-y-hidden w-full">
@@ -289,6 +291,10 @@ const OrderContent = () => {
 
                     <TabsContent value="incident" className='h-full'>
                       <OrderIncident />
+                    </TabsContent>
+
+                    <TabsContent value="customer-history" className='h-full'>
+                      <OrderCustomerHistory />
                     </TabsContent>
 
                   </div>
