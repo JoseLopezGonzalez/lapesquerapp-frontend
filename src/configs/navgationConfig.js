@@ -202,7 +202,7 @@ export const navigationManagerConfig = [
         name: 'Almacenes interactivos',
         icon: LandPlot,
         allowedRoles: ["manager"],
-        href: '/admin/stores',
+        href: '/admin/stores-manager',
     },
     {
         name: 'Recepciones de Materia Prima',
