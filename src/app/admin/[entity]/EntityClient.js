@@ -223,7 +223,8 @@ export default function EntityClient({ config }) {
                                 label: 'Ver',
                                 onClick: () => {
                                     const viewUrl = config.viewRoute.replace(':id', row.id);
-                                    router.push(viewUrl);
+                                    window.open(viewUrl, '_blank');
+                                    /* router.push(viewUrl); */
                                 },
                             },
                             delete: {
