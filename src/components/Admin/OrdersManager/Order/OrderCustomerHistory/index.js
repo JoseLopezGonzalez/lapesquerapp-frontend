@@ -40,6 +40,8 @@ import {
     YAxis,
     Tooltip,
     Legend,
+    AreaChart,
+    Area,
 } from "recharts"
 
 export default function OrderCustomerHistory() {
@@ -60,6 +62,42 @@ export default function OrderCustomerHistory() {
                     new Date(a.load_date).getTime() - new Date(b.load_date).getTime()
             )
     }
+
+    const CustomTooltipQuantity = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-neutral-800 border border-neutral-900 p-3 rounded-lg backdrop-blur-lg drop-shadow-lg	">
+                    {payload.map((data, index) => (
+                        <div key={index}>
+                            <p className=' text-sm'>{formatDateShort(data.payload.load_date)}</p>
+                            <p className="text-sm font-semibold" key={index} style={{ color: data.color, margin: 0 }}>
+                                {`${formatDecimalWeight(data.value)}`}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const CustomTooltipPrice = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-neutral-800 border border-neutral-900 p-3 rounded-lg backdrop-blur-lg drop-shadow-lg	">
+                    {payload.map((data, index) => (
+                        <div key={index}>
+                            <p className=' text-sm'>{formatDateShort(data.payload.load_date)}</p>
+                            <p className="text-sm font-semibold" key={index} style={{ color: data.color, margin: 0 }}>
+                                {`${formatDecimalCurrency(data.value)}/kg`}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
 
     return (
         <div className="h-full pb-2">
@@ -109,7 +147,7 @@ export default function OrderCustomerHistory() {
                                             </div>
 
 
-                                            <div className="grid grid-cols-2 md:grid-cols-6 gap-x-6 gap-y-2 text-sm pr-5">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-sm pr-5">
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-muted-foreground">
                                                         Cajas Totales
@@ -119,20 +157,7 @@ export default function OrderCustomerHistory() {
                                                     </span>
                                                 </div>
 
-                                                <div className="w-20 h-20">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <LineChart data={chartData}>
-                                                            <Line
-                                                                type="monotone"
-                                                                dataKey="net_weight"
-                                                                name="kg"
-                                                                stroke="#10b981"
-                                                                strokeWidth={2}
-                                                                dot={{ r: 0 }}
-                                                            />
-                                                        </LineChart>
-                                                    </ResponsiveContainer>
-                                                </div>
+
 
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-muted-foreground">
@@ -143,20 +168,7 @@ export default function OrderCustomerHistory() {
                                                     </span>
                                                 </div>
 
-                                                <div className="w-20 h-20">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <LineChart data={chartData}>
-                                                            <Line
-                                                                type="monotone"
-                                                                dataKey="unit_price"
-                                                                name="€/kg"
-                                                                stroke="#6366f1"
-                                                                strokeWidth={2}
-                                                                dot={{ r: 0 }}
-                                                            />
-                                                        </LineChart>
-                                                    </ResponsiveContainer>
-                                                </div>
+
 
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-muted-foreground">
@@ -179,30 +191,37 @@ export default function OrderCustomerHistory() {
                                         </div>
                                     </AccordionTrigger>
 
-                                    <AccordionContent className="p-4 space-y-4">
+                                    <AccordionContent className="p-4 space-y-4 w-full">
                                         {/* Gráficas inline */}
-                                        <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                                            <Card className="w-full md:w-1/2 h-48 shadow-sm">
+                                        <div className="grid grid-cols-2 gap-5 w-full p-6 pt-3">
+                                            <Card className="w-full  h-48 shadow-sm">
                                                 <CardHeader className="pb-1 px-4 pt-2">
                                                     <CardTitle className="text-sm font-medium">
                                                         Evolución de precio
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="h-full pt-0 px-2">
+                                                <CardContent className="h-full pt-0 px-2 w-full ">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <LineChart data={chartData}>
+                                                        <AreaChart data={chartData}>
+                                                            <defs>
+                                                                <linearGradient id="color" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="5%" stopColor="rgb(250 250 250)" stopOpacity={0.8} />
+                                                                    <stop offset="95%" stopColor="rgb(250 250 250)" stopOpacity={0} />
+                                                                </linearGradient>
+                                                            </defs>
                                                             <CartesianGrid
                                                                 strokeDasharray="3 3"
                                                                 strokeOpacity={0.15}
                                                             />
-                                                            <XAxis
+                                                            {/*  <XAxis
                                                                 dataKey="load_date"
                                                                 tickFormatter={(date) =>
                                                                     formatDateShort(date)
                                                                 }
-                                                            />
+                                                            /> */}
                                                             <YAxis />
-                                                            <Tooltip
+                                                            <Tooltip content={<CustomTooltipPrice />} />
+                                                            {/* <Tooltip
                                                                 formatter={(value) =>
                                                                     formatDecimalCurrency(value)
                                                                 }
@@ -213,22 +232,17 @@ export default function OrderCustomerHistory() {
                                                                     fontSize: 12,
                                                                     borderRadius: 8,
                                                                 }}
-                                                            />
-                                                            <Legend />
-                                                            <Line
-                                                                type="monotone"
-                                                                dataKey="unit_price"
-                                                                name="€/kg"
-                                                                stroke="#6366f1"
-                                                                strokeWidth={2}
-                                                                dot={{ r: 1 }}
-                                                            />
-                                                        </LineChart>
+                                                            /> */}
+                                                            {/* <Legend /> */}
+
+                                                            <Area type="monotone" dataKey="unit_price" stroke="rgb(250 250 250)" strokeWidth={2.5} fillOpacity={1} fill="url(#color)" />
+
+                                                        </AreaChart>
                                                     </ResponsiveContainer>
                                                 </CardContent>
                                             </Card>
 
-                                            <Card className="w-full md:w-1/2 h-48 shadow-sm">
+                                            <Card className="w-full h-48 shadow-sm">
                                                 <CardHeader className="pb-1 px-4 pt-2">
                                                     <CardTitle className="text-sm font-medium">
                                                         Evolución de peso
@@ -236,19 +250,26 @@ export default function OrderCustomerHistory() {
                                                 </CardHeader>
                                                 <CardContent className="h-full pt-0 px-2">
                                                     <ResponsiveContainer width="100%" height="100%">
-                                                        <LineChart data={chartData}>
+                                                        <AreaChart data={chartData}>
+                                                            <defs>
+                                                                <linearGradient id="color" x1="0" y1="0" x2="0" y2="1">
+                                                                    <stop offset="5%" stopColor="rgb(250 250 250)" stopOpacity={0.8} />
+                                                                    <stop offset="95%" stopColor="rgb(250 250 250)" stopOpacity={0} />
+                                                                </linearGradient>
+                                                            </defs>
                                                             <CartesianGrid
                                                                 strokeDasharray="3 3"
                                                                 strokeOpacity={0.15}
                                                             />
-                                                            <XAxis
+                                                            {/*  <XAxis
                                                                 dataKey="load_date"
                                                                 tickFormatter={(date) =>
                                                                     formatDateShort(date)
                                                                 }
-                                                            />
+                                                            /> */}
                                                             <YAxis />
-                                                            <Tooltip
+                                                            <Tooltip content={<CustomTooltipQuantity />} />
+                                                            {/* <Tooltip
                                                                 formatter={(value) =>
                                                                     formatDecimalWeight(value)
                                                                 }
@@ -258,9 +279,10 @@ export default function OrderCustomerHistory() {
                                                                 contentStyle={{
                                                                     fontSize: 12,
                                                                     borderRadius: 8,
+                                                                    backgroundColor: "rgba(51, 51, 51, 0.9)",
                                                                 }}
-                                                            />
-                                                            <Legend />
+                                                            /> */}
+                                                            {/* <Legend /> */}
                                                             <Line
                                                                 type="monotone"
                                                                 dataKey="net_weight"
@@ -270,7 +292,8 @@ export default function OrderCustomerHistory() {
                                                                 strokeDasharray="4 2"
                                                                 dot={{ r: 1 }}
                                                             />
-                                                        </LineChart>
+                                                            <Area type="monotone" dataKey="net_weight" stroke="rgb(250 250 250)" strokeWidth={2.5} fillOpacity={1} fill="url(#color)" />
+                                                        </AreaChart>
                                                     </ResponsiveContainer>
                                                 </CardContent>
                                             </Card>
