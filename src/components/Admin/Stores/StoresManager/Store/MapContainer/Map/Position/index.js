@@ -1,7 +1,13 @@
+import { useStoreContext } from '@/context/StoreContext';
 import React from 'react'
 
 const Position = ({ posicion }) => {
-    const { coordenates, empty, name, id, type, onClick, position } = posicion;
+    const { isPositionFilled,  filteredPositionsMap} = useStoreContext();
+    const { coordenates, name, id, type, onClick, position } = posicion;
+
+    const isRelevant = filteredPositionsMap.has(id);
+    const isFilled = isPositionFilled(id);
+
 
     const width = position.width || 180;
     const height = position.height || 230;
@@ -15,9 +21,11 @@ const Position = ({ posicion }) => {
     const { blurX, mainX, textX } = offsetByType[type] || offsetByType.center;
     const baseY = coordenates.y + 40;
 
-    const fondoClasses = !empty
-        ? 'fill-white group-hover:fill-neutral-500'
-        : 'fill-neutral-200 dark:fill-neutral-400 group-hover:fill-neutral-300';
+    const fondoClasses = isRelevant ?
+        'fill-green-500 group-hover:fill-green-800'
+        : isFilled
+            ? 'fill-neutral-300 group-hover:fill-neutral-500'
+            : 'fill-neutral-600 group-hover:fill-neutral-300';
 
     return (
         <g id={id} className="group cursor-pointer" onClick={onClick}>

@@ -1,8 +1,35 @@
+"use client"
 
 import Map from './MapContainer/Map'
 import MapContainer from './MapContainer'
 import { useStore } from '@/hooks/useStore';
 import Loader from '@/components/Utilities/Loader';
+import { StoreProvider, useStoreContext } from '@/context/StoreContext';
+
+
+import {
+    Box,
+
+    Package,
+
+    Filter,
+    ChevronDown,
+    ChevronUp,
+} from "lucide-react"
+
+// Add these imports at the top of the file
+import { Check, ChevronsUpDown } from "lucide-react"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+/* import { Slider } from "@/components/ui/slider" */
+import { Separator } from "@/components/ui/separator"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Combobox } from '@/components/Shadcn/Combobox';
+import Filters from './Filters';
+import { Card } from '@/components/ui/card';
 
 
 
@@ -10,11 +37,9 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Store({ storeId }) {
+export const StoreContent = () => {
 
-    const { store, loading, error } = useStore(storeId);
-
-    const map = store?.map;
+    const { loading, error, productsOptions } = useStoreContext();
 
     if (loading) {
         return (
@@ -26,43 +51,60 @@ export default function Store({ storeId }) {
 
     return (
         <>
-            {/* <StoreProvider storeData={storeData} > */}
+            <div className='flex items-center justify-center w-full h-full gap-4'>
 
-            {/* Map */}
-            <MapContainer>
-                <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} map={map} />
-            </MapContainer>
+                {/* Map */}
+                <Card className='grow flex items-center justify-center w-full h-full overflow-hidden'>
+                    <MapContainer>
+                        <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
+                    </MapContainer>
+                </Card>
 
-            {/* Slideovers */}
-            {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />
+                <Card className='max-w-[350px] w-full flex items-center justify-center h-full overflow-hidden'>
+                    <Filters />
+                </Card>
+
+                {/* Slideovers */}
+                {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />
                 <UnlocatedElementsSlider open={openUnlocatedElementsSlideover} onClose={() => setOpenUnlocatedElementsSlideover(false)} data={unlocatedElementsSlideoverData} />
  */}
-            {/* Modals */}
-            {/*  <ModalAddToPosition show={openAddElementToPositionModal} onClose={() => setOpenAddElementToPositionModal(false)} data={addElementToPositionModalData} elementos={almacen.content} />
+                {/* Modals */}
+                {/*  <ModalAddToPosition show={openAddElementToPositionModal} onClose={() => setOpenAddElementToPositionModal(false)} data={addElementToPositionModalData} elementos={almacen.content} />
                 */} {/* <RegisterPalletModal open={openRegisterPalletModal} onClose={() => setOpenRegisterPalletModal(false)} onSubmit={registerPallet} storeId={almacen.id} /> */}
-            {/* <ModalPrintPalletLabel show={openLabelPalletPrintModal} onClose={() => setOpenLabelPalletPrintModal(false)} data={labelPalletPrintModalData} />
+                {/* <ModalPrintPalletLabel show={openLabelPalletPrintModal} onClose={() => setOpenLabelPalletPrintModal(false)} data={labelPalletPrintModalData} />
                 <ReportsModal open={openReportsModal} onClose={() => setOpenReportsModal(false)} />
  */}
-            {/* Register Pallet Modal */}
+                {/* Register Pallet Modal */}
 
-            {/* <RegisterPalletModal open={openRegisterPalletModal} onClose={() => setOpenRegisterPalletModal(false)} onSubmit={registerPallet} storeId={almacen.id} />
+                {/* <RegisterPalletModal open={openRegisterPalletModal} onClose={() => setOpenRegisterPalletModal(false)} onSubmit={registerPallet} storeId={almacen.id} />
  */}
-            {/* Edit Pallet Modal */}
-            {/* <PalletModal open={openEditPalletModal} onClose={() => setOpenEditPalletModal(false)} onSubmit={editPallet} data={editPalletModalData} storeId={almacen.id} />
+                {/* Edit Pallet Modal */}
+                {/* <PalletModal open={openEditPalletModal} onClose={() => setOpenEditPalletModal(false)} onSubmit={editPallet} data={editPalletModalData} storeId={almacen.id} />
  */}
-            {/* Print Container */}
-            {/* <PrintContainer open={openPrintMap}>
+                {/* Print Container */}
+                {/* <PrintContainer open={openPrintMap}>
                     <PrintableMap />
                 </PrintContainer>
  */}
-            {/*  </StoreProvider> */}
+                {/*  </StoreProvider> */}
 
-            {/* Floating Action Button */}
-            {/*  <FloatingActionButton actions={fabActions} /> */}
+                {/* Floating Action Button */}
+                {/*  <FloatingActionButton actions={fabActions} /> */}
 
-            {/* Toast */}
-            {/*  {createPortal(<Toaster />, document.body)} */}
+                {/* Toast */}
+                {/*  {createPortal(<Toaster />, document.body)} */}
+            </div>
 
         </>
+    )
+}
+
+export const Store = ({ storeId }) => {
+
+    return (
+        <StoreProvider storeId={storeId} >
+            <StoreContent />
+        </StoreProvider>
+
     )
 }

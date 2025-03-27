@@ -1,6 +1,11 @@
+import { useStoreContext } from '@/context/StoreContext';
 import Position from './Position';
 
-const Map = ({ onClickPosition , isPositionEmpty , map }) => {
+const Map = ({ onClickPosition , isPositionEmpty  }) => {
+
+    const { store } = useStoreContext();
+
+    const map = store?.map;
 
 
     return (
@@ -37,7 +42,6 @@ const Map = ({ onClickPosition , isPositionEmpty , map }) => {
                         type: posicion.tipo,
                         name: posicion.nombre,
                         coordenates: { x: posicion.x, y: posicion.y },
-                        empty: isPositionEmpty(posicion),
                         onClick: () => onClickPosition(posicion),
                     };
                     return <Position key={index} posicion={formatedPosition} />

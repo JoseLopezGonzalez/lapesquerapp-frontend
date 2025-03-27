@@ -19,7 +19,7 @@ import { ScrollShadow } from "@nextui-org/react";
 import { useState } from "react";
 import StoreCard from "./StoresManager/StoreCard";
 import SkeletonStoreCard from "./StoresManager/StoreCard/SkeletonStoreCard";
-import Store from "./StoresManager/Store";
+import { Store } from "./StoresManager/Store";
 
 
 // Configurar Numeral.js para usar el formato español
@@ -79,7 +79,7 @@ export default function StoresManager() {
             </ScrollShadow>
 
             {/* Content Box */}
-            <Card className='grow flex items-center justify-center w-full overflow-hidden'>
+            <div className='grow flex items-center justify-center w-full overflow-hidden'>
               {loadingStore ? (
                 <div className="h-full w-full flex justify-center items-center">
                   <Loader />
@@ -89,7 +89,7 @@ export default function StoresManager() {
               ) : (
                 <Store storeId={selectedStoreId} />
               )}
-            </Card>
+            </div>
           </div>
         )}
 
