@@ -1,0 +1,58 @@
+export const barcos = [
+  /* BEATRIZ LA POLA	ADRIMAR CD	E21610589	988214
+BELLITA CALÉ	MARIA BELLA PEREZ RIVERO	29781809Y	781809
+ABUELO PURGA	ANTONIO JOSE GARCÍA RAMOS	29492009Y	988223
+
+*/
+  { barco: "BEATRIZ LA POLA", armador: "ADRIMAR CD", cifArmador: "E21610589", codA3erp: "988214" },
+  { barco: "BELLITA CALÉ", armador: "MARIA BELLA PEREZ RIVERO", cifArmador: "29781809Y", codA3erp: "781809" },
+  { barco: "ABUELO PURGA", armador: "ANTONIO JOSE GARCÍA RAMOS", cifArmador: "29492009Y", codA3erp: "988223" },
+  { barco: "ALBA MARINA", armador: "DANIEL VILLEGAS ORTA", cifArmador: "48931261A", codA3erp: "931261" },
+  { barco: "ALVEI MIÑORI", armador: "LATIFA JBILOU BABA", cifArmador: "49278134J", codA3erp: "278134" },
+  { barco: "CABETE", armador: "JESUS GARCIA ACOSTA", cifArmador: "29619085F", codA3erp: "89" },
+  { barco: "DELFÍN CELESTE", armador: "MARIA CINTA LOSADA FERNANDEZ", cifArmador: "29777876Y", codA3erp: "988206" },
+  { barco: "LA CABRIOLA", armador: "PESQUERA LOS GUACHI S.L.", cifArmador: "B10691012", codA3erp: "691012" },
+  { barco: "LA TATA", armador: "ANTONIO MANUEL RODRIGUEZ SOUSA", cifArmador: "44220196M", codA3erp: "220196" },
+  { barco: "MARIA DEL CARMEN", armador: "LOS GEMELOS CB", cifArmador: "E13886957", codA3erp: "988209" },
+  { barco: "MARIA JESUS SEGUNDA", armador: "PUNTALEKE C.B.", cifArmador: "E21492228", codA3erp: "146" },
+  { barco: "MELVA 2º", armador: "FRANCISCO RUIZ MARTINEZ", cifArmador: "29789395W", codA3erp: "988243" },
+  { barco: "PAYMOGO", armador: "MARÍA ORTEGA LOPEZ", cifArmador: "29472335C", codA3erp: "988231" },
+  { barco: "PLAYA DORADA UNO", armador: "HERMANOS CORDERO GIL C.B.", cifArmador: "E72452600", codA3erp: "452600" },
+  { barco: "ROSA MARI", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216" },
+  { barco: "SANTA EMILIA", armador: "RAUL RUIZ GONZALEZ", cifArmador: "48927915S", codA3erp: "927915" },
+  { barco: "TALITO CHICO", armador: "JOSE AUGUSTO ORIA", cifArmador: "29051689K", codA3erp: "51689" },
+  { barco: "NUEVO ESTRELLA SANTI PETRI", armador: "DIAZ RAMIREZ CB", cifArmador: "E21602669", codA3erp: "145" },
+  { barco: "CANELA 1", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216" },
+  { barco: "TANIA Y DANIEL", armador: "JOSE ANTONIO MORA DE LA ROSA", cifArmador: "48930738D", codA3erp: "930738" },
+  { barco: "CARLOS Y DAVID", armador: "JUAN MANUEL RAMOS DE LA ROSA", cifArmador: "48951215Q", codA3erp: "951215" },
+  { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035" },
+];
+
+export const armadores = [
+  { armador: "ADRIMAR CD", cif: "E21610589", codA3erp: "988214" },
+  { armador: "MARIA BELLA PEREZ RIVERO", cif: "29781809Y", codA3erp: "781809" },
+  { armador: "ANTONIO JOSE GARCÍA RAMOS", cif: "29492009Y", codA3erp: "988223" },
+  { armador: "DANIEL VILLEGAS ORTA", cif: "48931261A", codA3erp: "931261" },
+  { armador: "LATIFA JBILOU BABA", cif: "49278134J", codA3erp: "278134" },
+  { armador: "JESUS GARCIA ACOSTA", cif: "29619085F", codA3erp: "89" },
+  { armador: "MARIA CINTA LOSADA FERNANDEZ", cif: "29777876Y", codA3erp: "988206" },
+  { armador: "PESQUERA LOS GUACHI S.L.", cif: "B10691012", codA3erp: "691012" },
+  { armador: "ANTONIO MANUEL RODRIGUEZ SOUSA", cif: "44220196M", codA3erp: "220196" },
+  { armador: "LOS GEMELOS CB", cif: "E13886957", codA3erp: "988209" },
+  { armador: "PUNTALEKE C.B.", cif: "E21492228", codA3erp: "146" },
+  { armador: "FRANCISCO RUIZ MARTINEZ", cif: "29789395W", codA3erp: "988243" },
+  { armador: "MARÍA ORTEGA LOPEZ", cif: "29472335C", codA3erp: "988231" },
+  { armador: "HERMANOS CORDERO GIL C.B.", cif: "E72452600", codA3erp: "452600" },
+  { armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cif: "49085648Z", codA3erp: "988216" },
+  { armador: "RAUL RUIZ GONZALEZ", cif: "48927915S", codA3erp: "927915" },
+  { armador: "JOSE AUGUSTO ORIA", cif: "29051689K", codA3erp: "51689" },
+  { armador: "DIAZ RAMIREZ CB", cif: "E21602669", codA3erp: "145" },
+  { armador: "JOSE ANTONIO MORA DE LA ROSA", cif: "48930738D", codA3erp: "930738" },
+  { armador: "JUAN MANUEL RAMOS DE LA ROSA", cif: "48951215Q", codA3erp: "951215" },
+  { armador: "EVA MARIA MARTIN GONZALEZ", cif: "44236035C", codA3erp: "236035" },
+];
+
+
+export const lonjas = [
+  { nombre: "Cofradia pescadores Santo Cristo del Mar", cif: 'G21011432', codA3erp: "A11432" },
+]

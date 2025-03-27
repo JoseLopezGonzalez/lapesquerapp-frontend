@@ -1,8 +1,19 @@
+'use client'
+
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import React from 'react'
+import { Download } from 'lucide-react'
+import React, { useState } from 'react'
+import ExportModal from './ExportModal'
+import {
+    Dialog,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 
 const AlbaranCofraWeb = ({ document }) => {
+    const [open, setOpen] = useState(false)
+
     return (
         <div>
             <div className="container mx-auto py-3 space-y-3">
@@ -242,6 +253,22 @@ const AlbaranCofraWeb = ({ document }) => {
                     </div>
                 </Card>
             </div>
+
+
+
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                    {/*  <Button variant="outline">Exportar a Software Contable</Button> */}
+                    <div className="fixed bottom-8 right-12">
+                        <Button className="rounded-full" >
+                            <Download className="w-6 h-6" />
+                            Exportar
+                        </Button>
+                    </div>
+                </DialogTrigger>
+                <ExportModal document={document} />
+            </Dialog>
+
         </div>
     )
 }
