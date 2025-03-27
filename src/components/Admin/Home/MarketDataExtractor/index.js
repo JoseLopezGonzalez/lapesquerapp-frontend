@@ -228,13 +228,13 @@ export default function MarketDataExtractor() {
         }
     }
 
-    
+
 
     const handleIntegrate = () => {
         console.log("Integrando información en la app...");
     }
 
-    
+
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -343,10 +343,9 @@ export default function MarketDataExtractor() {
         <>
             <div className="flex h-full bg-background gap-4">
                 {/* Panel de control (30%) */}
-                <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
+                {/*  <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
                     <h2 className="text-2xl font-bold">Panel de Control</h2>
 
-                    {/* Input de archivo */}
                     <div className="space-y-2">
                         <label htmlFor="pdf-upload" className="text-sm font-medium">
                             Seleccionar documento PDF
@@ -362,8 +361,6 @@ export default function MarketDataExtractor() {
                             />
                         </div>
                     </div>
-
-                    {/* Selector de tipo de documento */}
                     <div className="space-y-2">
                         <label htmlFor="document-type" className="text-sm font-medium">
                             Tipo de documento
@@ -380,13 +377,11 @@ export default function MarketDataExtractor() {
                         </Select>
                     </div>
 
-                    {/* Botón de procesar */}
                     <Button className="w-full" onClick={handleProcess}>
                         <Sparkles className=" h-4 w-4" />
                         Extraer datos con IA
                     </Button>
 
-                    {/* Botones de acción */}
                     <div className="space-y-3 mt-auto">
                         <Button className="w-full" variant="outline" onClick={handleIntegrate}>
                             <Link2 className="mr-2 h-4 w-4" />
@@ -401,10 +396,10 @@ export default function MarketDataExtractor() {
                             Exportación a FacilCom
                         </Button>
                     </div>
-                </Card>
+                </Card> */}
 
                 {/* Panel de vista previa (70%) */}
-               {/*  <div className="w-full  flex flex-col">
+                {/*  <div className="w-full  flex flex-col">
 
                     <div className="w-full h-full flex  justify-center  overflow-y-auto">
 
