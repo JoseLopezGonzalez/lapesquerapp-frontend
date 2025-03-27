@@ -404,7 +404,7 @@ export default function MarketDataExtractor() {
                 </Card>
 
                 {/* Panel de vista previa (70%) */}
-                <div className="w-full  flex flex-col">
+               {/*  <div className="w-full  flex flex-col">
 
                     <div className="w-full h-full flex  justify-center  overflow-y-auto">
 
@@ -423,7 +423,7 @@ export default function MarketDataExtractor() {
                             </div>
                         )}
                     </div>
-                </div>
+                </div> */}
             </div>
         </>
     );

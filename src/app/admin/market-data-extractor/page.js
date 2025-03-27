@@ -1,5 +1,3 @@
-"use client" // 👈 si quieres que todo el archivo se ejecute en cliente
-
 
 import MarketDataExtractor from "@/components/Admin/Home/MarketDataExtractor";
 
