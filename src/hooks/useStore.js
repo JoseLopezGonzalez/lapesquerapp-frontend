@@ -3,70 +3,32 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 
+const initialFilters = {
+    types: {
+        pallet: true,
+        box: true,
+        tub: true,
+    },
+    products: [],
+    pallets: [],
+};
+
 export function useStore(storeId) {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const token = session?.user?.accessToken;
     const [store, setStore] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [reload, setReload] = useState(false);
-    const [filters, setFilters] = useState({
-        types: {
-            pallet: true,
-            box: true,
-            tub: true,
-        },
-        products: [],
-    });
+
+    const [filters, setFilters] = useState(initialFilters);
 
     const onChangeFilters = (newFilters) => {
         setFilters(newFilters);
     }
 
-    
-
-    const [filteredPositionsMap, setFilteredPositionsMap] = useState(new Map());
-
-    useEffect(() => {
-        const map = new Map();
-
-        store?.content?.pallets?.forEach(pallet => {
-            if (!pallet.position) return;
-
-            const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.article?.id));
-
-            if (matchProduct) {
-                map.set(pallet.position, true);
-            }
-        });
-
-        setFilteredPositionsMap(map);
-    }, [store, filters]);
-
-
-
-   
-
-
-
-
-    useEffect(() => {
-        setLoading(true);
-        if (!token) return;
-        getStore(storeId, token)
-            .then((data) => {
-                setStore(data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error al obtener los almacenes', error);
-                setError(error);
-                setLoading(false);
-            });
-    }, [reload, token, storeId]);
-
-    const isPositionFilled = (positionId) => {
-        return store?.content?.pallets?.some(p => p.position === positionId) ?? false;
+    const resetFilters = () => {
+        setFilters(initialFilters);
     }
 
     const getAvailableProducts = () => {
@@ -91,14 +53,82 @@ export function useStore(storeId) {
     }));
 
 
+
+    const palletsOptions = store?.content?.pallets?.map(pallet => {
+        return {
+            value: pallet.id,
+            label: pallet.id
+        }
+    });
+
+
+
+    const [filteredPositionsMap, setFilteredPositionsMap] = useState(new Map());
+
+    useEffect(() => {
+        const map = new Map();
+
+        store?.content?.pallets?.forEach(pallet => {
+            if (!pallet.position) return;
+
+            const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.article?.id));
+
+            const matchPallet = filters.pallets.includes(pallet.id);
+
+            if (matchProduct || matchPallet) {
+                map.set(pallet.position, pallet);
+                
+            }
+        });
+
+        setFilteredPositionsMap(map);
+    }, [store, filters]);
+
+
+
+
+
+
+
+
+    useEffect(() => {
+        setLoading(true);
+        if (!token) return;
+        getStore(storeId, token)
+            .then((data) => {
+                setStore(data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error al obtener los almacenes', error);
+                setError(error);
+                setLoading(false);
+            });
+    }, [reload, token, storeId]);
+
+    const isPositionFilled = (positionId) => {
+        return store?.content?.pallets?.some(p => p.position === positionId) ?? false;
+    }
+
+
+
     return {
         store,
         loading,
         error,
         isPositionFilled,
-        productsOptions,
+
         onChangeFilters,
         filteredPositionsMap,
+
+
+
+
+
+        filters,
+        resetFilters,
+        palletsOptions,
+        productsOptions,
     };
 
 }

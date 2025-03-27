@@ -2,46 +2,16 @@
 
 import Map from './MapContainer/Map'
 import MapContainer from './MapContainer'
-import { useStore } from '@/hooks/useStore';
 import Loader from '@/components/Utilities/Loader';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
-
-
-import {
-    Box,
-
-    Package,
-
-    Filter,
-    ChevronDown,
-    ChevronUp,
-    Locate,
-    LocateFixed,
-} from "lucide-react"
-
-// Add these imports at the top of the file
-import { Check, ChevronsUpDown } from "lucide-react"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-
+import { LocateFixed } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-/* import { Slider } from "@/components/ui/slider" */
-import { Separator } from "@/components/ui/separator"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Combobox } from '@/components/Shadcn/Combobox';
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
 
-
-
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
-
 export const StoreContent = () => {
 
-    const { loading, error, productsOptions } = useStoreContext();
+    const { loading, error } = useStoreContext();
 
     if (loading) {
         return (
@@ -64,13 +34,13 @@ export const StoreContent = () => {
                         <Button variant="secondary">
                             <LocateFixed size={24} />
                             Elementos sin ubicar
-                            </Button>
+                        </Button>
                     </div>
                 </Card >
 
-                <Card className='max-w-[350px] w-full flex items-center justify-center h-full overflow-hidden'>
+                <div className='max-w-[350px] w-full h-full overflow-hidden'>
                     <Filters />
-                </Card>
+                </div>
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />
