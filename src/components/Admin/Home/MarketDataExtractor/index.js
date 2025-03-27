@@ -22,157 +22,185 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Download, FileSpreadsheet, Link2, Sparkles } from "lucide-react";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
+import AlbaranCofraWeb from "./AlbaranCofraWeb";
+import toast from "react-hot-toast";
+import { darkToastTheme } from "@/customs/reactHotToast";
 
 
-
-const parseAzureResult = (data) => {
-    const result = {};
+const analyzeAzureResult = (data) => {
+    const analyzedDocuments = [];
 
     // Accedemos a los documentos
     const documents = data.documents || [];
-    documents.forEach((document) => {
-        const fields = document.fields || {}; // Campos normales
 
-        // Extraemos los campos clave-valor y los agregamos al resultado
+    documents.forEach((document) => {
+
+        const fields = document.fields || {};
+
+        const details = {}
+
         for (const fieldKey in fields) {
             const field = fields[fieldKey];
             if (field && field.content) {
-                result[fieldKey] = field.content; // Guardamos los campos normales
+                details[fieldKey] = field.content;
             }
         }
 
-        // Accedemos a las tablas dentro de `documents.fields`
-        const subastas = document.fields?.subastas?.valueArray || [];  // Buscamos la tabla de subastas
-        const servicios = document.fields?.servicios?.valueArray || [];  // Buscamos la tabla de servicios
 
-        const subtotalesCajas = {
-            subtotal: document.fields?.subtotales_cajas?.valueObject?.columna.valueObject.cajas?.content || "",
-            iva: document.fields?.subtotales_cajas?.valueObject?.columna.valueObject.iva_cajas?.content || "",
-            total: document.fields?.subtotales_cajas?.valueObject?.columna.valueObject.total?.content || "",
-        }
+        const tables = {};
 
-        const subtotalesPesca = {
-            subtotal: document.fields?.subtotales_pesca?.valueObject?.columna.valueObject.total_pesca?.content || "",
-            iva: document.fields?.subtotales_pesca?.valueObject?.columna.valueObject.iva_pesca?.content || "",
-            total: document.fields?.subtotales_pesca?.valueObject?.columna.valueObject.total?.content || "",
-        }
-
-        const subtotalesServicios = {
-            subtotal: document.fields?.subtotales_servicios?.valueObject?.columna.valueObject.servicios?.content || "",
-            iva: document.fields?.subtotales_servicios?.valueObject?.columna.valueObject.iva_servicios?.content || "",
-            total: document.fields?.subtotales_servicios?.valueObject?.columna.valueObject.total?.content || "",
-        }
-
-
-
-        // Parsear tablas como subastas, servicios, subtotales_cajas, subtotales_pesca
-        result.tablaSubastas = result.tablaSubastas || [];
-        result.tablaServicios = result.tablaServicios || [];
-        result.subtotalesCajas = subtotalesCajas;
-        result.subtotalesPesca = subtotalesPesca;
-        result.subtotalesServicios = subtotalesServicios;
-
-        // Parseamos las tablas de subastas
-        subastas.forEach((tabla) => {
-            if (tabla.valueObject) {
-                const table = tabla.valueObject;
-                result.tablaSubastas.push({
-                    cajas: table.Cajas?.content || "",
-                    kilos: table.Kilos?.content || "",
-                    pescado: table.Pescado?.content || "",
-                    codBarco: table["Cod Barco"]?.content || "",
-                    armador: table.Armador?.content || "",
-                    precio: table.Precio?.content || "",
-                    importe: table.Importe?.content || "",
+        for (const field in fields) {
+            if (fields[field].type === 'array' && fields[field].valueArray) {
+                tables[field] = [];
+                fields[field].valueArray.forEach((item, index) => {
+                    const row = item.valueObject;
+                    const formattedRow = {};
+                    for (const key in row) {
+                        if (row[key].content) {
+                            formattedRow[key] = row[key].content;
+                        }
+                    }
+                    if (formattedRow) {
+                        tables[field].push(formattedRow);
+                    }
                 });
             }
-        });
+        }
 
-        // Parseamos las tablas de servicios
-        servicios.forEach((tabla) => {
-            if (tabla.valueObject) {
-                const table = tabla.valueObject;
-                result.tablaServicios.push({
-                    codigo: table.Código?.content || "",
-                    descripcion: table.Descripción?.content || "",
-                    fecha: table.Fecha?.content || "",
-                    iva: table["%IVA"]?.content || "",
-                    rec: table["%REC"]?.content || "",
-                    unidades: table.Unidades?.content || "",
-                    precio: table.Precio?.content || "",
-                    importe: table.Importe?.content || "",
-                });
+
+        const objects = {};
+
+        for (const field in fields) {
+            if (fields[field].type === 'object' && fields[field].valueObject) {
+                objects[field] = {};
+                const obj = fields[field].valueObject;
+                for (const key in obj) {
+                    if (obj[key].valueObject) {
+                        objects[field][key] = {};
+                        const subObj = obj[key].valueObject;
+                        for (const subKey in subObj) {
+                            if (subObj[subKey].content) {
+                                objects[field][key][subKey] = subObj[subKey].content;
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        analyzedDocuments.push({
+            details,
+            tables,
+            objects
         });
 
-        /* parsear de nuevo subastas */
+    });
 
-        result.tablaSubastas = result.tablaSubastas.map((row) => {
-            /* separar armador de cif armador 
-            ejemplos:
-             ADRIMAR C.B. E21610589
-             PEREZ RIVERO, MARIA BELLA 29781809Y
-            
-            
-            */
-            const armador = row.armador.split(" ");
+    return analyzedDocuments;
+};
+
+const parseAlbaranesCofraWeb = (data) => {
+
+    const parsedDocuments = data.map((document) => {
+        const details = {
+            lonja: document.details.lonja,
+            cifLonja: document.details.cif_lonja,
+            numero: document.details.numero,
+            fecha: document.details.fecha,
+            ejercicio: document.details.ejercicio,
+            comprador: document.details.comprador,
+            numeroComprador: document.details.numero_comprador,
+            cifComprador: document.details.cif_comprador,
+            importeTotal: document.details.importe_total,
+        };
+
+        const tablaSubastas = document.tables.subastas.map((row) => {
+            const armador = row.Armador.split(" ");
             const cifArmador = armador.pop();
             const nombreArmador = armador.join(" ");
 
-
-            /* Separar Cod de Barco en codBarco ejemplo:
-            816 ABUELO PURGA	
-            819 BEATRIZ LA POLA	
-            
-            */
-            const codBarco = row.codBarco.split(" ");
+            const codBarco = row["Cod Barco"].split(" ");
             const cod = codBarco.shift();
             const barco = codBarco.join(" ");
 
-            /* eliminar codBarco */
-            delete row.codBarco;
 
-            /* Separar cajas de tipo de cajas ejemplo:
-            1 M
-            2 C
-            3 M
-            
-            */
-            const cajas = row.cajas.split(" ");
+            const cajas = row.Cajas.split(" ");
             const tipoCaja = cajas.pop();
             const cantidadCajas = cajas.join(" ");
 
             return {
-                ...row,
+                cajas: cantidadCajas,
+                tipoCaja,
+                kilos: row.Kilos,
+                pescado: row.Pescado,
+                cod: cod,
+                barco: barco,
                 armador: nombreArmador,
                 cifArmador,
-                barco: barco,
-                cod: cod,
-                cajas: cantidadCajas,
-                tipoCaja
-
+                precio: row.Precio,
+                importe: row.Importe
             };
         });
 
+        const tablaServicios = document.tables.servicios.map((row) => {
+            return {
+                codigo: row.Código,
+                descripcion: row.Descripción,
+                fecha: row.Fecha,
+                iva: row["%IVA"],
+                rec: row["%REC"],
+                unidades: row.Unidades,
+                precio: row.Precio,
+                importe: row.Importe
+            };
+        });
 
+        const subtotalesPesca = {
+            subtotal: document.objects.subtotales_pesca.columna.total_pesca,
+            iva: document.objects.subtotales_pesca.columna.iva_pesca,
+            total: document.objects.subtotales_pesca.columna.total
+        };
 
+        const subtotalesServicios = {
+            subtotal: document.objects.subtotales_servicios.columna.servicios,
+            iva: document.objects.subtotales_servicios.columna.iva_servicios,
+            total: document.objects.subtotales_servicios.columna.total
+        };
+
+        const subtotalesCajas = {
+            subtotal: document.objects.subtotales_cajas.columna.cajas,
+            iva: document.objects.subtotales_cajas.columna.iva_cajas,
+            total: document.objects.subtotales_cajas.columna.total
+        };
+
+        return {
+            detalles: details,
+            tablas: {
+                subastas: tablaSubastas,
+                servicios: tablaServicios
+            },
+            subtotales: {
+                pesca: subtotalesPesca,
+                servicios: subtotalesServicios,
+                cajas: subtotalesCajas
+            },
+        }
 
     });
 
-    return result;
-};
+    return parsedDocuments;
+
+}
 
 
 
 
 export default function PdfExtractor() {
-    const [selectedFile, setSelectedFile] = useState(null)
     const [documentType, setDocumentType] = useState("") // Para el tipo de documento
-    const [isValid, setIsValid] = useState(false) // Estado de validación del documento
     const [loading, setLoading] = useState(false) // Estado de carga
     const fileInputRef = useRef(null)
     const [file, setFile] = useState(null);
-    const [result, setResult] = useState(null);
+    const [processedDocuments, setProcessedDocuments] = useState([]); // Para guardar los documentos procesados
 
 
     const processAlbaranCofraWeb = () => {
@@ -189,15 +217,15 @@ export default function PdfExtractor() {
                 endpoint,
                 apiKey,
                 apiVersion,
-                parseResult: parseAzureResult
+                parseResult: parseAlbaranesCofraWeb
             }
         )
     }
 
     // Manejador para el botón de procesar
     const handleProcess = () => {
-        if ( !documentType) { /* !selectedFile || */
-            alert("Por favor, seleccione un archivo y el tipo de documento.");
+        if (!documentType) { /* !selectedFile || */
+            toast.error("Por favor, seleccione un archivo y el tipo de documento.", darkToastTheme);
             return;
         }
 
@@ -206,41 +234,23 @@ export default function PdfExtractor() {
                 processAlbaranCofraWeb();
                 break;
             case "listadoComprasLonjaIsla":
-                /* processListadoComprasLonjaIsla(); */
+                /* no implementar por el momento*/
                 break;
             case "listadoComprasLonjaAyamonte":
-                /* processListadoComprasLonjaAyamonte(); */
+                /* no implementar por el momento*/
                 break;
             default:
                 alert("Tipo de documento no soportado.");
         }
-
-
-        // Aquí iría la lógica para procesar el documento
-        /* console.log("Procesando documento:", selectedFile, documentType); */
     }
 
-    // Manejador para el botón de validación
-    const handleValidate = () => {
-        if (!selectedFile) {
-            alert("Por favor, seleccione un documento antes de validarlo.");
-            return;
-        }
-        setIsValid(true); // Confirmar que el documento está validado
-    }
-
-    // Lógica para los botones de exportación, integración y generar Excel
-    const handleExport = () => {
-        console.log("Exportando documento...");
-    }
+    
 
     const handleIntegrate = () => {
         console.log("Integrando información en la app...");
     }
 
-    const handleGenerateExcel = () => {
-        console.log("Generando Excel...");
-    }
+    
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -320,14 +330,13 @@ export default function PdfExtractor() {
 
             } while (status === 'running' || status === 'notStarted');
 
-            console.log("Resultado Azure completo:", analysisResult);
+            /*  console.log("Resultado Azure completo:", analysisResult); */
 
             // 🧹 Parsear y estructurar el resultado para que solo contenga los campos necesarios
-            /* const parsedResult = parseAzureResult(analysisResult); */
-            const parsedResult = parseResult(analysisResult);
+            const parsedResult = parseResult(analyzeAzureResult(analysisResult));
             console.log("Resultado parseado:", parsedResult);
 
-            setResult(parsedResult); // Guardar resultado en el estado
+            setProcessedDocuments(parsedResult);
 
         } catch (error) {
             console.error("Error al procesar el PDF:", error);
@@ -336,6 +345,14 @@ export default function PdfExtractor() {
             setLoading(false);
         }
     };
+
+    const handleExportToA3Erp = () => {
+        console.log("Exportando a A3ERP...");
+    }
+
+    const handleExportToFacilCom = () => {
+        console.log("Exportando a FacilCom...");
+    }
 
 
     return (
@@ -387,26 +404,23 @@ export default function PdfExtractor() {
 
                     {/* Botones de acción */}
                     <div className="space-y-3 mt-auto">
-                        <Button className="w-full" variant="outline" onClick={handleExport}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Exportar
-                        </Button>
                         <Button className="w-full" variant="outline" onClick={handleIntegrate}>
                             <Link2 className="mr-2 h-4 w-4" />
                             Integrar en la app
                         </Button>
-                        <Button className="w-full" variant="outline" onClick={handleGenerateExcel}>
-                            <FileSpreadsheet className="mr-2 h-4 w-4" />
-                            Generar Excel
+                        <Button className="w-full" variant="outline" onClick={handleExportToA3Erp}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Exportación a A3Erp
+                        </Button>
+                        <Button className="w-full" variant="outline" onClick={handleExportToFacilCom}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Exportación a FacilCom
                         </Button>
                     </div>
                 </Card>
 
                 {/* Panel de vista previa (70%) */}
                 <div className="w-full  flex flex-col">
-
-                    {/*                 <h2 className="text-2xl font-bold">Datos Extraidos con IA</h2>
- */}
 
                     <div className="w-full h-full flex  justify-center  overflow-y-auto">
 
@@ -415,245 +429,9 @@ export default function PdfExtractor() {
                                 <SparklesLoader loading={loading} />
                             </div>
 
-                        ) : result ? (
+                        ) : processedDocuments.length > 0 ? (
                             <div>
-                                <div className="container mx-auto py-3 space-y-3">
-                                    {/* Sección de Datos del Albarán */}
-                                    <Card>
-                                        <CardHeader className="pb-0">
-                                            <CardTitle className="text-base">Albarán Cofra Web</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="px-10 py-5">
-                                            <div className="flex flex-col  gap-2">
-                                                {/* Información de la Lonja - Lado izquierdo */}
-                                                <div className="flex-1">
-                                                    <div className="text-base font-bold">
-                                                        {result.lonja}
-                                                    </div>
-                                                    <div className="text-sm">C.I.F.: {result.cif_lonja}</div>
-                                                </div>
-
-                                                {/* Información del Albarán - Lado derecho */}
-                                                <div className="flex-1 grid grid-cols-2 gap-3">
-                                                    <div className="border border-muted p-3 rounded-md text-sm">
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">Nº Albarán:</div>
-                                                            <div>{result.numero}</div>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">Fecha:</div>
-                                                            <div>{result.fecha}</div>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">Ejercicio:</div>
-                                                            <div>{result.ejercicio}</div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className=" border border-muted p-3 rounded-md text-sm">
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">Comprador:</div>
-                                                            <div className="">{result.comprador}</div>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">Codigo:</div>
-                                                            <div className="">{result.numero_comprador}</div>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <div className="font-semibold">C.I.F.:</div>
-                                                            <div className="">{result.cif_comprador}</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Tabla de Subastas */}
-                                    <Card>
-                                        <CardHeader className="pb-0 pt-3 px-3">
-                                            <CardTitle>Subastas</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-3">
-                                            <div className="overflow-x-auto">
-                                                <Table className="border-collapse [&_th]:p-2 [&_td]:p-2">
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Cajas</TableHead>
-                                                            <TableHead>Kilos</TableHead>
-                                                            <TableHead>Pescado</TableHead>
-                                                            <TableHead>Cod</TableHead>
-                                                            <TableHead>Barco</TableHead>
-                                                            <TableHead>Armador</TableHead>
-                                                            <TableHead>Precio</TableHead>
-                                                            <TableHead>Importe</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {result.tablaSubastas.map((row, index) => (
-                                                            <TableRow key={index}>
-                                                                <TableCell>{row.cajas} {row.tipoCaja}</TableCell>
-                                                                <TableCell>{row.kilos}</TableCell>
-                                                                <TableCell>{row.pescado}</TableCell>
-                                                                <TableCell>{row.cod}</TableCell>
-                                                                <TableCell>{row.barco}</TableCell>
-                                                                <TableCell>
-                                                                    {row.armador} <br />
-                                                                    {row.cifArmador}
-                                                                </TableCell>
-                                                                <TableCell>{row.precio}</TableCell>
-                                                                <TableCell>{row.importe}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Tabla de Servicios */}
-                                    <Card>
-                                        <CardHeader className="pb-0 pt-3 px-3">
-                                            <CardTitle>Servicios</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-3">
-                                            <div className="overflow-x-auto">
-                                                <Table className="border-collapse [&_th]:p-2 [&_td]:p-2">
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Código</TableHead>
-                                                            <TableHead>Descripción</TableHead>
-                                                            <TableHead>Fecha</TableHead>
-                                                            <TableHead>%IVA</TableHead>
-                                                            <TableHead>%REC</TableHead>
-                                                            <TableHead>Unidades</TableHead>
-                                                            <TableHead>Precio</TableHead>
-                                                            <TableHead>Importe</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {result.tablaServicios.map((row, index) => (
-                                                            <TableRow key={index}>
-                                                                <TableCell>{row.codigo}</TableCell>
-                                                                <TableCell>{row.descripcion}</TableCell>
-                                                                <TableCell>{row.fecha}</TableCell>
-                                                                <TableCell>{row.iva}</TableCell>
-                                                                <TableCell>{row.rec}</TableCell>
-                                                                <TableCell>{row.unidades}</TableCell>
-                                                                <TableCell>{row.precio}</TableCell>
-                                                                <TableCell>{row.importe}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Subtotales */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                        {/* Subtotales Pesca */}
-                                        <Card>
-                                            <CardHeader className="pb-0 pt-3 px-3">
-                                                <CardTitle>Subtotales Pesca</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-3">
-                                                <Table className="border-collapse [&_th]:p-2 [&_td]:p-2">
-                                                    <TableBody>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Total Pesca</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesPesca.subtotal}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">IVA Pesca</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesPesca.iva}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Total</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesPesca.total}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    </TableBody>
-                                                </Table>
-                                            </CardContent>
-                                        </Card>
-
-                                        {/* Subtotales Servicios */}
-                                        <Card>
-                                            <CardHeader className="pb-0 pt-3 px-3">
-                                                <CardTitle>Subtotales Servicios</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-3">
-                                                <Table className="border-collapse [&_th]:p-2 [&_td]:p-2">
-                                                    <TableBody>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Total Servicios</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesServicios.subtotal}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">IVA Servicios</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesServicios.iva}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Total</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesServicios.total}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    </TableBody>
-                                                </Table>
-                                            </CardContent>
-                                        </Card>
-
-                                        {/* Subtotales Cajas */}
-                                        <Card>
-                                            <CardHeader className="pb-0 pt-3 px-3">
-                                                <CardTitle>Subtotales Cajas</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-3">
-                                                <Table className="border-collapse [&_th]:p-2 [&_td]:p-2">
-                                                    <TableBody>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Cajas</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesCajas.subtotal}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">IVA Cajas</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesCajas.iva}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell className="font-medium">Total</TableCell>
-                                                            <TableCell className="text-right">
-                                                                {result.subtotalesCajas.total}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    </TableBody>
-                                                </Table>
-                                            </CardContent>
-                                        </Card>
-                                    </div>
-
-                                    {/* Total */}
-                                    <Card className="flex items-center justify-between p-3">
-                                        <span>Total</span>
-                                        <div className="text-2xl font-bold text-right">
-                                            {result.importe_total} €
-                                        </div>
-                                    </Card>
-                                </div>
+                                <AlbaranCofraWeb document={processedDocuments[0]} />
                             </div>
                         ) : (
                             <div className="flex-1 flex items-center justify-center   ">
