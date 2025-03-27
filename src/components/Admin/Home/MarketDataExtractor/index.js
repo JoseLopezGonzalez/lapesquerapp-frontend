@@ -1,15 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-
-
-
 import {
     Card,
 } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Download, FileSpreadsheet, Link2, Sparkles } from "lucide-react";
+import { Download, Link2, Sparkles } from "lucide-react";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
 import AlbaranCofraWeb from "./AlbaranCofraWeb";
 import toast from "react-hot-toast";
@@ -182,9 +179,7 @@ const parseAlbaranesCofraWeb = (data) => {
 }
 
 
-
-
-export default function PdfExtractor() {
+export default function MarketDataExtractor() {
     const [documentType, setDocumentType] = useState("") // Para el tipo de documento
     const [loading, setLoading] = useState(false) // Estado de carga
     const fileInputRef = useRef(null)
