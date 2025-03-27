@@ -32,5 +32,11 @@ export const formatInteger = (number) => {
   export const formatDecimalWeight = (number) => {
     return `${formatDecimal(number)} kg`;
   }
+
+  export const parseEuropeanNumber = (str) => {
+    if (typeof str !== 'string') return 0;
+    return parseFloat(str.replace(/\./g, '').replace(',', '.').trim()) || 0;
+  };
+  
   
   

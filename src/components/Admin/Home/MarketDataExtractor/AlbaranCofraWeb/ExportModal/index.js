@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 
 const ExportModal = ({ document }) => {
     const [software, setSoftware] = useState("A3ERP")
@@ -108,7 +109,7 @@ const ExportModal = ({ document }) => {
             console.error(`Falta código de conversión para la lonja ${headerData.cif_lonja}`);
         } else {
             servicios.forEach(line => {
-                const calculatedPrecio = parseFloat(line.importe) / parseFloat(line.unidades);
+                const calculatedPrecio = parseEuropeanNumber(line.importe) / parseEuropeanNumber(line.unidades);
                 processedRows.push({
                     CABNUMDOC: albaranNumber,
                     CABFECHA: headerData.fecha,
@@ -128,7 +129,7 @@ const ExportModal = ({ document }) => {
         // Crear el libro y hoja
         const worksheet = XLSX.utils.json_to_sheet(processedRows);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANES');
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
 
         // Guardar archivo
         const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
@@ -166,7 +167,7 @@ const ExportModal = ({ document }) => {
                         <label htmlFor="software" className=" font-medium">
                             Contador Inicio Albaranes
                         </label>
-                        <Input type="number" placeholder='000' />
+                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e)=> setInitialAlbaranNumber(e.target.value)} />
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>
