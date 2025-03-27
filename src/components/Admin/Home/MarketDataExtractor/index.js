@@ -7,13 +7,176 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Download, Link2, Sparkles } from "lucide-react";
-/* import SparklesLoader from "@/components/Utilities/SparklesLoader"; */
+import SparklesLoader from "@/components/Utilities/SparklesLoader";
 import AlbaranCofraWeb from "./AlbaranCofraWeb";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
 
+const analyzeAzureResult = (data) => {
+    const analyzedDocuments = [];
 
+    // Accedemos a los documentos
+    const documents = data.documents || [];
+
+    documents.forEach((document) => {
+
+        const fields = document.fields || {};
+
+        const details = {}
+
+        for (const fieldKey in fields) {
+            const field = fields[fieldKey];
+            if (field && field.content) {
+                details[fieldKey] = field.content;
+            }
+        }
+
+
+        const tables = {};
+
+        for (const field in fields) {
+            if (fields[field].type === 'array' && fields[field].valueArray) {
+                tables[field] = [];
+                fields[field].valueArray.forEach((item, index) => {
+                    const row = item.valueObject;
+                    const formattedRow = {};
+                    for (const key in row) {
+                        if (row[key].content) {
+                            formattedRow[key] = row[key].content;
+                        }
+                    }
+                    if (formattedRow) {
+                        tables[field].push(formattedRow);
+                    }
+                });
+            }
+        }
+
+
+        const objects = {};
+
+        for (const field in fields) {
+            if (fields[field].type === 'object' && fields[field].valueObject) {
+                objects[field] = {};
+                const obj = fields[field].valueObject;
+                for (const key in obj) {
+                    if (obj[key].valueObject) {
+                        objects[field][key] = {};
+                        const subObj = obj[key].valueObject;
+                        for (const subKey in subObj) {
+                            if (subObj[subKey].content) {
+                                objects[field][key][subKey] = subObj[subKey].content;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        analyzedDocuments.push({
+            details,
+            tables,
+            objects
+        });
+
+    });
+
+    return analyzedDocuments;
+};
+
+const parseAlbaranesCofraWeb = (data) => {
+
+    const parsedDocuments = data.map((document) => {
+        const details = {
+            lonja: document.details.lonja,
+            cifLonja: document.details.cif_lonja,
+            numero: document.details.numero,
+            fecha: document.details.fecha,
+            ejercicio: document.details.ejercicio,
+            comprador: document.details.comprador,
+            numeroComprador: document.details.numero_comprador,
+            cifComprador: document.details.cif_comprador,
+            importeTotal: document.details.importe_total,
+        };
+
+        const tablaSubastas = document.tables.subastas.map((row) => {
+            const armador = row.Armador.split(" ");
+            const cifArmador = armador.pop();
+            const nombreArmador = armador.join(" ");
+
+            const codBarco = row["Cod Barco"].split(" ");
+            const cod = codBarco.shift();
+            const barco = codBarco.join(" ");
+
+
+            const cajas = row.Cajas.split(" ");
+            const tipoCaja = cajas.pop();
+            const cantidadCajas = cajas.join(" ");
+
+            return {
+                cajas: cantidadCajas,
+                tipoCaja,
+                kilos: row.Kilos,
+                pescado: row.Pescado,
+                cod: cod,
+                barco: barco,
+                armador: nombreArmador,
+                cifArmador,
+                precio: row.Precio,
+                importe: row.Importe
+            };
+        });
+
+        const tablaServicios = document.tables.servicios.map((row) => {
+            return {
+                codigo: row.Código,
+                descripcion: row.Descripción,
+                fecha: row.Fecha,
+                iva: row["%IVA"],
+                rec: row["%REC"],
+                unidades: row.Unidades,
+                precio: row.Precio,
+                importe: row.Importe
+            };
+        });
+
+        const subtotalesPesca = {
+            subtotal: document.objects.subtotales_pesca.columna.total_pesca,
+            iva: document.objects.subtotales_pesca.columna.iva_pesca,
+            total: document.objects.subtotales_pesca.columna.total
+        };
+
+        const subtotalesServicios = {
+            subtotal: document.objects.subtotales_servicios.columna.servicios,
+            iva: document.objects.subtotales_servicios.columna.iva_servicios,
+            total: document.objects.subtotales_servicios.columna.total
+        };
+
+        const subtotalesCajas = {
+            subtotal: document.objects.subtotales_cajas.columna.cajas,
+            iva: document.objects.subtotales_cajas.columna.iva_cajas,
+            total: document.objects.subtotales_cajas.columna.total
+        };
+
+        return {
+            detalles: details,
+            tablas: {
+                subastas: tablaSubastas,
+                servicios: tablaServicios
+            },
+            subtotales: {
+                pesca: subtotalesPesca,
+                servicios: subtotalesServicios,
+                cajas: subtotalesCajas
+            },
+        }
+
+    });
+
+    return parsedDocuments;
+
+}
 
 
 export default function MarketDataExtractor() {
@@ -23,170 +186,7 @@ export default function MarketDataExtractor() {
     const [file, setFile] = useState(null);
     const [processedDocuments, setProcessedDocuments] = useState([]); // Para guardar los documentos procesados
 
-    const analyzeAzureResult = (data) => {
-        const analyzedDocuments = [];
-
-        // Accedemos a los documentos
-        const documents = data.documents || [];
-
-        documents.forEach((document) => {
-
-            const fields = document.fields || {};
-
-            const details = {}
-
-            for (const fieldKey in fields) {
-                const field = fields[fieldKey];
-                if (field && field.content) {
-                    details[fieldKey] = field.content;
-                }
-            }
-
-
-            const tables = {};
-
-            for (const field in fields) {
-                if (fields[field].type === 'array' && fields[field].valueArray) {
-                    tables[field] = [];
-                    fields[field].valueArray.forEach((item, index) => {
-                        const row = item.valueObject;
-                        const formattedRow = {};
-                        for (const key in row) {
-                            if (row[key].content) {
-                                formattedRow[key] = row[key].content;
-                            }
-                        }
-                        if (formattedRow) {
-                            tables[field].push(formattedRow);
-                        }
-                    });
-                }
-            }
-
-
-            const objects = {};
-
-            for (const field in fields) {
-                if (fields[field].type === 'object' && fields[field].valueObject) {
-                    objects[field] = {};
-                    const obj = fields[field].valueObject;
-                    for (const key in obj) {
-                        if (obj[key].valueObject) {
-                            objects[field][key] = {};
-                            const subObj = obj[key].valueObject;
-                            for (const subKey in subObj) {
-                                if (subObj[subKey].content) {
-                                    objects[field][key][subKey] = subObj[subKey].content;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            analyzedDocuments.push({
-                details,
-                tables,
-                objects
-            });
-
-        });
-
-        return analyzedDocuments;
-    };
-
-    const parseAlbaranesCofraWeb = (data) => {
-
-        const parsedDocuments = data.map((document) => {
-            const details = {
-                lonja: document.details.lonja,
-                cifLonja: document.details.cif_lonja,
-                numero: document.details.numero,
-                fecha: document.details.fecha,
-                ejercicio: document.details.ejercicio,
-                comprador: document.details.comprador,
-                numeroComprador: document.details.numero_comprador,
-                cifComprador: document.details.cif_comprador,
-                importeTotal: document.details.importe_total,
-            };
-
-            const tablaSubastas = document.tables.subastas.map((row) => {
-                const armador = row.Armador.split(" ");
-                const cifArmador = armador.pop();
-                const nombreArmador = armador.join(" ");
-
-                const codBarco = row["Cod Barco"].split(" ");
-                const cod = codBarco.shift();
-                const barco = codBarco.join(" ");
-
-
-                const cajas = row.Cajas.split(" ");
-                const tipoCaja = cajas.pop();
-                const cantidadCajas = cajas.join(" ");
-
-                return {
-                    cajas: cantidadCajas,
-                    tipoCaja,
-                    kilos: row.Kilos,
-                    pescado: row.Pescado,
-                    cod: cod,
-                    barco: barco,
-                    armador: nombreArmador,
-                    cifArmador,
-                    precio: row.Precio,
-                    importe: row.Importe
-                };
-            });
-
-            const tablaServicios = document.tables.servicios.map((row) => {
-                return {
-                    codigo: row.Código,
-                    descripcion: row.Descripción,
-                    fecha: row.Fecha,
-                    iva: row["%IVA"],
-                    rec: row["%REC"],
-                    unidades: row.Unidades,
-                    precio: row.Precio,
-                    importe: row.Importe
-                };
-            });
-
-            const subtotalesPesca = {
-                subtotal: document.objects.subtotales_pesca.columna.total_pesca,
-                iva: document.objects.subtotales_pesca.columna.iva_pesca,
-                total: document.objects.subtotales_pesca.columna.total
-            };
-
-            const subtotalesServicios = {
-                subtotal: document.objects.subtotales_servicios.columna.servicios,
-                iva: document.objects.subtotales_servicios.columna.iva_servicios,
-                total: document.objects.subtotales_servicios.columna.total
-            };
-
-            const subtotalesCajas = {
-                subtotal: document.objects.subtotales_cajas.columna.cajas,
-                iva: document.objects.subtotales_cajas.columna.iva_cajas,
-                total: document.objects.subtotales_cajas.columna.total
-            };
-
-            return {
-                detalles: details,
-                tablas: {
-                    subastas: tablaSubastas,
-                    servicios: tablaServicios
-                },
-                subtotales: {
-                    pesca: subtotalesPesca,
-                    servicios: subtotalesServicios,
-                    cajas: subtotalesCajas
-                },
-            }
-
-        });
-
-        return parsedDocuments;
-
-    }
+    
 
     const processAlbaranCofraWeb = () => {
 
@@ -344,7 +344,7 @@ export default function MarketDataExtractor() {
         <>
             <div className="flex h-full bg-background gap-4">
                 {/* Panel de control (30%) */}
-                {/*  <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
+                 <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
                     <h2 className="text-2xl font-bold">Panel de Control</h2>
 
                     <div className="space-y-2">
@@ -397,10 +397,10 @@ export default function MarketDataExtractor() {
                             Exportación a FacilCom
                         </Button>
                     </div>
-                </Card> */}
+                </Card>
 
                 {/* Panel de vista previa (70%) */}
-                {/*  <div className="w-full  flex flex-col">
+                 <div className="w-full  flex flex-col">
 
                     <div className="w-full h-full flex  justify-center  overflow-y-auto">
 
@@ -419,7 +419,7 @@ export default function MarketDataExtractor() {
                             </div>
                         )}
                     </div>
-                </div> */}
+                </div>
             </div>
         </>
     );

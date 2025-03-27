@@ -1,27 +1,29 @@
 'use client'
 import React, { useEffect, useRef } from 'react';
-import lottie from 'lottie-web';
 
 const SparklesLoader = () => {
     const containerRef = useRef(null);
     const animationInstance = useRef(null);
 
     useEffect(() => {
-        // Limpia el contenedor por completo antes de volver a cargar
-        if (containerRef.current) {
-            containerRef.current.innerHTML = ''; // 🔥 Limpieza total
-        }
+        const loadLottie = async () => {
+            const lottie = await import('lottie-web'); // ✅ Import dinámico
 
-        // Carga la animación
-        animationInstance.current = lottie.loadAnimation({
-            container: containerRef.current,
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: 'https://lottie.host/b9622bf5-048c-4fd4-b040-c3192e4c1ec8/9cYjmJ8bB1.json',
-        });
+            if (containerRef.current) {
+                containerRef.current.innerHTML = '';
+            }
 
-        // Cleanup al desmontar
+            animationInstance.current = lottie.loadAnimation({
+                container: containerRef.current,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://lottie.host/b9622bf5-048c-4fd4-b040-c3192e4c1ec8/9cYjmJ8bB1.json',
+            });
+        };
+
+        loadLottie();
+
         return () => {
             animationInstance.current?.destroy();
         };
