@@ -15,6 +15,8 @@ import {
     Filter,
     ChevronDown,
     ChevronUp,
+    Locate,
+    LocateFixed,
 } from "lucide-react"
 
 // Add these imports at the top of the file
@@ -54,11 +56,17 @@ export const StoreContent = () => {
             <div className='flex items-center justify-center w-full h-full gap-4'>
 
                 {/* Map */}
-                <Card className='grow flex items-center justify-center w-full h-full overflow-hidden'>
+                <Card className=' relative grow flex items-center justify-center w-full h-full overflow-hidden'>
                     <MapContainer>
                         <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
                     </MapContainer>
-                </Card>
+                    <div className="absolute bottom-4 right-4 z-10">
+                        <Button variant="secondary">
+                            <LocateFixed size={24} />
+                            Elementos sin ubicar
+                            </Button>
+                    </div>
+                </Card >
 
                 <Card className='max-w-[350px] w-full flex items-center justify-center h-full overflow-hidden'>
                     <Filters />
@@ -93,7 +101,7 @@ export const StoreContent = () => {
 
                 {/* Toast */}
                 {/*  {createPortal(<Toaster />, document.body)} */}
-            </div>
+            </div >
 
         </>
     )
