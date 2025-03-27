@@ -1,14 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
+/* import {
     Card,
 } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Download, Link2, Sparkles } from "lucide-react";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
-import AlbaranCofraWeb from "./AlbaranCofraWeb";
+import AlbaranCofraWeb from "./AlbaranCofraWeb"; */
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
 
