@@ -90,7 +90,7 @@ const ExportModal = ({ document }) => {
                         CABNUMDOC: albaranNumber,
                         CABFECHA: headerData.fecha,
                         CABCODPRO: armadorData.codA3erp,
-                        CABREFERENCIA: `${barco.nombre}`,
+                        CABREFERENCIA: `${headerData.fecha} - ${barco.nombre}`,
                         LINCODART: 95,
                         LINDESCLIN: 'PULPO FRESCO LONJA',
                         LINUNIDADES: linea.kilos,
@@ -98,7 +98,7 @@ const ExportModal = ({ document }) => {
                         LINTIPIVA: 'RED10',
                     });
                 });
-          });
+            });
 
             albaranNumber++;
         }
@@ -167,7 +167,7 @@ const ExportModal = ({ document }) => {
                         <label htmlFor="software" className=" font-medium">
                             Contador Inicio Albaranes
                         </label>
-                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e)=> setInitialAlbaranNumber(e.target.value)} />
+                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e) => setInitialAlbaranNumber(e.target.value)} />
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>
