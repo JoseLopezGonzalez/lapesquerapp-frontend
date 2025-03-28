@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import {
-    Card,
-} from "@/components/ui/card";
+import { useEffect, useRef, useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Download, Link2, Sparkles } from "lucide-react";
@@ -11,82 +9,10 @@ import SparklesLoader from "@/components/Utilities/SparklesLoader";
 import AlbaranCofraWeb from "./AlbaranCofraWeb";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
-import { set } from "date-fns";
-import { view } from "framer-motion";
 import ListadoComprasAsocPuntaDelMoral from "./ListadoComprasAsocPuntaDelMoral";
-
-
-const analyzeAzureResult = (data) => {
-    const analyzedDocuments = [];
-
-    // Accedemos a los documentos
-    const documents = data.documents || [];
-
-    documents.forEach((document) => {
-
-        const fields = document.fields || {};
-
-        const details = {}
-
-        for (const fieldKey in fields) {
-            const field = fields[fieldKey];
-            if (field && field.content) {
-                details[fieldKey] = field.content;
-            }
-        }
-
-
-        const tables = {};
-
-        for (const field in fields) {
-            if (fields[field].type === 'array' && fields[field].valueArray) {
-                tables[field] = [];
-                fields[field].valueArray.forEach((item, index) => {
-                    const row = item.valueObject;
-                    const formattedRow = {};
-                    for (const key in row) {
-                        if (row[key].content) {
-                            formattedRow[key] = row[key].content;
-                        }
-                    }
-                    if (formattedRow) {
-                        tables[field].push(formattedRow);
-                    }
-                });
-            }
-        }
-
-
-        const objects = {};
-
-        for (const field in fields) {
-            if (fields[field].type === 'object' && fields[field].valueObject) {
-                objects[field] = {};
-                const obj = fields[field].valueObject;
-                for (const key in obj) {
-                    if (obj[key].valueObject) {
-                        objects[field][key] = {};
-                        const subObj = obj[key].valueObject;
-                        for (const subKey in subObj) {
-                            if (subObj[subKey].content) {
-                                objects[field][key][subKey] = subObj[subKey].content;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        analyzedDocuments.push({
-            details,
-            tables,
-            objects
-        });
-
-    });
-
-    return analyzedDocuments;
-};
+import { parseAzureDocumentAIResult } from "@/helpers/azure/documentAI";
+import { extractDataWithAzureDocumentAi } from "@/services/azure";
+import { PdfUpload } from "@/components/Utilities/PdfUpload";
 
 const parseAlbaranesCofraWeb = (data) => {
 
@@ -181,7 +107,6 @@ const parseAlbaranesCofraWeb = (data) => {
 
 }
 
-
 export default function MarketDataExtractor() {
     const [documentType, setDocumentType] = useState("") // Para el tipo de documento
     const [loading, setLoading] = useState(false) // Estado de carga
@@ -192,46 +117,45 @@ export default function MarketDataExtractor() {
 
     const [viewDocumentType, setViewDocumentType] = useState("");
 
-    const processAlbaranCofraWeb = () => {
+    const processAlbaranCofradiaPescadoresSantoCristoDelMar = () => {
 
-        const endpoint = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_ENDPOINT;
-        const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_KEY;
-        const modelId = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_MODEL_ID;
-        const apiVersion = '2023-07-31';
+        setLoading(true);
 
+        extractDataWithAzureDocumentAi({
+            file,
+            documentType: 'AlbaranCofradiaPescadoresSantoCristoDelMar',
+        }).then((data) => {
+            setProcessedDocuments(parseAlbaranesCofraWeb(data));
+        }).catch((error) => {
+            console.error(error);
+            toast.error("Error al procesar el documento.", darkToastTheme);
+        }).finally(() => {
+            setLoading(false);
+        });
 
-        handleUpload(
-            {
-                modelId,
-                endpoint,
-                apiKey,
-                apiVersion,
-                parseResult: parseAlbaranesCofraWeb
-            }
-        )
-
-        setViewDocumentType("albaranCofraWeb");
+        setViewDocumentType("albaranCofradiaPescadoresSantoCristoDelMar");
     }
 
-    const processListadoComprasAsocPuntaDelMoral = () => {
-        const endpoint = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_ENDPOINT;
-        const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_KEY;
-        const modelId = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_ASOC_PUNTA_DEL_MORAL_MODEL_ID;
-        const apiVersion = '2023-07-31';
+    const processListadoComprasAsocArmadoresPuntaDelMoral = () => {
 
-
-        handleUpload(
+        setLoading(true);
+        extractDataWithAzureDocumentAi(
             {
-                modelId,
-                endpoint,
-                apiKey,
-                apiVersion,
+                file,
+                documentType: 'ListadoComprasAsocArmadoresPuntaDelMoral',
             }
-        )
+        ).then((data) => {
+            setProcessedDocuments(data);
+        }).catch((error) => {
+            console.error(error);
+            toast.error("Error al procesar el documento.", darkToastTheme);
+        }).finally(() => {
+            setLoading(false);
+        });
 
-        setViewDocumentType("listadoComprasAsocPuntaDelMoral");
+        setViewDocumentType("listadoComprasAsocArmadoresPuntaDelMoral");
     }
-    // Manejador para el botón de procesar
+
     const handleProcess = () => {
         if (!documentType) { /* !selectedFile || */
             toast.error("Por favor, seleccione un archivo y el tipo de documento.", darkToastTheme);
@@ -239,31 +163,27 @@ export default function MarketDataExtractor() {
         }
 
         switch (documentType) {
-            case "albaranCofraWeb":
-                processAlbaranCofraWeb();
+            case "albaranCofradiaPescadoresSantoCristoDelMar":
+                processAlbaranCofradiaPescadoresSantoCristoDelMar();
                 break;
-            case "listadoComprasAsocPuntaDelMoral":
-                processListadoComprasAsocPuntaDelMoral();
+            case "listadoComprasAsocArmadoresPuntaDelMoral":
+                processListadoComprasAsocArmadoresPuntaDelMoral();
                 /* no implementar por el momento*/
                 break;
             case "listadoComprasLonjaIsla":
                 /* no implementar por el momento*/
                 break;
-            case "listadoComprasLonjaAyamonte":
+            case "listadoComprasLonjaAyamonts":
                 /* no implementar por el momento*/
                 break;
             default:
-                alert("Tipo de documento no soportado.");
+                toast.error("Tipo de documento no soportado.", darkToastTheme);
         }
     }
-
-
 
     const handleIntegrate = () => {
         console.log("Integrando información en la app...");
     }
-
-
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -271,100 +191,6 @@ export default function MarketDataExtractor() {
         }
     };
 
-    const handleUpload = async ({ modelId, endpoint, apiKey, apiVersion, parseResult }) => {
-        if (!file) {
-            alert("Selecciona un archivo PDF");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            /* const endpoint = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_ENDPOINT;
-            const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_KEY;
-            const modelId = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_MODEL_ID;
-            const apiVersion = '2023-07-31'; */
-            /* const endpoint = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_ENDPOINT; // Verifica que sea correcto
-            const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_KEY;
-            const modelId = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_MODEL_ID;
-            const apiVersion = '2023-07-31'; */ // Versión estable de la API '2024-11-30'
-
-            // URL para Azure API (con la versión correcta de API)
-            /* const url = `${endpoint}formrecognizer/documentModels/prebuilt-document:analyze?api-version=${apiVersion}`; */
-            const url = `${endpoint}formrecognizer/documentModels/${modelId}:analyze?api-version=${apiVersion}`;
-            console.log("URL:", url);
-            /* const url = `${endpoint}formrecognizer/documentModels/prebuilt-document:analyze?api-version=${apiVersion}`; */
-
-            // Leer archivo PDF como binary
-            const fileBuffer = await file.arrayBuffer();
-
-            // Hacer llamada inicial a Azure
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/pdf',
-                    'Ocp-Apim-Subscription-Key': apiKey,
-                },
-                body: fileBuffer,
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error Azure inicial: ${response.statusText}`);
-            }
-
-            // Obtener URL de resultado
-            const operationLocation = response.headers.get('Operation-Location');
-            if (!operationLocation) {
-                throw new Error("Operation-Location no encontrado en respuesta.");
-            }
-
-            // Esperar el resultado final (polling)
-            let analysisResult = null;
-            let status = null;
-
-            do {
-                await new Promise(resolve => setTimeout(resolve, 2000)); // esperar 2 segundos
-                const resultResponse = await fetch(operationLocation, {
-                    headers: { 'Ocp-Apim-Subscription-Key': apiKey },
-                });
-
-                if (!resultResponse.ok) {
-                    throw new Error(`Error Azure resultado: ${resultResponse.statusText}`);
-                }
-
-                const resultData = await resultResponse.json();
-                status = resultData.status;
-
-                if (status === 'succeeded') {
-                    analysisResult = resultData.analyzeResult;
-                } else if (status === 'failed') {
-                    throw new Error("Análisis fallido en Azure.");
-                }
-
-            } while (status === 'running' || status === 'notStarted');
-
-
-            // 🧹 Parsear y estructurar el resultado para que solo contenga los campos necesarios
-            /* Si existe una funcion parseResult  o no*/
-
-            if (!parseResult) {
-                const parsedResult = analyzeAzureResult(analysisResult);
-                setProcessedDocuments(parsedResult);
-                return;
-            }
-
-            const parsedResult = parseResult(analyzeAzureResult(analysisResult));
-            console.log("Resultado parseado:", parsedResult);
-
-            setProcessedDocuments(parsedResult);
-
-        } catch (error) {
-            console.error("Error al procesar el PDF:", error);
-            alert("Ocurrió un error: " + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleExportToA3Erp = () => {
         console.log("Exportando a A3ERP...");
@@ -375,6 +201,10 @@ export default function MarketDataExtractor() {
     }
 
 
+
+
+
+
     return (
         <>
             <div className="flex h-full bg-background gap-4">
@@ -382,7 +212,7 @@ export default function MarketDataExtractor() {
                 <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
                     <h2 className="text-2xl font-bold">Panel de Control</h2>
 
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                         <label htmlFor="pdf-upload" className="text-sm font-medium">
                             Seleccionar documento PDF
                         </label>
@@ -396,7 +226,10 @@ export default function MarketDataExtractor() {
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
                             />
                         </div>
-                    </div>
+                    </div> */}
+
+                    <PdfUpload onChange={setFile} />
+
                     <div className="space-y-2">
                         <label htmlFor="document-type" className="text-sm font-medium">
                             Tipo de documento
@@ -406,8 +239,8 @@ export default function MarketDataExtractor() {
                                 <SelectValue placeholder="Seleccionar documento" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="albaranCofraWeb">Albarán Cofra Web</SelectItem>
-                                <SelectItem value="listadoComprasAsocPuntaDelMoral">Listado de compras - Asoc. Punta del Moral</SelectItem>
+                                <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">Albarán - Cofradia Pescadores Santo Cristo del Mar</SelectItem>
+                                <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">Listado de compras - Asoc. Armadores Punta del Moral</SelectItem>
                                 <SelectItem value="listadoComprasLonjaIsla">Listado de compras - Lonja de Isla</SelectItem>
                                 <SelectItem value="listadoComprasLonjaAyamonte">Listado de compras - Lonja de Ayamonte</SelectItem>
                             </SelectContent>
@@ -449,12 +282,12 @@ export default function MarketDataExtractor() {
 
                             <div>
                                 {
-                                    viewDocumentType === "albaranCofraWeb" && (
+                                    viewDocumentType === "albaranCofradiaPescadoresSantoCristoDelMar" && (
                                         <AlbaranCofraWeb document={processedDocuments[0]} />
                                     )
                                 }
                                 {
-                                    viewDocumentType === "listadoComprasAsocPuntaDelMoral" && (
+                                    viewDocumentType === "listadoComprasAsocArmadoresPuntaDelMoral" && (
                                         <ListadoComprasAsocPuntaDelMoral document={processedDocuments[0]} />
                                     )
                                 }
