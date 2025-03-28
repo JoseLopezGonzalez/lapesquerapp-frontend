@@ -248,7 +248,7 @@ const AlbaranCofraWeb = ({ document }) => {
                 {/* Total */}
                 <Card className="flex items-center justify-between p-3">
                     <span>Total</span>
-                    <div className="text-2xl font-bold text-right">
+                    <div className="text-xl font-medium text-right">
                         {document.detalles.importeTotal} €
                     </div>
                 </Card>

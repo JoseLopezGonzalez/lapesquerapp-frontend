@@ -11,6 +11,9 @@ import SparklesLoader from "@/components/Utilities/SparklesLoader";
 import AlbaranCofraWeb from "./AlbaranCofraWeb";
 import toast from "react-hot-toast";
 import { darkToastTheme } from "@/customs/reactHotToast";
+import { set } from "date-fns";
+import { view } from "framer-motion";
+import ListadoComprasAsocPuntaDelMoral from "./ListadoComprasAsocPuntaDelMoral";
 
 
 const analyzeAzureResult = (data) => {
@@ -186,7 +189,8 @@ export default function MarketDataExtractor() {
     const [file, setFile] = useState(null);
     const [processedDocuments, setProcessedDocuments] = useState([]); // Para guardar los documentos procesados
 
-    
+
+    const [viewDocumentType, setViewDocumentType] = useState("");
 
     const processAlbaranCofraWeb = () => {
 
@@ -205,8 +209,28 @@ export default function MarketDataExtractor() {
                 parseResult: parseAlbaranesCofraWeb
             }
         )
+
+        setViewDocumentType("albaranCofraWeb");
     }
 
+    const processListadoComprasAsocPuntaDelMoral = () => {
+        const endpoint = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_ENDPOINT;
+        const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_COFRAWEB_KEY;
+        const modelId = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_ASOC_PUNTA_DEL_MORAL_MODEL_ID;
+        const apiVersion = '2023-07-31';
+
+
+        handleUpload(
+            {
+                modelId,
+                endpoint,
+                apiKey,
+                apiVersion,
+            }
+        )
+
+        setViewDocumentType("listadoComprasAsocPuntaDelMoral");
+    }
     // Manejador para el botón de procesar
     const handleProcess = () => {
         if (!documentType) { /* !selectedFile || */
@@ -217,6 +241,10 @@ export default function MarketDataExtractor() {
         switch (documentType) {
             case "albaranCofraWeb":
                 processAlbaranCofraWeb();
+                break;
+            case "listadoComprasAsocPuntaDelMoral":
+                processListadoComprasAsocPuntaDelMoral();
+                /* no implementar por el momento*/
                 break;
             case "listadoComprasLonjaIsla":
                 /* no implementar por el momento*/
@@ -315,9 +343,16 @@ export default function MarketDataExtractor() {
 
             } while (status === 'running' || status === 'notStarted');
 
-            /*  console.log("Resultado Azure completo:", analysisResult); */
 
             // 🧹 Parsear y estructurar el resultado para que solo contenga los campos necesarios
+            /* Si existe una funcion parseResult  o no*/
+
+            if (!parseResult) {
+                const parsedResult = analyzeAzureResult(analysisResult);
+                setProcessedDocuments(parsedResult);
+                return;
+            }
+
             const parsedResult = parseResult(analyzeAzureResult(analysisResult));
             console.log("Resultado parseado:", parsedResult);
 
@@ -344,7 +379,7 @@ export default function MarketDataExtractor() {
         <>
             <div className="flex h-full bg-background gap-4">
                 {/* Panel de control (30%) */}
-                 <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
+                <Card className="w-full md:w-[30%] p-6 flex flex-col gap-6 border-r">
                     <h2 className="text-2xl font-bold">Panel de Control</h2>
 
                     <div className="space-y-2">
@@ -372,6 +407,7 @@ export default function MarketDataExtractor() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="albaranCofraWeb">Albarán Cofra Web</SelectItem>
+                                <SelectItem value="listadoComprasAsocPuntaDelMoral">Listado de compras - Asoc. Punta del Moral</SelectItem>
                                 <SelectItem value="listadoComprasLonjaIsla">Listado de compras - Lonja de Isla</SelectItem>
                                 <SelectItem value="listadoComprasLonjaAyamonte">Listado de compras - Lonja de Ayamonte</SelectItem>
                             </SelectContent>
@@ -400,7 +436,7 @@ export default function MarketDataExtractor() {
                 </Card>
 
                 {/* Panel de vista previa (70%) */}
-                 <div className="w-full  flex flex-col">
+                <div className="w-full  flex flex-col">
 
                     <div className="w-full h-full flex  justify-center  overflow-y-auto">
 
@@ -410,8 +446,18 @@ export default function MarketDataExtractor() {
                             </div>
 
                         ) : processedDocuments.length > 0 ? (
+
                             <div>
-                                <AlbaranCofraWeb document={processedDocuments[0]} />
+                                {
+                                    viewDocumentType === "albaranCofraWeb" && (
+                                        <AlbaranCofraWeb document={processedDocuments[0]} />
+                                    )
+                                }
+                                {
+                                    viewDocumentType === "listadoComprasAsocPuntaDelMoral" && (
+                                        <ListadoComprasAsocPuntaDelMoral document={processedDocuments[0]} />
+                                    )
+                                }
                             </div>
                         ) : (
                             <div className="flex-1 flex items-center justify-center   ">
