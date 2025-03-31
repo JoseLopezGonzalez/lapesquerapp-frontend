@@ -138,6 +138,8 @@ const ExportModal = ({ document }) => {
                     LINTIPIVA: 'RED10',
                 });
             });
+
+            albaranNumber++;
         }
 
 
