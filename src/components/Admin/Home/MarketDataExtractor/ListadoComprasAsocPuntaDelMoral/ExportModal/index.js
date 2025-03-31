@@ -29,7 +29,11 @@ const ExportModal = ({ document }) => {
     const isVentaDirecta = tipoSubasta == 'M1 M1'
     const isSubasta = tipoSubasta == 'T2 Arrastre'
 
+    const cajasTotales = tables.subastas.reduce((acc, item) => {
+        return acc + Number(item.cajas)
+    }, 0);
 
+    console.log('cajasTotales', cajasTotales)
     /* asocArmadoresPuntaDelMoral */
 
     /* const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja) */
@@ -150,13 +154,27 @@ const ExportModal = ({ document }) => {
                 CABNUMDOC: albaranNumber,
                 CABFECHA: fecha,
                 CABCODPRO: isVentaDirecta ? asocArmadoresPuntaDelMoral.codA3erp : asocArmadoresPuntaDelMoralSubasta.codA3erp,
-                CABREFERENCIA: `${fecha} - SERVICIOS`,
+                CABREFERENCIA: isVentaDirecta ? `${fecha} - SERVICIOS` : `${fecha} - SERVICIOS SUBASTA`,
                 LINCODART: 9999,
                 LINDESCLIN: line.descripcion,
                 LINUNIDADES: line.unidades,
                 LINPRCMONEDA: line.precio,
                 LINTIPIVA: 'RED10',
             });
+        });
+
+        albaranNumber++;
+
+        isSubasta && processedRows.push({
+            CABNUMDOC: albaranNumber,
+            CABFECHA: fecha,
+            CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
+            CABREFERENCIA: `${fecha} - SERVICIOS CAJAS SUBASTA`,
+            LINCODART: 1015,
+            LINDESCLIN: 'Préstamo cajas',
+            LINUNIDADES: cajasTotales,
+            LINPRCMONEDA: 5.50,
+            LINTIPIVA: 'RED10',
         });
 
         albaranNumber++;
