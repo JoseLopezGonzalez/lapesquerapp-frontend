@@ -52,14 +52,36 @@ export function useStore(storeId) {
         label: product.name
     }));
 
-
-
     const palletsOptions = store?.content?.pallets?.map(pallet => {
         return {
             value: pallet.id,
             label: pallet.id
         }
     });
+
+    /* quantity per Especie Summary */
+    const [quantityPerEspecie, setQuantityPerEspecie] = useState([]);
+    useEffect(() => {
+        const map = new Map();
+        store?.content?.pallets?.forEach(pallet => {
+            pallet.boxes?.forEach(box => {
+                const product = box.article;
+                if (product?.species?.name) {
+                    const currentQuantity = map.get(product?.species?.name) ?? 0;
+                    map.set(product?.species?.name, currentQuantity + Number(box.netWeight));
+                }
+            });
+        });
+
+        const quantityArray = Array.from(map.entries()).map(([name, quantity]) => ({
+            name,
+            quantity
+        }));
+
+        setQuantityPerEspecie(quantityArray);
+    }, [store]);
+
+    console.log('quantityPerEspecie', quantityPerEspecie);
 
 
 
@@ -77,7 +99,7 @@ export function useStore(storeId) {
 
             if (matchProduct || matchPallet) {
                 map.set(pallet.position, pallet);
-                
+
             }
         });
 
