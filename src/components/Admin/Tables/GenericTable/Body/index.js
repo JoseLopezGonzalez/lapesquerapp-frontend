@@ -75,8 +75,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
 
     return (
         <div className="grow overflow-y-auto overflow-x-auto w-full">
-            <table className="min-w-full divide-y divide-neutral-700/20"> {/* divide-y divide-neutral-700 */}
-                {/* Head sticky */}
+            <table className="min-w-full divide-y divide-neutral-700/20"> 
                 <thead className="bg-neutral-950 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
@@ -108,8 +107,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                         ))}
                     </tr>
                 </thead>
-
-                {/* Table Body */}
                 <tbody className="divide-y divide-neutral-700/20">
                     {data.loading ? (
                         [...Array(14)].map((_, index) => (
@@ -192,7 +189,6 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                         )}
                                         {header.type === 'date' && (
                                             <span className="text-white">
-                                                {/* si nes N/A devolver - */}
                                                 {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}
                                             </span>
                                         )}

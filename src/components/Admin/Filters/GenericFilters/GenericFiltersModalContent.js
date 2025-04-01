@@ -8,10 +8,10 @@ import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
 import NumberFilter from './Types/NumberFilter';
 import PairSelectBoxesFilter from './Types/PairSelectBoxesFilter';
 import DateFilter from './Types/DateFilter';
-import DateRangeFilter from './Types/DateRangeFilter';
 import { AutocompleteFilter } from './Types/AutocompleteFilter';
 import SearchFilter from './Types/SearchFilter';
 import TextFilter from './Types/TextFilter';
+import { DateRangeFilter } from './Types/DateRangeFilter';
 
 export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
     if (!filtersGroup || (!filtersGroup.search && !filtersGroup.groups)) {
@@ -139,7 +139,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                         {filter.type === 'date' && (
                                                             <>
 
-                                                            {/* <DateFilter
+                                                                {/* <DateFilter
                                                                 label={filter.label}
                                                                 name={filter.name}
                                                                 value={filter.value}
@@ -153,15 +153,17 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                         )}
                                                         {filter.type === 'dateRange' && (
                                                             <>
-                                                                {/* <DateRangeFilter
+                                                                <DateRangeFilter
                                                                     label={filter.label}
                                                                     name={filter.name}
                                                                     value={filter.value}
-                                                                    onChange={(value) =>
+                                                                    onChange={(value) => {
                                                                         onFilterChange(group.name, filter.name, value)
+                                                                        console.log('cambiando fecha')
                                                                     }
-                                                                    visibleMonths={filter.visibleMonths}
-                                                                /> */}
+                                                                    }
+                                                                /* visibleMonths={filter.visibleMonths} */
+                                                                />
                                                             </>
                                                         )}
                                                         {filter.type === 'autocomplete' && (
@@ -169,8 +171,8 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                 label={filter.label}
                                                                 placeholder={filter.placeholder}
                                                                 endpoint={filter.endpoint}
-                                                                onAdd={(item) =>
-                                                                { console.log('item', item);
+                                                                onAdd={(item) => {
+                                                                    console.log('item', item);
                                                                     onFilterChange(group.name, filter.name, [
                                                                         ...(filter.value || []),
                                                                         item,

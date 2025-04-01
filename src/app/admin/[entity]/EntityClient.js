@@ -42,8 +42,8 @@ function getValueByPath(object, path) {
 const formatFilters = (filters, paginationMeta) => {
     const formattedFilters = filters.reduce((acc, filter) => {
         if (filter.type === 'dateRange' && filter.value) {
-            if (filter.value.start) acc[`${filter.name}[start]`] = filter.value.start;
-            if (filter.value.end) acc[`${filter.name}[end]`] = filter.value.end;
+            if (filter.value.from) acc[`${filter.name}[start]`] = filter.value.from;
+            if (filter.value.to) acc[`${filter.name}[end]`] = filter.value.to;
         } else if (filter.type === 'autocomplete' && filter.value) {
             acc[filter.name] = filter.value.map((item) => item.id);
         } else if (filter.value) {
