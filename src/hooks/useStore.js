@@ -37,7 +37,7 @@ export function useStore(storeId) {
         store?.content?.pallets?.forEach(pallet => {
             if (!pallet.position) return
             pallet.boxes?.forEach(box => {
-                const product = box.article;
+                const product = box.product;
                 if (product?.id) {
                     productsMap.set(product.id, product); // evitar duplicados
                 }
@@ -65,7 +65,7 @@ export function useStore(storeId) {
         const map = new Map();
         store?.content?.pallets?.forEach(pallet => {
             pallet.boxes?.forEach(box => {
-                const product = box.article;
+                const product = box.product;
                 if (product?.species?.name) {
                     const currentQuantity = map.get(product?.species?.name) ?? 0;
                     map.set(product?.species?.name, currentQuantity + Number(box.netWeight));
@@ -93,7 +93,7 @@ export function useStore(storeId) {
         store?.content?.pallets?.forEach(pallet => {
             if (!pallet.position) return;
 
-            const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.article?.id));
+            const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.product?.id));
 
             const matchPallet = filters.pallets.includes(pallet.id);
 

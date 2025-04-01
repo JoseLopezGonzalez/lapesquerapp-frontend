@@ -7,7 +7,7 @@ import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 
 /* getStores*/
 export async function getStore(id, token) {
-    return fetch(`${API_URL_V1}stores/${id}`, {
+    return fetch(`${API_URL_V2}stores/${id}`, {
         method: 'GET',
         headers: {
             /* 'Content-Type': 'application/json', */
