@@ -21,7 +21,6 @@ export function DateRangeFilter({ className, value, onChange , label, name }) {
     }, [value])
 
     const handleOnChange = (date) => {
-        /* Formatear fechas yyyy-mm-dd */
         const formattedDate = {
             from: date.from ? format(date.from, "yyyy-MM-dd") : null,
             to: date.to ? format(date.to, "yyyy-MM-dd") : null,
