@@ -11,7 +11,13 @@ const documentTypes = [
         name: 'AlbaranCofradiaPescadoresSantoCristoDelMar',
         modelId: process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_ALBARAN_COFRADIA_PESCADORES_SANTO_CRISTO_DEL_MAR_MODEL_ID,
         apiVersion: '2023-07-31',
+    },
+    {
+        name: 'ListadoComprasLonjaDeIsla',
+        modelId: process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_LONJA_DE_ISLA_MODEL_ID,
+        apiVersion: '2023-07-31',
     }
+
 ];
 
 export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => {

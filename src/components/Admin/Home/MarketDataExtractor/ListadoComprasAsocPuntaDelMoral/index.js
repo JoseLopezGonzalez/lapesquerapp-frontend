@@ -28,7 +28,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
             <div className="container mx-auto py-3 space-y-3">
                 <Card>
                     <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Albarán Cofra Web</CardTitle>
+                        <CardTitle className="text-base">Listado de Compras Asoc. Armadores Punta del Moral</CardTitle>
                     </CardHeader>
                     <CardContent className="px-10 py-5">
                         <div className="flex flex-col gap-2">

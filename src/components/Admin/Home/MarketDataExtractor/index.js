@@ -13,6 +13,7 @@ import ListadoComprasAsocPuntaDelMoral from "./ListadoComprasAsocPuntaDelMoral";
 import { parseAzureDocumentAIResult } from "@/helpers/azure/documentAI";
 import { extractDataWithAzureDocumentAi } from "@/services/azure";
 import { PdfUpload } from "@/components/Utilities/PdfUpload";
+import ListadoComprasLonjaDeIsla from "./ListadoComprasLonjaDeIsla";
 
 const parseAlbaranesCofraWeb = (data) => {
 
@@ -156,6 +157,26 @@ export default function MarketDataExtractor() {
         setViewDocumentType("listadoComprasAsocArmadoresPuntaDelMoral");
     }
 
+    const processListadoComprasLonjaDeIsla = () => {
+
+        setLoading(true);
+        extractDataWithAzureDocumentAi(
+            {
+                file,
+                documentType: 'ListadoComprasLonjaDeIsla',
+            }
+        ).then((data) => {
+            setProcessedDocuments(data);
+        }).catch((error) => {
+            console.error(error);
+            toast.error("Error al procesar el documento.", darkToastTheme);
+        }).finally(() => {
+            setLoading(false);
+        });
+
+        setViewDocumentType("listadoComprasLonjaDeIsla");
+    }
+
     const handleProcess = () => {
         if (!documentType) { /* !selectedFile || */
             toast.error("Por favor, seleccione un archivo y el tipo de documento.", darkToastTheme);
@@ -170,8 +191,8 @@ export default function MarketDataExtractor() {
                 processListadoComprasAsocArmadoresPuntaDelMoral();
                 /* no implementar por el momento*/
                 break;
-            case "listadoComprasLonjaIsla":
-                /* no implementar por el momento*/
+            case "listadoComprasLonjaDeIsla":
+                processListadoComprasLonjaDeIsla();
                 break;
             case "listadoComprasLonjaAyamonts":
                 /* no implementar por el momento*/
@@ -241,7 +262,7 @@ export default function MarketDataExtractor() {
                             <SelectContent>
                                 <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">Albarán - Cofradia Pescadores Santo Cristo del Mar</SelectItem>
                                 <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">Listado de compras - Asoc. Armadores Punta del Moral</SelectItem>
-                                <SelectItem value="listadoComprasLonjaIsla">Listado de compras - Lonja de Isla</SelectItem>
+                                <SelectItem value="listadoComprasLonjaDeIsla">Listado de compras - Lonja de Isla</SelectItem>
                                 <SelectItem value="listadoComprasLonjaAyamonte">Listado de compras - Lonja de Ayamonte</SelectItem>
                             </SelectContent>
                         </Select>
@@ -291,6 +312,14 @@ export default function MarketDataExtractor() {
                                         <ListadoComprasAsocPuntaDelMoral document={processedDocuments[0]} />
                                     )
                                 }
+
+                                {
+                                    viewDocumentType === "listadoComprasLonjaDeIsla" && (
+                                        <ListadoComprasLonjaDeIsla document={processedDocuments[0]} />
+                                    )
+                                }
+
+                                
                             </div>
                         ) : (
                             <div className="flex-1 flex items-center justify-center   ">
