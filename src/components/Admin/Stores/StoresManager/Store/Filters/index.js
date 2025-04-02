@@ -16,6 +16,7 @@ import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { SummaryDialog } from "../SummaryDialog"
 
 
 const Filters = () => {
@@ -198,12 +199,13 @@ const Filters = () => {
 
                             <Separator />
 
-                            <div className="w-full">
+                            <div className="w-full flex flex-col gap-2">
                                 <Button variant="secondary" className="w-full">
                                     <PiMicrosoftExcelLogoFill className="h-5 w-5" />
                                     Exportar a Excel
                                 </Button>
 
+                                <SummaryDialog />
                             </div>
 
                         </div>

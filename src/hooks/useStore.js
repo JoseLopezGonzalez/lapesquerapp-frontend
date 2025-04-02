@@ -60,28 +60,68 @@ export function useStore(storeId) {
     });
 
     /* quantity per Especie Summary */
-    const [quantityPerEspecie, setQuantityPerEspecie] = useState([]);
+    const [speciesSummary, setSpeciesSummary] = useState([]);
+
     useEffect(() => {
         const map = new Map();
-        store?.content?.pallets?.forEach(pallet => {
-            pallet.boxes?.forEach(box => {
+        let totalWeight = 0;
+        let totalProductWeight = 0;
+
+        store?.content?.pallets?.forEach((pallet) => {
+            pallet.boxes?.forEach((box) => {
                 const product = box.product;
-                if (product?.species?.name) {
-                    const currentQuantity = map.get(product?.species?.name) ?? 0;
-                    map.set(product?.species?.name, currentQuantity + Number(box.netWeight));
+                const speciesName = product?.species?.name;
+                const productName = product?.name;
+                const netWeight = Number(box.netWeight) || 0;
+
+                if (speciesName && productName) {
+                    totalWeight += netWeight;
+                    totalProductWeight += netWeight;
+
+                    if (!map.has(speciesName)) {
+                        map.set(speciesName, {
+                            name: speciesName,
+                            quantity: 0,
+                            products: new Map()
+                        });
+                    }
+
+                    const speciesData = map.get(speciesName);
+                    speciesData.quantity += netWeight;
+
+                    const currentProductQuantity = speciesData.products.get(productName) ?? 0;
+                    speciesData.products.set(productName, currentProductQuantity + netWeight);
                 }
             });
         });
 
-        const quantityArray = Array.from(map.entries()).map(([name, quantity]) => ({
-            name,
-            quantity
-        }));
+        // Convert Map to plain objects
+        const result = Array.from(map.values()).map((entry) => {
+            const speciesPercentage = (entry.quantity / totalWeight) * 100;
 
-        setQuantityPerEspecie(quantityArray);
+            const products = Array.from(entry.products.entries()).map(([name, quantity]) => {
+                const productPercentage = (quantity / totalProductWeight) * 100;
+                return { name, quantity, productPercentage };
+            });
+
+            /* ordenar productos por name */
+            
+
+
+
+            return {
+                name: entry.name,
+                quantity: entry.quantity,
+                percentage: speciesPercentage,
+                products : products.sort((a, b) => a.name.localeCompare(b.name))
+            };
+        });
+
+        setSpeciesSummary(result);
     }, [store]);
 
-    console.log('quantityPerEspecie', quantityPerEspecie);
+
+    console.log('speciesSummary', speciesSummary);
 
 
 
@@ -151,6 +191,7 @@ export function useStore(storeId) {
         resetFilters,
         palletsOptions,
         productsOptions,
+        speciesSummary,
     };
 
 }
