@@ -13,16 +13,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { armadores, asocArmadoresPuntaDelMoral, asocArmadoresPuntaDelMoralSubasta, barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, lonjas, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraAsocArmadoresPuntaDelMoral, servicioExtraLonjaDeIsla, serviciosAsocArmadoresPuntaDelMoral, serviciosLonjaDeIsla } from '../exportData'
+import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { formatDecimalCurrency, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import toast from 'react-hot-toast'
+import { darkToastTheme } from '@/customs/reactHotToast'
+import { set } from 'date-fns'
 
 /* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
+    console.log('importe', importe)
     const importeString = String(importe);
     const partes = importeString.split('.');
+
+    console.log('partes', partes)
 
     if (partes.length <= 2) {
         // Solo hay un punto (o ninguno), no hay miles que quitar
@@ -32,7 +38,8 @@ const formatLonjaIslaImporte = (importe) => {
     // El último punto es el decimal, los anteriores son de miles
     const parteDecimal = partes.pop(); // último elemento
     const parteEntera = partes.join(''); // unimos las partes sin puntos de miles
-
+    console.log('parteEntera', parteEntera)
+    console.log('parteDecimal', parteDecimal)
     return `${parteEntera}.${parteDecimal}`;
 };
 
@@ -50,115 +57,139 @@ const ExportModal = ({ document }) => {
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
 
+    const errors = []
+
     const { details, tables } = document
-    const { lonja, cifComprador, comprador, numeroComprador, fecha, cajasTotales, kilosTotales, importeTotal } = details
+    const { fecha } = details
     const { ventas, peces, vendidurias, cajas, tipoVentas } = tables
 
-    /* const { details, tables } = document
-    const { lonja, cifComprador, comprador, fecha, tipoSubasta, importeTotal } = details
-    const isVentaDirecta = tipoSubasta == 'M1 M1'
-    const isSubasta = tipoSubasta == 'T2 Arrastre' */
 
-    /* const cajasTotales = tables.subastas.reduce((acc, item) => {
-        return acc + Number(item.cajas)
-    }, 0);
-
-    console.log('cajasTotales', cajasTotales) */
-    /* asocArmadoresPuntaDelMoral */
-
-    /* const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja) */
-
-    const isVentaDirecta = (nombreBarco) => {
-        const barcoEncontrado = barcosVentaDirecta.find((barco) => barco.barco === nombreBarco);
-        if (!barcoEncontrado) {
-            return false;
-        }
-        return true;
+    const isConvertibleBarco = (cod) => {
+        return barcos.some((barco) => barco.cod === cod);
     };
 
-    const ventasGroupedByBarco = Object.values(ventas.reduce((acc, venta) => {
-
-        if (!acc[venta.barco]) {
-            acc[venta.barco] = {
-                nombre: venta.barco,
-                lineas: [],
-
-            };
-        }
-        acc[venta.barco].lineas.push(venta);
-        return acc;
-    }, {}));
-
-    const getVendiduria = (nombreBarco) => {
-        const barcoEncontrado = barcos.find((barco) => barco.barco === nombreBarco);
+    /* const ventasDirectas = Object.values(ventas.reduce((acc, venta) => {
+        let barcoEncontrado = barcos.find((barco) => barco.cod === venta.codBarco || barco.barco === venta.barco);
 
         if (!barcoEncontrado) {
-            return null;
-        }
-
-        const { codVendiduria } = barcoEncontrado;
-
-        const nombreVendiduria = datosVendidurias.find((vendiduria) => vendiduria.cod === codVendiduria)?.nombre;
-
-        if (!nombreVendiduria) {
-            return null; // Aquí podrías lanzar un toast u otro aviso visual
-        }
-
-        return {
-            cod: codVendiduria,
-            nombre: nombreVendiduria,
-        };
-    };
-
-    const getArmador = (nombreBarco) => {
-        const barcoEncontrado = barcosVentaDirecta.find((barco) => barco.barco === nombreBarco);
-        if (!barcoEncontrado) {
-            return null;
-        }
-        const { armador } = barcoEncontrado;
-        if (!armador) {
-            return null; // Aquí podrías lanzar un toast u otro aviso visual
-        }
-        return armador;
-    };
-
-    const isConvertibleBarco = (nombre) => {
-        return barcos.some((barco) => barco.barco === nombre);
-    };
-
-    const ventasDirectasGroupedByBarco = Object.values(ventas.reduce((acc, venta) => {
-        if (!isVentaDirecta(venta.barco)) {
             return acc;
         }
-        if (!acc[venta.barco]) {
-            acc[venta.barco] = {
-                nombre: venta.barco,
-                armador: getArmador(venta.barco),
+        let nombreBarco = barcoEncontrado.barco;
+        let codBarco = `${barcoEncontrado.cod}`;
+
+        if (!isVentaDirecta(codBarco)) {
+            return acc;
+        }
+
+        if (!acc[codBarco]) {
+            acc[codBarco] = {
+                cod: venta.codBarco,
+                nombre: nombreBarco,
+                armador: getArmador(codBarco),
                 lineas: [],
             };
         }
-        acc[venta.barco].lineas.push(venta);
+        acc[codBarco].lineas.push(venta);
         return acc;
-    }, {}));
+    }, {})); */
 
-    const ventasVendiduriasGroupedByBarco = Object.values(ventas.reduce((acc, venta) => {
-        if (isVentaDirecta(venta.barco)) {
+    /* const ventasVendidurias = Object.values(ventas.reduce((acc, venta) => {
+
+
+        const barcoEncontrado = barcos.find((barco) => {
+            if (barco.cod !== venta.codBarco && barco.barco === venta.barco) {
+                setErrors((prevErrors) => [...prevErrors, `Barco encontrado por nombre: ${venta.barco}`]);
+            }
+            return barco.cod === venta.codBarco || barco.barco === venta.barco
+        });
+
+        if (!barcoEncontrado) {
+            setErrors((prevErrors) => [...prevErrors, `Barco no encontrado: ${venta.codBarco}`]);
             return acc;
         }
-        /* Si no existe el barco en la bd */
-        /* if (!isConvertibleBarco(venta.barco)) {
+
+        let nombreBarco = barcoEncontrado.barco;
+        let codBarco = `${barcoEncontrado.cod}`;
+
+        if (isVentaDirecta(codBarco)) {
             return acc;
-        } */
-        if (!acc[venta.barco]) {
-            acc[venta.barco] = {
-                nombre: venta.barco,
-                vendiduria: isConvertibleBarco(venta.barco) ? getVendiduria(venta.barco) : null,
+        }
+
+
+        if (!acc[codBarco]) {
+            acc[codBarco] = {
+                cod: venta.codBarco,
+                nombre: nombreBarco,
+                vendiduria: isConvertibleBarco(venta.codBarco) ? getVendiduria(venta.codBarco) : null,
                 lineas: [],
             };
         }
-        acc[venta.barco].lineas.push(venta);
+        acc[codBarco].lineas.push(venta);
         return acc;
-    }, {}));
+    }, {})); */
+
+    const addError = (error) => {
+        if (!errors.includes(error)) {
+            errors.push(error);
+        }
+    };
+
+    const ventasVendidurias = []
+    const ventasDirectas = []
+
+    ventas.map((venta, index) => {
+
+        /* Ojo lógica si falla codigo busca por nombre */
+
+        const barcoEncontrado = barcos.find((barco) => {
+            if (barco.cod !== venta.codBarco && barco.barco === venta.barco) {
+                addError(`Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco}`)
+            }
+            return barco.cod === venta.codBarco || barco.barco === venta.barco
+        });
+
+        if (!barcoEncontrado) {
+            addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`)
+            return ;
+        }
+
+        const nombreBarco = barcoEncontrado.barco;
+        const codBarco = `${barcoEncontrado.cod}`;
+
+        const barcoVentaDirectaEntontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
+
+        if (!barcoVentaDirectaEntontrado) {
+            const vendiduria = datosVendidurias.find((vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria);
+
+            if (!vendiduria) {
+                addError(`Vendiduria no encontrada para el barco: ${codBarco} - ${nombreBarco}`)
+                return ;
+            }
+
+            if (!ventasVendidurias[codBarco]) {
+                ventasVendidurias[codBarco] = {
+                    cod: codBarco,
+                    nombre: nombreBarco,
+                    vendiduria: vendiduria,
+                    lineas: [],
+                };
+            }
+            ventasVendidurias[codBarco].lineas.push(venta);
+
+        } else if (barcoVentaDirectaEntontrado) {
+            const armador = barcoVentaDirectaEntontrado.armador;
+            if (!ventasDirectas[codBarco]) {
+                ventasDirectas[codBarco] = {
+                    cod: codBarco,
+                    nombre: nombreBarco,
+                    armador: armador,
+                    lineas: [],
+                };
+            }
+            ventasDirectas[codBarco].lineas.push(venta);
+        }
+    });
+
 
     const getImporteServiciosVendiduria = (lineas) => {
         const importeTotal = lineas.reduce((acc, linea) => {
@@ -169,17 +200,14 @@ const ExportModal = ({ document }) => {
 
 
 
-    const isSomeBarcoNotConvertible = ventas.some((venta) => !isConvertibleBarco(venta.barco));
-
-
-    const importeTotalVentasDirectas = ventasDirectasGroupedByBarco.reduce((acc, barco) => {
+    const importeTotalVentasDirectas = ventasDirectas.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
-            return acc + Number(linea.importe);
+            return acc + Number(formatLonjaIslaImporte(linea.importe));
         }, 0);
     }, 0);
 
     /* importes totales por cada tipo de vendiduria segun ventasVendiduriasGroupByBarco */
-    const importesTotalesVendidurias = ventasVendiduriasGroupedByBarco.reduce((acc, barco) => {
+    const importesTotalesVendidurias = ventasVendidurias.reduce((acc, barco) => {
         if (!barco.vendiduria) {
             return acc;
         }
@@ -249,10 +277,10 @@ const ExportModal = ({ document }) => {
     console.log('compararImportesPorVendiduria', compararImportesPorVendiduria())
 
     /* comprobar vendidurias desde importesTotaltesVendidurias y vendidurias */
-    
+
 
     /* calcular buscando si hay diferencias */
-    const isSomeVendiduriaNotConvertible =  compararImportesPorVendiduria().some((linea) => {
+    const isSomeVendiduriaNotConvertible = compararImportesPorVendiduria().some((linea) => {
         return !linea.cuadran;
     });
 
@@ -267,6 +295,13 @@ const ExportModal = ({ document }) => {
         }
     })
 
+    const getImporteTotal = (lineasBarco) => {
+        const importeTotal = lineasBarco.reduce((acc, linea) => {
+            return acc + Number(formatLonjaIslaImporte(linea.importe));
+        }, 0);
+        return importeTotal;
+    }
+
     /* Añadir en segunda posicion servvicio extra a servicios */
     const servicioExtra = {
         ...servicioExtraLonjaDeIsla,
@@ -277,21 +312,34 @@ const ExportModal = ({ document }) => {
     }
     servicios.splice(1, 0, servicioExtra)
 
+    const handleOnClickExport = () => {
+        if (initialAlbaranNumber === "") {
+            toast.error('Introduzca un número de albarán inicial', darkToastTheme);
+            return;
+        }
 
+        if (software === "A3ERP") {
+            generateExcelForA3erp();
+        } else if (software === "Facilcom") {
+            // generateExcelForFacilcom();
+        } else {
+            // generateExcelForOtros();
+        }
+    };
 
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
         let albaranNumber = Number(initialAlbaranNumber);
 
-        ventasDirectasGroupedByBarco.forEach(barco => {
+        ventasDirectas.forEach(barco => {
             barco.lineas.forEach(linea => {
                 processedRows.push({
                     CABNUMDOC: albaranNumber,
                     CABFECHA: fecha,
-                    CABCODPRO: barco.armador,
+                    CABCODPRO: barco.armador.codA3erp,
                     CABREFERENCIA: `${fecha} - ${barco.nombre}`,
-                    LINCODART: productos.find(p => p.nombre == linea.especie).codA3erp,
+                    LINCODART: productos.find(p => p.nombre == linea.especie)?.codA3erp,
                     LINDESCLIN: linea.especie,
                     LINUNIDADES: Number(linea.kilos),
                     LINPRCMONEDA: Number(linea.precio),
@@ -301,12 +349,12 @@ const ExportModal = ({ document }) => {
             albaranNumber++;
         });
 
-        ventasVendiduriasGroupedByBarco.forEach(barco => {
-            isConvertibleBarco(barco.nombre) && barco.lineas.forEach(linea => {
+        ventasVendidurias.forEach(barco => {
+            isConvertibleBarco(barco.cod) && barco.lineas.forEach(linea => {
                 processedRows.push({
                     CABNUMDOC: albaranNumber,
                     CABFECHA: fecha,
-                    CABCODPRO: barco.vendiduria.cod,
+                    CABCODPRO: barco.vendiduria.codA3erp,
                     CABREFERENCIA: `${fecha} - ${barco.nombre}`,
                     LINCODART: productos.find(p => p.nombre == linea.especie).codA3erp,
                     LINDESCLIN: linea.especie,
@@ -315,7 +363,22 @@ const ExportModal = ({ document }) => {
                     LINTIPIVA: 'RED10',
                 });
             });
+
+            const importeTotal = getImporteTotal(barco.lineas);
+
+            processedRows.push({
+                CABNUMDOC: albaranNumber,
+                CABFECHA: fecha,
+                CABCODPRO: lonjaDeIsla.codA3erp,
+                CABREFERENCIA: `${fecha} - ${barco.nombre}`,
+                LINCODART: 9999,
+                LINDESCLIN: 'Gastos de Lonja y OP',
+                LINUNIDADES: 1,
+                LINPRCMONEDA: importeTotal * 3.5 / 100,
+                LINTIPIVA: 'RED10',
+            });
             albaranNumber++;
+
         });
 
 
@@ -381,7 +444,19 @@ const ExportModal = ({ document }) => {
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>
-                    {isSomeBarcoNotConvertible ? (
+                    {errors.length > 0 && (
+                        <ul className="list-disc list-inside text-red-500 flex flex-col gap-2">
+                            {errors.map((error, index) => (
+                                <li key={index} className="text-xs flex gap-1">
+                                    <CircleX className="h-4 w-4 " />
+                                    {error}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+
+                    {/* {isSomeBarcoNotConvertible ? (
                         <div className="flex items-center gap-1 p-1  text-amber-500  rounded-md ">
                             <AlertTriangle className="h-4 w-4 " />
                             <span className="text-xs">
@@ -395,8 +470,8 @@ const ExportModal = ({ document }) => {
                                 Todos los barcos son exportables.
                             </span>
                         </div>
-                    )}
-                    {isSomeVendiduriaNotConvertible ? (
+                    )} */}
+                    {/* {isSomeVendiduriaNotConvertible ? (
                         <div className="flex items-center gap-1 p-1  text-red-500  rounded-md ">
                             <CircleX className="h-4 w-4 " />
                             <span className="text-xs">
@@ -410,7 +485,7 @@ const ExportModal = ({ document }) => {
                                 Importes de vendidurias comprobados.
                             </span>
                         </div>
-                    )}
+                    )} */}
                 </div>
 
                 <div className="space-y-4 mt-2">
@@ -462,7 +537,7 @@ const ExportModal = ({ document }) => {
                         </Card>
                     )}
 
-                    {ventasDirectasGroupedByBarco.length > 0 && (
+                    {ventasDirectas.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="pb-2">
@@ -472,7 +547,7 @@ const ExportModal = ({ document }) => {
                             </CardHeader>
                             <CardContent className='flex flex-col gap-4'>
 
-                                {ventasDirectasGroupedByBarco.map((barco, index) => (
+                                {ventasDirectas.map((barco, index) => (
                                     <Card key={`${barco.nombre}-${index}`}>
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-start">
@@ -480,7 +555,7 @@ const ExportModal = ({ document }) => {
                                                     <div className='flex flex-col gap-1'>
                                                         <span className="text-lg">{barco.nombre}</span>
                                                         <span className="text-sm text-muted-foreground">
-                                                            {barco.armador}
+                                                            {barco.armador.nombre}
                                                         </span>
                                                     </div>
                                                 </CardTitle>
@@ -579,7 +654,7 @@ const ExportModal = ({ document }) => {
                         </Card>
                     )}
 
-                    {ventasVendiduriasGroupedByBarco.length > 0 && (
+                    {ventasVendidurias.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="pb-2">
@@ -587,7 +662,7 @@ const ExportModal = ({ document }) => {
                                 </div>
                             </CardHeader>
                             <CardContent className='flex flex-col gap-4'>
-                                {ventasVendiduriasGroupedByBarco.map((barco, index) => (
+                                {ventasVendidurias.map((barco, index) => (
                                     <Card key={`${barco.nombre}-${index}`}>
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-start">
@@ -603,7 +678,7 @@ const ExportModal = ({ document }) => {
                                                     <Badge variant="outline" className=" text-yellow-500  flex items-center gap-1">
                                                         Vendiduría
                                                     </Badge>
-                                                    {isConvertibleBarco(barco.nombre) ? (
+                                                    {isConvertibleBarco(barco.cod) ? (
                                                         <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
                                                             <Check className="h-3.5 w-3.5" />
                                                             Exportable
@@ -672,7 +747,7 @@ const ExportModal = ({ document }) => {
                         Cancelar
                     </Button>
                 </DialogTrigger>
-                <Button className="gap-2" onClick={() => generateExcelForA3erp()}>
+                <Button className="gap-2" onClick={() => handleOnClickExport()}>
                     <FileSpreadsheet className="h-4 w-4" />
                     Exportar a A3ERP
                 </Button>

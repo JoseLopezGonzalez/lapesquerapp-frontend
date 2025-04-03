@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import { normalizeText } from '@/helpers/formats/texts'
 
 const ExportModal = ({ document }) => {
     const [software, setSoftware] = useState("A3ERP")
@@ -56,7 +57,7 @@ const ExportModal = ({ document }) => {
 
 
     const isConvertibleBarco = (matricula) => {
-        return barcos.some((barco) => barco.matricula === matricula);
+        return barcos.some((barco) => normalizeText(barco.matricula) === normalizeText(matricula));
     };
 
     const isSomeBarcoNotConvertible = subastas.some((barco) => !isConvertibleBarco(barco.matricula));
@@ -103,7 +104,7 @@ const ExportModal = ({ document }) => {
         if (isVentaDirecta) {
 
             for (const [matricula, lines] of Object.entries(groupedByBarco)) {
-                const barcoData = barcos.find(a => a.matricula === matricula);
+                const barcoData = barcos.find(a => normalizeText(a.matricula) === normalizeText(matricula));
                 if (!barcoData) {
                     console.error(`Falta código de conversión para barco ${matricula}`);
                     continue; // o lanza un toast o marca el error visualmente
@@ -188,7 +189,12 @@ const ExportModal = ({ document }) => {
         // Guardar archivo
         const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `ALBARANES_A3ERP_${fecha}.xls`);
+        if (isSubasta){
+            blob.name = `ALBARANES_SUBASTA_A3ERP_ASOC_ARMADORES_PUNTA_MORAL_${fecha}.xls`;
+        }else{
+            blob.name = `ALBARANES_A3ERP_ASOC_ARMADORES_PUNTA_MORAL_${fecha}.xls`;
+        }
+        saveAs(blob, blob.name);
     };
 
     return (

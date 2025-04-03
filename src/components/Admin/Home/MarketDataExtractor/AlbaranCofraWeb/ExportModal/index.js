@@ -134,7 +134,7 @@ const ExportModal = ({ document }) => {
         // Guardar archivo
         const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `ALBARANES_A3ERP_${headerData.fecha}.xls`);
+        saveAs(blob, `ALBARANES_A3ERP_COFRA_SANTO_CRISTO_${headerData.fecha}.xls`);
     };
 
     return (

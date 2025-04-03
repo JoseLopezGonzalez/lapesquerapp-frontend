@@ -6,10 +6,10 @@ export const barcos = [
   { nombre: "Juan Y Lucas", matricula: "HU-1-1-22", cifArmador: "29478435W", codA3erp: "" },
   { nombre: "Tres Cuñaos", matricula: "HU-2-2007", cifArmador: "29617231Q", codA3erp: "" },
   { nombre: "Nova Selesa", matricula: "T-767-L", cifArmador: "513587853", codA3erp: "" },
-
   { nombre: "Maria Jesus Segunda", matricula: "3 CA 1-7-98", cifArmador: "E-21492228", codA3erp: "" },
   { nombre: "Ajuda Do Mar", matricula: "PTVRE-118863-C", cifArmador: "PRT000020421", codA3erp: "" },
   { nombre: "Pepe Manuel", matricula: "3HU1420", cifArmador: "49056334W", codA3erp: "" },
+  { nombre: 'Som do Mar', matricula: 'PTTVR-118920-L-1189', cifArmador: '', codA3erp: "" },
 ];
 
 export const asocArmadoresPuntaDelMoral = {
@@ -45,5 +45,6 @@ export const servicioExtraAsocArmadoresPuntaDelMoral = {
 
 export const productos = [
   { nombre: "PULPO", codA3erp: "95"},
+  { nombre: "PULPO PORTUGAL", codA3erp: "95"},
   { nombre: "PULPO ALMIZCLADO", codA3erp: "671"},
 ]
