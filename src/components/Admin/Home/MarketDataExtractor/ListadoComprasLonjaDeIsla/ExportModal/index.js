@@ -20,7 +20,6 @@ import { saveAs } from 'file-saver';
 import { formatDecimalCurrency, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 import toast from 'react-hot-toast'
 import { darkToastTheme } from '@/customs/reactHotToast'
-import { set } from 'date-fns'
 
 /* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
