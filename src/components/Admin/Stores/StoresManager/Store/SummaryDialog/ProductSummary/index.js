@@ -20,9 +20,9 @@ import { saveAs } from 'file-saver';
 
 export default function ProductSummary() {
 
-    const { speciesSummary } = useStoreContext()
+    const { speciesSummary, store } = useStoreContext()
     const species = speciesSummary
-
+    const storeName = store.name
     const [searchText, setSearchText] = useState("")
 
     const [selectedSpecies, setSelectedSpecies] = useState(null)
@@ -32,6 +32,7 @@ export default function ProductSummary() {
     const totalWeight = species.reduce((sum, s) => sum + s.quantity, 0)
     const totalProducts = species.reduce((sum, s) => sum + s.products.length, 0)
     const totalSpecies = species.length
+
 
     useEffect(() => {
         setSelectedSpecies(species[0].name)
@@ -46,19 +47,23 @@ export default function ProductSummary() {
     )
     const totalFilteredProducts = filteredProducts.length
 
-    const generateExcel = () => {
-        // Crear el libro y hoja
+    const totalQuantityFilteredProducts = filteredProducts.reduce((sum, product) => sum + product.quantity, 0)
 
-        /* unir todos los productos de todas las especies */
+
+    const generateExcel = () => {
         const allProducts = species.reduce((acc, species) => {
             const speciesProducts = species.products.map((product) => ({
-                ...product,
-                species: species.name,
-                speciesPercentage: species.percentage,  
-                speciesQuantity: species.quantity,
+                Producto: product.name,
+                Especie: species.name,
+                Cantidad: Number(product.quantity.toFixed(2)),
+                Porcentaje: Number(product.productPercentage.toFixed(2)),
             }))
             return acc.concat(speciesProducts)
         }, [])
+
+        const currenDate = new Date();
+        const formattedDate = `${currenDate.getDate().toString().padStart(2, '0')}-${(currenDate.getMonth() + 1).toString().padStart(2, '0')}-${currenDate.getFullYear()}`;
+        const formattedStoreName = storeName.replace(/\s+/g, '_').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         const worksheet = XLSX.utils.json_to_sheet(allProducts);
         // Agregar encabezados
@@ -67,9 +72,9 @@ export default function ProductSummary() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'PRODUCTOS');
 
         // Guardar archivo
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `PRODUCTOS.xlsx`);
+        saveAs(blob, `Productos_${formattedStoreName}_${formattedDate}.xlsx`);
     };
 
     return (
@@ -153,8 +158,10 @@ export default function ProductSummary() {
                             />
                         </div>
                         {/* <h3 className="text-sm font-medium text-muted-foreground">Productos</h3> */}
-                        <div className="px-2 py-1 rounded-full text-xs bg-muted text-muted-foreground">
+                        <div className="px-3 py-1 rounded-full text-xs bg-muted text-muted-foreground flex items-center justify-center">
                             {totalFilteredProducts} {totalFilteredProducts > 1 ? 'productos' : 'producto'}
+                            <Separator orientation="vertical" className="mx-2 h-3 bg-muted-foreground" />
+                            {formatDecimalWeight(totalQuantityFilteredProducts)}
                         </div>
                     </div>
 
@@ -183,10 +190,10 @@ export default function ProductSummary() {
                     <PiMicrosoftExcelLogo />
                     Exportar .xlsx
                 </Button>
-                <Button variant="secondary" >
+                {/* <Button variant="secondary" >
                     <LucideFileJson />
                     Exportar .json
-                </Button>
+                </Button> */}
             </DialogFooter>
         </div>
     )
