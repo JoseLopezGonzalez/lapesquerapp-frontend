@@ -14,6 +14,7 @@ import { parseAzureDocumentAIResult } from "@/helpers/azure/documentAI";
 import { extractDataWithAzureDocumentAi } from "@/services/azure";
 import { PdfUpload } from "@/components/Utilities/PdfUpload";
 import ListadoComprasLonjaDeIsla from "./ListadoComprasLonjaDeIsla";
+import FacturaDocapesca from "./FacturaDocapesca";
 
 const parseAlbaranesCofraWeb = (data) => {
 
@@ -177,6 +178,26 @@ export default function MarketDataExtractor() {
         setViewDocumentType("listadoComprasLonjaDeIsla");
     }
 
+    const processFacturaDocapesca = () => {
+
+        setLoading(true);
+        extractDataWithAzureDocumentAi(
+            {
+                file,
+                documentType: 'FacturaDocapesca',
+            }
+        ).then((data) => {
+            setProcessedDocuments(data);
+        }).catch((error) => {
+            console.error(error);
+            toast.error("Error al procesar el documento.", darkToastTheme);
+        }).finally(() => {
+            setLoading(false);
+        });
+
+        setViewDocumentType("facturaDocapesca");
+    }
+
     const handleProcess = () => {
         if (!documentType) { /* !selectedFile || */
             toast.error("Por favor, seleccione un archivo y el tipo de documento.", darkToastTheme);
@@ -194,7 +215,8 @@ export default function MarketDataExtractor() {
             case "listadoComprasLonjaDeIsla":
                 processListadoComprasLonjaDeIsla();
                 break;
-            case "listadoComprasLonjaAyamonts":
+            case "facturaDocapesca":
+                processFacturaDocapesca();
                 /* no implementar por el momento*/
                 break;
             default:
@@ -263,7 +285,7 @@ export default function MarketDataExtractor() {
                                 <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">Albarán - Cofradia Pescadores Santo Cristo del Mar</SelectItem>
                                 <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">Listado de compras - Asoc. Armadores Punta del Moral</SelectItem>
                                 <SelectItem value="listadoComprasLonjaDeIsla">Listado de compras - Lonja de Isla</SelectItem>
-                                <SelectItem value="listadoComprasLonjaAyamonte">Listado de compras - Lonja de Ayamonte</SelectItem>
+                                <SelectItem value="facturaDocapesca">Factura - Docapesca</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -318,6 +340,12 @@ export default function MarketDataExtractor() {
                                         <ListadoComprasLonjaDeIsla document={processedDocuments[0]} />
                                     )
                                 }
+
+                                    {
+                                        viewDocumentType === "facturaDocapesca" && (
+                                            <FacturaDocapesca document={processedDocuments[0]} />
+                                        )
+                                    }
 
                                 
                             </div>
