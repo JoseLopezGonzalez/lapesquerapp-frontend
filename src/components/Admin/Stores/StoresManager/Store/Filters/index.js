@@ -1,23 +1,15 @@
-
 "use client"
 
-import {
-    Box,
-    Package,
-    Filter,
-    X,
-} from "lucide-react"
+import { Box, Package, Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { useStoreContext } from "@/context/StoreContext"
-import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { SummaryDialog } from "../SummaryDialog"
-
+import { ProductSummaryDialog } from "../ProductSummaryDialog"
 
 const Filters = () => {
 
@@ -56,10 +48,6 @@ const Filters = () => {
             pallets: filters.pallets.filter((pallet) => pallet !== value)
         })
     }
-
-
-
-
 
     return (
         <Card className=' w-full  h-full overflow-hidden bg-neutral-900 flex flex-col '>
@@ -205,7 +193,7 @@ const Filters = () => {
                                     Exportar a Excel
                                 </Button>
 
-                                <SummaryDialog />
+                                <ProductSummaryDialog />
                             </div>
 
                         </div>

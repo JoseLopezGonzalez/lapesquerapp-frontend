@@ -11,20 +11,16 @@ import { Input } from "@/components/ui/input"
 import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { PiMicrosoftExcelLogo } from "react-icons/pi"
-import { LucideFileJson } from "lucide-react"
-
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-
-
 
 export default function ProductSummary() {
 
     const { speciesSummary, store } = useStoreContext()
     const species = speciesSummary
     const storeName = store.name
-    const [searchText, setSearchText] = useState("")
 
+    const [searchText, setSearchText] = useState("")
     const [selectedSpecies, setSelectedSpecies] = useState(null)
     const [products, setProducts] = useState([])
 
@@ -32,7 +28,6 @@ export default function ProductSummary() {
     const totalWeight = species.reduce((sum, s) => sum + s.quantity, 0)
     const totalProducts = species.reduce((sum, s) => sum + s.products.length, 0)
     const totalSpecies = species.length
-
 
     useEffect(() => {
         setSelectedSpecies(species[0].name)
@@ -45,10 +40,9 @@ export default function ProductSummary() {
     const filteredProducts = products.filter((product) =>
         product.name.toLowerCase().includes(searchText.toLowerCase())
     )
+
     const totalFilteredProducts = filteredProducts.length
-
     const totalQuantityFilteredProducts = filteredProducts.reduce((sum, product) => sum + product.quantity, 0)
-
 
     const generateExcel = () => {
         const allProducts = species.reduce((acc, species) => {
@@ -157,7 +151,6 @@ export default function ProductSummary() {
                                 onChange={(e) => setSearchText(e.target.value)}
                             />
                         </div>
-                        {/* <h3 className="text-sm font-medium text-muted-foreground">Productos</h3> */}
                         <div className="px-3 py-1 rounded-full text-xs bg-muted text-muted-foreground flex items-center justify-center">
                             {totalFilteredProducts} {totalFilteredProducts > 1 ? 'productos' : 'producto'}
                             <Separator orientation="vertical" className="mx-2 h-3 bg-muted-foreground" />

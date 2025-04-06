@@ -8,6 +8,7 @@ import { LocateFixed } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
+import PositionSlideover from './PositionSlideover';
 
 export const StoreContent = () => {
 
@@ -41,6 +42,8 @@ export const StoreContent = () => {
                 <div className='max-w-[350px] w-full h-full overflow-hidden'>
                     <Filters />
                 </div>
+
+                <PositionSlideover/>
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />

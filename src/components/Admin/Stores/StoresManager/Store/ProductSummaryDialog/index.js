@@ -2,16 +2,13 @@ import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogContent,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import ProductSummary from "./ProductSummary"
-import { PiMicrosoftExcelLogo } from "react-icons/pi"
-import { LucideFileJson } from "lucide-react"
 
-export function SummaryDialog() {
+export function ProductSummaryDialog() {
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -26,9 +23,7 @@ export function SummaryDialog() {
                 <div className=" gap-4 pb-2">
                     <ProductSummary />
                 </div>
-               
             </DialogContent>
-
         </Dialog>
     )
 }

@@ -21,6 +21,20 @@ export function useStore(storeId) {
     const [error, setError] = useState(null);
     const [reload, setReload] = useState(false);
 
+    const [isOpenPositionSlideover, setIsOpenPositionSlideover] = useState(false);
+    const [selectedPosition, setSelectedPosition] = useState(null);
+
+
+    const openPositionSlideover = (positionId) => {
+        setSelectedPosition(positionId);
+        setIsOpenPositionSlideover(true);
+    }
+
+    const closePositionSlideover = () => {
+        setSelectedPosition(null);
+        setIsOpenPositionSlideover(false);
+    }
+
     const [filters, setFilters] = useState(initialFilters);
 
     const onChangeFilters = (newFilters) => {
@@ -173,6 +187,10 @@ export function useStore(storeId) {
     }
 
 
+    const getPositionPallets = (positionId) => {
+        return store?.content?.pallets?.filter(p => p.position === positionId) ?? [];
+    }
+
 
     return {
         store,
@@ -192,6 +210,12 @@ export function useStore(storeId) {
         palletsOptions,
         productsOptions,
         speciesSummary,
+
+        getPositionPallets,
+        openPositionSlideover,
+        closePositionSlideover,
+        isOpenPositionSlideover,
+        selectedPosition,
     };
 
 }
