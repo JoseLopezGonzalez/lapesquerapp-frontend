@@ -24,6 +24,11 @@ export function useStore(storeId) {
     const [isOpenPositionSlideover, setIsOpenPositionSlideover] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
 
+    const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
+
+
+
+
 
     const openPositionSlideover = (positionId) => {
         setSelectedPosition(positionId);
@@ -192,6 +197,19 @@ export function useStore(storeId) {
     }
 
 
+    const openAddElementToPosition = () => {
+        setIsOpenAddElementToPositionDialog(true);
+    }
+
+    const closeAddElementToPosition = () => {
+        setIsOpenAddElementToPositionDialog(false);
+    }
+
+    const unlocatedPallets = store?.content?.pallets?.filter(pallet => !pallet.position);
+
+    const pallets = store?.content?.pallets;
+
+
     return {
         store,
         loading,
@@ -216,6 +234,13 @@ export function useStore(storeId) {
         closePositionSlideover,
         isOpenPositionSlideover,
         selectedPosition,
+
+        isOpenAddElementToPositionDialog,
+        openAddElementToPosition,
+        closeAddElementToPosition,
+
+        unlocatedPallets,
+        pallets,
     };
 
 }

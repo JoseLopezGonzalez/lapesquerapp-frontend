@@ -68,18 +68,23 @@ const typeIcons = {
 export default function PositionSlideover({ onClose, position = "A5" }) {
 
 
-    const { isOpenPositionSlideover , closePositionSlideover , selectedPosition, getPositionPallets } = useStoreContext()
+    const { isOpenPositionSlideover, closePositionSlideover, selectedPosition, getPositionPallets, openAddElementToPosition } = useStoreContext()
 
     const pallets = getPositionPallets(selectedPosition)
 
     const open = isOpenPositionSlideover
+
+    const handleOnClickAddElement = () => {
+        openAddElementToPosition()
+        console.log('openAddElementToPosition')
+    }
 
     console.log('pallets', pallets)
 
     return (
 
         <Sheet open={open} onOpenChange={closePositionSlideover} >
-           {/*  <SheetTrigger>Open</SheetTrigger> */}
+            {/*  <SheetTrigger>Open</SheetTrigger> */}
             <SheetContent className='w-[400px] sm:w-[900px] sm:min-w-[430px] flex flex-col h-full'  >
                 <SheetHeader>
                     <SheetTitle>Posicion A4</SheetTitle>
@@ -88,8 +93,8 @@ export default function PositionSlideover({ onClose, position = "A5" }) {
                     </SheetDescription>
                 </SheetHeader>
                 <div className="">
-                    <Button className="w-full flex items-center justify-center gap-2">
-                        <Plus className="h-4 w-4" />
+                    <Button className="w-full flex items-center justify-center gap-2" onClick={handleOnClickAddElement}>
+                        <Plus className="h-4 w-4"  />
                         Agregar nuevo elemento
                     </Button>
                 </div>
@@ -107,7 +112,7 @@ export default function PositionSlideover({ onClose, position = "A5" }) {
                                 </Button>
                             </Card>
                         ) : (
-                            
+
                             pallets.map((pallet) => <PalletCard key={pallet.id} pallet={pallet} />)
                         )}
                     </div>

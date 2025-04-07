@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button"
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
 import PositionSlideover from './PositionSlideover';
+import AddElementToPosition from './AddElementToPositionDialog';
 
 export const StoreContent = () => {
 
-    const { loading, error } = useStoreContext();
+    const { loading, error, isOpenAddElementToPositionDialog } = useStoreContext();
 
     if (loading) {
         return (
@@ -43,7 +44,9 @@ export const StoreContent = () => {
                     <Filters />
                 </div>
 
-                <PositionSlideover/>
+                <PositionSlideover />
+
+                <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />
