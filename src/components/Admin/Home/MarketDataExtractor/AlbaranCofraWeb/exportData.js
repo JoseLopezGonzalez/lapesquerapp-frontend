@@ -29,6 +29,11 @@ ABUELO PURGA	ANTONIO JOSE GARCÍA RAMOS	29492009Y	988223
 ];
 
 export const armadores = [
+  {
+    armador: 'Manuel Jesus Yaque Camacho',
+    cif: '29489841T',
+    codA3erp: '988285',
+  },
   { armador: "ADRIMAR CD", cif: "E21610589", codA3erp: "988214" },
   { armador: "MARIA BELLA PEREZ RIVERO", cif: "29781809Y", codA3erp: "781809" },
   { armador: "ANTONIO JOSE GARCÍA RAMOS", cif: "29492009Y", codA3erp: "988223" },

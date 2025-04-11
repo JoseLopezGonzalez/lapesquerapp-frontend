@@ -47,4 +47,5 @@ export const productos = [
   { nombre: "PULPO", codA3erp: "95"},
   { nombre: "PULPO PORTUGAL", codA3erp: "95"},
   { nombre: "PULPO ALMIZCLADO", codA3erp: "671"},
+  { nombre:"COQUINA", codA3erp: "47"},
 ]

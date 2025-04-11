@@ -934,6 +934,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '358',
     barco: "HERMANOS ARAUJO LOPEZ",
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
@@ -1069,6 +1070,7 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
+    cod:'390',
     barco: "BELI Y TOÑI",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -3656,6 +3658,7 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
+    cod: '935',
     barco: "ABUELO ANGEL",
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
@@ -5184,6 +5187,14 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Manuel Jesus Yaque Camacho',
       codA3erp: '988285',
+    }
+  },
+  {
+    cod: '358',
+    barco: "HERMANOS ARAUJO LOPEZ",
+    armador: {
+      nombre: 'Juan Jesus Araujo Lopez',
+      codA3erp: '988258',
     }
   }
 ];
