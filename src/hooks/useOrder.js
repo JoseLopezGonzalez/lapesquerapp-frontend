@@ -432,6 +432,14 @@ export function useOrder(orderId, onChange) {
             types: ['pdf'],
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
         },
+        /* incident */
+        {
+            name: 'incident',
+            label: 'Reporte de Incidencias',
+            types: ['pdf'],
+            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Incidencias'],
+        },
+        
 
     ];
 
