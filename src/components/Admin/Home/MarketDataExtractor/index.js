@@ -116,6 +116,13 @@ export default function MarketDataExtractor() {
     const [file, setFile] = useState(null);
     const [processedDocuments, setProcessedDocuments] = useState([]); // Para guardar los documentos procesados
 
+    const handleOnSetFile = (file) => {
+        setFile(file);
+        setDocumentType(""); // Resetear el tipo de documento al seleccionar un nuevo archivo
+        setProcessedDocuments([]); // Resetear los documentos procesados al seleccionar un nuevo archivo
+        setViewDocumentType(""); // Resetear el tipo de documento a visualizar al seleccionar un nuevo archivo
+        setLoading(false); // Resetear el estado de carga al seleccionar un nuevo archivo
+    }
 
     const [viewDocumentType, setViewDocumentType] = useState("");
 
@@ -271,7 +278,7 @@ export default function MarketDataExtractor() {
                         </div>
                     </div> */}
 
-                    <PdfUpload onChange={setFile} />
+                    <PdfUpload onChange={handleOnSetFile} />
 
                     <div className="space-y-2">
                         <label htmlFor="document-type" className="text-sm font-medium">
