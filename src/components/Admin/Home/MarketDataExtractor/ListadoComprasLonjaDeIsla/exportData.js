@@ -30,7 +30,6 @@ export const datosVendidurias = [
   }
 ]
 
-
 export const barcos = [
   {
     barco: "EL JUNZA",
@@ -874,6 +873,7 @@ export const barcos = [
   },
   {
     cod: '343',
+    codBrisapp: '164',
     barco: "PESCAITO GABRIEL Y MANUEL",
     vendiduria: "HIJOS DE MANUEL GEY, S.L.",
     codVendiduria: 'JA'
@@ -936,6 +936,7 @@ export const barcos = [
   {
     cod: '358',
     barco: "HERMANOS ARAUJO LOPEZ",
+    codBrisapp: '151',
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
   },
@@ -1070,7 +1071,7 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
-    cod:'390',
+    cod: '390',
     barco: "BELI Y TOÑI",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -1708,6 +1709,7 @@ export const barcos = [
   {
     cod: '544',
     barco: "URTAIN PRIMERO",
+    codBrisapp: '5',
     vendiduria: "HIJOS DE MANUEL GEY, S.L.",
     codVendiduria: 'JA'
   },
@@ -2694,6 +2696,7 @@ export const barcos = [
   {
     cod: '742',
     barco: "PEPE MANUEL",
+    codBrisapp: '14',
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX',
   },
@@ -3660,6 +3663,7 @@ export const barcos = [
   {
     cod: '935',
     barco: "ABUELO ANGEL",
+    codBrisapp: '3',
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
   },
@@ -4411,6 +4415,7 @@ export const barcos = [
   {
     cod: '1185',
     barco: "PAYMOGO",
+    codBrisapp: '128',
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
   },
@@ -4867,6 +4872,7 @@ export const barcos = [
   {
     cod: '1276',
     barco: "DOMINGO CALE",
+    codBrisapp: '8',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
@@ -4978,6 +4984,7 @@ export const barcos = [
   {
     cod: '1298',
     barco: "SIMON EL FORTUNA",
+    codBrisapp: '114',
     vendiduria: "HIJOS DE MANUEL GEY, S.L.",
     codVendiduria: 'JA'
   },
@@ -5162,7 +5169,7 @@ export const barcosVentaDirecta = [
     barco: "PAYMOGO",
     armador: {
       codA3erp: '988231',
-      nombre: 'Paymogo', 
+      nombre: 'Paymogo',
     },
   },
   {
@@ -5170,7 +5177,7 @@ export const barcosVentaDirecta = [
     barco: "SIMON EL FORTUNA",
     armador: {
       codA3erp: '143',
-      nombre: 'Simon el Fortuna', 
+      nombre: 'Simon el Fortuna',
     },
   },
   {
@@ -5178,7 +5185,7 @@ export const barcosVentaDirecta = [
     barco: "DOMINGO CALE",
     armador: {
       codA3erp: '148',
-      nombre: 'Domingo Cale', 
+      nombre: 'Domingo Cale',
     },
   },
   {
@@ -5198,8 +5205,6 @@ export const barcosVentaDirecta = [
     }
   }
 ];
-
-
 
 export const serviciosLonjaDeIsla = [
   {

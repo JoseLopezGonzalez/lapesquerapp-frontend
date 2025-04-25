@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check, X, AlertTriangle, FileSpreadsheet, CircleX } from "lucide-react"
+import { Check, X, AlertTriangle, FileSpreadsheet, CircleX, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DialogContent,
@@ -17,17 +17,16 @@ import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_S
 import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { formatDecimalCurrency, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import { formatDecimalCurrency, formatDecimalWeight, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 import toast from 'react-hot-toast'
 import { darkToastTheme } from '@/customs/reactHotToast'
+import { API_URL_V1 } from '@/configs/config'
 
 /* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
-    console.log('importe', importe)
     const importeString = String(importe);
     const partes = importeString.split('.');
 
-    console.log('partes', partes)
 
     if (partes.length <= 2) {
         // Solo hay un punto (o ninguno), no hay miles que quitar
@@ -37,8 +36,6 @@ const formatLonjaIslaImporte = (importe) => {
     // El último punto es el decimal, los anteriores son de miles
     const parteDecimal = partes.pop(); // último elemento
     const parteEntera = partes.join(''); // unimos las partes sin puntos de miles
-    console.log('parteEntera', parteEntera)
-    console.log('parteDecimal', parteDecimal)
     return `${parteEntera}.${parteDecimal}`;
 };
 
@@ -67,65 +64,6 @@ const ExportModal = ({ document }) => {
         return barcos.some((barco) => barco.cod === cod);
     };
 
-    /* const ventasDirectas = Object.values(ventas.reduce((acc, venta) => {
-        let barcoEncontrado = barcos.find((barco) => barco.cod === venta.codBarco || barco.barco === venta.barco);
-
-        if (!barcoEncontrado) {
-            return acc;
-        }
-        let nombreBarco = barcoEncontrado.barco;
-        let codBarco = `${barcoEncontrado.cod}`;
-
-        if (!isVentaDirecta(codBarco)) {
-            return acc;
-        }
-
-        if (!acc[codBarco]) {
-            acc[codBarco] = {
-                cod: venta.codBarco,
-                nombre: nombreBarco,
-                armador: getArmador(codBarco),
-                lineas: [],
-            };
-        }
-        acc[codBarco].lineas.push(venta);
-        return acc;
-    }, {})); */
-
-    /* const ventasVendidurias = Object.values(ventas.reduce((acc, venta) => {
-
-
-        const barcoEncontrado = barcos.find((barco) => {
-            if (barco.cod !== venta.codBarco && barco.barco === venta.barco) {
-                setErrors((prevErrors) => [...prevErrors, `Barco encontrado por nombre: ${venta.barco}`]);
-            }
-            return barco.cod === venta.codBarco || barco.barco === venta.barco
-        });
-
-        if (!barcoEncontrado) {
-            setErrors((prevErrors) => [...prevErrors, `Barco no encontrado: ${venta.codBarco}`]);
-            return acc;
-        }
-
-        let nombreBarco = barcoEncontrado.barco;
-        let codBarco = `${barcoEncontrado.cod}`;
-
-        if (isVentaDirecta(codBarco)) {
-            return acc;
-        }
-
-
-        if (!acc[codBarco]) {
-            acc[codBarco] = {
-                cod: venta.codBarco,
-                nombre: nombreBarco,
-                vendiduria: isConvertibleBarco(venta.codBarco) ? getVendiduria(venta.codBarco) : null,
-                lineas: [],
-            };
-        }
-        acc[codBarco].lineas.push(venta);
-        return acc;
-    }, {})); */
 
     const addError = (error) => {
         if (!errors.includes(error)) {
@@ -149,7 +87,7 @@ const ExportModal = ({ document }) => {
 
         if (!barcoEncontrado) {
             addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`)
-            return ;
+            return null;
         }
 
         const nombreBarco = barcoEncontrado.barco;
@@ -162,7 +100,7 @@ const ExportModal = ({ document }) => {
 
             if (!vendiduria) {
                 addError(`Vendiduria no encontrada para el barco: ${codBarco} - ${nombreBarco}`)
-                return ;
+                return null;
             }
 
             if (!ventasVendidurias[codBarco]) {
@@ -226,7 +164,6 @@ const ExportModal = ({ document }) => {
     /* convertir el objeto a array */
     const importesTotalesVendiduriasArray = Object.values(importesTotalesVendidurias);
 
-    console.log('importesTotalesVendiduriasArray', importesTotalesVendiduriasArray)
 
     const compararImportesPorVendiduria = () => {
         const totalesCalculados = {};
@@ -273,7 +210,6 @@ const ExportModal = ({ document }) => {
         return comparacion;
     };
 
-    console.log('compararImportesPorVendiduria', compararImportesPorVendiduria())
 
     /* comprobar vendidurias desde importesTotaltesVendidurias y vendidurias */
 
@@ -323,6 +259,88 @@ const ExportModal = ({ document }) => {
             // generateExcelForFacilcom();
         } else {
             // generateExcelForOtros();
+        }
+    };
+
+
+
+
+
+    const linkedSummary = Object.values(ventasVendidurias)  // <- ¡Object.values!
+        .filter(Boolean) // Eliminamos posibles undefined
+        .map((venta) => {
+            const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
+            const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+            const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+            return {
+                supplierId: codBrisappBarco,
+                date: details.fecha,
+                declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+                declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+                barcoNombre: venta.nombre,
+                error: codBrisappBarco === null ? true : false,
+            };
+        })
+        .concat(
+            Object.values(ventasDirectas) // También aquí
+                .filter(Boolean)
+                .map((venta) => {
+                    const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
+                    const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+                    const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+                    return {
+                        supplierId: codBrisappBarco,
+                        date: details.fecha,
+                        declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+                        declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+                        barcoNombre: venta.nombre,
+                        error: codBrisappBarco === null ? true : false,
+                    };
+                })
+        );
+
+
+    const handleOnClickLinkPurchases = async () => {
+        const comprasValidas = linkedSummary.filter(linea => !linea.error);
+
+        if (comprasValidas.length === 0) {
+            toast.error('No hay compras válidas para vincular.', darkToastTheme);
+            return;
+        }
+
+        let correctas = 0;
+        let errores = 0;
+
+        await Promise.allSettled(comprasValidas.map(async (linea) => {
+            try {
+                const res = await fetch(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        supplier_id: linea.supplierId,
+                        date: linea.date.split('/').reverse().join('-'), // convertir de dd/mm/yyyy a yyyy-mm-dd
+                        declared_total_net_weight: linea.declaredTotalNetWeight,
+                        declared_total_amount: linea.declaredTotalAmount,
+                    }),
+                });
+
+                if (!res.ok) throw new Error();
+                correctas++;
+            } catch (error) {
+                errores++;
+                console.error(`Error al actualizar compra de ${linea.barcoNombre}`, error);
+                toast.error(`Error al actualizar compra de ${linea.barcoNombre}`, darkToastTheme);
+            }
+        }));
+
+        if (correctas > 0) {
+            toast.success(`Compras enlazadas correctamente (${correctas})`, darkToastTheme);
+        }
+
+        if (errores > 0) {
+            toast.error(`${errores} compras fallaron al enlazar`, darkToastTheme);
         }
     };
 
@@ -489,8 +507,66 @@ const ExportModal = ({ document }) => {
 
                 <div className="space-y-4 mt-2">
 
+                    {/* Table para linked Summary */}
+                    {linkedSummary.length > 0 && (
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                    <CardTitle>
+                                        <div className='flex flex-col gap-1'>
+                                            <span className="text-lg">Enlaces de compra/recepción</span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {linkedSummary.length} Compras
+                                            </span>
+                                        </div>
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Barco</TableHead>
+                                            <TableHead>Fecha</TableHead>
+                                            <TableHead className="text-right">Peso Neto</TableHead>
+                                            <TableHead className="text-right">Importe</TableHead>
+                                            <TableHead>Error</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {linkedSummary.map((linea, index) => (
+                                            <TableRow key={index} className="hover:bg-muted/50">
+                                                <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
+                                                <TableCell className="font-medium">{linea.date}</TableCell>
+                                                <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {formatDecimalCurrency(linea.declaredTotalAmount)}
+                                                </TableCell>
+                                                <TableCell className={` ${linea.error ? 'text-red-500' : 'text-green-500'}`}>
+                                                    {linea.error ? (
+                                                        <X className="h-4 w-4" />
+                                                    ) : (
+                                                        <Check className="h-4 w-4" />
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                            {/* button to link  */}
+                            <div className="flex justify-end p-2 mb-2">
+                                <Button variant="" className="" onClick={() => handleOnClickLinkPurchases()}>
+                                    <Link className="h-4 w-4" />
+                                    Enlazar Compras
+                                </Button>
+                            </div>
+
+                        </Card>
+                    )}
+
                     {/* table para vendidurias comparando con importesTotaltesVendidurias */}
-                    {importesTotalesVendiduriasArray.length > 0 && (
+                    {/* {importesTotalesVendiduriasArray.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="flex justify-between items-start">
@@ -510,7 +586,6 @@ const ExportModal = ({ document }) => {
                                             <TableHead>Vendiduria</TableHead>
                                             <TableHead>Importe para exportar</TableHead>
                                             <TableHead>Importe Documento</TableHead>
-                                            {/* diferencia */}
                                             <TableHead>Diferencia</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -534,7 +609,7 @@ const ExportModal = ({ document }) => {
                                 </Table>
                             </CardContent>
                         </Card>
-                    )}
+                    )} */}
 
                     {ventasDirectas.length > 0 && (
                         <Card>
