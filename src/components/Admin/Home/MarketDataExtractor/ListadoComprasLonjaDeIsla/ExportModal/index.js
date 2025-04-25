@@ -22,48 +22,31 @@ import toast from 'react-hot-toast'
 import { darkToastTheme } from '@/customs/reactHotToast'
 import { API_URL_V1 } from '@/configs/config'
 
-/* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
     const importeString = String(importe);
     const partes = importeString.split('.');
 
-
     if (partes.length <= 2) {
-        // Solo hay un punto (o ninguno), no hay miles que quitar
         return importeString;
     }
 
-    // El último punto es el decimal, los anteriores son de miles
-    const parteDecimal = partes.pop(); // último elemento
-    const parteEntera = partes.join(''); // unimos las partes sin puntos de miles
+    const parteDecimal = partes.pop();
+    const parteEntera = partes.join('');
     return `${parteEntera}.${parteDecimal}`;
-};
-
-
-const normalizaNombre = (nombre) => {
-    return nombre
-        ?.normalize('NFD') // quitar tildes
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[.,]/g, '') // quitar puntos y comas
-        .toLowerCase()
-        .trim();
 };
 
 const ExportModal = ({ document }) => {
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
-
     const errors = []
 
     const { details, tables } = document
     const { fecha } = details
-    const { ventas, peces, vendidurias, cajas, tipoVentas } = tables
-
+    const { ventas, vendidurias } = tables
 
     const isConvertibleBarco = (cod) => {
         return barcos.some((barco) => barco.cod === cod);
     };
-
 
     const addError = (error) => {
         if (!errors.includes(error)) {
@@ -210,11 +193,6 @@ const ExportModal = ({ document }) => {
         return comparacion;
     };
 
-
-    /* comprobar vendidurias desde importesTotaltesVendidurias y vendidurias */
-
-
-    /* calcular buscando si hay diferencias */
     const isSomeVendiduriaNotConvertible = compararImportesPorVendiduria().some((linea) => {
         return !linea.cuadran;
     });
@@ -465,49 +443,15 @@ const ExportModal = ({ document }) => {
                         <ul className="list-disc list-inside text-red-500 flex flex-col gap-2">
                             {errors.map((error, index) => (
                                 <li key={index} className="text-xs flex gap-1">
-                                    <CircleX className="h-4 w-4 " />
+                                    <CircleX className="h-4 w-4" />
                                     {error}
                                 </li>
                             ))}
                         </ul>
                     )}
-
-
-                    {/* {isSomeBarcoNotConvertible ? (
-                        <div className="flex items-center gap-1 p-1  text-amber-500  rounded-md ">
-                            <AlertTriangle className="h-4 w-4 " />
-                            <span className="text-xs">
-                                Todos los barcos no son exportables.
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1 p-1  text-green-500  rounded-md">
-                            <Check className="h-4 w-4" />
-                            <span className="text-xs">
-                                Todos los barcos son exportables.
-                            </span>
-                        </div>
-                    )} */}
-                    {/* {isSomeVendiduriaNotConvertible ? (
-                        <div className="flex items-center gap-1 p-1  text-red-500  rounded-md ">
-                            <CircleX className="h-4 w-4 " />
-                            <span className="text-xs">
-                                Incongruencia en los datos de vendidurias.
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1 p-1  text-green-500  rounded-md">
-                            <Check className="h-4 w-4" />
-                            <span className="text-xs">
-                                Importes de vendidurias comprobados.
-                            </span>
-                        </div>
-                    )} */}
                 </div>
 
                 <div className="space-y-4 mt-2">
-
-                    {/* Table para linked Summary */}
                     {linkedSummary.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
@@ -554,7 +498,6 @@ const ExportModal = ({ document }) => {
                                     </TableBody>
                                 </Table>
                             </CardContent>
-                            {/* button to link  */}
                             <div className="flex justify-end p-2 mb-2">
                                 <Button variant="" className="" onClick={() => handleOnClickLinkPurchases()}>
                                     <Link className="h-4 w-4" />
@@ -564,52 +507,6 @@ const ExportModal = ({ document }) => {
 
                         </Card>
                     )}
-
-                    {/* table para vendidurias comparando con importesTotaltesVendidurias */}
-                    {/* {importesTotalesVendiduriasArray.length > 0 && (
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle>
-                                        <div className='flex flex-col gap-1'>
-                                            <span className="text-lg">Comprobación Vendidurías</span>
-
-                                        </div>
-                                    </CardTitle>
-
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Vendiduria</TableHead>
-                                            <TableHead>Importe para exportar</TableHead>
-                                            <TableHead>Importe Documento</TableHead>
-                                            <TableHead>Diferencia</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {compararImportesPorVendiduria().map((linea, index) => (
-                                            <TableRow key={index} className="hover:bg-muted/50">
-                                                <TableCell className="font-medium">{linea.vendiduria}</TableCell>
-                                                <TableCell >{formatDecimalCurrency(linea.importeCalculado)}</TableCell>
-                                                <TableCell >{formatDecimalCurrency(linea.importeDocumento)} </TableCell>
-                                                <TableCell  >{formatDecimalCurrency(linea.diferencia)} </TableCell>
-                                                <TableCell className={` ${linea.cuadran ? 'text-green-500' : 'text-red-500'}`}>
-                                                    {linea.cuadran ? (
-                                                        <Check className="h-4 w-4" />
-                                                    ) : (
-                                                        <X className="h-4 w-4" />
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    )} */}
 
                     {ventasDirectas.length > 0 && (
                         <Card>

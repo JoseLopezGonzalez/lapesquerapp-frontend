@@ -1,7 +1,3 @@
-import { Description } from "@headlessui/react";
-import { armadores } from "../AlbaranCofraWeb/exportData";
-
-
 export const datosVendidurias = [
   {
     nombre: 'Congelados Friperga S.L.',
@@ -1073,6 +1069,7 @@ export const barcos = [
   {
     cod: '390',
     barco: "BELI Y TOÑI",
+    codBrisapp: '147',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
@@ -5233,17 +5230,6 @@ export const lonjaDeIsla = {
 }
 
 export const PORCENTAJE_SERVICIOS_VENDIDURIAS = 3.5;
-
-/* 
-
-export const asocArmadoresPuntaDelMoralSubasta = {
-  nombre: "Asoc. Armadores Punta del Moral, S.Coop.And.",
-  codA3erp: "A400",
-}
-
-
-
-*/
 
 export const productos = [
   { nombre: "Pulpo común / Pulpo común", codA3erp: "95" },
