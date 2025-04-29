@@ -1,31 +1,26 @@
 export const barcos = [
-  /* BEATRIZ LA POLA	ADRIMAR CD	E21610589	988214
-BELLITA CALÉ	MARIA BELLA PEREZ RIVERO	29781809Y	781809
-ABUELO PURGA	ANTONIO JOSE GARCÍA RAMOS	29492009Y	988223
-
-*/
-  { barco: "BEATRIZ LA POLA", armador: "ADRIMAR CD", cifArmador: "E21610589", codA3erp: "988214" },
-  { barco: "BELLITA CALÉ", armador: "MARIA BELLA PEREZ RIVERO", cifArmador: "29781809Y", codA3erp: "781809" },
-  { barco: "ABUELO PURGA", armador: "ANTONIO JOSE GARCÍA RAMOS", cifArmador: "29492009Y", codA3erp: "988223" },
-  { barco: "ALBA MARINA", armador: "DANIEL VILLEGAS ORTA", cifArmador: "48931261A", codA3erp: "931261" },
-  { barco: "ALVEI MIÑORI", armador: "LATIFA JBILOU BABA", cifArmador: "49278134J", codA3erp: "278134" },
-  { barco: "CABETE", armador: "JESUS GARCIA ACOSTA", cifArmador: "29619085F", codA3erp: "89" },
-  { barco: "DELFÍN CELESTE", armador: "MARIA CINTA LOSADA FERNANDEZ", cifArmador: "29777876Y", codA3erp: "988206" },
-  { barco: "LA CABRIOLA", armador: "PESQUERA LOS GUACHI S.L.", cifArmador: "B10691012", codA3erp: "691012" },
-  { barco: "LA TATA", armador: "ANTONIO MANUEL RODRIGUEZ SOUSA", cifArmador: "44220196M", codA3erp: "220196" },
-  { barco: "MARIA DEL CARMEN", armador: "LOS GEMELOS CB", cifArmador: "E13886957", codA3erp: "988209" },
-  { barco: "MARIA JESUS SEGUNDA", armador: "PUNTALEKE C.B.", cifArmador: "E21492228", codA3erp: "146" },
-  { barco: "MELVA 2º", armador: "FRANCISCO RUIZ MARTINEZ", cifArmador: "29789395W", codA3erp: "988243" },
-  { barco: "PAYMOGO", armador: "MARÍA ORTEGA LOPEZ", cifArmador: "29472335C", codA3erp: "988231" },
-  { barco: "PLAYA DORADA UNO", armador: "HERMANOS CORDERO GIL C.B.", cifArmador: "E72452600", codA3erp: "452600" },
-  { barco: "ROSA MARI", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216" },
-  { barco: "SANTA EMILIA", armador: "RAUL RUIZ GONZALEZ", cifArmador: "48927915S", codA3erp: "927915" },
-  { barco: "TALITO CHICO", armador: "JOSE AUGUSTO ORIA", cifArmador: "29051689K", codA3erp: "51689" },
-  { barco: "NUEVO ESTRELLA SANTI PETRI", armador: "DIAZ RAMIREZ CB", cifArmador: "E21602669", codA3erp: "145" },
-  { barco: "CANELA 1", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216" },
-  { barco: "TANIA Y DANIEL", armador: "JOSE ANTONIO MORA DE LA ROSA", cifArmador: "48930738D", codA3erp: "930738" },
-  { barco: "CARLOS Y DAVID", armador: "JUAN MANUEL RAMOS DE LA ROSA", cifArmador: "48951215Q", codA3erp: "951215" },
-  { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035" },
+  { barco: "BEATRIZ LA POLA", armador: "ADRIMAR CD", cifArmador: "E21610589", codA3erp: "988214", codBrisapp: '60' },
+  { barco: "BELLITA CALE", armador: "MARIA BELLA PEREZ RIVERO", cifArmador: "29781809Y", codA3erp: "781809", codBrisapp: '1' },
+  { barco: "ABUELO PURGA", armador: "ANTONIO JOSE GARCÍA RAMOS", cifArmador: "29492009Y", codA3erp: "988223", codBrisapp: '104' },
+  { barco: "ALBA MARINA", armador: "DANIEL VILLEGAS ORTA", cifArmador: "48931261A", codA3erp: "931261", codBrisapp: '11' },
+  { barco: "ALVEI MIÑORI", armador: "LATIFA JBILOU BABA", cifArmador: "49278134J", codA3erp: "278134", codBrisapp: '81' },
+  { barco: "CABETE", armador: "JESUS GARCIA ACOSTA", cifArmador: "29619085F", codA3erp: "89", codBrisapp: '4' },
+  { barco: "DELFÍN CELESTE", armador: "MARIA CINTA LOSADA FERNANDEZ", cifArmador: "29777876Y", codA3erp: "988206", codBrisapp: '85' },
+  { barco: "LA CABRIOLA", armador: "PESQUERA LOS GUACHI S.L.", cifArmador: "B10691012", codA3erp: "691012", codBrisapp: '12' },
+  { barco: "LA TATA", armador: "ANTONIO MANUEL RODRIGUEZ SOUSA", cifArmador: "44220196M", codA3erp: "220196", codBrisapp: '17' },
+  { barco: "MARIA DEL CARMEN", armador: "LOS GEMELOS CB", cifArmador: "E13886957", codA3erp: "988209", codBrisapp: '91' },
+  { barco: "MARIA JESUS SEGUNDA", armador: "PUNTALEKE C.B.", cifArmador: "E21492228", codA3erp: "146", codBrisapp: '76' },
+  { barco: "MELVA 2º", armador: "FRANCISCO RUIZ MARTINEZ", cifArmador: "29789395W", codA3erp: "988243", codBrisapp: '67' },
+  { barco: "PAYMOGO", armador: "MARÍA ORTEGA LOPEZ", cifArmador: "29472335C", codA3erp: "988231", codBrisapp: '128' },
+  { barco: "PLAYA DORADA UNO", armador: "HERMANOS CORDERO GIL C.B.", cifArmador: "E72452600", codA3erp: "452600", codBrisapp: '98' },
+  { barco: "ROSA MARI", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216", codBrisapp: '99' },
+  { barco: "SANTA EMILIA", armador: "RAUL RUIZ GONZALEZ", cifArmador: "48927915S", codA3erp: "927915", codBrisapp: '100' },
+  { barco: "TALITO CHICO", armador: "JOSE AUGUSTO ORIA", cifArmador: "29051689K", codA3erp: "51689", codBrisapp: '23' },
+  { barco: "NUEVO ESTRELLA SANTI PETRI", armador: "DIAZ RAMIREZ CB", cifArmador: "E21602669", codA3erp: "145", codBrisapp: '115' },
+  { barco: "CANELA 1", armador: "ALVARO MANUEL DIAZ DE LA LLAGA", cifArmador: "49085648Z", codA3erp: "988216", codBrisapp: '82' },
+  { barco: "TANIA Y DANIEL", armador: "JOSE ANTONIO MORA DE LA ROSA", cifArmador: "48930738D", codA3erp: "930738", codBrisapp: '146' },
+  { barco: "CARLOS Y DAVID", armador: "JUAN MANUEL RAMOS DE LA ROSA", cifArmador: "48951215Q", codA3erp: "951215", codBrisapp: '83' },
+  { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035", codBrisapp: '90' },
 ];
 
 export const armadores = [

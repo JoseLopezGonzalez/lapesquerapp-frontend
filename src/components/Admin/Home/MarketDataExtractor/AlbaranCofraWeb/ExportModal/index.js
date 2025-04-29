@@ -1,35 +1,26 @@
 import React, { useState } from 'react'
-import { Check, X, AlertTriangle, FileSpreadsheet } from "lucide-react"
+import { Check, X, AlertTriangle, FileSpreadsheet, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { armadores, lonjas } from '../exportData'
+import { armadores, barcos, lonjas } from '../exportData'
 import { Input } from '@/components/ui/input'
-
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import { formatDecimalCurrency, formatDecimalWeight, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import toast from 'react-hot-toast'
+import { darkToastTheme } from '@/customs/reactHotToast'
+import { API_URL_V1 } from '@/configs/config'
 
 const ExportModal = ({ document }) => {
+    const { detalles: { numero, fecha, cifLonja, lonja } } = document
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
 
-    const cifLonja = document.detalles.cifLonja
-    const nombreLonja = document.detalles.lonja
-
     const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja)
-
-    console.log('Document:', document)
 
     const subastasGroupedByBarco = document.tablas.subastas.reduce((acc, item) => {
         if (!acc[item.barco]) {
@@ -44,7 +35,6 @@ const ExportModal = ({ document }) => {
         acc[item.barco].lineas.push(item);
         return acc;
     }, {});
-
     const subastas = Object.values(subastasGroupedByBarco);
 
     const isConvertibleArmador = (cifArmador) => {
@@ -53,18 +43,9 @@ const ExportModal = ({ document }) => {
 
     const isSomeArmadorNotConvertible = subastas.some((barco) => !isConvertibleArmador(barco.cifArmador));
 
-    console.log(subastas);
-
     const servicios = document.tablas.servicios;
 
-    console.log(servicios);
-
-    const exportableData = [
-
-    ]
-    const generateExcelForA3erp = ({
-        headerData, // contiene número albarán, fecha, lonja, cif_lonja, etc.
-    }) => {
+    const generateExcelForA3erp = () => {
         const processedRows = [];
         let albaranNumber = Number(initialAlbaranNumber);
 
@@ -88,9 +69,9 @@ const ExportModal = ({ document }) => {
                 barco.lineas.forEach(linea => {
                     processedRows.push({
                         CABNUMDOC: albaranNumber,
-                        CABFECHA: headerData.fecha,
+                        CABFECHA: fecha,
                         CABCODPRO: armadorData.codA3erp,
-                        CABREFERENCIA: `${headerData.fecha} - ${headerData.numero} -  ${barco.nombre}`,
+                        CABREFERENCIA: `${fecha} - ${numero} -  ${barco.nombre}`,
                         LINCODART: 95,
                         LINDESCLIN: 'PULPO FRESCO LONJA',
                         LINUNIDADES: linea.kilos,
@@ -104,17 +85,17 @@ const ExportModal = ({ document }) => {
         }
 
         // Albarán para la lonja con los servicios
-        const lonjaData = lonjas.find(l => l.cif === headerData.cifLonja);
+        const lonjaData = lonjas.find(l => l.cif === cifLonja);
         if (!lonjaData) {
-            console.error(`Falta código de conversión para la lonja ${headerData.cif_lonja}`);
+            console.error(`Falta código de conversión para la lonja ${cifLonja}`);
         } else {
             servicios.forEach(line => {
                 const calculatedPrecio = parseEuropeanNumber(line.importe) / parseEuropeanNumber(line.unidades);
                 processedRows.push({
                     CABNUMDOC: albaranNumber,
-                    CABFECHA: headerData.fecha,
+                    CABFECHA: fecha,
                     CABCODPRO: lonjaData.codA3erp,
-                    CABREFERENCIA: `${headerData.fecha} - ${headerData.numero} - SERVICIOS`,
+                    CABREFERENCIA: `${fecha} - ${numero} - SERVICIOS`,
                     LINCODART: 9998,
                     LINDESCLIN: line.descripcion,
                     LINUNIDADES: line.unidades,
@@ -134,7 +115,83 @@ const ExportModal = ({ document }) => {
         // Guardar archivo
         const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `ALBARANES_A3ERP_COFRA_SANTO_CRISTO_${headerData.fecha}.xls`);
+        saveAs(blob, `ALBARANES_A3ERP_COFRA_SANTO_CRISTO_${fecha}.xls`);
+    };
+
+    const handleOnClickExport = () => {
+        if (initialAlbaranNumber === "") {
+            toast.error('Introduzca un número de albarán inicial', darkToastTheme);
+            return;
+        }
+
+        if (software === "A3ERP") {
+            generateExcelForA3erp();
+        } else if (software === "Facilcom") {
+            // generateExcelForFacilcom();
+        } else {
+            // generateExcelForOtros();
+        }
+    };
+
+    const linkedSummary = subastas.map((barco) => {
+        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.kilos), 0);
+        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.importe), 0);
+
+        const barcoEncontrado = barcos.find(b =>
+            b.barco === barco.nombre);
+
+        const codBrisappArmador = barcoEncontrado?.codBrisapp ?? null;
+
+        return {
+            supplierId: codBrisappArmador,
+            date: fecha,
+            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+            barcoNombre: barco.nombre,
+            error: codBrisappArmador === null ? true : false,
+        };
+    });
+
+    const handleOnClickLinkPurchases = async () => {
+        const comprasValidas = linkedSummary.filter(linea => !linea.error);
+
+        if (comprasValidas.length === 0) {
+            toast.error('No hay compras válidas para vincular.', darkToastTheme);
+            return;
+        }
+
+        let correctas = 0;
+        let errores = 0;
+
+        await Promise.allSettled(comprasValidas.map(async (linea) => {
+            try {
+                const res = await fetch(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        supplier_id: linea.supplierId,
+                        date: linea.date.split('/').reverse().join('-'),
+                        declared_total_net_weight: linea.declaredTotalNetWeight,
+                        declared_total_amount: linea.declaredTotalAmount,
+                    }),
+                });
+
+                if (!res.ok) throw new Error();
+                correctas++;
+            } catch (error) {
+                errores++;
+                console.error(`Error al actualizar compra de ${linea.barcoNombre}`, error);
+                toast.error(`Error al actualizar compra de ${linea.barcoNombre}`, darkToastTheme);
+            }
+        }));
+
+        if (correctas > 0) {
+            toast.success(`Compras enlazadas correctamente (${correctas})`, darkToastTheme);
+        }
+
+        if (errores > 0) {
+            toast.error(`${errores} compras fallaron al enlazar`, darkToastTheme);
+        }
     };
 
     return (
@@ -175,14 +232,14 @@ const ExportModal = ({ document }) => {
                         <div className="flex items-center gap-1 p-1  text-amber-500  rounded-md ">
                             <AlertTriangle className="h-4 w-4 " />
                             <span className="text-xs">
-                                Los servicios de la lonja <strong>{nombreLonja} - {cifLonja}</strong> no son exportables.
+                                Los servicios de la lonja <strong>{lonja} - {cifLonja}</strong> no son exportables.
                             </span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-1 p-1  text-green-500   rounded-md">
                             <Check className="h-4 w-4" />
                             <span className="text-xs">
-                                Los servicios de la lonja <strong>{nombreLonja} - {cifLonja}</strong> son exportables.
+                                Los servicios de la lonja <strong>{lonja} - {cifLonja}</strong> son exportables.
                             </span>
                         </div>
                     )}
@@ -205,6 +262,63 @@ const ExportModal = ({ document }) => {
                 </div>
 
                 <div className="space-y-4 mt-2">
+
+                    {linkedSummary.length > 0 && (
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                    <CardTitle>
+                                        <div className='flex flex-col gap-1'>
+                                            <span className="text-lg">Enlaces de compra/recepción</span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {linkedSummary.length} Compras
+                                            </span>
+                                        </div>
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Barco</TableHead>
+                                            <TableHead>Fecha</TableHead>
+                                            <TableHead className="text-right">Peso Neto</TableHead>
+                                            <TableHead className="text-right">Importe</TableHead>
+                                            <TableHead>Error</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {linkedSummary.map((linea, index) => (
+                                            <TableRow key={index} className="hover:bg-muted/50">
+                                                <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
+                                                <TableCell className="font-medium">{linea.date}</TableCell>
+                                                <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {formatDecimalCurrency(linea.declaredTotalAmount)}
+                                                </TableCell>
+                                                <TableCell className={` ${linea.error ? 'text-red-500' : 'text-green-500'}`}>
+                                                    {linea.error ? (
+                                                        <X className="h-4 w-4" />
+                                                    ) : (
+                                                        <Check className="h-4 w-4" />
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                            <div className="flex justify-end p-2 mb-2">
+                                <Button variant="" className="" onClick={() => handleOnClickLinkPurchases()}>
+                                    <Link className="h-4 w-4" />
+                                    Enlazar Compras
+                                </Button>
+                            </div>
+
+                        </Card>
+                    )}
+
                     {subastas.map((barco) => (
                         <Card key={barco.cod}>
                             <CardHeader className="pb-2">
@@ -313,7 +427,7 @@ const ExportModal = ({ document }) => {
                         Cancelar
                     </Button>
                 </DialogTrigger>
-                <Button className="gap-2" onClick={() => generateExcelForA3erp({ headerData: document.detalles })}>
+                <Button className="gap-2" onClick={handleOnClickExport}>
                     <FileSpreadsheet className="h-4 w-4" />
                     Exportar a A3ERP
                 </Button>

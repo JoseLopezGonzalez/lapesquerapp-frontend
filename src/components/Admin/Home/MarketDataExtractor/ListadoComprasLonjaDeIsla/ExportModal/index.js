@@ -249,6 +249,9 @@ const ExportModal = ({ document }) => {
     })
     );
 
+    console.log('linkedSummary', linkedSummary);
+
+
     const handleOnClickLinkPurchases = async () => {
         const comprasValidas = linkedSummary.filter(linea => !linea.error);
 

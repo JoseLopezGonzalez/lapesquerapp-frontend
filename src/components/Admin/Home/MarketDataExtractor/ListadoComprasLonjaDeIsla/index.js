@@ -17,12 +17,15 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
     return (
         <div className='py-8'>
             <div className="container mx-auto py-3 space-y-3 bg-white text-black rounded-md shadow-md">
+
+                <img src="/images/logos/logo-lonja-isla.png" alt="Logo" className=" h-32 mx-auto mb-4" />
+
                 <div className="container mx-auto p-6 max-w-5xl ">
                     <div className="grid gap-6 md:grid-cols-2 ">
                         {/* Sección de Datos del Albarán */}
                         <Card className="col-span-2 bg-white text-black border-neutral-200">
                             <CardHeader className="pb-0">
-                                <CardTitle className="text-base">Listado de Compras Lonja de Isla</CardTitle>
+                                <CardTitle className="text-base">Listado de Compras</CardTitle>
                             </CardHeader>
                             <CardContent className="px-10 py-5 w-full">
                                 <div className="flex flex-col  gap-2">

@@ -28,7 +28,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
 
                 <Card className='bg-white text-black border-neutral-200'>
                     <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Listado de Compras Asoc. Armadores Punta del Moral</CardTitle>
+                        <CardTitle className="text-base">Listado de Compras</CardTitle>
                     </CardHeader>
                     <CardContent className="px-10 py-5">
                         <div className="flex flex-col gap-2">
@@ -38,7 +38,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                             </div>
 
                             <div className="flex-1 grid grid-cols-2 gap-3">
-                                <div className="border border-muted p-3 rounded-md text-sm">
+                                <Card className="p-3 text-sm bg-white text-black border-neutral-200 border-0 border-b-1">
                                     <div className="flex gap-1">
                                         <div className="font-semibold">Fecha:</div>
                                         <div>{fecha}</div>
@@ -49,9 +49,9 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                                             {isVentaDirecta ? 'Venta Directa' : isSubasta ? 'Subasta' : 'Desconocido'}
                                         </div>
                                     </div>
-                                </div>
+                                </Card>
 
-                                <div className="border border-muted p-3 rounded-md text-sm">
+                                <Card className="p-3 text-sm bg-white text-black border-neutral-200 border-0 border-b-1">
                                     <div className="flex gap-1">
                                         <div className="font-semibold">Comprador:</div>
                                         <div>{comprador}</div>
@@ -60,7 +60,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                                         <div className="font-semibold">C.I.F.:</div>
                                         <div>{cifComprador}</div>
                                     </div>
-                                </div>
+                                </Card>
                             </div>
                         </div>
                     </CardContent>
