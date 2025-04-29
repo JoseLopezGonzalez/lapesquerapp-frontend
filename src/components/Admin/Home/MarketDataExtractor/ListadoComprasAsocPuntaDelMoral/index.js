@@ -14,19 +14,19 @@ import ExportModal from './ExportModal'
 
 const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
     const [open, setOpen] = useState(false)
-
     const { details, tables } = document
     const { lonja, cifComprador, comprador, fecha, tipoSubasta, importeTotal } = details
     const { subastas } = tables
     const isVentaDirecta = tipoSubasta == 'M1 M1'
     const isSubasta = tipoSubasta == 'T2 Arrastre'
 
-    console.log('document', document)
-
     return (
-        <div>
-            <div className="container mx-auto py-3 space-y-3">
-                <Card>
+        <div className='py-8'>
+            <div className="container mx-auto p-6 py-6 space-y-3 bg-white text-black rounded-md shadow-md">
+
+                <img src="/images/logos/logo-asoc-punta-del-moral.png" alt="Logo" className=" h-32 mx-auto mb-4" />
+
+                <Card className='bg-white text-black border-neutral-200'>
                     <CardHeader className="pb-0">
                         <CardTitle className="text-base">Listado de Compras Asoc. Armadores Punta del Moral</CardTitle>
                     </CardHeader>
@@ -66,7 +66,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className='bg-white text-black border-neutral-200'>
                     <CardHeader className="pb-0 pt-3 px-3">
                         <CardTitle>Subastas</CardTitle>
                     </CardHeader>
@@ -74,7 +74,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                         <div className="overflow-x-auto">
                             <Table className="border-collapse [&_th]:p-2 [&_td]:p-2 text-xs">
                                 <TableHeader>
-                                    <TableRow>
+                                    <TableRow className="hover:bg-white">
                                         <TableHead>Venta</TableHead>
                                         <TableHead>
                                             Especie
@@ -109,7 +109,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                                 </TableHeader>
                                 <TableBody>
                                     {document.tables.subastas.map((item, index) => (
-                                        <TableRow key={index}>
+                                        <TableRow key={index} className="hover:bg-muted hover:text-white">
                                             <TableCell>
                                                 {item.venta}
                                             </TableCell>
@@ -124,7 +124,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                                                 {item.envase}
                                             </TableCell>
                                             <TableCell>{item.cajas}</TableCell>
-                                            <TableCell>{item.pesoNeto}</TableCell>
+                                            <TableCell>{item.pesoNeto} kg</TableCell>
                                             <TableCell>
                                                 {item.artePesca}
                                                 <br />
@@ -136,7 +136,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                                                 {item.zonaCaptura}
                                             </TableCell>
                                             <TableCell>{item.precio}</TableCell>
-                                            <TableCell>{item.importe}</TableCell>
+                                            <TableCell>{item.importe} €</TableCell>
                                             <TableCell>
                                                 {item.barco}
                                                 <br />
@@ -150,15 +150,11 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                     </CardContent>
                 </Card>
 
-                <Card className="flex items-center justify-between p-3">
+                <Card className="flex items-center justify-between p-3 bg-white text-black border-neutral-200">
                     <span className="text-base font-semibold">Total</span>
                     <div className="text-xl font-medium text-right">{importeTotal} €</div>
                 </Card>
             </div>
-
-            {/* {console.log(document)} */}
-
-
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>

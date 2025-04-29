@@ -1,66 +1,39 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Building2, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 import React, { useState } from 'react'
-/* import ExportModal from './ExportModal' */
-import {
-    Dialog,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import ExportModal from './ExportModal'
 
 const ListadoComprasLonjaDeIsla = ({ document }) => {
     const [open, setOpen] = useState(false)
-
     const { details, tables } = document
-    const { lonja, cifComprador, comprador, numeroComprador, fecha, cajasTotales, kilosTotales, importeTotal } = details
+    const { lonja, cifComprador, comprador, numeroComprador, fecha, importeTotal } = details
     const { ventas, peces, vendidurias, cajas, tipoVentas } = tables
-    /* const { subastas } = tables
-    const isVentaDirecta = tipoSubasta == 'M1 M1'
-    const isSubasta = tipoSubasta == 'T2 Arrastre' */
-
-    console.log('document', document)
 
     return (
-        <div>
-            <div className="container mx-auto py-3 space-y-3">
-                <div className="container mx-auto p-6 max-w-5xl">
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Datos del Albarán */}
-                        {/* <Card className="col-span-2">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-2xl font-bold">{lonja}</CardTitle>
-                                <CardDescription className="text-sm">
-                                    Muelle Martínez Catena, 21410 Isla Cristina, Huelva
-                                    <br />
-                                    Teléfono: 959331670 – Email: lonjamanolo@gmail.com
-                                    <br />
-                                    RS: arrastre 12.010500/H, cerco/chirla 12.0017730/H
-                                </CardDescription>
-                            </CardHeader>
-                        </Card> */}
-
+        <div className='py-8'>
+            <div className="container mx-auto py-3 space-y-3 bg-white text-black rounded-md shadow-md">
+                <div className="container mx-auto p-6 max-w-5xl ">
+                    <div className="grid gap-6 md:grid-cols-2 ">
                         {/* Sección de Datos del Albarán */}
-                        <Card className="col-span-2">
+                        <Card className="col-span-2 bg-white text-black border-neutral-200">
                             <CardHeader className="pb-0">
                                 <CardTitle className="text-base">Listado de Compras Lonja de Isla</CardTitle>
                             </CardHeader>
                             <CardContent className="px-10 py-5 w-full">
                                 <div className="flex flex-col  gap-2">
-                                    {/* Información de la Lonja - Lado izquierdo */}
                                     <div className="flex-1">
                                         <div className="text-base font-bold">
                                             {lonja}
                                         </div>
                                     </div>
-
-                                    {/* Información del Albarán - Lado derecho */}
                                     <div className="flex-1 grid grid-cols-2 gap-3">
-                                        <div className="border border-muted p-3 rounded-md text-sm">
-                                        <div className="flex gap-1">
+                                        <Card className="p-3 text-sm bg-white text-black border-neutral-200 border-0 border-b-1">
+                                            <div className="flex gap-1">
                                                 <div className="font-semibold">Fecha:</div>
                                                 <div>{fecha}</div>
                                             </div>
@@ -72,9 +45,8 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                                 <div className="font-semibold">Teléfono:</div>
                                                 <div>959331670</div>
                                             </div>
-                                        </div>
-
-                                        <div className=" border border-muted p-3 rounded-md text-sm">
+                                        </Card>
+                                        <Card className="p-3 text-sm bg-white text-black border-neutral-200 border-0 border-b-1 ">
                                             <div className="flex gap-1">
                                                 <div className="font-semibold">Comprador:</div>
                                                 <div className="">{comprador}</div>
@@ -87,14 +59,14 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                                 <div className="font-semibold">C.I.F.:</div>
                                                 <div className="">{cifComprador}</div>
                                             </div>
-                                        </div>
+                                        </Card>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         {/* Tabla de Compras */}
-                        <Card className="col-span-2">
+                        <Card className="col-span-2 bg-white text-black border-neutral-200">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg font-semibold">Ventas</CardTitle>
                             </CardHeader>
@@ -102,7 +74,7 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                 <div className="overflow-x-auto">
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
+                                            <TableRow className="hover:bg-white">
                                                 <TableHead>Venta</TableHead>
                                                 <TableHead>Barco</TableHead>
                                                 <TableHead>Especie</TableHead>
@@ -113,16 +85,16 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                                 <TableHead>NRSI</TableHead>
                                             </TableRow>
                                         </TableHeader>
-                                        <TableBody>
+                                        <TableBody className=''>
                                             {ventas.map((venta, index) => (
-                                                <TableRow key={index}>
+                                                <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                     <TableCell>{venta.venta}</TableCell>
                                                     <TableCell>{venta.barco}</TableCell>
                                                     <TableCell>{venta.especie}</TableCell>
                                                     <TableCell className="text-right">{venta.cajas}</TableCell>
-                                                    <TableCell className="text-right">{venta.kilos}</TableCell>
-                                                    <TableCell className="text-right">{venta.precio}</TableCell>
-                                                    <TableCell className="text-right">{venta.importe}</TableCell>
+                                                    <TableCell className="text-right">{venta.kilos} kg</TableCell>
+                                                    <TableCell className="text-right">{venta.precio} €/kg</TableCell>
+                                                    <TableCell className="text-right">{venta.importe}€</TableCell>
                                                     <TableCell>{venta.nrsi}</TableCell>
                                                 </TableRow>
                                             ))}
@@ -133,14 +105,14 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                         </Card>
 
                         {/* Resumen por Especie */}
-                        <Card>
+                        <Card className='bg-white text-black border-neutral-200'>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg font-semibold">Peces</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Table>
-                                    <TableHeader>
-                                        <TableRow>
+                                    <TableHeader >
+                                        <TableRow className="hover:bg-white">
                                             <TableHead>FAO</TableHead>
                                             <TableHead>Especie</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
@@ -150,12 +122,12 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                     </TableHeader>
                                     <TableBody>
                                         {peces.map((especie, index) => (
-                                            <TableRow key={index}>
+                                            <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                 <TableCell>{especie.fao}</TableCell>
                                                 <TableCell>{especie.descripcion}</TableCell>
                                                 <TableCell className="text-right">{especie.cajas}</TableCell>
-                                                <TableCell className="text-right">{especie.kilos}</TableCell>
-                                                <TableCell className="text-right">{especie.importe}</TableCell>
+                                                <TableCell className="text-right">{especie.kilos} kg</TableCell>
+                                                <TableCell className="text-right">{especie.importe}€</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -164,14 +136,14 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                         </Card>
 
                         {/* Tipo de Envase */}
-                        <Card>
+                        <Card className='bg-white text-black border-neutral-200'>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg font-semibold">Cajas</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
+                                        <TableRow className="hover:bg-white">
                                             <TableHead>Tipo</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
                                             <TableHead className="text-right">Importe</TableHead>
@@ -179,10 +151,10 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                     </TableHeader>
                                     <TableBody>
                                         {cajas.map((tipo, index) => (
-                                            <TableRow key={index}>
+                                            <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                 <TableCell>{tipo.descripcion}</TableCell>
                                                 <TableCell className="text-right">{tipo.cajas}</TableCell>
-                                                <TableCell className="text-right">{tipo.importe}</TableCell>
+                                                <TableCell className="text-right">{tipo.importe} €</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -191,14 +163,14 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                         </Card>
 
                         {/* Resumen por Vendeduría */}
-                        <Card>
+                        <Card className='bg-white text-black border-neutral-200'>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg font-semibold">Compras por Vendeduría</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
+                                        <TableRow className="hover:bg-white">
                                             <TableHead>Vendedor</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
                                             <TableHead className="text-right">Kilos</TableHead>
@@ -207,11 +179,11 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                     </TableHeader>
                                     <TableBody>
                                         {vendidurias.map((vendiduria, index) => (
-                                            <TableRow key={index}>
+                                            <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                 <TableCell>{vendiduria.vendiduria}</TableCell>
                                                 <TableCell className="text-right">{vendiduria.cajas}</TableCell>
-                                                <TableCell className="text-right">{vendiduria.kilos}</TableCell>
-                                                <TableCell className="text-right">{vendiduria.importe}</TableCell>
+                                                <TableCell className="text-right">{vendiduria.kilos} kg</TableCell>
+                                                <TableCell className="text-right">{vendiduria.importe}€</TableCell>
                                             </TableRow>
                                         ))}
 
@@ -220,17 +192,15 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                             </CardContent>
                         </Card>
 
-
-
                         {/* Tipo de Subasta */}
-                        <Card>
+                        <Card className='bg-white text-black border-neutral-200'>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg font-semibold">Tipo de Subasta</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
+                                        <TableRow className="hover:bg-white">
                                             <TableHead>COD</TableHead>
                                             <TableHead>Tipo</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
@@ -239,11 +209,11 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                                     </TableHeader>
                                     <TableBody>
                                         {tipoVentas.map((tipo, index) => (
-                                            <TableRow key={index}>
+                                            <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                 <TableCell>{tipo.cod}</TableCell>
                                                 <TableCell>{tipo.descripcion}</TableCell>
                                                 <TableCell className="text-right">{tipo.cajas}</TableCell>
-                                                <TableCell className="text-right">{tipo.importe}</TableCell>
+                                                <TableCell className="text-right">{tipo.importe}€</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -252,11 +222,11 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                         </Card>
 
                         {/* Total */}
-                        <Card className="col-span-2">
-                            <CardContent>
-                                <div className="flex justify-between items-center">
+                        <Card className="col-span-2 bg-white text-black border-neutral-200  ">
+                            <CardContent className='flex flex-col items-center justify-center mt-4'>
+                                <div className="w-full flex justify-between items-center">
                                     <p className="text-lg font-medium">Importe Total</p>
-                                    <p className="text-xl font-bold">{importeTotal}</p>
+                                    <p className="text-xl font-bold">{importeTotal} €</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -264,13 +234,9 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                 </div>
             </div>
 
-            {/* {console.log(document)} */}
-
-
-
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <div className="fixed bottom-8 right-12">
+                    <div className="fixed bottom-8 right-9">
                         <Button className="rounded-full" >
                             <Download className="w-6 h-6" />
                             Exportar

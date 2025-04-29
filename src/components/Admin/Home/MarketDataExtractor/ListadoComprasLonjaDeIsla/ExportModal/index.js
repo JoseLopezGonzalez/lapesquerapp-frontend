@@ -1,14 +1,7 @@
 import React, { useState } from 'react'
-import { Check, X, AlertTriangle, FileSpreadsheet, CircleX, Link } from "lucide-react"
+import { Check, X, FileSpreadsheet, CircleX, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -36,13 +29,12 @@ const formatLonjaIslaImporte = (importe) => {
 };
 
 const ExportModal = ({ document }) => {
+    const { details: { fecha }, tables: { ventas, vendidurias } } = document
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
-    const errors = []
-
-    const { details, tables } = document
-    const { fecha } = details
-    const { ventas, vendidurias } = tables
+    const [errors, setErrors] = useState([])
+    const ventasVendidurias = []
+    const ventasDirectas = []
 
     const isConvertibleBarco = (cod) => {
         return barcos.some((barco) => barco.cod === cod);
@@ -50,12 +42,9 @@ const ExportModal = ({ document }) => {
 
     const addError = (error) => {
         if (!errors.includes(error)) {
-            errors.push(error);
+            setErrors((prevErrors) => [...prevErrors, error]);
         }
     };
-
-    const ventasVendidurias = []
-    const ventasDirectas = []
 
     ventas.map((venta, index) => {
 
@@ -110,15 +99,12 @@ const ExportModal = ({ document }) => {
         }
     });
 
-
     const getImporteServiciosVendiduria = (lineas) => {
         const importeTotal = lineas.reduce((acc, linea) => {
             return acc + Number(formatLonjaIslaImporte(linea.importe));
         }, 0);
         return (importeTotal * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100).toFixed(2);
     }
-
-
 
     const importeTotalVentasDirectas = ventasDirectas.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
@@ -146,7 +132,6 @@ const ExportModal = ({ document }) => {
     }, {});
     /* convertir el objeto a array */
     const importesTotalesVendiduriasArray = Object.values(importesTotalesVendidurias);
-
 
     const compararImportesPorVendiduria = () => {
         const totalesCalculados = {};
@@ -193,11 +178,6 @@ const ExportModal = ({ document }) => {
         return comparacion;
     };
 
-    const isSomeVendiduriaNotConvertible = compararImportesPorVendiduria().some((linea) => {
-        return !linea.cuadran;
-    });
-
-
     const servicios = serviciosLonjaDeIsla.map((servicio) => {
         return {
             ...servicio,
@@ -240,45 +220,34 @@ const ExportModal = ({ document }) => {
         }
     };
 
+    const linkedSummary = Object.values(ventasVendidurias).filter(Boolean).map((venta) => {
+        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
+        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
 
+        return {
+            supplierId: codBrisappBarco,
+            date: fecha,
+            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+            barcoNombre: venta.nombre,
+            error: codBrisappBarco === null ? true : false,
+        };
+    }).concat(Object.values(ventasDirectas).filter(Boolean).map((venta) => {
+        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
+        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
 
-
-
-    const linkedSummary = Object.values(ventasVendidurias)  // <- ¡Object.values!
-        .filter(Boolean) // Eliminamos posibles undefined
-        .map((venta) => {
-            const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
-            const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
-            const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
-
-            return {
-                supplierId: codBrisappBarco,
-                date: details.fecha,
-                declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-                declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-                barcoNombre: venta.nombre,
-                error: codBrisappBarco === null ? true : false,
-            };
-        })
-        .concat(
-            Object.values(ventasDirectas) // También aquí
-                .filter(Boolean)
-                .map((venta) => {
-                    const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
-                    const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
-                    const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
-
-                    return {
-                        supplierId: codBrisappBarco,
-                        date: details.fecha,
-                        declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-                        declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-                        barcoNombre: venta.nombre,
-                        error: codBrisappBarco === null ? true : false,
-                    };
-                })
-        );
-
+        return {
+            supplierId: codBrisappBarco,
+            date: fecha,
+            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+            barcoNombre: venta.nombre,
+            error: codBrisappBarco === null ? true : false,
+        };
+    })
+    );
 
     const handleOnClickLinkPurchases = async () => {
         const comprasValidas = linkedSummary.filter(linea => !linea.error);
@@ -321,7 +290,6 @@ const ExportModal = ({ document }) => {
             toast.error(`${errores} compras fallaron al enlazar`, darkToastTheme);
         }
     };
-
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
@@ -575,17 +543,6 @@ const ExportModal = ({ document }) => {
                                         <div className="flex justify-between items-center">
                                             <CardTitle className="text-lg">Servicios Lonja de Isla Cristina</CardTitle>
                                             <div className="flex items-center gap-2">
-                                                {/* {isConvertibleLonja ? (
-                                        <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                            <Check className="h-3.5 w-3.5" />
-                                            Exportable
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline" className="bg-red-900 text-red-200 border-red-500 flex items-center gap-1">
-                                            <X className="h-3.5 w-3.5" />
-                                            No exportable
-                                        </Badge>
-                                    )} */}
                                                 <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
                                                     <Check className="h-3.5 w-3.5" />
                                                     Exportable
@@ -602,7 +559,6 @@ const ExportModal = ({ document }) => {
                                                     <TableHead className="text-right">Base</TableHead>
                                                     <TableHead className="text-right">Porcentaje</TableHead>
                                                     <TableHead className="text-right">Precio</TableHead>
-                                                    {/* <TableHead className="text-right">Iva</TableHead> */}
                                                     <TableHead className="text-right">Importe</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -705,10 +661,6 @@ const ExportModal = ({ document }) => {
                             </CardContent>
                         </Card>
                     )}
-
-
-
-
                 </div>
             </div>
 
