@@ -411,7 +411,7 @@ export function useOrder(orderId, onChange) {
         {
             name: 'A3ERP-sales-delivery-note',
             label: 'Albarán de venta A3ERP',
-            types: ['xlsx'],
+            types: ['xls'],
             fields: ['Datos básicos', 'Direcciones', 'A3ERP', 'Productos'],
         },
         {

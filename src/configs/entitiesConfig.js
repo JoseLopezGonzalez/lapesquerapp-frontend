@@ -117,6 +117,20 @@ export const configs = {
     createPath: "/admin/orders/create",
     exports: [
       {
+        title: "Exportar a A3ERP",
+        endpoint: "orders/xls/A3ERP-sales-delivery-note-filtered",
+        type: "excel",
+        waitingMessage: "Generando exportación a A3ERP",
+        fileName: "Exportacion_pedidos_A3ERP",
+      },
+      {
+        title: "Exportar a Facilcom",
+        endpoint: "orders/xls/facilcom-sales-delivery-note",
+        type: "excel",
+        waitingMessage: "Generando exportación a Facilcom",
+        fileName: "Exportacion_pedidos_Facilcom",
+      },
+      {
         title: "Exportar a Excel",
         endpoint: "orders_report",
         type: "excel",
@@ -129,17 +143,11 @@ export const configs = {
         type: "pdf",
         waitingMessage: "Generando exportación a pdf",
         fileName: "export_pedidos",
-      },
+      }
     ],
     reports: [
       {
-        title: "Reporte de pedidos",
-        endpoint: "/exports/orders_report/pdf",
-        waitingMessage: "Generando reporte pdf",
-        fileName: "report_pedidos",
-      },
-      {
-        title: "Reporte de pedidos (Excel)",
+        title: "Reporte de pedidos (Repetido)",
         endpoint: "orders_report",
         waitingMessage: "Generando reporte excel",
         fileName: "report_pedidos",
@@ -327,7 +335,7 @@ export const configs = {
             xl: 1,
           }
         },
-        
+
         /* Incoterm Autocomplete */
         {
           name: "incoterm",
@@ -1920,7 +1928,7 @@ export const configs = {
         },
       ],
     },
-    
+
   },
 
   /* ceboDispatches*/
