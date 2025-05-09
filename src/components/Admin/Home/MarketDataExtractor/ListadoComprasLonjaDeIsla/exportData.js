@@ -4260,7 +4260,9 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '232',
     barco: "BELLITA CALE",
+    codBrisapp: '1',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
