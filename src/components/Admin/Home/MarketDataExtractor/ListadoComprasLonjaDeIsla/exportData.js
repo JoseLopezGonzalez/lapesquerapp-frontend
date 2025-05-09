@@ -4260,7 +4260,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
-    cod: '232',
+    cod: '1055',
     barco: "BELLITA CALE",
     codBrisapp: '1',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
@@ -5204,7 +5204,7 @@ export const barcosVentaDirecta = [
     }
   },
   {
-    cod: '232',
+    cod: '1055',
     barco: "BELLITA CALE",
     armador: {
       nombre: 'MARIA BELLA PEREZ RIVERO',
