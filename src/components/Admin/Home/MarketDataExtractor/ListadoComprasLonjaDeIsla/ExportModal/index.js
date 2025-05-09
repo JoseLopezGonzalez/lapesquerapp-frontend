@@ -16,15 +16,20 @@ import { darkToastTheme } from '@/customs/reactHotToast'
 import { API_URL_V1 } from '@/configs/config'
 
 const formatLonjaIslaImporte = (importe) => {
+
+    /* console.log('importe', importe); */ /* 1.048.0 */
     const importeString = String(importe);
     const partes = importeString.split('.');
 
     if (partes.length <= 2) {
+        /* console.log('partes', importeString); */
         return importeString;
     }
 
     const parteDecimal = partes.pop();
     const parteEntera = partes.join('');
+
+    /* console.log('parteEntera', parteEntera); */
     return `${parteEntera}.${parteDecimal}`;
 };
 
@@ -234,8 +239,9 @@ const ExportModal = ({ document }) => {
             error: codBrisappBarco === null ? true : false,
         };
     }).concat(Object.values(ventasDirectas).filter(Boolean).map((venta) => {
+        /* console.log('venta', venta); */
         const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(formatLonjaIslaImporte(linea.importe)), 0);
         const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
 
         return {
