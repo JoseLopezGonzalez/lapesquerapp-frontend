@@ -5200,7 +5200,15 @@ export const barcosVentaDirecta = [
       nombre: 'Juan Jesus Araujo Lopez',
       codA3erp: '988258',
     }
-  }
+  },
+  {
+    cod: '232',
+    barco: "BELLITA CALE",
+    armador: {
+      nombre: 'MARIA BELLA PEREZ RIVERO',
+      codA3erp: '781809',
+    }
+  },
 ];
 
 export const serviciosLonjaDeIsla = [
