@@ -21,6 +21,8 @@ export const barcos = [
   { barco: "TANIA Y DANIEL", armador: "JOSE ANTONIO MORA DE LA ROSA", cifArmador: "48930738D", codA3erp: "930738", codBrisapp: '146' },
   { barco: "CARLOS Y DAVID", armador: "JUAN MANUEL RAMOS DE LA ROSA", cifArmador: "48951215Q", codA3erp: "951215", codBrisapp: '83' },
   { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035", codBrisapp: '90' },
+  /* BELLI Y TOÑI */
+  { barco: "BELLI Y TOÑI", armador: "BELLI Y TOÑI", cifArmador: "B55470421", codA3erp: "988234", codBrisapp: '147' },
 ];
 
 export const armadores = [
@@ -50,6 +52,7 @@ export const armadores = [
   { armador: "JOSE ANTONIO MORA DE LA ROSA", cif: "48930738D", codA3erp: "930738" },
   { armador: "JUAN MANUEL RAMOS DE LA ROSA", cif: "48951215Q", codA3erp: "951215" },
   { armador: "EVA MARIA MARTIN GONZALEZ", cif: "44236035C", codA3erp: "236035" },
+  { armador: "BELLI Y TOÑI", cif: "B55470421", codA3erp: "988234" },
 ];
 
 
