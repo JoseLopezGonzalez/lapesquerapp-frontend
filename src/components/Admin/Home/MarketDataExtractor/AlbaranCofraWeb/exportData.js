@@ -22,7 +22,7 @@ export const barcos = [
   { barco: "CARLOS Y DAVID", armador: "JUAN MANUEL RAMOS DE LA ROSA", cifArmador: "48951215Q", codA3erp: "951215", codBrisapp: '83' },
   { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035", codBrisapp: '90' },
   /* BELLI Y TOÑI */
-  { barco: "BELLI Y TOÑI", armador: "PERICO Y MENDEZ S.L.", cifArmador: "B55470421", codA3erp: "988234", codBrisapp: '147' },
+  { barco: "BELI Y TOÑI", armador: "PERICO Y MENDEZ S.L.", cifArmador: "B55470421", codA3erp: "988234", codBrisapp: '147' },
 ];
 
 export const armadores = [
