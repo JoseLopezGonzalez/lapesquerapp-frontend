@@ -35,7 +35,7 @@ export function NavManagers({ items }) {
                     <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton asChild>
                             <Link href={item.href}
-                                className={item.current ? "font-medium bg-neutral-800" : ""}
+                                className={item.current ? "font-medium bg-foreground-200" : ""}
                             >
                                 <item.icon />
                                 <span>{item.name}</span>

@@ -56,21 +56,21 @@ const OrderContent = () => {
   const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
     const colorVariants = {
       green: {
-        bg: 'bg-green-100 dark:bg-green-900',
+        bg: 'bg-green-200 dark:bg-green-900',
         text: 'text-green-800 dark:text-green-300',
-        border: 'border-2 dark:border-green-500',
+        border: 'border dark:border-2 border-green-500',
         dot: 'bg-green-500'
       },
       orange: {
-        bg: 'bg-orange-100 dark:bg-orange-900',
+        bg: 'bg-orange-200 dark:bg-orange-900',
         text: 'text-orange-800 dark:text-orange-300',
-        border: 'border-2 dark:border-orange-500',
+        border: 'border dark:border-2 border-orange-500',
         dot: 'bg-orange-500'
       },
       red: {
-        bg: 'bg-red-100 dark:bg-red-900',
+        bg: 'bg-red-200 dark:bg-red-900',
         text: 'text-red-800 dark:text-red-300',
-        border: 'border-2 dark:border-red-500',
+        border: 'border dark:border-2 border-red-500',
         dot: 'bg-red-500'
       },
       // Puedes añadir más colores aquí
@@ -154,28 +154,28 @@ const OrderContent = () => {
                     Terminado
                   </span>)
                 } */}
-                <h3 className='text-xl font-medium text-white'>#{order.id}</h3>
-                <div className='text-white'>
+                <h3 className='text-xl font-medium '>#{order.id}</h3>
+                <div className=''>
                   <p className=''>
                     <span className='font-light text-3xl'>{order.customer.name}</span> <br />
                     <span className='text-lg font-medium'>Cliente Nº {order.customer.id}</span>
                   </p>
                 </div>
-                <div className='text-white'>
-                  <p className='font-medium text-xs text-neutral-300'>Fecha de Carga:</p>
+                <div className=''>
+                  <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
                   <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
                 </div>
-                <div className='text-white'>
-                  <p className='font-medium text-xs text-neutral-300'>Temperatura:</p>
+                <div className=''>
+                  <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="focus:outline-none">
-                      <span className='font-medium text-lg flex gap-1 items-center hover:text-neutral-300'>
+                      <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
                         <ThermometerSnowflake className='h-5 w-5 inline-block' />
                         {order.temperature || '0'} ºC
 
                       </span>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className='bg-neutral-950 '>
+                    <DropdownMenuContent className=' '>
                       <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
                         0 ºC
                       </DropdownMenuItem>
@@ -229,7 +229,7 @@ const OrderContent = () => {
                               : (
                                 <img className="" src='/images/transports/trailer.png' />)
                     }
-                    <h3 className='text-2xl font-light text-white'>{order.transport.name}</h3>
+                    <h3 className='text-2xl font-light '>{order.transport.name}</h3>
                   </div>
                 </div>
               </div>
