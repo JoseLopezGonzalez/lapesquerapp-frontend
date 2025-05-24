@@ -28,10 +28,10 @@ const Position = ({ posicion }) => {
     const baseY = coordenates.y + 40;
 
     const fondoClasses = isRelevant ?
-        'fill-green-500 group-hover:fill-green-800'
+        'fill-green-500 group-hover:fill-green-600 dark:group-hover:fill-green-800'
         : isFilled
-            ? 'fill-neutral-300 group-hover:fill-neutral-500'
-            : 'fill-neutral-600 group-hover:fill-neutral-300';
+            ? 'fill-primary/75 group-hover:fill-primary'
+            : 'fill-foreground-300 group-hover:fill-foreground-400';
 
     return (
         <>
@@ -62,7 +62,7 @@ const Position = ({ posicion }) => {
 
                         {/* rectángulo superior */}
                         <rect
-                            className="fill-white dark:fill-neutral-800 stroke-neutral-200 dark:stroke-neutral-300"
+                            className="fill-foreground-50 stroke-foreground-300 "
                             x={coordenates.x + mainX}
                             y={baseY}
                             width="100"
@@ -75,7 +75,7 @@ const Position = ({ posicion }) => {
 
                         {/* Texto */}
                         <text
-                            className="fill-neutral-500 dark:fill-white"
+                            className="fill-primary"
                             fontFamily="Arial-BoldMT, Arial"
                             fontSize="49px"
                         >

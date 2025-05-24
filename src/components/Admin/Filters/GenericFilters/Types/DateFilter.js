@@ -8,7 +8,7 @@ const DateFilter = ({ name, label, value, placeholder, onChange }) => {
             <div className="flex w-full flex-col">
                 <label
                     htmlFor={`date-filter-${name}`}
-                    className="block mb-2 text-xs font-medium text-neutral-400 text-start"
+                    className="block mb-2 text-xs font-medium text-muted-foreground text-start"
                 >
                     {label}
                 </label>

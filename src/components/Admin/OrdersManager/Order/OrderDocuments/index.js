@@ -244,7 +244,7 @@ const OrderDocuments = () => {
                                         {recipients.map((recipient) => (
                                             <Card
                                                 key={recipient.name}
-                                                className="border  flex flex-col shadow-sm bg-neutral-900"
+                                                className="border  flex flex-col shadow-sm bg-foreground-50"
                                             >
                                                 <CardHeader className="flex flex-row items-center p-3 pb-2 ">
                                                     <div className="flex items-center space-x-2">
@@ -281,7 +281,7 @@ const OrderDocuments = () => {
                                                 </CardContent>
                                                 <Separator />
                                                 <CardFooter className="p-3 min-h-[80px] flex flex-col items-start flex-grow">
-                                                    <p className="text-xs font-medium text-neutral-500 mb-2">Documentos</p>
+                                                    <p className="text-xs font-medium text-foreground-50 mb-2">Documentos</p>
                                                     {recipient.documents.length > 0 ? (
                                                         <div className="flex flex-wrap gap-2">
                                                             {recipient.documents.map((doc) => (
@@ -301,7 +301,7 @@ const OrderDocuments = () => {
                                                             ))}
                                                         </div>
                                                     ) : (
-                                                        <p className="text-xs text-neutral-500">
+                                                        <p className="text-xs text-muted-foreground">
                                                             No hay documentos disponibles
                                                         </p>
                                                     )}
@@ -405,7 +405,7 @@ const OrderDocuments = () => {
                                 </Card>
                             </div>
                             <div className="md:col-span-1">
-                                <Card className="border  bg-neutral-800 h-full shadow-sm flex flex-col">
+                                <Card className="border  bg-foreground-50 h-full shadow-sm flex flex-col">
                                     <CardHeader className="p-4 pb-2">
                                         <CardTitle className="text-lg">Envío Automático Estándar</CardTitle>
                                         <CardDescription>Envia automaticamente</CardDescription>

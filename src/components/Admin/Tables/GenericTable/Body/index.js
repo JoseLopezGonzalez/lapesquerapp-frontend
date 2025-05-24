@@ -13,23 +13,23 @@ import React, { useEffect, useState } from 'react';
 const badgeStyles = {
     primary: {
         base: " text-blue-800",
-        outline: "text-blue-400 border border-blue-300 bg-blue-800/25",
+        outline: "text-blue-100 border-blue-400 bg-blue-500 dark:text-blue-400 border dark:border-blue-300 dark:bg-blue-800/25",
     },
     success: {
         base: " text-green-800",
-        outline: "text-green-400 border border-green-300 bg-green-800/25",
+        outline: " text-green-200 border-green-400 bg-green-600 dark:text-green-400 border  dark:border-green-300  dark:bg-green-800/25",
     },
     warning: {
         base: " text-orange-500",
-        outline: "text-orange-400 border border-orange-300 bg-orange-800/25",
+        outline: "text-orange-100 border-orange-400 bg-orange-400 dark:text-orange-400 border dark:border-orange-300 dark:bg-orange-800/25",
     },
     danger: {
         base: " text-red-800",
-        outline: "text-red-400 border border-red-300 bg-red-800/25 ",
+        outline: "text-red-100 border-red-400 bg-red-500 dark:text-red-400 border dark:border-red-300 dark:bg-red-800/25 ",
     },
     neutral: {
         base: " text-neutral-800",
-        outline: "text-neutral-400 border border-neutral-300 bg-neutral-800/25",
+        outline: "text-neutral-100 border-neutral-400 bg-neutral-500 dark:text-neutral-400 border dark:border-neutral-300 dark:bg-neutral-800/25",
     },
 };
 
@@ -76,10 +76,10 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     return (
         <div className="grow overflow-y-auto overflow-x-auto w-full">
             <table className="min-w-full divide-y divide-neutral-700/20"> 
-                <thead className="bg-neutral-950 sticky top-0 z-10">
+                <thead className="bg-foreground-50 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
-                            <th className="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                            <th className="py-3.5 px-4 text-left text-sm font-semibold ">
                                 <Checkbox
                                     onValueChange={toggleSelectAll}
                                     isSelected={
@@ -90,24 +90,24 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                             </th>
                         )}
                         {headers.map((header) => header.type === 'button' ? (
-                            <th key={header.name} scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6 whitespace-nowrap">
+                            <th key={header.name} scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6 whitespace-nowrap">
                                 <span className="sr-only">{header.label}</span>
                             </th>
                         ) : (
                             <th key={header.name} scope="col" className="px-6 py-3 text-start">
                                 <a className="group inline-flex items-center gap-x-2" href="#">
-                                    <span className="text-xs font-semibold uppercase tracking-wide text-neutral-200">
+                                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                         {header.label}
                                     </span>
                                     {header.label.length > 0 && (
-                                        <svg className="flex-shrink-0 size-3.5 text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" /></svg>
+                                        <svg className="flex-shrink-0 size-3.5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" /></svg>
                                     )}
                                 </a>
                             </th>
                         ))}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-700/20">
+                <tbody className="divide-y divide-foreground-200">
                     {data.loading ? (
                         [...Array(14)].map((_, index) => (
                             <tr key={index}>
@@ -127,7 +127,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                         data.rows.map((row, rowIndex) => (
                             <tr
                                 key={rowIndex}
-                                className="hover:bg-neutral-800 transition-colors"
+                                className="hover:bg-foreground-50 transition-colors"
                                 onClick={() => toggleSelectRow(row.id)}
                             >
                                 {isSelectable && (
@@ -141,7 +141,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 {headers.map((header, index) => (
                                     <td
                                         key={header.name}
-                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm text-white sm:w-auto sm:max-w-none sm:pl-6 `}
+                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm sm:w-auto sm:max-w-none sm:pl-6 `}
                                     >
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
                                         {header.type === "button" && (
@@ -162,7 +162,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </div>
                                         )}
                                         {header.type === 'text' && (
-                                            <span className="text-white">
+                                            <span className="">
                                                 {row[header.name] === 'N/A' ? '-' : row[header.name]}
                                             </span>
                                         )}
@@ -172,12 +172,12 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </span>
                                         )}
                                         {header.type === 'weight' && (
-                                            <span className="text-white">
+                                            <span className="">
                                                 {formatDecimalWeight(row[header.name])}
                                             </span>
                                         )}
                                         {header.type === 'list' && (
-                                            <ul className="text-white text-nowrap">
+                                            <ul className=" text-nowrap">
                                                 {row[header.name].length > 0 &&
 
                                                     row[header.name].map((item, index) => (
@@ -188,12 +188,12 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </ul>
                                         )}
                                         {header.type === 'date' && (
-                                            <span className="text-white">
+                                            <span className="">
                                                 {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}
                                             </span>
                                         )}
                                         {header.type === 'dateHour' && (
-                                            <span className="text-white text-nowrap">
+                                            <span className=" text-nowrap">
                                                 {row[header.name] === 'N/A' ? '-' : formatDateHour(row[header.name])}
                                             </span>
                                         )}

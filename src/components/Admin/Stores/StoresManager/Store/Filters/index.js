@@ -50,7 +50,7 @@ const Filters = () => {
     }
 
     return (
-        <Card className=' w-full  h-full overflow-hidden bg-neutral-900 flex flex-col '>
+        <Card className=' w-full  h-full overflow-hidden bg-foreground-100 flex flex-col '>
             <CardHeader>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-medium flex items-center">

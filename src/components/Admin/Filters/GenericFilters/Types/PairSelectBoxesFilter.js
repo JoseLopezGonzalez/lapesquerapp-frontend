@@ -17,7 +17,7 @@ const PairSelectBoxesFilter = ({ label, name, value, onChange, options }) => {
                 {/* Label principal */}
                 <label
                     id={`select-label-${name}`}
-                    className="w-full mb-2 text-xs font-medium text-neutral-400 text-start"
+                    className="w-full mb-2 text-xs font-medium text-muted-foreground text-start"
                     htmlFor={`select-boxes-filter-${name}`}
                 >
                     {label}
