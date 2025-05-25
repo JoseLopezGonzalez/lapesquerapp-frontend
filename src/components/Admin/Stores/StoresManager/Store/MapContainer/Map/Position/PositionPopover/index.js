@@ -10,12 +10,16 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
 
-    const { getPositionPallets, openPositionSlideover } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog } = useStoreContext();
 
     const pallets = getPositionPallets(id);
 
     const handleOnClickDetails = () => {
         openPositionSlideover(id);
+    }
+
+    const handleOnClickEditPallet = (palletId) => {
+        openPalletDialog(palletId);
     }
 
     return (
@@ -60,10 +64,10 @@ const PositionPopover = ({ position }) => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-7 w-7"
-                                /* onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditPallet(position.id, pallet.id);
-                                }} */
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOnClickEditPallet(pallet.id);
+                                    }}
                                 >
                                     <Edit className="h-3.5 w-3.5" />
                                 </Button>

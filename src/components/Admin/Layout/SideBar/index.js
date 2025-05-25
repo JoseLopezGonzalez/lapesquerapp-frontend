@@ -32,6 +32,7 @@ import { signOut, useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { darkToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
+import { COMPANY_NAME } from "@/configs/config"
 
 // This is sample data.
 
@@ -67,19 +68,19 @@ export function AppSidebar() {
         },
         apps: [
             {
-                name: "Congelados Brisamar S.L.",
+                name: COMPANY_NAME,
                 logo: GalleryVerticalEnd,
                 description: "Administración",
                 current: true,
             },
             {
-                name: "Congelados Brisamar S.L.",
+                name: COMPANY_NAME,
                 logo: AudioWaveform,
                 description: "Producción",
                 current: false,
             },
             {
-                name: "Congelados Brisamar S.L.",
+                name: COMPANY_NAME,
                 logo: Earth,
                 description: "World Trade",
                 current: false,

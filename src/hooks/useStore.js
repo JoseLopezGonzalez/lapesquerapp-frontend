@@ -26,6 +26,11 @@ export function useStore(storeId) {
 
     const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
 
+    const [isOpenPalletDialog , setIsOpenPalletDialog] = useState(false);
+    /* data */
+    const [palletDialogData, setPalletDialogData] = useState(null);
+
+
 
 
 
@@ -209,6 +214,18 @@ export function useStore(storeId) {
 
     const pallets = store?.content?.pallets;
 
+    const openPalletDialog = (palletId) => {
+        const pallet = pallets?.find(p => p.id === palletId);
+        setPalletDialogData(pallet);
+        setIsOpenPalletDialog(true);
+    }
+
+    const closePalletDialog = () => {
+        setPalletDialogData(null);
+        setIsOpenPalletDialog(false);
+    }
+
+
 
     return {
         store,
@@ -241,6 +258,11 @@ export function useStore(storeId) {
 
         unlocatedPallets,
         pallets,
+
+        isOpenPalletDialog,
+        openPalletDialog,
+        closePalletDialog,
+        palletDialogData,   
     };
 
 }

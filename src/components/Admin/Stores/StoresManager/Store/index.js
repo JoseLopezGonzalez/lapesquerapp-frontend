@@ -10,10 +10,15 @@ import Filters from './Filters';
 import { Card } from '@/components/ui/card';
 import PositionSlideover from './PositionSlideover';
 import AddElementToPosition from './AddElementToPositionDialog';
+import { useState } from 'react';
+import PalletDialog from './PalletDialog';
 
 export const StoreContent = () => {
 
-    const { loading, error, isOpenAddElementToPositionDialog } = useStoreContext();
+    const { loading, error, isOpenAddElementToPositionDialog , 
+        isOpenPalletDialog
+
+    } = useStoreContext();
 
     if (loading) {
         return (
@@ -47,6 +52,8 @@ export const StoreContent = () => {
                 <PositionSlideover />
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
+
+                <PalletDialog open={isOpenPalletDialog} />
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />

@@ -18,6 +18,13 @@ import { useStoreContext } from "@/context/StoreContext"
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
+
+    const { openPalletDialog } = useStoreContext();
+
+    const handleOnCLickEdit = () => {
+        openPalletDialog(pallet)
+    }
+
     /* const hasMultipleProducts = pallet.products.length > 1 */
 
 
@@ -87,7 +94,9 @@ export default function PalletCard({ pallet }) {
                             <MapPin className="h-4 w-4 mr-2" />
                             Reubicar
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={handleOnCLickEdit}
+                        >
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                         </DropdownMenuItem>
