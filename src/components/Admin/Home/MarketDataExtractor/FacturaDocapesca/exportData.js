@@ -1519,6 +1519,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '505',
     barco: "EL GORDO",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -1920,6 +1921,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '587',
     barco: "HERMANOS CEADA",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -5159,7 +5161,7 @@ export const barcosVentaDirecta = [
     barco: "PAYMOGO",
     armador: {
       codA3erp: '988231',
-      nombre: 'Paymogo', 
+      nombre: 'Paymogo',
     },
   },
   {
@@ -5167,7 +5169,7 @@ export const barcosVentaDirecta = [
     barco: "SIMON EL FORTUNA",
     armador: {
       codA3erp: '143',
-      nombre: 'Simon el Fortuna', 
+      nombre: 'Simon el Fortuna',
     },
   },
   {
@@ -5175,7 +5177,7 @@ export const barcosVentaDirecta = [
     barco: "DOMINGO CALE",
     armador: {
       codA3erp: '148',
-      nombre: 'Domingo Cale', 
+      nombre: 'Domingo Cale',
     },
   },
   {
@@ -5185,7 +5187,8 @@ export const barcosVentaDirecta = [
       nombre: 'Manuel Jesus Yaque Camacho',
       codA3erp: '988285',
     }
-  }
+  },
+  
 ];
 
 
@@ -5195,7 +5198,6 @@ export const serviciosLonjaDeIsla = [
     descripcion: 'USO LONJA 1% COMPRADORES',
     porcentaje: 1,
   },
-
   {
     descripcion: 'REPERCUSION TARIFA G-4 COMP.',
     porcentaje: 2,

@@ -1519,6 +1519,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '505',
     barco: "EL GORDO",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -1921,6 +1922,7 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '587',
     barco: "HERMANOS CEADA",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -5211,6 +5213,22 @@ export const barcosVentaDirecta = [
       codA3erp: '781809',
     }
   },
+  {
+    cod: '505',
+    barco: "EL GORDO",
+    armador: {
+      nombre: 'Juan Mirabent Serrano',
+      codA3erp: '988293',
+    }
+  },
+  {
+    cod: '587',
+    barco: "HERMANOS CEADA",
+    armador: {
+      nombre: 'Alejandra Gómez Ceada',
+      codA3erp: '611721',
+    }
+  }
 ];
 
 export const serviciosLonjaDeIsla = [
