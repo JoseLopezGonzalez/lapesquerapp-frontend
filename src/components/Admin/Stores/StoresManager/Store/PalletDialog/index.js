@@ -117,7 +117,7 @@ export default function PalletDialog() {
                                         </CardHeader>
                                         <CardContent>
                                             <Tabs defaultValue="lector" className="w-full">
-                                                <TabsList className="grid w-full grid-cols-3">
+                                                <TabsList className="grid w-full grid-cols-4">
                                                     <TabsTrigger value="lector" className="flex items-center gap-2">
                                                         <Scan className="h-4 w-4" /> Lector
                                                     </TabsTrigger>
@@ -127,8 +127,12 @@ export default function PalletDialog() {
                                                     <TabsTrigger value="masiva" className="flex items-center gap-2">
                                                         <Upload className="h-4 w-4" /> Masiva
                                                     </TabsTrigger>
+                                                    <TabsTrigger value="promedio" className="flex items-center gap-2">
+                                                        <Package className="h-4 w-4" /> Promedio
+                                                    </TabsTrigger>
                                                 </TabsList>
 
+                                                {/* Lector */}
                                                 <TabsContent value="lector" className="space-y-3">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="codigo-escaneado">Código escaneado</Label>
@@ -139,6 +143,7 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
+                                                {/* Manual */}
                                                 <TabsContent value="manual" className="space-y-4">
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -175,6 +180,7 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
+                                                {/* Masiva */}
                                                 <TabsContent value="masiva" className="space-y-4">
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -210,9 +216,51 @@ export default function PalletDialog() {
                                                         </Button>
                                                     </div>
                                                 </TabsContent>
+
+                                                {/* Promedio */}
+                                                <TabsContent value="promedio" className="space-y-4">
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-2">
+                                                            <Label>Artículo</Label>
+                                                            <Select>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Seleccionar artículo" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="art-001">Tomate Cherry 250g</SelectItem>
+                                                                    <SelectItem value="art-002">Lechuga Iceberg 500g</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label>Lote</Label>
+                                                            <Select>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Seleccionar lote" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="lote-001">L240115001</SelectItem>
+                                                                    <SelectItem value="lote-002">L240115002</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label>Peso Total (kg)</Label>
+                                                            <Input type="number" step="0.01" placeholder="0.00" className="text-right" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label>Número de Cajas</Label>
+                                                            <Input type="number" placeholder="0" className="text-right" />
+                                                        </div>
+                                                        <Button className="w-full">
+                                                            <Plus className="h-4 w-4 mr-2" /> Generar Cajas
+                                                        </Button>
+                                                    </div>
+                                                </TabsContent>
                                             </Tabs>
                                         </CardContent>
                                     </Card>
+
 
                                     <Card className="border-2 border-muted">
                                         <CardHeader className="pb-4">
