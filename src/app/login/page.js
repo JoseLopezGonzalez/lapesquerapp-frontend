@@ -2,145 +2,137 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
-import { darkToastTheme } from "@/customs/reactHotToast";
+import { useSearchParams } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import RotatingText from "@/components/Utilities/RotatingText";
-import StarBorder from "@/components/Utilities/StarBorder";
-import ShinyText from "@/components/Utilities/ShinyText";
-import Squares from "@/components/Utilities/Squares";
+
+import Image from "next/image";
+import Link from "next/link";
+import { darkToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      setLoading(true);
+      const redirectTo = searchParams.get("from") || "/admin";
 
-      // Obtener la URL de redirección desde los parámetros de la URL
-      const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get("from") || "/admin"; // Redirige a /admin si no se especifica una URL previa
-
-      // Intentar iniciar sesión
       const result = await signIn("credentials", {
-        redirect: false, // No redirige automáticamente
+        redirect: false,
         email,
         password,
       });
 
-      // Comprobar si hay error
       if (!result || result.error) {
-        if (result.error === "CredentialsSignin") {
-          setEmail("");
-          setPassword("");
-          throw new Error("Datos de acceso incorrectos");
-        }
-        throw new Error(result.error || "Error al iniciar sesión");
+        setEmail("");
+        setPassword("");
+        throw new Error(
+          result?.error === "CredentialsSignin"
+            ? "Datos de acceso incorrectos"
+            : result?.error || "Error al iniciar sesión"
+        );
       }
 
-      // Si no hay error, inicio de sesión exitoso
       toast.success("Inicio de sesión exitoso", darkToastTheme);
-      window.location.href = redirectTo; // Redirigir a la página solicitada o a /admin
+      window.location.href = redirectTo;
     } catch (err) {
-      // Mostrar mensaje de error
       toast.error(err.message, darkToastTheme);
     } finally {
-      setLoading(false); // Restaurar estado de carga
+      setLoading(false);
     }
   };
 
-
-
   return (
-    <div className="flex justify-center items-center min-h-screen ">
-      
-      <div id="content" className="h-full before:opacity-20 relative max-w-3xl px-4 sm:px-6 lg:px-8 flex flex-col justify-center sm:items-center mx-auto size-full before:absolute before:top-20 before:start-1/2 before:bg-[url('/squared-bg-element.svg')] before:bg-no-repeat before:bg-top before:size-full before:-z-[1] before:transform before:-translate-x-1/2">
-        <div className="flex flex-col gap-8 justify-center items-center py-12 px-6 sm:px-10  w-full">
-          <img className="h-16 w-auto" src={NAVBAR_LOGO} alt="Your Company" />
-
-          <div className="text-center py-8 px-4 sm:px-6 lg:px-8">
-
-            {/*  <h1 className="text-2xl text-white sm:text-3xl text-nowrap">
-              Manten tu producción al día.
-            </h1> */}
-            <div className="flex items-center justify-center text-nowrap gap-2">
-              <span className="text-2xl sm:text-3xl text-white">Manten tu producción</span>
-              <RotatingText
-                texts={['al día.', 'segura.', 'eficiente.', 'organizada.']}
-                mainClassName="text-nowrap text-white text-2xl sm:text-3xl font-medium overflow-hidden  justify-center"
-                staggerFrom={"last"}
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "-120%" }}
-                staggerDuration={0.025}
-                splitLevelClassName="text-nowrap overflow-hidden "
-                transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                rotationInterval={6000}
-              />
-            </div>
-            <h2 className="mt-1 sm:mt-3 text-3xl font-bold text-white sm:text-[2.5rem]">
-              <span className="bg-clip-text bg-gradient-to-tr from-sky-600 to-green-400 text-transparent">
-                BlueApp</span>
-
-
-            </h2>
+    <div className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black">
+      <div className="w-full max-w-[1000px] py-20">
+        <Card className="flex w-full h-full p-2">
+          {/* Panel izquierdo con imagen */}
+          <div className="relative hidden w-full max-w-[500px] overflow-hidden rounded-lg bg-black lg:block">
+            <Image
+              src="/images/landing.png"
+              alt="Space landscape with mountains and planet"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
-          <div className="w-full max-w-sm backdrop-blur-lg sm:px-10 px-5 py-10 rounded-xl border border-white/5 shadow-lg">
-            {/*  <h2 className="text-center text-2xl font-bold text-white">Iniciar Sesión</h2>
-            <p className="text-center text-sm text-neutral-400 mt-2">
-              ¡Bienvenido! Introduce tus datos de acceso.
-            </p> */}
-            <form onSubmit={handleLogin} className=" space-y-6 ">
-              <div>
-                <label htmlFor="email" className="block text-sm text-neutral-200">
-                  Usuario
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="ejemplo@ejemplo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  required
-                  className="block w-full mt-1 rounded-md bg-white/5 border-white/50  px-3 py-2 placeholder-neutral-700 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm text-neutral-200">
-                  Contraseña
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                  className="block w-full mt-1 rounded-md bg-white/5 border-neutral-600 bg-transparent px-3 py-2 placeholder-neutral-700 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm"
-                />
+
+          {/* Panel derecho con formulario */}
+          <div className="flex w-full flex-col items-center justify-center p-8 lg:p-12">
+            <form
+              onSubmit={handleLogin}
+              className="mx-auto w-full max-w-xs space-y-8 py-20"
+            >
+              <div className="text-center flex flex-col gap-3">
+                <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent">
+                  BlueApp
+                </h2>
+                <div className="flex items-center justify-center gap-1 text-nowrap">
+                  <span className="text-xl text-primary">Mantén tu producción</span>
+                  <RotatingText
+                    texts={["al día.", "segura.", "eficiente.", "organizada."]}
+                    mainClassName="text-xl text-primary font-medium"
+                    staggerFrom="last"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-120%" }}
+                    staggerDuration={0.025}
+                    splitLevelClassName="overflow-hidden"
+                    transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                    rotationInterval={6000}
+                  />
+                </div>
               </div>
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`border border-neutral-800 hover:border-neutral-700 flex w-full justify-center rounded-lg bg-transparent py-2 px-4 text-sm font-semibold text-white shadow-sm hover:bg-neutral-900/50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${loading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-                </button>
-               
+              <div className="space-y-4">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ejemplo@pymcolorao.es"
+                    required
+                  />
+                </div>
+
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="*******"
+                    required
+                  />
+                </div>
+
+                <Button className="w-full" type="submit" disabled={loading}>
+                  {loading ? "Entrando..." : "Login"}
+                </Button>
+
+                <p className="text-center text-sm text-muted-foreground">
+                  ¿Algún problema?{" "}
+                  <Link href="#" className="text-primary hover:text-muted-foreground">
+                    Contáctanos
+                  </Link>
+                </p>
               </div>
             </form>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

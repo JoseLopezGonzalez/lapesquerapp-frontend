@@ -99,7 +99,7 @@ export default function PositionSlideover({ onClose, position = "A5" }) {
                     </Button>
                 </div>
 
-                <ScrollArea className="flex-1 gap-2 py-4 px-4">
+                <ScrollArea className="flex-1 gap-2 py-4 px-2">
                     <div className=" space-y-4">
                         {palletData.length === 0 ? (
                             <Card className="bg-muted/30 border-dashed flex flex-col items-center justify-center p-6 text-center">

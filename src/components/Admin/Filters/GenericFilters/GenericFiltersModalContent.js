@@ -15,7 +15,7 @@ import { DateRangeFilter } from './Types/DateRangeFilter';
 
 export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => {
     if (!filtersGroup || (!filtersGroup.search && !filtersGroup.groups)) {
-        return <p className="text-neutral-500">No hay filtros disponibles.</p>;
+        return <p className="text-muted-foreground">No hay filtros disponibles.</p>;
     }
 
     const { search, groups } = filtersGroup;
@@ -39,18 +39,18 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
             )}
 
             <div className="px-2">
-                <div className="pb-4 divide-y divide-white/10">
-                    <dl className="space-y-6 divide-y divide-white/10">
+                <div className="pb-4 divide-y divide-foreground-200">
+                    <dl className="space-y-6 divide-y divide-foreground-200">
                         {groups.map((group) => (
                             <Disclosure key={group.name || group.label} as="div" className="pt-6">
                                 {({ open }) => (
                                     <>
                                         <dt>
-                                            <DisclosureButton className="flex w-full items-start justify-between text-left text-neutral-300 hover:text-white">
+                                            <DisclosureButton className="flex w-full items-start justify-between text-left text-primary ">
                                                 <span className="text-lg font-light leading-7">
                                                     {group.label || 'Grupo sin nombre'}
                                                 </span>
-                                                <span className="ml-6 flex p-1.5 items-center border-0 rounded-xl border-neutral-600 text-neutral-300 hover:bg-white/20">
+                                                <span className="ml-6 flex p-1.5 items-center border-0 rounded-xl border-foreground-200 text-muted-foreground hover:bg-foreground-200">
                                                     {open ? (
                                                         <ChevronDownIcon
                                                             className="h-4 w-4"

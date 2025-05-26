@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className='h-screen ' style={{backgroundColor: '#0f0f0f'}}>
+    <div className='h-screen ' >
 
       {/* <Layout>
       {children}

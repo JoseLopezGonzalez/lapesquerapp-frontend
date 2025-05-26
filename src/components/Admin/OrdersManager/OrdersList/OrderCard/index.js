@@ -23,31 +23,31 @@ const OrderCard = ({ order, onClick, disabled }) => {
     } else if (order.current && order.status === 'incident') {
         statusClass = 'border-red-900 bg-red-500 hover:bg-red-500/80'
     } else if (order.status === 'incident') {
-        statusClass = 'border-red-500 bg-neutral-800 hover:bg-neutral-700'
+        statusClass = 'border-red-500 bg-foreground-50 hover:foreground-100'
     } else if (order.status === 'finished') {
-        statusClass = 'border-green-500 bg-neutral-800 hover:bg-neutral-700'
+        statusClass = 'border-green-500 bg-foreground-50 hover:foreground-100'
     } else {
-        statusClass = 'border-orange-500 bg-neutral-800 hover:bg-neutral-700'
+        statusClass = 'border-orange-500 bg-foreground-50 hover:bg-foreground-100'
     }
 
     const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
         const colorVariants = {
             green: {
-                bg: 'bg-green-100 dark:bg-green-900',
+                bg: 'bg-green-200 dark:bg-green-900',
                 text: 'text-green-800 dark:text-green-300',
-                border: 'border-2 dark:border-green-500',
+                border: 'border dark:border-2 border-green-500',
                 dot: 'bg-green-500'
             },
             orange: {
-                bg: 'bg-orange-100 dark:bg-orange-900',
+                bg: 'bg-orange-200 dark:bg-orange-900',
                 text: 'text-orange-800 dark:text-orange-300',
-                border: 'border-2 dark:border-orange-500',
+                border: 'border dark:border-2 border-orange-500',
                 dot: 'bg-orange-500'
             },
             red: {
                 bg: 'bg-red-100 dark:bg-red-900',
                 text: 'text-red-800 dark:text-red-300',
-                border: 'border-2 dark:border-red-500',
+                border: 'border dark:border-2 border-red-500',
                 dot: 'bg-red-500'
             },
             // Puedes añadir más colores aquí

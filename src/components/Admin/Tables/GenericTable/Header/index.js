@@ -7,10 +7,10 @@ export const Header = ({data , children}) => {
     return (
         <div className="px-6 py-4 pt-6 grid gap-3 md:flex md:justify-between md:items-center  ">
             <div>
-                <h2 className="text-xl font-semibold text-neutral-200">
+                <h2 className="text-xl font-semibold ">
                     {title}
                 </h2>
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-muted-foreground">
                     {description}
                 </p>
             </div>

@@ -15,7 +15,7 @@ const TextAreaFilter = ({ label, name, value, placeholder, onChange }) => {
                 <div className="flex w-full flex-col">
                     <label
                         htmlFor={name}
-                        className="w-full mb-2 text-xs font-medium text-neutral-400 text-start"
+                        className="w-full mb-2 text-xs font-medium text-muted-foreground text-start"
                     >
                         {label}
                     </label>

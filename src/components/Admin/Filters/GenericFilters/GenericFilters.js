@@ -149,7 +149,7 @@ export const GenericFilters = ({ data }) => {
                         <IoFilter className="h-4 w-4" />
                         <span className='hidden xl:flex'>Filtros</span>
                         {numberOfActiveFilters > 0 && (
-                            <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-neutral-700 text-neutral-300">
+                            <span className="inline-flex items-center gap-1.5 py-0.5 px-1.5 rounded-full text-xs font-medium border border-foreground-200 text-muted-foreground">
                                 {numberOfActiveFilters}
                             </span>
                         )}

@@ -7,6 +7,7 @@ import { ScrollShadow } from '@nextui-org/react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -53,8 +54,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                         {/* input search  */}
                         <div className='relative w-full text-sm'>
-                            <input onChange={(e) => onChangeSearch(e.target.value)} value={searchText}
-                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5 bg-black/15 text-white border border-neutral-600 rounded-lg placeholder:text-neutral-500' />
+                            <Input onChange={(e) => onChangeSearch(e.target.value)} value={searchText}
+                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5' />
                             <button className='absolute right-0 top-0 h-full w-10 flex items-center justify-center'>
                                 {searchText.length > 0 ? (
                                     <XMarkIcon onClick={() => onChangeSearch('')} className='h-4 w-4 text-white dark:text-white' />

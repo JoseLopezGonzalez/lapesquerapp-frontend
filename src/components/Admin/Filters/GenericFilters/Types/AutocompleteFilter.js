@@ -59,7 +59,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                 <div className="flex w-full flex-col  text-start">
                     <label
                         htmlFor="autocomplete-filter"
-                        className="w-full mb-2 text-xs font-medium text-neutral-400"
+                        className="w-full mb-2 text-xs font-medium text-muted-foreground"
                     >
                         {label}
                     </label>
