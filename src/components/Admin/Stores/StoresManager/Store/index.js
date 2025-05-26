@@ -12,13 +12,23 @@ import PositionSlideover from './PositionSlideover';
 import AddElementToPosition from './AddElementToPositionDialog';
 import { useState } from 'react';
 import PalletDialog from './PalletDialog';
+import UnallocatedPositionSlideover from './UnallocatedPositionSlideover';
+import { UNLOCATED_POSITION_ID } from '@/configs/config';
 
 export const StoreContent = () => {
 
-    const { loading, error, isOpenAddElementToPositionDialog , 
-        isOpenPalletDialog
+    const { loading, error, isOpenAddElementToPositionDialog,
+        isOpenPalletDialog,
+        openUnallocatedPositionSlideover,
+        isPositionRelevant,
+        isPositionFilled,
 
     } = useStoreContext();
+
+    const handleOnClickUnallocatedPosition = () => {
+        console.log("Unallocated positions clicked");
+        openUnallocatedPositionSlideover();
+    }
 
     if (loading) {
         return (
@@ -27,6 +37,15 @@ export const StoreContent = () => {
             </div>
         )
     }
+
+    const isUnallocatedPositionRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
+    const isUnallocatedPositionFilled = isPositionFilled(UNLOCATED_POSITION_ID)
+
+    const fondoClasses = isUnallocatedPositionRelevant ?
+        'bg-green-500 group-hover:bg-green-600 dark:group-hover:bg-green-800'
+        : isUnallocatedPositionFilled
+            ? 'bg-primary/75 group-hover:bg-primary text-background'
+            : 'bg-foreground-300 group-hover:bg-foreground-400';
 
     return (
         <>
@@ -38,7 +57,10 @@ export const StoreContent = () => {
                         <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
                     </MapContainer>
                     <div className="absolute bottom-4 right-4 z-10">
-                        <Button variant="secondary">
+                        <Button variant="secondary"
+                            className={`flex items-center gap-2 ${fondoClasses} `}
+                            onClick={handleOnClickUnallocatedPosition}
+                        >
                             <LocateFixed size={24} />
                             Elementos sin ubicar
                         </Button>
@@ -50,6 +72,8 @@ export const StoreContent = () => {
                 </div>
 
                 <PositionSlideover />
+
+                <UnallocatedPositionSlideover />
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 

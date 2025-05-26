@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useStoreContext } from "@/context/StoreContext"
-import PalletCard from "./PalletCard"
+import PalletCard from "../PositionSlideover/PalletCard"
 
 const palletData = [
     {
@@ -65,39 +65,28 @@ const typeIcons = {
     Tina: <Package className="h-5 w-5" />,
 }
 
-export default function PositionSlideover({ onClose, position = "A5" }) {
+export default function UnallocatedPositionSlideover() {
 
 
-    const { isOpenPositionSlideover, closePositionSlideover, selectedPosition, getPositionPallets, openAddElementToPosition } = useStoreContext()
+    const { isOpenUnallocatedPositionSlideover, closeUnallocatedPositionSlideover, unlocatedPallets } = useStoreContext()
 
-    const pallets = getPositionPallets(selectedPosition)
+    const pallets = unlocatedPallets
 
-    const open = isOpenPositionSlideover
+    const open = isOpenUnallocatedPositionSlideover
 
-    const handleOnClickAddElement = () => {
-        openAddElementToPosition()
-        console.log('openAddElementToPosition')
-    }
-
-    console.log('pallets', pallets)
 
     return (
 
-        <Sheet open={open} onOpenChange={closePositionSlideover} >
+        <Sheet open={open} onOpenChange={closeUnallocatedPositionSlideover} >
             {/*  <SheetTrigger>Open</SheetTrigger> */}
             <SheetContent className='w-[400px] sm:w-[900px] sm:min-w-[430px] flex flex-col h-full'  >
                 <SheetHeader>
-                    <SheetTitle>Posicion A4</SheetTitle>
+                    <SheetTitle>Elementos sin ubicar</SheetTitle>
                     <SheetDescription>
                         Detalles de la posición seleccionada
                     </SheetDescription>
                 </SheetHeader>
-                <div className="">
-                    <Button className="w-full flex items-center justify-center gap-2" onClick={handleOnClickAddElement}>
-                        <Plus className="h-4 w-4"  />
-                        Agregar nuevo elemento
-                    </Button>
-                </div>
+                
 
                 <ScrollArea className="flex-1 gap-2 py-4 px-2">
                     <div className=" space-y-4">

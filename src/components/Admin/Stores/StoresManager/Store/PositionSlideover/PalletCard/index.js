@@ -19,11 +19,15 @@ import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
 
-    const { openPalletDialog } = useStoreContext();
+    const { openPalletDialog , isPalletRelevant } = useStoreContext();
 
     const handleOnCLickEdit = () => {
-        openPalletDialog(pallet)
+        openPalletDialog(pallet.id)
     }
+
+    const fondoClasses = isPalletRelevant(pallet.id) ?
+        'bg-green-500 text-background border-green-400 dark:border-green-600 overflow-hidden '
+        : '' + 'bg-card border-border shadow-md';
 
     /* const hasMultipleProducts = pallet.products.length > 1 */
 
@@ -47,14 +51,12 @@ export default function PalletCard({ pallet }) {
     const hasMultipleProducts = productsSummaryArray.length > 1
 
     return (
-        <Card className="bg-card border-border shadow-md">
+        <Card className={fondoClasses}>
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 space-x-2">
                 <div className="flex items-center space-x-2">
-                    <div className="flex items-center bg-black text-white p-1.5  rounded-xl gap-2">
-
+                    <div className="flex items-center bg-black text-white p-1.5  rounded-md gap-2">
                         <Layers className="h-5 w-5" />
                     </div>
-
                     <h3 className="font-medium text-xl text-foreground">
                         Palet #{pallet.id}
                     </h3>
@@ -95,6 +97,7 @@ export default function PalletCard({ pallet }) {
                             Reubicar
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                        className='cursor-pointer'
                             onClick={handleOnCLickEdit}
                         >
                             <Edit className="h-4 w-4 mr-2" />
@@ -119,7 +122,7 @@ export default function PalletCard({ pallet }) {
                                 {hasMultipleProducts && (product.weight || product.boxCount) && (
                                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                                         <span>{formatDecimalWeight(product.netWeight)} kg</span>
-                                        <span className="mx-1.5 text-border">|</span>
+                                        <span className="mx-1.5 ">|</span>
                                         {product.boxCount && (
                                             <span>
                                                 {product.boxCount} {product.boxCount === 1 ? "caja" : "cajas"}

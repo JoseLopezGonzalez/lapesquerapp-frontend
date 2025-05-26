@@ -12,3 +12,4 @@ export const NAVBAR_LOGO = '/logos/blueapp-logo-horizontal.png';
 /* Nombre de empresa */
 export const COMPANY_NAME = 'Congelados Brisamar S.L.';
 
+export const UNLOCATED_POSITION_ID = "unlocated";

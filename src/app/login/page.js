@@ -72,7 +72,7 @@ export default function LoginPage() {
               className="mx-auto w-full max-w-xs space-y-8 py-20"
             >
               <div className="text-center flex flex-col gap-3">
-                <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent">
+                <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
                   BlueApp
                 </h2>
                 <div className="flex items-center justify-center gap-1 text-nowrap">

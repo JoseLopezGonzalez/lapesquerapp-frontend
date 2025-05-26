@@ -8,10 +8,10 @@ import React from 'react'
 import PositionPopover from './PositionPopover';
 
 const Position = ({ posicion }) => {
-    const { isPositionFilled, filteredPositionsMap } = useStoreContext();
+    const {  filteredPositionsMap, isPositionRelevant, isPositionFilled } = useStoreContext();
     const { coordenates, name, id, type, onClick, position } = posicion;
 
-    const isRelevant = filteredPositionsMap.has(id);
+    const isRelevant = isPositionRelevant(id);
     const isFilled = isPositionFilled(id);
 
 

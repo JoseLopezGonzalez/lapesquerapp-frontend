@@ -10,7 +10,7 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
 
-    const { getPositionPallets, openPositionSlideover, openPalletDialog } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant } = useStoreContext();
 
     const pallets = getPositionPallets(id);
 
@@ -21,6 +21,10 @@ const PositionPopover = ({ position }) => {
     const handleOnClickEditPallet = (palletId) => {
         openPalletDialog(palletId);
     }
+
+    const fondoClasses = (palletId) => isPalletRelevant(palletId) ?
+        'bg-green-500 text-background border-green-400 dark:border-green-600'
+        : '';
 
     return (
         <Card className="border-0 shadow-none">
@@ -52,9 +56,9 @@ const PositionPopover = ({ position }) => {
                 {pallets.length === 0 ? (
                     <div className="text-center py-4 text-muted-foreground">No existen elementos en esta posición</div>
                 ) : pallets.map((pallet) =>
-                    <div key={pallet.id} className="flex justify-between items-center p-2 rounded-lg border">
+                    <div key={pallet.id} className={`flex justify-between items-center p-2 rounded-lg border ${fondoClasses(pallet.id)}`}>
                         <div className="font-medium">#{pallet.id}</div>
-                        <div className="flex gap-3 text-sm text-muted-foreground">
+                        <div className="flex gap-3 text-sm ">
                             <span>{formatInteger(pallet.boxes.length)} cajas</span>
                             <span>{formatDecimalWeight(pallet.netWeight)}</span>
                         </div>

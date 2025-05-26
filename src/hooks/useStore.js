@@ -1,6 +1,10 @@
+import { UNLOCATED_POSITION_ID } from "@/configs/config";
 import { getStore, getStores } from "@/services/storeService";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+
+
+
 
 
 const initialFilters = {
@@ -22,11 +26,12 @@ export function useStore(storeId) {
     const [reload, setReload] = useState(false);
 
     const [isOpenPositionSlideover, setIsOpenPositionSlideover] = useState(false);
+    const [isOpenUnallocatedPositionSlideover, setIsOpenUnallocatedPositionSlideover] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
 
     const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
 
-    const [isOpenPalletDialog , setIsOpenPalletDialog] = useState(false);
+    const [isOpenPalletDialog, setIsOpenPalletDialog] = useState(false);
     /* data */
     const [palletDialogData, setPalletDialogData] = useState(null);
 
@@ -40,9 +45,18 @@ export function useStore(storeId) {
         setIsOpenPositionSlideover(true);
     }
 
+
     const closePositionSlideover = () => {
         setSelectedPosition(null);
         setIsOpenPositionSlideover(false);
+    }
+
+    const openUnallocatedPositionSlideover = () => {
+        setIsOpenUnallocatedPositionSlideover(true);
+    }
+
+    const closeUnallocatedPositionSlideover = () => {
+        setIsOpenUnallocatedPositionSlideover(false);
     }
 
     const [filters, setFilters] = useState(initialFilters);
@@ -59,7 +73,6 @@ export function useStore(storeId) {
         const productsMap = new Map();
 
         store?.content?.pallets?.forEach(pallet => {
-            if (!pallet.position) return
             pallet.boxes?.forEach(box => {
                 const product = box.product;
                 if (product?.id) {
@@ -69,7 +82,8 @@ export function useStore(storeId) {
         });
 
         return Array.from(productsMap.values());
-    }
+    };
+
 
     const productsOptions = getAvailableProducts().map(product => ({
         value: product.id,
@@ -129,7 +143,7 @@ export function useStore(storeId) {
             });
 
             /* ordenar productos por name */
-            
+
 
 
 
@@ -137,7 +151,7 @@ export function useStore(storeId) {
                 name: entry.name,
                 quantity: entry.quantity,
                 percentage: speciesPercentage,
-                products : products.sort((a, b) => a.name.localeCompare(b.name))
+                products: products.sort((a, b) => a.name.localeCompare(b.name))
             };
         });
 
@@ -155,15 +169,30 @@ export function useStore(storeId) {
         const map = new Map();
 
         store?.content?.pallets?.forEach(pallet => {
-            if (!pallet.position) return;
+            // Pallets SIN posición (unlocated)
+            if (!pallet.position) {
+                const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.product?.id));
+                const matchPallet = filters.pallets.includes(pallet.id);
 
+                if (matchProduct || matchPallet) {
+                    // Usamos la clave especial "unlocated"
+                    if (!map.has(UNLOCATED_POSITION_ID)) {
+                        map.set(UNLOCATED_POSITION_ID, []);
+                    }
+                    map.get(UNLOCATED_POSITION_ID).push(pallet);
+                }
+                return;
+            }
+
+            // Pallets CON posición
             const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.product?.id));
-
             const matchPallet = filters.pallets.includes(pallet.id);
 
             if (matchProduct || matchPallet) {
-                map.set(pallet.position, pallet);
-
+                if (!map.has(pallet.position)) {
+                    map.set(pallet.position, []);
+                }
+                map.get(pallet.position).push(pallet);
             }
         });
 
@@ -171,6 +200,28 @@ export function useStore(storeId) {
     }, [store, filters]);
 
 
+
+
+    const isPositionRelevant = (positionId) => {
+        return filteredPositionsMap.has(positionId) && filteredPositionsMap.get(positionId).length > 0;
+    };
+
+    const isPositionFilled = (positionId) => {
+        if (positionId === UNLOCATED_POSITION_ID) {
+            return unlocatedPallets.length > 0;
+        }
+        return store?.content?.pallets?.some(p => p.position === positionId) ?? false;
+    };
+
+    const isPalletRelevant = (palletId) => {
+        // Recorre cada posición (incluida la de sin ubicar)
+        for (const pallets of filteredPositionsMap.values()) {
+            if (pallets.some(pallet => pallet.id === palletId)) {
+                return true;
+            }
+        }
+        return false;
+    };
 
 
 
@@ -192,9 +243,9 @@ export function useStore(storeId) {
             });
     }, [reload, token, storeId]);
 
-    const isPositionFilled = (positionId) => {
+    /* const isPositionFilled = (positionId) => {
         return store?.content?.pallets?.some(p => p.position === positionId) ?? false;
-    }
+    } */
 
 
     const getPositionPallets = (positionId) => {
@@ -262,7 +313,17 @@ export function useStore(storeId) {
         isOpenPalletDialog,
         openPalletDialog,
         closePalletDialog,
-        palletDialogData,   
+        palletDialogData,
+
+        isOpenUnallocatedPositionSlideover,
+        openUnallocatedPositionSlideover,
+        closeUnallocatedPositionSlideover,
+
+        unlocatedPallets,
+        isPositionRelevant,
+
+        isPalletRelevant
+
     };
 
 }
