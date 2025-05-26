@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { NAVBAR_LOGO } from "@/configs/config";
 import toast from "react-hot-toast";
-import { darkToastTheme } from "@/customs/reactHotToast";
+import { getToastTheme } from "@/customs/reactHotToast";
 import RotatingText from "@/components/Utilities/RotatingText";
 import StarBorder from "@/components/Utilities/StarBorder";
 import ShinyText from "@/components/Utilities/ShinyText";
@@ -42,11 +42,11 @@ export default function LoginPage() {
       }
 
       // Si no hay error, inicio de sesión exitoso
-      toast.success("Inicio de sesión exitoso", darkToastTheme);
+      toast.success("Inicio de sesión exitoso", getToastTheme());
       window.location.href = redirectTo; // Redirigir a la página solicitada o a /admin
     } catch (err) {
       // Mostrar mensaje de error
-      toast.error(err.message, darkToastTheme);
+      toast.error(err.message, getToastTheme());
     } finally {
       setLoading(false); // Restaurar estado de carga
     }

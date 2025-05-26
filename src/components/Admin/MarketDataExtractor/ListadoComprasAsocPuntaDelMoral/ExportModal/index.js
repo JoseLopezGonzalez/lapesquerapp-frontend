@@ -12,7 +12,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { formatDecimalCurrency, formatDecimalWeight, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 import { normalizeText } from '@/helpers/formats/texts'
-import { darkToastTheme } from '@/customs/reactHotToast'
+import { getToastTheme } from '@/customs/reactHotToast'
 import toast from 'react-hot-toast'
 import { API_URL_V1 } from '@/configs/config'
 
@@ -189,7 +189,7 @@ const ExportModal = ({ document }) => {
         const comprasValidas = linkedSummary.filter(linea => !linea.error);
 
         if (comprasValidas.length === 0) {
-            toast.error('No hay compras válidas para vincular.', darkToastTheme);
+            toast.error('No hay compras válidas para vincular.', getToastTheme());
             return;
         }
 
@@ -214,22 +214,22 @@ const ExportModal = ({ document }) => {
             } catch (error) {
                 errores++;
                 console.error(`Error al actualizar compra de ${linea.barcoNombre}`, error);
-                toast.error(`Error al actualizar compra de ${linea.barcoNombre}`, darkToastTheme);
+                toast.error(`Error al actualizar compra de ${linea.barcoNombre}`, getToastTheme());
             }
         }));
 
         if (correctas > 0) {
-            toast.success(`Compras enlazadas correctamente (${correctas})`, darkToastTheme);
+            toast.success(`Compras enlazadas correctamente (${correctas})`, getToastTheme());
         }
 
         if (errores > 0) {
-            toast.error(`${errores} compras fallaron al enlazar`, darkToastTheme);
+            toast.error(`${errores} compras fallaron al enlazar`, getToastTheme());
         }
     };
 
     const handleOnClickExport = () => {
         if (initialAlbaranNumber === "") {
-            toast.error('Introduzca un número de albarán inicial', darkToastTheme);
+            toast.error('Introduzca un número de albarán inicial', getToastTheme());
             return;
         }
 

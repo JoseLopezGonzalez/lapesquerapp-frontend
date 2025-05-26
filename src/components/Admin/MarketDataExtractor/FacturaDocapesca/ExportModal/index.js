@@ -19,7 +19,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { formatDecimalCurrency, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 import toast from 'react-hot-toast'
-import { darkToastTheme } from '@/customs/reactHotToast'
+import { getToastTheme } from '@/customs/reactHotToast'
 
 /* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
@@ -313,7 +313,7 @@ const ExportModal = ({ document }) => {
 
     const handleOnClickExport = () => {
         if (initialAlbaranNumber === "") {
-            toast.error('Introduzca un número de albarán inicial', darkToastTheme);
+            toast.error('Introduzca un número de albarán inicial', getToastTheme());
             return;
         }
 

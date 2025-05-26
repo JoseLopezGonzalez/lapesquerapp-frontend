@@ -17,7 +17,7 @@ import { getCustomer } from '@/services/customerService';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useTaxOptions } from '@/hooks/useTaxOptions';
 import Loader from '@/components/Utilities/Loader';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import toast from 'react-hot-toast';
 import { API_URL_V2 } from '@/configs/config';
 
@@ -83,7 +83,7 @@ const CreateOrderForm = ({onCreate}) => {
 
 
     const handleCreate = async (formData) => {
-        const toastId = toast.loading('Creando pedido...', darkToastTheme);
+        const toastId = toast.loading('Creando pedido...', getToastTheme());
 
         try {
             const payload = {

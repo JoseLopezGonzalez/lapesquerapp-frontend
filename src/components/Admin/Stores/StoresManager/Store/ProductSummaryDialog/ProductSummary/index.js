@@ -86,14 +86,14 @@ export default function ProductSummary() {
                     Especies
                 </h3>
                 <ScrollArea className="w-full whitespace-nowrap pb-4">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2  p-2">
                         {species.map((species, index) => {
                             return (
                                 <Card
                                     key={index}
                                     className={cn(
-                                        "bg-card border cursor-pointer transition-all duration-200 hover:shadow-md flex-shrink-0 ",
-                                        selectedSpecies === species.name ? "border-primary shadow-sm" : "border-muted"
+                                        "bg-card border cursor-pointer transition-all duration-200 hover:shadow-md shadow-foreground-200 flex-shrink-0 ",
+                                        selectedSpecies === species.name ? " shadow-md shadow-foreground-400" : "border-muted"
                                     )}
                                     onClick={() => setSelectedSpecies(species.name)}
                                 >

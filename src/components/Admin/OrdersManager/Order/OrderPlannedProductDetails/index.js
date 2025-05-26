@@ -10,7 +10,7 @@ import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/hel
 import { Delete, GitBranchPlus, Package, Pencil, Plus, PlusCircle, SaveIcon, SearchX, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 
 const OrderPlannedProductDetails = () => {
@@ -63,7 +63,7 @@ const OrderPlannedProductDetails = () => {
 
         if (!detail.id) {
             detail.orderId = order.id;
-            const toastId = toast.loading('Creando nueva linea...', darkToastTheme);
+            const toastId = toast.loading('Creando nueva linea...', getToastTheme());
             plannedProductDetailActions.create(detail)
                 .then(() => {
                     toast.success('Linea creada correctamente', { id: toastId });
@@ -78,7 +78,7 @@ const OrderPlannedProductDetails = () => {
 
 
         /* Toast */
-        const toastId = toast.loading('Actualizando linea...', darkToastTheme);
+        const toastId = toast.loading('Actualizando linea...', getToastTheme());
 
         plannedProductDetailActions.update(detail.id, detail)
             .then(() => {
@@ -93,7 +93,7 @@ const OrderPlannedProductDetails = () => {
 
     const handleOnClickDeleteLine = async (detailId) => {
 
-        const toastId = toast.loading('Eliminando linea...', darkToastTheme);
+        const toastId = toast.loading('Eliminando linea...', getToastTheme());
 
         plannedProductDetailActions.delete(detailId)
             .then(() => {
@@ -119,7 +119,7 @@ const OrderPlannedProductDetails = () => {
 
         const detail = mergedProductDetails.find((productDetail) => productDetail.status === 'noPlanned');
         if (!detail) {
-            toast.error('No hay productos detectados ', darkToastTheme);
+            toast.error('No hay productos detectados ', getToastTheme());
             return;
         }
         const product = detail.product;

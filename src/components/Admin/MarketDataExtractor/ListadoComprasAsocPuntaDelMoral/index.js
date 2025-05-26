@@ -22,7 +22,7 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
 
     return (
         <div className='py-8'>
-            <div className="container mx-auto p-6 py-6 space-y-3 bg-white text-black rounded-md shadow-md">
+            <div className="container mx-auto p-6 py-6 space-y-3 bg-white text-black rounded-md shadow-md border border-foreground-200">
 
                 <img src="/images/logos/logo-asoc-punta-del-moral.png" alt="Logo" className=" h-32 mx-auto mb-4" />
 

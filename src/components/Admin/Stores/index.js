@@ -72,7 +72,7 @@ export default function StoresManager() {
                 e.currentTarget.scrollLeft += e.deltaY; // Permite desplazamiento horizontal con la rueda
               }}
               hideScrollBar
-              orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full ">
+              orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 ">
               {stores.map((store) => (
                 <StoreCard key={store.id} store={store} isSelected={selectedStoreId} onClick={() => handleOnSelectStore(store.id)} block={loadingStore} />
               ))}

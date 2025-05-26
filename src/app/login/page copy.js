@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCsrfCookie, login, getAuthenticatedUser } from "@/services/auth/auth";
 import toast from "react-hot-toast";
 import { NAVBAR_LOGO } from "@/configs/config";
-import { darkToastTheme } from "@/customs/reactHotToast";
+import { getToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,7 +55,7 @@ export default function LoginPage() {
       window.location.href = getRedirectTo();
       router.push(getRedirectTo());
     } catch (err) {
-      toast.error(err.message, darkToastTheme);
+      toast.error(err.message, getToastTheme());
 
       // Limpiar campos tras intento fallido
       setEmail("");

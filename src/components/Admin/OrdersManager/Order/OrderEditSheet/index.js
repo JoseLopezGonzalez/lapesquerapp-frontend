@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
 import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
@@ -36,7 +36,7 @@ const OrderEditSheet = () => {
 
     const onSubmit = async (data) => {
         /* toast fetch */
-        const toastId = toast.loading('Actualizando pedido...', darkToastTheme);
+        const toastId = toast.loading('Actualizando pedido...', getToastTheme());
 
         updateOrderData(data)
             .then((updatedData) => {

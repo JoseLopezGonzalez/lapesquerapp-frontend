@@ -17,7 +17,7 @@ import OrderProduction from './OrderProduction';
 import OrderProductDetails from './OrderProductDetails';
 import OrderPlannedProductDetails from './OrderPlannedProductDetails';
 import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderIncident from './OrderIncident';
@@ -35,24 +35,24 @@ const OrderContent = ({ onLoading }) => {
 
   // Función para cambiar el estado del pedido
   const handleStatusChange = async (newStatus) => {
-    const toastId = toast.loading('Actualizando estado del pedido...', darkToastTheme);
+    const toastId = toast.loading('Actualizando estado del pedido...', getToastTheme());
     updateOrderStatus(newStatus)
       .then(() => {
-        toast.success('Estado del pedido actualizado', { id: toastId, ...darkToastTheme });
+        toast.success('Estado del pedido actualizado', { id: toastId, ...getToastTheme() });
       })
       .catch((error) => {
-        toast.error(error.message || 'Error al actualizar el estado del pedido', { id: toastId, ...darkToastTheme });
+        toast.error(error.message || 'Error al actualizar el estado del pedido', { id: toastId, ...getToastTheme() });
       });
   };
 
   const handleTemperatureChange = async (newTemperature) => {
-    const toastId = toast.loading('Actualizando temperatura del pedido...', darkToastTheme);
+    const toastId = toast.loading('Actualizando temperatura del pedido...', getToastTheme());
     updateTemperatureOrder(newTemperature)
       .then(() => {
-        toast.success('Temperatura del pedido actualizada', { id: toastId, ...darkToastTheme });
+        toast.success('Temperatura del pedido actualizada', { id: toastId, ...getToastTheme() });
       })
       .catch((error) => {
-        toast.error(error.message || 'Error al actualizar la temperatura del pedido', { id: toastId, ...darkToastTheme });
+        toast.error(error.message || 'Error al actualizar la temperatura del pedido', { id: toastId, ...getToastTheme() });
       });
   };
 

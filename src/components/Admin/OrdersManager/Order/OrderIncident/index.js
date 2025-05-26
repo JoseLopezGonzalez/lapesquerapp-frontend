@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { AlertCircle, Ban, CheckCircle, Delete, Trash } from "lucide-react"
 import { useOrderContext } from "@/context/OrderContext"
 import { toast } from "react-hot-toast"
-import { darkToastTheme } from "@/customs/reactHotToast"
+import { getToastTheme } from "@/customs/reactHotToast"
 import { formatDate } from "@/helpers/formats/dates/formatDates"
 
 export default function OrderIncidentPanel() {
@@ -28,7 +28,7 @@ export default function OrderIncidentPanel() {
 
     const handleCreate = async () => {
         if (!newDescription) return toast.error("La descripción es obligatoria")
-        const toastId = toast.loading("Creando incidencia...", darkToastTheme)
+        const toastId = toast.loading("Creando incidencia...", getToastTheme())
         setLoading(true)
         try {
             await openOrderIncident(newDescription)
@@ -43,7 +43,7 @@ export default function OrderIncidentPanel() {
 
     const handleResolve = async () => {
         if (!resolutionType) return toast.error("Selecciona un tipo de resolución")
-        const toastId = toast.loading("Resolviendo incidencia...", darkToastTheme)
+        const toastId = toast.loading("Resolviendo incidencia...", getToastTheme())
         setLoading(true)
         try {
             await resolveOrderIncident(resolutionType, resolutionNotes)
@@ -56,7 +56,7 @@ export default function OrderIncidentPanel() {
     }
 
     const handleDelete = async () => {
-        const toastId = toast.loading("Eliminando incidencia...", darkToastTheme)
+        const toastId = toast.loading("Eliminando incidencia...", getToastTheme())
         setLoading(true)
         try {
             await deleteOrderIncident()

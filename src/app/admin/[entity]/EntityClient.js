@@ -14,7 +14,7 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-o
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import { getSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 
@@ -243,7 +243,7 @@ export default function EntityClient({ config }) {
                     perPage: result.meta.per_page,
                 });
             } catch (error) {
-                toast.error(error.message, darkToastTheme);
+                toast.error(error.message, getToastTheme());
                 setData((prevData) => ({ ...prevData, loading: false }));
             }
         };
@@ -328,7 +328,7 @@ export default function EntityClient({ config }) {
                         : null}
                 {waitingMessage || 'Generando exportación...'}
             </span>
-        ), darkToastTheme);
+        ), getToastTheme());
 
         return await getEntityExport(url, fileName).then(() => {
             toast.success((t) => (
@@ -352,7 +352,7 @@ export default function EntityClient({ config }) {
             <span className="flex gap-2 items-center justify-center" >
                 {waitingMessage || 'Generando reporte...'}
             </span>
-        ), darkToastTheme);
+        ), getToastTheme());
 
         return await getEntityReport(url, fileName).then(() => {
             toast.success((t) => (
@@ -378,7 +378,7 @@ export default function EntityClient({ config }) {
                         : null}
                 {waitingMessage || 'Generando exportación...'}
             </span>
-        ), darkToastTheme);
+        ), getToastTheme());
 
         return await getEntityExport(url, fileName).then(() => {
             toast.success((t) => (
@@ -402,7 +402,7 @@ export default function EntityClient({ config }) {
             <span className="flex gap-2 items-center justify-center" >
                 {waitingMessage || 'Generando reporte...'}
             </span>
-        ), darkToastTheme);
+        ), getToastTheme());
 
         return await getEntityReport(url, fileName).then(() => {
             toast.success((t) => (

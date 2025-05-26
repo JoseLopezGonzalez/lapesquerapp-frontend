@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useOrderContext } from "@/context/OrderContext";
 import toast from "react-hot-toast";
-import { darkToastTheme } from "@/customs/reactHotToast";
+import { getToastTheme } from "@/customs/reactHotToast";
 
 
 const OrderDocuments = () => {
@@ -124,7 +124,7 @@ const OrderDocuments = () => {
 
     const handleOnClickSendMultiple = async () => {
         if (!selectedDocument) {
-            toast.error("Por favor seleccione un documento", darkToastTheme);
+            toast.error("Por favor seleccione un documento", getToastTheme());
             return;
         }
         const selectedRecipientsArray = Object.entries(selectedRecipients)
@@ -132,7 +132,7 @@ const OrderDocuments = () => {
             .map(([id]) => id);
 
         if (selectedRecipientsArray.length === 0) {
-            toast.error("Por favor seleccione al menos un destinatario", darkToastTheme);
+            toast.error("Por favor seleccione al menos un destinatario", getToastTheme());
             return;
         }
 
@@ -145,7 +145,7 @@ const OrderDocuments = () => {
             ]
         }
 
-        const toastId = toast.loading("Enviando documentos a multiples destinatarios...", darkToastTheme);
+        const toastId = toast.loading("Enviando documentos a multiples destinatarios...", getToastTheme());
 
         sendDocuments.customDocuments(json)
             .then(() => {
@@ -177,7 +177,7 @@ const OrderDocuments = () => {
             }))
         }
 
-        const toastId = toast.loading("Enviando documentos...", darkToastTheme);
+        const toastId = toast.loading("Enviando documentos...", getToastTheme());
 
         sendDocuments.customDocuments(json)
             .then(() => {
@@ -192,7 +192,7 @@ const OrderDocuments = () => {
     };
 
     const handleOnClickSendStandarDocuments = async () => {
-        const toastId = toast.loading("Enviando documentos estándar...", darkToastTheme);
+        const toastId = toast.loading("Enviando documentos estándar...", getToastTheme());
 
         sendDocuments.standardDocuments()
             .then(() => {

@@ -30,7 +30,7 @@ import {
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { darkToastTheme } from "@/customs/reactHotToast"
+import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { COMPANY_NAME } from "@/configs/config"
 
@@ -53,7 +53,7 @@ export function AppSidebar() {
         try {
             await signOut({ redirect: false });
             window.location.href = '/login';
-            toast.success('Sesión cerrada correctamente', darkToastTheme);
+            toast.success('Sesión cerrada correctamente', getToastTheme());
         } catch (err) {
             toast.error(err.message || 'Error al cerrar sesión');
         }

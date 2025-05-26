@@ -15,7 +15,7 @@ const StoreCard = ({ store, isSelected, onClick, block }) => {
       key={store.id}
 
       className={
-        `border-0 border-l-4  min-w-56  text-sm font-medium leading-5  
+        `border-0 border-l-4 min-w-56  text-sm font-medium leading-5  
           ${store.id === isSelected && fillPercentage <= 50
           ? 'bg-green-700 text-white'
           : store.id === isSelected && fillPercentage <= 80

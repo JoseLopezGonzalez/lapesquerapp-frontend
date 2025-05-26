@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { darkToastTheme } from '@/customs/reactHotToast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
 import { getTaxOptions } from '@/services/taxService';
@@ -230,7 +230,7 @@ export function useOrder(orderId, onChange) {
     /* ---------------------- */
 
     const exportDocument = async (documentName, type, documentLabel) => {
-        const toastId = toast.loading(`Exportando ${documentLabel}.${type}`, darkToastTheme);
+        const toastId = toast.loading(`Exportando ${documentLabel}.${type}`, getToastTheme());
         try {
             const response = await fetch(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
                 method: 'GET',

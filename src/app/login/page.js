@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import RotatingText from "@/components/Utilities/RotatingText";
 import Image from "next/image";
 import Link from "next/link";
-import { darkToastTheme } from "@/customs/reactHotToast";
+import { getToastTheme } from "@/customs/reactHotToast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -41,10 +41,10 @@ export default function LoginPage() {
         );
       }
 
-      toast.success("Inicio de sesión exitoso", darkToastTheme);
+      toast.success("Inicio de sesión exitoso", getToastTheme());
       window.location.href = redirectTo;
     } catch (err) {
-      toast.error(err.message, darkToastTheme);
+      toast.error(err.message, getToastTheme());
     } finally {
       setLoading(false);
     }

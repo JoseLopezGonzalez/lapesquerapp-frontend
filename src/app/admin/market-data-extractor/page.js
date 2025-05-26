@@ -1,5 +1,5 @@
 
-import MarketDataExtractor from "@/components/Admin/Home/MarketDataExtractor";
+import MarketDataExtractor from "@/components/Admin/MarketDataExtractor";
 
 export default async function MarketDataExtractorPage({ params }) {
   /*  const entity = params.entity; // Capturamos el segmento dinámico desde la URL
