@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
-import { useSearchParams } from "next/navigation";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import RotatingText from "@/components/Utilities/RotatingText";
-
 import Image from "next/image";
 import Link from "next/link";
 import { darkToastTheme } from "@/customs/reactHotToast";
@@ -19,13 +16,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const searchParams = useSearchParams();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const redirectTo = searchParams.get("from") || "/admin";
+      // Usamos window.location.search directamente
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get("from") || "/admin";
 
       const result = await signIn("credentials", {
         redirect: false,
