@@ -70,6 +70,14 @@ const initialFormGroups = [
                 options: [],
                 props: { placeholder: 'Seleccionar Incoterm' },
             },
+            /* buyerReference */
+            {
+                name: 'buyerReference',
+                label: 'Referencia del comprador',
+                component: 'Input',
+                rules: { maxLength: { value: 50, message: 'Máximo 50 caracteres' } },
+                props: { placeholder: 'Referencia del comprador' },
+            },
         ],
     },
     {
@@ -232,6 +240,7 @@ export function useOrderFormConfig({ orderData }) {
                 salesperson: `${orderData.salesperson.id}` || '',
                 payment: `${orderData.paymentTerm.id}` || '',
                 incoterm: `${orderData.incoterm.id}` || '',
+                buyerReference: orderData.buyerReference || '',
                 transport: `${orderData.transport?.id}` || '',
                 truckPlate: orderData.truckPlate || '',
                 trailerPlate: orderData.trailerPlate || '',
@@ -242,7 +251,6 @@ export function useOrderFormConfig({ orderData }) {
                 accountingNotes: orderData.accountingNotes || '',
                 transportNotes: orderData.transportNotes || '',
                 emails: orderData.emails || '',
-
             });
         }
 

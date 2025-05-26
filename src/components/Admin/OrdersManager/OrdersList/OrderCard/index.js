@@ -1,5 +1,5 @@
 
-const OrderCard = ({ order, onClick }) => {
+const OrderCard = ({ order, onClick, disabled }) => {
 
     const orderId = order.id.toString().padStart(5, '0');
     const loadDate = order.loadDate.split('-').reverse().join('/'); //convertir fecha a dd/mm/yyyy
@@ -12,7 +12,7 @@ const OrderCard = ({ order, onClick }) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = tomorrow.toDateString() === loadDateObj.toDateString();
 
-    const baseClass = "relative flex cursor-pointer rounded-xl p-5 border-l-4"
+    const baseClass = "relative flex  rounded-xl p-5 border-l-4"
 
     let statusClass = ''
 
@@ -67,8 +67,8 @@ const OrderCard = ({ order, onClick }) => {
 
     return (
         <div
-            className={`${baseClass} ${statusClass}`}
-            onClick={onClick}
+            className={`${baseClass} ${statusClass} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}  `}
+            onClick={() => !disabled && onClick()}
         >
             {isToday && (
                 <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-white">
@@ -81,17 +81,12 @@ const OrderCard = ({ order, onClick }) => {
                 </span>)}
 
             < div className='grow dark:text-white xl:w-48 space-y-1'>
-
                 <StatusBadge
                     color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                     label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
                 />
-
-                
-
                 <h3 className='text-xl font-medium'>#{orderId}</h3>
                 <div>
-                    {/* <p className=' text-xs font-light text-white'>Cliente:</p> */}
                     <p className='font-medium text-lg whitespace-nowrap xl:whitespace-normal'>{order.customer.name}</p>
                 </div>
                 <div className=''>
@@ -100,13 +95,6 @@ const OrderCard = ({ order, onClick }) => {
                         {loadDate}
                     </p>
                 </div>
-
-                {/* <div className=''>
-                    <p className='font-medium text-xs text-neutral-300'>Transporte:</p>
-                    <p className='font-medium text-sm'>{order.transport.name}</p>
-                </div> */}
-
-
 
             </div >
         </div>

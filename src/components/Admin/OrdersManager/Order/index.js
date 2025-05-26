@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Loader2, MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,9 +25,13 @@ import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import OrderCustomerHistory from './OrderCustomerHistory';
 
-const OrderContent = () => {
+const OrderContent = ({ onLoading }) => {
 
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
+
+  useEffect(() => {
+    onLoading(loading)
+  }, [loading, onLoading])
 
   // Función para cambiar el estado del pedido
   const handleStatusChange = async (newStatus) => {
@@ -309,12 +313,12 @@ const OrderContent = () => {
 }
 
 
-const Order = ({ orderId, onChange }) => {
+const Order = ({ orderId, onChange, onLoading }) => {
 
 
   return (
     <OrderProvider orderId={orderId} onChange={onChange} >
-      <OrderContent />
+      <OrderContent onLoading={onLoading} />
     </OrderProvider>
   )
 }

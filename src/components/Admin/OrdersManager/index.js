@@ -34,6 +34,7 @@ const initialCategories = [
 export default function OrdersManager() {
 
     const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
+    const [isOrderLoading, setIsOrderLoading] = useState(false);
 
 
     useEffect(() => {
@@ -170,12 +171,13 @@ export default function OrdersManager() {
                                 onClickCategory={handleOnClickCategory}
                                 onChangeSearch={handleOnChangeSearch}
                                 searchText={searchText}
+                                disabled={isOrderLoading}
                             />
                         </div>
                         <div className='grow  lg:pl-0 p-2'>
                             {selectedOrder ? (
                                 <div className='h-full overflow-hidden'>
-                                    <Order orderId={selectedOrder} onChange={handleOnChange} />
+                                    <Order orderId={selectedOrder} onChange={handleOnChange} onLoading={(value) => setIsOrderLoading(value)} />
                                 </div>
                             ) :
                                 onCreatingNewOrder ? (

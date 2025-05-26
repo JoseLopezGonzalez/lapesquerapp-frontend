@@ -21,7 +21,7 @@ const sortOrdersByDate = (orders) => {
 
 
 
-const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard , onClickAddNewOrder }) => {
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard , onClickAddNewOrder, disabled }) => {
 
     const [loading, setLoading] = useState(false);
 
@@ -122,7 +122,9 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                 <div key={index} className='' >
                                     <OrderCard
                                         onClick={() => onClickOrderCard(order.id)}
-                                        order={order} isOrderSelected={() => false} />
+                                        order={order} isOrderSelected={() => false}
+                                        disabled={disabled}
+                                        />
                                 </div>
                             ))}
                         </ScrollShadow>
