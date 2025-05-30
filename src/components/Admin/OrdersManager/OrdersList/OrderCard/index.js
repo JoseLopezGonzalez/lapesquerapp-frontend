@@ -80,7 +80,7 @@ const OrderCard = ({ order, onClick, disabled }) => {
                     {isTomorrow && 'Mañana'}
                 </span>)}
 
-            < div className='grow dark:text-muted-foreground xl:w-48 space-y-1'>
+            < div className='grow  xl:w-48 space-y-1'>
                 <StatusBadge
                     color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                     label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
@@ -90,7 +90,7 @@ const OrderCard = ({ order, onClick, disabled }) => {
                     <p className='font-medium text-lg whitespace-nowrap xl:whitespace-normal'>{order.customer.name}</p>
                 </div>
                 <div className=''>
-                    <p className='text-xs font-light text-muted-foreground'>Fecha de Carga:</p>
+                    <p className='text-xs font-light '>Fecha de Carga:</p>
                     <p className='font-medium text-lg '>
                         {loadDate}
                     </p>
