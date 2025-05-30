@@ -105,7 +105,7 @@ const OrderProduction = () => {
                                             <TableCell>
                                                 <div className="flex items-end gap-2">
                                                     {detail.status === 'success' ? (
-                                                        <Badge variant="success" className="bg-green-500">
+                                                        <Badge variant="success" className="bg-green-500 text-foreground-50">
                                                             Correcto
                                                         </Badge>
                                                     ) : detail.status === 'difference' ? (

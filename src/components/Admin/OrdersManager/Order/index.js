@@ -111,7 +111,7 @@ const OrderContent = ({ onLoading }) => {
         <DropdownMenuTrigger className="focus:outline-none">
           <StatusBadge color={colors[status]} label={statusText[status]} />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='bg-neutral-950 flex flex-col items-end '>
+        <DropdownMenuContent className=' flex flex-col items-end '>
           <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('pending')}>
             <StatusBadge color="orange" label="En producción" />
           </DropdownMenuItem>
