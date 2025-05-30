@@ -71,16 +71,16 @@ const OrderCard = ({ order, onClick, disabled }) => {
             onClick={() => !disabled && onClick()}
         >
             {isToday && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/50 text-white">
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full  text-muted-foreground">
                     {isToday && 'Hoy'}
                 </span>)}
 
             {isTomorrow && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-black/20 px-2 py-0.5 rounded-full dark:bg-white/20 text-white">
+                <span className="absolute top-5 right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full  text-muted-foreground">
                     {isTomorrow && 'Mañana'}
                 </span>)}
 
-            < div className='grow dark:text-white xl:w-48 space-y-1'>
+            < div className='grow dark:text-muted-foreground xl:w-48 space-y-1'>
                 <StatusBadge
                     color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                     label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
@@ -90,7 +90,7 @@ const OrderCard = ({ order, onClick, disabled }) => {
                     <p className='font-medium text-lg whitespace-nowrap xl:whitespace-normal'>{order.customer.name}</p>
                 </div>
                 <div className=''>
-                    <p className='text-xs font-light text-white'>Fecha de Carga:</p>
+                    <p className='text-xs font-light text-muted-foreground'>Fecha de Carga:</p>
                     <p className='font-medium text-lg '>
                         {loadDate}
                     </p>

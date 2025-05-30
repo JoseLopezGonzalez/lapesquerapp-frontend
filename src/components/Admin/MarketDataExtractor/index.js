@@ -18,6 +18,7 @@ import FacturaDocapesca from "./FacturaDocapesca";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 
 const parseAlbaranesCofraWeb = (data) => {
+    console.log(data)
 
     const parsedDocuments = data.map((document) => {
         const details = {
@@ -33,7 +34,10 @@ const parseAlbaranesCofraWeb = (data) => {
         };
 
         const tablaSubastas = document.tables.subastas.map((row) => {
-            const armador = row.Armador.split(" ");
+            console.log(row.Armador)
+            /* row.Armador = 'ADRIMAR C.B E21610589' -NO FUNCIONA */
+            /* row.Armador = 'HERMANOS CORDERO GIL CB E72452600' -SI FUNCIONA */
+            const armador = row.Armador?.split(" ");
             const cifArmador = armador.pop();
             const nombreArmador = armador.join(" ");
 
