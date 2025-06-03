@@ -19,6 +19,12 @@ import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 import { useState } from "react";
 import { Combobox } from "@/components/Shadcn/Combobox";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
 
 export default function PalletDialog() {
     const { closePalletDialog, isOpenPalletDialog, palletDialogData } = useStoreContext();
@@ -514,7 +520,7 @@ export default function PalletDialog() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="resumen" className="mt-0">
+                        {/*  <TabsContent value="resumen" className="mt-0">
                             <div className="h-[calc(90vh-180px)] overflow-y-auto">
                                 <div className="space-y-6">
                                     <Card>
@@ -632,7 +638,109 @@ export default function PalletDialog() {
                                     </div>
                                 </div>
                             </div>
+                        </TabsContent> */}
+
+                        <TabsContent value="resumen" className="mt-0">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-180px)] overflow-y-auto px-2">
+
+                                {/* Columna derecha: Totales y gráficos */}
+                                <div className="flex flex-col gap-6">
+                                    {/* Cards de resumen general */}
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-xl">Resumen General del Palet</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
+                                                    <div className="text-2xl font-bold">{temporalPallet.numberOfBoxes}</div>
+                                                    <div className="text-sm text-muted-foreground">Total Cajas</div>
+                                                </div>
+                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
+                                                    <div className="text-2xl font-bold">{formatDecimalWeight(temporalPallet.netWeight)}</div>
+                                                    <div className="text-sm text-muted-foreground">Peso Total</div>
+                                                </div>
+                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
+                                                    <div className="text-2xl font-bold">{temporalTotalProducts}</div>
+                                                    <div className="text-sm text-muted-foreground">Productos</div>
+                                                </div>
+                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
+                                                    <div className="text-2xl font-bold">{temporalTotalLots}</div>
+                                                    <div className="text-sm text-muted-foreground">Lotes</div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Espacio para gráficos */}
+                                    <Card className="flex-1">
+                                        <CardHeader>
+                                            <CardTitle className="text-lg">Gráfico de Distribución</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="h-[240px] flex items-center justify-center">
+                                            <span className="text-muted-foreground italic">[Aquí irá tu gráfico]</span>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Columna izquierda: Productos + detalles por lote */}
+                                <div className="space-y-4 h-full overflow-y-auto">
+                                    {temporalProductsSummary &&
+                                        Object.entries(temporalProductsSummary).map(([productName, productData]) => (
+                                            <Card key={productName}>
+                                                <CardHeader className="pb-3">
+                                                    <CardTitle className="text-lg flex justify-between items-center">
+                                                        {productName}
+                                                        <Badge variant="outline" className="text-xs">
+                                                            {productData.numberOfBoxes} cajas • {productData.totalNetWeight.toFixed(2)} kg
+                                                        </Badge>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <Collapsible>
+                                                        <CollapsibleTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="w-full justify-between">
+                                                                Ver detalles por lote
+                                                                <span className="ml-2 text-muted-foreground">▼</span>
+                                                            </Button>
+                                                        </CollapsibleTrigger>
+
+                                                        <CollapsibleContent className="space-y-3 mt-4">
+                                                            {Object.entries(productData.lots).map(([lot, weights]) => (
+                                                                <div key={lot} className="p-3 border rounded-lg bg-muted/50">
+                                                                    <div className="flex justify-between items-center mb-2">
+                                                                        <span className="font-medium">Lote: {lot}</span>
+                                                                        <Badge variant="outline" className="text-xs">
+                                                                            {weights.length} cajas
+                                                                        </Badge>
+                                                                    </div>
+                                                                    <div className="space-y-1 text-sm">
+                                                                        {weights.map((weight, index) => (
+                                                                            <div key={index} className="flex justify-between">
+                                                                                <span>Caja {index + 1}:</span>
+                                                                                <span>{weight.toFixed(2)} kg</span>
+                                                                            </div>
+                                                                        ))}
+                                                                        <Separator />
+                                                                        <div className="flex justify-between font-medium mt-1">
+                                                                            <span>Subtotal:</span>
+                                                                            <span>{weights.reduce((sum, w) => sum + w, 0).toFixed(2)} kg</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </CollapsibleContent>
+                                                    </Collapsible>
+                                                </CardContent>
+
+                                            </Card>
+                                        ))}
+                                </div>
+
+                            </div>
                         </TabsContent>
+
+
                     </Tabs>
                 </div>
 
