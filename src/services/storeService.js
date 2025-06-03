@@ -24,7 +24,6 @@ export async function getStore(id, token) {
             return response.json();
         })
         .then((data) => {
-            console.log('getStores data:', data);
             return data.data;
         })
         .catch((error) => {
@@ -56,7 +55,6 @@ export async function getStores(token) {
             return response.json();
         })
         .then((data) => {
-            console.log('getStores data:', data);
             return data.data;
         })
         .catch((error) => {

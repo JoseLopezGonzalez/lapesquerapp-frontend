@@ -123,7 +123,6 @@ const OrderPlannedProductDetails = () => {
             return;
         }
         const product = detail.product;
-        console.log('product', product);
         setDetails([...details, {
             product: { name: product.name, id: product.id },
             boxes: detail.productionBoxes,

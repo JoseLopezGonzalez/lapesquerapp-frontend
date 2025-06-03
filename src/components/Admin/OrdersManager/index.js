@@ -59,7 +59,6 @@ export default function OrdersManager() {
     }
 
     useEffect(() => {
-        console.log('OrdersManager - useEffect');
         getActiveOrders()
             .then((data) => {
                 setOrders(data);

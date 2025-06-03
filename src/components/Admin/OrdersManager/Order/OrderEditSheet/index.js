@@ -40,7 +40,6 @@ const OrderEditSheet = () => {
 
         updateOrderData(data)
             .then((updatedData) => {
-                console.log('Pedido actualizado:', updatedData);
                 toast.success('Pedido actualizado correctamente', { id: toastId });
             })
             .catch((error) => {

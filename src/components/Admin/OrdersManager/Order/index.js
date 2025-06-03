@@ -30,6 +30,7 @@ const OrderContent = ({ onLoading }) => {
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
 
   useEffect(() => {
+    if(!onLoading) return;
     onLoading(loading)
   }, [loading, onLoading])
 

@@ -188,8 +188,8 @@ const OrderDetails = () => {
 
                                 <div>
                                     {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
-                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-white h-[32px] bg-blue-700">
-                                        <div className=" text-white flex items-center justify-center px-1 h-full">
+                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-black dark:border-white h-[32px] bg-blue-700">
+                                        <div className=" text-white flex items-center justify-center px-1 h-full ">
                                             <div className="flex flex-col items-center text-xs leading-none gap-0.5">
                                                 <span className=" ">
                                                     <Image src="/images/transports/eu-stars.svg" width={13} height={13} alt="Spain Flag" />

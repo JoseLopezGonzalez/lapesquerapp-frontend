@@ -65,7 +65,6 @@ const ExportModal = ({ document }) => {
             }
 
             lines.forEach(barco => {
-                console.log('line:', barco);
                 barco.lineas.forEach(linea => {
                     processedRows.push({
                         CABNUMDOC: albaranNumber,

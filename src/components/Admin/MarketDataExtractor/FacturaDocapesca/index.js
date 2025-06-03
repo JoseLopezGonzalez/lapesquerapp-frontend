@@ -23,7 +23,6 @@ const FacturaDocapesca = ({ document }) => {
     const isVentaDirecta = tipoSubasta == 'M1 M1'
     const isSubasta = tipoSubasta == 'T2 Arrastre' */
 
-    console.log('document', document)
 
     /* convertir 1.438,09 a numero*/
     const formatNumber = (number) => {

@@ -32,7 +32,6 @@ const DatePicker = ({ value, onChange }) => {
                         const day = String(date.getDate()).padStart(2, '0');
 
                         const dateString = `${year}-${month}-${day}`;
-                        console.log(dateString); // Fecha en formato correcto yyyy-mm-dd
 
                         onChange(dateString);
                         setOpen(false);

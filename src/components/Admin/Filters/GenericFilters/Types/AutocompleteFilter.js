@@ -21,7 +21,6 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
             try {
                 const session = await getSession(); // Obtener sesión actual
 
-                console.log('url', `${API_URL_V2}${endpoint}`);
 
                 const response = await fetch(`${API_URL_V2}${endpoint}`,
                     {
@@ -34,7 +33,6 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     }
                 );
                 const data = await response.json();
-                console.log('data', data);
                 setOptions(data.map((item) => ({ value: item.id, label: item.name })));
             } catch (error) {
                 console.error("Error fetching options:", error);

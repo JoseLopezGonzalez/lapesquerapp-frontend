@@ -159,7 +159,6 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                     value={filter.value}
                                                                     onChange={(value) => {
                                                                         onFilterChange(group.name, filter.name, value)
-                                                                        console.log('cambiando fecha')
                                                                     }
                                                                     }
                                                                 /* visibleMonths={filter.visibleMonths} */
@@ -172,7 +171,6 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                                 placeholder={filter.placeholder}
                                                                 endpoint={filter.endpoint}
                                                                 onAdd={(item) => {
-                                                                    console.log('item', item);
                                                                     onFilterChange(group.name, filter.name, [
                                                                         ...(filter.value || []),
                                                                         item,

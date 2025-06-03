@@ -52,7 +52,6 @@ const CreateOrderForm = ({onCreate}) => {
 
 
         getCustomer(selectedCustomerId, token).then((customer) => {
-            console.log('Customer:', customer);
             setValue('salesperson', customer.salesperson?.id?.toString() || '');
             setValue('payment', customer.paymentTerm?.id?.toString() || '');
             setValue('incoterm', customer.incoterm?.id?.toString() || '');
@@ -130,7 +129,6 @@ const CreateOrderForm = ({onCreate}) => {
             const data = await res.json();
 
             toast.success('Pedido creado correctamente', { id: toastId });
-            console.log('Pedido creado:', data);
 
             // Aquí podrías redirigir o limpiar el formulario
             // reset(); // si quieres resetear

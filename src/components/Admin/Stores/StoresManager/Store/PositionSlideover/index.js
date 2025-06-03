@@ -76,10 +76,8 @@ export default function PositionSlideover({ onClose, position = "A5" }) {
 
     const handleOnClickAddElement = () => {
         openAddElementToPosition()
-        console.log('openAddElementToPosition')
     }
 
-    console.log('pallets', pallets)
 
     return (
 

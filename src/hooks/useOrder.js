@@ -31,7 +31,7 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
         if (existing) {
             existing.productionQuantity += parseFloat(production.netWeight);
             existing.productionBoxes += parseFloat(production.boxes);
-            existing.quantityDifference = existing.plannedQuantity - existing.productionQuantity;
+            existing.quantityDifference = Number(existing.plannedQuantity) - Number(existing.productionQuantity);
             existing.boxesDifference = existing.plannedBoxes - existing.productionBoxes;
             existing.status = existing.quantityDifference == 0
                 ? 'success'
@@ -72,11 +72,9 @@ export function useOrder(orderId, onChange) {
         setActiveTab('details');
 
         if (!orderId) return;
-        console.log('useOrder', orderId, status);
 
         const token = session?.user?.accessToken;
 
-        console.log('token', token);
         setLoading(true);
         getOrder(orderId, token)
             .then((data) => {
@@ -496,7 +494,6 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         createOrderIncident(order.id, description, token)
             .then((updated) => {
-                console.log('updated', updated);
                 setOrder(prevOrder => {
                     return {
                         ...prevOrder,

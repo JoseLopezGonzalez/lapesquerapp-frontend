@@ -58,7 +58,6 @@ export async function getCustomer(id, token) {
             return response.json();
         })
         .then((data) => {
-            console.log('getCustomer data:', data);
             return data.data;
         })
         .catch((error) => {

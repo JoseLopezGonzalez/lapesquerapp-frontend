@@ -30,7 +30,6 @@ export const AutocompleteInput = ({ placeholder, endpoint, onChange}) => {
                     }
                 );
                 const data =await response.json();
-                console.log('data', data);
                 setOptions(data.map((item) => ({ id: item.id, name: item.name })));
             } catch (error) {
                 console.error("Error fetching options:", error);

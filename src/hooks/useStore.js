@@ -159,7 +159,6 @@ export function useStore(storeId) {
     }, [store]);
 
 
-    console.log('speciesSummary', speciesSummary);
 
 
 

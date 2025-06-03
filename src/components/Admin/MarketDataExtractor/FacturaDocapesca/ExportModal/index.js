@@ -23,11 +23,9 @@ import { getToastTheme } from '@/customs/reactHotToast'
 
 /* formatear numero 1.000.00 donde el primer punto por la derecha es el decimal */
 const formatLonjaIslaImporte = (importe) => {
-    console.log('importe', importe)
     const importeString = String(importe);
     const partes = importeString.split('.');
 
-    console.log('partes', partes)
 
     if (partes.length <= 2) {
         // Solo hay un punto (o ninguno), no hay miles que quitar
@@ -37,8 +35,6 @@ const formatLonjaIslaImporte = (importe) => {
     // El último punto es el decimal, los anteriores son de miles
     const parteDecimal = partes.pop(); // último elemento
     const parteEntera = partes.join(''); // unimos las partes sin puntos de miles
-    console.log('parteEntera', parteEntera)
-    console.log('parteDecimal', parteDecimal)
     return `${parteEntera}.${parteDecimal}`;
 };
 
@@ -226,7 +222,6 @@ const ExportModal = ({ document }) => {
     /* convertir el objeto a array */
     const importesTotalesVendiduriasArray = Object.values(importesTotalesVendidurias);
 
-    console.log('importesTotalesVendiduriasArray', importesTotalesVendiduriasArray)
 
     const compararImportesPorVendiduria = () => {
         const totalesCalculados = {};
@@ -273,7 +268,6 @@ const ExportModal = ({ document }) => {
         return comparacion;
     };
 
-    console.log('compararImportesPorVendiduria', compararImportesPorVendiduria())
 
     /* comprobar vendidurias desde importesTotaltesVendidurias y vendidurias */
 

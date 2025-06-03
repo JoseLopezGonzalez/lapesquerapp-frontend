@@ -121,7 +121,6 @@ export default function AddElementToPosition({ open, onOpenChange, onSubmit }) {
         )
     }
 
-    console.log('pallets', pallets)
 
     const filteredPallets = pallets.filter((pallet) => {
         if (activeTab === "unlocated" && pallet.position) {

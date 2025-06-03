@@ -44,7 +44,6 @@ export function AppSidebar() {
     const userRoles = session?.user?.role || []; // Roles del usuario actual
     const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
 
-    console.log(session?.user)
 
     const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
     const email = session?.user?.email || 'Desconocido'; // Nombre del usuario actual

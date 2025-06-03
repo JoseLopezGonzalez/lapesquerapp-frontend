@@ -14,7 +14,6 @@ export default function Home() {
 
   const handleClose = () => {
     setIsOpen(false);
-    console.log("Modal cerrado");
   };
 
 
