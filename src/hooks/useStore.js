@@ -271,8 +271,8 @@ export function useStore(storeId) {
     }
 
     const closePalletDialog = () => {
-        setPalletDialogData(null);
         setIsOpenPalletDialog(false);
+        setPalletDialogData(null);
     }
 
 

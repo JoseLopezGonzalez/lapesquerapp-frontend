@@ -1,95 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-    Copy,
-    Trash2,
-    X,
-    Scan,
-    Plus,
-    Upload,
-    Package,
-    FileText,
-    Edit,
-    Eye,
-    BarChart3,
-} from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useStoreContext } from "@/context/StoreContext";
+import { usePallet } from "@/hooks/usePallet";
+import Loader from "@/components/Utilities/Loader";
+import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
+import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 
 export default function PalletDialog() {
     const { closePalletDialog, isOpenPalletDialog, palletDialogData } = useStoreContext();
-    const [temporalPalletData, setTemporalPalletData] = useState(null);
+    const { loading, temporalPallet, error, temporalProductsSummary, temporalTotalProducts, temporalTotalLots, activeOrdersOptions } = usePallet(palletDialogData?.id);
 
-    useEffect(() => {
-        if (isOpenPalletDialog && palletDialogData) {
-            setTemporalPalletData({ ...palletDialogData });
-        }
-    }, [isOpenPalletDialog, palletDialogData]);
+    if (loading) {
+        return (
+            <Dialog open={isOpenPalletDialog} onOpenChange={closePalletDialog}>
+                <DialogContent className="w-full min-h-[40vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle className="sr-only">
+                            Editar Palet
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex justify-center w-full flex-1 items-center">
+                        <Loader />
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
-    if (!temporalPalletData) return null;
+    if (error || !temporalPallet) {
+        return (
+            <Dialog open={isOpenPalletDialog} onOpenChange={closePalletDialog}>
+                <DialogContent className="w-full  flex flex-col items-center justify-center gap-4 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2 py-10">
+                        <div className="flex items-center justify-center bg-red-100 rounded-full p-5 mb-2">
+                            <CloudAlert className="w-12 h-12 text-destructive" />
+                        </div>
+                        <h2 className="text-xl font-semibold text-destructive">¡Vaya! Ocurrió un error</h2>
+                        <p className="text-muted-foreground text-sm max-w-xs">
+                            Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
+                        </p>
+                        <Button variant="destructive" className="px-20 mt-5" onClick={closePalletDialog}>
+                            Cerrar
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
-    const totalWeight = temporalPalletData.boxes
-        .reduce((acc, box) => acc + parseFloat(box.netWeight), 0)
-        .toFixed(2);
-
-    const numberOfBoxes = temporalPalletData.boxes.length;
-
-    const resumenProductos = temporalPalletData.boxes.reduce((acc, box) => {
-        const producto = box.product.name;
-        const lote = box.lot;
-        if (!acc[producto]) {
-            acc[producto] = { totalCajas: 0, totalPeso: 0, lotes: {} };
-        }
-        acc[producto].totalCajas += 1;
-        acc[producto].totalPeso += parseFloat(box.netWeight);
-        if (!acc[producto].lotes[lote]) {
-            acc[producto].lotes[lote] = [];
-        }
-        acc[producto].lotes[lote].push(parseFloat(box.netWeight));
-        return acc;
-    }, {});
-
-    const totalProductos = Object.keys(resumenProductos).length;
-
-    const lotesUnicos = new Set();
-    temporalPalletData.boxes.forEach((box) => lotesUnicos.add(box.lot));
-    const totalLotes = lotesUnicos.size;
 
     return (
         <Dialog open={isOpenPalletDialog} onOpenChange={closePalletDialog}>
             <DialogContent className="w-full max-w-[95vw] max-h-[90vw] overflow-hidden">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">
-                        Editar Palet #{temporalPalletData.id}
+                    <DialogTitle className="">
+                        Editar Palet #{temporalPallet.id}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -106,7 +83,6 @@ export default function PalletDialog() {
 
                         <TabsContent value="edicion" className="mt-0">
                             <div className="grid grid-cols-5 gap-6 h-[calc(90vh-180px)]">
-                                {/* Panel izquierdo */}
                                 <div className="space-y-6 overflow-y-auto pr-2 col-span-2">
                                     <Card className="border-2 border-muted bg-foreground-50">
                                         <CardHeader className="pb-4">
@@ -132,7 +108,6 @@ export default function PalletDialog() {
                                                     </TabsTrigger>
                                                 </TabsList>
 
-                                                {/* Lector */}
                                                 <TabsContent value="lector" className="space-y-3">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="codigo-escaneado">Código escaneado</Label>
@@ -143,7 +118,6 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
-                                                {/* Manual */}
                                                 <TabsContent value="manual" className="space-y-4">
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -180,7 +154,6 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
-                                                {/* Masiva */}
                                                 <TabsContent value="masiva" className="space-y-4">
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -217,7 +190,6 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
-                                                {/* Promedio */}
                                                 <TabsContent value="promedio" className="space-y-4">
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
@@ -273,38 +245,46 @@ export default function PalletDialog() {
                                             <div className="space-y-2">
                                                 <Label>Observaciones</Label>
                                                 <Textarea
-                                                    defaultValue={temporalPalletData.observations || ""}
+                                                    defaultValue={temporalPallet.observations || ""}
                                                     onChange={(e) =>
-                                                        setTemporalPalletData({
-                                                            ...temporalPalletData,
-                                                            observations: e.target.value,
-                                                        })
+                                                        console.log("Observaciones actualizadas:", e.target.value)
                                                     }
                                                     className="min-h-[80px]"
                                                 />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>Pedido vinculado (opcional)</Label>
-                                                <Select>
+                                                <Select defaultValue={temporalPallet.orderId}>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Sin pedido asignado" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="pedido-001">Pedido #001</SelectItem>
-                                                        <SelectItem value="pedido-002">Pedido #002</SelectItem>
+                                                        {/* Lista de pedidos activos */}
+                                                        {activeOrdersOptions?.map((order) => (
+                                                            <SelectItem key={order.id} value={order.id}>
+                                                                #{order.name} - {formatDateShort(order.load_date)}
+                                                            </SelectItem>
+                                                        ))}
+                                                        {/* Pedido actualmente asignado (si no está en la lista) */}
+                                                        {temporalPallet.orderId &&
+                                                            !activeOrdersOptions?.some((order) => order.id === temporalPallet.orderId) && (
+                                                                <SelectItem value={temporalPallet.orderId}>
+                                                                    #{temporalPallet.orderId} - Pedido Actual
+                                                                </SelectItem>
+                                                            )}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+
                                         </CardContent>
                                     </Card>
                                 </div>
 
-                                {/* Panel derecho */}
                                 <div className="space-y-4 overflow-y-auto col-span-3">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
                                         <Badge variant="secondary" className="text-lg px-3 py-1">
-                                            {numberOfBoxes} cajas • {totalWeight} kg
+                                            {temporalPallet.numberOfBoxes} cajas • {formatDecimalWeight(temporalPallet.netWeight)}
                                         </Badge>
                                     </div>
 
@@ -321,9 +301,9 @@ export default function PalletDialog() {
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {temporalPalletData.boxes.map((box) => (
+                                                    {temporalPallet.boxes.map((box) => (
                                                         <TableRow key={box.id}>
-                                                            <TableCell>{box.product.name}</TableCell>
+                                                            <TableCell>{box.article.name}</TableCell>
                                                             <TableCell>{box.lot}</TableCell>
                                                             <TableCell>{box.gs1128}</TableCell>
                                                             <TableCell>{box.netWeight} kg</TableCell>
@@ -337,10 +317,7 @@ export default function PalletDialog() {
                                                                         size="icon"
                                                                         className="h-8 w-8 text-destructive"
                                                                         onClick={() => {
-                                                                            setTemporalPalletData({
-                                                                                ...temporalPalletData,
-                                                                                boxes: temporalPalletData.boxes.filter((b) => b.id !== box.id),
-                                                                            });
+                                                                            console.log("Eliminar caja:", box.id);
                                                                         }}
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
@@ -357,11 +334,9 @@ export default function PalletDialog() {
                             </div>
                         </TabsContent>
 
-                        {/* Resumen detallado */}
                         <TabsContent value="resumen" className="mt-0">
                             <div className="h-[calc(90vh-180px)] overflow-y-auto">
                                 <div className="space-y-6">
-                                    {/* Resumen general */}
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="text-xl">
@@ -372,7 +347,7 @@ export default function PalletDialog() {
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                                 <div className="text-center p-4 border rounded-lg">
                                                     <div className="text-2xl font-bold">
-                                                        {numberOfBoxes}
+                                                        {temporalPallet.numberOfBoxes}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
                                                         Total Cajas
@@ -380,7 +355,7 @@ export default function PalletDialog() {
                                                 </div>
                                                 <div className="text-center p-4 border rounded-lg">
                                                     <div className="text-2xl font-bold">
-                                                        {totalWeight} kg
+                                                        {formatDecimalWeight(temporalPallet.netWeight)}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
                                                         Peso Total
@@ -388,7 +363,7 @@ export default function PalletDialog() {
                                                 </div>
                                                 <div className="text-center p-4 border rounded-lg">
                                                     <div className="text-2xl font-bold">
-                                                        {totalProductos}
+                                                        {temporalTotalProducts}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
                                                         Productos
@@ -396,7 +371,7 @@ export default function PalletDialog() {
                                                 </div>
                                                 <div className="text-center p-4 border rounded-lg">
                                                     <div className="text-2xl font-bold">
-                                                        {totalLotes}
+                                                        {temporalTotalLots}
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
                                                         Lotes
@@ -406,9 +381,8 @@ export default function PalletDialog() {
                                         </CardContent>
                                     </Card>
 
-                                    {/* Desglose por productos */}
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        {Object.entries(resumenProductos).map(
+                                        {temporalProductsSummary && Object.entries(temporalProductsSummary).map(
                                             ([productName, productData]) => (
                                                 <Card key={productName}>
                                                     <CardHeader className="pb-3">
@@ -417,16 +391,16 @@ export default function PalletDialog() {
                                                         </CardTitle>
                                                         <div className="flex justify-between text-sm">
                                                             <span className="font-semibold">
-                                                                Total: {productData.totalCajas} cajas
+                                                                Total: {productData.numberOfBoxes} cajas
                                                             </span>
                                                             <span className="font-semibold">
-                                                                {productData.totalPeso.toFixed(2)} kg
+                                                                {productData.totalNetWeight.toFixed(2)} kg
                                                             </span>
                                                         </div>
                                                     </CardHeader>
                                                     <CardContent>
                                                         <div className="space-y-3">
-                                                            {Object.entries(productData.lotes).map(
+                                                            {Object.entries(productData.lots).map(
                                                                 ([lot, weights]) => (
                                                                     <div
                                                                         key={lot}

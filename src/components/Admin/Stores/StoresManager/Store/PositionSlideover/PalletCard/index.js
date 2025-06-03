@@ -19,7 +19,7 @@ import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
 
-    const { openPalletDialog , isPalletRelevant } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant } = useStoreContext();
 
     const handleOnCLickEdit = () => {
         openPalletDialog(pallet.id)
@@ -50,6 +50,7 @@ export default function PalletCard({ pallet }) {
 
     const hasMultipleProducts = productsSummaryArray.length > 1
 
+
     return (
         <Card className={fondoClasses}>
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 space-x-2">
@@ -60,6 +61,14 @@ export default function PalletCard({ pallet }) {
                     <h3 className="font-medium text-xl text-foreground">
                         Palet #{pallet.id}
                     </h3>
+                    {pallet.orderId && (
+                        <Badge
+                            variant="outline"
+                            className="bg-muted text-muted-foreground text-xs mt-0.5"
+                        >
+                            Pedido: #{pallet.orderId}
+                        </Badge>
+                    )}
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -97,7 +106,7 @@ export default function PalletCard({ pallet }) {
                             Reubicar
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                        className='cursor-pointer'
+                            className='cursor-pointer'
                             onClick={handleOnCLickEdit}
                         >
                             <Edit className="h-4 w-4 mr-2" />
