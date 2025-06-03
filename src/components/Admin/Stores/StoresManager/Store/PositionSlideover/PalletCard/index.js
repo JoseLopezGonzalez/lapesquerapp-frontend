@@ -27,7 +27,7 @@ export default function PalletCard({ pallet }) {
 
     const fondoClasses = isPalletRelevant(pallet.id) ?
         'bg-green-500 text-background border-green-400 dark:border-green-600 overflow-hidden '
-        : '' + 'bg-card border-border shadow-md';
+        : '' + 'bg-card border-border shadow-md  overflow-hidden';
 
     /* const hasMultipleProducts = pallet.products.length > 1 */
 
@@ -52,7 +52,7 @@ export default function PalletCard({ pallet }) {
 
 
     return (
-        <Card className={fondoClasses}>
+        <Card className={fondoClasses} >
             <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 space-x-2">
                 <div className="flex items-center space-x-2">
                     <div className="flex items-center bg-black text-white p-1.5  rounded-md gap-2">
@@ -121,13 +121,13 @@ export default function PalletCard({ pallet }) {
                 </DropdownMenu>
             </CardHeader>
 
-            <CardContent className="p-4 pt-0">
-                <div className="py-3 px-1">
+            <CardContent className="p-4 pt-0 ">
+                <div className="py-3 px-1 ">
                     <div className="text-xs font-medium text-muted-foreground mb-1.5">Productos:</div>
-                    <div className="space-y-3">
+                    <div className="space-y-3 ">
                         {productsSummaryArray.map((product, index) => (
-                            <div key={index} className="flex flex-col">
-                                <span className="text-sm font-medium text-foreground">{product.name}</span>
+                            <div key={index} className="flex flex-col   overflow-hidden">
+                                <p className="text-sm font-medium text-foreground max-w-xs truncate  overflow-hidden">{product.name}</p>
                                 {hasMultipleProducts && (product.weight || product.boxCount) && (
                                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                                         <span>{formatDecimalWeight(product.netWeight)} kg</span>
@@ -146,7 +146,7 @@ export default function PalletCard({ pallet }) {
 
                 <div className="mb-3">
                     <div className="text-xs font-medium text-muted-foreground mb-1">Lotes:</div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 max-w-xs overflow-hidden">
                         {pallet.lots.map((lot) => (
                             <Badge key={lot} variant="outline" className="bg-accent text-accent-foreground border-input text-xs">
                                 {lot}
@@ -158,14 +158,14 @@ export default function PalletCard({ pallet }) {
                 {pallet.observations && (
                     <div className="mb-3">
                         <div className="text-xs font-medium text-muted-foreground mb-1">Observaciones:</div>
-                        <div className="text-sm text-foreground bg-muted/50 p-2 rounded-md">{pallet.observations}</div>
+                        <div className="text-sm text-foreground bg-muted/50 p-2 rounded-md  break-words max-w-xs">{pallet.observations}</div>
                     </div>
                 )}
             </CardContent>
 
-            <CardFooter className="p-0">
+            <CardFooter className="p-0 w-full">
                 <div className="w-full grid grid-cols-2 divide-x divide-border">
-                    <div className="flex items-center justify-center py-3 bg-accent/40">
+                    <div className="flex items-center justify-center py-3 bg-accent/40 ">
                         <span className="text-base font-semibold">
                             {pallet.boxes.length} {pallet.boxes.length === 1 ? "caja" : "cajas"}
                         </span>

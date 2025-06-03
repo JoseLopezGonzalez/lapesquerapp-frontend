@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, UndoDot, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +17,53 @@ import { usePallet } from "@/hooks/usePallet";
 import Loader from "@/components/Utilities/Loader";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
+import { useState } from "react";
+import { Combobox } from "@/components/Shadcn/Combobox";
 
 export default function PalletDialog() {
     const { closePalletDialog, isOpenPalletDialog, palletDialogData } = useStoreContext();
-    const { loading, temporalPallet, error, temporalProductsSummary, temporalTotalProducts, temporalTotalLots, activeOrdersOptions } = usePallet(palletDialogData?.id);
+    const {
+        productsOptions,
+        boxCreationData,
+        boxCreationDataChange,
+        loading,
+        temporalPallet,
+        error,
+        temporalProductsSummary,
+        temporalTotalProducts,
+        temporalTotalLots,
+        onResetBoxCreationData,
+        activeOrdersOptions,
+        editPallet,
+        onAddNewBox
+    } = usePallet(palletDialogData?.id);
+
+    const [selectedBox, setSelectedBox] = useState(null);
+
+    const handleOnClickBoxRow = (boxId) => {
+        if (selectedBox === boxId) {
+            setSelectedBox(null);
+        } else {
+            setSelectedBox(boxId);
+        }
+    };
+
+    const handleOnChangeBoxLot = (boxId, lot) => {
+        editPallet.box.edit.lot(boxId, lot);
+    };
+    const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
+        editPallet.box.edit.netWeight(boxId, netWeight);
+    };
+
+    const handleOnClickDuplicateBox = (boxId) => {
+        editPallet.box.duplicate(boxId);
+    };
+
+    const handleOnClickDeleteBox = (boxId) => {
+        editPallet.box.delete(boxId);
+    };
+
+
 
     if (loading) {
         return (
@@ -84,12 +127,18 @@ export default function PalletDialog() {
                         <TabsContent value="edicion" className="mt-0">
                             <div className="grid grid-cols-5 gap-6 h-[calc(90vh-180px)]">
                                 <div className="space-y-6 overflow-y-auto pr-2 col-span-2">
-                                    <Card className="border-2 border-muted bg-foreground-50">
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="flex items-center gap-2 text-lg">
-                                                <Package className="h-5 w-5 text-primary" />
-                                                Agregar Cajas
+                                    <Card className="border-2 border-muted bg-foreground-50 w-full">
+                                        <CardHeader className="pb-4  w-full">
+                                            <CardTitle className="flex items-center justify-between gap-2 text-lg w-full">
+                                                <div className="flex items-center gap-2 ">
+                                                    <Package className="h-5 w-5 text-primary" />
+                                                    Agregar Cajas
+                                                </div>
+
                                             </CardTitle>
+                                            {/* resetButton */}
+
+
                                         </CardHeader>
                                         <CardContent>
                                             <Tabs defaultValue="lector" className="w-full">
@@ -118,39 +167,60 @@ export default function PalletDialog() {
                                                     </div>
                                                 </TabsContent>
 
-                                                <TabsContent value="manual" className="space-y-4">
-                                                    <div className="space-y-4">
-                                                        <div className="space-y-2">
+                                                <TabsContent value="manual" className="">
+                                                    <div className=" grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2 col-span-2">
                                                             <Label>Artículo</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar artículo" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="art-001">Tomate Cherry 250g</SelectItem>
-                                                                    <SelectItem value="art-002">Lechuga Iceberg 500g</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Combobox
+                                                                options={productsOptions}
+                                                                placeholder='Seleccionar artículo'
+                                                                searchPlaceholder='Buscar artículo...'
+                                                                notFoundMessage='No se encontraron artículos'
+                                                                value={boxCreationData.productId}
+                                                                onChange={(value) => {
+                                                                    boxCreationDataChange("productId", value);
+                                                                }}
+                                                            />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label>Lote</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar lote" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="lote-001">L240115001</SelectItem>
-                                                                    <SelectItem value="lote-002">L240115002</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Input
+                                                                type="text"
+                                                                placeholder="Lote del producto"
+                                                                value={boxCreationData.lot}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("lot", e.target.value);
+                                                                }}
+                                                            />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label>Peso Neto (kg)</Label>
-                                                            <Input type="number" step="0.01" placeholder="0.00" className="text-right" />
+                                                            <Input
+                                                                type="number"
+                                                                step="0.01"
+                                                                placeholder="0.00"
+                                                                value={boxCreationData.netWeight}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("netWeight", e.target.value);
+                                                                }}
+                                                                className="text-right"
+                                                            />
                                                         </div>
-                                                        <Button className="w-full">
-                                                            <Plus className="h-4 w-4 mr-2" /> Agregar Caja
-                                                        </Button>
+                                                        <div className="col-span-2 grid grid-cols-2 gap-x-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                className=""
+                                                                onClick={() => {
+                                                                    onResetBoxCreationData();
+                                                                }}
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" /> Resetear
+                                                            </Button>
+                                                            <Button className="w-full" onClick={() => onAddNewBox({ method: 'manual' })}>
+                                                                <Plus className="h-4 w-4 mr-2" /> Agregar Caja
+                                                            </Button>
+                                                        </div>
+
                                                     </div>
                                                 </TabsContent>
 
@@ -158,75 +228,120 @@ export default function PalletDialog() {
                                                     <div className="space-y-4">
                                                         <div className="space-y-2">
                                                             <Label>Artículo</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar artículo" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="art-001">Tomate Cherry 250g</SelectItem>
-                                                                    <SelectItem value="art-002">Lechuga Iceberg 500g</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Combobox
+                                                                options={productsOptions}
+                                                                placeholder='Seleccionar artículo'
+                                                                searchPlaceholder='Buscar artículo...'
+                                                                notFoundMessage='No se encontraron artículos'
+                                                                value={boxCreationData.productId}
+                                                                onChange={(value) => {
+                                                                    boxCreationDataChange("productId", value);
+                                                                }}
+                                                            />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label>Lote</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar lote" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="lote-001">L240115001</SelectItem>
-                                                                    <SelectItem value="lote-002">L240115002</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Input
+                                                                type="text"
+                                                                placeholder="Lote del producto"
+                                                                value={boxCreationData.lot}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("lot", e.target.value);
+                                                                }}
+                                                            />
                                                         </div>
-                                                        <div className="space-y-2">
-                                                            <Label>Pesos (uno por línea)</Label>
-                                                            <Textarea defaultValue="13.45\n14.20\n12.80\n15.10" className="min-h-[120px]" />
+                                                        <Textarea
+                                                            placeholder="Ingresa los pesos de las cajas, uno por línea"
+                                                            value={boxCreationData.weights}
+                                                            onChange={(e) => {
+                                                                const weights = e.target.value
+                                                                boxCreationDataChange("weights", weights);
+                                                            }}
+                                                            className="min-h-[100px]"
+                                                        />
+                                                        <div className="col-span-2 grid grid-cols-2 gap-x-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                className=""
+                                                                onClick={() => {
+                                                                    onResetBoxCreationData();
+                                                                }}
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" /> Resetear
+                                                            </Button>
+                                                            <Button className="w-full" onClick={() => onAddNewBox({ method: 'bulk' })}>
+                                                                <Upload className="h-4 w-4 mr-2" /> Agregar Cajas en Lote
+                                                            </Button>
                                                         </div>
-                                                        <Button className="w-full">
-                                                            <Upload className="h-4 w-4 mr-2" /> Agregar Cajas en Lote
-                                                        </Button>
+
                                                     </div>
                                                 </TabsContent>
 
                                                 <TabsContent value="promedio" className="space-y-4">
-                                                    <div className="space-y-4">
-                                                        <div className="space-y-2">
+                                                    <div className="space-y-4 grid grid-cols-3 gap-4">
+                                                        <div className="space-y-2 col-span-3">
                                                             <Label>Artículo</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar artículo" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="art-001">Tomate Cherry 250g</SelectItem>
-                                                                    <SelectItem value="art-002">Lechuga Iceberg 500g</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Combobox
+                                                                options={productsOptions}
+                                                                placeholder='Seleccionar artículo'
+                                                                searchPlaceholder='Buscar artículo...'
+                                                                notFoundMessage='No se encontraron artículos'
+                                                                value={boxCreationData.productId}
+                                                                onChange={(value) => {
+                                                                    boxCreationDataChange("productId", value);
+                                                                }}
+                                                            />
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-2 ">
                                                             <Label>Lote</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Seleccionar lote" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="lote-001">L240115001</SelectItem>
-                                                                    <SelectItem value="lote-002">L240115002</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Input
+                                                                type="text"
+                                                                placeholder="Lote del producto"
+                                                                value={boxCreationData.lot}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("lot", e.target.value);
+                                                                }}
+                                                            />
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-2 ">
                                                             <Label>Peso Total (kg)</Label>
-                                                            <Input type="number" step="0.01" placeholder="0.00" className="text-right" />
+                                                            <Input
+                                                                type="number"
+                                                                step="0.01"
+                                                                placeholder="0.00"
+                                                                value={boxCreationData.totalWeight}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("totalWeight", e.target.value);
+                                                                }}
+                                                                className="text-right"
+                                                            />
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-2 ">
                                                             <Label>Número de Cajas</Label>
-                                                            <Input type="number" placeholder="0" className="text-right" />
+                                                            <Input
+                                                                type="number"
+                                                                placeholder="0"
+                                                                value={boxCreationData.numberOfBoxes}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("numberOfBoxes", e.target.value);
+                                                                }}
+                                                                className="text-right"
+                                                            />
                                                         </div>
-                                                        <Button className="w-full">
-                                                            <Plus className="h-4 w-4 mr-2" /> Generar Cajas
-                                                        </Button>
+                                                        <div className="col-span-3 grid grid-cols-2 gap-x-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                className=""
+                                                                onClick={() => {
+                                                                    onResetBoxCreationData();
+                                                                }}
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" /> Resetear
+                                                            </Button>
+                                                            <Button className="w-full" onClick={() => onAddNewBox({ method: 'average' })}>
+                                                                <Plus className="h-4 w-4 mr-2" /> Generar Cajas
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </TabsContent>
                                             </Tabs>
@@ -283,11 +398,19 @@ export default function PalletDialog() {
                                 <div className="space-y-4 overflow-y-auto col-span-3">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
-                                        <Badge variant="secondary" className="text-lg px-3 py-1">
-                                            {temporalPallet.numberOfBoxes} cajas • {formatDecimalWeight(temporalPallet.netWeight)}
-                                        </Badge>
+                                        <div className="text-sm text-muted-foreground/90 bg-foreground-50 rounded-full px-4 py-1  flex items-center">
+                                            <span>{temporalPallet.numberOfBoxes} cajas</span>
+                                            <Separator orientation="vertical" className="mx-2 h-3" />
+                                            <span>{formatDecimalWeight(temporalPallet.netWeight)}</span>
+                                            <Separator orientation="vertical" className="mx-2 h-3" />
+                                            <span>{temporalTotalProducts} productos</span>
+                                            <Separator orientation="vertical" className="mx-2 h-3" />
+                                            <span>{temporalTotalLots} lotes</span>
+                                        </div>
+                                        {/* <Badge variant="secondary" className="text-lg px-3 py-1 min-w-md">
+                                            {temporalPallet.numberOfBoxes} cajas | {formatDecimalWeight(temporalPallet.netWeight)} • {temporalTotalProducts} productos • {temporalTotalLots} lotes
+                                        </Badge> */}
                                     </div>
-
                                     <div className="border rounded-lg overflow-hidden">
                                         <div className="overflow-y-auto max-h-[calc(90vh-250px)]">
                                             <Table>
@@ -301,14 +424,35 @@ export default function PalletDialog() {
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {temporalPallet.boxes.map((box) => (
-                                                        <TableRow key={box.id}>
-                                                            <TableCell>{box.article.name}</TableCell>
-                                                            <TableCell>{box.lot}</TableCell>
-                                                            <TableCell>{box.gs1128}</TableCell>
-                                                            <TableCell>{box.netWeight} kg</TableCell>
+                                                    {temporalPallet.boxes.map((box) => box.id === selectedBox ? (
+                                                        <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className=" hover:bg-muted">
+                                                            <TableCell className='whitespace-nowrap'>{box.article.name}</TableCell>
                                                             <TableCell>
-                                                                <div className="flex gap-1">
+                                                                <Input
+                                                                    defaultValue={box.lot}
+                                                                    onChange={(e) => {
+                                                                        handleOnChangeBoxLot(box.id, e.target.value);
+                                                                    }}
+                                                                    onClick={(e) => e.stopPropagation()} // 👈 Esto evita que el click llegue al TableRow
+                                                                    className="w-full"
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {box.gs1128}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Input
+                                                                    type="number"
+                                                                    defaultValue={box.netWeight}
+                                                                    onClick={(e) => e.stopPropagation()} // 👈 Esto evita que el click llegue al TableRow
+                                                                    onChange={(e) => {
+                                                                        handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
+                                                                    }}
+                                                                    className="w-full "
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {/* <div className="flex gap-1">
                                                                     <Button variant="ghost" size="icon" className="h-8 w-8">
                                                                         <Copy className="h-4 w-4" />
                                                                     </Button>
@@ -322,10 +466,46 @@ export default function PalletDialog() {
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
+                                                                </div> */}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ) : (
+                                                        <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)}
+                                                            className={`cursor-text hover:bg-muted ${box?.new === true ? "bg-foreground-50" : ""}`}
+                                                        >
+                                                            <TableCell>{box.article.name}</TableCell>
+                                                            <TableCell>{box.lot}</TableCell>
+                                                            <TableCell>{box.gs1128}</TableCell>
+                                                            <TableCell>{box.netWeight} kg</TableCell>
+                                                            <TableCell>
+                                                                <div className="flex gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleOnClickDuplicateBox(box.id)
+                                                                        }} // 👈 Añadido el evento de clic
+                                                                    >
+                                                                        <Copy className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 text-destructive"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleOnClickDeleteBox(box.id);
+                                                                        }}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
                                                                 </div>
                                                             </TableCell>
                                                         </TableRow>
-                                                    ))}
+                                                    )
+                                                    )}
                                                 </TableBody>
                                             </Table>
                                         </div>
