@@ -7,6 +7,7 @@ import {
     Legend
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 
 
 
@@ -44,20 +45,34 @@ export default function SummaryPieChart({ data }) {
                                 cy="50%"
                                 outerRadius={80}
                                 fill="#8884d8"
-                                label
+                                label={({ name, value }) => `${formatDecimalWeight(value)}`}
                             >
                                 {data.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip />
+                            <Tooltip
+                                content={({ payload, active }) => {
+                                    if (active && payload && payload.length > 0) {
+                                        const { name, value } = payload[0];
+                                        return (
+                                            <Card className="p-2 text-sm">
+                                                {name} : {formatDecimalWeight(value)}
+                                            </Card>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+
+
                         </PieChart>
                     </ResponsiveContainer>
 
                     {/* Leyenda personalizada */}
                     <div className="flex flex-wrap gap-4 justify-center mt-2">
                         {data.map((entry, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div key={index} className="flex items-center gap-2 text-sm ">
                                 <div
                                     className="w-4 h-4 rounded-sm"
                                     style={{ backgroundColor: COLORS[index % COLORS.length] }}

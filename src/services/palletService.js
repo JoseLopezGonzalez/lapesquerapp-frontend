@@ -41,9 +41,9 @@ export function getPallet(palletId, token) {
  * @param {string} token - Token de autenticación.
  * @returns {Promise<Object>} - Los datos actualizados del pedido.
  */
-export function updatePallet(orderId, orderData, token) {
+export function updatePallet(palletId, palletData, token) {
 
-    return fetch(`${API_URL_V2}orders/${orderId}`, {
+    return fetch(`${API_URL_V2}pallets/${palletId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export function updatePallet(orderId, orderData, token) {
             'Authorization': `Bearer ${token}`, // Enviar el token
             'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify(palletData),
     })
         .then((response) => {
             if (!response.ok) {
@@ -62,7 +62,40 @@ export function updatePallet(orderId, orderData, token) {
             return response.json();
         })
         .then((data) => {
-            return data.data;
+            return data;
+        })
+        .catch((error) => {
+            // Manejo adicional de errores, si lo requieres
+            throw error;
+        })
+        .finally(() => {
+            console.log('updateOrder finalizado');
+        });
+}
+
+
+/* Create OrderPlannedProductDetail */
+export async function createPallet(palletData, token) {
+
+    return fetch(`${API_URL_V2}pallets`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',  // <- Este es el header que necesitas
+            'Authorization': `Bearer ${token}`, // Enviar el token
+            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+        },
+        body: JSON.stringify(palletData),
+    }).then((response) => {
+        if (!response.ok) {
+            return response.json().then((errorData) => {
+                throw new Error(errorData.message || 'Error al crear la linea del pedido');
+            });
+        }
+        return response.json();
+    })
+        .then((data) => {
+            return data;
         })
         .catch((error) => {
             // Manejo adicional de errores, si lo requieres

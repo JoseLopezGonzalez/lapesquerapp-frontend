@@ -1,6 +1,6 @@
 import { getToastTheme } from "@/customs/reactHotToast";
 import { getActiveOrdersOptions } from "@/services/orderService";
-import { getPallet } from "@/services/palletService";
+import { createPallet, getPallet, updatePallet } from "@/services/palletService";
 import { getProductOptions } from "@/services/productService";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -31,11 +31,30 @@ const initialboxCreationData = {
     deleteScannedCode: "",//para lector eliminar
 };
 
+function generateUniqueIntId() {
+    // Usa timestamp + número aleatorio para asegurar unicidad
+    return Math.floor(Date.now() + Math.random() * 1000);
+}
+
+const emptyPallet = {
+    id: null,
+    observations: '',
+    state: { id: 2, name: 'Almacenado' }, // opcional
+    articlesNames: [],
+    boxes: [],
+    lots: [],
+    netWeight: 0,
+    position: null,
+    store: null,
+    orderId: null,
+    numberOfBoxes: 0,
+
+};
 
 
 
 
-export function usePallet(id) {
+export function usePallet({ id, onChange, initialStoreId = null, initialOrderId = null }) {
 
     const [pallet, setPallet] = useState(null);
     const [temporalPallet, setTemporalPallet] = useState(null);
@@ -50,20 +69,30 @@ export function usePallet(id) {
     const [boxCreationData, setBoxCreationData] = useState(initialboxCreationData)
 
     useEffect(() => {
-        if (!id) return; // 🚫 no hacer nada si no hay id
         setError(null);
         setLoading(true);
         setTemporalPallet(null);
-        getPallet(id, token)
-            .then((data) => {
-                setPallet(data);
-            })
-            .catch((err) => {
-                setError(err.message || 'Error al cargar el palet');
-            })
-            .finally(() => {
-                setLoading(false);
+        // NUEVO: si no hay id => crear palet temporal nuevo
+        if (id === 'new') {
+            setPallet({
+                ...emptyPallet,
+                store: initialStoreId ? { id: initialStoreId } : null, // Asignar store si se proporciona
+                orderId: initialOrderId || null, // Asignar orderId si se proporciona
             });
+            setLoading(false);
+        } else {
+            getPallet(id, token)
+                .then((data) => {
+                    setPallet(data);
+                })
+                .catch((err) => {
+                    setError(err.message || 'Error al cargar el palet');
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        }
+
         getActiveOrdersOptions(token)
             .then((data) => {
                 setActiveOrdersOptions(data);
@@ -86,10 +115,23 @@ export function usePallet(id) {
             });
     }, [id, token, reload]);
 
+    const onClose = () => {
+        setTimeout(() => {
+        setPallet(null);
+        setTemporalPallet(null);
+        setLoading(false);
+        setError(null);
+        setReload(false);
+        setBoxCreationData(initialboxCreationData);
+        }, 1000); // Esperar un poco para que se cierre el modal antes de resetear
+        
+    };
+
     useEffect(() => {
         if (pallet) {
             setTemporalPallet({ ...pallet })
             setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
+            console.log('Pallet loaded:', pallet);
         }
     }, [pallet]);
 
@@ -98,7 +140,7 @@ export function usePallet(id) {
     };
 
     const temporalProductsSummary = temporalPallet?.boxes?.reduce((acc, box) => {
-        const productName = box.article.name;
+        const productName = box.product.name;
         const lot = box.lot;
         const netWeight = parseFloat(box.netWeight);
 
@@ -124,7 +166,7 @@ export function usePallet(id) {
     const temporalTotalProducts = temporalProductsSummary && Object.keys(temporalProductsSummary).length;
 
     const temporalUniqueLots = new Set();
-    temporalPallet?.boxes.forEach((box) => temporalUniqueLots.add(box.lot));
+    temporalPallet?.boxes?.forEach((box) => temporalUniqueLots.add(box.lot));
     const temporalTotalLots = temporalUniqueLots.size;
 
     /* Generic Functions */
@@ -156,9 +198,9 @@ export function usePallet(id) {
     /* Add box */
     const addBox = (box) => {
         if (!temporalPallet) return;
-        const uniqueId = Date.now() + Math.random(); // Generar un nuevo ID único
-        const gs1128 = getGs1128(box.article.id, box.lot, box.netWeight);
-        const boxWithId = { ...box, id: uniqueId, new: true, gs1128 }; // Añadir el ID y marcar como nueva
+        const uniqueId = generateUniqueIntId(); // Generar un nuevo ID único
+        const gs1128 = getGs1128(box.product.id, box.lot, box.netWeight);
+        const boxWithId = { ...box, id: uniqueId, new: true, gs1128, grossWeight: box.netWeight }; // Añadir el ID y marcar como nueva
         setTemporalPallet((prev) => (
             recalculatePalletStats({
                 ...prev,
@@ -195,13 +237,13 @@ export function usePallet(id) {
     };
     /* Edit box */
     const editBox = {
-        article: (boxId, article) => {
+        product: (boxId, product) => {
             if (!temporalPallet) return;
             setTemporalPallet((prev) => (
                 recalculatePalletStats({
                     ...prev,
                     boxes: prev.boxes.map((box) =>
-                        box.id === boxId ? { ...box, article: article } : box
+                        box.id === boxId ? { ...box, product: product } : box
                     )
                 })));
         },
@@ -253,6 +295,7 @@ export function usePallet(id) {
         },
         observations: editObservations,
         orderId: editOrderId
+
     }
 
     const boxCreationDataChange = (field, value) => {
@@ -287,7 +330,7 @@ export function usePallet(id) {
             }
             const product = getProductById(productId); // Validar que el producto existe
             const newBox = {
-                article: product,
+                product: product,
                 lot,
                 netWeight: parseFloat(netWeight),
                 scannedCode
@@ -302,7 +345,7 @@ export function usePallet(id) {
             for (let i = 0; i < numberOfBoxes; i++) {
                 const product = getProductById(productId);
                 const newBox = {
-                    article: product,
+                    product: product,
                     lot,
                     netWeight: parseFloat(averageNetWeight),
                     scannedCode
@@ -360,7 +403,7 @@ export function usePallet(id) {
             weightsArray.forEach((weight) => {
                 const product = getProductById(productId);
                 const newBox = {
-                    article: product,
+                    product: product,
                     lot,
                     netWeight: weight,
                     scannedCode,
@@ -391,7 +434,7 @@ export function usePallet(id) {
             }
 
             const newBox = {
-                article: {
+                product: {
                     id: product.value,
                     name: product.label
                 },
@@ -450,6 +493,7 @@ export function usePallet(id) {
     };
 
     const resetAllChanges = () => {
+        console.log("resetAllChanges: pallet =", pallet);
         setTemporalPallet({ ...pallet });
         setBoxCreationData(initialboxCreationData);
         toast.success('Cambios desechos', getToastTheme());
@@ -460,6 +504,47 @@ export function usePallet(id) {
         name: productName,
         value: parseFloat(data.totalNetWeight.toFixed(2))
     }));
+
+
+
+    const onSavingChanges = async () => {
+        if (!temporalPallet) return;
+
+        console.log('Saving changes for pallet:', temporalPallet);
+
+        if (temporalPallet.id === null) {
+            createPallet(temporalPallet, token)
+                .then((data) => {
+                    console.log('Pallet created successfully:', data);
+                    setPallet(data);
+                    onChange(data); // Notificar al componente padre del cambio
+                    toast.success('Palet creado correctamente', getToastTheme());
+                })
+                .catch((err) => {
+                    console.error('Error al crear el palet:', err);
+                    toast.error(err.message || 'Error al crear el palet', getToastTheme());
+                });
+
+
+        } else {
+            updatePallet(temporalPallet.id, temporalPallet, token)
+                .then((data) => {
+                    console.log('Pallet updated successfully:', data);
+                    setPallet(data);
+                    onChange(data); // Notificar al componente padre del cambio
+                    toast.success('Palet actualizado correctamente', getToastTheme());
+                })
+                .catch((err) => {
+                    console.error('Error al actualizar el palet:', err);
+                    toast.error(err.message || 'Error al actualizar el palet', getToastTheme());
+                });
+        }
+
+
+    };
+
+
+
 
 
 
@@ -484,6 +569,8 @@ export function usePallet(id) {
         deleteAllBoxes,
         resetAllChanges,
         getPieChartData,
+        onSavingChanges,
+        onClose,
     };
 
 }

@@ -4,7 +4,7 @@ import Map from './MapContainer/Map'
 import MapContainer from './MapContainer'
 import Loader from '@/components/Utilities/Loader';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
-import { LocateFixed } from "lucide-react"
+import { LocateFixed, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
@@ -15,6 +15,22 @@ import PalletDialog from './PalletDialog';
 import UnallocatedPositionSlideover from './UnallocatedPositionSlideover';
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuPortal,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+
 export const StoreContent = () => {
 
     const { loading, error, isOpenAddElementToPositionDialog,
@@ -22,12 +38,22 @@ export const StoreContent = () => {
         openUnallocatedPositionSlideover,
         isPositionRelevant,
         isPositionFilled,
+        palletDialogData,
+        onChangePallet,
+        openCreatePalletDialog,
+        store
 
     } = useStoreContext();
+
+    const storeId = store?.id;
 
     const handleOnClickUnallocatedPosition = () => {
         console.log("Unallocated positions clicked");
         openUnallocatedPositionSlideover();
+    }
+
+    const handleOnClickCreatePallet = () => {
+        openCreatePalletDialog();
     }
 
     if (loading) {
@@ -56,7 +82,7 @@ export const StoreContent = () => {
                     <MapContainer>
                         <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
                     </MapContainer>
-                    <div className="absolute bottom-4 right-4 z-10">
+                    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
                         <Button variant="secondary"
                             className={`flex items-center gap-2 ${fondoClasses} `}
                             onClick={handleOnClickUnallocatedPosition}
@@ -64,6 +90,32 @@ export const StoreContent = () => {
                             <LocateFixed size={24} />
                             Elementos sin ubicar
                         </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Plus size={24} />
+                                    Nuevo
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="start">
+                                <DropdownMenuLabel>Crear elementos</DropdownMenuLabel>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem onClick={handleOnClickCreatePallet}>
+                                        Palet
+                                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Tinas
+                                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Cajas
+                                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </Card >
 
@@ -77,7 +129,7 @@ export const StoreContent = () => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog open={isOpenPalletDialog} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={onChangePallet} initialStoreId ={storeId}  initialOrderId ={null} />
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />

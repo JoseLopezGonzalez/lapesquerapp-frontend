@@ -266,14 +266,58 @@ export function useStore(storeId) {
 
     const openPalletDialog = (palletId) => {
         const pallet = pallets?.find(p => p.id === palletId);
-        setPalletDialogData(pallet);
+        setPalletDialogData(palletId);
+        setIsOpenPalletDialog(true);
+    }
+
+    const openCreatePalletDialog = () => {
+        setPalletDialogData('new');
         setIsOpenPalletDialog(true);
     }
 
     const closePalletDialog = () => {
         setIsOpenPalletDialog(false);
+        setTimeout(() => {
         setPalletDialogData(null);
+        }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
+
+    /* const onChangePallet = (updatedPallet) => {
+        const updatedPallets = pallets.map(pallet => {
+            if (pallet.id === updatedPallet.id) {
+                return { ...pallet, ...updatedPallet };
+            }
+            return pallet;
+        });
+        setStore(prevStore => ({
+            ...prevStore,
+            content: {
+                ...prevStore.content,
+                pallets: updatedPallets
+            }
+        }));
+    } */
+    const onChangePallet = (updatedPallet) => {
+        setStore(prevStore => {
+            const existingPallets = prevStore.content.pallets || [];
+
+            const palletIndex = existingPallets.findIndex(p => p.id === updatedPallet.id);
+
+            const updatedPallets =
+                palletIndex !== -1
+                    ? existingPallets.map(p => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
+                    : [...existingPallets, updatedPallet]; // Añadir si no existe
+
+            return {
+                ...prevStore,
+                content: {
+                    ...prevStore.content,
+                    pallets: updatedPallets
+                }
+            };
+        });
+    };
+
 
 
 
@@ -321,7 +365,9 @@ export function useStore(storeId) {
         unlocatedPallets,
         isPositionRelevant,
 
-        isPalletRelevant
+        isPalletRelevant,
+        onChangePallet,
+        openCreatePalletDialog,
 
     };
 
