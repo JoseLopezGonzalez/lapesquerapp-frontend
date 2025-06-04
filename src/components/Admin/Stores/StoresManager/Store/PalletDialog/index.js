@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, UndoDot, RotateCcw } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,11 +19,10 @@ import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 import { useState } from "react";
 import { Combobox } from "@/components/Shadcn/Combobox";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import toast from "react-hot-toast";
+import { PiShrimp } from "react-icons/pi";
+import SummaryPieChart from "./SummaryPieChart";
 
 
 export default function PalletDialog() {
@@ -41,10 +40,15 @@ export default function PalletDialog() {
         onResetBoxCreationData,
         activeOrdersOptions,
         editPallet,
-        onAddNewBox
+        onAddNewBox,
+        deleteAllBoxes,
+        resetAllChanges,
+        getPieChartData,
     } = usePallet(palletDialogData?.id);
 
     const [selectedBox, setSelectedBox] = useState(null);
+
+    /* Handles */
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -69,6 +73,13 @@ export default function PalletDialog() {
         editPallet.box.delete(boxId);
     };
 
+    const handleOnClickDeleteAllBoxes = () => {
+        deleteAllBoxes();
+    };
+
+    const handleOnClickReset = () => {
+        resetAllChanges();
+    };
 
 
     if (loading) {
@@ -140,15 +151,11 @@ export default function PalletDialog() {
                                                     <Package className="h-5 w-5 text-primary" />
                                                     Agregar Cajas
                                                 </div>
-
                                             </CardTitle>
-                                            {/* resetButton */}
-
-
                                         </CardHeader>
                                         <CardContent>
                                             <Tabs defaultValue="lector" className="w-full">
-                                                <TabsList className="grid w-full grid-cols-4">
+                                                <TabsList className="grid w-full grid-cols-5">
                                                     <TabsTrigger value="lector" className="flex items-center gap-2">
                                                         <Scan className="h-4 w-4" /> Lector
                                                     </TabsTrigger>
@@ -161,12 +168,22 @@ export default function PalletDialog() {
                                                     <TabsTrigger value="promedio" className="flex items-center gap-2">
                                                         <Package className="h-4 w-4" /> Promedio
                                                     </TabsTrigger>
+                                                    <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300">
+                                                        <Trash2 className="h-4 w-4" /> Eliminar
+                                                    </TabsTrigger>
                                                 </TabsList>
 
                                                 <TabsContent value="lector" className="space-y-3">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="codigo-escaneado">Código escaneado</Label>
-                                                        <Input id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono" />
+                                                        <Input
+                                                            value={boxCreationData.scannedCode}
+                                                            onChange={(e) => {
+                                                                boxCreationDataChange("scannedCode", e.target.value);
+                                                            }}
+                                                            type="text"
+                                                            autoFocus
+                                                            id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono" />
                                                         <p className="text-xs text-muted-foreground">
                                                             La caja se agregará automáticamente al detectar un código válido
                                                         </p>
@@ -223,10 +240,9 @@ export default function PalletDialog() {
                                                                 <RotateCcw className="h-4 w-4" /> Resetear
                                                             </Button>
                                                             <Button className="w-full" onClick={() => onAddNewBox({ method: 'manual' })}>
-                                                                <Plus className="h-4 w-4 mr-2" /> Agregar Caja
+                                                                <Plus className="h-4 w-4" /> Agregar Caja
                                                             </Button>
                                                         </div>
-
                                                     </div>
                                                 </TabsContent>
 
@@ -276,10 +292,9 @@ export default function PalletDialog() {
                                                                 <RotateCcw className="h-4 w-4" /> Resetear
                                                             </Button>
                                                             <Button className="w-full" onClick={() => onAddNewBox({ method: 'bulk' })}>
-                                                                <Upload className="h-4 w-4 mr-2" /> Agregar Cajas en Lote
+                                                                <Upload className="h-4 w-4" /> Agregar Cajas en Lote
                                                             </Button>
                                                         </div>
-
                                                     </div>
                                                 </TabsContent>
 
@@ -345,14 +360,38 @@ export default function PalletDialog() {
                                                                 <RotateCcw className="h-4 w-4" /> Resetear
                                                             </Button>
                                                             <Button className="w-full" onClick={() => onAddNewBox({ method: 'average' })}>
-                                                                <Plus className="h-4 w-4 mr-2" /> Generar Cajas
+                                                                <Plus className="h-4 w-4" /> Generar Cajas
                                                             </Button>
                                                         </div>
+                                                    </div>
+                                                </TabsContent>
+
+                                                <TabsContent value="eliminar" className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="codigo-escaneado">Código escaneado</Label>
+                                                        <div className="grid grid-cols-3  gap-x-2">
+                                                            <Input
+                                                                value={boxCreationData.deleteScannedCode}
+                                                                onChange={(e) => {
+                                                                    boxCreationDataChange("deleteScannedCode", e.target.value);
+                                                                }}
+
+                                                                type="text"
+                                                                id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono col-span-2" />
+                                                            <Button variant='destructive' className="w-full" onClick={() => handleOnClickDeleteAllBoxes()}>
+                                                                <Trash2 className="h-4 w-4 " /> Eliminar todas las cajas
+                                                            </Button>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            La caja se eliminará automáticamente al detectar un código válido
+                                                        </p>
                                                     </div>
                                                 </TabsContent>
                                             </Tabs>
                                         </CardContent>
                                     </Card>
+
+
 
 
                                     <Card className="border-2 border-muted">
@@ -380,13 +419,11 @@ export default function PalletDialog() {
                                                         <SelectValue placeholder="Sin pedido asignado" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {/* Lista de pedidos activos */}
                                                         {activeOrdersOptions?.map((order) => (
                                                             <SelectItem key={order.id} value={order.id}>
                                                                 #{order.name} - {formatDateShort(order.load_date)}
                                                             </SelectItem>
                                                         ))}
-                                                        {/* Pedido actualmente asignado (si no está en la lista) */}
                                                         {temporalPallet.orderId &&
                                                             !activeOrdersOptions?.some((order) => order.id === temporalPallet.orderId) && (
                                                                 <SelectItem value={temporalPallet.orderId}>
@@ -413,9 +450,6 @@ export default function PalletDialog() {
                                             <Separator orientation="vertical" className="mx-2 h-3" />
                                             <span>{temporalTotalLots} lotes</span>
                                         </div>
-                                        {/* <Badge variant="secondary" className="text-lg px-3 py-1 min-w-md">
-                                            {temporalPallet.numberOfBoxes} cajas | {formatDecimalWeight(temporalPallet.netWeight)} • {temporalTotalProducts} productos • {temporalTotalLots} lotes
-                                        </Badge> */}
                                     </div>
                                     <div className="border rounded-lg overflow-hidden">
                                         <div className="overflow-y-auto max-h-[calc(90vh-250px)]">
@@ -458,21 +492,6 @@ export default function PalletDialog() {
                                                                 />
                                                             </TableCell>
                                                             <TableCell>
-                                                                {/* <div className="flex gap-1">
-                                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                        <Copy className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-destructive"
-                                                                        onClick={() => {
-                                                                            console.log("Eliminar caja:", box.id);
-                                                                        }}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div> */}
                                                             </TableCell>
                                                         </TableRow>
                                                     ) : (
@@ -520,126 +539,6 @@ export default function PalletDialog() {
                             </div>
                         </TabsContent>
 
-                        {/*  <TabsContent value="resumen" className="mt-0">
-                            <div className="h-[calc(90vh-180px)] overflow-y-auto">
-                                <div className="space-y-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-xl">
-                                                Resumen General del Palet
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                                <div className="text-center p-4 border rounded-lg">
-                                                    <div className="text-2xl font-bold">
-                                                        {temporalPallet.numberOfBoxes}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Total Cajas
-                                                    </div>
-                                                </div>
-                                                <div className="text-center p-4 border rounded-lg">
-                                                    <div className="text-2xl font-bold">
-                                                        {formatDecimalWeight(temporalPallet.netWeight)}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Peso Total
-                                                    </div>
-                                                </div>
-                                                <div className="text-center p-4 border rounded-lg">
-                                                    <div className="text-2xl font-bold">
-                                                        {temporalTotalProducts}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Productos
-                                                    </div>
-                                                </div>
-                                                <div className="text-center p-4 border rounded-lg">
-                                                    <div className="text-2xl font-bold">
-                                                        {temporalTotalLots}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Lotes
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        {temporalProductsSummary && Object.entries(temporalProductsSummary).map(
-                                            ([productName, productData]) => (
-                                                <Card key={productName}>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-lg">
-                                                            {productName}
-                                                        </CardTitle>
-                                                        <div className="flex justify-between text-sm">
-                                                            <span className="font-semibold">
-                                                                Total: {productData.numberOfBoxes} cajas
-                                                            </span>
-                                                            <span className="font-semibold">
-                                                                {productData.totalNetWeight.toFixed(2)} kg
-                                                            </span>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="space-y-3">
-                                                            {Object.entries(productData.lots).map(
-                                                                ([lot, weights]) => (
-                                                                    <div
-                                                                        key={lot}
-                                                                        className="p-3 border rounded-lg"
-                                                                    >
-                                                                        <div className="flex justify-between items-center mb-2">
-                                                                            <span className="font-medium">
-                                                                                Lote: {lot}
-                                                                            </span>
-                                                                            <Badge
-                                                                                variant="outline"
-                                                                                className="text-xs"
-                                                                            >
-                                                                                {weights.length} cajas
-                                                                            </Badge>
-                                                                        </div>
-                                                                        <div className="space-y-1 text-sm">
-                                                                            {weights.map((weight, index) => (
-                                                                                <div
-                                                                                    key={index}
-                                                                                    className="flex justify-between"
-                                                                                >
-                                                                                    <span>Caja {index + 1}:</span>
-                                                                                    <span>{weight.toFixed(2)} kg</span>
-                                                                                </div>
-                                                                            ))}
-                                                                            <Separator />
-                                                                            <div className="flex justify-between font-medium">
-                                                                                <span>Subtotal:</span>
-                                                                                <span>
-                                                                                    {weights
-                                                                                        .reduce(
-                                                                                            (sum, w) => sum + w,
-                                                                                            0
-                                                                                        )
-                                                                                        .toFixed(2)}{" "}
-                                                                                    kg
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent> */}
-
                         <TabsContent value="resumen" className="mt-0">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-180px)] overflow-y-auto px-2">
 
@@ -651,23 +550,47 @@ export default function PalletDialog() {
                                             <CardTitle className="text-xl">Resumen General del Palet</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
-                                                    <div className="text-2xl font-bold">{temporalPallet.numberOfBoxes}</div>
-                                                    <div className="text-sm text-muted-foreground">Total Cajas</div>
+                                            <div className="grid grid-cols-4 gap-4">
+                                                <div className=" p-2 border rounded-lg bg-foreground-50 flex items-center gap-2">
+                                                    <div className="p-2.5 rounded-lg bg-foreground-200/50">
+                                                        <Box className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h4 className="text-lg font-medium">{temporalPallet.numberOfBoxes}</h4>
+                                                        <span className="text-sm text-muted-foreground">Cajas</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
-                                                    <div className="text-2xl font-bold">{formatDecimalWeight(temporalPallet.netWeight)}</div>
-                                                    <div className="text-sm text-muted-foreground">Peso Total</div>
+
+                                                <div className=" p-2 border rounded-lg bg-foreground-50 flex items-center gap-2">
+                                                    <div className="p-2.5 rounded-lg bg-foreground-200/50">
+                                                        <PiShrimp className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h4 className="text-lg font-medium">{temporalTotalProducts}</h4>
+                                                        <span className="text-sm text-muted-foreground">Productos</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
-                                                    <div className="text-2xl font-bold">{temporalTotalProducts}</div>
-                                                    <div className="text-sm text-muted-foreground">Productos</div>
+
+                                                <div className=" p-2 border rounded-lg bg-foreground-50 flex items-center gap-2">
+                                                    <div className="p-2.5 rounded-lg bg-foreground-200/50">
+                                                        <Layers className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h4 className="text-lg font-medium">{temporalTotalLots}</h4>
+                                                        <span className="text-sm text-muted-foreground">Lotes</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-center p-4 border rounded-lg bg-foreground-50">
-                                                    <div className="text-2xl font-bold">{temporalTotalLots}</div>
-                                                    <div className="text-sm text-muted-foreground">Lotes</div>
+
+                                                <div className=" p-2 border rounded-lg bg-foreground-50 flex items-center gap-2">
+                                                    <div className="p-2.5 rounded-lg bg-foreground-200/50">
+                                                        <Weight className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h4 className="text-lg font-medium">{formatDecimalWeight(temporalPallet.netWeight)}</h4>
+                                                        <span className="text-sm text-muted-foreground">Peso total</span>
+                                                    </div>
                                                 </div>
+
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -678,7 +601,7 @@ export default function PalletDialog() {
                                             <CardTitle className="text-lg">Gráfico de Distribución</CardTitle>
                                         </CardHeader>
                                         <CardContent className="h-[240px] flex items-center justify-center">
-                                            <span className="text-muted-foreground italic">[Aquí irá tu gráfico]</span>
+                                            <SummaryPieChart data={getPieChartData} />
                                         </CardContent>
                                     </Card>
                                 </div>
@@ -691,8 +614,8 @@ export default function PalletDialog() {
                                                 <CardHeader className="pb-3">
                                                     <CardTitle className="text-lg flex justify-between items-center">
                                                         {productName}
-                                                        <Badge variant="outline" className="text-xs">
-                                                            {productData.numberOfBoxes} cajas • {productData.totalNetWeight.toFixed(2)} kg
+                                                        <Badge variant="outline" className="text-sm font-medium">
+                                                            {productData.numberOfBoxes} cajas  •  {productData.totalNetWeight.toFixed(2)} kg
                                                         </Badge>
                                                     </CardTitle>
                                                 </CardHeader>
@@ -701,7 +624,9 @@ export default function PalletDialog() {
                                                         <CollapsibleTrigger asChild>
                                                             <Button variant="ghost" size="sm" className="w-full justify-between">
                                                                 Ver detalles por lote
-                                                                <span className="ml-2 text-muted-foreground">▼</span>
+                                                                <span className="ml-2 text-muted-foreground">
+                                                                    <ChevronDown className="h-4 w-4 transition-transform duration-200 transform" />
+                                                                </span>
                                                             </Button>
                                                         </CollapsibleTrigger>
 
@@ -740,13 +665,11 @@ export default function PalletDialog() {
                             </div>
                         </TabsContent>
 
-
                     </Tabs>
                 </div>
-
                 <div className="flex justify-end gap-3 pt-4 border-t mt-4">
-                    <Button variant="outline" onClick={closePalletDialog}>
-                        Cancelar
+                    <Button variant="outline" onClick={handleOnClickReset}>
+                        Deshacer
                     </Button>
                     <Button onClick={() => console.log()}>Guardar</Button>
                 </div>

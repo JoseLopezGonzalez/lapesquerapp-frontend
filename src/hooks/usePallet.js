@@ -28,6 +28,7 @@ const initialboxCreationData = {
     totalWeight: "", // para promedio
     numberOfBoxes: "", // para promedio
     scannedCode: "", // para lector
+    deleteScannedCode: "",//para lector eliminar
 };
 
 
@@ -63,7 +64,6 @@ export function usePallet(id) {
             .finally(() => {
                 setLoading(false);
             });
-
         getActiveOrdersOptions(token)
             .then((data) => {
                 setActiveOrdersOptions(data);
@@ -71,7 +71,6 @@ export function usePallet(id) {
             .catch((err) => {
                 console.error('Error al cargar las opciones de pedidos:', err);
             });
-
         getProductOptions(token)
             .then((data) => {
                 setProductsOptions(
@@ -84,21 +83,19 @@ export function usePallet(id) {
             })
             .catch((err) => {
                 console.error('Error al cargar las opciones de productos:', err);
-            }
-            );
-
+            });
     }, [id, token, reload]);
 
     useEffect(() => {
         if (pallet) {
             setTemporalPallet({ ...pallet })
+            setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
         }
     }, [pallet]);
 
     const reloadPallet = () => {
         setReload(!reload);
     };
-
 
     const temporalProductsSummary = temporalPallet?.boxes?.reduce((acc, box) => {
         const productName = box.article.name;
@@ -124,12 +121,13 @@ export function usePallet(id) {
 
         return acc;
     }, {}) || {};
-
     const temporalTotalProducts = temporalProductsSummary && Object.keys(temporalProductsSummary).length;
 
     const temporalUniqueLots = new Set();
     temporalPallet?.boxes.forEach((box) => temporalUniqueLots.add(box.lot));
     const temporalTotalLots = temporalUniqueLots.size;
+
+    /* Generic Functions */
 
     const getProductById = (productId) => {
         const product = productsOptions.find((product) => product.value === productId);
@@ -152,8 +150,9 @@ export function usePallet(id) {
         return `(01)${boxGtin}(3100)${formattedNetWeight}(10)${lot}`;
     }
 
+    /* ----------------- */
 
-    /* Edit Temporal Pallet */
+
     /* Add box */
     const addBox = (box) => {
         if (!temporalPallet) return;
@@ -263,6 +262,20 @@ export function usePallet(id) {
         }));
     };
 
+    useEffect(() => {
+        if (boxCreationData.scannedCode.length >= 42) {
+            onAddNewBox({ method: 'lector' });
+            setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
+        }
+    }, [boxCreationData.scannedCode]);
+
+    useEffect(() => {
+        if (boxCreationData.deleteScannedCode.length >= 42) {
+            onDeleteScannedCode();
+            setBoxCreationData((prev) => ({ ...prev, deleteScannedCode: '' })); // Resetear campo de código escaneado para eliminar
+        }
+    }, [boxCreationData.deleteScannedCode]);
+
     const onAddNewBox = ({ method }) => {
         if (!temporalPallet) return;
         const { productId, lot, netWeight, weights, totalWeight, numberOfBoxes, scannedCode } = boxCreationData;
@@ -356,17 +369,97 @@ export function usePallet(id) {
             });
 
             toast.success(`Se agregaron ${weightsArray.length} cajas correctamente`, getToastTheme());
+        } else if (method === 'lector') {
+            if (!scannedCode) {
+                toast.error('Por favor, escanea un código válido.', getToastTheme());
+                return;
+            }
+
+            const match = scannedCode.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+            if (!match) {
+                toast.error('Formato de código escaneado no válido.', getToastTheme());
+                return;
+            }
+
+            const [, gtin, weightStr, lotFromCode] = match;
+            const netWeight = parseFloat(weightStr) / 100;
+
+            const product = productsOptions.find(p => p.boxGtin === gtin);
+            if (!product) {
+                toast.error(`No se encontró ningún producto con GTIN ${gtin}`, getToastTheme());
+                return;
+            }
+
+            const newBox = {
+                article: {
+                    id: product.value,
+                    name: product.label
+                },
+                lot: lotFromCode,
+                netWeight,
+                scannedCode
+            };
+
+            addBox(newBox);
+            toast.success('Caja añadida correctamente por lector', getToastTheme());
         }
 
         setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
     }
 
+    const onDeleteScannedCode = () => {
+        if (!temporalPallet) return;
+
+        const scannedCode = boxCreationData.deleteScannedCode.trim();
+        if (!scannedCode) {
+            toast.error('Por favor, escanea un código válido para eliminar.', getToastTheme());
+            return;
+        }
+
+        const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === scannedCode);
+        if (!boxToDelete) {
+            toast.error('No se encontró ninguna caja que coincida con el código escaneado.', getToastTheme());
+            return;
+        }
+
+        setTemporalPallet(prev =>
+            recalculatePalletStats({
+                ...prev,
+                boxes: prev.boxes.filter(box => box.id !== boxToDelete.id)
+            })
+        );
+
+        toast.success('Caja eliminada correctamente por lector', getToastTheme());
+        setBoxCreationData(prev => ({ ...prev, deleteScannedCode: '' }));
+    };
+
+
     const onResetBoxCreationData = () => {
         setBoxCreationData(initialboxCreationData);
     };
 
+    const deleteAllBoxes = () => {
+        if (!temporalPallet) return;
+        setTemporalPallet((prev) => (
+            recalculatePalletStats({
+                ...prev,
+                boxes: []
+            })
+        ));
+        toast.success('Todas las cajas han sido eliminadas', getToastTheme());
+    };
+
+    const resetAllChanges = () => {
+        setTemporalPallet({ ...pallet });
+        setBoxCreationData(initialboxCreationData);
+        toast.success('Cambios desechos', getToastTheme());
+    };
 
 
+    const getPieChartData = Object.entries(temporalProductsSummary).map(([productName, data]) => ({
+        name: productName,
+        value: parseFloat(data.totalNetWeight.toFixed(2))
+    }));
 
 
 
@@ -388,6 +481,9 @@ export function usePallet(id) {
         boxCreationDataChange,
         onResetBoxCreationData,
         onAddNewBox,
+        deleteAllBoxes,
+        resetAllChanges,
+        getPieChartData,
     };
 
 }
