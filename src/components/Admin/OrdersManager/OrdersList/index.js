@@ -6,8 +6,18 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { ScrollShadow } from '@nextui-org/react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { API_URL_V2 } from '@/configs/config';
+import toast from 'react-hot-toast';
+import { getToastTheme } from '@/customs/reactHotToast';
+import { useSession } from 'next-auth/react';
+
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 
 /* Ordenar Pedidos por fecha de salida */
@@ -22,14 +32,51 @@ const sortOrdersByDate = (orders) => {
 
 
 
-const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard , onClickAddNewOrder, disabled }) => {
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled }) => {
 
     const [loading, setLoading] = useState(false);
+    const { data: session, status } = useSession();
+
 
 
     const activeTab = categories.find((category) => category.current)?.name || 'all';
 
+    const exportDocument = async () => {
+        const toastId = toast.loading(`Exportando `, getToastTheme());
+        try {
+            const response = await fetch(`${API_URL_V2}orders/xlsx/active-planned-products`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${session.user.accessToken}`,
+                    'User-Agent': navigator.userAgent,
+                }
+            });
 
+            if (!response.ok) {
+                throw new Error('Error al exportar');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_pedidos_activos.xlsx`; // Nombre del archivo de descarga
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url); // Liberar memoria
+
+            toast.success('Exportación exitosa', { id: toastId });
+
+        } catch (error) {
+            console.log(error);
+            toast.error('Error al exportar', { id: toastId });
+        }
+    };
+
+    const handleExportActivePlannedProducts = () => {
+        exportDocument('active-planned-products', 'xlsx', 'Productos Planificados Activos')
+    };
 
 
 
@@ -37,10 +84,31 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
         <div className='flex flex-col h-full pt-5   px-7'>
             <div className='w-full flex items-center justify-between pb-3'>
                 <h2 className=' text-xl  dark:text-white font-semibold'>Pedidos Activos</h2>
-                <Button size="icon" variant='outline' onClick={onClickAddNewOrder}>
-                    <Plus className='h-5 w-5' />
-                    {/* <span className='text-sm'>Nuevo Pedido</span> */}
-                </Button>
+                <div className='flex items-center gap-2'>
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size="icon" variant='' onClick={onClickAddNewOrder}>
+                                <Plus className='h-5 w-5' />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Crear nuevo pedido</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts}>
+                                <Download className='h-5 w-5' />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Descargar reporte excel</p>
+                        </TooltipContent>
+                    </Tooltip>
+
+
+                </div>
             </div>
             {loading ? (
                 <>
@@ -125,7 +193,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                         onClick={() => onClickOrderCard(order.id)}
                                         order={order} isOrderSelected={() => false}
                                         disabled={disabled}
-                                        />
+                                    />
                                 </div>
                             ))}
                         </ScrollShadow>
