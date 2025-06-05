@@ -86,16 +86,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                 <h2 className=' text-xl  dark:text-white font-semibold'>Pedidos Activos</h2>
                 <div className='flex items-center gap-2'>
 
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button size="icon" variant='' onClick={onClickAddNewOrder}>
-                                <Plus className='h-5 w-5' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Crear nuevo pedido</p>
-                        </TooltipContent>
-                    </Tooltip>
+
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts}>
@@ -106,8 +97,16 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <p>Descargar reporte excel</p>
                         </TooltipContent>
                     </Tooltip>
-
-
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size="icon" variant='' onClick={onClickAddNewOrder}>
+                                <Plus className='h-5 w-5' />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Crear nuevo pedido</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
             {loading ? (

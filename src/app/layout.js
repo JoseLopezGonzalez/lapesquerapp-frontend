@@ -9,11 +9,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="">
       <body
-        className={` bg-background  w-full`}
+        className={` bg-background  w-full  `}
       >
         <SessionProvider>{children}</SessionProvider>
         <Toaster />
+
       </body>
+
     </html>
   );
 }

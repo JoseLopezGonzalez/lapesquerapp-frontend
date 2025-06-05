@@ -13,3 +13,8 @@ export const NAVBAR_LOGO = '/logos/blueapp-logo-horizontal.png';
 export const COMPANY_NAME = 'Congelados Brisamar S.L.';
 
 export const UNLOCATED_POSITION_ID = "unlocated";
+
+export const PALLET_LABEL_SIZE = {
+  width: "110mm",
+  height: "90mm",
+};

@@ -1,9 +1,9 @@
 "use client";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,11 +17,15 @@ import { usePallet } from "@/hooks/usePallet";
 import Loader from "@/components/Utilities/Loader";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { Combobox } from "@/components/Shadcn/Combobox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PiShrimp } from "react-icons/pi";
 import SummaryPieChart from "./SummaryPieChart";
+import { PALLET_LABEL_SIZE } from "@/configs/config";
+import { createPortal } from "react-dom";
+import { useReactToPrint } from "react-to-print";
+import PalletLabel from "../PositionSlideover/PalletCard/PalletLabel";
 
 
 export default function PalletDialog({ palletId, isOpen, onChange, initialStoreId = null, initialOrderId = null }) {
@@ -45,8 +49,24 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         getPieChartData,
         onSavingChanges,
         onClose,
-        reloadPallet,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId });
+
+    const printRef = useRef();
+
+    const handlePrint = useReactToPrint({
+        content: () => printRef.current,
+        documentTitle: `Etiqueta Palet ${temporalPallet.id}`,
+        pageStyle: `
+      @page {
+        size: ${PALLET_LABEL_SIZE.width} ${PALLET_LABEL_SIZE.height};
+        margin: 0;
+      }
+      body {
+        margin: 0;
+        background: white;
+      }
+    `,
+    });
 
 
     const [selectedBox, setSelectedBox] = useState(null);
@@ -92,30 +112,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         closePalletDialog();
         onClose();
     };
-
-
-
-
-   /*  if (error) {
-        return (
-            <Dialog open={isOpen} onOpenChange={closePalletDialog}>
-                <DialogContent className="w-full  flex flex-col items-center justify-center gap-4 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 py-10">
-                        <div className="flex items-center justify-center bg-red-100 rounded-full p-5 mb-2">
-                            <CloudAlert className="w-12 h-12 text-destructive" />
-                        </div>
-                        <h2 className="text-xl font-semibold text-destructive">¡Vaya! Ocurrió un error</h2>
-                        <p className="text-muted-foreground text-sm max-w-xs">
-                            Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
-                        </p>
-                        <Button variant="destructive" className="px-20 mt-5" onClick={closePalletDialog}>
-                            Cerrar
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        );
-    } */
 
 
     return (
@@ -164,6 +160,10 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                 <TabsTrigger value="resumen" className="flex items-center gap-2">
                                     <Eye className="h-4 w-4" /> Resumen
                                 </TabsTrigger>
+                                <TabsTrigger value="etiqueta" className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" /> Etiqueta
+                                </TabsTrigger>
+
                             </TabsList>
 
                             <TabsContent value="edicion" className="mt-0">
@@ -455,7 +455,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                                 )}
                                                         </SelectContent>
                                                     </Select>
-                                                    {/* Botón para desvincular */}
                                                     {temporalPallet.orderId && (
                                                         <button
                                                             type="button"
@@ -576,9 +575,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                             <TabsContent value="resumen" className="mt-0">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-180px)] overflow-y-auto px-2">
 
-                                    {/* Columna derecha: Totales y gráficos */}
                                     <div className="flex flex-col gap-6">
-                                        {/* Cards de resumen general */}
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle className="text-xl">Resumen General del Palet</CardTitle>
@@ -699,6 +696,26 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                 </div>
                             </TabsContent>
 
+                            <TabsContent value="etiqueta" className="mt-0">
+                                <div className="flex flex-col items-center gap-4 mt-4">
+                                    <div className="border p-4 bg-white text-black w-auto">
+                                        <PalletLabel pallet={temporalPallet} />
+                                    </div>
+
+                                    <Button onClick={handlePrint}>
+                                        <Printer className="mr-2 h-4 w-4" />
+                                        Imprimir Etiqueta
+                                    </Button>
+
+                                    {/* Contenido invisible para imprimir */}
+                                    <div style={{ display: "none" }}>
+                                        <PalletLabel ref={printRef} pallet={temporalPallet} />
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+
+
                         </Tabs>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t mt-4">
@@ -709,8 +726,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                     </div>
                 </DialogContent>
             )}
-
-
         </Dialog>
     );
 }
