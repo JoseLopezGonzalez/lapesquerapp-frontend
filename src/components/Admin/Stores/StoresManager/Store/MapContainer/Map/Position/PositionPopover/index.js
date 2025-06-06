@@ -10,7 +10,7 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
 
-    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition } = useStoreContext();
 
     const pallets = getPositionPallets(id);
 
@@ -20,6 +20,10 @@ const PositionPopover = ({ position }) => {
 
     const handleOnClickEditPallet = (palletId) => {
         openPalletDialog(palletId);
+    }
+
+    const handleAddPallet = () => {
+        openAddElementToPosition(id);
     }
 
     const fondoClasses = (palletId) => isPalletRelevant(palletId) ?
@@ -39,6 +43,9 @@ const PositionPopover = ({ position }) => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
+                            onClick={handleAddPallet}
+
+
                         /*  onClick={(e) => {
                              e.stopPropagation();
                              handleAddPallet(position.id);

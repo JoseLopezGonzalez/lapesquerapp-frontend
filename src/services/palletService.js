@@ -107,4 +107,45 @@ export async function createPallet(palletData, token) {
 }
 
 
+/**
+ * Asigna uno o varios palets a una posición.
+ * @param {string} positionId - ID de la posición (por ejemplo, "A1-03").
+ * @param {number[]} palletIds - Array de IDs de palets a ubicar.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Mensaje de éxito o error del backend.
+ */
+export async function assignPalletsToPosition(positionId, palletIds, token) {
+    return fetch(`${API_URL_V2}pallets/assign-to-position`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            position_id: positionId,
+            pallet_ids: palletIds,
+        }),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al ubicar los palets');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('assignPalletsToPosition finalizado');
+        });
+}
+
+
 

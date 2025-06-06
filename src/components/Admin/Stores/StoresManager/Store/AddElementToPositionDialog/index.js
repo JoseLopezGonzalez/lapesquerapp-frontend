@@ -18,6 +18,10 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStoreContext } from "@/context/StoreContext"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { getToastTheme } from "@/customs/reactHotToast"
+import { assignPalletsToPosition } from "@/services/palletService"
+import { useSession } from "next-auth/react"
+import toast from "react-hot-toast"
 
 const availablePallets = [
     {
@@ -89,16 +93,36 @@ const availablePallets = [
     },
 ]
 
-export default function AddElementToPosition({ open, onOpenChange, onSubmit }) {
+export default function AddElementToPosition({ open }) {
 
 
-    const { selectedPosition, closeAddElementToPosition, unlocatedPallets, pallets } = useStoreContext()
+    const { addElementToPositionDialogData, closeAddElementToPosition, unlocatedPallets, pallets, changePalletsPosition } = useStoreContext()
 
-    const position = selectedPosition
+    const position = addElementToPositionDialogData
 
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedPalletIds, setSelectedPalletIds] = useState([])
     const [activeTab, setActiveTab] = useState("unlocated")
+    const { data: session } = useSession();
+    const token = session?.user?.accessToken;
+
+    const onSubmit = () => {
+
+        assignPalletsToPosition(position, selectedPalletIds, token)
+            .then((response) => {
+                toast.success("Pallets ubicados correctamente", getToastTheme())
+                setSelectedPalletIds([])
+                setSearchQuery("")
+                changePalletsPosition(selectedPalletIds,position )
+                closeAddElementToPosition()
+            })
+            .catch((error) => {
+                console.error("Error al ubicar los pallets:", error)
+                toast.error("Error al ubicar los pallets", getToastTheme())
+            })
+
+
+    }
 
     const handleOnClose = () => {
         setSelectedPalletIds([])
@@ -107,12 +131,12 @@ export default function AddElementToPosition({ open, onOpenChange, onSubmit }) {
     }
 
     const handleSubmit = () => {
-        if (selectedPalletIds.length > 0 && onSubmit) {
-            onSubmit(selectedPalletIds)
-            setSelectedPalletIds([])
-            setSearchQuery("")
-            onOpenChange(false)
+        if (selectedPalletIds.length <= 0) {
+            toast.error("Debe seleccionar al menos un pallet para ubicar", getToastTheme())
+            return
         }
+        onSubmit(selectedPalletIds)
+
     }
 
     const togglePalletSelection = (palletId) => {

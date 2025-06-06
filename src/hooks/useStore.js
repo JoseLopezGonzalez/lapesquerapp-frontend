@@ -30,6 +30,7 @@ export function useStore(storeId) {
     const [selectedPosition, setSelectedPosition] = useState(null);
 
     const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
+    const [addElementToPositionDialogData, setAddElementToPositionDialogData] = useState(null);
 
     const [isOpenPalletDialog, setIsOpenPalletDialog] = useState(false);
     /* data */
@@ -273,12 +274,16 @@ export function useStore(storeId) {
     }
 
 
-    const openAddElementToPosition = () => {
+    const openAddElementToPosition = (id) => {
         setIsOpenAddElementToPositionDialog(true);
+        setAddElementToPositionDialogData(id);
     }
 
     const closeAddElementToPosition = () => {
         setIsOpenAddElementToPositionDialog(false);
+        setTimeout(() => {
+            setAddElementToPositionDialogData(null);
+        }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
     const unlocatedPallets = store?.content?.pallets?.filter(pallet => !pallet.position);
@@ -339,6 +344,26 @@ export function useStore(storeId) {
         });
     };
 
+    /* Change Position to PalletsIds */
+    const changePalletsPosition = (palletsIds, positionId) => {
+        setStore(prevStore => {
+            const updatedPallets = prevStore.content.pallets.map(pallet => {
+                if (palletsIds.includes(pallet.id)) {
+                    return { ...pallet, position: positionId };
+                }
+                return pallet;
+            });
+
+            return {
+                ...prevStore,
+                content: {
+                    ...prevStore.content,
+                    pallets: updatedPallets
+                }
+            };
+        });
+    }
+
 
 
 
@@ -393,7 +418,9 @@ export function useStore(storeId) {
         openPalletLabelDialog,
         closePalletLabelDialog,
         palletLabelDialogData,
-        isOpenPalletLabelDialog
+        isOpenPalletLabelDialog,
+        addElementToPositionDialogData,
+        changePalletsPosition,
 
 
     };
