@@ -24,8 +24,10 @@ import { PiShrimp } from "react-icons/pi";
 import SummaryPieChart from "./SummaryPieChart";
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 import { createPortal } from "react-dom";
-import { useReactToPrint } from "react-to-print";
+/* import { useReactToPrint } from "react-to-print"; */
 import PalletLabel from "../PositionSlideover/PalletCard/PalletLabel";
+import { Test } from "../PositionSlideover/PalletCard";
+import printJS from "print-js";
 
 
 export default function PalletDialog({ palletId, isOpen, onChange, initialStoreId = null, initialOrderId = null }) {
@@ -51,22 +53,25 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         onClose,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId });
 
-    const printRef = useRef();
 
-    const handlePrint = useReactToPrint({
-        content: () => printRef.current,
-        documentTitle: `Etiqueta Palet ${temporalPallet.id}`,
-        pageStyle: `
-      @page {
-        size: ${PALLET_LABEL_SIZE.width} ${PALLET_LABEL_SIZE.height};
-        margin: 0;
-      }
-      body {
-        margin: 0;
-        background: white;
-      }
-    `,
-    });
+    /*  const handlePrint = useReactToPrint({
+         content: () => printRef.current,
+         documentTitle: `Etiqueta Palet ${temporalPallet?.id}`,
+         pageStyle: `
+       @page {
+         size: ${PALLET_LABEL_SIZE.width} ${PALLET_LABEL_SIZE.height};
+         margin: 0;
+       }
+       body {
+         margin: 0;
+         background: white;
+       }
+     `,
+     }); */
+
+    const handlePrint = () => {
+        printJS({ printable: 'print-area-id', type: 'html', targetStyles: ['*'] });
+    };
 
 
     const [selectedBox, setSelectedBox] = useState(null);
@@ -698,19 +703,21 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
 
                             <TabsContent value="etiqueta" className="mt-0">
                                 <div className="flex flex-col items-center gap-4 mt-4">
-                                    <div className="border p-4 bg-white text-black w-auto">
+                                    {/* <div className="border p-4 bg-white text-black w-auto">
+                                        <PalletLabel pallet={temporalPallet} />
+                                    </div> */}
+
+                                    {/* <Button onClick={handlePrint}>
+                                        <Printer className="mr-2 h-4 w-4" />
+                                        Imprimir Etiqueta
+                                    </Button> */}
+
+                                    {/* Contenido invisible para imprimir */}
+                                    <div style={{ display: "none" }} id='print-area-id'>
                                         <PalletLabel pallet={temporalPallet} />
                                     </div>
 
-                                    <Button onClick={handlePrint}>
-                                        <Printer className="mr-2 h-4 w-4" />
-                                        Imprimir Etiqueta
-                                    </Button>
-
-                                    {/* Contenido invisible para imprimir */}
-                                    <div style={{ display: "none" }}>
-                                        <PalletLabel ref={printRef} pallet={temporalPallet} />
-                                    </div>
+                                    {/* <Test /> */}
                                 </div>
                             </TabsContent>
 
