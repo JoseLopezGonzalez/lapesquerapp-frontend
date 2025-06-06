@@ -7,8 +7,7 @@ import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 
 const PalletLabel = ({ pallet }) => {
     return (
-        <div ref={ref} className="bg-white text-black p-4" style={{ width: "108mm", height: "88mm" }}>
-            <Card className="border-none shadow-none p-0">
+            <Card className=" p-0 overflow-hidden w-full h-full" >{/*  border-none shadow-none */}
                 <CardHeader className="pb-2">
                     <CardTitle className="text-3xl font-bold">Palet #{pallet.id}</CardTitle>
                     {pallet.orderId && (
@@ -58,7 +57,6 @@ const PalletLabel = ({ pallet }) => {
                     </div>
                 </CardContent>
             </Card>
-        </div>
     );
 }
 

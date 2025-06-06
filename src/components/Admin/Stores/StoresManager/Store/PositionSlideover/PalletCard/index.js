@@ -178,56 +178,6 @@ export default function PalletCard({ pallet }) {
         </Card>
     )
 }
-/* 
-import { useReactToPrint } from 'react-to-print'; */
 
-import { forwardRef } from 'react';
-
-const ComponenteAImprimir = forwardRef((props, ref) => (
-    <div ref={ref}>
-        <h1>Contenido a imprimir</h1>
-        <p>Este es el contenido que se imprimirá.</p>
-    </div>
-));
-
-import printJS from 'print-js';
-
-export const Test = () => {
-    const componenteRef = useRef();
-
-    /*  const handlePrint = useReactToPrint({
-         componenteRef
-     }); */
-
-    /* const handlePrint = () => {
-        console.log('ref', componenteRef.current);
-    } */
-
-    const handlePrint = () => {
-        printJS({ printable: 'print-area-id', type: 'html', targetStyles: ['*'] });
-    };
-
-    return (
-        <div>
-            {/* <ComponenteAImprimir ref={componenteRef} /> */}
-            <div ref={componenteRef}>
-                <h1>Contenido a imprimir</h1>
-                <p>Este es el contenido que se imprimirá.</p>
-            </div>
-            {/*  <button onClick={handlePrint}>Imprimir</button> */}
-
-            <form method="post" action="#" id="print-area-id">
-                <h1>Contenido a imprimir</h1>
-                <p>Este es el contenido que se imprimirá.</p>
-            </form>
-
-            <button type="button" onClick={handlePrint} className="bg-blue-500 text-white px-4 py-2 rounded">
-                Print Form
-            </button>
-
-
-        </div>
-    );
-};
 
 
