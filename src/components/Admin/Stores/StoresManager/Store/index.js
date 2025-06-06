@@ -29,6 +29,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import PalletLabelDialog from './PalletLabelDialog';
 
 
 export const StoreContent = () => {
@@ -41,7 +42,8 @@ export const StoreContent = () => {
         palletDialogData,
         onChangePallet,
         openCreatePalletDialog,
-        store
+        store,
+
 
     } = useStoreContext();
 
@@ -129,7 +131,9 @@ export const StoreContent = () => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={onChangePallet} initialStoreId ={storeId}  initialOrderId ={null} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={onChangePallet} initialStoreId={storeId} initialOrderId={null} />
+
+                <PalletLabelDialog />
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />

@@ -19,7 +19,7 @@ import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
 
-    const { openPalletDialog, isPalletRelevant } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant ,openPalletLabelDialog, } = useStoreContext();
 
     const handleOnCLickEdit = () => {
         openPalletDialog(pallet.id)
@@ -92,14 +92,17 @@ export default function PalletCard({ pallet }) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => openPalletLabelDialog(pallet.id)}
+                        >
                             <Printer className="h-4 w-4 mr-2" />
                             Imprimir etiqueta
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem>
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalles
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
                             <MapPin className="h-4 w-4 mr-2" />

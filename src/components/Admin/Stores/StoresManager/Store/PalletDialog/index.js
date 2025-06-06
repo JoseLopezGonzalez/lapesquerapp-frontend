@@ -707,14 +707,13 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                             <div className="flex flex-col items-center  gap-4"
                                                 style={{ width: PALLET_LABEL_SIZE.width }}>
                                                 <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
-                                                    
                                                 </div>
                                                 <div id='print-area-id' className=" text-black"
                                                     style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}>
                                                     <PalletLabel pallet={temporalPallet} />
                                                 </div>
                                                 <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
-                                                    
+
                                                 </div>
                                             </div>
                                         </div>
@@ -724,9 +723,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                         </Button>
                                     </div>
                                 </TabsContent>
-
-
-
                             </Tabs>
                         </div>
                         <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">

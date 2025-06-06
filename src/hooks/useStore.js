@@ -35,6 +35,27 @@ export function useStore(storeId) {
     /* data */
     const [palletDialogData, setPalletDialogData] = useState(null);
 
+    const [isOpenPalletLabelDialog, setIsOpenPalletLabelDialog] = useState(false);
+    const [palletLabelDialogData, setPalletLabelDialogData] = useState(null);
+
+    const openPalletLabelDialog = (palletId) => {
+        const pallet = store?.content?.pallets?.find(p => p.id === palletId);
+        if (!pallet) {
+            console.error(`Pallet with ID ${palletId} not found`);
+            return;
+        }
+
+        setPalletLabelDialogData(pallet);
+        setIsOpenPalletLabelDialog(true);
+    }
+
+    const closePalletLabelDialog = () => {
+        setIsOpenPalletLabelDialog(false);
+        setTimeout(() => {
+            setPalletLabelDialogData(null);
+        }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
+    }
+
 
 
 
@@ -278,7 +299,7 @@ export function useStore(storeId) {
     const closePalletDialog = () => {
         setIsOpenPalletDialog(false);
         setTimeout(() => {
-        setPalletDialogData(null);
+            setPalletDialogData(null);
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
@@ -368,6 +389,12 @@ export function useStore(storeId) {
         isPalletRelevant,
         onChangePallet,
         openCreatePalletDialog,
+
+        openPalletLabelDialog,
+        closePalletLabelDialog,
+        palletLabelDialogData,
+        isOpenPalletLabelDialog
+
 
     };
 
