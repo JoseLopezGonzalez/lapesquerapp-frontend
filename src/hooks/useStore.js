@@ -39,6 +39,23 @@ export function useStore(storeId) {
     const [isOpenPalletLabelDialog, setIsOpenPalletLabelDialog] = useState(false);
     const [palletLabelDialogData, setPalletLabelDialogData] = useState(null);
 
+    const [isOpenMovePalletToStoreDialog, setIsOpenMovePalletToStoreDialog] = useState(false);
+    const [movePalletToStoreDialogData, setMovePalletToStoreDialogData] = useState(null);
+
+    const openMovePalletToStoreDialog = (palletId) => {
+        setMovePalletToStoreDialogData(palletId);
+        setIsOpenMovePalletToStoreDialog(true);
+    }
+
+    const closeMovePalletToStoreDialog = () => {
+        setIsOpenMovePalletToStoreDialog(false);
+        setTimeout(() => {
+            setMovePalletToStoreDialogData(null);
+        }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
+    }
+
+
+
     const openPalletLabelDialog = (palletId) => {
         const pallet = store?.content?.pallets?.find(p => p.id === palletId);
         if (!pallet) {
@@ -355,6 +372,19 @@ export function useStore(storeId) {
         });
     };
 
+    const onMovePalletToStore = (palletId) => {
+        setStore(prevStore => {
+            const updatedPallets = prevStore.content.pallets.filter(pallet => pallet.id !== palletId);
+            return {
+                ...prevStore,
+                content: {
+                    ...prevStore.content,
+                    pallets: updatedPallets
+                }
+            };
+        });
+    };
+
     /* Change Position to PalletsIds */
     const changePalletsPosition = (palletsIds, positionId) => {
         setStore(prevStore => {
@@ -433,6 +463,11 @@ export function useStore(storeId) {
         addElementToPositionDialogData,
         changePalletsPosition,
 
+        openMovePalletToStoreDialog,
+        closeMovePalletToStoreDialog,
+        movePalletToStoreDialogData,
+        isOpenMovePalletToStoreDialog,
+        onMovePalletToStore,
 
     };
 

@@ -19,7 +19,7 @@ import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
 
-    const { openPalletDialog, isPalletRelevant ,openPalletLabelDialog, } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant ,openPalletLabelDialog,openMovePalletToStoreDialog } = useStoreContext();
 
     const handleOnCLickEdit = () => {
         openPalletDialog(pallet.id)
@@ -104,7 +104,10 @@ export default function PalletCard({ pallet }) {
                             Ver detalles
                         </DropdownMenuItem> */}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            className='cursor-pointer'
+                            onClick={() => openMovePalletToStoreDialog(pallet.id)}
+                        >
                             <MapPin className="h-4 w-4 mr-2" />
                             Reubicar
                         </DropdownMenuItem>

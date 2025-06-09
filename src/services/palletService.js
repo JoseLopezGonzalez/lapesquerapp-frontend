@@ -149,3 +149,42 @@ export async function assignPalletsToPosition(positionId, palletIds, token) {
 
 
 
+/**
+ * Mueve un palet a otro almacén.
+ * @param {number|string} palletId - ID del palet a mover.
+ * @param {number|string} storeId - ID del almacén de destino.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend.
+ */
+export function movePalletToStore(palletId, storeId, token) {
+    return fetch(`${API_URL_V2}pallets/move-to-store`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            pallet_id: palletId,
+            store_id: storeId,
+        }),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al mover el palet');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('movePalletToStore finalizado');
+        });
+}
