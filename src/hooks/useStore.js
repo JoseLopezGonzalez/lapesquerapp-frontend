@@ -269,9 +269,16 @@ export function useStore(storeId) {
     } */
 
 
-    const getPositionPallets = (positionId) => {
+    /* const getPositionPallets = (positionId) => {
         return store?.content?.pallets?.filter(p => p.position === positionId) ?? [];
-    }
+    } */
+
+    const getPositionPallets = (positionId) => {
+        return store?.content?.pallets
+            ?.filter(p => p.position === positionId)
+            ?.sort((a, b) => a.id - b.id) ?? [];
+    };
+
 
 
     const openAddElementToPosition = (id) => {
@@ -286,7 +293,11 @@ export function useStore(storeId) {
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
-    const unlocatedPallets = store?.content?.pallets?.filter(pallet => !pallet.position);
+    /* const unlocatedPallets = store?.content?.pallets?.filter(pallet => !pallet.position); */
+    const unlocatedPallets = store?.content?.pallets
+        ?.filter(pallet => !pallet.position)
+        ?.sort((a, b) => a.id - b.id);
+
 
     const pallets = store?.content?.pallets;
 

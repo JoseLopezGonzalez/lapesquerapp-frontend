@@ -117,14 +117,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const onClose = () => {
         setTimeout(() => {
-        setPallet(null);
-        setTemporalPallet(null);
-        setLoading(false);
-        setError(null);
-        setReload(false);
-        setBoxCreationData(initialboxCreationData);
+            setPallet(null);
+            setTemporalPallet(null);
+            setLoading(false);
+            setError(null);
+            setReload(false);
+            setBoxCreationData(initialboxCreationData);
         }, 1000); // Esperar un poco para que se cierre el modal antes de resetear
-        
+
     };
 
     useEffect(() => {
@@ -253,7 +253,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 recalculatePalletStats({
                     ...prev,
                     boxes: prev.boxes.map((box) =>
-                        box.id === boxId ? { ...box, lot: lot } : box
+                        box.id === boxId ? { ...box, lot: lot, gs1128: getGs1128(box.product.id, lot, box.netWeight) } : box
                     )
                 })));
         },
@@ -263,7 +263,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 recalculatePalletStats({
                     ...prev,
                     boxes: prev.boxes.map((box) =>
-                        box.id === boxId ? { ...box, netWeight: netWeight } : box
+                        box.id === boxId ? { ...box, netWeight: netWeight, gs1128: getGs1128(box.product.id, box.lot, netWeight) } : box
                     )
                 })));
         }
