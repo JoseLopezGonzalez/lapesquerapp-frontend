@@ -198,36 +198,37 @@ export function PalletsListDialog() {
                             </thead>
                             <tbody>
                                 {filteredPallets.map((pallet) => {
-                                    const productNames = Array.from(new Set(
-                                        pallets.find(p => p.id === pallet.id)?.boxes?.map(b => b.product?.name)
-                                    )).filter(Boolean).join(", ");
+                                    const fullPallet = pallets.find(p => p.id === pallet.id);
+                                    if (!fullPallet) return null;
 
-                                    const lots = pallets.find(p => p.id === pallet.id)?.lots ?? [];
-                                    const observations = pallets.find(p => p.id === pallet.id)?.observations ?? "";
+                                    const productNames = Array.from(
+                                        new Set(fullPallet.boxes.map(b => b.product?.name).filter(Boolean))
+                                    ).join("\n");
+
+                                    const lots = fullPallet.lots ?? [];
+                                    const observations = fullPallet.observations ?? "";
 
                                     return (
                                         <tr key={pallet.id} className="border-b border-muted last:border-0 hover:bg-muted/20">
                                             <td className="px-4 py-3">{pallet.id}</td>
-                                            <td className="px-4 py-3 whitespace-pre-wrap">
-                                                {Array.from(
-                                                    new Set(
-                                                        pallets.find(p => p.id === pallet.id)?.boxes?.map(b => b.product?.name)
-                                                    )
-                                                )
-                                                    .filter(Boolean)
-                                                    .join('\n')}
+                                            <td className="px-4 py-3 whitespace-pre-wrap">{productNames}</td>
+                                            <td className="px-4 py-3 max-w-[150px] truncate" title={lots.join(", ")}>
+                                                {lots.join(", ")}
                                             </td>
-
-                                            <td className="px-4 py-3 max-w-[150px] truncate" title={lots.join(", ")}>{lots.join(", ")}</td>
-                                            <td className="px-4 py-3 max-w-[200px] truncate" title={observations}>{observations}</td>
+                                            <td className="px-4 py-3 max-w-[200px] truncate" title={observations}>
+                                                {observations}
+                                            </td>
                                             <td className="px-4 py-3 text-right">{pallet.totalBoxes}</td>
-                                            <td className="px-4 py-3 text-right text-nowrap">{formatDecimalWeight(pallet.totalWeight)}</td>
+                                            <td className="px-4 py-3 text-right text-nowrap">
+                                                {formatDecimalWeight(pallet.totalWeight)}
+                                            </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
                     </div>
+
 
 
                     <DialogFooter className="pt-7">
