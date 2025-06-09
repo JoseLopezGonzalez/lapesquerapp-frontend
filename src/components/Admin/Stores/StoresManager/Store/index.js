@@ -70,10 +70,10 @@ export const StoreContent = () => {
     const isUnallocatedPositionFilled = isPositionFilled(UNLOCATED_POSITION_ID)
 
     const fondoClasses = isUnallocatedPositionRelevant ?
-        'bg-green-500 group-hover:bg-green-600 dark:group-hover:bg-green-800'
+        'bg-green-500 hover:bg-green-400 '
         : isUnallocatedPositionFilled
-            ? 'bg-primary/75 group-hover:bg-primary text-background'
-            : 'bg-foreground-300 group-hover:bg-foreground-400';
+            ? 'bg-primary/75 hover:bg-primary/90 text-background'
+            : 'bg-foreground-300 hover:bg-foreground-400';
 
     return (
         <>

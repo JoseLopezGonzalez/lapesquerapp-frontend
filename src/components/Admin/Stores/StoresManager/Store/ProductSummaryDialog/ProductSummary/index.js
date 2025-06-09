@@ -181,7 +181,7 @@ export default function ProductSummary() {
             <DialogFooter className='pt-7'>
                 <Button variant="secondary" onClick={generateExcel} >
                     <PiMicrosoftExcelLogo />
-                    Exportar .xlsx
+                    Exportar todo .xlsx
                 </Button>
                 {/* <Button variant="secondary" >
                     <LucideFileJson />

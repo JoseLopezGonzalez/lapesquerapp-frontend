@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { ProductSummaryDialog } from "../ProductSummaryDialog"
+import { PalletsListDialog } from "../PalletsListDialog"
 
 const Filters = () => {
 
@@ -192,7 +193,7 @@ const Filters = () => {
                                     <PiMicrosoftExcelLogoFill className="h-5 w-5" />
                                     Exportar a Excel
                                 </Button>
-
+                                <PalletsListDialog />
                                 <ProductSummaryDialog />
                             </div>
 
