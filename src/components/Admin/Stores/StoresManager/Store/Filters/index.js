@@ -189,10 +189,10 @@ const Filters = () => {
                             <Separator />
 
                             <div className="w-full flex flex-col gap-2">
-                                <Button variant="secondary" className="w-full">
+                               {/*  <Button variant="secondary" className="w-full">
                                     <PiMicrosoftExcelLogoFill className="h-5 w-5" />
                                     Exportar a Excel
-                                </Button>
+                                </Button> */}
                                 <PalletsListDialog />
                                 <ProductSummaryDialog />
                             </div>

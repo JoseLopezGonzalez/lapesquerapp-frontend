@@ -101,7 +101,10 @@ export function PalletsListDialog() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">Palets</Button>
+                <Button variant="secondary" className="w-full">
+                    Palets
+                </Button>
+                {/* <Button variant="outline">Palets</Button> */}
             </DialogTrigger>
             <DialogContent className="w-full max-w-6xl ">
                 <DialogHeader>
