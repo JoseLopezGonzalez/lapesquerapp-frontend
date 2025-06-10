@@ -17,7 +17,7 @@ const initialFilters = {
     pallets: [],
 };
 
-export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore }) {
+export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading }) {
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
     const [store, setStore] = useState([]);
@@ -268,16 +268,20 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
     useEffect(() => {
         setLoading(true);
+        setIsStoreLoading(true);
         if (!token) return;
         getStore(storeId, token)
             .then((data) => {
                 setStore(data);
-                setLoading(false);
             })
             .catch((error) => {
                 console.error('Error al obtener los almacenes', error);
                 setError(error);
+            })
+            .finally(() => {
+                setIsStoreLoading(false);
                 setLoading(false);
+
             });
     }, [reload, token, storeId]);
 

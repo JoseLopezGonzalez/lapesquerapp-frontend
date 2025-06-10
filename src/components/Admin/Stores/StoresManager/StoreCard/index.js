@@ -4,11 +4,15 @@ import { ThermometerSnowflake } from "lucide-react";
 import { TbTruckLoading } from "react-icons/tb";
 
 
-const StoreCard = ({ store, isSelected, onClick, block }) => {
+const StoreCard = ({ store, isSelected, onClick, disabled }) => {
 
 
   const fillPercentage = (store.totalNetWeight / store.capacity) * 100;
 
+  const handleOnClick = () => {
+    if (disabled) return;
+    onClick(store.id);
+  }
 
   return (
     <Card
@@ -32,10 +36,10 @@ const StoreCard = ({ store, isSelected, onClick, block }) => {
               ? 'border-red-600'
               : 'border-neutral-200'
         }
-        ${block ? 'cursor-not-allowed' : 'cursor-pointer'}
+        ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
       `}
     >
-      <div onClick={onClick} className='flex p-4 h-full w-full'>
+      <div onClick={handleOnClick} className='flex p-4 h-full w-full'>
         <span className="flex flex-1 text-start w-full">
           <span className="flex flex-col w-full">
             <span className="block text-md font-medium ">

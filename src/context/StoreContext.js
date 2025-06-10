@@ -7,9 +7,9 @@ import { useStore } from '@/hooks/useStore';
 const StoreContext = createContext();
 
 // Componente proveedor del contexto
-export function StoreProvider({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, children }) {
+export function StoreProvider({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore,setIsStoreLoading, children }) {
   // Se obtienen los datos del pedido utilizando el hook
-  const orderData = useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore });
+  const orderData = useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore,setIsStoreLoading });
 
   return (
     <StoreContext.Provider value={orderData}>

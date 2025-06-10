@@ -13,6 +13,7 @@ export function useStores() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [reload, setReload] = useState(false);
+    const [isStoreLoading, setIsStoreLoading] = useState(false);
 
     useEffect(() => {
         if (!token) return;
@@ -64,7 +65,7 @@ export function useStores() {
 
 
 
-    return { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore };
+    return { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading};
 
 }
 

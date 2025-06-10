@@ -27,7 +27,7 @@ import { Store } from "./StoresManager/Store";
 
 export default function StoresManager() {
 
-  const { stores, loading, error , onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore} = useStores();
+  const { stores, loading, error , onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore , isStoreLoading, setIsStoreLoading} = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   /* const { store, loadingStore, updateStore } = useStore(selectedStore); */
 
@@ -53,7 +53,7 @@ export default function StoresManager() {
         {loading ? (
           <>
             <div className="flex flex-col items-center justify-center h-full w-full gap-6">
-              <ScrollShadow orientation="horizontal" className="space-x-3 rounded-xl flex overflow-x-auto w-full scrollbar-none">
+              <ScrollShadow orientation="horizontal" className="space-x-3 rounded-xl flex overflow-x-auto w-full scrollbar-none py-2">
                 {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                   <SkeletonStoreCard key={i} />
                 ))}
@@ -72,9 +72,9 @@ export default function StoresManager() {
                 e.currentTarget.scrollLeft += e.deltaY; // Permite desplazamiento horizontal con la rueda
               }}
               hideScrollBar
-              orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 ">
+              orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 py-2">
               {stores.map((store) => (
-                <StoreCard key={store.id} store={store} isSelected={selectedStoreId} onClick={() => handleOnSelectStore(store.id)} block={loadingStore} />
+                <StoreCard key={store.id} store={store} disabled={isStoreLoading} isSelected={selectedStoreId} onClick={() => handleOnSelectStore(store.id)} block={loadingStore} />
               ))}
             </ScrollShadow>
 
@@ -90,6 +90,7 @@ export default function StoresManager() {
                 <Store storeId={selectedStoreId}  
                   onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
                   onAddNetWeightToStore={onAddNetWeightToStore} 
+                   setIsStoreLoading = {setIsStoreLoading}
                   
                 />
               )}

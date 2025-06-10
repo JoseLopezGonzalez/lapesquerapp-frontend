@@ -173,13 +173,15 @@ export const StoreContent = () => {
     )
 }
 
-export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore }) => {
+                  
+export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore , setIsStoreLoading }) => {
 
     return (
         <StoreProvider
             storeId={storeId}
             onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
             onAddNetWeightToStore={onAddNetWeightToStore}
+            setIsStoreLoading={setIsStoreLoading}
         >
             <StoreContent />
         </StoreProvider>
