@@ -27,7 +27,7 @@ import { Store } from "./StoresManager/Store";
 
 export default function StoresManager() {
 
-  const { stores, loading, error , onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore , isStoreLoading, setIsStoreLoading} = useStores();
+  const { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   /* const { store, loadingStore, updateStore } = useStore(selectedStore); */
 
@@ -85,13 +85,15 @@ export default function StoresManager() {
                   <Loader />
                 </div>
               ) : !selectedStoreId ? (
-                <EmptyState title="Selecciona un almacén" description="Selecciona un almacén para ver su información" />
+                <Card className='h-full w-full flex items-center justify-center  '>
+                  <EmptyState title="Selecciona un almacén" description="Selecciona un almacén para ver su información" />
+                </Card>
               ) : (
-                <Store storeId={selectedStoreId}  
+                <Store storeId={selectedStoreId}
                   onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
-                  onAddNetWeightToStore={onAddNetWeightToStore} 
-                   setIsStoreLoading = {setIsStoreLoading}
-                  
+                  onAddNetWeightToStore={onAddNetWeightToStore}
+                  setIsStoreLoading={setIsStoreLoading}
+
                 />
               )}
             </div>
