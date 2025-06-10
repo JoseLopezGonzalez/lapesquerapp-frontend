@@ -61,7 +61,7 @@ const PositionPopover = ({ position }) => {
                 </Tooltip>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-[160px] pr-4">
+                <ScrollArea className="max-h-[160px] pr-4">
                     <div className="flex flex-col gap-2">
                         {pallets.length === 0 ? (
                             <div className="text-center py-4 text-muted-foreground">
