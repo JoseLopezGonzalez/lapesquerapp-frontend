@@ -166,8 +166,16 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
                     const speciesData = map.get(speciesName);
                     speciesData.quantity += netWeight;
 
-                    const currentProductQuantity = speciesData.products.get(productName) ?? 0;
-                    speciesData.products.set(productName, currentProductQuantity + netWeight);
+                    if (!speciesData.products.has(productName)) {
+                        speciesData.products.set(productName, {
+                            quantity: 0,
+                            boxes: 0
+                        });
+                    }
+
+                    const productData = speciesData.products.get(productName);
+                    productData.quantity += netWeight;
+                    productData.boxes += 1;
                 }
             });
         });
@@ -176,15 +184,15 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         const result = Array.from(map.values()).map((entry) => {
             const speciesPercentage = (entry.quantity / totalWeight) * 100;
 
-            const products = Array.from(entry.products.entries()).map(([name, quantity]) => {
-                const productPercentage = (quantity / totalProductWeight) * 100;
-                return { name, quantity, productPercentage };
+            const products = Array.from(entry.products.entries()).map(([name, data]) => {
+                const productPercentage = (data.quantity / totalProductWeight) * 100;
+                return {
+                    name,
+                    quantity: data.quantity,
+                    boxes: data.boxes,
+                    productPercentage
+                };
             });
-
-            /* ordenar productos por name */
-
-
-
 
             return {
                 name: entry.name,
@@ -196,6 +204,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
         setSpeciesSummary(result);
     }, [store]);
+
 
 
 

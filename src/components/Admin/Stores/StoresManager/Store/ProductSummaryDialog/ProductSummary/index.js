@@ -51,6 +51,7 @@ export default function ProductSummary() {
                 Especie: species.name,
                 Cantidad: Number(product.quantity.toFixed(2)),
                 Porcentaje: Number(product.productPercentage.toFixed(2)),
+                Cajas: product.boxes,
             }))
             return acc.concat(speciesProducts)
         }, [])
@@ -160,7 +161,7 @@ export default function ProductSummary() {
 
                     <div className="border rounded-md max-h-[315px] overflow-y-auto">
                         <table className="w-full">
-                            <tbody >
+                            {/* <tbody >
                                 {filteredProducts.map((product) => {
                                     return (
                                         <tr key={product.name} className="border-b border-muted last:border-0 hover:bg-muted/20">
@@ -172,8 +173,23 @@ export default function ProductSummary() {
                                         </tr>
                                     )
                                 })}
+                            </tbody> */}
+                            <tbody>
+                                {filteredProducts.map((product) => {
+                                    return (
+                                        <tr key={product.name} className="border-b border-muted last:border-0 hover:bg-muted/20">
+                                            <td className="py-3 px-4 text-sm">{product.name}</td>
+                                            <td className="py-3 px-4 text-sm text-right">{product.boxes ?? '-'} cajas</td> {/* NUEVA CELDA */}
+                                            <td className="py-3 px-4 text-sm text-right">{formatDecimalWeight(product.quantity)}</td>
+                                            <td className="py-3 px-4 text-sm text-right">
+                                                {formatDecimal(product.productPercentage)}%
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
+
                     </div>
                 </div>
             )}
