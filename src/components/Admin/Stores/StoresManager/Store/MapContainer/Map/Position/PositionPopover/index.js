@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useStoreContext } from '@/context/StoreContext';
 import { CircleDot, Edit, Plus } from 'lucide-react';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
@@ -59,37 +60,49 @@ const PositionPopover = ({ position }) => {
             </TooltipContent> */}
                 </Tooltip>
             </CardHeader>
-            <CardContent className="space-y-3">
-                {pallets.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground">No existen elementos en esta posición</div>
-                ) : pallets.map((pallet) =>
-                    <div key={pallet.id} className={`flex justify-between items-center p-2 rounded-lg border ${fondoClasses(pallet.id)}`}>
-                        <div className="font-medium">#{pallet.id}</div>
-                        <div className="flex gap-3 text-sm ">
-                            <span>{formatInteger(pallet.boxes.length)} cajas</span>
-                            <span>{formatDecimalWeight(pallet.netWeight)}</span>
-                        </div>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOnClickEditPallet(pallet.id);
-                                    }}
+            <CardContent>
+                <ScrollArea className="h-[160px] pr-4">
+                    <div className="flex flex-col gap-2">
+                        {pallets.length === 0 ? (
+                            <div className="text-center py-4 text-muted-foreground">
+                                No existen elementos en esta posición
+                            </div>
+                        ) : (
+                            pallets.map((pallet) => (
+                                <div
+                                    key={pallet.id}
+                                    className={`flex justify-between items-center p-2 rounded-lg border ${fondoClasses(pallet.id)}`}
                                 >
-                                    <Edit className="h-3.5 w-3.5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Editar palet</p>
-                            </TooltipContent>
-                        </Tooltip>
+                                    <div className="font-medium">#{pallet.id}</div>
+                                    <div className="flex gap-3 text-sm">
+                                        <span>{formatInteger(pallet.boxes.length)} cajas</span>
+                                        <span>{formatDecimalWeight(pallet.netWeight)}</span>
+                                    </div>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOnClickEditPallet(pallet.id);
+                                                }}
+                                            >
+                                                <Edit className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Editar palet</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            ))
+                        )}
                     </div>
-                )}
+                </ScrollArea>
             </CardContent>
+
             {pallets.length > 0 && (
                 <CardFooter className="pt-0">
                     <Button
