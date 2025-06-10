@@ -16,16 +16,16 @@ import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { Warehouse, Check, Search, X } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
-import { useStoresOptions } from "@/hooks/useStores";
 import { movePalletToStore } from "@/services/palletService";
 import { useStoreContext } from "@/context/StoreContext";
+import { useStoresOptions } from "@/hooks/useStoresOptions";
 
 export default function MovePalletToStoreDialog() {
     const {
         closeMovePalletToStoreDialog,
         movePalletToStoreDialogData: palletId,
         isOpenMovePalletToStoreDialog: isOpen,
-        onMovePalletToStore
+        updateStoreWhenOnMovePalletToStore
     } = useStoreContext();
 
     const { data: session } = useSession();
@@ -55,7 +55,7 @@ export default function MovePalletToStoreDialog() {
         movePalletToStore(palletId, selectedStoreValue, token)
             .then(() => {
                 toast.success("Pallet movido correctamente", getToastTheme());
-                onMovePalletToStore(palletId);
+                updateStoreWhenOnMovePalletToStore({palletId , storeId: selectedStoreValue});
                 resetAndClose();
             })
             .catch(() => {

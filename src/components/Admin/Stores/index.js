@@ -27,7 +27,7 @@ import { Store } from "./StoresManager/Store";
 
 export default function StoresManager() {
 
-  const { stores, loading, error } = useStores();
+  const { stores, loading, error , onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore} = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   /* const { store, loadingStore, updateStore } = useStore(selectedStore); */
 
@@ -87,7 +87,11 @@ export default function StoresManager() {
               ) : !selectedStoreId ? (
                 <EmptyState title="Selecciona un almacén" description="Selecciona un almacén para ver su información" />
               ) : (
-                <Store storeId={selectedStoreId} />
+                <Store storeId={selectedStoreId}  
+                  onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
+                  onAddNetWeightToStore={onAddNetWeightToStore} 
+                  
+                />
               )}
             </div>
           </div>

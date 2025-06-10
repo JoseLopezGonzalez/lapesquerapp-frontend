@@ -41,7 +41,7 @@ export const StoreContent = () => {
         isPositionRelevant,
         isPositionFilled,
         palletDialogData,
-        onChangePallet,
+        updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
         store,
 
@@ -132,7 +132,7 @@ export const StoreContent = () => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={onChangePallet} initialStoreId={storeId} initialOrderId={null} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} initialOrderId={null} />
 
                 <PalletLabelDialog />
 
@@ -173,10 +173,14 @@ export const StoreContent = () => {
     )
 }
 
-export const Store = ({ storeId }) => {
+export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore }) => {
 
     return (
-        <StoreProvider storeId={storeId} >
+        <StoreProvider
+            storeId={storeId}
+            onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
+            onAddNetWeightToStore={onAddNetWeightToStore}
+        >
             <StoreContent />
         </StoreProvider>
 

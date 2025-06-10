@@ -17,7 +17,7 @@ const initialFilters = {
     pallets: [],
 };
 
-export function useStore(storeId) {
+export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore }) {
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
     const [store, setStore] = useState([]);
@@ -336,7 +336,7 @@ export function useStore(storeId) {
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
-    /* const onChangePallet = (updatedPallet) => {
+    /* const updateStoreWhenOnChangePallet = (updatedPallet) => {
         const updatedPallets = pallets.map(pallet => {
             if (pallet.id === updatedPallet.id) {
                 return { ...pallet, ...updatedPallet };
@@ -351,39 +351,77 @@ export function useStore(storeId) {
             }
         }));
     } */
-    const onChangePallet = (updatedPallet) => {
+    const updateStoreWhenOnChangePallet = (updatedPallet) => {
         setStore(prevStore => {
             const existingPallets = prevStore.content.pallets || [];
-
             const palletIndex = existingPallets.findIndex(p => p.id === updatedPallet.id);
-
             const updatedPallets =
                 palletIndex !== -1
                     ? existingPallets.map(p => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
-                    : [...existingPallets, updatedPallet]; // Añadir si no existe
+                    : [...existingPallets, updatedPallet];
 
-            return {
+            const newStore = {
                 ...prevStore,
                 content: {
                     ...prevStore.content,
                     pallets: updatedPallets
                 }
             };
+
+            const totalNetWeight = updatedPallets.reduce((total, pallet) => {
+                const palletNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+                return total + palletNetWeight;
+            }, 0);
+
+            newStore.totalNetWeight = totalNetWeight;
+
+            console.log('Updated Store:', newStore);
+
+            if (onUpdateCurrentStoreTotalNetWeight) onUpdateCurrentStoreTotalNetWeight(prevStore.id, newStore.totalNetWeight);
+            return newStore;
         });
     };
 
-    const onMovePalletToStore = (palletId) => {
+
+    const updateStoreWhenOnMovePalletToStore = ({ palletId, storeId }) => {
+
+        /*  */
+
+        const pallet = store?.content?.pallets?.find(p => p.id === palletId);
+
+        const palletTotalNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+
+        console.log('storeId', storeId);
+        console.log('palletTotalNetWeight', palletTotalNetWeight);
+
+        if (onAddNetWeightToStore) {
+            onAddNetWeightToStore(storeId, palletTotalNetWeight);
+        }
+
         setStore(prevStore => {
             const updatedPallets = prevStore.content.pallets.filter(pallet => pallet.id !== palletId);
-            return {
+
+            const newStore = {
                 ...prevStore,
                 content: {
                     ...prevStore.content,
                     pallets: updatedPallets
                 }
             };
+            const totalNetWeight = updatedPallets.reduce((total, pallet) => {
+                const palletNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+                return total + palletNetWeight;
+            }, 0);
+            newStore.totalNetWeight = totalNetWeight;
+            if (onUpdateCurrentStoreTotalNetWeight) onUpdateCurrentStoreTotalNetWeight(prevStore.id, newStore.totalNetWeight);
+
+            return newStore;
         });
+
+
     };
+
+
 
     /* Change Position to PalletsIds */
     const changePalletsPosition = (palletsIds, positionId) => {
@@ -404,6 +442,8 @@ export function useStore(storeId) {
             };
         });
     }
+
+
 
 
 
@@ -453,7 +493,7 @@ export function useStore(storeId) {
         isPositionRelevant,
 
         isPalletRelevant,
-        onChangePallet,
+        updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
 
         openPalletLabelDialog,
@@ -467,7 +507,7 @@ export function useStore(storeId) {
         closeMovePalletToStoreDialog,
         movePalletToStoreDialogData,
         isOpenMovePalletToStoreDialog,
-        onMovePalletToStore,
+        updateStoreWhenOnMovePalletToStore,
 
     };
 

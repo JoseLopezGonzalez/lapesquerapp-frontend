@@ -108,7 +108,7 @@ export function PalletsListDialog() {
             </DialogTrigger>
             <DialogContent className="w-full max-w-6xl ">
                 <DialogHeader>
-                    <DialogTitle>Palets por especie</DialogTitle>
+                    <DialogTitle>Palets</DialogTitle>
                 </DialogHeader>
 
                 <div className="bg-background text-foreground p-6  mx-auto rounded-lg w-full "> {/* max-w-3xl */}

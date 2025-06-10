@@ -1,6 +1,6 @@
 import { getStoreOptions, getStores } from "@/services/storeService";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 
 export function useStores() {
@@ -15,7 +15,7 @@ export function useStores() {
     const [reload, setReload] = useState(false);
 
     useEffect(() => {
-        if(!token) return;
+        if (!token) return;
         getStores(token)
             .then((data) => {
                 setStores(data);
@@ -26,29 +26,47 @@ export function useStores() {
                 setError(error);
                 setLoading(false);
             });
-    }, [reload , token]);
+    }, [reload, token]);
 
-    return { stores, loading, error };
+    /* const onUpdateCurrentStoreNetWeight = useCallback((storeId, updatedStore) => {
+        requestAnimationFrame(() => {
+            setStores((prevStores) =>
+                prevStores.map((store) =>
+                    store.id === storeId ? { ...store, ...updatedStore } : store
+                )
+            );
+        });
+    }, []); */
+
+    const onUpdateCurrentStoreTotalNetWeight = useCallback((storeId, totalNetWeight) => {
+        requestAnimationFrame(() => {
+            setStores((prevStores) =>
+                prevStores.map((store) =>
+                    store.id == storeId ? { ...store, totalNetWeight } : store
+                )
+            );
+        });
+    }, []);
+
+    const onAddNetWeightToStore = useCallback((storeId, netWeight) => {
+        console.log("Adding net weight to store:", storeId, netWeight);
+        requestAnimationFrame(() => {
+            setStores((prevStores) =>
+                prevStores.map((store) =>
+                    store.id == storeId ? { ...store, totalNetWeight: store.totalNetWeight + netWeight }
+                        : store
+                )
+            );
+        });
+    }, []);
+
+
+
+
+
+    return { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore };
 
 }
 
-export const useStoresOptions = () => {
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
 
-    const [storeOptions, setStoreOptions] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!token) return;
-        getStoreOptions(token)
-            .then((store) => {
-                setStoreOptions(store.map(s => ({ value: `${s.id}`, label: `${s.name}` })));
-            })
-            .catch(err => console.error('Error al cargar impuestos:', err))
-            .finally(() => setLoading(false));
-    }, [token]);
-
-    return { storeOptions, loading };
-};
 
