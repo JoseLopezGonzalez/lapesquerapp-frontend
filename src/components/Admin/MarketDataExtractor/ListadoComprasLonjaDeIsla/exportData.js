@@ -4466,6 +4466,8 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
+    cod: '1195',
+    codBrisapp: '170',
     barco: "BRASILIA",
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
@@ -5228,7 +5230,32 @@ export const barcosVentaDirecta = [
       nombre: 'Alejandra Gómez Ceada',
       codA3erp: '611721',
     }
-  }
+  },
+  /* BRASILIA */
+  {
+    cod: '1195',
+    barco: "BRASILIA",
+    armador: {
+      nombre: 'Prumaudaz-Pescas Unipessoal Lda',
+      codA3erp: '988299',
+    }
+  },
+  {
+    cod: '14',
+    barco: "RIO NABAO",
+    armador: {
+      nombre: 'Expo-Vent de Pesca, S.L.',
+      codA3erp: '988292',
+    }
+  },
+  {
+    cod: '128',
+    barco: "PAYMOGO",
+    armador: {
+      nombre: 'Expo-Vent de Pesca, S.L.',
+      codA3erp: '988292',
+    }
+  },
 ];
 
 export const serviciosLonjaDeIsla = [
