@@ -1,3 +1,4 @@
+import { API_URL_V2 } from '@/configs/config';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -11,7 +12,7 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          const res = await fetch('https://api.congeladosbrisamar.es/api/v2/login', {
+          const res = await fetch(`${API_URL_V2}login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
