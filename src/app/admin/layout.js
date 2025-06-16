@@ -1,3 +1,4 @@
+import FloatingHelpButton from '@/components/Admin/FloatingHelp/FloatingHelpButton';
 import Layout from '@/components/Admin/Layout';
 import { AppSidebar } from '@/components/Admin/Layout/SideBar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -29,6 +30,7 @@ export default function AdminLayout({ children }) {
             {children}
           </div>
         </main>
+        <FloatingHelpButton />
       </SidebarProvider>
 
     </div>
