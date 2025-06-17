@@ -188,3 +188,39 @@ export function movePalletToStore(palletId, storeId, token) {
             console.log('movePalletToStore finalizado');
         });
 }
+
+
+/**
+ * Elimina la posición actual de un palet (lo deja sin ubicar).
+ * @param {number|string} palletId - ID del palet.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend.
+ */
+export function removePalletPosition(palletId, token) {
+    return fetch(`${API_URL_V2}pallets/${palletId}/unassign-position`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al quitar la posición del palet');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('removePalletPosition finalizado');
+        });
+}

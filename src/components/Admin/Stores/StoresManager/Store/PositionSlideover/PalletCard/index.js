@@ -1,7 +1,7 @@
 "use client"
 import React, { useRef } from 'react'
 import { useState } from "react"
-import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin } from "lucide-react"
+import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
@@ -19,10 +19,15 @@ import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
 
-    const { openPalletDialog, isPalletRelevant ,openPalletLabelDialog,openMovePalletToStoreDialog } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition } = useStoreContext();
 
     const handleOnCLickEdit = () => {
         openPalletDialog(pallet.id)
+    }
+
+    /* Handle on Click quitar elemento de posición */
+    const handleOnClickRemovePalletFromPosition = () => {
+        removePalletFromPosition(pallet.id)
     }
 
     const fondoClasses = isPalletRelevant(pallet.id) ?
@@ -119,8 +124,11 @@ export default function PalletCard({ pallet }) {
                             Editar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <LogOut className="h-4 w-4 mr-2" />
+                        <DropdownMenuItem
+                            onClick={handleOnClickRemovePalletFromPosition}
+                            className="text-destructive focus:text-destructive cursor-pointer"
+                        >
+                            <MapPinX className="h-4 w-4 mr-2" />
                             Quitar de esta posición
                         </DropdownMenuItem>
                     </DropdownMenuContent>

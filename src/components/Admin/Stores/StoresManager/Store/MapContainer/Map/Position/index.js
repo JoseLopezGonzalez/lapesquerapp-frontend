@@ -85,7 +85,7 @@ const Position = ({ posicion }) => {
                         </text>
                     </g>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-0" align="center">
+                <PopoverContent className="w-96 p-0" align="center">
                     <PositionPopover position={posicion} />
                 </PopoverContent>
             </Popover>

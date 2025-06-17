@@ -44,8 +44,6 @@ export const StoreContent = () => {
         updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
         store,
-
-
     } = useStoreContext();
 
     const storeId = store?.id;
@@ -173,8 +171,8 @@ export const StoreContent = () => {
     )
 }
 
-                  
-export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore , setIsStoreLoading }) => {
+
+export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading }) => {
 
     return (
         <StoreProvider

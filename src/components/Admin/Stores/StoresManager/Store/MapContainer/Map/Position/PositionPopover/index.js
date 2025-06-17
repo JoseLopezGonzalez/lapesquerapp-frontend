@@ -4,14 +4,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStoreContext } from '@/context/StoreContext';
-import { CircleDot, Edit, Plus } from 'lucide-react';
+import { CircleDot, Edit, MapPinX, Plus, Trash2 } from 'lucide-react';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
 
-    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition } = useStoreContext();
 
     const pallets = getPositionPallets(id);
 
@@ -26,6 +26,11 @@ const PositionPopover = ({ position }) => {
     const handleAddPallet = () => {
         openAddElementToPosition(id);
     }
+
+    const handleOnClickRemovePalletFromPosition = (palletId) => {
+        removePalletFromPosition(palletId, id);
+    }
+
 
     const fondoClasses = (palletId) => isPalletRelevant(palletId) ?
         'bg-green-500 text-background border-green-400 dark:border-green-600'
@@ -78,24 +83,45 @@ const PositionPopover = ({ position }) => {
                                         <span>{formatInteger(pallet.boxes.length)} cajas</span>
                                         <span>{formatDecimalWeight(pallet.netWeight)}</span>
                                     </div>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-7 w-7"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleOnClickEditPallet(pallet.id);
-                                                }}
-                                            >
-                                                <Edit className="h-3.5 w-3.5" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Editar palet</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                    <div className="flex items-center ">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7 "
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOnClickEditPallet(pallet.id);
+                                                    }}
+                                                >
+                                                    <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Editar palet</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                        {/* Button deletePalletFromPosition Tooltip */}
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7 text-destructive"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOnClickRemovePalletFromPosition(pallet.id);
+                                                    }}
+                                                >
+                                                    <MapPinX className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Quitar de esta posición</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
                                 </div>
                             ))
                         )}

@@ -1,7 +1,10 @@
 import { UNLOCATED_POSITION_ID } from "@/configs/config";
+import { getToastTheme } from "@/customs/reactHotToast";
+import { removePalletPosition } from "@/services/palletService";
 import { getStore, getStores } from "@/services/storeService";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 
 
@@ -458,6 +461,36 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
 
 
+    const removePalletFromPosition = async (palletId) => {
+        if (!token) return;
+
+        try {
+            await removePalletPosition(palletId, token);
+
+            setStore(prevStore => {
+                const updatedPallets = prevStore.content.pallets.map(pallet =>
+                    pallet.id === palletId ? { ...pallet, position: null } : pallet
+                );
+
+                return {
+                    ...prevStore,
+                    content: {
+                        ...prevStore.content,
+                        pallets: updatedPallets
+                    }
+                };
+            });
+
+            toast.success("Posición eliminada correctamente", getToastTheme());
+        } catch (error) {
+            console.error("Error al quitar posición del palet", error);
+            toast.error("Error al quitar la posición", getToastTheme());
+        }
+    };
+
+
+
+
 
 
 
@@ -469,7 +502,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
         onChangeFilters,
         filteredPositionsMap,
-
+        removePalletFromPosition,
 
 
 
