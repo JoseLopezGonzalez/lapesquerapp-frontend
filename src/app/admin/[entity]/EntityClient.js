@@ -263,58 +263,67 @@ export default function EntityClient({ config }) {
         const deleteUrl = config.deleteEndpoint.replace(':id', id);
 
         try {
-
-            const session = await getSession(); // Obtener sesión actual
-
+            const session = await getSession();
 
             const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
                 headers: {
-                    Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                    'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                    'User-Agent': navigator.userAgent,
+                    'Content-Type': 'application/json',
                 },
             });
 
             if (response.ok) {
-                alert('Elemento eliminado con éxito.');
+                toast.success('Elemento eliminado con éxito.');
                 setData((prevData) => ({
                     ...prevData,
                     rows: prevData.rows.filter((item) => item.id !== id),
                 }));
             } else {
-                alert('Hubo un error al intentar eliminar el elemento.');
+                toast.error('Hubo un error al intentar eliminar el elemento.');
             }
         } catch (error) {
-            alert(error.message);
+            toast.error(error.message);
         }
     };
 
     const handleSelectedRowsDelete = async () => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar estos elementos?')) return;
 
-        const deleteUrl = config.deleteEndpoint;
+        const deleteUrl = config.deleteEndpoint.includes(':id')
+            ? config.deleteEndpoint.replace('/:id', '')
+            : config.deleteEndpoint;
 
         try {
+            const session = await getSession();
+
             const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                    'User-Agent': navigator.userAgent,
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ ids: selectedRows }),
             });
 
             if (response.ok) {
-                alert('Elementos eliminados con éxito.');
+                toast.success('Elementos eliminados con éxito.');
                 setData((prevData) => ({
                     ...prevData,
                     rows: prevData.rows.filter((item) => !selectedRows.includes(item.id)),
                 }));
                 setSelectedRows([]);
             } else {
-                alert('Hubo un error al intentar eliminar los elementos.');
+                toast.error('Hubo un error al intentar eliminar los elementos.');
             }
         } catch (error) {
-            alert('No se pudo conectar al servidor.');
+            toast.error(error.message || 'No se pudo conectar al servidor.');
         }
-    }
+    };
+
+
 
     const handleExport = async (exportOption) => {
         const { endpoint, fileName, type, waitingMessage } = exportOption;

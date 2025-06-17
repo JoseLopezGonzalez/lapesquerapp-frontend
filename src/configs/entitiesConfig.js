@@ -836,7 +836,7 @@ export const configs = {
     },
     endpoint: "products",
     viewRoute: "/admin/products/:id",
-    deleteEndpoint: "/products/:id",
+    deleteEndpoint: "products/:id",
     createPath: "/admin/products/create",
     filtersGroup: {
       search: {
@@ -1017,8 +1017,23 @@ export const configs = {
           },
           cols: { sm: 4, md: 4, lg: 4, xl: 2 },
         },
+        {
+          name: "a3erp_code",
+          label: "Código A3ERP",
+          type: "text",
+          placeholder: "Ej. 123456",
+          cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+        },
+        {
+          name: "facil_com_code",
+          label: "Código Facilcom",
+          type: "text",
+          placeholder: "Ej. F4567",
+          cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+        },
       ],
-    },
+    }
+
 
   },
 
@@ -1032,7 +1047,7 @@ export const configs = {
     },
     endpoint: "stores",
     viewRoute: "/admin/stores/:id",
-    deleteEndpoint: "/stores/:id",
+    deleteEndpoint: "stores/:id",
     createPath: "/admin/stores/create",
     filtersGroup: {
       search: {
@@ -2104,7 +2119,7 @@ export const configs = {
     },
     endpoint: "salespeople",
     viewRoute: "/admin/salespeople/:id",
-    deleteEndpoint: "/salespeople/:id",
+    deleteEndpoint: "salespeople/:id",
     createPath: "/admin/salespeople/create",
     filtersGroup: {
       search: {
@@ -2165,27 +2180,25 @@ export const configs = {
           validation: {
             required: "El nombre es obligatorio",
           },
-          cols: {
-            sm: 6,
-            md: 6,
-            lg: 6,
-            xl: 6,
-          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
         },
         {
           name: "emails",
           label: "Emails",
           type: "emailList",
-          placeholder: "Introduce uno o varios correos y pulsa Enter",
-          cols: {
-            sm: 6,
-            md: 6,
-            lg: 6,
-            xl: 6,
-          },
+          placeholder: "Introduce un correo y pulsa Enter",
+          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        },
+        {
+          name: "ccEmails",
+          label: "Emails en copia (CC)",
+          type: "emailList",
+          placeholder: "Introduce un correo y pulsa Enter",
+          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
         },
       ],
-    },
+    }
+
 
   },
   /* fishing-gears */

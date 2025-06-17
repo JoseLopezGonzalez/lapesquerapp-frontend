@@ -60,18 +60,8 @@ export const navigationConfig = [
         name: 'Pedidos',
         icon: PencilSquareIcon,
         allowedRoles: ["admin", "manager", "superuser"],
-        childrens: [
-            {
-                name: 'Todos los Pedidos',
-                href: '/admin/orders',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-            {
-                name: 'Gestor de Pedidos',
-                href: '/admin/orders-manager',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-        ],
+        href: '/admin/orders',
+        
     },
     {
         name: 'Productos',

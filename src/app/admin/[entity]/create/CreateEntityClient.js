@@ -95,7 +95,7 @@ export default function CreateEntityClient({ config }) {
     const onSubmit = async (data) => {
         try {
             const session = await getSession();
-            const response = await fetch("/api/submit-entity", {
+            const response = await fetch(`${API_URL_V2}${endpoint}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export default function CreateEntityClient({ config }) {
                     Authorization: `Bearer ${session?.user?.accessToken}`,
                     "User-Agent": navigator.userAgent,
                 },
-                body: JSON.stringify({ endpoint, data }),
+                body: JSON.stringify(data),
             });
 
             const result = await response.json();
