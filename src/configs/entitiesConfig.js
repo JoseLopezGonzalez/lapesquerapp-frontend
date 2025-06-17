@@ -755,6 +755,7 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    
   },
 
   /* Products */

@@ -254,7 +254,7 @@ const OrderContent = ({ onLoading }) => {
                     {/* Incident */}
                     <TabsTrigger value="incident">Incidencia</TabsTrigger>
                     <TabsTrigger value="customer-history">Histórico</TabsTrigger>
-                    {/*  <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
+                     {/* <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                   </TabsList>
                   <div className="flex-1 overflow-y-hidden w-full">
 
