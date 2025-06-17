@@ -1,5 +1,10 @@
+
+
+
+
 export const configs = {
   'raw-material-receptions': {
+    hideCreateButton: true,
     title: "Recepciones de materia prima",
     description: "Crea, edita, genera reportes y más.",
     emptyState: {
@@ -104,6 +109,7 @@ export const configs = {
 
   },
   orders: {
+    hideCreateButton: true,
     title: "Pedidos",
     description: "Gestiona, edita, y consulta pedidos.",
     emptyState: {
@@ -640,9 +646,10 @@ export const configs = {
           validation: {
             required: "El correo electrónico es obligatorio",
             pattern: {
-              value: "/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/",
+              value: "^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$",
               message: "Formato de email no válido"
             }
+
           },
           cols: {
             sm: 3,
@@ -677,6 +684,7 @@ export const configs = {
           name: "role",
           label: "Rol",
           type: "Autocomplete",
+          placeholder: "Selecciona el rol",
           endpoint: "roles/options",
           validation: {
             required: "Seleccionar un rol es obligatorio"
@@ -755,7 +763,67 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
-    
+    createForm: {
+      title: "Nuevo Transporte",
+      endpoint: "transports",
+      method: "POST",
+      successMessage: "Transporte creado con éxito",
+      errorMessage: "Error al crear el transporte",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          },
+          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        },
+        {
+          name: "vatNumber",
+          label: "NIF/CIF",
+          type: "text",
+          validation: {
+            required: "El NIF o CIF es obligatorio",
+            pattern: {
+              value: '/^[A-Z0-9]{8,12}$/',
+              message: "Formato no válido",
+            },
+          },
+          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        },
+        {
+          name: "address",
+          label: "Dirección",
+          type: "textarea",
+          validation: {
+            required: "La dirección es obligatoria",
+            minLength: { value: 10, message: "Debe contener al menos 10 caracteres" },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+        {
+          name: "emails",
+          label: "Emails de contacto",
+          type: "emailList",
+          placeholder: "Introduce cada email individualmente y pulsa 'Enter'",
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          },
+        },
+        {
+          name: "ccEmails",
+          label: "Emails en copia",
+          type: "emailList",
+          placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        }
+      ],
+    }
   },
 
   /* Products */
@@ -871,6 +939,87 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Nuevo Producto",
+      endpoint: "products",
+      method: "POST",
+      successMessage: "Producto creado con éxito",
+      errorMessage: "Error al crear el producto",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre del producto",
+          type: "text",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+        {
+          name: "speciesId",
+          label: "Especie",
+          type: "Autocomplete",
+          placeholder: "Selecciona la especie",
+          endpoint: "species/options",
+          validation: {
+            required: "La especie es obligatoria",
+          },
+          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        },
+        {
+          name: "captureZoneId",
+          label: "Zona de captura",
+          type: "Autocomplete",
+          placeholder: "Selecciona la zona de captura",
+          endpoint: "capture-zones/options",
+          validation: {
+            required: "La zona de captura es obligatoria",
+          },
+          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        },
+        {
+          name: "articleGtin",
+          label: "GTIN del artículo",
+          type: "text",
+          placeholder: "Ej. 8431234567890",
+          validation: {
+            pattern: {
+              value: '/^[0-9]{8,14}$/',
+              message: "GTIN inválido. Debe contener entre 8 y 14 dígitos.",
+            },
+          },
+          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+        },
+        {
+          name: "boxGtin",
+          label: "GTIN de caja",
+          type: "text",
+          placeholder: "Ej. 8431234567890",
+          validation: {
+            pattern: {
+              value: '/^[0-9]{8,14}$/',
+              message: "GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.",
+            },
+          },
+          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+        },
+        {
+          name: "palletGtin",
+          label: "GTIN de palet",
+          type: "text",
+          placeholder: "Ej. 8431234567890",
+          validation: {
+            pattern: {
+              value: '/^[0-9]{8,14}$/',
+              message: "GTIN de palet inválido. Debe contener entre 8 y 14 dígitos.",
+            },
+          },
+          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+        },
+      ],
+    },
+
   },
 
   /* Stores */
@@ -933,9 +1082,64 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Crear almacén",
+      endpoint: "stores",
+      method: "POST",
+      successMessage: "Almacén creado con éxito",
+      errorMessage: "Error al crear el almacén",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Introduce el nombre del almacén",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: {
+              value: 3,
+              message: "Debe tener al menos 3 caracteres",
+            },
+          },
+          cols: {
+            sm: 3, md: 3, lg: 3, xl: 6,
+          },
+        },
+        {
+          name: "temperature",
+          label: "Temperatura",
+          type: "text",
+          placeholder: "Ej. -18 ºC",
+          validation: {
+            required: "La temperatura es obligatoria",
+          },
+          cols: {
+            sm: 3, md: 3, lg: 3, xl: 3,
+          },
+        },
+        {
+          name: "capacity",
+          label: "Capacidad (kg)",
+          type: "number",
+          placeholder: "Capacidad máxima en kg",
+          validation: {
+            required: "La capacidad es obligatoria",
+            min: {
+              value: 0,
+              message: "Debe ser un valor positivo",
+            },
+          },
+          cols: {
+            sm: 3, md: 3, lg: 3, xl: 3,
+          },
+        },
+      ],
+    }
+
   },
   /* boxes */
   boxes: {
+    hideCreateButton: true,
     title: "Cajas",
     description: "Gestiona, edita y consulta cajas.",
     emptyState: {
@@ -1038,6 +1242,7 @@ export const configs = {
   },
   /* Pallets */
   pallets: {
+    hideCreateButton: true,
     title: "Palets",
     description: "Gestiona, edita y consulta palets.",
     emptyState: {
@@ -1323,6 +1528,117 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Crear cliente",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Introduce el nombre del cliente",
+          validation: {
+            required: "El nombre es obligatorio",
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 4 },
+        },
+        {
+          name: "vatNumber",
+          label: "NIF",
+          type: "text",
+          placeholder: "Introduce el NIF",
+          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        },
+
+        {
+          name: "billing_address",
+          label: "Dirección de facturación",
+          type: "textarea",
+          cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        },
+        {
+          name: "shipping_address",
+          label: "Dirección de envío",
+          type: "textarea",
+          cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        },
+        {
+          name: "transportation_notes",
+          label: "Notas para transporte",
+          type: "textarea",
+          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        },
+        {
+          name: "production_notes",
+          label: "Notas para producción",
+          type: "textarea",
+          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        },
+        {
+          name: "accounting_notes",
+          label: "Notas contables",
+          type: "textarea",
+          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        },
+        {
+          name: "emails",
+          label: "Emails",
+          type: "emailListInput",
+          placeholder: "Introduce correos electrónicos y pulsa Enter",
+          cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+        },
+        {
+          name: "contact_info",
+          label: "Información de contacto",
+          type: "textarea",
+          placeholder: "Introduce teléfonos u otra información de contacto",
+          cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+        },
+        {
+          name: "salesperson_id",
+          label: "Comercial",
+          type: "Autocomplete",
+          placeholder: "Selecciona el comercial",
+          endpoint: "salespeople/options",
+          placeholder: "Selecciona el comercial",
+          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        },
+        {
+          name: "country_id",
+          label: "País",
+          type: "Autocomplete",
+          endpoint: "countries/options",
+          placeholder: "Selecciona el país",
+          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        },
+        {
+          name: "payment_term_id",
+          label: "Forma de pago",
+          type: "Autocomplete",
+          endpoint: "payment-terms/options",
+          placeholder: "Selecciona la forma de pago",
+          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        },
+        {
+          name: "transport_id",
+          label: "Transporte",
+          type: "Autocomplete",
+          endpoint: "transports/options",
+          placeholder: "Selecciona el transporte",
+          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        },
+        {
+          name: "a3erp_code",
+          label: "Código A3ERP",
+          type: "text",
+          placeholder: "Introduce el código de cliente A3ERP",
+          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        },
+      ],
+    }
+
+
+
+
   },
   /* suppliers */
   suppliers: {
@@ -1391,6 +1707,58 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Crear proveedor",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Introduce el nombre del proveedor",
+          validation: {
+            required: "El nombre es obligatorio",
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+        /* {
+          name: "type",
+          label: "Tipo",
+          type: "text",
+          placeholder: "Introduce el tipo de proveedor",
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        }, */
+        {
+          name: "contact_person",
+          label: "Persona de contacto",
+          type: "text",
+          placeholder: "Introduce la persona de contacto",
+          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        },
+        {
+          name: "phone",
+          label: "Teléfono",
+          type: "text",
+          placeholder: "Introduce el teléfono",
+          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        },
+        {
+          name: "email",
+          label: "Correo electrónico",
+          type: "email",
+          placeholder: "Introduce el email",
+          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        },
+        {
+          name: "address",
+          label: "Dirección",
+          type: "textarea",
+          placeholder: "Introduce la dirección del proveedor",
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+
+      ],
+    },
+
   },
   /* CaptureZones */
   'capture-zones': {
@@ -1446,6 +1814,30 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Nueva Zona de Captura",
+      endpoint: "capture-zones",
+      method: "POST",
+      successMessage: "Zona de captura creada con éxito",
+      errorMessage: "Error al crear la zona de captura",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre de la zona",
+          type: "text",
+          placeholder: "Ej. Atlántico Noroeste",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: {
+              value: 3,
+              message: "Debe tener al menos 3 caracteres",
+            },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+      ],
+    },
+
   },
   /* species */
   species: {
@@ -1534,6 +1926,69 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Nueva Especie",
+      endpoint: "species",
+      method: "POST",
+      successMessage: "Especie creada con éxito",
+      errorMessage: "Error al crear la especie",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre común",
+          type: "text",
+          placeholder: "Ej. Pulpo",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: {
+              value: 2,
+              message: "Debe tener al menos 2 caracteres",
+            },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        },
+        {
+          name: "scientificName",
+          label: "Nombre científico",
+          type: "text",
+          placeholder: "Ej. Octopus vulgaris",
+          validation: {
+            required: "El nombre científico es obligatorio",
+            minLength: {
+              value: 2,
+              message: "Debe tener al menos 2 caracteres",
+            },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        },
+        {
+          name: "fao",
+          label: "Código FAO",
+          type: "text",
+          placeholder: "Ej. OCT",
+          validation: {
+            required: "El código FAO es obligatorio",
+            pattern: {
+              value: "/^[A-Z]{3,5}$/",
+              message: "Debe contener entre 3 y 5 letras mayúsculas",
+            },
+          },
+          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        },
+        {
+          name: "fishingGearId",
+          label: "Arte de pesca",
+          type: "Autocomplete",
+          placeholder: "Selecciona un arte de pesca",
+          endpoint: "fishing-gears/options",
+          validation: {
+            required: "El arte de pesca es obligatorio",
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        },
+      ],
+    },
+
   },
 
   /* incoterms */
@@ -1602,12 +2057,16 @@ export const configs = {
     /* createForm */
     createForm: {
       title: "Crear incoterm",
+      endpoint: "incoterms",
+      method: "POST",
+      successMessage: "Incoterm creado con éxito",
+      errorMessage: "Error al crear el incoterm",
       fields: [
         {
           name: "code",
           label: "Código",
           type: "text",
-          validations: {
+          validation: {
             required: "El código es obligatorio",
           },
           cols: {
@@ -1615,13 +2074,13 @@ export const configs = {
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         {
           name: "description",
           label: "Descripción",
           type: "text",
-          validations: {
+          validation: {
             required: "La descripción es obligatoria",
           },
           cols: {
@@ -1629,10 +2088,11 @@ export const configs = {
             md: 4,
             lg: 4,
             xl: 4,
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
+
   },
   /* salespeople */
   salespeople: {
@@ -1690,6 +2150,43 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Crear comercial",
+      endpoint: "salespeople",
+      method: "POST",
+      successMessage: "Comercial creado con éxito",
+      errorMessage: "Error al crear el comercial",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Ej. Juan Pérez",
+          validation: {
+            required: "El nombre es obligatorio",
+          },
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          },
+        },
+        {
+          name: "emails",
+          label: "Emails",
+          type: "emailList",
+          placeholder: "Introduce uno o varios correos y pulsa Enter",
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          },
+        },
+      ],
+    },
+
   },
   /* fishing-gears */
   'fishing-gears': {
@@ -1745,6 +2242,30 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Nuevo Arte de Pesca",
+      endpoint: "fishing-gears",
+      method: "POST",
+      successMessage: "Arte de pesca creado con éxito",
+      errorMessage: "Error al crear el arte de pesca",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Ej. Nasas, Trasmallo, Arrastre...",
+          validation: {
+            required: "El nombre es obligatorio",
+            minLength: {
+              value: 2,
+              message: "Debe tener al menos 2 caracteres",
+            },
+          },
+          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        },
+      ],
+    },
+
   },
   /* payment-terms */
   'payment-terms': {
@@ -1850,6 +2371,30 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    createForm: {
+      title: "Crear país",
+      endpoint: "countries",
+      method: "POST",
+      successMessage: "País creado con éxito",
+      errorMessage: "Error al crear el país",
+      fields: [
+        {
+          name: "name",
+          label: "Nombre",
+          type: "text",
+          placeholder: "Introduce el nombre del país",
+          validation: {
+            required: "El nombre es obligatorio",
+          },
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          },
+        },
+      ],
+    },
   },
 
   /* paymentTerms */
@@ -1908,9 +2453,12 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
-    /* CreateForm */
     createForm: {
       title: "Crear método de pago",
+      endpoint: "payment-terms",
+      method: "POST",
+      successMessage: "Método de pago creado con éxito",
+      errorMessage: "Error al crear el método de pago",
       fields: [
         {
           name: "name",
@@ -1925,7 +2473,7 @@ export const configs = {
             md: 6,
             lg: 6,
             xl: 6,
-          }
+          },
         },
       ],
     },
@@ -1934,6 +2482,7 @@ export const configs = {
 
   /* ceboDispatches*/
   'cebo-dispatches': {
+    hideCreateButton: true,
     title: "Envíos de cebo",
     description: "Gestiona, edita y consulta envíos de cebo.",
     emptyState: {
@@ -2032,6 +2581,7 @@ export const configs = {
 
   /* Sessions */
   sessions: {
+    hideCreateButton: true,
     title: "Sesiones",
     description: "Gestiona, edita y consulta sesiones.",
     emptyState: {
@@ -2095,6 +2645,7 @@ export const configs = {
   },
   /* activity-logs */
   'activity-logs': {
+    hideCreateButton: true,
     title: "Registros de actividad",
     description: "Gestiona, edita y consulta registros de actividad.",
     emptyState: {
@@ -2213,6 +2764,8 @@ export const configs = {
 
 
 };
+
+
 
 
 

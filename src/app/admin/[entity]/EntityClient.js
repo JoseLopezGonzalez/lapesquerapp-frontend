@@ -547,16 +547,21 @@ export default function EntityClient({ config }) {
                             updateFilters: (updatedFilters) => setFilters(updatedFilters),
                         }}
                     />
-                    <Button
-                        onClick={() => router.push(config.createPath)}
-                    >
-                        <PlusIcon className="h-5 w-5" aria-hidden="true" />
-                        Nuevo
-                    </Button>
+                    {!config.hideCreateButton && (
+                        <Button
+                            onClick={() => router.push(config.createPath)}
+                        >
+                            <PlusIcon className="h-5 w-5" aria-hidden="true" />
+                            Nuevo
+                        </Button>
+                    )}
                 </Header>
                 <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} onSelectionChange={handleOnSelectionChange} />
                 <Footer>
-                    <PaginationFooter meta={paginationMeta} onPageChange={handlePageChange} />
+                    <div className='w-full pr-24 '>
+
+                        <PaginationFooter meta={paginationMeta} onPageChange={handlePageChange} />
+                    </div>
                 </Footer>
             </GenericTable>
         </div>

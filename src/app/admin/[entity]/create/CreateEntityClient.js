@@ -17,6 +17,26 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/Shadcn/Dates/DatePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
+import { API_URL_V2 } from "@/configs/config";
+import EmailListInput from "@/components/ui/emailListInput";
+
+function prepareValidations(fields) {
+    return fields.map((field) => {
+        const newField = { ...field };
+
+        if (
+            newField.validation?.pattern?.value &&
+            typeof newField.validation.pattern.value === "string"
+        ) {
+            const raw = newField.validation.pattern.value;
+            const regexBody = raw.replace(/^\/|\/$/g, ""); // quita los / inicial y final
+            newField.validation.pattern.value = new RegExp(regexBody);
+        }
+
+        return newField;
+    });
+}
+
 
 export default function CreateEntityClient({ config }) {
     const { title, endpoint, fields, successMessage, errorMessage } = config.createForm;
@@ -35,14 +55,27 @@ export default function CreateEntityClient({ config }) {
     useEffect(() => {
         const fetchOptions = async () => {
             const result = {};
+            const session = await getSession();
 
             await Promise.all(
                 fields.map(async (field) => {
                     if (field.type === "Autocomplete" && field.endpoint) {
                         try {
-                            const res = await fetch(`/api/${field.endpoint}`);
+                            const res = await fetch(`${API_URL_V2}${field.endpoint}`, {
+                                headers: {
+                                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                                    Accept: "application/json",
+                                },
+                            });
                             const data = await res.json();
-                            result[field.name] = data;
+
+                            // Convertimos [{ id, name }] → [{ value, label }]
+                            const formatted = data.map((item) => ({
+                                value: item.id,
+                                label: item.name,
+                            }));
+
+                            result[field.name] = formatted;
                         } catch (err) {
                             console.error(`Error cargando opciones para ${field.name}`, err);
                             result[field.name] = [];
@@ -56,6 +89,8 @@ export default function CreateEntityClient({ config }) {
 
         fetchOptions();
     }, [fields]);
+
+
 
     const onSubmit = async (data) => {
         try {
@@ -145,6 +180,19 @@ export default function CreateEntityClient({ config }) {
                 );
             case "textarea":
                 return <Textarea {...commonProps} rows={field.rows || 3} />;
+            case "emailList":
+                return (
+                    <Controller
+                        name={field.name}
+                        control={control}
+                        defaultValue={[]}
+                        render={({ field: { value, onChange } }) => (
+                            <EmailListInput value={value} onChange={onChange} placeholder={field.placeholder} />
+                        )}
+                    />
+                );
+
+
             default:
                 return <Input {...commonProps} type={field.type || "text"} />;
         }
@@ -158,7 +206,8 @@ export default function CreateEntityClient({ config }) {
                     onSubmit={handleSubmit(onSubmit)}
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5"
                 >
-                    {fields.map((field, index) => (
+                    {prepareValidations(fields).map((field, index) => (
+
                         <div
                             key={`${field.name}-${index}`}
                             className={`p-2 sm:col-span-${field.cols?.sm || 6} md:col-span-${field.cols?.md || 6} lg:col-span-${field.cols?.lg || 6} xl:col-span-${field.cols?.xl || 6}`}
@@ -175,9 +224,17 @@ export default function CreateEntityClient({ config }) {
                         </div>
                     ))}
 
-                    <div className="sm:col-span-6 flex justify-end p-4">
+                    <div className="sm:col-span-6 justify-end p-4 flex gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="ml-2"
+                            onClick={() => reset()}
+                        >
+                            Cancelar
+                        </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            Agregar
+                            Crear
                         </Button>
                     </div>
                 </form>
