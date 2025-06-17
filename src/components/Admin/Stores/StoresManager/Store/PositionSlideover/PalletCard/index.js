@@ -1,7 +1,7 @@
 "use client"
 import React, { useRef } from 'react'
 import { useState } from "react"
-import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX } from "lucide-react"
+import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX, MapPinHouse } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
@@ -113,7 +113,7 @@ export default function PalletCard({ pallet }) {
                             className='cursor-pointer'
                             onClick={() => openMovePalletToStoreDialog(pallet.id)}
                         >
-                            <MapPin className="h-4 w-4 mr-2" />
+                            <MapPinHouse className="h-4 w-4 mr-2" />
                             Reubicar
                         </DropdownMenuItem>
                         <DropdownMenuItem

@@ -82,7 +82,7 @@ export default function FloatingHelpButton() {
         <>
             {/* Fondo oscuro cuando está abierto */}
             <div
-                className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 ease-in-out ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                className={`fixed inset-0 z-40 bg-black/75 transition-opacity duration-200 ease-in-out ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                     }`}
                 onClick={() => setIsOpen(false)}
             />

@@ -4,14 +4,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStoreContext } from '@/context/StoreContext';
-import { CircleDot, Edit, MapPinX, Plus, Trash2 } from 'lucide-react';
+import { CircleDot, Edit, MapPinHouse, MapPinX, Plus, Trash2 } from 'lucide-react';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
 
-    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition, openMovePalletToStoreDialog } = useStoreContext();
 
     const pallets = getPositionPallets(id);
 
@@ -29,6 +29,10 @@ const PositionPopover = ({ position }) => {
 
     const handleOnClickRemovePalletFromPosition = (palletId) => {
         removePalletFromPosition(palletId, id);
+    }
+
+    const handleOnCLickMovePalletToStore = (palletId) => {
+        openMovePalletToStoreDialog(palletId, id);
     }
 
 
@@ -102,13 +106,32 @@ const PositionPopover = ({ position }) => {
                                                 <p>Editar palet</p>
                                             </TooltipContent>
                                         </Tooltip>
+                                        {/* Button  Reubicar Tooltip*/}
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOnCLickMovePalletToStore(pallet.id);
+                                                    }}
+                                                >
+                                                    <MapPinHouse className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Reubicar palet</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                         {/* Button deletePalletFromPosition Tooltip */}
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 text-destructive"
+                                                    className="h-7 w-7 text-destructive hover:text-destructive"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleOnClickRemovePalletFromPosition(pallet.id);
@@ -121,6 +144,7 @@ const PositionPopover = ({ position }) => {
                                                 <p>Quitar de esta posición</p>
                                             </TooltipContent>
                                         </Tooltip>
+
                                     </div>
                                 </div>
                             ))
