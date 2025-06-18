@@ -33,33 +33,27 @@ const badgeStyles = {
     },
 };
 
-export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange }) => {
+export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange, selectedRows }) => {
     const { headers } = table;
 
-    const [selectedRows, setSelectedRows] = useState([]);
 
     const toggleSelectAll = (checked) => {
         if (checked) {
             const visibleRowIds = data.rows.map((row) => row.id);
-            setSelectedRows(visibleRowIds);
+            onSelectionChange(visibleRowIds);
         } else {
-            setSelectedRows([]);
+            onSelectionChange([]);
         }
     };
 
     const toggleSelectRow = (rowId) => {
-        setSelectedRows((prevSelected) =>
+        onSelectionChange((prevSelected) =>
             prevSelected.includes(rowId)
                 ? prevSelected.filter((id) => id !== rowId)
                 : [...prevSelected, rowId]
         );
     };
 
-    useEffect(() => {
-        if (onSelectionChange) {
-            onSelectionChange(selectedRows);
-        }
-    }, [selectedRows, onSelectionChange]);
 
     const renderBadge = (header, value) => {
         const option = header.options[value] || header.options.default;
@@ -75,7 +69,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
 
     return (
         <div className="grow overflow-y-auto overflow-x-auto w-full">
-            <table className="min-w-full divide-y divide-neutral-700/20"> 
+            <table className="min-w-full divide-y divide-neutral-700/20">
                 <thead className="bg-foreground-50 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
@@ -118,7 +112,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 </td>
                                 {headers.map((_, index) => (
                                     <td key={index} className="px-6 py-3">
-                                        <Skeleton className="w-full h-6 rounded-lg "/>
+                                        <Skeleton className="w-full h-6 rounded-lg " />
                                     </td>
                                 ))}
                             </tr>

@@ -110,7 +110,9 @@ export default function CreateEntityClient({ config }) {
 
             if (response.ok) {
                 toast.success(successMessage || "Entidad creada con éxito!");
-                reset();
+               /*  reset(); */
+                // Redirigir a la pagina de la tabla de la entidad
+                window.location.href = `/admin/${endpoint.split("/").pop()}`;
             } else {
                 toast.error(errorMessage || "Error al crear la entidad");
             }

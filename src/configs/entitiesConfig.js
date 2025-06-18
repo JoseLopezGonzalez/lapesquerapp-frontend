@@ -709,7 +709,7 @@ export const configs = {
     },
     endpoint: "transports",
     viewRoute: "/admin/transports/:id",
-    deleteEndpoint: "/transports/:id",
+    deleteEndpoint: "transports/:id",
     createPath: "/admin/transports/create",
     filtersGroup: {
       search: {
@@ -1433,7 +1433,7 @@ export const configs = {
     },
     endpoint: "customers",
     viewRoute: "/admin/customers/:id",
-    deleteEndpoint: "/customers/:id",
+    deleteEndpoint: "customers/:id",
     createPath: "/admin/customers/create",
     filtersGroup: {
       search: {
@@ -1545,6 +1545,10 @@ export const configs = {
     },
     createForm: {
       title: "Crear cliente",
+      endpoint: "customers",
+      method: "POST",
+      successMessage: "Cliente creado con éxito",
+      errorMessage: "Error al crear el cliente",
       fields: [
         {
           name: "name",
@@ -1561,19 +1565,27 @@ export const configs = {
           label: "NIF",
           type: "text",
           placeholder: "Introduce el NIF",
+          validation: {
+            required: "El NIF es obligatorio",
+          },
           cols: { sm: 6, md: 6, lg: 6, xl: 2 },
         },
-
         {
           name: "billing_address",
           label: "Dirección de facturación",
           type: "textarea",
+          validation: {
+            required: "La dirección de facturación es obligatoria",
+          },
           cols: { sm: 12, md: 6, lg: 6, xl: 3 },
         },
         {
           name: "shipping_address",
           label: "Dirección de envío",
           type: "textarea",
+          validation: {
+            required: "La dirección de envío es obligatoria",
+          },
           cols: { sm: 12, md: 6, lg: 6, xl: 3 },
         },
         {
@@ -1597,8 +1609,11 @@ export const configs = {
         {
           name: "emails",
           label: "Emails",
-          type: "emailListInput",
+          type: "emailList",
           placeholder: "Introduce correos electrónicos y pulsa Enter",
+          validation: {
+            required: "Al menos un correo electrónico es obligatorio",
+          },
           cols: { sm: 12, md: 12, lg: 12, xl: 6 },
         },
         {
@@ -1606,6 +1621,9 @@ export const configs = {
           label: "Información de contacto",
           type: "textarea",
           placeholder: "Introduce teléfonos u otra información de contacto",
+          validation: {
+            required: "La información de contacto es obligatoria",
+          },
           cols: { sm: 12, md: 12, lg: 12, xl: 6 },
         },
         {
@@ -1614,7 +1632,9 @@ export const configs = {
           type: "Autocomplete",
           placeholder: "Selecciona el comercial",
           endpoint: "salespeople/options",
-          placeholder: "Selecciona el comercial",
+          validation: {
+            required: "El comercial es obligatorio",
+          },
           cols: { sm: 6, md: 4, lg: 4, xl: 3 },
         },
         {
@@ -1622,6 +1642,9 @@ export const configs = {
           label: "País",
           type: "Autocomplete",
           endpoint: "countries/options",
+          validation: {
+            required: "El país es obligatorio",
+          },
           placeholder: "Selecciona el país",
           cols: { sm: 6, md: 4, lg: 4, xl: 3 },
         },
@@ -1630,6 +1653,9 @@ export const configs = {
           label: "Forma de pago",
           type: "Autocomplete",
           endpoint: "payment-terms/options",
+          validation: {
+            required: "La forma de pago es obligatoria",
+          },
           placeholder: "Selecciona la forma de pago",
           cols: { sm: 6, md: 4, lg: 4, xl: 3 },
         },
@@ -1638,6 +1664,9 @@ export const configs = {
           label: "Transporte",
           type: "Autocomplete",
           endpoint: "transports/options",
+          validation: {
+            required: "El transporte es obligatorio",
+          },
           placeholder: "Selecciona el transporte",
           cols: { sm: 6, md: 4, lg: 4, xl: 3 },
         },
@@ -1650,6 +1679,7 @@ export const configs = {
         },
       ],
     }
+
 
 
 
@@ -1785,7 +1815,7 @@ export const configs = {
     },
     endpoint: "capture-zones",
     viewRoute: "/admin/capture-zones/:id",
-    deleteEndpoint: "/capture-zones/:id",
+    deleteEndpoint: "capture-zones/:id",
     createPath: "/admin/capture-zones/create",
     filtersGroup: {
       search: {
@@ -1864,7 +1894,7 @@ export const configs = {
     },
     endpoint: "species",
     viewRoute: "/admin/species/:id",
-    deleteEndpoint: "/species/:id",
+    deleteEndpoint: "species/:id",
     createPath: "/admin/species/create",
     filtersGroup: {
       search: {
@@ -2016,7 +2046,7 @@ export const configs = {
     },
     endpoint: "incoterms",
     viewRoute: "/admin/incoterms/:id",
-    deleteEndpoint: "/incoterms/:id",
+    deleteEndpoint: "incoterms/:id",
     createPath: "/admin/incoterms/create",
     filtersGroup: {
       search: {
@@ -2211,7 +2241,7 @@ export const configs = {
     },
     endpoint: "fishing-gears",
     viewRoute: "/admin/fishing-gears/:id",
-    deleteEndpoint: "/fishing-gears/:id",
+    deleteEndpoint: "fishing-gears/:id",
     createPath: "/admin/fishing-gears/create",
     filtersGroup: {
       search: {
@@ -2281,53 +2311,7 @@ export const configs = {
 
   },
   /* payment-terms */
-  'payment-terms': {
-    title: "Plazos de pago",
-    description: "Gestiona, edita y consulta plazos de pago.",
-    emptyState: {
-      title: "No existen plazos de pago según los filtros",
-      description: "Ajusta los filtros o crea un nuevo plazo de pago.",
-    },
-    endpoint: "payment-terms",
-    viewRoute: "/admin/payment-terms/:id",
-    deleteEndpoint: "/payment-terms/:id",
-    createPath: "/admin/payment-terms/create",
-    filtersGroup: {
-      search: {
-        label: "Buscar",
-        filters: [
-          {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          },
-        ],
-      },
-      groups: [
-        {
-          name: "generals",
-          label: "Generales",
-          filters: [
-            {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
-            },
 
-          ],
-        },
-
-      ],
-    },
-    table: {
-      headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-      ],
-    },
-  },
   /* countries */
   countries: {
     title: "Países",
@@ -2338,7 +2322,7 @@ export const configs = {
     },
     endpoint: "countries",
     viewRoute: "/admin/countries/:id",
-    deleteEndpoint: "/countries/:id",
+    deleteEndpoint: "countries/:id",
     createPath: "/admin/countries/create",
     filtersGroup: {
       search: {
@@ -2420,7 +2404,7 @@ export const configs = {
     },
     endpoint: "payment-terms",
     viewRoute: "/admin/payment-terms/:id",
-    deleteEndpoint: "/payment-terms/:id",
+    deleteEndpoint: "payment-terms/:id",
     createPath: "/admin/payment-terms/create",
     filtersGroup: {
       search: {
@@ -2656,6 +2640,7 @@ export const configs = {
       ],
     },
   },
+
   /* activity-logs */
   'activity-logs': {
     hideCreateButton: true,

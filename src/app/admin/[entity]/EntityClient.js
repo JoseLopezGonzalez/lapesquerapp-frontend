@@ -280,6 +280,7 @@ export default function EntityClient({ config }) {
                     ...prevData,
                     rows: prevData.rows.filter((item) => item.id !== id),
                 }));
+                setSelectedRows((prevSelected) => prevSelected.filter((rowId) => rowId !== id));
             } else {
                 toast.error('Hubo un error al intentar eliminar el elemento.');
             }
@@ -314,7 +315,12 @@ export default function EntityClient({ config }) {
                     ...prevData,
                     rows: prevData.rows.filter((item) => !selectedRows.includes(item.id)),
                 }));
-                setSelectedRows([]);
+                setSelectedRows([]); // no funciona
+                console.log('Selected rows after deletion:', selectedRows);
+                /* Selected rows after deletion: [11] */
+                setTimeout(() => {
+                    setSelectedRows([]);
+                }, 0);
             } else {
                 toast.error('Hubo un error al intentar eliminar los elementos.');
             }
@@ -565,7 +571,7 @@ export default function EntityClient({ config }) {
                         </Button>
                     )}
                 </Header>
-                <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} onSelectionChange={handleOnSelectionChange} />
+                <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} selectedRows={selectedRows} onSelectionChange={handleOnSelectionChange} />
                 <Footer>
                     <div className='w-full pr-24 '>
 
