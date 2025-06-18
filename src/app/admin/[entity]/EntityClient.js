@@ -39,7 +39,7 @@ function getValueByPath(object, path) {
 }
 
 // Reusable filter formatting function
-const formatFilters = (filters, paginationMeta) => {
+const formatFilters = (filters) => {
     const formattedFilters = filters.reduce((acc, filter) => {
         if (filter.type === 'dateRange' && filter.value) {
             if (filter.value.from) acc[`${filter.name}[start]`] = filter.value.from;
@@ -57,9 +57,7 @@ const formatFilters = (filters, paginationMeta) => {
         formattedFilters['search'] = searchFilter.value;
     }
 
-    const queryParams = new URLSearchParams({
-        page: paginationMeta.currentPage,
-    });
+    const queryParams = new URLSearchParams();
 
     Object.keys(formattedFilters).forEach((key) => {
         const value = formattedFilters[key];
@@ -169,20 +167,24 @@ export default function EntityClient({ config }) {
 
     const router = useRouter();
 
+    const [currentPage, setCurrentPage] = useState(1);
+
 
 
     // Fetch Data
+
+
     useEffect(() => {
-        if (!config?.endpoint) return;
+        const fetchDataWithFilters = async () => {
+            // Restablece la página a 1 cuando los filtros cambian
 
-        const fetchData = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
-            const queryString = formatFilters(filters, paginationMeta);
+            setCurrentPage(1); // Resetea la página a 1 cuando cambian los filtros
+            const queryString = formatFilters(filters);
 
-            /* añadir al queryString el perPage */
+            // Añadir al queryString el perPage
             const perPage = config?.perPage || 12;
-
-            const url = `${API_URL_V2}${config.endpoint}?${queryString}&perPage=${perPage}`;
+            const url = `${API_URL_V2}${config.endpoint}?${queryString}&page=1&perPage=${perPage}`;
 
             try {
                 const session = await getSession(); // Obtener sesión actual
@@ -191,8 +193,8 @@ export default function EntityClient({ config }) {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                        'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                        Authorization: `Bearer ${session?.user?.accessToken}`,
+                        'User-Agent': navigator.userAgent,
                     },
                 });
 
@@ -224,7 +226,6 @@ export default function EntityClient({ config }) {
                                 onClick: () => {
                                     const viewUrl = config.viewRoute.replace(':id', row.id);
                                     window.open(viewUrl, '_blank');
-                                    /* router.push(viewUrl); */
                                 },
                             },
                             delete: {
@@ -248,13 +249,91 @@ export default function EntityClient({ config }) {
             }
         };
 
-        fetchData();
-    }, [config.endpoint, filters, paginationMeta.currentPage]);
+        fetchDataWithFilters();
+    }, [config.endpoint, filters]); // Este useEffect depende solo de los filtros
 
 
+    // useEffect para manejar cambios en la página
+    useEffect(() => {
+        if (currentPage === 1) return;
+        const fetchDataWithPageChange = async () => {
+            setData((prevData) => ({ ...prevData, loading: true }));
+
+            const queryString = formatFilters(filters);
+            // Añadir al queryString el perPage
+            const perPage = config?.perPage || 12;
+            const url = `${API_URL_V2}${config.endpoint}?${queryString}&page=${currentPage}&perPage=${perPage}`;
+
+            try {
+                const session = await getSession(); // Obtener sesión actual
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session?.user?.accessToken}`,
+                        'User-Agent': navigator.userAgent,
+                    },
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('No estás autenticado. Por favor, inicia sesión.');
+                    }
+                    if (response.status === 403) {
+                        throw new Error('No tienes permiso para acceder a esta ruta.');
+                    }
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                const processedRows = result.data.map((row) => {
+                    const rowData = config.table.headers.reduce((acc, header) => {
+                        acc[header.name] = header.path
+                            ? getValueByPath(row, header.path)
+                            : row[header.name] || 'N/A';
+                        return acc;
+                    }, {});
+
+                    return {
+                        ...rowData,
+                        actions: {
+                            view: {
+                                label: 'Ver',
+                                onClick: () => {
+                                    const viewUrl = config.viewRoute.replace(':id', row.id);
+                                    window.open(viewUrl, '_blank');
+                                },
+                            },
+                            delete: {
+                                label: 'Eliminar',
+                                onClick: async () => handleDelete(row.id),
+                            },
+                        },
+                    };
+                });
+
+                setData({ loading: false, rows: processedRows });
+                setPaginationMeta({
+                    currentPage: result.meta.current_page,
+                    totalPages: result.meta.last_page,
+                    totalItems: result.meta.total,
+                    perPage: result.meta.per_page,
+                });
+            } catch (error) {
+                toast.error(error.message, getToastTheme());
+                setData((prevData) => ({ ...prevData, loading: false }));
+            }
+        };
+
+
+        fetchDataWithPageChange();
+    }, [currentPage]); // Este useEffect depende solo de la página
 
     const handlePageChange = (newPage) => {
-        setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) }));
+        setCurrentPage(parseInt(newPage, 10));
+        /* setPaginationMeta((prev) => ({ ...prev, currentPage: parseInt(newPage, 10) })); */
     };
 
     const handleDelete = async (id) => {
@@ -441,7 +520,7 @@ export default function EntityClient({ config }) {
     };
 
     return (
-        <div className='h-full overflow-hidden'>
+        <div className='h-full w-full '>
             <GenericTable>
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (
@@ -575,7 +654,7 @@ export default function EntityClient({ config }) {
                 <Footer>
                     <div className='w-full pr-24 '>
 
-                        <PaginationFooter meta={paginationMeta} onPageChange={handlePageChange} />
+                        <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </Footer>
             </GenericTable>

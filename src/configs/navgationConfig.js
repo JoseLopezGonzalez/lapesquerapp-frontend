@@ -61,7 +61,7 @@ export const navigationConfig = [
         icon: PencilSquareIcon,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/orders',
-        
+
     },
     {
         name: 'Productos',
@@ -137,12 +137,7 @@ export const navigationConfig = [
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/suppliers',
     },
-    {
-        name: 'Etiquetas',
-        icon: IoReceiptOutline,
-        allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/labels',
-    },
+
     {
         name: 'Usuarios',
         icon: UserGroupIcon,
@@ -193,6 +188,13 @@ export const navigationManagerConfig = [
         icon: LandPlot,
         allowedRoles: ["manager"],
         href: '/admin/stores-manager',
+    },
+
+    {
+        name: 'Editor de Etiquetas',
+        icon: IoReceiptOutline,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/labels',
     },
     {
         name: 'Recepciones de Materia Prima',

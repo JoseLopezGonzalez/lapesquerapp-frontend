@@ -1,9 +1,9 @@
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import React from "react";
 
-export const PaginationFooter = ({ meta, onPageChange }) => {
+export const PaginationFooter = ({ meta, onPageChange , currentPage }) => {
 
-    const currentPage = meta.currentPage;
+    /* const currentPage = meta.currentPage; */
     const totalPages = meta.totalPages;
     const totalElements = meta.totalItems;
     const maxPagesToShow = 5;

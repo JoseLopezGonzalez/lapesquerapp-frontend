@@ -4,61 +4,96 @@ import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
+    Select, SelectTrigger, SelectValue, SelectContent, SelectItem
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/Shadcn/Dates/DatePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
-import { API_URL_V2 } from "@/configs/config";
 import EmailListInput from "@/components/ui/emailListInput";
+import { API_URL_V2 } from "@/configs/config";
+
+import get from "lodash.get";
+import { getToastTheme } from "@/customs/reactHotToast";
+import Loader from "@/components/Utilities/Loader";
+
+export function mapApiDataToFormValues(fields, data) {
+    const result = {};
+
+    for (const field of fields) {
+        const key = field.name;
+
+        if (field.path) {
+            // Usamos lodash.get para acceder a rutas anidadas como 'fishingGear.id'
+            result[key] = get(data, field.path, null);
+        } else {
+            result[key] = data[key];
+        }
+    }
+
+    return result;
+}
 
 function prepareValidations(fields) {
     return fields.map((field) => {
         const newField = { ...field };
-
-        if (
-            newField.validation?.pattern?.value &&
-            typeof newField.validation.pattern.value === "string"
-        ) {
-            const raw = newField.validation.pattern.value;
-            const regexBody = raw.replace(/^\/|\/$/g, ""); // quita los / inicial y final
-            newField.validation.pattern.value = new RegExp(regexBody);
+        if (newField.validation?.pattern?.value && typeof newField.validation.pattern.value === "string") {
+            newField.validation.pattern.value = new RegExp(newField.validation.pattern.value.replace(/^\/|\/$/g, ""));
         }
-
         return newField;
     });
 }
 
-
-export default function CreateEntityClient({ config }) {
-    const { title, endpoint, successMessage, errorMessage } = config.createForm;
-    const fields = config.fields;
-
+export default function EditEntityClient({ config }) {
+    const { id } = useParams();
+    const router = useRouter();
 
     const {
-        register,
-        handleSubmit,
-        control,
-        reset,
+        title,
+        endpoint,
+        method = "PUT",
+        successMessage,
+        errorMessage,
+    } = config.editForm;
+
+    const fields = config.fields;
+    // Reutilizamos solo los campos
+
+    const {
+        register, handleSubmit, control, reset,
         formState: { errors, isSubmitting },
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
+    const [loading, setLoading] = useState(true);
 
-    // Cargar dinámicamente los options de los campos con endpoint
+    // Cargar datos de la entidad
+    useEffect(() => {
+        const fetchData = async () => {
+            const session = await getSession();
+            const res = await fetch(`${API_URL_V2}${endpoint}/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                },
+            });
+
+            const data = await res.json();
+            const formValues = mapApiDataToFormValues(fields, data.data);
+            reset(formValues);
+            setLoading(false);
+        };
+        fetchData();
+    }, [id]);
+
+    // Cargar opciones para Autocomplete
     useEffect(() => {
         const fetchOptions = async () => {
-            const result = {};
             const session = await getSession();
-
+            const result = {};
             await Promise.all(
                 fields.map(async (field) => {
                     if (field.type === "Autocomplete" && field.endpoint) {
@@ -66,61 +101,47 @@ export default function CreateEntityClient({ config }) {
                             const res = await fetch(`${API_URL_V2}${field.endpoint}`, {
                                 headers: {
                                     Authorization: `Bearer ${session?.user?.accessToken}`,
-                                    Accept: "application/json",
                                 },
                             });
                             const data = await res.json();
-
-                            // Convertimos [{ id, name }] → [{ value, label }]
-                            const formatted = data.map((item) => ({
+                            result[field.name] = data.map((item) => ({
                                 value: item.id,
                                 label: item.name,
                             }));
-
-                            result[field.name] = formatted;
                         } catch (err) {
-                            console.error(`Error cargando opciones para ${field.name}`, err);
+                            console.error(`Error cargando ${field.name}`, err);
                             result[field.name] = [];
                         }
                     }
                 })
             );
-
             setLoadedOptions(result);
         };
 
         fetchOptions();
     }, [fields]);
 
-
-
     const onSubmit = async (data) => {
         try {
             const session = await getSession();
-            const response = await fetch(`${API_URL_V2}${endpoint}`, {
-                method: "POST",
+            const res = await fetch(`${API_URL_V2}${endpoint}/${id}`, {
+                method,
                 headers: {
                     "Content-Type": "application/json",
-                    Accept: "application/json",
                     Authorization: `Bearer ${session?.user?.accessToken}`,
-                    "User-Agent": navigator.userAgent,
                 },
                 body: JSON.stringify(data),
             });
 
-            const result = await response.json();
-
-            if (response.ok) {
-                toast.success(successMessage || "Entidad creada con éxito!");
-                /*  reset(); */
-                // Redirigir a la pagina de la tabla de la entidad
-                window.location.href = `/admin/${endpoint.split("/").pop()}`;
+            if (res.ok) {
+                toast.success(successMessage, getToastTheme());
+                /* router.push(`/admin/${endpoint}`); */
             } else {
-                toast.error(errorMessage || "Error al crear la entidad");
+                toast.error(errorMessage, getToastTheme());
             }
-        } catch (error) {
-            console.error("Error al enviar el formulario:", error);
-            toast.error("Ocurrió un error inesperado");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error inesperado");
         }
     };
 
@@ -189,18 +210,20 @@ export default function CreateEntityClient({ config }) {
                     <Controller
                         name={field.name}
                         control={control}
-                        defaultValue={[]}
                         render={({ field: { value, onChange } }) => (
-                            <EmailListInput value={value} onChange={onChange} placeholder={field.placeholder} />
+                            <EmailListInput value={value || []} onChange={onChange} placeholder={field.placeholder} />
                         )}
                     />
                 );
-
-
             default:
                 return <Input {...commonProps} type={field.type || "text"} />;
         }
     };
+
+    if (loading) return (
+        <div className="h-full w-full flex items-center justify-center">
+            <Loader className="h-10 w-10" />
+        </div>)
 
     return (
         <div className="h-full">
@@ -211,7 +234,6 @@ export default function CreateEntityClient({ config }) {
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5"
                 >
                     {prepareValidations(fields).map((field, index) => (
-
                         <div
                             key={`${field.name}-${index}`}
                             className={`p-2 sm:col-span-${field.cols?.sm || 6} md:col-span-${field.cols?.md || 6} lg:col-span-${field.cols?.lg || 6} xl:col-span-${field.cols?.xl || 6}`}
@@ -221,24 +243,17 @@ export default function CreateEntityClient({ config }) {
                             </Label>
                             {renderField(field)}
                             {errors[field.name] && (
-                                <p className="text-red-400 text-xs pt-1">
-                                    * {errors[field.name].message}
-                                </p>
+                                <p className="text-red-400 text-xs pt-1">* {errors[field.name].message}</p>
                             )}
                         </div>
                     ))}
 
                     <div className="sm:col-span-6 justify-end p-4 flex gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="ml-2"
-                            onClick={() => reset()}
-                        >
+                        <Button type="button" variant="outline" onClick={() => router.back()}>
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            Crear
+                            Guardar
                         </Button>
                     </div>
                 </form>
@@ -246,3 +261,4 @@ export default function CreateEntityClient({ config }) {
         </div>
     );
 }
+

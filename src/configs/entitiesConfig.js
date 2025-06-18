@@ -758,8 +758,10 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        /* Address */
+        { name: "vatNumber", label: "NIF/CIF", type: "text", path: "vatNumber" },
         { name: "address", label: "Dirección", type: "text", path: "address" },
+        { name: "emails", label: "Emails", type: "list", path: "emails" },
+        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -769,61 +771,72 @@ export const configs = {
       method: "POST",
       successMessage: "Transporte creado con éxito",
       errorMessage: "Error al crear el transporte",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
-          },
-          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+
+    },
+    editForm: {
+      title: "Editar Transporte",
+      endpoint: "transports",
+      method: "PUT",
+      successMessage: "Transporte actualizado con éxito",
+      errorMessage: "Error al actualizar el transporte",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
         },
-        {
-          name: "vatNumber",
-          label: "NIF/CIF",
-          type: "text",
-          validation: {
-            required: "El NIF o CIF es obligatorio",
-            pattern: {
-              value: '/^[A-Z0-9]{8,12}$/',
-              message: "Formato no válido",
-            },
-          },
-          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
-        },
-        {
-          name: "address",
-          label: "Dirección",
-          type: "textarea",
-          validation: {
-            required: "La dirección es obligatoria",
-            minLength: { value: 10, message: "Debe contener al menos 10 caracteres" },
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        },
-        {
-          name: "emails",
-          label: "Emails de contacto",
-          type: "emailList",
-          placeholder: "Introduce cada email individualmente y pulsa 'Enter'",
-          cols: {
-            sm: 6,
-            md: 6,
-            lg: 6,
-            xl: 6,
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "vatNumber",
+        label: "NIF/CIF",
+        type: "text",
+        validation: {
+          required: "El NIF o CIF es obligatorio",
+          pattern: {
+            value: '/^[A-Z0-9]{8,12}$/',
+            message: "Formato no válido",
           },
         },
-        {
-          name: "ccEmails",
-          label: "Emails en copia",
-          type: "emailList",
-          placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        }
-      ],
-    }
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "address",
+        label: "Dirección",
+        type: "textarea",
+        validation: {
+          required: "La dirección es obligatoria",
+          minLength: { value: 10, message: "Debe contener al menos 10 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "emails",
+        label: "Emails de contacto",
+        type: "emailList",
+        placeholder: "Introduce cada email individualmente y pulsa 'Enter'",
+        validation: {
+          required: "Al menos un email es obligatorio",
+        },
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 3,
+        },
+      },
+      {
+        name: "ccEmails",
+        label: "Emails en copia",
+        type: "emailList",
+        placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      }
+    ],
   },
 
   /* Products */
@@ -926,15 +939,12 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        /* species */
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode" },
+        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
         { name: "species", label: "Especie", type: "text", path: "species.name" },
-        /* captureZone */
         { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name" },
-        /* articleGtin */
         { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin" },
-        /* boxGtin */
         { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin" },
-        /* palletGtin */
         { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
@@ -945,94 +955,104 @@ export const configs = {
       method: "POST",
       successMessage: "Producto creado con éxito",
       errorMessage: "Error al crear el producto",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre del producto",
-          type: "text",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre del producto",
+        type: "text",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "speciesId",
+        path: "species.id",
+        label: "Especie",
+        type: "Autocomplete",
+        placeholder: "Selecciona la especie",
+        endpoint: "species/options",
+        validation: {
+          required: "La especie es obligatoria",
+        },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "captureZoneId",
+        path: "captureZone.id",
+        label: "Zona de captura",
+        type: "Autocomplete",
+        placeholder: "Selecciona la zona de captura",
+        endpoint: "capture-zones/options",
+        validation: {
+          required: "La zona de captura es obligatoria",
+        },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "articleGtin",
+        label: "GTIN del artículo",
+        type: "text",
+        placeholder: "Ej. 8431234567890",
+        validation: {
+          pattern: {
+            value: '/^[0-9]{8,14}$/',
+            message: "GTIN inválido. Debe contener entre 8 y 14 dígitos.",
           },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
         },
-        {
-          name: "speciesId",
-          label: "Especie",
-          type: "Autocomplete",
-          placeholder: "Selecciona la especie",
-          endpoint: "species/options",
-          validation: {
-            required: "La especie es obligatoria",
+        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "boxGtin",
+        label: "GTIN de caja",
+        type: "text",
+        placeholder: "Ej. 8431234567890",
+        validation: {
+          pattern: {
+            value: '/^[0-9]{8,14}$/',
+            message: "GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.",
           },
-          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
         },
-        {
-          name: "captureZoneId",
-          label: "Zona de captura",
-          type: "Autocomplete",
-          placeholder: "Selecciona la zona de captura",
-          endpoint: "capture-zones/options",
-          validation: {
-            required: "La zona de captura es obligatoria",
+        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "palletGtin",
+        label: "GTIN de palet",
+        type: "text",
+        placeholder: "Ej. 8431234567890",
+        validation: {
+          pattern: {
+            value: '/^[0-9]{8,14}$/',
+            message: "GTIN de palet inválido. Debe contener entre 8 y 14 dígitos.",
           },
-          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
         },
-        {
-          name: "articleGtin",
-          label: "GTIN del artículo",
-          type: "text",
-          placeholder: "Ej. 8431234567890",
-          validation: {
-            pattern: {
-              value: '/^[0-9]{8,14}$/',
-              message: "GTIN inválido. Debe contener entre 8 y 14 dígitos.",
-            },
-          },
-          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
-        },
-        {
-          name: "boxGtin",
-          label: "GTIN de caja",
-          type: "text",
-          placeholder: "Ej. 8431234567890",
-          validation: {
-            pattern: {
-              value: '/^[0-9]{8,14}$/',
-              message: "GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.",
-            },
-          },
-          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
-        },
-        {
-          name: "palletGtin",
-          label: "GTIN de palet",
-          type: "text",
-          placeholder: "Ej. 8431234567890",
-          validation: {
-            pattern: {
-              value: '/^[0-9]{8,14}$/',
-              message: "GTIN de palet inválido. Debe contener entre 8 y 14 dígitos.",
-            },
-          },
-          cols: { sm: 4, md: 4, lg: 4, xl: 2 },
-        },
-        {
-          name: "a3erp_code",
-          label: "Código A3ERP",
-          type: "text",
-          placeholder: "Ej. 123456",
-          cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-        },
-        {
-          name: "facil_com_code",
-          label: "Código Facilcom",
-          type: "text",
-          placeholder: "Ej. F4567",
-          cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-        },
-      ],
-    }
+        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "a3erp_code",
+        label: "Código A3ERP",
+        type: "text",
+        placeholder: "Ej. 123456",
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+      {
+        name: "facil_com_code",
+        label: "Código Facilcom",
+        type: "text",
+        placeholder: "Ej. F4567",
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+    ],
+    editForm: {
+      title: "Editar Producto",
+      endpoint: "products", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Producto actualizado con éxito",
+      errorMessage: "Error al actualizar el producto",
+    },
 
 
   },
@@ -1103,54 +1123,61 @@ export const configs = {
       method: "POST",
       successMessage: "Almacén creado con éxito",
       errorMessage: "Error al crear el almacén",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Introduce el nombre del almacén",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: {
-              value: 3,
-              message: "Debe tener al menos 3 caracteres",
-            },
-          },
-          cols: {
-            sm: 3, md: 3, lg: 3, xl: 6,
-          },
-        },
-        {
-          name: "temperature",
-          label: "Temperatura",
-          type: "text",
-          placeholder: "Ej. -18 ºC",
-          validation: {
-            required: "La temperatura es obligatoria",
-          },
-          cols: {
-            sm: 3, md: 3, lg: 3, xl: 3,
-          },
-        },
-        {
-          name: "capacity",
-          label: "Capacidad (kg)",
-          type: "number",
-          placeholder: "Capacidad máxima en kg",
-          validation: {
-            required: "La capacidad es obligatoria",
-            min: {
-              value: 0,
-              message: "Debe ser un valor positivo",
-            },
-          },
-          cols: {
-            sm: 3, md: 3, lg: 3, xl: 3,
-          },
-        },
-      ],
-    }
 
+    },
+    editForm: {
+      title: "Editar Almacén",
+      endpoint: "stores", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Almacén actualizado con éxito",
+      errorMessage: "Error al actualizar el almacén",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Introduce el nombre del almacén",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 3,
+            message: "Debe tener al menos 3 caracteres",
+          },
+        },
+        cols: {
+          sm: 3, md: 3, lg: 3, xl: 6,
+        },
+      },
+      {
+        name: "temperature",
+        label: "Temperatura",
+        type: "text",
+        placeholder: "Ej. -18 ºC",
+        validation: {
+          required: "La temperatura es obligatoria",
+        },
+        cols: {
+          sm: 3, md: 3, lg: 3, xl: 3,
+        },
+      },
+      {
+        name: "capacity",
+        label: "Capacidad (kg)",
+        type: "number",
+        placeholder: "Capacidad máxima en kg",
+        validation: {
+          required: "La capacidad es obligatoria",
+          min: {
+            value: 0,
+            message: "Debe ser un valor positivo",
+          },
+        },
+        cols: {
+          sm: 3, md: 3, lg: 3, xl: 3,
+        },
+      },
+    ],
   },
   /* boxes */
   boxes: {
@@ -1531,15 +1558,16 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        /* vat_number */
         { name: "vatNumber", label: "NIF", type: "text", path: "vatNumber" },
-        /* paymenTerm */
+        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcom_code" },
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erp_code" },
         { name: "paymentTerm", label: "Plazo de pago", type: "text", path: "paymentTerm.name" },
-        /* salesperson */
         { name: "salesperson", label: "Comercial", type: "text", path: "salesperson.name" },
-        /* Country */
+        /* emails */
+        { name: "emails", label: "Emails", type: "list", path: "emails" },
+        /* ccEmails */
+        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
         { name: "country", label: "País", type: "text", path: "country.name" },
-
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -1549,136 +1577,174 @@ export const configs = {
       method: "POST",
       successMessage: "Cliente creado con éxito",
       errorMessage: "Error al crear el cliente",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Introduce el nombre del cliente",
-          validation: {
-            required: "El nombre es obligatorio",
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 4 },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Introduce el nombre del cliente",
+        validation: {
+          required: "El nombre es obligatorio",
         },
-        {
-          name: "vatNumber",
-          label: "NIF",
-          type: "text",
-          placeholder: "Introduce el NIF",
-          validation: {
-            required: "El NIF es obligatorio",
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 4 },
+      },
+      {
+        name: "vatNumber",
+        label: "NIF",
+        type: "text",
+        placeholder: "Introduce el NIF",
+        validation: {
+          required: "El NIF es obligatorio",
         },
-        {
-          name: "billing_address",
-          label: "Dirección de facturación",
-          type: "textarea",
-          validation: {
-            required: "La dirección de facturación es obligatoria",
-          },
-          cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+      },
+      {
+        name: "billing_address",
+        path: "billingAddress",
+        label: "Dirección de facturación",
+        type: "textarea",
+        validation: {
+          required: "La dirección de facturación es obligatoria",
         },
-        {
-          name: "shipping_address",
-          label: "Dirección de envío",
-          type: "textarea",
-          validation: {
-            required: "La dirección de envío es obligatoria",
-          },
-          cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "shipping_address",
+        path: "shippingAddress",
+        label: "Dirección de envío",
+        type: "textarea",
+        validation: {
+          required: "La dirección de envío es obligatoria",
         },
-        {
-          name: "transportation_notes",
-          label: "Notas para transporte",
-          type: "textarea",
-          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "transportation_notes",
+        path: "transportationNotes",
+        label: "Notas para transporte",
+        type: "textarea",
+        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "production_notes",
+        path: "productionNotes",
+        label: "Notas para producción",
+        type: "textarea",
+        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "accounting_notes",
+        path: "accountingNotes",
+        label: "Notas contables",
+        type: "textarea",
+        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+      },
+      {
+        name: "emails",
+        label: "Emails",
+        type: "emailList",
+        placeholder: "Introduce correos electrónicos y pulsa Enter",
+        validation: {
+          required: "Al menos un correo electrónico es obligatorio",
         },
-        {
-          name: "production_notes",
-          label: "Notas para producción",
-          type: "textarea",
-          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 12, md: 12, lg: 12, xl: 3 },
+      },
+      /* ccEmails */
+      {
+        name: "ccEmails",
+        label: "Emails en copia (CC)",
+        type: "emailList",
+        placeholder: "Introduce correos electrónicos en copia y pulsa Enter",
+        validation: {
+          required: "Al menos un correo electrónico en copia es obligatorio",
         },
-        {
-          name: "accounting_notes",
-          label: "Notas contables",
-          type: "textarea",
-          cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 12, md: 12, lg: 12, xl: 3 },
+      },
+      {
+        name: "contact_info",
+        path: "contactInfo",
+        label: "Información de contacto",
+        type: "textarea",
+        placeholder: "Introduce teléfonos u otra información de contacto",
+        validation: {
+          required: "La información de contacto es obligatoria",
         },
-        {
-          name: "emails",
-          label: "Emails",
-          type: "emailList",
-          placeholder: "Introduce correos electrónicos y pulsa Enter",
-          validation: {
-            required: "Al menos un correo electrónico es obligatorio",
-          },
-          cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+        cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+      },
+      {
+        name: "salesperson_id",
+        path: "salesperson.id",
+        label: "Comercial",
+        type: "Autocomplete",
+        placeholder: "Selecciona el comercial",
+        endpoint: "salespeople/options",
+        validation: {
+          required: "El comercial es obligatorio",
         },
-        {
-          name: "contact_info",
-          label: "Información de contacto",
-          type: "textarea",
-          placeholder: "Introduce teléfonos u otra información de contacto",
-          validation: {
-            required: "La información de contacto es obligatoria",
-          },
-          cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+      {
+        name: "country_id",
+        path: "country.id",
+        label: "País",
+        type: "Autocomplete",
+        endpoint: "countries/options",
+        validation: {
+          required: "El país es obligatorio",
         },
-        {
-          name: "salesperson_id",
-          label: "Comercial",
-          type: "Autocomplete",
-          placeholder: "Selecciona el comercial",
-          endpoint: "salespeople/options",
-          validation: {
-            required: "El comercial es obligatorio",
-          },
-          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        placeholder: "Selecciona el país",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+      {
+        name: "payment_term_id",
+        path: "paymentTerm.id",
+        label: "Forma de pago",
+        type: "Autocomplete",
+        endpoint: "payment-terms/options",
+        validation: {
+          required: "La forma de pago es obligatoria",
         },
-        {
-          name: "country_id",
-          label: "País",
-          type: "Autocomplete",
-          endpoint: "countries/options",
-          validation: {
-            required: "El país es obligatorio",
-          },
-          placeholder: "Selecciona el país",
-          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        placeholder: "Selecciona la forma de pago",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+      {
+        name: "transport_id",
+        path: "transport.id",
+        label: "Transporte",
+        type: "Autocomplete",
+        endpoint: "transports/options",
+        validation: {
+          required: "El transporte es obligatorio",
         },
-        {
-          name: "payment_term_id",
-          label: "Forma de pago",
-          type: "Autocomplete",
-          endpoint: "payment-terms/options",
-          validation: {
-            required: "La forma de pago es obligatoria",
-          },
-          placeholder: "Selecciona la forma de pago",
-          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
-        },
-        {
-          name: "transport_id",
-          label: "Transporte",
-          type: "Autocomplete",
-          endpoint: "transports/options",
-          validation: {
-            required: "El transporte es obligatorio",
-          },
-          placeholder: "Selecciona el transporte",
-          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
-        },
-        {
-          name: "a3erp_code",
-          label: "Código A3ERP",
-          type: "text",
-          placeholder: "Introduce el código de cliente A3ERP",
-          cols: { sm: 6, md: 4, lg: 4, xl: 3 },
-        },
-      ],
-    }
+        placeholder: "Selecciona el transporte",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+      {
+        name: "a3erp_code",
+        path: "a3erpCode",
+        label: "Código A3ERP",
+        type: "text",
+        placeholder: "Introduce el código de cliente A3ERP",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+      {
+        name: "facilcom_code",
+        path: "facilcomCode",
+        label: "Código Facilcom",
+        type: "text",
+        placeholder: "Introduce el código de proveedor Facilcom",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+    ],
+    editForm: {
+      title: "Editar Cliente",
+      endpoint: "customers", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Cliente actualizado con éxito",
+      errorMessage: "Error al actualizar el cliente",
+    },
 
 
 
@@ -1695,7 +1761,7 @@ export const configs = {
     },
     endpoint: "suppliers",
     viewRoute: "/admin/suppliers/:id",
-    deleteEndpoint: "/suppliers/:id",
+    deleteEndpoint: "suppliers/:id",
     createPath: "/admin/suppliers/create",
     filtersGroup: {
       search: {
@@ -1736,73 +1802,85 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        /* 'id' => $this->id,
-            'name' => $this->name,
-            'type' => $this->type,
-            'contact_person' => $this->contact_person,
-            'phone' => $this->phone,
-            'email' => $this->email,
-            'address' => $this->address,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at, */
-        /* email*/
-        { name: "email", label: "Correo electrónico", type: "text", path: "email" },
-
-
+        { name: "facilcomCode", label: "Código Facilcom", type: "text", path: "facilcomCode" },
+        { name: "address", label: "Dirección", type: "text", path: "address" },
+        { name: "contactPerson", label: "Persona de contacto", type: "text", path: "contactPerson" },
+        { name: "phone", label: "Teléfono", type: "text", path: "phone" },
+        { name: "emails", label: "Emails", type: "list", path: "emails" },
+        { name: "ccEmails", label: "Emails (CC)", type: "list", path: "ccEmails" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
     createForm: {
       title: "Crear proveedor",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Introduce el nombre del proveedor",
-          validation: {
-            required: "El nombre es obligatorio",
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        },
-        /* {
-          name: "type",
-          label: "Tipo",
-          type: "text",
-          placeholder: "Introduce el tipo de proveedor",
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        }, */
-        {
-          name: "contact_person",
-          label: "Persona de contacto",
-          type: "text",
-          placeholder: "Introduce la persona de contacto",
-          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
-        },
-        {
-          name: "phone",
-          label: "Teléfono",
-          type: "text",
-          placeholder: "Introduce el teléfono",
-          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
-        },
-        {
-          name: "email",
-          label: "Correo electrónico",
-          type: "email",
-          placeholder: "Introduce el email",
-          cols: { sm: 6, md: 6, lg: 6, xl: 2 },
-        },
-        {
-          name: "address",
-          label: "Dirección",
-          type: "textarea",
-          placeholder: "Introduce la dirección del proveedor",
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        },
+      endpoint: "suppliers",
+      method: "POST",
+      successMessage: "Proveedor creado con éxito",
+      errorMessage: "Error al crear el proveedor",
 
-      ],
     },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Introduce el nombre del proveedor",
+        validation: {
+          required: "El nombre es obligatorio",
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "contact_person",
+        label: "Persona de contacto",
+        type: "text",
+        placeholder: "Introduce la persona de contacto",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "phone",
+        label: "Teléfono",
+        type: "text",
+        placeholder: "Introduce el teléfono",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "emails",
+        label: "Emails principales",
+        type: "emailList",
+        placeholder: "Introduce un correo electronico y pulsa Enter",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "ccEmails",
+        label: "Emails en copia (CC)",
+        type: "emailList",
+        placeholder: "Introduce un correo electronico y pulsa Enter",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "address",
+        label: "Dirección",
+        type: "textarea",
+        placeholder: "Introduce la dirección del proveedor",
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "facil_com_code",
+        label: "Código Facilcom",
+        type: "text",
+        placeholder: "Introduce el código de proveedor Facilcom",
+        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+      },
+    ],
+    editForm: {
+      title: "Editar Proveedor",
+      endpoint: "suppliers", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Proveedor actualizado con éxito",
+      errorMessage: "Error al actualizar el proveedor",
+    },
+
 
   },
   /* CaptureZones */
@@ -1865,23 +1943,31 @@ export const configs = {
       method: "POST",
       successMessage: "Zona de captura creada con éxito",
       errorMessage: "Error al crear la zona de captura",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre de la zona",
-          type: "text",
-          placeholder: "Ej. Atlántico Noroeste",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: {
-              value: 3,
-              message: "Debe tener al menos 3 caracteres",
-            },
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-        },
-      ],
+
     },
+    editForm: {
+      title: "Editar Zona de Captura",
+      endpoint: "capture-zones", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Zona de captura actualizada con éxito",
+      errorMessage: "Error al actualizar la zona de captura",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre de la zona",
+        type: "text",
+        placeholder: "Ej. Atlántico Noroeste",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 3,
+            message: "Debe tener al menos 3 caracteres",
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
 
   },
   /* species */
@@ -1977,62 +2063,71 @@ export const configs = {
       method: "POST",
       successMessage: "Especie creada con éxito",
       errorMessage: "Error al crear la especie",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre común",
-          type: "text",
-          placeholder: "Ej. Pulpo",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: {
-              value: 2,
-              message: "Debe tener al menos 2 caracteres",
-            },
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-        },
-        {
-          name: "scientificName",
-          label: "Nombre científico",
-          type: "text",
-          placeholder: "Ej. Octopus vulgaris",
-          validation: {
-            required: "El nombre científico es obligatorio",
-            minLength: {
-              value: 2,
-              message: "Debe tener al menos 2 caracteres",
-            },
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-        },
-        {
-          name: "fao",
-          label: "Código FAO",
-          type: "text",
-          placeholder: "Ej. OCT",
-          validation: {
-            required: "El código FAO es obligatorio",
-            pattern: {
-              value: "/^[A-Z]{3,5}$/",
-              message: "Debe contener entre 3 y 5 letras mayúsculas",
-            },
-          },
-          cols: { sm: 3, md: 3, lg: 3, xl: 3 },
-        },
-        {
-          name: "fishingGearId",
-          label: "Arte de pesca",
-          type: "Autocomplete",
-          placeholder: "Selecciona un arte de pesca",
-          endpoint: "fishing-gears/options",
-          validation: {
-            required: "El arte de pesca es obligatorio",
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-        },
-      ],
+
     },
+    editForm: {
+      title: "Editar Especie",
+      endpoint: "species", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Especie actualizada con éxito",
+      errorMessage: "Error al actualizar especie",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre común",
+        type: "text",
+        placeholder: "Ej. Pulpo",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 2,
+            message: "Debe tener al menos 2 caracteres",
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "scientificName",
+        label: "Nombre científico",
+        type: "text",
+        placeholder: "Ej. Octopus vulgaris",
+        validation: {
+          required: "El nombre científico es obligatorio",
+          minLength: {
+            value: 2,
+            message: "Debe tener al menos 2 caracteres",
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "fao",
+        label: "Código FAO",
+        type: "text",
+        placeholder: "Ej. OCT",
+        validation: {
+          required: "El código FAO es obligatorio",
+          pattern: {
+            value: "/^[A-Z]{3,5}$/",
+            message: "Debe contener entre 3 y 5 letras mayúsculas",
+          },
+        },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "fishingGearId",
+        path: "fishingGear.id",
+        label: "Arte de pesca",
+        type: "Autocomplete",
+        placeholder: "Selecciona un arte de pesca",
+        endpoint: "fishing-gears/options",
+        validation: {
+          required: "El arte de pesca es obligatorio",
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+    ],
 
   },
 
@@ -2106,36 +2201,45 @@ export const configs = {
       method: "POST",
       successMessage: "Incoterm creado con éxito",
       errorMessage: "Error al crear el incoterm",
-      fields: [
-        {
-          name: "code",
-          label: "Código",
-          type: "text",
-          validation: {
-            required: "El código es obligatorio",
-          },
-          cols: {
-            sm: 2,
-            md: 2,
-            lg: 2,
-            xl: 2,
-          },
+
+    },
+    fields: [
+      {
+        name: "code",
+        label: "Código",
+        type: "text",
+        validation: {
+          required: "El código es obligatorio",
         },
-        {
-          name: "description",
-          label: "Descripción",
-          type: "text",
-          validation: {
-            required: "La descripción es obligatoria",
-          },
-          cols: {
-            sm: 4,
-            md: 4,
-            lg: 4,
-            xl: 4,
-          },
+        cols: {
+          sm: 2,
+          md: 2,
+          lg: 2,
+          xl: 2,
         },
-      ],
+      },
+      {
+        name: "description",
+        label: "Descripción",
+        type: "text",
+        validation: {
+          required: "La descripción es obligatoria",
+        },
+        cols: {
+          sm: 4,
+          md: 4,
+          lg: 4,
+          xl: 4,
+        },
+      },
+    ],
+    /* editForm */
+    editForm: {
+      title: "Editar incoterm",
+      endpoint: "incoterms", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Incoterm actualizado con éxito",
+      errorMessage: "Error al actualizar el incoterm",
     },
 
   },
@@ -2191,7 +2295,8 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        /* email */
+        { name: "emails", label: "Emails", type: "list", path: "emails" },
+        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -2201,33 +2306,41 @@ export const configs = {
       method: "POST",
       successMessage: "Comercial creado con éxito",
       errorMessage: "Error al crear el comercial",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Ej. Juan Pérez",
-          validation: {
-            required: "El nombre es obligatorio",
-          },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Ej. Juan Pérez",
+        validation: {
+          required: "El nombre es obligatorio",
         },
-        {
-          name: "emails",
-          label: "Emails",
-          type: "emailList",
-          placeholder: "Introduce un correo y pulsa Enter",
-          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-        },
-        {
-          name: "ccEmails",
-          label: "Emails en copia (CC)",
-          type: "emailList",
-          placeholder: "Introduce un correo y pulsa Enter",
-          cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-        },
-      ],
-    }
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "emails",
+        label: "Emails",
+        type: "emailList",
+        placeholder: "Introduce un correo y pulsa Enter",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+      {
+        name: "ccEmails",
+        label: "Emails en copia (CC)",
+        type: "emailList",
+        placeholder: "Introduce un correo y pulsa Enter",
+        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+      },
+    ],
+    editForm: {
+      title: "Editar comercial",
+      endpoint: "salespeople", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Comercial actualizado con éxito",
+      errorMessage: "Error al actualizar el comercial",
+    },
 
 
   },
@@ -2291,22 +2404,30 @@ export const configs = {
       method: "POST",
       successMessage: "Arte de pesca creado con éxito",
       errorMessage: "Error al crear el arte de pesca",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Ej. Nasas, Trasmallo, Arrastre...",
-          validation: {
-            required: "El nombre es obligatorio",
-            minLength: {
-              value: 2,
-              message: "Debe tener al menos 2 caracteres",
-            },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Ej. Nasas, Trasmallo, Arrastre...",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 2,
+            message: "Debe tener al menos 2 caracteres",
           },
-          cols: { sm: 6, md: 6, lg: 6, xl: 6 },
         },
-      ],
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+    editForm: {
+      title: "Editar Arte de Pesca",
+      endpoint: "fishing-gears", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Arte de pesca actualizado con éxito",
+      errorMessage: "Error al actualizar el arte de pesca",
     },
 
   },
@@ -2374,23 +2495,31 @@ export const configs = {
       method: "POST",
       successMessage: "País creado con éxito",
       errorMessage: "Error al crear el país",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Introduce el nombre del país",
-          validation: {
-            required: "El nombre es obligatorio",
-          },
-          cols: {
-            sm: 6,
-            md: 6,
-            lg: 6,
-            xl: 6,
-          },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Introduce el nombre del país",
+        validation: {
+          required: "El nombre es obligatorio",
         },
-      ],
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        },
+      },
+    ],
+    editForm: {
+      title: "Editar país",
+      endpoint: "countries", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "País actualizado con éxito",
+      errorMessage: "Error al actualizar el país",
     },
   },
 
@@ -2456,23 +2585,31 @@ export const configs = {
       method: "POST",
       successMessage: "Método de pago creado con éxito",
       errorMessage: "Error al crear el método de pago",
-      fields: [
-        {
-          name: "name",
-          label: "Nombre",
-          type: "text",
-          placeholder: "Introduce el nombre",
-          validation: {
-            required: "El nombre es obligatorio",
-          },
-          cols: {
-            sm: 6,
-            md: 6,
-            lg: 6,
-            xl: 6,
-          },
+
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Introduce el nombre",
+        validation: {
+          required: "El nombre es obligatorio",
         },
-      ],
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        },
+      },
+    ],
+    editForm: {
+      title: "Editar método de pago",
+      endpoint: "payment-terms", // sin /:id, lo añadiremos dinámicamente
+      method: "PUT",
+      successMessage: "Método de pago actualizado con éxito",
+      errorMessage: "Error al actualizar el método de pago",
     },
 
   },
