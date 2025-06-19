@@ -10,7 +10,7 @@ const today = new Date();
 
 const initialDefaultValues = {
     customer: '',
-    entryDate:  today.toISOString().split('T')[0],
+    entryDate: today.toISOString().split('T')[0],
     loadDate: '',
     salesperson: '',
     payment: '',
@@ -24,7 +24,8 @@ const initialDefaultValues = {
     shippingAddress: '',
     productionNotes: '',
     accountingNotes: '',
-    emails: '',
+    emails: [],
+    ccEmails: [],
     plannedProducts: [],
 };
 
@@ -207,35 +208,39 @@ const initialFormGroups = [
     },
     {
         group: 'Emails',
-        grid: 'grid-cols-1',
+        grid: 'grid-cols-1 md:grid-cols-2 gap-4',
         fields: [
             {
                 name: 'emails',
-                label: 'Lista de emails',
-                component: 'Textarea',
+                label: 'Para',
+                component: 'emailList',
                 rules: {
-                    required: 'Ingrese al menos un email',
-                    validate: (value) => {
-                        const emails = value.split('\n').filter(Boolean);
-                        const validEmails = emails.every((line) => {
-                            const parts = line.split(':');
-                            if (parts.length > 1) {
-                                const [type, emailValue] = parts;
-                                return type.trim().toLowerCase() === 'cc' && emailValue.trim().includes('@');
-                            }
-                            return line.trim().includes('@');
-                        });
-                        return validEmails || 'Ingrese un email válido por línea';
-                    },
+                    validate: (emails) =>
+                        Array.isArray(emails) && emails.length > 0
+                            ? true
+                            : 'Debe ingresar al menos un correo',
                 },
                 props: {
-                    placeholder: 'ejemplo1@dominio.com\nejemplo2@dominio.com\nejemplo3@dominio.com',
-                    className: 'min-h-[100px]',
-                    rows: 4,
+                    placeholder: 'Introduce correos y pulsa Enter',
+                },
+            },
+            {
+                name: 'ccEmails',
+                label: 'CC',
+                component: 'emailList',
+                rules: {
+                    validate: (emails) =>
+                        Array.isArray(emails)
+                            ? true
+                            : 'Formato inválido en CC',
+                },
+                props: {
+                    placeholder: 'Introduce correos en copia (opcional)',
                 },
             },
         ],
-    },
+    }
+
 ];
 
 

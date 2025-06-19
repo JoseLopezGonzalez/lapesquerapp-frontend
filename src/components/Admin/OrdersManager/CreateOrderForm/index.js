@@ -20,8 +20,9 @@ import Loader from '@/components/Utilities/Loader';
 import { getToastTheme } from '@/customs/reactHotToast';
 import toast from 'react-hot-toast';
 import { API_URL_V2 } from '@/configs/config';
+import EmailListInput from '@/components/ui/emailListInput';
 
-const CreateOrderForm = ({onCreate}) => {
+const CreateOrderForm = ({ onCreate }) => {
     const { productOptions } = useProductOptions();
     const { taxOptions } = useTaxOptions();
 
@@ -50,7 +51,6 @@ const CreateOrderForm = ({onCreate}) => {
         const selectedCustomerId = watch('customer');
         if (!selectedCustomerId) return;
 
-
         getCustomer(selectedCustomerId, token).then((customer) => {
             setValue('salesperson', customer.salesperson?.id?.toString() || '');
             setValue('payment', customer.paymentTerm?.id?.toString() || '');
@@ -61,11 +61,16 @@ const CreateOrderForm = ({onCreate}) => {
             setValue('productionNotes', customer.productionNotes || '');
             setValue('accountingNotes', customer.accountingNotes || '');
             setValue('transport', customer.transport?.id?.toString() || '');
-            setValue('emails', customer.emails || '');
+
+            // ✅ Corrección aquí
+            setValue('emails', customer.emails || []);
+            setValue('ccEmails', customer.ccEmails || []);
         }).catch((err) => {
             console.error('Error al cargar datos del cliente:', err);
         });
     }, [watch('customer')]);
+
+
 
 
     const { fields, append, remove } = useFieldArray({
@@ -102,7 +107,8 @@ const CreateOrderForm = ({onCreate}) => {
                 transportationNotes: formData.transportationNotes || null,
                 productionNotes: formData.productionNotes || null,
                 accountingNotes: formData.accountingNotes || null,
-                emails: formData.emails || null,
+                emails: formData.emails || [],
+                ccEmails: formData.ccEmails || [],
                 plannedProducts: formData.plannedProducts.map((line) => ({
                     product: parseInt(line.product),
                     quantity: parseFloat(line.quantity),
@@ -211,6 +217,25 @@ const CreateOrderForm = ({onCreate}) => {
                 );
             case 'Textarea':
                 return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
+            case 'emailList':
+                return (
+                    <Controller
+                        name={field.name}
+                        control={control}
+                        defaultValue={[]}
+                        rules={field.rules}
+                        render={({ field: { value, onChange } }) => (
+                            <EmailListInput
+                                /* value={value} */
+                                value={Array.isArray(value) ? value : []}
+                                onChange={onChange}
+                                placeholder={field.props?.placeholder}
+                            />
+                        )}
+                    />
+                );
+
+
             case 'Input':
             default:
                 return <Input {...commonProps} />;

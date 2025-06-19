@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
+import EmailListInput from '@/components/ui/emailListInput';
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
@@ -134,6 +135,23 @@ const OrderEditSheet = () => {
                 );
             case 'Textarea':
                 return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
+            case 'emailList':
+                return (
+                    <Controller
+                        name={field.name}
+                        control={control}
+                        defaultValue={[]}
+                        rules={field.rules}
+                        render={({ field: { value, onChange } }) => (
+                            <EmailListInput
+                                value={Array.isArray(value) ? value : []}
+                                onChange={onChange}
+                                placeholder={field.props?.placeholder}
+                            />
+                        )}
+                    />
+                );
+
             case 'Input':
             default:
                 return <Input {...commonProps} />;

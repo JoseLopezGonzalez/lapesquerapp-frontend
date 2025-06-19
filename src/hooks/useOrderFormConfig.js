@@ -18,7 +18,9 @@ const initialDefaultValues = {
     productionNotes: '',
     accountingNotes: '',
     transportNotes: '',
-    emails: '',
+    emails: [],
+    ccEmails: [],
+
 };
 
 const initialFormGroups = [
@@ -179,51 +181,44 @@ const initialFormGroups = [
                     rows: 4,
                 },
             },
-           
+
         ],
     },
     {
         group: 'Emails',
-        grid: 'grid-cols-1',
+        grid: 'grid-cols-1  gap-4',
         fields: [
             {
                 name: 'emails',
-                label: 'Lista de emails',
-                component: 'Textarea',
+                label: 'Para',
+                component: 'emailList',
                 rules: {
-                    required: 'Ingrese al menos un email',
-                    /* Validacion para que en cada linea haya un texto formato email terminado de ; o CC: email; por ejemplo:
-                    ejemplo@ejemplo.com;
-                    cc:ejemplo@ejemplo.com;
-                     */
-                    validate: (value) => {
-                        // Separamos las líneas y eliminamos líneas vacías
-                        const emails = value.split('\n').filter(Boolean);
-                        // Verificamos que cada línea tenga un formato válido:
-                        // Si la línea contiene ":", asumimos que es de la forma "cc:email" (ignorando mayúsculas)
-                        // de lo contrario, se espera un email normal.
-                        const validEmails = emails.every((line) => {
-                            const parts = line.split(':');
-                            if (parts.length > 1) {
-                                // Si hay ":", asumimos que el primer valor es el tipo (ej. "cc") y el segundo es el email.
-                                const [type, emailValue] = parts;
-                                return type.trim().toLowerCase() === 'cc' && emailValue.trim().includes('@');
-                            }
-                            // Si no tiene ":", se valida que la línea contenga '@'
-                            return line.trim().includes('@');
-                        });
-                        return validEmails || 'Ingrese un email válido por línea';
-                    },
-                    // Aquí podrías agregar validaciones adicionales (por ejemplo, validación custom para múltiples emails)
+                    validate: (emails) =>
+                        Array.isArray(emails) && emails.length > 0
+                            ? true
+                            : 'Debe ingresar al menos un correo',
                 },
                 props: {
-                    placeholder: 'ejemplo1@dominio.com\nejemplo2@dominio.com\nejemplo3@dominio.com',
-                    className: 'min-h-[100px]',
-                    rows: 4,
+                    placeholder: 'Introduce correos y pulsa Enter',
                 },
             },
-        ],
-    },
+            {
+                name: 'ccEmails',
+                label: 'CC',
+                component: 'emailList',
+                rules: {
+                    validate: (emails) =>
+                        Array.isArray(emails)
+                            ? true
+                            : 'Formato inválido en CC',
+                },
+                props: {
+                    placeholder: 'Introduce correos en copia (opcional)',
+                },
+            },
+        ]
+    }
+
 ]
 
 export function useOrderFormConfig({ orderData }) {
@@ -250,7 +245,9 @@ export function useOrderFormConfig({ orderData }) {
                 productionNotes: orderData.productionNotes || '',
                 accountingNotes: orderData.accountingNotes || '',
                 transportNotes: orderData.transportNotes || '',
-                emails: orderData.emails || '',
+                emails: orderData.emails || [],
+                ccEmails: orderData.ccEmails || [],
+
             });
         }
 
