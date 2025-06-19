@@ -194,7 +194,7 @@ export const navigationManagerConfig = [
         name: 'Editor de Etiquetas',
         icon: IoReceiptOutline,
         allowedRoles: ["admin", "manager", "superuser"],
-        href: '/admin/labels',
+        href: '/admin/label-editor',
     },
     {
         name: 'Recepciones de Materia Prima',

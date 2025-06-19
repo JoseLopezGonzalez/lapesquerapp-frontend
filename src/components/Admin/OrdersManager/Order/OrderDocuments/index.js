@@ -47,8 +47,8 @@ const OrderDocuments = () => {
             name: "customer",
             label: "Cliente",
             icon: <User className="h-4 w-4" />,
-            email: order.emailsArray,
-            copyEmail: order.ccEmailsArray,
+            email: order.emails,
+            copyEmail: order.ccEmails,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
@@ -60,8 +60,8 @@ const OrderDocuments = () => {
             name: "transport",
             label: "Transporte",
             icon: <Truck className="h-4 w-4" />,
-            email: order.transport.emailsArray,
-            copyEmail: order.transport.ccEmailsArray,
+            email: order.transport.emails,
+            copyEmail: order.transport.ccEmails,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
@@ -74,8 +74,8 @@ const OrderDocuments = () => {
             name: "salesperson",
             label: "Comercial",
             icon: <Users className="h-4 w-4" />,
-            email: order.salesperson.emailsArray,
-            copyEmail: order.salesperson.ccEmailsArray,
+            email: order.salesperson.emails,
+            copyEmail: order.salesperson.ccEmails,
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },

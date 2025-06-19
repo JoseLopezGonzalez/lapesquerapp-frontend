@@ -150,14 +150,14 @@ const OrderDetails = () => {
                             <div className="text-sm">{order.transport.name}</div>
                             <div className="text-sm text-muted-foreground whitespace-pre-line">
                                 <ul className="list-disc px-5 pl-8">
-                                    {order.transport.emailsArray.map((email) => (
+                                    {order.transport.emails.map((email) => (
                                         <li key={email} className="text-xs font-medium">
                                             <a href={`mailto:${email}`} className=" hover:underline">
                                                 {email}
                                             </a>
                                         </li>
                                     ))}
-                                    {order.transport.ccEmailsArray.map((copyEmail) => (
+                                    {order.transport.ccEmails.map((copyEmail) => (
                                         <li key={copyEmail} className="text-xs font-medium">
                                             <div className="flex gap-1 items-center">
                                                 <Badge variant="outline" className="px-1">CC</Badge>
