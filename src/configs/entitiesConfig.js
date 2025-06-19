@@ -1429,12 +1429,12 @@ export const configs = {
         /* observations */
         { name: "observations", label: "Observaciones", type: "text", path: "observations" },
         /* store */
-        { name: "store", label: "Almacén", type: "text", path: "store" },
+        { name: "store", label: "Almacén", type: "text", path: "store.name" },
         /* orderId*/
         { name: "orderId", label: "Pedido", type: "text", path: "orderId" },
         /* { name: "name", label: "Nombre", type: "text", path: "article.name" }, */
         {
-          name: "state", label: "Estado", type: "badge",
+          name: "state", label: "Estado", type: "badge", path: "state.name",
           options:
           {
             almacenado: { label: "Almacenado", color: "warning", outline: true },
