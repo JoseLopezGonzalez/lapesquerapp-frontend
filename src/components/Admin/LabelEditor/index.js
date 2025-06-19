@@ -42,6 +42,7 @@ import {
 } from "lucide-react"
 import { BoldIcon, LinkSlashIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const dataContext = {
     product: {
@@ -164,13 +165,28 @@ export default function LabelEditor() {
         URL.revokeObjectURL(url)
     }
 
+    const getFieldName = (field) => {
+        const fieldNames = {
+            "product.name": "Nombre del Producto",
+            "product.species.name": "Especie",
+            "product.species.fao_code": "Código FAO",
+            "product.weight": "Peso",
+            "product.price": "Precio",
+            "lot_number": "Número de Lote",
+            "expiry_date": "Fecha de Caducidad",
+            "origin": "Origen",
+            "batch_id": "ID de Lote",
+        }
+        return fieldNames[field] || field
+    }
+
     const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null
 
     return (
         <div className="flex h-full w-full  bg-muted/30">
             {/* Sidebar Izquierda */}
-            <div className="w-80 border-r bg-card p-4 overflow-y-auto">
-                <div className="space-y-4">
+            <div className="w-80 border-r bg-card p-4 h-full">
+                <div className="space-y-4 h-full flex flex-col min-h-0">
                     <div>
                         <h3 className="font-semibold mb-3">Añadir Elementos</h3>
                         <div className="grid grid-cols-1 gap-2">
@@ -199,38 +215,73 @@ export default function LabelEditor() {
 
                     <Separator />
 
-                    <div>
+                    <div className="flex-1 flex flex-col min-h-0">
 
                         {elements.length > 0 ? (
-                            <div>
+                            <div className="h-full flex flex-col">
                                 <h3 className="font-semibold mb-3 flex items-center justify-between">
                                     <span>Elementos</span>  {elements.length}</h3>
-                                <div className="space-y-2">
-                                    {elements.map((element) => (
-                                        <div
-                                            key={element.id}
-                                            className={`p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
-                                                }`}
-                                            onClick={() => setSelectedElement(element.id)}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    {element.type === "text" && <Type className="w-3 h-3" />}
-                                                    {element.type === "field" && <Database className="w-3 h-3" />}
-                                                    {element.type === "qr" && <QrCode className="w-3 h-3" />}
-                                                    {element.type === "barcode" && <Barcode3 className="w-3 h-3" />}
-                                                    {element.type === "image" && <ImageIcon className="w-3 h-3" />}
-                                                    <span className="text-sm font-medium capitalize">{element.type}</span>
-                                                </div>
-                                                <Badge variant="secondary" className="text-xs">
+                                <div className="flex-1 overflow-hidden h-full">
+                                    <ScrollArea className="flex-1 h-full pr-3">
+                                        <div className="flex flex-col gap-2 p-2"> {/* aquí sí el gap y padding-bottom para evitar cortar por el scroll */}
+
+                                            {elements.map((element) => (
+                                                <div
+                                                    key={element.id}
+                                                    className={`p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
+                                                        }`}
+                                                    onClick={() => setSelectedElement(element.id)}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2 w-full">
+                                                            {element.type === "text" && (
+                                                                <div className="flex flex-col items-center gap-1 w-full">
+                                                                    <div className="flex items-center gap-1 justify-start w-full">
+                                                                        <Type className="w-3 h-3" />
+                                                                        <span className="text-sm font-medium capitalize">Texto Fijo</span>
+                                                                    </div>
+                                                                    <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                        <span className="text-xs text-muted-foreground">{element.text}</span>
+                                                                    </div>
+                                                                </div>)}
+                                                            {element.type === "field" && (
+                                                                <div className="flex flex-col items-center gap-1 w-full">
+                                                                    <div className="flex items-center gap-1 justify-start w-full">
+                                                                        <Database className="w-3 h-3" />
+                                                                        <span className="text-sm font-medium capitalize">Campo Dinámico</span>
+                                                                    </div>
+                                                                    <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                        <span className="text-xs text-muted-foreground">{getFieldName(element.field || "")}</span>
+                                                                    </div>
+                                                                </div>)}
+
+                                                            {element.type === "qr" && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <QrCode className="w-3 h-3" />
+                                                                    <span className="text-sm font-medium capitalize">Código QR</span>
+                                                                </div>)}
+                                                            {element.type === "barcode" && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <Barcode3 className="w-3 h-3" />
+                                                                    <span className="text-sm font-medium capitalize">Código de Barras</span>
+                                                                </div>)}
+                                                            {element.type === "image" && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <ImageIcon className="w-3 h-3" />
+                                                                    <span className="text-sm font-medium capitalize">Imagen</span>
+                                                                </div>)}
+                                                        </div>
+                                                        {/* <Badge variant="secondary" className="text-xs">
                                                     {Math.round(element.x)},{Math.round(element.y)}
-                                                </Badge>
-                                            </div>
-                                            {element.type === "field" && (
+                                                </Badge> */}
+                                                    </div>
+                                                    {/*  {element.type === "field" && (
                                                 <div className="text-xs text-muted-foreground mt-1">{element.field}</div>
-                                            )}
+                                            )} */}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </ScrollArea>
                                 </div>
                             </div>
                         ) : (
@@ -247,16 +298,11 @@ export default function LabelEditor() {
                 </div>
             </div>
 
-
-
             {/* Zona Central - Canvas */}
             <div className="flex-1 flex flex-col h-full pb-5">
                 {/* Toolbar */}
-
                 <div className=" p-2 flex justify-center items-center gap-2 w-full">
-                    {/* Tamaño etiqueta h x w */}
                     <div className="flex items-center gap-2">
-                        {/* <Label className="text-sm">Tamaño etiqueta:</Label> */}
                         <Input
                             type="number"
                             value={400}
@@ -270,12 +316,11 @@ export default function LabelEditor() {
                             readOnly
                             className="w-16 text-center"
                         />
-                        <Button variant="outline" size="sm" onClick={() => setZoom(1)}>
+                        <Button variant="outline" size="" onClick={() => setZoom(1)}>
                             <RotateCcw className="w-4 h-4" />
                         </Button>
                     </div>
                     <Separator orientation="vertical" className="h-6" />
-
                     <Button onClick={exportJSON} className="gap-2">
                         <Download className="w-4 h-4" />
                         Exportar JSON
@@ -285,7 +330,6 @@ export default function LabelEditor() {
                         Guardar
                     </Button>
                 </div>
-
 
                 {/* Canvas */}
                 <div className="flex-1 p-8 overflow-auto ">
@@ -407,8 +451,6 @@ export default function LabelEditor() {
                 </div>
 
                 <div className=" p-2 flex justify-center items-center gap-2 w-full">
-
-
                     <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}>
                         <ZoomOut className="w-4 h-4" />
                     </Button>
@@ -416,10 +458,7 @@ export default function LabelEditor() {
                     <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))}>
                         <ZoomIn className="w-4 h-4" />
                     </Button>
-
-
                 </div>
-
 
             </div>
 
@@ -808,6 +847,6 @@ export default function LabelEditor() {
                     </CardContent>
                 </Card> */}
             </div>
-        </div >
+        </div>
     )
 }
