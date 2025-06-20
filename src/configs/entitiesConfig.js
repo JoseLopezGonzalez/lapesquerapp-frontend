@@ -1033,6 +1033,7 @@ export const configs = {
       },
       {
         name: "a3erp_code",
+        path: "a3erpCode",
         label: "Código A3ERP",
         type: "text",
         placeholder: "Ej. 123456",
@@ -1040,6 +1041,7 @@ export const configs = {
       },
       {
         name: "facil_com_code",
+        path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
         placeholder: "Ej. F4567",
@@ -1867,6 +1869,7 @@ export const configs = {
       },
       {
         name: "facil_com_code",
+        path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
         placeholder: "Introduce el código de proveedor Facilcom",
