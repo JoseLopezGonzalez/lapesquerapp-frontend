@@ -38,6 +38,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             text: type === "text" ? "Texto ejemplo" : undefined,
             field: type === "field" ? "product.name" : undefined,
             qrContent: type === "qr" ? "" : undefined,
+            barcodeContent: type === "barcode" ? "" : undefined,
+            barcodeType: type === "barcode" ? "ean13" : undefined,
             color: "#000000",
         };
         setElements((prev) => [...prev, newElement]);
