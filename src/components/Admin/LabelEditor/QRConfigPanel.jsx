@@ -1,16 +1,24 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
-import { Button } from '@/components/ui/button'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 
 export default function QRConfigPanel({ value, onChange, fieldOptions }) {
     const editorRef = useRef(null)
+    const fieldMapRef = useRef({})
+
+    useEffect(() => {
+        fieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.value, o.label]))
+    }, [fieldOptions])
+
+    const badgeClass = `${badgeVariants({ variant: 'secondary' })} px-1 py-0.5 text-xs gap-1 cursor-default`
 
     const renderContent = () => {
         if (!editorRef.current) return
         const html = (value || '').split(/({{[^}]+}})/g).map((part) => {
             if (/^{{[^}]+}}$/.test(part)) {
                 const field = part.slice(2, -2)
-                return `<span data-field="${field}" contenteditable="false" class="inline-flex items-center px-1 bg-muted rounded text-sm mx-0.5">${field}</span>`
+                const label = fieldMapRef.current[field] || field
+                return `<span data-field="${field}" contenteditable="false" class="${badgeClass}"><span>${label}</span><span data-remove="true" class="ml-1 cursor-pointer">&times;</span></span>`
             }
             return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         }).join('')
@@ -18,6 +26,7 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
     }
 
     useEffect(() => {
+        if (editorRef.current && extractValue() === value) return
         renderContent()
     }, [value])
 
@@ -42,11 +51,12 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
 
     const insertField = (field) => {
         if (!editorRef.current) return
+        const label = fieldMapRef.current[field] || field
         const span = document.createElement('span')
-        span.textContent = field
         span.setAttribute('data-field', field)
         span.setAttribute('contenteditable', 'false')
-        span.className = 'inline-flex items-center px-1 bg-muted rounded text-sm mx-0.5'
+        span.className = badgeClass
+        span.innerHTML = `<span>${label}</span><span data-remove="true" class="ml-1 cursor-pointer">&times;</span>`
 
         const sel = window.getSelection()
         if (!sel || !sel.rangeCount) {
@@ -61,6 +71,21 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         setTimeout(() => editorRef.current?.focus(), 0)
     }
 
+    useEffect(() => {
+        const editor = editorRef.current
+        if (!editor) return
+        const handleClick = (e) => {
+            const target = e.target
+            if (target.closest && target.closest('[data-remove="true"]')) {
+                const badge = target.closest('[data-field]')
+                badge?.remove()
+                onChange(extractValue())
+            }
+        }
+        editor.addEventListener('click', handleClick)
+        return () => editor.removeEventListener('click', handleClick)
+    }, [onChange])
+
     return (
         <div>
             <div
@@ -69,11 +94,15 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
                 contentEditable
                 onInput={handleInput}
             />
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1 mt-2">
                 {fieldOptions.map((opt) => (
-                    <Button key={opt.value} type="button" variant="outline" size="sm" onClick={() => insertField(opt.value)}>
+                    <Badge
+                        key={opt.value}
+                        className="cursor-pointer select-none px-1.5 py-0.5 text-xs"
+                        onClick={() => insertField(opt.value)}
+                    >
                         {opt.label}
-                    </Button>
+                    </Badge>
                 ))}
             </div>
         </div>
