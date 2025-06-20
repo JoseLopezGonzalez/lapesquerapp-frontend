@@ -4,6 +4,7 @@ import { CgFormatUppercase } from "react-icons/cg";
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -11,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import QRConfigPanel from "./QRConfigPanel"
 import {
     Type,
     Database,
@@ -81,6 +83,7 @@ export default function LabelEditor() {
             textAlign: "left",
             text: type === "text" ? "Texto ejemplo" : undefined,
             field: type === "field" ? "product.name" : undefined,
+            qrContent: type === "qr" ? "" : undefined,
             color: "#000000",
         }
         setElements([...elements, newElement])
@@ -180,9 +183,22 @@ export default function LabelEditor() {
         return fieldNames[field] || field
     }
 
+    const fieldOptions = [
+        { value: "product.name", label: "Nombre del Producto" },
+        { value: "product.species.name", label: "Especie" },
+        { value: "product.species.fao_code", label: "Código FAO" },
+        { value: "product.weight", label: "Peso" },
+        { value: "product.price", label: "Precio" },
+        { value: "lot_number", label: "Número de Lote" },
+        { value: "expiry_date", label: "Fecha de Caducidad" },
+        { value: "origin", label: "Origen" },
+        { value: "batch_id", label: "ID de Lote" },
+    ]
+
     const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null
 
     return (
+        <TooltipProvider>
         <div className="flex h-full w-full  bg-muted/30">
             {/* Sidebar Izquierda */}
             <div className="w-80 border-r bg-card p-4 h-full">
@@ -524,15 +540,11 @@ export default function LabelEditor() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="product.name">Nombre del Producto</SelectItem>
-                                            <SelectItem value="product.species.name">Especie</SelectItem>
-                                            <SelectItem value="product.species.fao_code">Código FAO</SelectItem>
-                                            <SelectItem value="product.weight">Peso</SelectItem>
-                                            <SelectItem value="product.price">Precio</SelectItem>
-                                            <SelectItem value="lot_number">Número de Lote</SelectItem>
-                                            <SelectItem value="expiry_date">Fecha de Caducidad</SelectItem>
-                                            <SelectItem value="origin">Origen</SelectItem>
-                                            <SelectItem value="batch_id">ID de Lote</SelectItem>
+                                            {fieldOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <div className="mt-2 p-2 bg-muted rounded text-sm">
@@ -554,7 +566,18 @@ export default function LabelEditor() {
                                 </div>
                             )}
 
-                            {selectedElementData.type === "text" || selectedElementData.type === "field" && (
+                            {selectedElementData.type === "qr" && (
+                                <div>
+                                    <h4 className="text-sm font-medium mb-2">Contenido QR</h4>
+                                    <QRConfigPanel
+                                        value={selectedElementData.qrContent || ""}
+                                        onChange={(val) => updateElement(selectedElementData.id, { qrContent: val })}
+                                        fieldOptions={fieldOptions}
+                                    />
+                                </div>
+                            )}
+
+                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "qr") && (
                                 <Separator className="my-4" />
                             )}
 
@@ -630,30 +653,51 @@ export default function LabelEditor() {
                                             Alineación
                                         </span>
                                         <div className="flex items-center gap-2 ">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { verticalAlign: "start" })}
-                                            >
-                                                <AlignVerticalJustifyStart className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { verticalAlign: "end" })}
-                                            >
-                                                <AlignVerticalJustifyEnd className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { verticalAlign: "center" })}
-                                            >
-                                                <AlignVerticalJustifyCenter className="w-4 h-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "start" })}
+                                                    >
+                                                        <AlignVerticalJustifyStart className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Alinear arriba</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "end" })}
+                                                    >
+                                                        <AlignVerticalJustifyEnd className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Alinear abajo</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "center" })}
+                                                    >
+                                                        <AlignVerticalJustifyCenter className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Centro vertical</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                     <div className="flex w-full gap-2 items-center justify-between">
@@ -661,38 +705,66 @@ export default function LabelEditor() {
                                             {/* space code */} &nbsp;
                                         </span>
                                         <div className="flex items-center gap-2 ">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}
-                                            >
-                                                <AlignLeft className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "center" })}
-                                            >
-                                                <AlignCenter className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "right" })}
-                                            >
-                                                <AlignRight className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-8"
-                                                onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "justify" })}
-                                            >
-                                                <AlignJustify className="w-4 h-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}
+                                                    >
+                                                        <AlignLeft className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Alinear a la izquierda</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "center" })}
+                                                    >
+                                                        <AlignCenter className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Alinear al centro</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "right" })}
+                                                    >
+                                                        <AlignRight className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Alinear a la derecha</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-8"
+                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "justify" })}
+                                                    >
+                                                        <AlignJustify className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Justificar</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                 </div>
@@ -748,38 +820,66 @@ export default function LabelEditor() {
                                                 Estilos
                                             </span>
                                             <div className="flex items-center gap-2 w-fit">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
-                                                >
-                                                    <BoldIcon className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
-                                                >
-                                                    <Italic className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
-                                                >
-                                                    <Underline className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
-                                                >
-                                                    <Strikethrough className="w-4 h-4" />
-                                                </Button>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
+                                                        >
+                                                            <BoldIcon className="w-4 h-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Negrita</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
+                                                        >
+                                                            <Italic className="w-4 h-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Cursiva</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
+                                                        >
+                                                            <Underline className="w-4 h-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Subrayado</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
+                                                        >
+                                                            <Strikethrough className="w-4 h-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Tachado</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </div>
                                         </div>
                                         <div className="flex w-full gap-2 items-center justify-between">
@@ -787,31 +887,52 @@ export default function LabelEditor() {
                                                 Caracter
                                             </span>
                                             <div className="flex items-center gap-2 w-fit">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8 p-0"
-                                                    onClick={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
-                                                >
-                                                    <CaseUpper className="w-5 h-5" />
-                                                </Button>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8 p-0"
+                                                            onClick={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
+                                                        >
+                                                            <CaseUpper className="w-5 h-5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Mayúsculas</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
 
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
-                                                >
-                                                    <CaseLower className="w-5 h-5" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-8"
-                                                    onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
-                                                >
-                                                    <CaseSensitive className="w-5 h-5" />
-                                                </Button>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
+                                                        >
+                                                            <CaseLower className="w-5 h-5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Minúsculas</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="w-8"
+                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
+                                                        >
+                                                            <CaseSensitive className="w-5 h-5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Capitalizar</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             </div>
                                         </div>
 
@@ -848,5 +969,6 @@ export default function LabelEditor() {
                 </Card> */}
             </div>
         </div>
+        </TooltipProvider>
     )
 }
