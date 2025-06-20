@@ -13,6 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import QRConfigPanel from "./QRConfigPanel"
+import BarcodeConfigPanel from "./BarcodeConfigPanel"
+import Barcode from 'react-barcode'
+import { serializeBarcode, formatMap } from '@/lib/barcodes'
 import {
     Type,
     Database,
@@ -301,8 +304,17 @@ export default function LabelEditor() {
                                                         </div>
                                                     )}
                                                     {element.type === "barcode" && (
-                                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                            <Barcode3 className="w-8 h-8 text-gray-600" />
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Barcode
+                                                                value={serializeBarcode(
+                                                                    (element.barcodeContent || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f)),
+                                                                    element.barcodeType || 'ean13'
+                                                                ) || '0'}
+                                                                format={formatMap[element.barcodeType || 'ean13']}
+                                                                width={1}
+                                                                height={element.height - 10}
+                                                                displayValue={false}
+                                                            />
                                                         </div>
                                                     )}
                                                     {element.type === "image" && (
@@ -447,7 +459,21 @@ export default function LabelEditor() {
                                 </div>
                             )}
 
-                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "qr") && (
+                            {selectedElementData.type === "barcode" && (
+                                <div>
+                                    <h4 className="text-sm font-medium mb-2">Código de Barras</h4>
+                                    <BarcodeConfigPanel
+                                        value={selectedElementData.barcodeContent || ""}
+                                        onChange={(val) => updateElement(selectedElementData.id, { barcodeContent: val })}
+                                        fieldOptions={fieldOptions}
+                                        type={selectedElementData.barcodeType || 'ean13'}
+                                        onTypeChange={(val) => updateElement(selectedElementData.id, { barcodeType: val })}
+                                        getFieldValue={getFieldValue}
+                                    />
+                                </div>
+                            )}
+
+                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "qr" || selectedElementData.type === "barcode") && (
                                 <Separator className="my-4" />
                             )}
 
