@@ -22,6 +22,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
+    const [canvasWidth, setCanvasWidth] = useState(400);
+    const [canvasHeight, setCanvasHeight] = useState(300);
+    const [canvasRotation, setCanvasRotation] = useState(0);
     const canvasRef = useRef(null);
 
     const addElement = (type) => {
@@ -89,12 +92,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             const rect = canvasRef.current.getBoundingClientRect();
             const newX = (e.clientX - rect.left) / zoom - dragOffset.x;
             const newY = (e.clientY - rect.top) / zoom - dragOffset.y;
+            const element = elements.find(el => el.id === selectedElement);
+            const maxX = canvasWidth - (element?.width || 0);
+            const maxY = canvasHeight - (element?.height || 0);
             updateElement(selectedElement, {
-                x: Math.max(0, Math.min(400 - 50, newX)),
-                y: Math.max(0, Math.min(300 - 30, newY)),
+                x: Math.max(0, Math.min(maxX, newX)),
+                y: Math.max(0, Math.min(maxY, newY)),
             });
         },
-        [isDragging, selectedElement, dragOffset, zoom]
+        [isDragging, selectedElement, dragOffset, zoom, canvasWidth, canvasHeight, elements]
     );
 
     const handleMouseUp = useCallback(() => {
@@ -115,7 +121,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const exportJSON = () => {
         const jsonData = {
             elements: elements.map(({ id, ...el }) => el),
-            canvas: { width: 400, height: 300 },
+            canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
         };
         const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -161,6 +167,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         selectedElementData,
         zoom,
         canvasRef,
+        canvasWidth,
+        canvasHeight,
+        canvasRotation,
+        setCanvasWidth,
+        setCanvasHeight,
+        setCanvasRotation,
         addElement,
         deleteElement,
         updateElement,

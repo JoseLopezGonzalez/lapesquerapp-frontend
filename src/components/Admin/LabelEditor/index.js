@@ -70,13 +70,19 @@ export default function LabelEditor() {
         getFieldName,
         getFieldValue,
         fieldOptions,
+        canvasWidth,
+        canvasHeight,
+        canvasRotation,
+        setCanvasWidth,
+        setCanvasHeight,
+        setCanvasRotation,
     } = useLabelEditor();
 
     const [manualValues, setManualValues] = useState({});
     const [showManualDialog, setShowManualDialog] = useState(false);
     const [manualForm, setManualForm] = useState({});
 
-    const { onPrint } = usePrintElement({ id: 'print-area', width: 100, height: 75 });
+    const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
     const handlePrint = () => {
         const manualFields = elements.filter(el => el.type === 'manualField');
@@ -240,15 +246,21 @@ export default function LabelEditor() {
                     <div className="flex items-center gap-2">
                         <Input
                             type="number"
-                            value={400}
-                            readOnly
+                            value={canvasWidth}
+                            onChange={(e) => setCanvasWidth(Number(e.target.value))}
                             className="w-16 text-center"
                         />
                         <span className="text-sm">x</span>
                         <Input
                             type="number"
-                            value={300}
-                            readOnly
+                            value={canvasHeight}
+                            onChange={(e) => setCanvasHeight(Number(e.target.value))}
+                            className="w-16 text-center"
+                        />
+                        <Input
+                            type="number"
+                            value={canvasRotation}
+                            onChange={(e) => setCanvasRotation(Number(e.target.value))}
                             className="w-16 text-center"
                         />
                         <Button variant="outline" size="" onClick={() => setZoom(1)}>
@@ -285,9 +297,9 @@ export default function LabelEditor() {
                                         id="print-area"
                                         className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
                                         style={{
-                                            width: 400 * zoom,
-                                            height: 300 * zoom,
-                                            transform: `scale(${zoom})`,
+                                            width: canvasWidth * zoom,
+                                            height: canvasHeight * zoom,
+                                            transform: `scale(${zoom}) rotate(${canvasRotation}deg)`,
                                             transformOrigin: "top left",
                                         }}
                                     >
