@@ -4,6 +4,7 @@ import { CgFormatUppercase } from "react-icons/cg";
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -66,6 +67,8 @@ export default function LabelEditor() {
         setSelectedElement,
         setZoom,
         handleMouseDown,
+        handleResizeMouseDown,
+        duplicateElement,
         exportJSON,
         getFieldName,
         getFieldValue,
@@ -176,7 +179,7 @@ export default function LabelEditor() {
                                             {elements.map((element) => (
                                                 <div
                                                     key={element.id}
-                                                    className={`p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
+                                                    className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
                                                         }`}
                                                     onClick={() => setSelectedElement(element.id)}
                                                 >
@@ -229,6 +232,14 @@ export default function LabelEditor() {
                                                                     <span className="text-sm font-medium capitalize">Imagen</span>
                                                                 </div>)}
                                                         </div>
+                                                        <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100">
+                                                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); duplicateElement(element.id); }}>
+                                                                <CopyPlus className="w-3 h-3" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); deleteElement(element.id); }}>
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
                                                         {/* <Badge variant="secondary" className="text-xs">
                                                     {Math.round(element.x)},{Math.round(element.y)}
                                                 </Badge> */}
@@ -274,7 +285,7 @@ export default function LabelEditor() {
                             onChange={(e) => setCanvasHeight(Number(e.target.value))}
                             className="w-16 text-center"
                         />
-                        <Select value={canvasRotation} onValueChange={(val) => handleCanvasRotationChange(Number(val))}>
+                        <Select value={String(canvasRotation)} onValueChange={(val) => handleCanvasRotationChange(Number(val))}>
                             <SelectTrigger className="w-16">
                                 <SelectValue placeholder="Ángulo" />
                             </SelectTrigger>
@@ -429,10 +440,10 @@ export default function LabelEditor() {
                                                 {/* Indicador de selección */}
                                                 {selectedElement === element.id && (
                                                     <>
-                                                        <div className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full"></div>
-                                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></div>
-                                                        <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full"></div>
-                                                        <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full"></div>
+                                                        <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'nw')} className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"></div>
+                                                        <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'ne')} className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"></div>
+                                                        <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'sw')} className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"></div>
+                                                        <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'se')} className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"></div>
                                                     </>
                                                 )}
                                             </div>
@@ -479,6 +490,12 @@ export default function LabelEditor() {
                                     <div className="flex items-center gap-2 justify-center">
                                         <Database className="w-4 h-4" />
                                         <h4 className="capitalize text-xl font-normal">Campo Dinámico</h4>
+                                    </div>
+                                )}
+                                {selectedElementData.type === "manualField" && (
+                                    <div className="flex items-center gap-2 justify-center">
+                                        <BetweenHorizonalEnd className="w-4 h-4" />
+                                        <h4 className="capitalize text-xl font-normal">Campo Manual</h4>
                                     </div>
                                 )}
                                 {selectedElementData.type === "qr" && (
@@ -651,7 +668,7 @@ export default function LabelEditor() {
 
                                         {/* Select angle */}
                                         <Select
-                                            value={selectedElementData.rotation || 0}
+                                            value={String(selectedElementData.rotation || 0)}
                                             onValueChange={(value) => handleElementRotationChange(selectedElementData.id, Number(value))}
                                         >
                                             <SelectTrigger className="w-24">
@@ -672,14 +689,7 @@ export default function LabelEditor() {
                                         <div className="flex items-center gap-2 ">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "start" })}
-                                                    >
-                                                        <AlignVerticalJustifyStart className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "start"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "start" })}><AlignVerticalJustifyStart className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Alinear arriba</p>
@@ -687,14 +697,7 @@ export default function LabelEditor() {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "end" })}
-                                                    >
-                                                        <AlignVerticalJustifyEnd className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "end"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "end" })}><AlignVerticalJustifyEnd className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Alinear abajo</p>
@@ -702,14 +705,7 @@ export default function LabelEditor() {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { verticalAlign: "center" })}
-                                                    >
-                                                        <AlignVerticalJustifyCenter className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "center"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "center" })}><AlignVerticalJustifyCenter className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Centro vertical</p>
@@ -724,14 +720,7 @@ export default function LabelEditor() {
                                         <div className="flex items-center gap-2 ">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}
-                                                    >
-                                                        <AlignLeft className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "left"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}><AlignLeft className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Alinear a la izquierda</p>
@@ -739,14 +728,7 @@ export default function LabelEditor() {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "center" })}
-                                                    >
-                                                        <AlignCenter className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "center"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "center" })}><AlignCenter className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Alinear al centro</p>
@@ -754,14 +736,7 @@ export default function LabelEditor() {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "right" })}
-                                                    >
-                                                        <AlignRight className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "right"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "right" })}><AlignRight className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Alinear a la derecha</p>
@@ -769,14 +744,7 @@ export default function LabelEditor() {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="w-8"
-                                                        onClick={() => updateElement(selectedElementData.id, { horizontalAlign: "justify" })}
-                                                    >
-                                                        <AlignJustify className="w-4 h-4" />
-                                                    </Button>
+                                                    <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "justify"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "justify" })}><AlignJustify className="w-4 h-4" /></Toggle>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Justificar</p>
@@ -839,14 +807,15 @@ export default function LabelEditor() {
                                             <div className="flex items-center gap-2 w-fit">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                    <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
+                                                            pressed={selectedElementData.fontWeight === "bold"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
                                                         >
                                                             <BoldIcon className="w-4 h-4" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Negrita</p>
@@ -854,14 +823,15 @@ export default function LabelEditor() {
                                                 </Tooltip>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                    <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
+                                                            pressed={selectedElementData.fontStyle === "italic"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
                                                         >
                                                             <Italic className="w-4 h-4" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Cursiva</p>
@@ -869,14 +839,15 @@ export default function LabelEditor() {
                                                 </Tooltip>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                    <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
+                                                            pressed={selectedElementData.textDecoration === "underline"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
                                                         >
                                                             <Underline className="w-4 h-4" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Subrayado</p>
@@ -884,14 +855,15 @@ export default function LabelEditor() {
                                                 </Tooltip>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                    <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
+                                                            pressed={selectedElementData.textDecoration === "line-through"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
                                                         >
                                                             <Strikethrough className="w-4 h-4" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Tachado</p>
@@ -906,14 +878,15 @@ export default function LabelEditor() {
                                             <div className="flex items-center gap-2 w-fit">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                        <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8 p-0"
-                                                            onClick={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
+                                                            pressed={selectedElementData.textTransform === "uppercase"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
                                                         >
                                                             <CaseUpper className="w-5 h-5" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Mayúsculas</p>
@@ -922,14 +895,15 @@ export default function LabelEditor() {
 
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                        <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
+                                                            pressed={selectedElementData.textDecoration === "lowercase"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
                                                         >
                                                             <CaseLower className="w-5 h-5" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Minúsculas</p>
@@ -937,14 +911,15 @@ export default function LabelEditor() {
                                                 </Tooltip>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <Button
+                                                        <Toggle
                                                             variant="outline"
                                                             size="sm"
                                                             className="w-8"
-                                                            onClick={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
+                                                            pressed={selectedElementData.textDecoration === "capitalize"}
+                                                            onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
                                                         >
                                                             <CaseSensitive className="w-5 h-5" />
-                                                        </Button>
+                                                        </Toggle>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>Capitalizar</p>

@@ -21,6 +21,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [selectedElement, setSelectedElement] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [isResizing, setIsResizing] = useState(false);
+    const [resizeCorner, setResizeCorner] = useState(null);
+    const [resizeStart, setResizeStart] = useState(null);
     const [zoom, setZoom] = useState(1);
     const [canvasWidth, setCanvasWidth] = useState(400);
     const [canvasHeight, setCanvasHeight] = useState(300);
@@ -58,6 +61,14 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
     };
 
+    const duplicateElement = (id) => {
+        const el = elements.find((e) => e.id === id);
+        if (!el) return;
+        const copy = { ...el, id: `element-${Date.now()}`, x: el.x + 10, y: el.y + 10 };
+        setElements((prev) => [...prev, copy]);
+        setSelectedElement(copy.id);
+    };
+
     const updateElement = (id, updates) => {
         setElements((prev) => prev.map((el) => (el.id === id ? { ...el, ...updates } : el)));
     };
@@ -86,29 +97,94 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
     };
 
+    const handleResizeMouseDown = (e, elementId, corner) => {
+        e.preventDefault();
+        setSelectedElement(elementId);
+        setIsResizing(true);
+        setResizeCorner(corner);
+        const element = elements.find((el) => el.id === elementId);
+        if (element && canvasRef.current) {
+            const rect = canvasRef.current.getBoundingClientRect();
+            setResizeStart({
+                x: (e.clientX - rect.left) / zoom,
+                y: (e.clientY - rect.top) / zoom,
+                width: element.width,
+                height: element.height,
+                elX: element.x,
+                elY: element.y,
+            });
+        }
+    };
+
     const handleMouseMove = useCallback(
         (e) => {
-            if (!isDragging || !selectedElement || !canvasRef.current) return;
+            if ((!isDragging && !isResizing) || !selectedElement || !canvasRef.current) return;
             const rect = canvasRef.current.getBoundingClientRect();
-            const newX = (e.clientX - rect.left) / zoom - dragOffset.x;
-            const newY = (e.clientY - rect.top) / zoom - dragOffset.y;
-            const element = elements.find(el => el.id === selectedElement);
-            const maxX = canvasWidth - (element?.width || 0);
-            const maxY = canvasHeight - (element?.height || 0);
-            updateElement(selectedElement, {
-                x: Math.max(0, Math.min(maxX, newX)),
-                y: Math.max(0, Math.min(maxY, newY)),
-            });
+            const curX = (e.clientX - rect.left) / zoom;
+            const curY = (e.clientY - rect.top) / zoom;
+            if (isDragging) {
+                const newX = curX - dragOffset.x;
+                const newY = curY - dragOffset.y;
+                const element = elements.find(el => el.id === selectedElement);
+                const maxX = canvasWidth - (element?.width || 0);
+                const maxY = canvasHeight - (element?.height || 0);
+                updateElement(selectedElement, {
+                    x: Math.max(0, Math.min(maxX, newX)),
+                    y: Math.max(0, Math.min(maxY, newY)),
+                });
+            }
+            if (isResizing && resizeStart) {
+                const dx = curX - resizeStart.x;
+                const dy = curY - resizeStart.y;
+                let { width, height, elX, elY } = resizeStart;
+                let newProps = {};
+                switch (resizeCorner) {
+                    case 'se':
+                        width = width + dx;
+                        height = height + dy;
+                        break;
+                    case 'sw':
+                        width = width - dx;
+                        height = height + dy;
+                        elX = elX + dx;
+                        break;
+                    case 'ne':
+                        width = width + dx;
+                        height = height - dy;
+                        elY = elY + dy;
+                        break;
+                    case 'nw':
+                        width = width - dx;
+                        height = height - dy;
+                        elX = elX + dx;
+                        elY = elY + dy;
+                        break;
+                    default:
+                        break;
+                }
+                width = Math.max(10, width);
+                height = Math.max(10, height);
+                const maxX = canvasWidth - width;
+                const maxY = canvasHeight - height;
+                newProps = {
+                    x: Math.max(0, Math.min(maxX, elX)),
+                    y: Math.max(0, Math.min(maxY, elY)),
+                    width,
+                    height,
+                };
+                updateElement(selectedElement, newProps);
+            }
         },
-        [isDragging, selectedElement, dragOffset, zoom, canvasWidth, canvasHeight, elements]
+        [isDragging, isResizing, selectedElement, dragOffset, resizeStart, resizeCorner, zoom, canvasWidth, canvasHeight, elements]
     );
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
+        setIsResizing(false);
     }, []);
 
     useEffect(() => {
-        if (isDragging) {
+        if (isDragging || isResizing) {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", handleMouseUp);
             return () => {
@@ -116,7 +192,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 document.removeEventListener("mouseup", handleMouseUp);
             };
         }
-    }, [isDragging, handleMouseMove, handleMouseUp]);
+    }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
     const exportJSON = () => {
         const jsonData = {
@@ -232,10 +308,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         rotateCanvasTo,
         addElement,
         deleteElement,
+        duplicateElement,
         updateElement,
         setSelectedElement,
         setZoom,
         handleMouseDown,
+        handleResizeMouseDown,
         exportJSON,
         getFieldName,
         getFieldValue,

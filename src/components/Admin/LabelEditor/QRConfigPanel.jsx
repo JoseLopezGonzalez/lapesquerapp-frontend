@@ -90,7 +90,7 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         <div>
             <div
                 ref={editorRef}
-                className="min-h-[40px] border border-input bg-background rounded-md p-2 text-sm focus:outline-none"
+                className="min-h-[80px] border border-input bg-background rounded-md p-2 text-sm focus:outline-none"
                 contentEditable
                 onInput={handleInput}
             />
