@@ -38,6 +38,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             text: type === "text" ? "Texto ejemplo" : undefined,
             field: type === "field" ? "product.name" : undefined,
             key: type === "manualField" ? "campo" : undefined,
+            sample: type === "manualField" ? "Valor" : undefined,
             qrContent: type === "qr" ? "" : undefined,
             barcodeContent: type === "barcode" ? "" : undefined,
             barcodeType: type === "barcode" ? "ean13" : undefined,
