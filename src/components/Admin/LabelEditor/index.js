@@ -2,7 +2,7 @@
 "use client"
 import { CgFormatUppercase } from "react-icons/cg";
 
-import React from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import QRConfigPanel from "./QRConfigPanel"
 import BarcodeConfigPanel from "./BarcodeConfigPanel"
 import Barcode from 'react-barcode'
@@ -43,12 +44,14 @@ import {
     CaseSensitive,
     Save,
     BetweenHorizonalEnd,
+    Printer,
     CopyPlus,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
+import { usePrintElement } from "@/hooks/usePrintElement";
 
 export default function LabelEditor() {
     const {
@@ -69,6 +72,35 @@ export default function LabelEditor() {
         fieldOptions,
     } = useLabelEditor();
 
+    const [manualValues, setManualValues] = useState({});
+    const [showManualDialog, setShowManualDialog] = useState(false);
+    const [manualForm, setManualForm] = useState({});
+
+    const { onPrint } = usePrintElement({ id: 'print-area', width: 100, height: 75 });
+
+    const handlePrint = () => {
+        const manualFields = elements.filter(el => el.type === 'manualField');
+        if (manualFields.length > 0) {
+            const formValues = {};
+            manualFields.forEach(el => {
+                formValues[el.key] = manualValues[el.key] || '';
+            });
+            setManualForm(formValues);
+            setShowManualDialog(true);
+        } else {
+            onPrint();
+        }
+    };
+
+    const handleConfirmManual = () => {
+        setManualValues(manualForm);
+        setShowManualDialog(false);
+        setTimeout(() => {
+            onPrint();
+            setManualValues({});
+        }, 0);
+    };
+
 
     return (
         <TooltipProvider>
@@ -86,6 +118,10 @@ export default function LabelEditor() {
                             <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("field")}>
                                 <Database className="w-4 h-4" />
                                 Campo Dinámico
+                            </Button>
+                            <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("manualField")}>
+                                <BetweenHorizonalEnd className="w-4 h-4" />
+                                Campo Manual
                             </Button>
                             <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("qr")}>
                                 <QrCode className="w-4 h-4" />
@@ -141,6 +177,16 @@ export default function LabelEditor() {
                                                                     </div>
                                                                     <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
                                                                         <span className="text-xs text-muted-foreground">{getFieldName(element.field || "")}</span>
+                                                                    </div>
+                                                                </div>)}
+                                                            {element.type === "manualField" && (
+                                                                <div className="flex flex-col items-center gap-1 w-full">
+                                                                    <div className="flex items-center gap-1 justify-start w-full">
+                                                                        <BetweenHorizonalEnd className="w-3 h-3" />
+                                                                        <span className="text-sm font-medium capitalize">Campo Manual</span>
+                                                                    </div>
+                                                                    <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                        <span className="text-xs text-muted-foreground">{`{{${element.key}}}`}</span>
                                                                     </div>
                                                                 </div>)}
 
@@ -214,6 +260,10 @@ export default function LabelEditor() {
                         <Download className="w-4 h-4" />
                         Exportar JSON
                     </Button>
+                    <Button variant="outline" onClick={handlePrint} className="gap-2">
+                        <Printer className="w-4 h-4" />
+                        Imprimir
+                    </Button>
                     <Button variant="" onClick={() => console.log("Guardar cambios")} className='bg-lime-500  hover:bg-lime-400'>
                         <Save className="w-4 h-4 " />
                         Guardar
@@ -232,6 +282,7 @@ export default function LabelEditor() {
 
                                     <div
                                         ref={canvasRef}
+                                        id="print-area"
                                         className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
                                         style={{
                                             width: 400 * zoom,
@@ -296,6 +347,22 @@ export default function LabelEditor() {
                                                             className="truncate"
                                                         >
                                                             {getFieldValue(element.field || "")}
+                                                        </span>
+                                                    )}
+                                                    {element.type === "manualField" && (
+                                                        <span
+                                                            style={{
+                                                                fontSize: element.fontSize,
+                                                                fontWeight: element.fontWeight,
+                                                                textAlign: element.textAlign,
+                                                                color: element.color,
+                                                                textTransform: element.textTransform,
+                                                                fontStyle: element.fontStyle,
+                                                                textDecoration: element.textDecoration,
+                                                            }}
+                                                            className="truncate"
+                                                        >
+                                                            {manualValues[element.key] ? manualValues[element.key] : `{{${element.key}}}`}
                                                         </span>
                                                     )}
                                                     {element.type === "qr" && (
@@ -435,6 +502,16 @@ export default function LabelEditor() {
                                 </div>
                             )}
 
+                            {selectedElementData.type === "manualField" && (
+                                <div>
+                                    <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
+                                    <Input
+                                        value={selectedElementData.key}
+                                        onChange={(e) => updateElement(selectedElementData.id, { key: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
                             {selectedElementData.type === "text" && (
                                 <div>
                                     <h4 className="text-sm font-medium mb-2">Contenido</h4>
@@ -473,7 +550,7 @@ export default function LabelEditor() {
                                 </div>
                             )}
 
-                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "qr" || selectedElementData.type === "barcode") && (
+                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "qr" || selectedElementData.type === "barcode") && (
                                 <Separator className="my-4" />
                             )}
 
@@ -668,12 +745,12 @@ export default function LabelEditor() {
 
 
 
-                            {selectedElementData.type === "text" || selectedElementData.type === "field" && (
+                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField") && (
                                 <Separator className="my-4" />
                             )}
 
                             {/* Text properties */}
-                            {(selectedElementData.type === "text" || selectedElementData.type === "field") && (
+                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField") && (
                                 <div>
                                     <h4 className="text-sm font-medium mb-2">Texto</h4>
                                     <div className="flex flex-col items-center w-full gap-3">
@@ -865,6 +942,24 @@ export default function LabelEditor() {
                 </Card> */}
             </div>
         </div>
+        <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Completa campos manuales</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                    {Object.keys(manualForm).map((key) => (
+                        <div key={key} className="flex flex-col gap-1">
+                            <Label className="text-sm">{key}</Label>
+                            <Input value={manualForm[key]} onChange={(e) => setManualForm({ ...manualForm, [key]: e.target.value })} />
+                        </div>
+                    ))}
+                </div>
+                <DialogFooter className="pt-4">
+                    <Button onClick={handleConfirmManual}>Imprimir</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
         </TooltipProvider>
     )
 }
