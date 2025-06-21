@@ -1,5 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
+const rotatePoint = (x, y, angle) => {
+    const rad = (angle * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    return {
+        x: x * cos - y * sin,
+        y: x * sin + y * cos,
+    };
+};
+
 const defaultDataContext = {
     product: {
         name: "Pulpo Fresco",
@@ -79,9 +89,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         const element = elements.find((el) => el.id === elementId);
         if (element && canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect();
+            const rawX = (e.clientX - rect.left) / zoom;
+            const rawY = (e.clientY - rect.top) / zoom;
+            const { x, y } = rotatePoint(rawX, rawY, -canvasRotation);
             setDragOffset({
-                x: (e.clientX - rect.left) / zoom - element.x,
-                y: (e.clientY - rect.top) / zoom - element.y,
+                x: x - element.x,
+                y: y - element.y,
             });
         }
     };
@@ -90,8 +103,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         (e) => {
             if (!isDragging || !selectedElement || !canvasRef.current) return;
             const rect = canvasRef.current.getBoundingClientRect();
-            const newX = (e.clientX - rect.left) / zoom - dragOffset.x;
-            const newY = (e.clientY - rect.top) / zoom - dragOffset.y;
+            const rawX = (e.clientX - rect.left) / zoom;
+            const rawY = (e.clientY - rect.top) / zoom;
+            const { x: rotatedX, y: rotatedY } = rotatePoint(rawX, rawY, -canvasRotation);
+            const newX = rotatedX - dragOffset.x;
+            const newY = rotatedY - dragOffset.y;
             const element = elements.find(el => el.id === selectedElement);
             const maxX = canvasWidth - (element?.width || 0);
             const maxY = canvasHeight - (element?.height || 0);
@@ -100,7 +116,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 y: Math.max(0, Math.min(maxY, newY)),
             });
         },
-        [isDragging, selectedElement, dragOffset, zoom, canvasWidth, canvasHeight, elements]
+        [isDragging, selectedElement, dragOffset, zoom, canvasWidth, canvasHeight, elements, canvasRotation]
     );
 
     const handleMouseUp = useCallback(() => {
@@ -164,44 +180,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const rotateCanvasTo = useCallback((angle) => {
         const diff = (angle - canvasRotation + 360) % 360;
         if (diff === 0) return;
-        setElements((prev) => prev.map((el) => {
-            let { x, y, width: w, height: h, rotation = 0 } = el;
-            switch (diff) {
-                case 90: {
-                    const newX = canvasHeight - y - h;
-                    const newY = x;
-                    return {
-                        ...el,
-                        x: newX,
-                        y: newY,
-                        width: h,
-                        height: w,
-                        rotation: (rotation + 90) % 360,
-                    };
-                }
-                case 180:
-                    return {
-                        ...el,
-                        x: canvasWidth - x - w,
-                        y: canvasHeight - y - h,
-                        rotation: (rotation + 180) % 360,
-                    };
-                case 270: {
-                    const newX = y;
-                    const newY = canvasWidth - x - w;
-                    return {
-                        ...el,
-                        x: newX,
-                        y: newY,
-                        width: h,
-                        height: w,
-                        rotation: (rotation + 270) % 360,
-                    };
-                }
-                default:
-                    return el;
-            }
-        }));
 
         if (diff === 90 || diff === 270) {
             setCanvasWidth(canvasHeight);
