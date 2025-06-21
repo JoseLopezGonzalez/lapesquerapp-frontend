@@ -83,7 +83,7 @@ export default function LabelEditor() {
         if (manualFields.length > 0) {
             const formValues = {};
             manualFields.forEach(el => {
-                formValues[el.key] = manualValues[el.key] || '';
+                formValues[el.key] = manualValues[el.key] || el.sample || '';
             });
             setManualForm(formValues);
             setShowManualDialog(true);
@@ -186,7 +186,7 @@ export default function LabelEditor() {
                                                                         <span className="text-sm font-medium capitalize">Campo Manual</span>
                                                                     </div>
                                                                     <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                        <span className="text-xs text-muted-foreground">{`{{${element.key}}}`}</span>
+                                                                        <span className="text-xs text-muted-foreground">{element.sample || `{{${element.key}}}`}</span>
                                                                     </div>
                                                                 </div>)}
 
@@ -362,7 +362,7 @@ export default function LabelEditor() {
                                                             }}
                                                             className="truncate"
                                                         >
-                                                            {manualValues[element.key] ? manualValues[element.key] : `{{${element.key}}}`}
+                                                            {manualValues[element.key] ? manualValues[element.key] : element.sample || `{{${element.key}}}`}
                                                         </span>
                                                     )}
                                                     {element.type === "qr" && (
@@ -503,12 +503,21 @@ export default function LabelEditor() {
                             )}
 
                             {selectedElementData.type === "manualField" && (
-                                <div>
-                                    <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
-                                    <Input
-                                        value={selectedElementData.key}
-                                        onChange={(e) => updateElement(selectedElementData.id, { key: e.target.value })}
-                                    />
+                                <div className="space-y-2">
+                                    <div>
+                                        <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
+                                        <Input
+                                            value={selectedElementData.key}
+                                            onChange={(e) => updateElement(selectedElementData.id, { key: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-medium mb-2">Valor de prueba</h4>
+                                        <Input
+                                            value={selectedElementData.sample || ''}
+                                            onChange={(e) => updateElement(selectedElementData.id, { sample: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                             )}
 
