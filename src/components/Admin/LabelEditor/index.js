@@ -75,7 +75,8 @@ export default function LabelEditor() {
         canvasRotation,
         setCanvasWidth,
         setCanvasHeight,
-        setCanvasRotation,
+        rotateCanvas,
+        rotateCanvasTo,
     } = useLabelEditor();
 
     const [manualValues, setManualValues] = useState({});
@@ -105,6 +106,22 @@ export default function LabelEditor() {
             onPrint();
             setManualValues({});
         }, 0);
+    };
+
+    const handleElementRotationChange = (id, angle) => {
+        const element = elements.find(el => el.id === id);
+        if (!element) return;
+        const prevMod = (element.rotation || 0) % 180;
+        const newMod = angle % 180;
+        let { width, height } = element;
+        if (prevMod !== newMod) {
+            [width, height] = [height, width];
+        }
+        updateElement(id, { rotation: angle, width, height });
+    };
+
+    const handleCanvasRotationChange = (angle) => {
+        rotateCanvasTo(angle);
     };
 
 
@@ -257,13 +274,18 @@ export default function LabelEditor() {
                             onChange={(e) => setCanvasHeight(Number(e.target.value))}
                             className="w-16 text-center"
                         />
-                        <Input
-                            type="number"
-                            value={canvasRotation}
-                            onChange={(e) => setCanvasRotation(Number(e.target.value))}
-                            className="w-16 text-center"
-                        />
-                        <Button variant="outline" size="" onClick={() => setZoom(1)}>
+                        <Select value={canvasRotation} onValueChange={(val) => handleCanvasRotationChange(Number(val))}>
+                            <SelectTrigger className="w-16">
+                                <SelectValue placeholder="Ángulo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="0">0°</SelectItem>
+                                <SelectItem value="90">90°</SelectItem>
+                                <SelectItem value="180">180°</SelectItem>
+                                <SelectItem value="270">270°</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" size="" onClick={rotateCanvas}>
                             <RotateCcw className="w-4 h-4" />
                         </Button>
                     </div>
@@ -299,7 +321,7 @@ export default function LabelEditor() {
                                         style={{
                                             width: canvasWidth * zoom,
                                             height: canvasHeight * zoom,
-                                            transform: `scale(${zoom}) rotate(${canvasRotation}deg)`,
+                                            transform: `scale(${zoom})`,
                                             transformOrigin: "top left",
                                         }}
                                     >
@@ -313,8 +335,10 @@ export default function LabelEditor() {
                                                 style={{
                                                     left: element.x,
                                                     top: element.y,
-                                                    width: element.width,
-                                                    height: element.height,
+                                                    width: (element.rotation || 0) % 180 === 0 ? element.width : element.height,
+                                                    height: (element.rotation || 0) % 180 === 0 ? element.height : element.width,
+                                                    transform: `rotate(${element.rotation || 0}deg)`,
+                                                    transformOrigin: "center",
                                                 }}
                                                 onMouseDown={(e) => handleMouseDown(e, element.id)}
                                             >
@@ -323,7 +347,6 @@ export default function LabelEditor() {
                                                     style={{
                                                         textAlign: element.textAlign,
                                                         verticalAlign: element.verticalAlign || "center",
-                                                        transform: `rotate(${element.rotation || 0}deg)`,
                                                         display: "flex",
                                                         alignItems: element.verticalAlign || "center",
                                                         justifyContent: element.horizontalAlign || "flex-start",
@@ -629,7 +652,7 @@ export default function LabelEditor() {
                                         {/* Select angle */}
                                         <Select
                                             value={selectedElementData.rotation || 0}
-                                            onValueChange={(value) => updateElement(selectedElementData.id, { rotation: Number(value) })}
+                                            onValueChange={(value) => handleElementRotationChange(selectedElementData.id, Number(value))}
                                         >
                                             <SelectTrigger className="w-24">
                                                 <SelectValue placeholder="Ángulo" />

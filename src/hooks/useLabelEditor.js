@@ -161,6 +161,61 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null;
 
+    const rotateCanvasTo = useCallback((angle) => {
+        const diff = (angle - canvasRotation + 360) % 360;
+        if (diff === 0) return;
+        setElements((prev) => prev.map((el) => {
+            let { x, y, width: w, height: h, rotation = 0 } = el;
+            switch (diff) {
+                case 90: {
+                    const newX = canvasHeight - y - h;
+                    const newY = x;
+                    return {
+                        ...el,
+                        x: newX,
+                        y: newY,
+                        width: h,
+                        height: w,
+                        rotation: (rotation + 90) % 360,
+                    };
+                }
+                case 180:
+                    return {
+                        ...el,
+                        x: canvasWidth - x - w,
+                        y: canvasHeight - y - h,
+                        rotation: (rotation + 180) % 360,
+                    };
+                case 270: {
+                    const newX = y;
+                    const newY = canvasWidth - x - w;
+                    return {
+                        ...el,
+                        x: newX,
+                        y: newY,
+                        width: h,
+                        height: w,
+                        rotation: (rotation + 270) % 360,
+                    };
+                }
+                default:
+                    return el;
+            }
+        }));
+
+        if (diff === 90 || diff === 270) {
+            setCanvasWidth(canvasHeight);
+            setCanvasHeight(canvasWidth);
+        }
+
+        setCanvasRotation(angle);
+    }, [canvasRotation, canvasHeight, canvasWidth]);
+
+    const rotateCanvas = useCallback(() => {
+        const next = (canvasRotation + 90) % 360;
+        rotateCanvasTo(next);
+    }, [canvasRotation, rotateCanvasTo]);
+
     return {
         elements,
         selectedElement,
@@ -173,6 +228,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setCanvasWidth,
         setCanvasHeight,
         setCanvasRotation,
+        rotateCanvas,
+        rotateCanvasTo,
         addElement,
         deleteElement,
         updateElement,
