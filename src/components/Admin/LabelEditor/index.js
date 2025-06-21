@@ -321,7 +321,7 @@ export default function LabelEditor() {
                                         style={{
                                             width: canvasWidth,
                                             height: canvasHeight,
-                                            transform: `scale(${zoom}) rotate(${canvasRotation}deg)`,
+                                            transform: `scale(${zoom})`,
                                             transformOrigin: "top left",
                                         }}
                                     >
