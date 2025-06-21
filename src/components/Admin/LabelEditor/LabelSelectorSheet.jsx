@@ -52,7 +52,13 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
             )}
           </div>
         </ScrollArea>
-        <Button variant="outline" className="w-full" onClick={() => console.log("crear nueva etiqueta")}>+ Nueva etiqueta</Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => handleSelect({ id: Date.now().toString(), name: "", width: 400, height: 300 })}
+        >
+          + Nueva etiqueta
+        </Button>
       </SheetContent>
     </Sheet>
   )

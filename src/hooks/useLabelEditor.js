@@ -195,8 +195,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
     }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
-    const exportJSON = () => {
+    const exportJSON = (name = "label-structure.json") => {
         const jsonData = {
+            name,
             elements: elements.map(({ id, ...el }) => el),
             canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
         };
@@ -204,9 +205,23 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "label-structure.json";
+        a.download = name.endsWith('.json') ? name : `${name}.json`;
         a.click();
         URL.revokeObjectURL(url);
+    };
+
+    const importJSON = (jsonData) => {
+        if (!jsonData) return;
+        if (Array.isArray(jsonData.elements)) {
+            const newElements = jsonData.elements.map((el, i) => ({ id: `element-${Date.now()}-${i}`, ...el }));
+            setElements(newElements);
+        }
+        if (jsonData.canvas) {
+            setCanvasWidth(jsonData.canvas.width || canvasWidth);
+            setCanvasHeight(jsonData.canvas.height || canvasHeight);
+            setCanvasRotation(jsonData.canvas.rotation || 0);
+        }
+        return jsonData.name || "";
     };
 
     const getFieldName = (field) => {
@@ -316,6 +331,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         handleMouseDown,
         handleResizeMouseDown,
         exportJSON,
+        importJSON,
         getFieldName,
         getFieldValue,
         fieldOptions,

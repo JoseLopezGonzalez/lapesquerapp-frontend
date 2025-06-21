@@ -2,7 +2,7 @@
 "use client"
 import { CgFormatUppercase } from "react-icons/cg";
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
@@ -48,6 +48,7 @@ import {
     BetweenHorizonalEnd,
     Printer,
     CopyPlus,
+    Upload,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -83,6 +84,7 @@ export default function LabelEditor() {
         rotateCanvas,
         rotateCanvasTo,
         setElements,
+        importJSON,
     } = useLabelEditor();
 
     const [manualValues, setManualValues] = useState({});
@@ -90,6 +92,8 @@ export default function LabelEditor() {
     const [manualForm, setManualForm] = useState({});
     const [selectedLabel, setSelectedLabel] = useState(null);
     const [openSelector, setOpenSelector] = useState(false);
+    const [labelName, setLabelName] = useState("");
+    const fileInputRef = useRef(null);
 
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
@@ -116,6 +120,22 @@ export default function LabelEditor() {
         }, 0);
     };
 
+    const handleImportJSON = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                const name = importJSON(data);
+                setLabelName(name);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handleElementRotationChange = (id, angle) => {
         const element = elements.find(el => el.id === id);
         if (!element) return;
@@ -137,7 +157,21 @@ export default function LabelEditor() {
         setCanvasWidth(model.width);
         setCanvasHeight(model.height);
         setElements([]);
+        setLabelName(model.name || "");
     };
+
+    const handleCreateNewLabel = () => {
+        const model = { id: Date.now().toString(), name: "", width: 400, height: 300 };
+        setSelectedLabel(model);
+        setCanvasWidth(model.width);
+        setCanvasHeight(model.height);
+        setElements([]);
+        setLabelName("");
+    };
+
+    useEffect(() => {
+        handleCreateNewLabel();
+    }, []);
 
 
     return (
@@ -299,6 +333,12 @@ export default function LabelEditor() {
                 <div className=" p-2 flex justify-center items-center gap-2 w-full">
                     <div className="flex items-center gap-2">
                         <Input
+                            placeholder="Nombre"
+                            value={labelName}
+                            onChange={(e) => setLabelName(e.target.value)}
+                            className="w-48"
+                        />
+                        <Input
                             type="number"
                             value={canvasWidth}
                             onChange={(e) => setCanvasWidth(Number(e.target.value))}
@@ -327,7 +367,12 @@ export default function LabelEditor() {
                         </Button>
                     </div>
                     <Separator orientation="vertical" className="h-6" />
-                    <Button onClick={exportJSON} className="gap-2">
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-2">
+                        <Upload className="w-4 h-4" />
+                        Importar JSON
+                    </Button>
+                    <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
+                    <Button onClick={() => exportJSON(labelName)} className="gap-2">
                         <Download className="w-4 h-4" />
                         Exportar JSON
                     </Button>
