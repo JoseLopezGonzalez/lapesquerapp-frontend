@@ -2,6 +2,8 @@
 import React, { useEffect, useRef } from 'react'
 import { Badge, badgeVariants } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import Barcode from 'react-barcode'
 import { serializeBarcode, formatMap } from '@/lib/barcodes'
 
@@ -19,6 +21,8 @@ export default function BarcodeConfigPanel({
   type,
   onTypeChange,
   getFieldValue,
+  showValue,
+  onShowValueChange,
 }) {
   const editorRef = useRef(null)
   const fieldMapRef = useRef({})
@@ -128,20 +132,24 @@ export default function BarcodeConfigPanel({
           onInput={handleInput}
         />
         <div className="flex flex-wrap gap-1">
-          {fieldOptions.map((opt) => (
-            <Badge
-              key={opt.value}
-              className="cursor-pointer select-none px-1.5 py-0.5 text-xs"
-              onClick={() => insertField(opt.value)}
-            >
-              {opt.label}
-            </Badge>
-          ))}
-        </div>
+      {fieldOptions.map((opt) => (
+        <Badge
+          key={opt.value}
+          className="cursor-pointer select-none px-1.5 py-0.5 text-xs"
+          onClick={() => insertField(opt.value)}
+        >
+          {opt.label}
+        </Badge>
+      ))}
       </div>
-      <div className="flex justify-center p-2 border rounded">
-        <Barcode value={previewValue || '0'} format={formatMap[type]} width={1} height={40} displayValue={false} />
+      <div className="flex items-center gap-2 pt-2">
+        <Checkbox id="show-value" checked={showValue} onCheckedChange={onShowValueChange} />
+        <Label htmlFor="show-value" className="text-xs">Mostrar caracteres</Label>
       </div>
     </div>
+    <div className="flex justify-center p-2 border rounded">
+      <Barcode value={previewValue || '0'} format={formatMap[type]} width={1} height={40} displayValue={showValue} />
+    </div>
+  </div>
   )
 }

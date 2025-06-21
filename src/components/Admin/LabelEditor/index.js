@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import QRConfigPanel from "./QRConfigPanel"
 import BarcodeConfigPanel from "./BarcodeConfigPanel"
 import Barcode from 'react-barcode'
+import QRCode from 'react-qr-code'
 import { serializeBarcode, formatMap } from '@/lib/barcodes'
 import {
     Type,
@@ -412,8 +413,12 @@ export default function LabelEditor() {
                                                         </span>
                                                     )}
                                                     {element.type === "qr" && (
-                                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                            <QrCode className="w-8 h-8 text-gray-600" />
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <QRCode
+                                                                value={(element.qrContent || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f)) || ' '}
+                                                                size={Math.min(element.width, element.height)}
+                                                                style={{ width: '100%', height: '100%' }}
+                                                            />
                                                         </div>
                                                     )}
                                                     {element.type === "barcode" && (
@@ -426,7 +431,7 @@ export default function LabelEditor() {
                                                                 format={formatMap[element.barcodeType || 'ean13']}
                                                                 width={1}
                                                                 height={element.height - 10}
-                                                                displayValue={false}
+                                                                displayValue={element.showValue}
                                                             />
                                                         </div>
                                                     )}
@@ -607,6 +612,8 @@ export default function LabelEditor() {
                                         type={selectedElementData.barcodeType || 'ean13'}
                                         onTypeChange={(val) => updateElement(selectedElementData.id, { barcodeType: val })}
                                         getFieldValue={getFieldValue}
+                                        showValue={!!selectedElementData.showValue}
+                                        onShowValueChange={(val) => updateElement(selectedElementData.id, { showValue: val })}
                                     />
                                 </div>
                             )}

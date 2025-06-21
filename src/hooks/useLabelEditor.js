@@ -48,6 +48,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             qrContent: type === "qr" ? "" : undefined,
             barcodeContent: type === "barcode" ? "" : undefined,
             barcodeType: type === "barcode" ? "ean13" : undefined,
+            showValue: type === "barcode" ? false : undefined,
             color: "#000000",
         };
         setElements((prev) => [...prev, newElement]);
