@@ -54,6 +54,7 @@ import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
 import { usePrintElement } from "@/hooks/usePrintElement";
+import LabelSelectorSheet from "./LabelSelectorSheet";
 
 export default function LabelEditor() {
     const {
@@ -81,11 +82,14 @@ export default function LabelEditor() {
         setCanvasHeight,
         rotateCanvas,
         rotateCanvasTo,
+        setElements,
     } = useLabelEditor();
 
     const [manualValues, setManualValues] = useState({});
     const [showManualDialog, setShowManualDialog] = useState(false);
     const [manualForm, setManualForm] = useState({});
+    const [selectedLabel, setSelectedLabel] = useState(null);
+    const [openSelector, setOpenSelector] = useState(false);
 
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
@@ -128,12 +132,22 @@ export default function LabelEditor() {
         rotateCanvasTo(angle);
     };
 
+    const handleSelectLabel = (model) => {
+        setSelectedLabel(model);
+        setCanvasWidth(model.width);
+        setCanvasHeight(model.height);
+        setElements([]);
+    };
+
 
     return (
         <TooltipProvider>
         <div className="flex h-full w-full  bg-muted/30">
             {/* Sidebar Izquierda */}
             <div className="w-80 border-r bg-card p-4 h-full">
+                <LabelSelectorSheet open={openSelector} onOpenChange={setOpenSelector} onSelect={handleSelectLabel}>
+                    <Button className="w-full mb-4">Seleccionar modelo</Button>
+                </LabelSelectorSheet>
                 <div className="space-y-4 h-full flex flex-col min-h-0">
                     <div>
                         <h3 className="font-semibold mb-3">Añadir Elementos</h3>
@@ -270,6 +284,17 @@ export default function LabelEditor() {
 
             {/* Zona Central - Canvas */}
             <div className="flex-1 flex flex-col h-full pb-5">
+                {!selectedLabel && (
+                    <div className="flex-1 flex items-center justify-center">
+                        <EmptyState
+                            title="Selecciona un modelo de etiqueta"
+                            description="Selecciona un modelo de etiqueta para comenzar la edición"
+                            button={{ name: "Elegir modelo", onClick: () => setOpenSelector(true) }}
+                        />
+                    </div>
+                )}
+                {selectedLabel && (
+                <>
                 {/* Toolbar */}
                 <div className=" p-2 flex justify-center items-center gap-2 w-full">
                     <div className="flex items-center gap-2">
@@ -475,6 +500,9 @@ export default function LabelEditor() {
                         <ZoomIn className="w-4 h-4" />
                     </Button>
                 </div>
+
+                </>
+                )}
 
             </div>
 

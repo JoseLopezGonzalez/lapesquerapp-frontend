@@ -319,5 +319,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         getFieldName,
         getFieldValue,
         fieldOptions,
+        setElements,
     };
 }
