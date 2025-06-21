@@ -319,9 +319,9 @@ export default function LabelEditor() {
                                         id="print-area"
                                         className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
                                         style={{
-                                            width: canvasWidth * zoom,
-                                            height: canvasHeight * zoom,
-                                            transform: `scale(${zoom})`,
+                                            width: canvasWidth,
+                                            height: canvasHeight,
+                                            transform: `scale(${zoom}) rotate(${canvasRotation}deg)`,
                                             transformOrigin: "top left",
                                         }}
                                     >
