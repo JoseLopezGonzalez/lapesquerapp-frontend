@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import QRConfigPanel from "./QRConfigPanel"
 import BarcodeConfigPanel from "./BarcodeConfigPanel"
+import RichParagraphConfigPanel from "./RichParagraphConfigPanel"
 
 import {
     Type,
@@ -21,6 +22,8 @@ import {
     QrCode,
     BarcodeIcon as Barcode3,
     ImageIcon,
+    Stamp,
+    Pilcrow,
     Trash2,
     Download,
     Move,
@@ -219,6 +222,14 @@ export default function LabelEditor() {
                                     <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("manualField")}>
                                         <BetweenHorizonalEnd className="w-4 h-4" />
                                         Campo Manual
+                                    </Button>
+                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("sanitaryRegister")}>
+                                        <Stamp className="w-4 h-4" />
+                                        Registro Sanitario
+                                    </Button>
+                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("richParagraph")}>
+                                        <Pilcrow className="w-4 h-4" />
+                                        Párrafo
                                     </Button>
                                     <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("qr")}>
                                         <QrCode className="w-4 h-4" />
@@ -543,6 +554,18 @@ export default function LabelEditor() {
                                                 <h4 className="capitalize text-xl font-normal">Campo Manual</h4>
                                             </div>
                                         )}
+                                        {selectedElementData.type === "sanitaryRegister" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <Stamp className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Registro Sanitario</h4>
+                                            </div>
+                                        )}
+                                        {selectedElementData.type === "richParagraph" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <Pilcrow className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Párrafo</h4>
+                                            </div>
+                                        )}
                                         {selectedElementData.type === "qr" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <QrCode className="w-4 h-4" />
@@ -618,6 +641,47 @@ export default function LabelEditor() {
                                         </div>
                                     )}
 
+                                    {selectedElementData.type === "sanitaryRegister" && (
+                                        <div className="space-y-2">
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Texto</h4>
+                                                <Input
+                                                    value={selectedElementData.text}
+                                                    onChange={(e) => updateElement(selectedElementData.id, { text: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex flex-col flex-1">
+                                                    <span className="text-xs text-muted-foreground">Color Borde</span>
+                                                    <Input
+                                                        type="color"
+                                                        value={selectedElementData.borderColor || '#000000'}
+                                                        onChange={(e) => updateElement(selectedElementData.id, { borderColor: e.target.value })}
+                                                        className="w-10 h-8 p-0"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col flex-1">
+                                                    <span className="text-xs text-muted-foreground">Grosor</span>
+                                                    <Input
+                                                        type="number"
+                                                        value={selectedElementData.borderWidth || 1}
+                                                        onChange={(e) => updateElement(selectedElementData.id, { borderWidth: Number(e.target.value) })}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedElementData.type === "richParagraph" && (
+                                        <div>
+                                            <h4 className="text-sm font-medium mb-2">Párrafo</h4>
+                                            <RichParagraphConfigPanel
+                                                html={selectedElementData.html || ''}
+                                                onChange={(val) => updateElement(selectedElementData.id, { html: val })}
+                                            />
+                                        </div>
+                                    )}
+
                                     {selectedElementData.type === "text" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Contenido</h4>
@@ -658,7 +722,7 @@ export default function LabelEditor() {
                                         </div>
                                     )}
 
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "qr" || selectedElementData.type === "barcode") && (
+                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "qr" || selectedElementData.type === "barcode" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
@@ -804,12 +868,12 @@ export default function LabelEditor() {
 
 
 
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField") && (
+                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
                                     {/* Text properties */}
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField") && (
+                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Texto</h4>
                                             <div className="flex flex-col items-center w-full gap-3">
