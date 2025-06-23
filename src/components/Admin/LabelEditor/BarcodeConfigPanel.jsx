@@ -10,7 +10,7 @@ import { serializeBarcode, formatMap } from '@/lib/barcodes'
 const typeOptions = [
   { value: 'ean13', label: 'EAN-13' },
   { value: 'ean14', label: 'EAN-14' },
-  { value: 'ean13-weight', label: 'EAN-13 con peso' },
+  /* { value: 'ean13-weight', label: 'EAN-13 con peso' }, */
   { value: 'gs1-128', label: 'GS1-128' },
 ]
 
@@ -73,23 +73,44 @@ export default function BarcodeConfigPanel({
   const insertField = (field) => {
     if (!editorRef.current) return
     const label = fieldMapRef.current[field] || field
+
     const span = document.createElement('span')
     span.setAttribute('data-field', field)
     span.setAttribute('contenteditable', 'false')
     span.className = badgeClass
-    span.innerHTML = `<span>${label}</span><span data-remove="true" class="ml-1 cursor-pointer">&times;</span>`
+
+    const labelSpan = document.createElement('span')
+    labelSpan.textContent = label
+
+    const removeSpan = document.createElement('span')
+    removeSpan.setAttribute('data-remove', 'true')
+    removeSpan.className = 'ml-1 cursor-pointer'
+    removeSpan.textContent = '×'
+
+    span.appendChild(labelSpan)
+    span.appendChild(removeSpan)
 
     const sel = window.getSelection()
+    const editor = editorRef.current
+
     if (!sel || !sel.rangeCount) {
-      editorRef.current.appendChild(span)
+      editor.appendChild(span)
     } else {
       const range = sel.getRangeAt(0)
-      range.deleteContents()
-      range.insertNode(span)
-      range.collapse(false)
+      if (!editor.contains(range.commonAncestorContainer)) {
+        editor.appendChild(span)
+      } else {
+        range.deleteContents()
+        range.insertNode(span)
+        range.setStartAfter(span)
+        range.setEndAfter(span)
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }
     }
+
     onChange(extractValue())
-    setTimeout(() => editorRef.current?.focus(), 0)
+    setTimeout(() => editor.focus(), 0)
   }
 
   useEffect(() => {
@@ -107,10 +128,25 @@ export default function BarcodeConfigPanel({
     return () => editor.removeEventListener('click', handleClick)
   }, [onChange])
 
-  const previewValue = serializeBarcode(
-    (value || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue ? getFieldValue(f) : ''),
+  const barcodeValue = serializeBarcode(
+    (value || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue ? getFieldValue(f) || '' : ''),
     type
   )
+
+  const isValidEAN = (val, len) => {
+    const trimmed = typeof val === 'string' ? val.trim() : ''
+    return /^\d+$/.test(trimmed) && trimmed.length === len
+  }
+
+
+  const isValidBarcode = () => {
+    if (!barcodeValue) return false
+
+
+    if (type === 'ean13') return isValidEAN(barcodeValue, 12)
+    if (type === 'ean14') return isValidEAN(barcodeValue, 13)
+    return true // otros tipos como gs1-128 pueden variar
+  }
 
   return (
     <div className="space-y-2">
@@ -132,24 +168,37 @@ export default function BarcodeConfigPanel({
           onInput={handleInput}
         />
         <div className="flex flex-wrap gap-1">
-      {fieldOptions.map((opt) => (
-        <Badge
-          key={opt.value}
-          className="cursor-pointer select-none px-1.5 py-0.5 text-xs"
-          onClick={() => insertField(opt.value)}
-        >
-          {opt.label}
-        </Badge>
-      ))}
+          {fieldOptions.map((opt) => (
+            <Badge
+              key={opt.value}
+              className="cursor-pointer select-none px-1.5 py-0.5 text-xs"
+              onClick={() => insertField(opt.value)}
+            >
+              {opt.label}
+            </Badge>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 pt-2">
+          <Checkbox id="show-value" checked={showValue} onCheckedChange={onShowValueChange} />
+          <Label htmlFor="show-value" className="text-xs">Mostrar caracteres</Label>
+        </div>
       </div>
-      <div className="flex items-center gap-2 pt-2">
-        <Checkbox id="show-value" checked={showValue} onCheckedChange={onShowValueChange} />
-        <Label htmlFor="show-value" className="text-xs">Mostrar caracteres</Label>
+
+      <div className="flex justify-center p-2 border rounded">
+        {isValidBarcode() ? (
+          <Barcode
+            value={barcodeValue}
+            format={formatMap[type]}
+            width={1}
+            height={40}
+            displayValue={showValue}
+          />
+        ) : (
+          <span className="text-sm text-red-500">
+            Valor no válido para {type.toUpperCase()}
+          </span>
+        )}
       </div>
     </div>
-    <div className="flex justify-center p-2 border rounded">
-      <Barcode value={previewValue || '0'} format={formatMap[type]} width={1} height={40} displayValue={showValue} />
-    </div>
-  </div>
   )
 }

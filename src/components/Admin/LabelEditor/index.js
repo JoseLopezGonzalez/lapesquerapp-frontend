@@ -939,7 +939,6 @@ export default function LabelEditor() {
                                                                 <p>Mayúsculas</p>
                                                             </TooltipContent>
                                                         </Tooltip>
-
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <Toggle
@@ -978,10 +977,8 @@ export default function LabelEditor() {
                                             </div>
                                         </div>
                                     )}
-
                                 </CardContent>
                             </Card>
-
                         )}
 
                         {/* Datos de contexto */}

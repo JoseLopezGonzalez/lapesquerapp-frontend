@@ -2,6 +2,7 @@
 import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { ImageIcon } from "lucide-react";
+import { serializeBarcode } from "@/lib/barcodes";
 
 const formatMap = {
     ean13: "EAN13",
@@ -40,18 +41,41 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
                 </div>
             );
 
-        case "barcode":
+        case "barcode": {
+            const type = element.barcodeType || "ean13"
+            console.log("Barcode type:", type)
+            const format = formatMap[type]
+            const rawValue = (element.barcodeContent || "").replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f))
+            const serialized = serializeBarcode(rawValue, type)
+            let isValidLength = true;
+
+            if (format === "EAN13") {
+                isValidLength = /^\d{12}$/.test(serialized); // Incluyendo checksum
+            } else if (format === "EAN14") {
+                isValidLength = /^\d{13}$/.test(serialized);
+            } else if (format === "CODE128") {
+                isValidLength = serialized.length > 0; // mínimo 1 carácter
+            }
+
             return (
                 <div className="w-full h-full flex items-center justify-center">
-                    <Barcode
-                        value={(element.barcodeContent || "").replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f))}
-                        format={formatMap[element.barcodeType || "ean13"]}
-                        width={1}
-                        height={element.height - 10}
-                        displayValue={element.showValue}
-                    />
+                    {isValidLength ? (
+                        <Barcode
+                            value={serialized}
+                            format={format}
+                            width={1}
+                            height={element.height - 10}
+                            displayValue={element.showValue}
+                        />
+                    ) : (
+                        <span className="text-xs text-red-500 text-center">
+                            Código inválido ({serialized?.length} dígitos)
+                        </span>
+                    )}
                 </div>
-            );
+            )
+        }
+
 
         case "image":
             return (
