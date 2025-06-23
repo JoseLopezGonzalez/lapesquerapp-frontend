@@ -294,6 +294,28 @@ export default function LabelEditor() {
                                                                                 <span className="text-xs text-muted-foreground">{element.sample || `{{${element.key}}}`}</span>
                                                                             </div>
                                                                         </div>)}
+                                                                    {element.type === "sanitaryRegister" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <Stamp className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Registro Sanitario</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground">{element.text}</span>
+                                                                            </div>
+                                                                        </div>)}
+                                                                    {element.type === "richParagraph" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <Pilcrow className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Párrafo</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground truncate">
+                                                                                    {element.html ? element.html.replace(/<[^>]+>/g, '') : element.text || ''}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>)}
 
                                                                     {element.type === "qr" && (
                                                                         <div className="flex items-center gap-1">
