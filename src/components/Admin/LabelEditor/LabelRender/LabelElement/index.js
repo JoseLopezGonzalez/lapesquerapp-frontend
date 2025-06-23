@@ -3,6 +3,8 @@ import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { ImageIcon } from "lucide-react";
 import { serializeBarcode } from "@/lib/barcodes";
+import SanitaryRegister from "./SanitaryRegister";
+import RichParagraph from "./RichParagraph";
 
 const formatMap = {
     ean13: "EAN13",
@@ -29,6 +31,12 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
 
         case "manualField":
             return <span style={commonStyle}>{manualValues[element.key] || element.sample || `{{${element.key}}}`}</span>;
+
+        case "sanitaryRegister":
+            return <SanitaryRegister element={element} />;
+
+        case "richParagraph":
+            return <RichParagraph element={element} />;
 
         case "qr":
             return (

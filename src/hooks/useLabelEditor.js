@@ -36,12 +36,27 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             type,
             x: 50,
             y: 50,
-            width: type === "text" || type === "field" || type === "manualField" ? 120 : 80,
-            height: type === "text" || type === "field" || type === "manualField" ? 30 : 80,
+            width:
+                type === "text" ||
+                type === "field" ||
+                type === "manualField" ||
+                type === "sanitaryRegister" ||
+                type === "richParagraph"
+                    ? 120
+                    : 80,
+            height:
+                type === "richParagraph"
+                    ? 60
+                    : type === "text" ||
+                      type === "field" ||
+                      type === "manualField" ||
+                      type === "sanitaryRegister"
+                    ? 30
+                    : 80,
             fontSize: 12,
             fontWeight: "normal",
             textAlign: "left",
-            text: type === "text" ? "Texto ejemplo" : undefined,
+            text: type === "text" || type === "sanitaryRegister" ? "Texto ejemplo" : undefined,
             field: type === "field" ? "product.name" : undefined,
             key: type === "manualField" ? "campo" : undefined,
             sample: type === "manualField" ? "Valor" : undefined,
@@ -49,6 +64,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             barcodeContent: type === "barcode" ? "" : undefined,
             barcodeType: type === "barcode" ? "ean13" : undefined,
             showValue: type === "barcode" ? false : undefined,
+            segments:
+                type === "richParagraph"
+                    ? [
+                          {
+                              text: "Texto de ejemplo",
+                              style: {},
+                          },
+                      ]
+                    : undefined,
             color: "#000000",
         };
         setElements((prev) => [...prev, newElement]);
