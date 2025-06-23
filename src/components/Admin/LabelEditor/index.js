@@ -56,6 +56,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
 import { usePrintElement } from "@/hooks/usePrintElement";
 import LabelSelectorSheet from "./LabelSelectorSheet";
+import LabelPreview from "./LabelPreview";
+import LabelRender from "./LabelRender";
 
 export default function LabelEditor() {
     const {
@@ -94,6 +96,11 @@ export default function LabelEditor() {
     const [openSelector, setOpenSelector] = useState(false);
     const [labelName, setLabelName] = useState("");
     const fileInputRef = useRef(null);
+
+    const labelData = {
+        elements,
+        canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
+    };
 
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
@@ -407,13 +414,13 @@ export default function LabelEditor() {
                                             transformOrigin: "top left",
                                         }}
                                     >
+                                        <LabelRender label={labelData} getFieldValue={getFieldValue} manualValues={manualValues} />
                                         {elements.map((element) => (
                                             <div
                                                 key={element.id}
                                                 className={`absolute cursor-move border transition-colors ${selectedElement === element.id
                                                     ? "border-primary bg-primary/5 "
-                                                    : "border-transparent hover:border-muted-foreground/30"
-                                                    }`}
+                                                    : "border-transparent hover:border-muted-foreground/30"}`}
                                                 style={{
                                                     left: element.x,
                                                     top: element.y,
@@ -424,95 +431,6 @@ export default function LabelEditor() {
                                                 }}
                                                 onMouseDown={(e) => handleMouseDown(e, element.id)}
                                             >
-                                                {/* Contenido del elemento */}
-                                                <div className="w-full h-full flex items-center justify-center p-1"
-                                                    style={{
-                                                        textAlign: element.textAlign,
-                                                        verticalAlign: element.verticalAlign || "center",
-                                                        display: "flex",
-                                                        alignItems: element.verticalAlign || "center",
-                                                        justifyContent: element.horizontalAlign || "flex-start",
-                                                    }}
-                                                >
-                                                    {element.type === "text" && (
-                                                        <span
-                                                            style={{
-                                                                fontSize: element.fontSize,
-                                                                fontWeight: element.fontWeight,
-                                                                textAlign: element.textAlign,
-                                                                color: element.color,
-                                                                textTransform: element.textTransform,
-                                                                fontStyle: element.fontStyle,
-                                                                textDecoration: element.textDecoration,
-                                                            }}
-                                                            className="truncate"
-                                                        >
-                                                            {element.text}
-                                                        </span>
-                                                    )}
-                                                    {element.type === "field" && (
-                                                        <span
-                                                            style={{
-                                                                fontSize: element.fontSize,
-                                                                fontWeight: element.fontWeight,
-                                                                textAlign: element.textAlign,
-                                                                color: element.color,
-                                                                textTransform: element.textTransform,
-                                                                fontStyle: element.fontStyle,
-                                                                textDecoration: element.textDecoration,
-                                                            }}
-                                                            className="truncate"
-                                                        >
-                                                            {getFieldValue(element.field || "")}
-                                                        </span>
-                                                    )}
-                                                    {element.type === "manualField" && (
-                                                        <span
-                                                            style={{
-                                                                fontSize: element.fontSize,
-                                                                fontWeight: element.fontWeight,
-                                                                textAlign: element.textAlign,
-                                                                color: element.color,
-                                                                textTransform: element.textTransform,
-                                                                fontStyle: element.fontStyle,
-                                                                textDecoration: element.textDecoration,
-                                                            }}
-                                                            className="truncate"
-                                                        >
-                                                            {manualValues[element.key] ? manualValues[element.key] : element.sample || `{{${element.key}}}`}
-                                                        </span>
-                                                    )}
-                                                    {element.type === "qr" && (
-                                                        <div className="w-full h-full flex items-center justify-center">
-                                                            <QRCode
-                                                                value={(element.qrContent || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f)) || ' '}
-                                                                size={Math.min(element.width, element.height)}
-                                                                style={{ width: '100%', height: '100%' }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {element.type === "barcode" && (
-                                                        <div className="w-full h-full flex items-center justify-center">
-                                                            <Barcode
-                                                                value={serializeBarcode(
-                                                                    (element.barcodeContent || '').replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f)),
-                                                                    element.barcodeType || 'ean13'
-                                                                ) || '0'}
-                                                                format={formatMap[element.barcodeType || 'ean13']}
-                                                                width={1}
-                                                                height={element.height - 10}
-                                                                displayValue={element.showValue}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {element.type === "image" && (
-                                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                            <ImageIcon className="w-8 h-8 text-gray-600" />
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Indicador de selección */}
                                                 {selectedElement === element.id && (
                                                     <>
                                                         <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'nw')} className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"></div>
@@ -523,6 +441,7 @@ export default function LabelEditor() {
                                                 )}
                                             </div>
                                         ))}
+                                    </div>
 
 
                                     </div>
