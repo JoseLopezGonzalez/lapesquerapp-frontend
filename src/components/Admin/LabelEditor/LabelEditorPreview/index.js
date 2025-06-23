@@ -1,0 +1,76 @@
+import LabelElement from "../LabelRender/LabelElement";
+
+
+export default function LabelEditorPreview({
+    canvasRef,
+    zoom = 1,
+    canvasWidth = 400,
+    canvasHeight = 300,
+    elements = [],
+    selectedElement,
+    handleMouseDown,
+    handleResizeMouseDown,
+    getFieldValue = () => "",
+    manualValues = {},
+}) {
+    return (
+        <div
+            ref={canvasRef}
+            className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
+            style={{
+                width: canvasWidth,
+                height: canvasHeight,
+                transform: `scale(${zoom})`,
+                transformOrigin: "top left",
+            }}
+        >
+            {elements.map((element) => {
+                const rotated = (element.rotation || 0) % 180 !== 0;
+                const width = rotated ? element.height : element.width;
+                const height = rotated ? element.width : element.height;
+
+                return (
+                    <div
+                        key={element.id}
+                        className={`absolute cursor-move border transition-colors ${selectedElement === element.id
+                                ? "border-primary bg-primary/5"
+                                : "border-transparent hover:border-muted-foreground/30"
+                            }`}
+                        style={{
+                            left: element.x,
+                            top: element.y,
+                            width,
+                            height,
+                            transform: `rotate(${element.rotation || 0}deg)`,
+                            transformOrigin: "center",
+                        }}
+                        onMouseDown={(e) => handleMouseDown(e, element.id)}
+                    >
+                        <LabelElement element={element} getFieldValue={getFieldValue} manualValues={manualValues} />
+
+                        {selectedElement === element.id && (
+                            <>
+                                <div
+                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "nw")}
+                                    className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"
+                                ></div>
+                                <div
+                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "ne")}
+                                    className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"
+                                ></div>
+                                <div
+                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "sw")}
+                                    className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"
+                                ></div>
+                                <div
+                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "se")}
+                                    className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"
+                                ></div>
+                            </>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
