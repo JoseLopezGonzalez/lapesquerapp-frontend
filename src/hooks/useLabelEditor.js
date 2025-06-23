@@ -64,15 +64,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             barcodeContent: type === "barcode" ? "" : undefined,
             barcodeType: type === "barcode" ? "ean13" : undefined,
             showValue: type === "barcode" ? false : undefined,
-            segments:
-                type === "richParagraph"
-                    ? [
-                          {
-                              text: "Texto de ejemplo",
-                              style: {},
-                          },
-                      ]
-                    : undefined,
+            html: type === "richParagraph" ? "<span>Texto de ejemplo</span>" : undefined,
+            borderColor: type === "sanitaryRegister" ? "#000000" : undefined,
+            borderWidth: type === "sanitaryRegister" ? 1 : undefined,
             color: "#000000",
         };
         setElements((prev) => [...prev, newElement]);
