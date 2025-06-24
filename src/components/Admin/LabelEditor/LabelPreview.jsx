@@ -22,7 +22,7 @@ const LabelPreview = React.forwardRef(function LabelPreview(
           "relative bg-white border border-dashed shadow-md",
           highlight && "ring-2 ring-primary"
         )}
-        style={{ width, height }}
+        style={{ width: `${width}mm`, height: `${height}mm` }}
       >
         <LabelRender label={label} {...props} />
       </div>

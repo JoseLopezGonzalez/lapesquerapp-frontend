@@ -23,8 +23,8 @@ export default function LabelEditorPreview({
             ref={canvasRef}
             className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
             style={{
-                width: canvasWidth,
-                height: canvasHeight,
+                width: `${canvasWidth}mm`,
+                height: `${canvasHeight}mm`,
                 transform: `scale(${zoom})`,
                 transformOrigin: "top left",
             }}
@@ -42,10 +42,10 @@ export default function LabelEditorPreview({
                             : "border-transparent hover:border-muted-foreground/30"
                             }`}
                         style={{
-                            left: element.x,
-                            top: element.y,
-                            width,
-                            height,
+                            left: `${element.x}mm`,
+                            top: `${element.y}mm`,
+                            width: `${width}mm`,
+                            height: `${height}mm`,
                             transform: `rotate(${element.rotation || 0}deg)`,
                             transformOrigin: "center",
                             alignItems:
