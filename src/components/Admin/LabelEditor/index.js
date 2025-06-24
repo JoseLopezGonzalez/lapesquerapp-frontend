@@ -302,9 +302,10 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Registro Sanitario</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground">{element.text}</span>
+                                                                                <span className="text-xs text-muted-foreground">{`${element.countryCode || ''} ${element.approvalNumber || ''} ${element.suffix || ''}`.trim()}</span>
                                                                             </div>
-                                                                        </div>)}
+                                                                        </div>
+                                                                    )}
                                                                     {element.type === "richParagraph" && (
                                                                         <div className="flex flex-col items-center gap-1 w-full">
                                                                             <div className="flex items-center gap-1 justify-start w-full">
@@ -667,10 +668,24 @@ export default function LabelEditor() {
                                     {selectedElementData.type === "sanitaryRegister" && (
                                         <div className="space-y-2">
                                             <div>
-                                                <h4 className="text-sm font-medium mb-2">Texto</h4>
-                                                <Textarea
-                                                    value={selectedElementData.text}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { text: e.target.value })}
+                                                <h4 className="text-sm font-medium mb-2">Código de país</h4>
+                                                <Input
+                                                    value={selectedElementData.countryCode || ''}
+                                                    onChange={(e) => updateElement(selectedElementData.id, { countryCode: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Número de aprobación</h4>
+                                                <Input
+                                                    value={selectedElementData.approvalNumber || ''}
+                                                    onChange={(e) => updateElement(selectedElementData.id, { approvalNumber: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Sufijo</h4>
+                                                <Input
+                                                    value={selectedElementData.suffix || ''}
+                                                    onChange={(e) => updateElement(selectedElementData.id, { suffix: e.target.value })}
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">

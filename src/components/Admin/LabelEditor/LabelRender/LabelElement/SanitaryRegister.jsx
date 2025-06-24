@@ -22,12 +22,10 @@ export default function SanitaryRegister({
 
   const color = element.color || "#000";
 
-  const cc = countryCode || element.countryCode || (element.text ? element.text.split(/\n/)[0] : "ES");
-  const an =
-    approvalNumber ||
-    element.approvalNumber ||
-    (element.text ? element.text.split(/\n/)[1] || "" : "10.08823/B");
-  const suff = suffix || element.suffix || (element.text ? element.text.split(/\n/)[2] || "" : "C.E.");
+  const legacy = element.text ? element.text.split(/\n/) : [];
+  const cc = countryCode || element.countryCode || legacy[0] || "ES";
+  const an = approvalNumber || element.approvalNumber || legacy[1] || "12.021462/H";
+  const suff = suffix || element.suffix || legacy[2] || "C.E.";
 
   return (
     <div className="w-full h-full flex items-center justify-center">
