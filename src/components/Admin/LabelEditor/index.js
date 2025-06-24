@@ -176,9 +176,9 @@ export default function LabelEditor() {
 
     const handleSelectLabel = (model) => {
         setSelectedLabel(model);
-        setCanvasWidth(model.width);
-        setCanvasHeight(model.height);
-        setElements([]);
+        setCanvasWidth(model.canvas.width);
+        setCanvasHeight(model.canvas.height);
+        setElements(model.elements || []);
         setLabelName(model.name || "");
     };
 
