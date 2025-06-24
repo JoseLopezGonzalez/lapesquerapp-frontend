@@ -4,6 +4,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { getLabels } from "@/services/labelService"
+import { useSession } from "next-auth/react"
+import Loader from "@/components/Utilities/Loader"
 
 const exampleModels = [
   {
@@ -224,15 +227,28 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
   const [models, setModels] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
+  const { data: session, status } = useSession();
+
 
   useEffect(() => {
-    setLoading(true)
-    const t = setTimeout(() => {
-      setModels(exampleModels)
-      setLoading(false)
-    }, 500)
-    return () => clearTimeout(t)
-  }, [])
+    if (status !== "authenticated") return; // Esperar a que esté autenticado
+    if (!session?.user?.accessToken) return;
+
+    setLoading(true);
+
+    const token = session.user.accessToken;
+
+    getLabels(token)
+      .then((data) => {
+        setModels(data);
+      })
+      .catch((error) => {
+        console.error("Error al cargar los modelos de etiqueta:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [status, session, open]);
 
   const filtered = models.filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -244,24 +260,33 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] flex flex-col gap-4">
+      <SheetContent side="right" className="w-[320px] sm:w-[400px] flex flex-col gap-4 h-full  ">
         <SheetHeader>
           <SheetTitle>Modelos de Etiqueta</SheetTitle>
         </SheetHeader>
         <Input placeholder="Buscar modelo..." value={search} onChange={e => setSearch(e.target.value)} />
-        <ScrollArea className="flex-1 pr-2">
-          <div className="space-y-2 py-2">
-            {loading ? (
-              <p className="text-sm text-muted-foreground">Cargando modelos...</p>
-            ) : (
-              filtered.map(m => (
-                <Button key={m.id} variant="secondary" className="w-full justify-start" onClick={() => handleSelect(m)}>
+        <ScrollArea className="flex-1 h-full w-full ">
+          {loading ? (
+            <div className="flex items-center justify-center w-full h-full py-20">
+              <Loader className="animate-spin h-6 w-6 text-gray-500" />
+            </div>
+          ) : (
+            <div className="flex-1 space-y-2 py-2">
+              {filtered.map((m) => (
+                <Button
+                  key={m.id}
+                  variant="secondary"
+                  className="w-full justify-start"
+                  onClick={() => handleSelect(m)}
+                >
                   {m.name}
                 </Button>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </ScrollArea>
+
+
         <Button
           variant="outline"
           className="w-full"

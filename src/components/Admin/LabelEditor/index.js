@@ -104,6 +104,7 @@ export default function LabelEditor() {
         rotateCanvasTo,
         setElements,
         importJSON,
+        handleSave,
     } = useLabelEditor();
 
     const [manualValues, setManualValues] = useState({});
@@ -120,6 +121,10 @@ export default function LabelEditor() {
     };
 
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
+
+    const handleOnClickSave = () => {
+        handleSave(labelData?.id, labelName);
+    };
 
     const handlePrint = () => {
         const manualFields = elements.filter(el => el.type === 'manualField');
@@ -401,7 +406,9 @@ export default function LabelEditor() {
                                     <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
 
                                     <Separator orientation="vertical" className="h-6" />
-                                    <Button variant="" onClick={() => console.log("Guardar cambios")} className='bg-lime-500  hover:bg-lime-400'>
+                                    <Button variant=""
+                                        onClick={handleOnClickSave}
+                                        className='bg-lime-500  hover:bg-lime-400'>
                                         <Save className="w-4 h-4 " />
                                         Guardar
                                     </Button>

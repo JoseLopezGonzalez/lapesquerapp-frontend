@@ -1,5 +1,8 @@
 // useLabelEditor.js
+import { createLabel, updateLabel } from "@/services/labelService";
+import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect } from "react";
+import toast from "react-hot-toast";
 
 // labelFields.js
 
@@ -49,6 +52,36 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [canvasHeight, setCanvasHeight] = useState(300);
     const [canvasRotation, setCanvasRotation] = useState(0);
     const canvasRef = useRef(null);
+    const { data: session } = useSession();
+
+
+    const handleSave = async (labelId, labelName) => {
+        console.log("handleSave called with labelId:", labelId, "labelName:", labelName);
+        const token = session?.user?.accessToken;
+        const payload = {
+            name: labelName,
+            format: {
+                elements,
+                canvas: {
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    rotation: canvasRotation,
+                },
+            },
+        };
+
+        try {
+            const result = labelId
+                ? await updateLabel(labelId, payload, token)
+                : await createLabel(payload, token);
+
+            toast.success(`Etiqueta ${labelId ? 'actualizada' : 'guardada'} correctamente.`);
+            return result;
+        } catch (err) {
+            toast.error(err.message || 'Error al guardar etiqueta.');
+            console.error(err);
+        }
+    };
 
     const addElement = (type) => {
         const newElement = {
@@ -288,5 +321,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         getFieldValue,
         fieldOptions,
         setElements,
+        handleSave,
     };
 }

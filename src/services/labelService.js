@@ -1,0 +1,119 @@
+import { API_URL_V2 } from "@/configs/config";
+
+export function getLabel(labelId, token) {
+    return fetch(`${API_URL_V2}labels/${labelId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al obtener la etiqueta');
+                });
+            }
+            return response.json();
+        })
+        .then(data => data.data)
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('getLabel finalizado');
+        });
+}
+
+
+export function createLabel(labelData, token) {
+    return fetch(`${API_URL_V2}labels`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            name: labelData.name,
+            format: labelData,
+        }),
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al crear la etiqueta');
+                });
+            }
+            return response.json();
+        })
+        .then(data => data)
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('createLabel finalizado');
+        });
+}
+
+export function updateLabel(labelId, labelData, token) {
+    return fetch(`${API_URL_V2}labels/${labelId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            name: labelData.name,
+            format: labelData,
+        }),
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al actualizar la etiqueta');
+                });
+            }
+            return response.json();
+        })
+        .then(data => data)
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('updateLabel finalizado');
+        });
+}
+
+
+export function getLabels(token) {
+    return fetch(`${API_URL_V2}labels`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al obtener las etiquetas');
+                });
+            }
+            return response.json();
+        })
+        .then(data => data.data) // <- solo los datos, no el wrapper
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('getLabels finalizado');
+        });
+}
+
+
