@@ -43,6 +43,25 @@ export default function LabelEditorPreview({
                             height,
                             transform: `rotate(${element.rotation || 0}deg)`,
                             transformOrigin: "center",
+                            alignItems:
+                                element.verticalAlign === "start"
+                                    ? "flex-start"
+                                    : element.verticalAlign === "end"
+                                    ? "flex-end"
+                                    : element.verticalAlign === "center"
+                                    ? "center"
+                                    : element.verticalAlign || "center",
+                            justifyContent:
+                                element.horizontalAlign === "left"
+                                    ? "flex-start"
+                                    : element.horizontalAlign === "right"
+                                    ? "flex-end"
+                                    : element.horizontalAlign === "center"
+                                    ? "center"
+                                    : element.horizontalAlign === "justify"
+                                    ? "space-between"
+                                    : element.horizontalAlign || "flex-start",
+                            textAlign: element.textAlign,
                         }}
                         onMouseDown={(e) => handleMouseDown(e, element.id)}
                     >

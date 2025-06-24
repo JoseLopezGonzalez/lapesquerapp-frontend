@@ -27,8 +27,24 @@ export default function LabelRender({ label, getFieldValue = () => "", manualVal
               transform: `rotate(${el.rotation || 0}deg)`,
               transformOrigin: "center",
               textAlign: el.textAlign,
-              alignItems: el.verticalAlign || "center",
-              justifyContent: el.horizontalAlign || "flex-start",
+              alignItems:
+                el.verticalAlign === "start"
+                  ? "flex-start"
+                  : el.verticalAlign === "end"
+                  ? "flex-end"
+                  : el.verticalAlign === "center"
+                  ? "center"
+                  : el.verticalAlign || "center",
+              justifyContent:
+                el.horizontalAlign === "left"
+                  ? "flex-start"
+                  : el.horizontalAlign === "right"
+                  ? "flex-end"
+                  : el.horizontalAlign === "center"
+                  ? "center"
+                  : el.horizontalAlign === "justify"
+                  ? "space-between"
+                  : el.horizontalAlign || "flex-start",
             }}
           >
             <LabelElement element={el} getFieldValue={getFieldValue} manualValues={manualValues} />
