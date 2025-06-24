@@ -1,7 +1,7 @@
 // useLabelEditor.js
 import { createLabel, deleteLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { usePrintElement } from "@/hooks/usePrintElement";
 
@@ -66,6 +66,26 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [manualForm, setManualForm] = useState({});
     const fileInputRef = useRef(null);
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
+
+    const manualFieldOptions = useMemo(
+        () => {
+            const seen = new Set();
+            return elements
+                .filter(el => el.type === 'manualField')
+                .filter(el => {
+                    if (seen.has(el.key)) return false;
+                    seen.add(el.key);
+                    return true;
+                })
+                .map(el => ({ value: el.key, label: el.key }));
+        },
+        [elements]
+    );
+
+    const allFieldOptions = useMemo(
+        () => [...fieldOptions, ...manualFieldOptions],
+        [manualFieldOptions]
+    );
 
 
     const handleSave = async () => {
@@ -462,6 +482,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         getFieldName,
         getFieldValue,
         fieldOptions,
+        manualFieldOptions,
+        allFieldOptions,
         setElements,
         // new stateful helpers
         selectedLabel,
