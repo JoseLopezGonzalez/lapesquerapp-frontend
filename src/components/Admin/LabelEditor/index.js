@@ -2,7 +2,7 @@
 "use client"
 import { CgFormatUppercase } from "react-icons/cg";
 
-import React, { useState, useRef, useEffect } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
@@ -56,7 +56,6 @@ import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
-import { usePrintElement } from "@/hooks/usePrintElement";
 import LabelSelectorSheet from "./LabelSelectorSheet";
 import LabelEditorPreview from "./LabelEditorPreview";
 
@@ -105,102 +104,33 @@ export default function LabelEditor() {
         setElements,
         importJSON,
         handleSave,
+        selectedLabel,
+        setSelectedLabel,
+        labelName,
+        setLabelName,
+        openSelector,
+        setOpenSelector,
+        manualValues,
+        setManualValues,
+        showManualDialog,
+        setShowManualDialog,
+        manualForm,
+        setManualForm,
+        fileInputRef,
+        handleOnClickSave,
+        handlePrint,
+        handleConfirmManual,
+        handleImportJSON,
+        handleSelectLabel,
+        handleCreateNewLabel,
+        handleElementRotationChange,
+        handleCanvasRotationChange,
     } = useLabelEditor();
-
-    const [manualValues, setManualValues] = useState({});
-    const [showManualDialog, setShowManualDialog] = useState(false);
-    const [manualForm, setManualForm] = useState({});
-    const [selectedLabel, setSelectedLabel] = useState(null);
-    const [openSelector, setOpenSelector] = useState(false);
-    const [labelName, setLabelName] = useState("");
-    const fileInputRef = useRef(null);
 
     const labelData = {
         elements,
         canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
     };
-
-    const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
-
-    const handleOnClickSave = () => {
-        handleSave(labelData?.id, labelName);
-    };
-
-    const handlePrint = () => {
-        const manualFields = elements.filter(el => el.type === 'manualField');
-        if (manualFields.length > 0) {
-            const formValues = {};
-            manualFields.forEach(el => {
-                formValues[el.key] = manualValues[el.key] || el.sample || '';
-            });
-            setManualForm(formValues);
-            setShowManualDialog(true);
-        } else {
-            onPrint();
-        }
-    };
-
-    const handleConfirmManual = () => {
-        setManualValues(manualForm);
-        setShowManualDialog(false);
-        setTimeout(() => {
-            onPrint();
-            setManualValues({});
-        }, 0);
-    };
-
-    const handleImportJSON = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const data = JSON.parse(ev.target.result);
-                const name = importJSON(data);
-                setLabelName(name);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        reader.readAsText(file);
-    };
-
-    const handleElementRotationChange = (id, angle) => {
-        const element = elements.find(el => el.id === id);
-        if (!element) return;
-        const prevMod = (element.rotation || 0) % 180;
-        const newMod = angle % 180;
-        let { width, height } = element;
-        if (prevMod !== newMod) {
-            [width, height] = [height, width];
-        }
-        updateElement(id, { rotation: angle, width, height });
-    };
-
-    const handleCanvasRotationChange = (angle) => {
-        rotateCanvasTo(angle);
-    };
-
-    const handleSelectLabel = (model) => {
-        setSelectedLabel(model);
-        setCanvasWidth(model.canvas.width);
-        setCanvasHeight(model.canvas.height);
-        setElements(model.elements || []);
-        setLabelName(model.name || "");
-    };
-
-    const handleCreateNewLabel = () => {
-        const model = { id: Date.now().toString(), name: "", width: 400, height: 300 };
-        setSelectedLabel(model);
-        setCanvasWidth(model.width);
-        setCanvasHeight(model.height);
-        setElements([]);
-        setLabelName("");
-    };
-
-    useEffect(() => {
-        handleCreateNewLabel();
-    }, []);
 
 
     return (
