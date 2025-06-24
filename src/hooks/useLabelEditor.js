@@ -3,6 +3,7 @@ import { createLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
+import { usePrintElement } from "@/hooks/usePrintElement";
 
 // labelFields.js
 
@@ -53,10 +54,17 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [canvasRotation, setCanvasRotation] = useState(0);
     const canvasRef = useRef(null);
     const { data: session } = useSession();
+    const [selectedLabel, setSelectedLabel] = useState(null);
+    const [labelName, setLabelName] = useState("");
+    const [openSelector, setOpenSelector] = useState(false);
+    const [manualValues, setManualValues] = useState({});
+    const [showManualDialog, setShowManualDialog] = useState(false);
+    const [manualForm, setManualForm] = useState({});
+    const fileInputRef = useRef(null);
+    const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
 
-    const handleSave = async (labelId, labelName) => {
-        console.log("handleSave called with labelId:", labelId, "labelName:", labelName);
+    const handleSave = async () => {
         const token = session?.user?.accessToken;
         const payload = {
             name: labelName,
@@ -71,11 +79,17 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         };
 
         try {
-            const result = labelId
-                ? await updateLabel(labelId, payload, token)
-                : await createLabel(payload, token);
+            let result;
+            if (selectedLabel?.id) {
+                result = await updateLabel(selectedLabel.id, payload, token);
+            } else {
+                result = await createLabel(payload, token);
+                if (result?.data?.id) {
+                    setSelectedLabel(result.data);
+                }
+            }
 
-            toast.success(`Etiqueta ${labelId ? 'actualizada' : 'guardada'} correctamente.`);
+            toast.success(`Etiqueta ${selectedLabel?.id ? 'actualizada' : 'guardada'} correctamente.`);
             return result;
         } catch (err) {
             toast.error(err.message || 'Error al guardar etiqueta.');
@@ -267,6 +281,21 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return jsonData.name || "";
     };
 
+    const handleImportJSON = (file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                const name = importJSON(data);
+                setLabelName(name);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null;
 
     const rotateCanvasTo = useCallback((angle) => {
@@ -292,6 +321,72 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         const next = (canvasRotation + 90) % 360;
         rotateCanvasTo(next);
     }, [canvasRotation, rotateCanvasTo]);
+
+    const handleElementRotationChange = (id, angle) => {
+        const element = elements.find(el => el.id === id);
+        if (!element) return;
+        const prevMod = (element.rotation || 0) % 180;
+        const newMod = angle % 180;
+        let { width, height } = element;
+        if (prevMod !== newMod) {
+            [width, height] = [height, width];
+        }
+        updateElement(id, { rotation: angle, width, height });
+    };
+
+    const handleCanvasRotationChange = (angle) => {
+        rotateCanvasTo(angle);
+    };
+
+    const handleSelectLabel = (model) => {
+        setSelectedLabel(model);
+        setCanvasWidth(model.canvas.width);
+        setCanvasHeight(model.canvas.height);
+        setCanvasRotation(model.canvas.rotation || 0);
+        setElements(model.elements || []);
+        setLabelName(model.name || "");
+    };
+
+    const handleCreateNewLabel = () => {
+        const model = { id: null, name: "", canvas: { width: 400, height: 300, rotation: 0 } };
+        setSelectedLabel(model);
+        setCanvasWidth(model.canvas.width);
+        setCanvasHeight(model.canvas.height);
+        setCanvasRotation(0);
+        setElements([]);
+        setLabelName("");
+    };
+
+    useEffect(() => {
+        handleCreateNewLabel();
+    }, []);
+
+    const handlePrint = () => {
+        const manualFields = elements.filter(el => el.type === 'manualField');
+        if (manualFields.length > 0) {
+            const formValues = {};
+            manualFields.forEach(el => {
+                formValues[el.key] = manualValues[el.key] || el.sample || '';
+            });
+            setManualForm(formValues);
+            setShowManualDialog(true);
+        } else {
+            onPrint();
+        }
+    };
+
+    const handleConfirmManual = () => {
+        setManualValues(manualForm);
+        setShowManualDialog(false);
+        setTimeout(() => {
+            onPrint();
+            setManualValues({});
+        }, 0);
+    };
+
+    const handleOnClickSave = () => {
+        handleSave();
+    };
 
     return {
         elements,
@@ -321,6 +416,28 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         getFieldValue,
         fieldOptions,
         setElements,
+        // new stateful helpers
+        selectedLabel,
+        setSelectedLabel,
+        labelName,
+        setLabelName,
+        openSelector,
+        setOpenSelector,
+        manualValues,
+        setManualValues,
+        showManualDialog,
+        setShowManualDialog,
+        manualForm,
+        setManualForm,
+        fileInputRef,
         handleSave,
+        handleOnClickSave,
+        handlePrint,
+        handleConfirmManual,
+        handleImportJSON,
+        handleSelectLabel,
+        handleCreateNewLabel,
+        handleElementRotationChange,
+        handleCanvasRotationChange,
     };
 }
