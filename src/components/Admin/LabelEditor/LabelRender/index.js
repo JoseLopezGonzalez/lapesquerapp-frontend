@@ -2,23 +2,38 @@
 
 import LabelElement from "./LabelElement";
 
-export default function LabelRender({ label, getFieldValue = () => "", manualValues = {} }) {
+export default function LabelRender({
+  label,
+  /* getFieldValue = () => "",
+  manualValues = {}, */
+  values = {},
+  zoom = 1, // Puedes pasarle zoom también si quieres
+}) {
   if (!label) return null;
 
   const { elements = [], canvas = {} } = label;
-  const width = canvas.width || 300;
-  const height = canvas.height || 200;
+  const width = canvas.width || 400;
+  const height = canvas.height || 300;
 
   return (
-    <div className="relative text-black bg-white shadow rounded" style={{ width, height }}>
+    <div
+      className="relative text-black bg-white shadow rounded border-2 border-dashed border-border"
+      style={{
+        width,
+        height,
+        transform: `scale(${zoom})`,
+        transformOrigin: "top left",
+      }}
+    >
       {elements.map((el) => {
-        const w = (el.rotation || 0) % 180 === 0 ? el.width : el.height;
-        const h = (el.rotation || 0) % 180 === 0 ? el.height : el.width;
+        const rotated = (el.rotation || 0) % 180 !== 0;
+        const w = rotated ? el.height : el.width;
+        const h = rotated ? el.width : el.height;
 
         return (
           <div
             key={el.id}
-            className="absolute flex items-center justify-center p-1"
+            className="absolute flex border border-transparent hover:border-muted-foreground/30"
             style={{
               left: el.x,
               top: el.y,
@@ -31,23 +46,28 @@ export default function LabelRender({ label, getFieldValue = () => "", manualVal
                 el.verticalAlign === "start"
                   ? "flex-start"
                   : el.verticalAlign === "end"
-                  ? "flex-end"
-                  : el.verticalAlign === "center"
-                  ? "center"
-                  : el.verticalAlign || "center",
+                    ? "flex-end"
+                    : el.verticalAlign === "center"
+                      ? "center"
+                      : el.verticalAlign || "center",
               justifyContent:
                 el.horizontalAlign === "left"
                   ? "flex-start"
                   : el.horizontalAlign === "right"
-                  ? "flex-end"
-                  : el.horizontalAlign === "center"
-                  ? "center"
-                  : el.horizontalAlign === "justify"
-                  ? "space-between"
-                  : el.horizontalAlign || "flex-start",
+                    ? "flex-end"
+                    : el.horizontalAlign === "center"
+                      ? "center"
+                      : el.horizontalAlign === "justify"
+                        ? "space-between"
+                        : el.horizontalAlign || "flex-start",
             }}
           >
-            <LabelElement element={el} getFieldValue={getFieldValue} manualValues={manualValues} />
+            <LabelElement
+              element={el}
+              values={values}
+              /* getFieldValue={getFieldValue}
+              manualValues={manualValues} */
+            />
           </div>
         );
       })}

@@ -1,12 +1,4 @@
-import React from "react";
-
-function replaceTokens(str, getFieldValue, manualValues) {
-  return (str || '').replace(/{{([^}]+)}}/g, (_, f) =>
-    manualValues?.[f] ?? getFieldValue(f)
-  )
-}
-
-export default function RichParagraph({ element, style = {}, getFieldValue = () => '', manualValues = {} }) {
+export default function RichParagraph({ element, style = {} }) {
   if (element.html) {
     return (
       <div
@@ -21,9 +13,9 @@ export default function RichParagraph({ element, style = {}, getFieldValue = () 
           textDecoration: element.textDecoration,
           ...style,
         }}
-        dangerouslySetInnerHTML={{ __html: replaceTokens(element.html, getFieldValue, manualValues) }}
+        dangerouslySetInnerHTML={{ __html: element.html }}
       />
-    )
+    );
   }
 
   const segments = Array.isArray(element.segments)
@@ -54,7 +46,7 @@ export default function RichParagraph({ element, style = {}, getFieldValue = () 
             ...style,
           }}
         >
-          {replaceTokens(seg.text, getFieldValue, manualValues)}
+          {seg.text}
         </span>
       ))}
     </div>

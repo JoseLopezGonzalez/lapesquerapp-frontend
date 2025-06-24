@@ -10,12 +10,13 @@ import { usePrintElement } from "@/hooks/usePrintElement";
 const labelFields = {
     "product.name": { label: "Nombre del Producto", defaultValue: "Pulpo Fresco" },
     "product.species.name": { label: "Especie", defaultValue: "Octopus vulgaris" },
-    "product.species.fao_code": { label: "Código FAO", defaultValue: "OCC" },
-    "product.weight": { label: "Peso", defaultValue: "20,500 kg" },
-    "product.price": { label: "Precio", defaultValue: "15.99€" },
-    "lot_number": { label: "Número de Lote", defaultValue: "120225OCC01001" },
-    "expiry_date": { label: "Fecha de Caducidad", defaultValue: "31/12/2027" },
-    "origin": { label: "Origen", defaultValue: "España" },
+    "product.species.faoCode": { label: "Código FAO", defaultValue: "OCC" },
+    "product.species.scientificName": { label: "Nombre Científico", defaultValue: "Octopus vulgaris" },
+    "product.species.fishingGear.name": { label: "Arte de Pesca", defaultValue: "Nasas y trampas" },
+    "product.species.captureZone.name": { label: "Zona de Captura", defaultValue: "FAO 27 IX.a Atlántico Nordeste" },
+    "product.boxGtin": { label: "GTIN del Producto", defaultValue: "98436613931182" },
+    "box.netWeight": { label: "Peso Neto", defaultValue: "20,000 kg" },
+    "box.lotNumber": { label: "Número de Lote", defaultValue: "120225OCC01001" },
 };
 
 const defaultDataContext = Object.entries(labelFields).reduce((acc, [path, { defaultValue }]) => {
@@ -86,6 +87,46 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         () => [...fieldOptions, ...manualFieldOptions],
         [manualFieldOptions]
     );
+
+    const getDefaultValuesFromElements = useCallback(() => {
+        const values = {};
+
+        const extractPlaceholders = (text) => {
+            const matches = text?.match(/{{([^}]+)}}/g) || [];
+            return matches.map(m => m.slice(2, -2));
+        };
+
+        const seenFields = new Set();
+
+        elements.forEach(el => {
+            // 🔹 Campos dinámicos directos tipo "field"
+            if (el.type === 'field' && el.field && labelFields[el.field] && !seenFields.has(el.field)) {
+                values[el.field] = labelFields[el.field].defaultValue;
+                seenFields.add(el.field);
+            }
+
+            // 🔹 Campos manuales tipo "manualField"
+            if (el.type === 'manualField' && el.key && !seenFields.has(el.key)) {
+                values[el.key] = el.sample || '';
+                seenFields.add(el.key);
+            }
+
+            // 🔹 Campos usados como {{placeholders}} en QR, Barcode, Parrafos ricos...
+            const contents = [el.html, el.qrContent, el.barcodeContent];
+            contents.forEach(content => {
+                extractPlaceholders(content).forEach(field => {
+                    if (!seenFields.has(field)) {
+                        values[field] = labelFields[field]?.defaultValue || '';
+                        seenFields.add(field);
+                    }
+                });
+            });
+        });
+
+        return values;
+    }, [elements]);
+
+
 
 
     const handleSave = async () => {
@@ -456,50 +497,35 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     return {
         elements,
-
         selectedElement,
         selectedElementData,
         zoom,
         canvasRef,
+        addElement,
+        deleteElement,
+        updateElement,
+        setZoom,
+        handleMouseDown,
+        handleResizeMouseDown,
+        duplicateElement,
+        exportJSON,
+        getFieldValue,
         canvasWidth,
         canvasHeight,
         canvasRotation,
         setCanvasWidth,
         setCanvasHeight,
-        setCanvasRotation,
         rotateCanvas,
-        rotateCanvasTo,
-        addElement,
-        deleteElement,
-        duplicateElement,
-        updateElement,
-        setSelectedElement,
-        setZoom,
-        handleMouseDown,
-        handleResizeMouseDown,
-        exportJSON,
-        importJSON,
-        getFieldName,
-        getFieldValue,
-        fieldOptions,
-        manualFieldOptions,
-        allFieldOptions,
-        setElements,
-        // new stateful helpers
         selectedLabel,
-        setSelectedLabel,
         labelName,
-
+        setLabelName,
         openSelector,
         setOpenSelector,
-        manualValues,
-        setManualValues,
         showManualDialog,
         setShowManualDialog,
         manualForm,
         setManualForm,
         fileInputRef,
-        handleSave,
         handleOnClickSave,
         handlePrint,
         handleConfirmManual,
@@ -507,13 +533,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         handleSelectLabel,
         handleCreateNewLabel,
         handleElementRotationChange,
-        handleCanvasRotationChange,
-
-        setLabelName,
-
         handleSelectElementCard,
-        handleDeleteLabel
-
-
+        handleDeleteLabel,
+        getDefaultValuesFromElements,
+        fieldOptions,
+        allFieldOptions,
+        getFieldName,
     };
 }

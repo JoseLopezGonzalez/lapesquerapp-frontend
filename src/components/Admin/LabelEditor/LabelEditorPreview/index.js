@@ -11,10 +11,13 @@ export default function LabelEditorPreview({
     selectedElement,
     handleMouseDown,
     handleResizeMouseDown,
-    getFieldValue = () => "",
-    manualValues = {},
+    /* getFieldValue = () => "",
+    manualValues = {}, */
+    values = {},
 
 }) {
+
+
     return (
         <div
             ref={canvasRef}
@@ -66,9 +69,9 @@ export default function LabelEditorPreview({
                             textAlign: element.textAlign,
                         }}
                         onMouseDown={(e) => handleMouseDown(e, element.id)}
-                       
+
                     >
-                        <LabelElement element={element} getFieldValue={getFieldValue} manualValues={manualValues} />
+                        <LabelElement element={element} /* getFieldValue={getFieldValue} manualValues={manualValues} */ values={values} />
 
                         {selectedElement === element.id && (
                             <>

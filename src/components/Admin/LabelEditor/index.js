@@ -1,6 +1,5 @@
 // LabelEditor.js (Versión convertida a JavaScript desde TSX)
 "use client"
-import { CgFormatUppercase } from "react-icons/cg";
 
 import React from "react"
 import { Button } from "@/components/ui/button"
@@ -26,7 +25,6 @@ import {
     Pilcrow,
     Trash2,
     Download,
-    Move,
     RotateCcw,
     ZoomIn,
     ZoomOut,
@@ -49,7 +47,6 @@ import {
     CopyPlus,
     Upload,
     EllipsisVertical,
-    Ticket,
     FolderSearch,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
@@ -65,15 +62,10 @@ import {
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuPortal,
     DropdownMenuSeparator,
     DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Textarea } from "@nextui-org/react";
 
 export default function LabelEditor() {
     const {
@@ -85,35 +77,23 @@ export default function LabelEditor() {
         addElement,
         deleteElement,
         updateElement,
-        setSelectedElement,
         setZoom,
         handleMouseDown,
         handleResizeMouseDown,
         duplicateElement,
         exportJSON,
-        getFieldName,
         getFieldValue,
-        fieldOptions,
-        manualFieldOptions,
-        allFieldOptions,
         canvasWidth,
         canvasHeight,
         canvasRotation,
         setCanvasWidth,
         setCanvasHeight,
         rotateCanvas,
-        rotateCanvasTo,
-        setElements,
-        importJSON,
-        handleSave,
         selectedLabel,
-        setSelectedLabel,
         labelName,
         setLabelName,
         openSelector,
         setOpenSelector,
-        manualValues,
-        setManualValues,
         showManualDialog,
         setShowManualDialog,
         manualForm,
@@ -126,12 +106,12 @@ export default function LabelEditor() {
         handleSelectLabel,
         handleCreateNewLabel,
         handleElementRotationChange,
-        handleCanvasRotationChange,
-
         handleSelectElementCard,
-        handleDeleteLabel
-
-
+        handleDeleteLabel,
+        getDefaultValuesFromElements,
+        fieldOptions,
+        allFieldOptions,
+        getFieldName,
 
     } = useLabelEditor();
 
@@ -143,6 +123,18 @@ export default function LabelEditor() {
     const handleOnClickDeleteLabel = () => {
         handleDeleteLabel();
     }
+
+    const labelData = {
+        name: labelName,
+        elements: elements,
+        canvas: {
+            width: canvasWidth,
+            height: canvasHeight,
+            rotation: canvasRotation,
+        },
+    }
+
+    console.log(getDefaultValuesFromElements())
 
     return (
         <>
@@ -389,9 +381,9 @@ export default function LabelEditor() {
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem 
-                                            className="text-destructive focus:text-destructive cursor-pointer"
-                                            onClick={handleOnClickDeleteLabel}
+                                            <DropdownMenuItem
+                                                className="text-destructive focus:text-destructive cursor-pointer"
+                                                onClick={handleOnClickDeleteLabel}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                                 Eliminar
@@ -461,11 +453,16 @@ export default function LabelEditor() {
                                                         selectedElement={selectedElement}
                                                         handleMouseDown={handleMouseDown}
                                                         handleResizeMouseDown={handleResizeMouseDown}
-                                                        getFieldValue={getFieldValue}
-                                                        manualValues={manualValues}
+                                                        /* getFieldValue={getFieldValue}
+                                                        manualValues={manualValues} */
+                                                        values={getDefaultValuesFromElements()}
                                                     />
 
-                                                    {/* <LabelRender label={labelData} getFieldValue={getFieldValue} manualValues={manualValues} /> */}
+                                                    {/*  <LabelRender
+                                                        label={labelData}
+                                                        
+                                                        values={{}}
+                                                    /> */}
 
 
 

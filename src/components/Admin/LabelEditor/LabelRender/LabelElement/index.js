@@ -12,7 +12,7 @@ const formatMap = {
     // Agrega más si necesitas
 };
 
-export default function LabelElement({ element, getFieldValue = () => "", manualValues = {} }) {
+export default function LabelElement({ element, values = {} }) {
     const commonStyle = {
         fontSize: element.fontSize,
         fontWeight: element.fontWeight,
@@ -22,27 +22,32 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
         textDecoration: element.textDecoration,
     };
 
+    const getValue = (key) => values?.[key] ?? `{{${key}}}`;
+    const replacePlaceholders = (str) =>
+        (str || "").replace(/{{([^}]+)}}/g, (_, f) => getValue(f));
+
+
     switch (element.type) {
         case "text":
             return <span style={commonStyle}>{element.text}</span>;
 
         case "field":
-            return <span style={commonStyle}>{getFieldValue(element.field || "")}</span>;
+            return <span style={commonStyle}>{getValue(element.field)}</span>;
 
         case "manualField":
-            return <span style={commonStyle}>{manualValues[element.key] || element.sample || `{{${element.key}}}`}</span>;
+            return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
 
         case "sanitaryRegister":
             return <SanitaryRegister element={element} />;
 
         case "richParagraph":
-            return <RichParagraph element={element} getFieldValue={getFieldValue} manualValues={manualValues} />;
+            return <RichParagraph element={{ ...element, html: replacePlaceholders(element.html) }} />;
 
         case "qr":
             return (
                 <div className="w-full h-full flex items-center justify-center">
                     <QRCode
-                        value={(element.qrContent || "").replace(/{{([^}]+)}}/g, (_, f) => manualValues[f] || getFieldValue(f))}
+                        value={replacePlaceholders(element.qrContent)}
                         size={Math.min(element.width, element.height)}
                         style={{ width: "100%", height: "100%" }}
                     />
@@ -53,7 +58,7 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
             const type = element.barcodeType || "ean13"
             console.log("Barcode type:", type)
             const format = formatMap[type]
-            const rawValue = (element.barcodeContent || "").replace(/{{([^}]+)}}/g, (_, f) => manualValues[f] || getFieldValue(f))
+            const rawValue = replacePlaceholders(element.barcodeContent)
             const serialized = serializeBarcode(rawValue, type)
             let isValidLength = true;
 
