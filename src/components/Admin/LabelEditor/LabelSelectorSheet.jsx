@@ -11,6 +11,7 @@ const exampleModels = [
     name: "Rizado Brisatlantic",
     elements: [
       {
+        id: "1",
         type: "sanitaryRegister",
         x: 146,
         y: 315,
@@ -27,6 +28,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "2",
         type: "richParagraph",
         x: 12,
         y: 9,
@@ -39,6 +41,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "3",
         type: "text",
         x: 12,
         y: 45,
@@ -53,6 +56,7 @@ const exampleModels = [
         verticalAlign: "center",
       },
       {
+        id: "4",
         type: "text",
         x: 11,
         y: 67,
@@ -66,6 +70,7 @@ const exampleModels = [
         verticalAlign: "center",
       },
       {
+        id: "5",
         type: "text",
         x: 11,
         y: 89,
@@ -79,6 +84,7 @@ const exampleModels = [
         verticalAlign: "center",
       },
       {
+        id: "6",
         type: "text",
         x: 10,
         y: 107,
@@ -92,6 +98,7 @@ const exampleModels = [
         verticalAlign: "center",
       },
       {
+        id: "7",
         type: "richParagraph",
         x: 11,
         y: 134,
@@ -105,6 +112,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "8",
         type: "richParagraph",
         x: 11,
         y: 185,
@@ -118,6 +126,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "9",
         type: "richParagraph",
         x: 12,
         y: 238,
@@ -131,6 +140,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "10",
         type: "richParagraph",
         x: 14,
         y: 304,
@@ -144,6 +154,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "11",
         type: "barcode",
         x: 7,
         y: 383,
@@ -159,6 +170,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "12",
         type: "text",
         x: 12,
         y: 276,
@@ -172,6 +184,7 @@ const exampleModels = [
         horizontalAlign: "left",
       },
       {
+        id: "13",
         type: "field",
         x: 89,
         y: 275,
@@ -184,6 +197,7 @@ const exampleModels = [
         color: "#000000",
       },
       {
+        id: "14",
         type: "qr",
         x: 224,
         y: 276,

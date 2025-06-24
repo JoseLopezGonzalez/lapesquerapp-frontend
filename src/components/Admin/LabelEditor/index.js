@@ -399,6 +399,8 @@ export default function LabelEditor() {
                                             <RotateCcw className="w-4 h-4" />
                                         </Button>
                                     </div>
+                                    <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
+
                                     <Separator orientation="vertical" className="h-6" />
                                     <Button variant="" onClick={() => console.log("Guardar cambios")} className='bg-lime-500  hover:bg-lime-400'>
                                         <Save className="w-4 h-4 " />

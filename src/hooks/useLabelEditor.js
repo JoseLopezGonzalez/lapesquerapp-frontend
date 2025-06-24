@@ -1,20 +1,40 @@
+// useLabelEditor.js
 import { useState, useRef, useCallback, useEffect } from "react";
 
-const defaultDataContext = {
-    product: {
-        name: "Pulpo Fresco",
-        species: {
-            name: "Octopus vulgaris",
-            fao_code: "OCC",
-        },
-        weight: "2.5 kg",
-        price: "€15.99",
-    },
-    lot_number: "LOT-2024-001",
-    expiry_date: "2024-12-31",
-    origin: "Galicia, España",
-    batch_id: "BCH-789",
+// labelFields.js
+
+const labelFields = {
+    "product.name": { label: "Nombre del Producto", defaultValue: "Pulpo Fresco" },
+    "product.species.name": { label: "Especie", defaultValue: "Octopus vulgaris" },
+    "product.species.fao_code": { label: "Código FAO", defaultValue: "OCC" },
+    "product.weight": { label: "Peso", defaultValue: "20,500 kg" },
+    "product.price": { label: "Precio", defaultValue: "15.99€" },
+    "lot_number": { label: "Número de Lote", defaultValue: "120225OCC01001" },
+    "expiry_date": { label: "Fecha de Caducidad", defaultValue: "31/12/2027" },
+    "origin": { label: "Origen", defaultValue: "España" },
 };
+
+const defaultDataContext = Object.entries(labelFields).reduce((acc, [path, { defaultValue }]) => {
+    const keys = path.split(".");
+    let ref = acc;
+    keys.forEach((key, i) => {
+        if (i === keys.length - 1) {
+            ref[key] = defaultValue;
+        } else {
+            ref[key] = ref[key] || {};
+            ref = ref[key];
+        }
+    });
+    return acc;
+}, {});
+
+const fieldOptions = Object.entries(labelFields).map(([value, { label }]) => ({
+    value,
+    label,
+}));
+
+const getFieldName = (field) => labelFields[field]?.label || field;
+
 
 export function useLabelEditor(dataContext = defaultDataContext) {
     const [elements, setElements] = useState([]);
@@ -36,21 +56,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             type,
             x: 50,
             y: 50,
-            width:
-                type === "text" ||
-                type === "field" ||
-                type === "manualField" ||
-                type === "sanitaryRegister" ||
-                type === "richParagraph"
-                    ? 120
-                    : 80,
-            height:
-                type === "richParagraph"
-                    ? 60
-                    : type === "text" ||
-                      type === "field" ||
-                      type === "manualField" ||
-                      type === "sanitaryRegister"
+            width: ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 120 : 80,
+            height: type === "richParagraph"
+                ? 60
+                : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
                     ? 30
                     : 80,
             fontSize: 12,
@@ -78,9 +87,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const deleteElement = (id) => {
         setElements((prev) => prev.filter((el) => el.id !== id));
-        if (selectedElement === id) {
-            setSelectedElement(null);
-        }
+        if (selectedElement === id) setSelectedElement(null);
     };
 
     const duplicateElement = (id) => {
@@ -108,7 +115,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         e.preventDefault();
         setSelectedElement(elementId);
         setIsDragging(true);
-
         const element = elements.find((el) => el.id === elementId);
         if (element && canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect();
@@ -161,28 +167,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 let { width, height, elX, elY } = resizeStart;
                 let newProps = {};
                 switch (resizeCorner) {
-                    case 'se':
-                        width = width + dx;
-                        height = height + dy;
-                        break;
-                    case 'sw':
-                        width = width - dx;
-                        height = height + dy;
-                        elX = elX + dx;
-                        break;
-                    case 'ne':
-                        width = width + dx;
-                        height = height - dy;
-                        elY = elY + dy;
-                        break;
-                    case 'nw':
-                        width = width - dx;
-                        height = height - dy;
-                        elX = elX + dx;
-                        elY = elY + dy;
-                        break;
-                    default:
-                        break;
+                    case 'se': width += dx; height += dy; break;
+                    case 'sw': width -= dx; height += dy; elX += dx; break;
+                    case 'ne': width += dx; height -= dy; elY += dy; break;
+                    case 'nw': width -= dx; height -= dy; elX += dx; elY += dy; break;
+                    default: break;
                 }
                 width = Math.max(10, width);
                 height = Math.max(10, height);
@@ -245,33 +234,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return jsonData.name || "";
     };
 
-    const getFieldName = (field) => {
-        const fieldNames = {
-            "product.name": "Nombre del Producto",
-            "product.species.name": "Especie",
-            "product.species.fao_code": "Código FAO",
-            "product.weight": "Peso",
-            "product.price": "Precio",
-            "lot_number": "Número de Lote",
-            "expiry_date": "Fecha de Caducidad",
-            "origin": "Origen",
-            "batch_id": "ID de Lote",
-        };
-        return fieldNames[field] || field;
-    };
-
-    const fieldOptions = [
-        { value: "product.name", label: "Nombre del Producto" },
-        { value: "product.species.name", label: "Especie" },
-        { value: "product.species.fao_code", label: "Código FAO" },
-        { value: "product.weight", label: "Peso" },
-        { value: "product.price", label: "Precio" },
-        { value: "lot_number", label: "Número de Lote" },
-        { value: "expiry_date", label: "Fecha de Caducidad" },
-        { value: "origin", label: "Origen" },
-        { value: "batch_id", label: "ID de Lote" },
-    ];
-
     const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null;
 
     const rotateCanvasTo = useCallback((angle) => {
@@ -280,47 +242,16 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setElements((prev) => prev.map((el) => {
             let { x, y, width: w, height: h, rotation = 0 } = el;
             switch (diff) {
-                case 90: {
-                    const newX = canvasHeight - y - h;
-                    const newY = x;
-                    return {
-                        ...el,
-                        x: newX,
-                        y: newY,
-                        width: h,
-                        height: w,
-                        rotation: (rotation + 90) % 360,
-                    };
-                }
-                case 180:
-                    return {
-                        ...el,
-                        x: canvasWidth - x - w,
-                        y: canvasHeight - y - h,
-                        rotation: (rotation + 180) % 360,
-                    };
-                case 270: {
-                    const newX = y;
-                    const newY = canvasWidth - x - w;
-                    return {
-                        ...el,
-                        x: newX,
-                        y: newY,
-                        width: h,
-                        height: w,
-                        rotation: (rotation + 270) % 360,
-                    };
-                }
-                default:
-                    return el;
+                case 90: return { ...el, x: canvasHeight - y - h, y: x, width: h, height: w, rotation: (rotation + 90) % 360 };
+                case 180: return { ...el, x: canvasWidth - x - w, y: canvasHeight - y - h, rotation: (rotation + 180) % 360 };
+                case 270: return { ...el, x: y, y: canvasWidth - x - w, width: h, height: w, rotation: (rotation + 270) % 360 };
+                default: return el;
             }
         }));
-
         if (diff === 90 || diff === 270) {
             setCanvasWidth(canvasHeight);
             setCanvasHeight(canvasWidth);
         }
-
         setCanvasRotation(angle);
     }, [canvasRotation, canvasHeight, canvasWidth]);
 
