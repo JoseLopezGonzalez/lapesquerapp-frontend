@@ -66,6 +66,8 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { usePrintElement } from "@/hooks/usePrintElement"
+import LabelRender from "./LabelRender"
 
 export default function LabelEditor() {
     const {
@@ -134,7 +136,11 @@ export default function LabelEditor() {
         },
     }
 
-    console.log(getDefaultValuesFromElements())
+    const { onPrint } = usePrintElement({ id: 'print-area-id', width: canvasWidth, height: canvasHeight });
+
+    const handleOnClickPrintLabel = () => {
+        onPrint();
+    }
 
     return (
         <>
@@ -372,7 +378,7 @@ export default function LabelEditor() {
                                                     <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
-                                                    onClick={handlePrint}
+                                                    onClick={handleOnClickPrintLabel}
                                                     className="cursor-pointer"
                                                 >
                                                     <Printer className="w-4 h-4" />
@@ -405,44 +411,7 @@ export default function LabelEditor() {
                                                     <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
                                                     </div>
 
-                                                    {/* <div
-                                                            ref={canvasRef}
-                                                            id="print-area"
-                                                            className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
-                                                            style={{
-                                                                width: canvasWidth,
-                                                                height: canvasHeight,
-                                                                transform: `scale(${zoom})`,
-                                                                transformOrigin: "top left",
-                                                            }}
-                                                        >
-                                                            {elements.map((element) => (
-                                                                <div
-                                                                    key={element.id}
-                                                                    className={`absolute cursor-move border transition-colors ${selectedElement === element.id
-                                                                        ? "border-primary bg-primary/5 "
-                                                                        : "border-transparent hover:border-muted-foreground/30"}`}
-                                                                    style={{
-                                                                        left: element.x,
-                                                                        top: element.y,
-                                                                        width: (element.rotation || 0) % 180 === 0 ? element.width : element.height,
-                                                                        height: (element.rotation || 0) % 180 === 0 ? element.height : element.width,
-                                                                        transform: `rotate(${element.rotation || 0}deg)`,
-                                                                        transformOrigin: "center",
-                                                                    }}
-                                                                    onMouseDown={(e) => handleMouseDown(e, element.id)}
-                                                                >
-                                                                    {selectedElement === element.id && (
-                                                                        <>
-                                                                            <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'nw')} className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"></div>
-                                                                            <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'ne')} className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"></div>
-                                                                            <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'sw')} className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"></div>
-                                                                            <div onMouseDown={(e) => handleResizeMouseDown(e, element.id, 'se')} className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"></div>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div> */}
+
 
                                                     <LabelEditorPreview
                                                         canvasRef={canvasRef}
@@ -453,8 +422,6 @@ export default function LabelEditor() {
                                                         selectedElement={selectedElement}
                                                         handleMouseDown={handleMouseDown}
                                                         handleResizeMouseDown={handleResizeMouseDown}
-                                                        /* getFieldValue={getFieldValue}
-                                                        manualValues={manualValues} */
                                                         values={getDefaultValuesFromElements()}
                                                     />
 
@@ -1055,6 +1022,12 @@ export default function LabelEditor() {
                     </CardContent>
                 </Card> */}
                     </div>
+
+
+
+
+
+
                 </div>
                 <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>
                     <DialogContent>

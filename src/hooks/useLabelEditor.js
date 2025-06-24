@@ -126,9 +126,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return values;
     }, [elements]);
 
-
-
-
     const handleSave = async () => {
         if (!labelName) {
             toast.error("Por favor, introduce un nombre para la etiqueta.");
@@ -462,6 +459,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setLabelId(null);
     };
 
+    /* Podemos inicializar valores al principio y no con un useEffect */
     useEffect(() => {
         handleCreateNewLabel();
     }, []);

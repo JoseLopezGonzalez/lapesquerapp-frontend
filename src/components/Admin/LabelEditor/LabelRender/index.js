@@ -4,8 +4,6 @@ import LabelElement from "./LabelElement";
 
 export default function LabelRender({
   label,
-  /* getFieldValue = () => "",
-  manualValues = {}, */
   values = {},
   zoom = 1, // Puedes pasarle zoom también si quieres
 }) {
@@ -65,8 +63,8 @@ export default function LabelRender({
             <LabelElement
               element={el}
               values={values}
-              /* getFieldValue={getFieldValue}
-              manualValues={manualValues} */
+            /* getFieldValue={getFieldValue}
+            manualValues={manualValues} */
             />
           </div>
         );
