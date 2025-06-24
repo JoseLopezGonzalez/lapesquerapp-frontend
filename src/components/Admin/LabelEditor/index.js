@@ -94,6 +94,8 @@ export default function LabelEditor() {
         getFieldName,
         getFieldValue,
         fieldOptions,
+        manualFieldOptions,
+        allFieldOptions,
         canvasWidth,
         canvasHeight,
         canvasRotation,
@@ -665,6 +667,7 @@ export default function LabelEditor() {
                                             <RichParagraphConfigPanel
                                                 html={selectedElementData.html || ''}
                                                 onChange={(val) => updateElement(selectedElementData.id, { html: val })}
+                                                fieldOptions={allFieldOptions}
                                             />
                                         </div>
                                     )}
@@ -688,7 +691,7 @@ export default function LabelEditor() {
                                             <QRConfigPanel
                                                 value={selectedElementData.qrContent || ""}
                                                 onChange={(val) => updateElement(selectedElementData.id, { qrContent: val })}
-                                                fieldOptions={fieldOptions}
+                                                fieldOptions={allFieldOptions}
                                             />
                                         </div>
                                     )}
@@ -699,7 +702,7 @@ export default function LabelEditor() {
                                             <BarcodeConfigPanel
                                                 value={selectedElementData.barcodeContent || ""}
                                                 onChange={(val) => updateElement(selectedElementData.id, { barcodeContent: val })}
-                                                fieldOptions={fieldOptions}
+                                                fieldOptions={allFieldOptions}
                                                 type={selectedElementData.barcodeType || 'ean13'}
                                                 onTypeChange={(val) => updateElement(selectedElementData.id, { barcodeType: val })}
                                                 getFieldValue={getFieldValue}

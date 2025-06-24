@@ -36,13 +36,13 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
             return <SanitaryRegister element={element} />;
 
         case "richParagraph":
-            return <RichParagraph element={element} />;
+            return <RichParagraph element={element} getFieldValue={getFieldValue} manualValues={manualValues} />;
 
         case "qr":
             return (
                 <div className="w-full h-full flex items-center justify-center">
                     <QRCode
-                        value={(element.qrContent || "").replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f))}
+                        value={(element.qrContent || "").replace(/{{([^}]+)}}/g, (_, f) => manualValues[f] || getFieldValue(f))}
                         size={Math.min(element.width, element.height)}
                         style={{ width: "100%", height: "100%" }}
                     />
@@ -53,7 +53,7 @@ export default function LabelElement({ element, getFieldValue = () => "", manual
             const type = element.barcodeType || "ean13"
             console.log("Barcode type:", type)
             const format = formatMap[type]
-            const rawValue = (element.barcodeContent || "").replace(/{{([^}]+)}}/g, (_, f) => getFieldValue(f))
+            const rawValue = (element.barcodeContent || "").replace(/{{([^}]+)}}/g, (_, f) => manualValues[f] || getFieldValue(f))
             const serialized = serializeBarcode(rawValue, type)
             let isValidLength = true;
 
