@@ -72,6 +72,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Textarea } from "@nextui-org/react";
 
 export default function LabelEditor() {
     const {
@@ -667,7 +668,7 @@ export default function LabelEditor() {
                                         <div className="space-y-2">
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Texto</h4>
-                                                <Input
+                                                <Textarea
                                                     value={selectedElementData.text}
                                                     onChange={(e) => updateElement(selectedElementData.id, { text: e.target.value })}
                                                 />
