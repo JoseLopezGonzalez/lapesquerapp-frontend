@@ -49,6 +49,8 @@ import {
     CopyPlus,
     Upload,
     EllipsisVertical,
+    Ticket,
+    FolderSearch,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -201,17 +203,17 @@ export default function LabelEditor() {
             <TooltipProvider>
                 <div className="flex h-full w-full  bg-muted/30">
                     {/* Sidebar Izquierda */}
-                    <div className="w-80 border-r bg-card p-4 h-full">
+                    <div className="w-90 border-r bg-card p-4 h-full flex flex-col">
                         <LabelSelectorSheet open={openSelector} onOpenChange={setOpenSelector} onSelect={handleSelectLabel}>
                             <Button className="w-full mb-4">
-                                <Label className="text-white" />
+                                <FolderSearch className=" h-5 w-5" />
                                 Seleccionar Etiqueta
                             </Button>
                         </LabelSelectorSheet>
-                        <div className="space-y-4 h-full flex flex-col min-h-0">
+                        <div className="space-y-4 h-full flex-1 flex flex-col min-h-0">
                             <div>
                                 <h3 className="font-semibold mb-3">Añadir Elementos</h3>
-                                <div className="grid grid-cols-1 gap-2">
+                                <div className="grid grid-cols-2 gap-2">
                                     <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("text")}>
                                         <Type className="w-4 h-4" />
                                         Texto Fijo
@@ -272,7 +274,7 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Texto Fijo</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground">{element.text}</span>
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.text}</span>
                                                                             </div>
                                                                         </div>)}
                                                                     {element.type === "field" && (
@@ -282,7 +284,7 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Campo Dinámico</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground">{getFieldName(element.field || "")}</span>
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{getFieldName(element.field || "")}</span>
                                                                             </div>
                                                                         </div>)}
                                                                     {element.type === "manualField" && (
@@ -292,7 +294,7 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Campo Manual</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground">{element.sample || `{{${element.key}}}`}</span>
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || `{{${element.key}}}`}</span>
                                                                             </div>
                                                                         </div>)}
                                                                     {element.type === "sanitaryRegister" && (
@@ -302,7 +304,7 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Registro Sanitario</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground">{`${element.countryCode || ''} ${element.approvalNumber || ''} ${element.suffix || ''}`.trim()}</span>
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{`${element.countryCode || ''} ${element.approvalNumber || ''} ${element.suffix || ''}`.trim()}</span>
                                                                             </div>
                                                                         </div>
                                                                     )}
@@ -313,12 +315,11 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Párrafo</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground truncate">
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
                                                                                     {element.html ? element.html.replace(/<[^>]+>/g, '') : element.text || ''}
                                                                                 </span>
                                                                             </div>
                                                                         </div>)}
-
                                                                     {element.type === "qr" && (
                                                                         <div className="flex items-center gap-1">
                                                                             <QrCode className="w-3 h-3" />
@@ -343,9 +344,7 @@ export default function LabelEditor() {
                                                                         <Trash2 className="w-3 h-3" />
                                                                     </Button>
                                                                 </div>
-
                                                             </div>
-
                                                         </div>
                                                     ))}
                                                 </div>
