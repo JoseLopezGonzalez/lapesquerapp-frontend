@@ -5,7 +5,7 @@ export default function RichParagraph({ element, style = {} }) {
         className="w-full h-full"
         style={{
           textAlign: element.textAlign,
-          fontSize: element.fontSize,
+          fontSize: `${element.fontSize}mm`,
           fontWeight: element.fontWeight,
           color: element.color,
           textTransform: element.textTransform,
@@ -27,7 +27,7 @@ export default function RichParagraph({ element, style = {} }) {
       className="w-full h-full"
       style={{
         textAlign: element.textAlign,
-        fontSize: element.fontSize,
+        fontSize: `${element.fontSize}mm`,
         fontWeight: element.fontWeight,
         color: element.color,
         textTransform: element.textTransform,

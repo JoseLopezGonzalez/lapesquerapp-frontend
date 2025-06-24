@@ -17,8 +17,8 @@ export default function LabelRender({
     <div
       className="relative text-black bg-white shadow rounded border-2 border-dashed border-border"
       style={{
-        width,
-        height,
+        width: `${width}mm`,
+        height: `${height}mm`,
         transform: `scale(${zoom})`,
         transformOrigin: "top left",
       }}
@@ -33,10 +33,10 @@ export default function LabelRender({
             key={el.id}
             className="absolute flex border border-transparent hover:border-muted-foreground/30"
             style={{
-              left: el.x,
-              top: el.y,
-              width: w,
-              height: h,
+              left: `${el.x}mm`,
+              top: `${el.y}mm`,
+              width: `${w}mm`,
+              height: `${h}mm`,
               transform: `rotate(${el.rotation || 0}deg)`,
               transformOrigin: "center",
               textAlign: el.textAlign,

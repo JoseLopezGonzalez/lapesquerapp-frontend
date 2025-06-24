@@ -42,14 +42,14 @@ export default function SanitaryRegister({
           ry={h / 2 - strokeWidth / 2}
           fill="white"
           stroke={strokeColor}
-          strokeWidth={strokeWidth}
+          strokeWidth={`${strokeWidth}mm`}
         />
         <text
           x="50%"
           y="50%"
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={fs}
+          fontSize={`${fs}mm`}
           fontWeight={fw}
           fill={color}
           style={style}

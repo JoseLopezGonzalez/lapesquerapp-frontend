@@ -14,7 +14,7 @@ const formatMap = {
 
 export default function LabelElement({ element, values = {} }) {
     const commonStyle = {
-        fontSize: element.fontSize,
+        fontSize: `${element.fontSize}mm`,
         fontWeight: element.fontWeight,
         color: element.color,
         textTransform: element.textTransform,
