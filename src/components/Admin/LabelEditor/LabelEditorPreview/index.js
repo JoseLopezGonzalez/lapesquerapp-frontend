@@ -32,7 +32,7 @@ export default function LabelEditorPreview({
                 return (
                     <div
                         key={element.id}
-                        className={`absolute cursor-move border transition-colors ${selectedElement === element.id
+                        className={`absolute flex cursor-move border transition-colors ${selectedElement === element.id
                                 ? "border-primary bg-primary/5"
                                 : "border-transparent hover:border-muted-foreground/30"
                             }`}
