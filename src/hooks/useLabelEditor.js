@@ -129,6 +129,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
     };
 
+    /* Mejorable, se puede extraer a initial element por cada tipo */
     const addElement = (type) => {
         const newElement = {
             id: `element-${Date.now()}`,
@@ -273,7 +274,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setIsResizing(false);
     }, []);
 
-    /* Deselect element */
     const handleSelectElementCard = (elementId) => {
         elementId === selectedElement ? setSelectedElement(null) : setSelectedElement(elementId);
     }
@@ -379,9 +379,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const handleSelectLabel = (label) => {
         const labelId = label.id
         const labelName = label.name || "";
-        const format = {
-            ...label.format,
-        }
+        const format = label.format
         setSelectedLabel(format);
         setCanvasWidth(format.canvas.width);
         setCanvasHeight(format.canvas.height);
@@ -389,15 +387,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setElements(format.elements || []);
         setLabelName(labelName || "");
         setLabelId(labelId);
-
-        console.log("Selected label:", label);
-        console.log("Canvas size:", format.canvas.width, format.canvas.height);
-        console.log("Canvas rotation:", format.canvas.rotation);
-        console.log("Elements:", format.elements);
-        console.log("Label name:", labelName);
-        console.log("Label ID:", labelId);
     };
 
+    /* Extraer en una constante EmptyLabelData */
     const handleCreateNewLabel = () => {
         const model = { id: null, name: "", canvas: { width: 400, height: 300, rotation: 0 } };
         setSelectedLabel(model);
