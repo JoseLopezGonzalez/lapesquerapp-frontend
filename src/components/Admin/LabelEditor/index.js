@@ -125,13 +125,22 @@ export default function LabelEditor() {
         handleCreateNewLabel,
         handleElementRotationChange,
         handleCanvasRotationChange,
+
+        handleSelectElementCard,
+        handleDeleteLabel
+
+
+
     } = useLabelEditor();
 
-    const labelData = {
-        elements,
-        canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
-    };
 
+    const handleOnClickElementCard = (elementId) => {
+        handleSelectElementCard(elementId);
+    }
+
+    const handleOnClickDeleteLabel = () => {
+        handleDeleteLabel();
+    }
 
     return (
         <>
@@ -139,7 +148,7 @@ export default function LabelEditor() {
                 <div className="flex h-full w-full  bg-muted/30">
                     {/* Sidebar Izquierda */}
                     <div className="w-90 border-r bg-card p-4 h-full flex flex-col">
-                        <LabelSelectorSheet open={openSelector} onOpenChange={setOpenSelector} onSelect={handleSelectLabel}>
+                        <LabelSelectorSheet open={openSelector} onOpenChange={setOpenSelector} onSelect={handleSelectLabel} onNew={handleCreateNewLabel}>
                             <Button className="w-full mb-4">
                                 <FolderSearch className=" h-5 w-5" />
                                 Seleccionar Etiqueta
@@ -198,7 +207,7 @@ export default function LabelEditor() {
                                                             key={element.id}
                                                             className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
                                                                 }`}
-                                                            onClick={() => setSelectedElement(element.id)}
+                                                            onClick={() => handleOnClickElementCard(element.id)}
                                                         >
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-2 w-full">
@@ -334,7 +343,6 @@ export default function LabelEditor() {
                                         </Button>
                                     </div>
                                     <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
-
                                     <Separator orientation="vertical" className="h-6" />
                                     <Button variant=""
                                         onClick={handleOnClickSave}
@@ -379,7 +387,10 @@ export default function LabelEditor() {
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer">
+                                            <DropdownMenuItem 
+                                            className="text-destructive focus:text-destructive cursor-pointer"
+                                            onClick={handleOnClickDeleteLabel}
+                                            >
                                                 <Trash2 className="w-4 h-4" />
                                                 Eliminar
                                                 <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>

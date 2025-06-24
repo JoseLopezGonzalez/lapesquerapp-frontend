@@ -223,12 +223,16 @@ const exampleModels = [
   { id: "2", name: "Etiqueta Producto Fresco", width: 600, height: 800 },
 ]
 
-export default function LabelSelectorSheet({ open, onOpenChange, onSelect, children }) {
+export default function LabelSelectorSheet({ open, onOpenChange, onSelect, children, onNew }) {
   const [models, setModels] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
   const { data: session, status } = useSession();
 
+  const handleOnClickNewLabel = () => {
+    onNew && onNew()
+    onOpenChange(false)
+  }
 
   useEffect(() => {
     if (status !== "authenticated") return; // Esperar a que esté autenticado
@@ -290,7 +294,7 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => handleSelect({ id: Date.now().toString(), name: "", width: 400, height: 300 })}
+          onClick={handleOnClickNewLabel}
         >
           + Nueva etiqueta
         </Button>

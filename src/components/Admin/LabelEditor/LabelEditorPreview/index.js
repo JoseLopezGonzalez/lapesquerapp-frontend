@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import LabelElement from "../LabelRender/LabelElement";
 
 
@@ -12,6 +13,7 @@ export default function LabelEditorPreview({
     handleResizeMouseDown,
     getFieldValue = () => "",
     manualValues = {},
+
 }) {
     return (
         <div
@@ -33,8 +35,8 @@ export default function LabelEditorPreview({
                     <div
                         key={element.id}
                         className={`absolute flex cursor-move border transition-colors ${selectedElement === element.id
-                                ? "border-primary bg-primary/5"
-                                : "border-transparent hover:border-muted-foreground/30"
+                            ? "border-primary bg-primary/5"
+                            : "border-transparent hover:border-muted-foreground/30"
                             }`}
                         style={{
                             left: element.x,
@@ -47,23 +49,24 @@ export default function LabelEditorPreview({
                                 element.verticalAlign === "start"
                                     ? "flex-start"
                                     : element.verticalAlign === "end"
-                                    ? "flex-end"
-                                    : element.verticalAlign === "center"
-                                    ? "center"
-                                    : element.verticalAlign || "center",
+                                        ? "flex-end"
+                                        : element.verticalAlign === "center"
+                                            ? "center"
+                                            : element.verticalAlign || "center",
                             justifyContent:
                                 element.horizontalAlign === "left"
                                     ? "flex-start"
                                     : element.horizontalAlign === "right"
-                                    ? "flex-end"
-                                    : element.horizontalAlign === "center"
-                                    ? "center"
-                                    : element.horizontalAlign === "justify"
-                                    ? "space-between"
-                                    : element.horizontalAlign || "flex-start",
+                                        ? "flex-end"
+                                        : element.horizontalAlign === "center"
+                                            ? "center"
+                                            : element.horizontalAlign === "justify"
+                                                ? "space-between"
+                                                : element.horizontalAlign || "flex-start",
                             textAlign: element.textAlign,
                         }}
                         onMouseDown={(e) => handleMouseDown(e, element.id)}
+                       
                     >
                         <LabelElement element={element} getFieldValue={getFieldValue} manualValues={manualValues} />
 

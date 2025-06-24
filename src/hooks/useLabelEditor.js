@@ -1,5 +1,5 @@
 // useLabelEditor.js
-import { createLabel, updateLabel } from "@/services/labelService";
+import { createLabel, deleteLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -41,8 +41,13 @@ const getFieldName = (field) => labelFields[field]?.label || field;
 
 
 export function useLabelEditor(dataContext = defaultDataContext) {
+    const [selectedLabel, setSelectedLabel] = useState(null);
     const [elements, setElements] = useState([]);
+    const [labelName, setLabelName] = useState("");
+    const [labelId, setLabelId] = useState(null);
+
     const [selectedElement, setSelectedElement] = useState(null);
+
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [isResizing, setIsResizing] = useState(false);
@@ -54,8 +59,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [canvasRotation, setCanvasRotation] = useState(0);
     const canvasRef = useRef(null);
     const { data: session } = useSession();
-    const [selectedLabel, setSelectedLabel] = useState(null);
-    const [labelName, setLabelName] = useState("");
+
     const [openSelector, setOpenSelector] = useState(false);
     const [manualValues, setManualValues] = useState({});
     const [showManualDialog, setShowManualDialog] = useState(false);
@@ -65,25 +69,28 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
 
     const handleSave = async () => {
+        if (!labelName) {
+            toast.error("Por favor, introduce un nombre para la etiqueta.");
+            return;
+        }
         const token = session?.user?.accessToken;
-        const payload = {
-            name: labelName,
-            format: {
-                elements,
-                canvas: {
-                    width: canvasWidth,
-                    height: canvasHeight,
-                    rotation: canvasRotation,
-                },
+
+        const labelFormat = {
+            elements,
+            canvas: {
+                width: canvasWidth,
+                height: canvasHeight,
+                rotation: canvasRotation,
             },
         };
 
+
         try {
             let result;
-            if (selectedLabel?.id) {
-                result = await updateLabel(selectedLabel.id, payload, token);
+            if (labelId) {
+                result = await updateLabel(labelId, labelName, labelFormat, token);
             } else {
-                result = await createLabel(payload, token);
+                result = await createLabel(labelName, labelFormat, token);
                 if (result?.data?.id) {
                     setSelectedLabel(result.data);
                 }
@@ -93,6 +100,31 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             return result;
         } catch (err) {
             toast.error(err.message || 'Error al guardar etiqueta.');
+            console.error(err);
+        }
+    };
+
+    const handleDeleteLabel = async () => {
+        const token = session?.user?.accessToken;
+        try {
+            if (!labelId) {
+                toast.error("No hay etiqueta seleccionada para eliminar.");
+                return;
+            }
+            deleteLabel(labelId, token)
+                .then(() => {
+                    toast.success("Etiqueta eliminada correctamente.");
+                    setSelectedLabel(null);
+                    setElements([]);
+                    setLabelName("");
+                    setLabelId(null);
+                })
+                .catch((err) => {
+                    toast.error(err.message || 'Error al eliminar etiqueta.');
+                    console.error(err);
+                });
+        } catch (err) {
+            toast.error(err.message || 'Error al eliminar etiqueta.');
             console.error(err);
         }
     };
@@ -241,6 +273,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setIsResizing(false);
     }, []);
 
+    /* Deselect element */
+    const handleSelectElementCard = (elementId) => {
+        elementId === selectedElement ? setSelectedElement(null) : setSelectedElement(elementId);
+    }
+
     useEffect(() => {
         if (isDragging || isResizing) {
             document.addEventListener("mousemove", handleMouseMove);
@@ -281,7 +318,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return jsonData.name || "";
     };
 
-    const handleImportJSON = (file) => {
+    const handleImportJSON = (e) => {
+        const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -338,13 +376,26 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         rotateCanvasTo(angle);
     };
 
-    const handleSelectLabel = (model) => {
-        setSelectedLabel(model);
-        setCanvasWidth(model.canvas.width);
-        setCanvasHeight(model.canvas.height);
-        setCanvasRotation(model.canvas.rotation || 0);
-        setElements(model.elements || []);
-        setLabelName(model.name || "");
+    const handleSelectLabel = (label) => {
+        const labelId = label.id
+        const labelName = label.name || "";
+        const format = {
+            ...label.format,
+        }
+        setSelectedLabel(format);
+        setCanvasWidth(format.canvas.width);
+        setCanvasHeight(format.canvas.height);
+        setCanvasRotation(format.canvas.rotation || 0);
+        setElements(format.elements || []);
+        setLabelName(labelName || "");
+        setLabelId(labelId);
+
+        console.log("Selected label:", label);
+        console.log("Canvas size:", format.canvas.width, format.canvas.height);
+        console.log("Canvas rotation:", format.canvas.rotation);
+        console.log("Elements:", format.elements);
+        console.log("Label name:", labelName);
+        console.log("Label ID:", labelId);
     };
 
     const handleCreateNewLabel = () => {
@@ -355,6 +406,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setCanvasRotation(0);
         setElements([]);
         setLabelName("");
+        setLabelId(null);
     };
 
     useEffect(() => {
@@ -388,8 +440,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         handleSave();
     };
 
+
+
     return {
         elements,
+
         selectedElement,
         selectedElementData,
         zoom,
@@ -420,7 +475,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         selectedLabel,
         setSelectedLabel,
         labelName,
-        setLabelName,
+
         openSelector,
         setOpenSelector,
         manualValues,
@@ -439,5 +494,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         handleCreateNewLabel,
         handleElementRotationChange,
         handleCanvasRotationChange,
+
+        setLabelName,
+
+        handleSelectElementCard,
+        handleDeleteLabel
+
+
     };
 }

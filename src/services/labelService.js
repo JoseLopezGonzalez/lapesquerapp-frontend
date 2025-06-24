@@ -27,7 +27,7 @@ export function getLabel(labelId, token) {
 }
 
 
-export function createLabel(labelData, token) {
+export function createLabel(labelName, labelFormat, token) {
     return fetch(`${API_URL_V2}labels`, {
         method: 'POST',
         headers: {
@@ -37,8 +37,8 @@ export function createLabel(labelData, token) {
             'User-Agent': navigator.userAgent,
         },
         body: JSON.stringify({
-            name: labelData.name,
-            format: labelData,
+            name: labelName,
+            format: labelFormat,
         }),
     })
         .then(response => {
@@ -58,7 +58,7 @@ export function createLabel(labelData, token) {
         });
 }
 
-export function updateLabel(labelId, labelData, token) {
+export function updateLabel(labelId, labelName, labelFormat, token) {
     return fetch(`${API_URL_V2}labels/${labelId}`, {
         method: 'PUT',
         headers: {
@@ -68,8 +68,8 @@ export function updateLabel(labelId, labelData, token) {
             'User-Agent': navigator.userAgent,
         },
         body: JSON.stringify({
-            name: labelData.name,
-            format: labelData,
+            name: labelName,
+            format: labelFormat,
         }),
     })
         .then(response => {
@@ -113,6 +113,33 @@ export function getLabels(token) {
         })
         .finally(() => {
             console.log('getLabels finalizado');
+        });
+}
+
+/* Delete label */
+export function deleteLabel(labelId, token) {
+    return fetch(`${API_URL_V2}labels/${labelId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al eliminar la etiqueta');
+                });
+            }
+            return response.json();
+        })
+        
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('deleteLabel finalizado');
         });
 }
 
