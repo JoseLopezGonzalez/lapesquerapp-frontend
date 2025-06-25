@@ -1,71 +1,66 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 export function usePrintElement({ id, width = 100, height = 150 }) {
-    const onPrint = useCallback(() => {
-        const target = document.getElementById(id);
-        if (!target) return;
+  const onPrint = useCallback(() => {
+    const elementToPrint = document.getElementById(id);
+    if (!elementToPrint) return;
 
-        // Crear contenedor temporal con el contenido a imprimir
-        const tempContainer = document.createElement('div');
-        tempContainer.id = 'print-temp-container';
-        tempContainer.innerHTML = target.outerHTML;
-        document.body.appendChild(tempContainer);
+    // Crear iframe oculto
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.left = "-9999px";
+    iframe.style.top = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
 
-        // Inyectar estilos de impresión
-        const style = document.createElement('style');
-        style.textContent = `
+    const doc = iframe.contentWindow.document;
+
+    // Copiar head con estilos incluidos
+    const headContent = document.head.cloneNode(true);
+    doc.head.innerHTML = "";
+    [...headContent.querySelectorAll("style, link[rel='stylesheet']")].forEach((el) => {
+      doc.head.appendChild(el.cloneNode(true));
+    });
+
+    // Estilos de impresión
+    const printStyle = document.createElement("style");
+    printStyle.textContent = `
       @media print {
         @page {
           size: ${width}mm ${height}mm;
           margin: 0;
         }
-
         body {
           margin: 0;
           padding: 0;
           background: white;
         }
-
-        body * {
-          visibility: hidden !important;
-        }
-
-        #print-temp-container, #print-temp-container * {
-          visibility: visible !important;
-        }
-
-        #print-temp-container {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          z-index: 9999;
-        }
-
-        #print-temp-container > * {
+        .page {
           width: ${width}mm;
           height: ${height}mm;
           overflow: hidden;
-          page-break-after: avoid;
-        }
-
-        .no-print {
-          display: none !important;
+          page-break-after: always;
         }
       }
     `;
-        document.head.appendChild(style);
+    doc.head.appendChild(printStyle);
 
-        // Ejecutar impresión
-        window.print();
+    // Copiar contenido
+    doc.body.innerHTML = elementToPrint.outerHTML;
 
-        // Limpiar después de imprimir
-        setTimeout(() => {
-            document.body.removeChild(tempContainer);
-            document.head.removeChild(style);
-        }, 100);
-    }, [id, width, height]);
+    // Esperar a que se cargue todo y luego imprimir
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
 
-    return { onPrint }
+      // Limpiar
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 500);
+    }, 500);
+  }, [id, width, height]);
 
+  return { onPrint };
 }

@@ -1038,7 +1038,7 @@ export default function LabelEditor() {
                         )}
 
                         {/* Datos de contexto */}
-                       {/*  <Card className="mt-4">
+                        {/*  <Card className="mt-4">
                             <CardHeader>
                                 <CardTitle className="text-sm">Datos de Preview</CardTitle>
                             </CardHeader>
@@ -1062,13 +1062,18 @@ export default function LabelEditor() {
                     </div>
 
                     {/* Impresión */}
-                    <div id='print-area-id' className="hidden print:block " /*  */
-                        style={{ width: `${canvasWidth}`, height: `${canvasHeight}` }}>
-                        <LabelRender
-                            label={labelData}
-                            values={getDefaultValuesFromElements()}
-                        />
+
+                    <div id="print-area-id" className="hidden print:block">
+                        {[0, 1, 2].map((i) => (
+                            <div key={i} className="page ">
+                                <LabelRender
+                                    label={labelData}
+                                    values={getDefaultValuesFromElements()}
+                                />
+                            </div>
+                        ))}
                     </div>
+
 
                 </div>
                 <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>

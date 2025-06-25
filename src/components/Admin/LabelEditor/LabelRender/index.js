@@ -19,8 +19,8 @@ export default function LabelRender({
       style={{
         width: `${width}mm`,
         height: `${height}mm`,
-        transform: `scale(${zoom})`,
-        transformOrigin: "top left",
+        /* transform: `scale(${zoom})`,
+        transformOrigin: "top left", */
       }}
     >
       {elements.map((el) => {
