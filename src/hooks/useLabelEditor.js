@@ -15,8 +15,8 @@ const labelFields = {
     "product.species.fishingGear.name": { label: "Arte de Pesca", defaultValue: "Nasas y trampas" },
     "product.species.captureZone.name": { label: "Zona de Captura", defaultValue: "FAO 27 IX.a Atlántico Nordeste" },
     "product.boxGtin": { label: "GTIN del Producto", defaultValue: "98436613931182" },
-    "box.netWeight": { label: "Peso Neto", defaultValue: "20,000 kg" },
-    "box.lotNumber": { label: "Número de Lote", defaultValue: "120225OCC01001" },
+    "netWeight": { label: "Peso Neto", defaultValue: "20,000 kg" },
+    "lot": { label: "Lote", defaultValue: "120225OCC01001" },
 };
 
 const defaultDataContext = Object.entries(labelFields).reduce((acc, [path, { defaultValue }]) => {

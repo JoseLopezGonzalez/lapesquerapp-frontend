@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+
 
 import {
     Select,
@@ -15,6 +17,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
+import BoxLabelPrintDialog from '@/components/Admin/Labels/BoxLabelPrintDialog';
 
 const OrderLabels = () => {
     const { pallets } = useOrderContext();
@@ -22,24 +25,20 @@ const OrderLabels = () => {
     const [palletIdFilter, setPalletIdFilter] = useState('');
     const [lotFilter, setLotFilter] = useState('');
     const [productFilter, setProductFilter] = useState('');
-    const [selectedGrouped, setSelectedGrouped] = useState({});
-    const [selectedIndividual, setSelectedIndividual] = useState({});
+    const [selectedGroupedLines, setSelectedGroupedLines] = useState([]);
+    const [selectedIndividualLines, setSelectedIndividualLines] = useState([]);
+
+    const [isOpenLabelPrintDialog, setIsOpenLabelPrintDialog] = useState(false);
+    const [labelPrintDialogBoxes, setLabelPrintDialogBoxes] = useState([]);
 
     // Manejadores
-    const toggleAllIndividual = (checked) => {
-        const updated = {};
-        filteredBoxes.forEach((box) => {
-            updated[box.id] = checked;
-        });
-        setSelectedIndividual(updated);
-    };
 
-    const toggleIndividual = (boxId, checked) => {
-        setSelectedIndividual((prev) => ({
-            ...prev,
-            [boxId]: checked
-        }));
-    };
+
+
+
+
+
+
 
 
     // Filtros únicos
@@ -64,21 +63,27 @@ const OrderLabels = () => {
     // Agrupado por producto + lote
     const groupedBoxes = useMemo(() => {
         const map = new Map();
+
         pallets?.forEach(pallet => {
             pallet.boxes.forEach(box => {
                 const key = `${box.article.name}-${box.lot}`;
                 if (!map.has(key)) {
                     map.set(key, {
-                        articleName: box.article.name,
+                        article: box.article,
                         lot: box.lot,
+                        boxIds: [], // ← aquí guardamos los IDs
                         count: 0
                     });
                 }
-                map.get(key).count += 1;
+                const group = map.get(key);
+                group.count += 1;
+                group.boxIds.push(box.id); // ← agregamos el ID
             });
         });
+
         return Array.from(map.values());
     }, [pallets]);
+
 
     // Cajas individuales con filtro aplicado
     const filteredBoxes = useMemo(() => {
@@ -94,6 +99,105 @@ const OrderLabels = () => {
             (!productFilter || box.article.name === productFilter)
         );
     }, [pallets, palletIdFilter, lotFilter, productFilter]);
+
+    const handleSelectAllGrouped = () => {
+        console.log('Grouped', groupedBoxes)
+        setSelectedGroupedLines(groupedBoxes)
+    };
+
+    const handleUnselectAllGrouped = () => {
+        setSelectedGroupedLines([]);
+    };
+
+    const isAllGroupedSelected = useMemo(() => {
+        return groupedBoxes.length > 0 && selectedGroupedLines.length === groupedBoxes.length;
+    }, [groupedBoxes, selectedGroupedLines]);
+
+    const isGroupedLineSelected = (group) => {
+        return selectedGroupedLines.some(selected =>
+            selected.article.id === group.article.id && selected.lot === group.lot
+        );
+    };
+
+    const handleSelectGroupedLine = (group) => {
+        if (isGroupedLineSelected(group)) {
+            setSelectedGroupedLines(prev => prev.filter(selected =>
+                !(selected.article.id === group.article.id && selected.lot === group.lot)
+            ));
+        } else {
+            setSelectedGroupedLines(prev => [...prev, group]);
+        }
+    };
+
+    const handleSelectAllIndividual = () => {
+        console.log('Individual', filteredBoxes);
+        setSelectedIndividualLines(filteredBoxes);
+    };
+
+    const handleUnselectAllIndividual = () => {
+        setSelectedIndividualLines([]);
+    };
+
+    const isAllIndividualSelected = useMemo(() => {
+        return filteredBoxes.length > 0 && selectedIndividualLines.length === filteredBoxes.length;
+    }, [filteredBoxes, selectedIndividualLines]);
+
+    const isIndividualLineSelected = (box) => {
+        return selectedIndividualLines.some(selected => selected.id === box.id);
+    };
+
+    const handleSelectIndividualLine = (box) => {
+        if (isIndividualLineSelected(box)) {
+            setSelectedIndividualLines(prev => prev.filter(selected => selected.id !== box.id));
+        } else {
+            setSelectedIndividualLines(prev => [...prev, box]);
+        }
+    };
+
+    const handlePrintGroupedLabels = () => {
+        if (selectedGroupedLines.length === 0) {
+            alert('Por favor, selecciona al menos una línea agrupada para imprimir.');
+            return;
+        }
+        console.log('Imprimiendo etiquetas agrupadas:', selectedGroupedLines);
+        /* Buscar los boxIds de cada grupo seleccionado en pallets */
+        /* Extraer boxIds de cada linea y unificarlo */
+        const boxIds = selectedGroupedLines.flatMap(group => group.boxIds);
+
+        /* Extraer todas las cajas de los palets */
+        const boxesOfAllPallets = pallets.flatMap(pallet => pallet.boxes);
+
+        /* Buscar en pallets las cajas con esos ids */
+        const formattedLines = boxIds.map(boxId => {
+            const box = boxesOfAllPallets.find(b => b.id === boxId);
+            if (!box) return null; // Si no se encuentra, retornar null
+            return {
+                ...box,
+                product: box.article,
+            };
+        }).filter(box => box !== null); // Filtrar los nulls
+
+        console.log('Formatted lines for grouped labels:', formattedLines);
+
+        setLabelPrintDialogBoxes(formattedLines);
+        setIsOpenLabelPrintDialog(true);
+    };
+
+    const handlePrintIndividualLabels = () => {
+        if (selectedIndividualLines.length === 0) {
+            alert('Por favor, selecciona al menos una línea individual para imprimir.');
+            return;
+        }
+        console.log('Imprimiendo etiquetas individuales:', selectedIndividualLines);
+        const formattedLines = selectedIndividualLines.map(box => ({
+            ...box,
+            product: box.article,
+        }));
+        setLabelPrintDialogBoxes(formattedLines);
+        setIsOpenLabelPrintDialog(true);
+    };
+
+
 
     return (
         <div className='h-full pb-2'>
@@ -112,28 +216,12 @@ const OrderLabels = () => {
                                         Puedes imprimir un número determinado de etiquetas por cada grupo
                                     </div>
                                 </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm">
-                                            <Printer className="h-4 w-4 mr-2" />
-                                            Imprimir
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[200px]">
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta estándar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta con precio
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta logística
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+
+                                <Button variant="outline" size="sm" onClick={handlePrintGroupedLabels}>
+                                    <Printer className="h-4 w-4" />
+                                    Imprimir
+                                </Button>
+
                             </div>
 
                             <div className="rounded-lg border">
@@ -142,12 +230,19 @@ const OrderLabels = () => {
                                         <TableRow>
                                             <TableHead className="w-[50px]">
                                                 <Checkbox
-
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            handleSelectAllGrouped();
+                                                        } else {
+                                                            handleUnselectAllGrouped();
+                                                        }
+                                                    }}
+                                                    checked={isAllGroupedSelected}
                                                 />
                                             </TableHead>
                                             <TableHead>Producto</TableHead>
                                             <TableHead>Cajas</TableHead>
-                                            <TableHead>Etiquetas</TableHead>
+                                            {/* <TableHead>Etiquetas</TableHead> */}
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -155,17 +250,18 @@ const OrderLabels = () => {
                                             <TableRow key={index}>
                                                 <TableCell>
                                                     <Checkbox
-
+                                                        checked={isGroupedLineSelected(group)}
+                                                        onCheckedChange={() => handleSelectGroupedLine(group)}
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">{group.articleName}</div>
+                                                    <div className="font-medium">{group.article.name}</div>
                                                     <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
                                                 </TableCell>
                                                 <TableCell>{group.count}</TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     <Input type="number" defaultValue={group.count} className="w-20 h-8" />
-                                                </TableCell>
+                                                </TableCell> */}
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -180,9 +276,21 @@ const OrderLabels = () => {
                             <CardTitle className="text-lg font-medium">Etiquetas Individuales</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="text-sm text-muted-foreground">
-                                Lista completa de cajas con su producto, lote, peso y pallet.
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="text-sm font-medium">Etiquetas por caja individual</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Puedes imprimir etiquetas para cada caja individual, filtrando por Pallet, Lote o Producto
+                                    </div>
+                                </div>
+
+                                <Button variant="outline" size="sm" onClick={handlePrintIndividualLabels}>
+                                    <Printer className="h-4 w-4" />
+                                    Imprimir
+                                </Button>
+
                             </div>
+
 
                             {/* Filtros */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -238,7 +346,18 @@ const OrderLabels = () => {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[50px]"><Checkbox /></TableHead>
+                                            <TableHead className="w-[50px]">
+                                                <Checkbox
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            handleSelectAllIndividual();
+                                                        } else {
+                                                            handleUnselectAllIndividual();
+                                                        }
+                                                    }}
+                                                    checked={isAllIndividualSelected}
+                                                />
+                                            </TableHead>
                                             <TableHead>Pallet ID</TableHead>
                                             <TableHead>Caja ID</TableHead>
                                             <TableHead>Producto</TableHead>
@@ -249,7 +368,12 @@ const OrderLabels = () => {
                                     <TableBody>
                                         {filteredBoxes.map((box) => (
                                             <TableRow key={box.id}>
-                                                <TableCell><Checkbox /></TableCell>
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={isIndividualLineSelected(box)}
+                                                        onCheckedChange={() => handleSelectIndividualLine(box)}
+                                                    />
+                                                </TableCell>
                                                 <TableCell>{box.palletId}</TableCell>
                                                 <TableCell>{box.id}</TableCell>
                                                 <TableCell>{box.article.name}</TableCell>
@@ -264,6 +388,14 @@ const OrderLabels = () => {
                     </Card>
                 </CardContent>
             </Card>
+
+
+            <BoxLabelPrintDialog
+                open={isOpenLabelPrintDialog}
+                onClose={() => setIsOpenLabelPrintDialog(false)}
+                boxes={labelPrintDialogBoxes}
+            />
+
         </div>
     );
 };

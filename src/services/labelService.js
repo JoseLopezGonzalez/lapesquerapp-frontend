@@ -134,12 +134,39 @@ export function deleteLabel(labelId, token) {
             }
             return response.json();
         })
-        
+
         .catch(error => {
             throw error;
         })
         .finally(() => {
             console.log('deleteLabel finalizado');
+        });
+}
+
+/* Labels Options */
+export function getLabelsOptions(token) {
+    return fetch(`${API_URL_V2}labels/options`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Error al obtener las opciones de etiquetas');
+                });
+            }
+            return response.json();
+        })
+        .then(data => data) // <- solo los datos, no el wrapper
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('getLabelsOptions finalizado');
         });
 }
 
