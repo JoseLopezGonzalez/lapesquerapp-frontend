@@ -30,7 +30,7 @@ const OrderContent = ({ onLoading }) => {
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
 
   useEffect(() => {
-    if(!onLoading) return;
+    if (!onLoading) return;
     onLoading(loading)
   }, [loading, onLoading])
 
@@ -247,14 +247,13 @@ const OrderContent = ({ onLoading }) => {
                     <TabsTrigger value="products">Previsión</TabsTrigger>
                     <TabsTrigger value="productDetails">Detalle productos</TabsTrigger>
                     <TabsTrigger value="production">Producción</TabsTrigger>
+                    <TabsTrigger value="labels">Etiquetas</TabsTrigger>
                     <TabsTrigger value="pallets">Palets</TabsTrigger>
                     <TabsTrigger value="documents">Envio de Documentos</TabsTrigger>
                     <TabsTrigger value="export">Exportar</TabsTrigger>
                     <TabsTrigger value="map">Mapa</TabsTrigger>
-                    {/* Incident */}
                     <TabsTrigger value="incident">Incidencia</TabsTrigger>
                     <TabsTrigger value="customer-history">Histórico</TabsTrigger>
-                     {/* <TabsTrigger value="labels">Etiquetas</TabsTrigger> */}
                   </TabsList>
                   <div className="flex-1 overflow-y-hidden w-full">
 

@@ -1,30 +1,51 @@
-import React from 'react'
-
-import {  AlertTriangle, FileText, Package, Printer, Truck } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import React from 'react';
+import { Printer, FileText } from 'lucide-react';
+import { useOrderContext } from '@/context/OrderContext';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const OrderLabels = () => {
+    const { pallets } = useOrderContext();
+
+    // Agrupado por producto + lote
+    const groupedBoxes = React.useMemo(() => {
+        const map = new Map();
+
+        pallets?.forEach(pallet => {
+            pallet.boxes.forEach(box => {
+                const key = `${box.article.name}-${box.lot}`;
+                if (!map.has(key)) {
+                    map.set(key, {
+                        articleName: box.article.name,
+                        lot: box.lot,
+                        count: 0
+                    });
+                }
+                map.get(key).count += 1;
+            });
+        });
+
+        return Array.from(map.values());
+    }, [pallets]);
+
     return (
-        <div className=" h-full pb-2">
-            <Card className='flex flex-col h-full'>
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium">Gestión de Etiquetas</CardTitle>
-                </CardHeader>
-                <CardContent className='flex-1 overflow-y-auto'>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
+        <div className='h-full pb-2'>
+            <Card className='h-full flex flex-col bg-transparent'>
+                <CardContent className="flex-1 overflow-y-auto py-6  flex flex-col gap-6">
+                    <Card className=' flex flex-col bg-transparent'>
+                        <CardHeader>
+                            <CardTitle className="text-lg font-medium">Etiquetas Agrupadas</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <div className="text-sm font-medium">Etiquetas de producto</div>
+                                <div>
+                                    <div className="text-sm font-medium">Etiquetas por lote y producto</div>
                                     <div className="text-sm text-muted-foreground">
-                                        Etiquetas individuales para cada caja de producto
+                                        Puedes imprimir un número determinado de etiquetas por cada grupo
                                     </div>
                                 </div>
                                 <DropdownMenu>
@@ -50,6 +71,7 @@ const OrderLabels = () => {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
+
                             <div className="rounded-lg border">
                                 <Table>
                                     <TableHeader>
@@ -58,205 +80,73 @@ const OrderLabels = () => {
                                                 <Checkbox />
                                             </TableHead>
                                             <TableHead>Producto</TableHead>
-                                            <TableHead className="w-[100px]">Cajas</TableHead>
-                                            <TableHead className="w-[100px]">Etiquetas</TableHead>
+                                            <TableHead>Cajas</TableHead>
+                                            <TableHead>Etiquetas</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Checkbox />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-medium">Pulpo Fresco -1kg</div>
-                                                <div className="text-sm text-muted-foreground">Lote: 1002250CC01001</div>
-                                            </TableCell>
-                                            <TableCell>1</TableCell>
-                                            <TableCell>
-                                                <Input type="number" defaultValue={1} className="w-20 h-8" />
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Checkbox />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-medium">Pulpo Fresco +1kg</div>
-                                                <div className="text-sm text-muted-foreground">Lote: 1002250CC01002</div>
-                                            </TableCell>
-                                            <TableCell>1</TableCell>
-                                            <TableCell>
-                                                <Input type="number" defaultValue={1} className="w-20 h-8" />
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Checkbox />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-medium">Pulpo Fresco +2kg</div>
-                                                <div className="text-sm text-muted-foreground">Lote: 1002250CC01003</div>
-                                            </TableCell>
-                                            <TableCell>3</TableCell>
-                                            <TableCell>
-                                                <Input type="number" defaultValue={3} className="w-20 h-8" />
-                                            </TableCell>
-                                        </TableRow>
+                                        {groupedBoxes.map((group, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell><Checkbox /></TableCell>
+                                                <TableCell>
+                                                    <div className="font-medium">{group.articleName}</div>
+                                                    <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
+                                                </TableCell>
+                                                <TableCell>{group.count}</TableCell>
+                                                <TableCell>
+                                                    <Input type="number" defaultValue={group.count} className="w-20 h-8" />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table>
                             </div>
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <div className="text-sm font-medium">Etiquetas de palet</div>
-                                    <div className="text-sm text-muted-foreground">Etiquetas para identificación de palets</div>
-                                </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm">
-                                            <Printer className="h-4 w-4 mr-2" />
-                                            Imprimir
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[200px]">
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta GS1
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta interna
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Etiqueta cliente
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                    {/* Tarjeta de etiquetas individuales */}
+                    <Card className="flex flex-col">
+                        <CardHeader>
+                            <CardTitle className="text-lg font-medium">Etiquetas Individuales</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <div className="text-sm text-muted-foreground mb-2">
+                                Lista completa de cajas con su producto, lote, peso y pallet.
                             </div>
                             <div className="rounded-lg border">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[50px]">
-                                                <Checkbox />
-                                            </TableHead>
-                                            <TableHead>Palet</TableHead>
-                                            <TableHead className="w-[100px]">Etiquetas</TableHead>
+                                            <TableHead className="w-[50px]"><Checkbox /></TableHead>
+                                            <TableHead>Pallet ID</TableHead>
+                                            <TableHead>Caja ID</TableHead>
+                                            <TableHead>Producto</TableHead>
+                                            <TableHead>Lote</TableHead>
+                                            <TableHead className="text-right">Peso neto (kg)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Checkbox />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-medium">Palet #2913</div>
-                                                <div className="text-sm text-muted-foreground">5 cajas - 120.00 kg</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input type="number" defaultValue={1} className="w-20 h-8" />
-                                            </TableCell>
-                                        </TableRow>
+                                        {pallets?.map(pallet =>
+                                            pallet.boxes.map(box => (
+                                                <TableRow key={box.id}>
+                                                    <TableCell><Checkbox /></TableCell>
+                                                    <TableCell>{pallet.id}</TableCell>
+                                                    <TableCell>{box.id}</TableCell>
+                                                    <TableCell>{box.article.name}</TableCell>
+                                                    <TableCell>{box.lot}</TableCell>
+                                                    <TableCell className="text-right">{box.netWeight}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
-                        </div>
-
-                        <Card className="md:col-span-2">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-medium">Etiquetas de envío</CardTitle>
-                                <CardDescription>Etiquetas para el transporte y entrega</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid md:grid-cols-3 gap-4">
-                                    <Button variant="outline" className="h-auto py-4 justify-start">
-                                        <div className="flex flex-col items-start gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <Truck className="h-4 w-4" />
-                                                <span className="font-medium">Etiqueta de transporte</span>
-                                            </div>
-                                            <span className="text-sm text-muted-foreground">SEUR - Servicio 24h</span>
-                                        </div>
-                                    </Button>
-                                    <Button variant="outline" className="h-auto py-4 justify-start">
-                                        <div className="flex flex-col items-start gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <Package className="h-4 w-4" />
-                                                <span className="font-medium">Etiqueta de contenido</span>
-                                            </div>
-                                            <span className="text-sm text-muted-foreground">Resumen del pedido</span>
-                                        </div>
-                                    </Button>
-                                    <Button variant="outline" className="h-auto py-4 justify-start">
-                                        <div className="flex flex-col items-start gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <AlertTriangle className="h-4 w-4" />
-                                                <span className="font-medium">Etiqueta de manipulación</span>
-                                            </div>
-                                            <span className="text-sm text-muted-foreground">Temperatura controlada</span>
-                                        </div>
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="md:col-span-2">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base font-medium">Configuración de impresión</CardTitle>
-                                <CardDescription>Ajusta las opciones de impresión de etiquetas</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Impresora</Label>
-                                        <Select defaultValue="zebra">
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="zebra">Zebra ZT411</SelectItem>
-                                                <SelectItem value="brady">Brady i7100</SelectItem>
-                                                <SelectItem value="toshiba">Toshiba B-EX4T2</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Formato</Label>
-                                        <Select defaultValue="10x15">
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="10x15">10 x 15 cm</SelectItem>
-                                                <SelectItem value="15x20">15 x 20 cm</SelectItem>
-                                                <SelectItem value="20x30">20 x 30 cm</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Resolución</Label>
-                                        <Select defaultValue="300">
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="200">200 DPI</SelectItem>
-                                                <SelectItem value="300">300 DPI</SelectItem>
-                                                <SelectItem value="600">600 DPI</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </CardContent>
             </Card>
         </div>
-    )
-}
+    );
+};
 
-export default OrderLabels
+export default OrderLabels;
