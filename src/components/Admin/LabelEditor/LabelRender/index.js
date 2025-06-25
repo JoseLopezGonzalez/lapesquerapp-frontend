@@ -15,7 +15,7 @@ export default function LabelRender({
 
   return (
     <div
-      className="relative text-black bg-white shadow rounded border-2 border-dashed border-border"
+      className="relative text-black bg-white " /* shadow rounded border-2 border-dashed border-border */
       style={{
         width: `${width}mm`,
         height: `${height}mm`,

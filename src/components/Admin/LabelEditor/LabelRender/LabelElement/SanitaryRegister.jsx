@@ -15,9 +15,9 @@ export default function SanitaryRegister({
   const h = height || element.height || 110;
 
   const strokeColor = element.borderColor || "black";
-  const strokeWidth = element.borderWidth || 2;
+  const strokeWidth = parseFloat(element.borderWidth || "0.10");
 
-  const fs = fontSize || element.fontSize || 16;
+  const fs = (fontSize || element.fontSize || 2) / 3;
   const fw = fontWeight || element.fontWeight || "bold";
 
   const color = element.color || "#000";
@@ -27,19 +27,24 @@ export default function SanitaryRegister({
   const an = approvalNumber || element.approvalNumber || legacy[1] || "12.021462/H";
   const suff = suffix || element.suffix || legacy[2] || "C.E.";
 
+  console.log(fs)
+
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center  ">
       <svg
         width="100%"
         height="100%"
-        viewBox={`0 0 ${w} ${h}`}
+       /*  viewBox={`0 0 ${w} ${h}`} */
+        viewBox={`-${strokeWidth / 2} -${strokeWidth / 2} ${w + strokeWidth} ${h + strokeWidth}`}
         xmlns="http://www.w3.org/2000/svg"
       >
         <ellipse
           cx={w / 2}
           cy={h / 2}
-          rx={w / 2 - strokeWidth / 2}
-          ry={h / 2 - strokeWidth / 2}
+          rx={w / 2 - strokeWidth}
+          ry={h / 2 - strokeWidth}
+          /* rx={w / 2 - strokeWidth / 2}
+          ry={h / 2 - strokeWidth / 2} */
           fill="white"
           stroke={strokeColor}
           strokeWidth={`${strokeWidth}mm`}
@@ -48,6 +53,7 @@ export default function SanitaryRegister({
           x="50%"
           y="50%"
           textAnchor="middle"
+          /* dominantBaseline="central" */
           dominantBaseline="middle"
           fontSize={`${fs}mm`}
           fontWeight={fw}

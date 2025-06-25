@@ -142,6 +142,9 @@ export default function LabelEditor() {
         onPrint();
     }
 
+    const borderWidthOptions = ['0.10', '0.15', '0.30', '0.50', '0.75'];
+
+
     return (
         <>
             <TooltipProvider>
@@ -613,13 +616,33 @@ export default function LabelEditor() {
                                                         className="w-10 h-8 p-0"
                                                     />
                                                 </div>
-                                                <div className="flex flex-col flex-1">
+                                                {/*  <div className="flex flex-col flex-1">
                                                     <span className="text-xs text-muted-foreground">Grosor</span>
                                                     <Input
                                                         type="number"
                                                         value={selectedElementData.borderWidth || 1}
                                                         onChange={(e) => updateElement(selectedElementData.id, { borderWidth: Number(e.target.value) })}
                                                     />
+                                                </div> */}
+                                                <div className="flex flex-col flex-1">
+                                                    <span className="text-xs text-muted-foreground">Grosor</span>
+                                                    <Select
+                                                        value={String(selectedElementData.borderWidth || '0.10')}
+                                                        onValueChange={(value) =>
+                                                            updateElement(selectedElementData.id, { borderWidth: value })
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {borderWidthOptions.map((value) => (
+                                                                <SelectItem key={value} value={value}>
+                                                                    {value}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
                                             </div>
                                         </div>
@@ -827,206 +850,225 @@ export default function LabelEditor() {
                                     )}
 
                                     {/* Text properties */}
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
-                                        <div>
-                                            <h4 className="text-sm font-medium mb-2">Texto</h4>
-                                            <div className="flex flex-col items-center w-full gap-3">
-                                                <div className="flex w-full gap-2 items-center justify-between">
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Tamaño
-                                                    </span>
-                                                    <Select
-                                                        value={selectedElementData.fontSize.toString()}
-                                                        onValueChange={(value) => updateElement(selectedElementData.id, { fontSize: Number(value) })}
-                                                    >
-                                                        <SelectTrigger className="w-24">
-                                                            <SelectValue placeholder="Tamaño" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="8">8</SelectItem>
-                                                            <SelectItem value="10">10</SelectItem>
-                                                            <SelectItem value="12">12</SelectItem>
-                                                            <SelectItem value="14">14</SelectItem>
-                                                            <SelectItem value="16">16</SelectItem>
-                                                            <SelectItem value="18">18</SelectItem>
-                                                            <SelectItem value="20">20</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="flex w-full gap-2 items-center justify-between">
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Color
-                                                    </span>
-                                                    <Input
-                                                        id="color"
-                                                        type="color"
-                                                        value={selectedElementData.color}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { color: e.target.value })}
-                                                        className="w-9 h-9 p-1 cursor-pointer"
-                                                    />
-                                                </div>
-                                                <div className="flex w-full gap-2 items-center justify-between">
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Estilos
-                                                    </span>
-                                                    <div className="flex items-center gap-2 w-fit">
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.fontWeight === "bold"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
-                                                                >
-                                                                    <BoldIcon className="w-4 h-4" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Negrita</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.fontStyle === "italic"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
-                                                                >
-                                                                    <Italic className="w-4 h-4" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Cursiva</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.textDecoration === "underline"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
-                                                                >
-                                                                    <Underline className="w-4 h-4" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Subrayado</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.textDecoration === "line-through"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
-                                                                >
-                                                                    <Strikethrough className="w-4 h-4" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Tachado</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                </div>
-                                                <div className="flex w-full gap-2 items-center justify-between">
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Caracter
-                                                    </span>
-                                                    <div className="flex items-center gap-2 w-fit">
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8 p-0"
-                                                                    pressed={selectedElementData.textTransform === "uppercase"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
-                                                                >
-                                                                    <CaseUpper className="w-5 h-5" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Mayúsculas</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.textDecoration === "lowercase"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
-                                                                >
-                                                                    <CaseLower className="w-5 h-5" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Minúsculas</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <Toggle
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-8"
-                                                                    pressed={selectedElementData.textDecoration === "capitalize"}
-                                                                    onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
-                                                                >
-                                                                    <CaseSensitive className="w-5 h-5" />
-                                                                </Toggle>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>Capitalizar</p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                </div>
+                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph" || selectedElementData.type === "barcode"
 
+                                    ) && (
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Texto</h4>
+                                                <div className="flex flex-col items-center w-full gap-3">
+                                                    <div className="flex w-full gap-2 items-center justify-between">
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Tamaño
+                                                        </span>
+                                                        <Select
+                                                            value={selectedElementData.fontSize.toString()}
+                                                            onValueChange={(value) => updateElement(selectedElementData.id, { fontSize: Number(value) })}
+                                                        >
+                                                            <SelectTrigger className="w-24">
+                                                                <SelectValue placeholder="Tamaño" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="1">1</SelectItem>
+                                                                <SelectItem value="1.5">1.5</SelectItem>
+                                                                <SelectItem value="2">2</SelectItem>
+                                                                <SelectItem value="2.5">2.5</SelectItem>
+                                                                <SelectItem value="3">3</SelectItem>
+                                                                <SelectItem value="3.5">3.5</SelectItem>
+                                                                <SelectItem value="4">4</SelectItem>
+                                                                <SelectItem value="4.5">4.5</SelectItem>
+                                                                <SelectItem value="5">5</SelectItem>
+                                                                <SelectItem value="5.5">5.5</SelectItem>
+                                                                <SelectItem value="6">6</SelectItem>
+                                                                <SelectItem value="6.5">6.5</SelectItem>
+                                                                <SelectItem value="7">7</SelectItem>
+                                                                <SelectItem value="8">8</SelectItem>
+                                                                <SelectItem value="10">10</SelectItem>
+                                                                <SelectItem value="12">12</SelectItem>
+                                                                <SelectItem value="14">14</SelectItem>
+                                                                <SelectItem value="16">16</SelectItem>
+                                                                <SelectItem value="18">18</SelectItem>
+                                                                <SelectItem value="20">20</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="flex w-full gap-2 items-center justify-between">
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Color
+                                                        </span>
+                                                        <Input
+                                                            id="color"
+                                                            type="color"
+                                                            value={selectedElementData.color}
+                                                            onChange={(e) => updateElement(selectedElementData.id, { color: e.target.value })}
+                                                            className="w-9 h-9 p-1 cursor-pointer"
+                                                        />
+                                                    </div>
+                                                    <div className="flex w-full gap-2 items-center justify-between">
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Estilos
+                                                        </span>
+                                                        <div className="flex items-center gap-2 w-fit">
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.fontWeight === "bold"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
+                                                                    >
+                                                                        <BoldIcon className="w-4 h-4" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Negrita</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.fontStyle === "italic"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
+                                                                    >
+                                                                        <Italic className="w-4 h-4" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Cursiva</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.textDecoration === "underline"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
+                                                                    >
+                                                                        <Underline className="w-4 h-4" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Subrayado</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.textDecoration === "line-through"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
+                                                                    >
+                                                                        <Strikethrough className="w-4 h-4" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Tachado</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex w-full gap-2 items-center justify-between">
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Caracter
+                                                        </span>
+                                                        <div className="flex items-center gap-2 w-fit">
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8 p-0"
+                                                                        pressed={selectedElementData.textTransform === "uppercase"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
+                                                                    >
+                                                                        <CaseUpper className="w-5 h-5" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Mayúsculas</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.textDecoration === "lowercase"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
+                                                                    >
+                                                                        <CaseLower className="w-5 h-5" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Minúsculas</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Toggle
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-8"
+                                                                        pressed={selectedElementData.textDecoration === "capitalize"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
+                                                                    >
+                                                                        <CaseSensitive className="w-5 h-5" />
+                                                                    </Toggle>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Capitalizar</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
                                 </CardContent>
                             </Card>
                         )}
 
                         {/* Datos de contexto */}
-                        {/* <Card className="mt-4">
-                    <CardHeader>
-                        <CardTitle className="text-sm">Datos de Preview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xs space-y-1 text-muted-foreground">
-                            <div>
-                                <strong>Producto:</strong> {dataContext.product.name}
-                            </div>
-                            <div>
-                                <strong>Especie:</strong> {dataContext.product.species.name}
-                            </div>
-                            <div>
-                                <strong>Lote:</strong> {dataContext.lot_number}
-                            </div>
-                            <div>
-                                <strong>Origen:</strong> {dataContext.origin}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card> */}
+                       {/*  <Card className="mt-4">
+                            <CardHeader>
+                                <CardTitle className="text-sm">Datos de Preview</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-xs space-y-1 text-muted-foreground">
+                                    <div>
+                                        <strong>Producto:</strong> {dataContext.product.name}
+                                    </div>
+                                    <div>
+                                        <strong>Especie:</strong> {dataContext.product.species.name}
+                                    </div>
+                                    <div>
+                                        <strong>Lote:</strong> {dataContext.lot_number}
+                                    </div>
+                                    <div>
+                                        <strong>Origen:</strong> {dataContext.origin}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card> */}
                     </div>
 
-
-
-
-
+                    {/* Impresión */}
+                    <div id='print-area-id' className="hidden print:block " /*  */
+                        style={{ width: `${canvasWidth}`, height: `${canvasHeight}` }}>
+                        <LabelRender
+                            label={labelData}
+                            values={getDefaultValuesFromElements()}
+                        />
+                    </div>
 
                 </div>
                 <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>

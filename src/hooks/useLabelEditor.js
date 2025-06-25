@@ -40,6 +40,9 @@ const fieldOptions = Object.entries(labelFields).map(([value, { label }]) => ({
 
 const getFieldName = (field) => labelFields[field]?.label || field;
 
+const pxToMm = (px) => px / 3.78;
+
+
 
 export function useLabelEditor(dataContext = defaultDataContext) {
     const [selectedLabel, setSelectedLabel] = useState(null);
@@ -67,6 +70,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [manualForm, setManualForm] = useState({});
     const fileInputRef = useRef(null);
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
+
+
+
 
     const manualFieldOptions = useMemo(
         () => {
@@ -194,13 +200,13 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             type,
             x: 50,
             y: 50,
-            width: ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 120 : 80,
+            width: ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
             height: type === "richParagraph"
                 ? 60
                 : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
-                    ? 30
-                    : 80,
-            fontSize: 12,
+                    ? 10
+                    : 10,
+            fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
             fontWeight: "normal",
             textAlign: "left",
             text: type === "text" ? "Texto ejemplo" : undefined,
@@ -216,7 +222,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             showValue: type === "barcode" ? false : undefined,
             html: type === "richParagraph" ? "<span>Texto de ejemplo</span>" : undefined,
             borderColor: type === "sanitaryRegister" ? "#000000" : undefined,
-            borderWidth: type === "sanitaryRegister" ? 1 : undefined,
+            borderWidth: type === "sanitaryRegister" ? 0.10 : undefined,
             color: "#000000",
         };
         setElements((prev) => [...prev, newElement]);
@@ -257,8 +263,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         if (element && canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect();
             setDragOffset({
-                x: (e.clientX - rect.left) / zoom - element.x,
-                y: (e.clientY - rect.top) / zoom - element.y,
+                x: pxToMm(e.clientX - rect.left) / zoom - element.x,
+                y: pxToMm(e.clientY - rect.top) / zoom - element.y,
             });
         }
     };
@@ -272,8 +278,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         if (element && canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect();
             setResizeStart({
-                x: (e.clientX - rect.left) / zoom,
-                y: (e.clientY - rect.top) / zoom,
+                x: pxToMm(e.clientX - rect.left) / zoom,
+                y: pxToMm(e.clientY - rect.top) / zoom,
                 width: element.width,
                 height: element.height,
                 elX: element.x,
@@ -285,9 +291,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const handleMouseMove = useCallback(
         (e) => {
             if ((!isDragging && !isResizing) || !selectedElement || !canvasRef.current) return;
+
             const rect = canvasRef.current.getBoundingClientRect();
-            const curX = (e.clientX - rect.left) / zoom;
-            const curY = (e.clientY - rect.top) / zoom;
+            const curX = pxToMm(e.clientX - rect.left) / zoom;
+            const curY = pxToMm(e.clientY - rect.top) / zoom;
+
             if (isDragging) {
                 const newX = curX - dragOffset.x;
                 const newY = curY - dragOffset.y;
@@ -299,11 +307,13 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     y: Math.max(0, Math.min(maxY, newY)),
                 });
             }
+
             if (isResizing && resizeStart) {
                 const dx = curX - resizeStart.x;
                 const dy = curY - resizeStart.y;
                 let { width, height, elX, elY } = resizeStart;
                 let newProps = {};
+
                 switch (resizeCorner) {
                     case 'se': width += dx; height += dy; break;
                     case 'sw': width -= dx; height += dy; elX += dx; break;
@@ -311,16 +321,19 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     case 'nw': width -= dx; height -= dy; elX += dx; elY += dy; break;
                     default: break;
                 }
-                width = Math.max(10, width);
-                height = Math.max(10, height);
+
+                width = Math.max(10 / 3.78, width);  // ≈2.65mm mínimo
+                height = Math.max(10 / 3.78, height);
                 const maxX = canvasWidth - width;
                 const maxY = canvasHeight - height;
+
                 newProps = {
                     x: Math.max(0, Math.min(maxX, elX)),
                     y: Math.max(0, Math.min(maxY, elY)),
                     width,
                     height,
                 };
+
                 updateElement(selectedElement, newProps);
             }
         },
@@ -449,7 +462,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     /* Extraer en una constante EmptyLabelData */
     const handleCreateNewLabel = () => {
-        const model = { id: null, name: "", canvas: { width: 400, height: 300, rotation: 0 } };
+        const model = { id: null, name: "", canvas: { width: 110, height: 90, rotation: 0 } };
         setSelectedLabel(model);
         setCanvasWidth(model.canvas.width);
         setCanvasHeight(model.canvas.height);

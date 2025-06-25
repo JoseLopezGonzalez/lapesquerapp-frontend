@@ -77,8 +77,10 @@ export default function LabelElement({ element, values = {} }) {
                             value={serialized}
                             format={format}
                             width={1}
-                            height={element.height - 10}
+                            /* height={element.height - 10} */
+                            height={`${element.height*4}px`}
                             displayValue={element.showValue}
+                            fontSize={element.fontSize * 6}
                         />
                     ) : (
                         <span className="text-xs text-red-500 text-center">
