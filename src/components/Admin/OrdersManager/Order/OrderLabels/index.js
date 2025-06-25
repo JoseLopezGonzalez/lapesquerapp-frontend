@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Printer, FileText } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -8,13 +8,62 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+} from "@/components/ui/select";
+
 const OrderLabels = () => {
     const { pallets } = useOrderContext();
 
-    // Agrupado por producto + lote
-    const groupedBoxes = React.useMemo(() => {
-        const map = new Map();
+    const [palletIdFilter, setPalletIdFilter] = useState('');
+    const [lotFilter, setLotFilter] = useState('');
+    const [productFilter, setProductFilter] = useState('');
+    const [selectedGrouped, setSelectedGrouped] = useState({});
+    const [selectedIndividual, setSelectedIndividual] = useState({});
 
+    // Manejadores
+    const toggleAllIndividual = (checked) => {
+        const updated = {};
+        filteredBoxes.forEach((box) => {
+            updated[box.id] = checked;
+        });
+        setSelectedIndividual(updated);
+    };
+
+    const toggleIndividual = (boxId, checked) => {
+        setSelectedIndividual((prev) => ({
+            ...prev,
+            [boxId]: checked
+        }));
+    };
+
+
+    // Filtros únicos
+    const palletIds = useMemo(() => {
+        const set = new Set();
+        pallets?.forEach(p => set.add(p.id));
+        return Array.from(set);
+    }, [pallets]);
+
+    const lots = useMemo(() => {
+        const set = new Set();
+        pallets?.forEach(p => p.boxes.forEach(b => set.add(b.lot)));
+        return Array.from(set);
+    }, [pallets]);
+
+    const productNames = useMemo(() => {
+        const set = new Set();
+        pallets?.forEach(p => p.boxes.forEach(b => set.add(b.article.name)));
+        return Array.from(set);
+    }, [pallets]);
+
+    // Agrupado por producto + lote
+    const groupedBoxes = useMemo(() => {
+        const map = new Map();
         pallets?.forEach(pallet => {
             pallet.boxes.forEach(box => {
                 const key = `${box.article.name}-${box.lot}`;
@@ -28,15 +77,30 @@ const OrderLabels = () => {
                 map.get(key).count += 1;
             });
         });
-
         return Array.from(map.values());
     }, [pallets]);
+
+    // Cajas individuales con filtro aplicado
+    const filteredBoxes = useMemo(() => {
+        const list = [];
+        pallets?.forEach(pallet => {
+            pallet.boxes.forEach(box => {
+                list.push({ ...box, palletId: pallet.id });
+            });
+        });
+        return list.filter(box =>
+            (!palletIdFilter || box.palletId?.toString() === palletIdFilter) &&
+            (!lotFilter || box.lot === lotFilter) &&
+            (!productFilter || box.article.name === productFilter)
+        );
+    }, [pallets, palletIdFilter, lotFilter, productFilter]);
 
     return (
         <div className='h-full pb-2'>
             <Card className='h-full flex flex-col bg-transparent'>
-                <CardContent className="flex-1 overflow-y-auto py-6  flex flex-col gap-6">
-                    <Card className=' flex flex-col bg-transparent'>
+                <CardContent className="flex-1 overflow-y-auto py-6 flex flex-col gap-6">
+                    {/* Agrupadas */}
+                    <Card className='flex flex-col bg-transparent'>
                         <CardHeader>
                             <CardTitle className="text-lg font-medium">Etiquetas Agrupadas</CardTitle>
                         </CardHeader>
@@ -77,7 +141,9 @@ const OrderLabels = () => {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[50px]">
-                                                <Checkbox />
+                                                <Checkbox
+
+                                                />
                                             </TableHead>
                                             <TableHead>Producto</TableHead>
                                             <TableHead>Cajas</TableHead>
@@ -87,7 +153,11 @@ const OrderLabels = () => {
                                     <TableBody>
                                         {groupedBoxes.map((group, index) => (
                                             <TableRow key={index}>
-                                                <TableCell><Checkbox /></TableCell>
+                                                <TableCell>
+                                                    <Checkbox
+
+                                                    />
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{group.articleName}</div>
                                                     <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
@@ -104,15 +174,66 @@ const OrderLabels = () => {
                         </CardContent>
                     </Card>
 
-                    {/* Tarjeta de etiquetas individuales */}
+                    {/* Individuales */}
                     <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle className="text-lg font-medium">Etiquetas Individuales</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="text-sm text-muted-foreground mb-2">
+                        <CardContent className="space-y-4">
+                            <div className="text-sm text-muted-foreground">
                                 Lista completa de cajas con su producto, lote, peso y pallet.
                             </div>
+
+                            {/* Filtros */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Filtro por Pallet */}
+                                <Select value={palletIdFilter} onValueChange={setPalletIdFilter}>
+                                    <SelectTrigger className="w-full h-10 text-sm">
+                                        <SelectValue placeholder="Todos los Pallets" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={null}>Todos los Pallets</SelectItem>
+                                        {palletIds.map((id) => (
+                                            <SelectItem key={id} value={id}>
+                                                {id}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Filtro por Lote */}
+                                <Select value={lotFilter} onValueChange={setLotFilter}>
+                                    <SelectTrigger className="w-full h-10 text-sm">
+                                        <SelectValue placeholder="Todos los Lotes" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={null}>Todos los Lotes</SelectItem>
+                                        {lots.map((lot) => (
+                                            <SelectItem key={lot} value={lot}>
+                                                {lot}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Filtro por Producto */}
+                                <Select value={productFilter} onValueChange={setProductFilter}>
+                                    <SelectTrigger className="w-full h-10 text-sm">
+                                        <SelectValue placeholder="Todos los Productos" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={null}>Todos los Productos</SelectItem>
+                                        {productNames.map((name) => (
+                                            <SelectItem key={name} value={name}>
+                                                {name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+
+                            {/* Tabla */}
                             <div className="rounded-lg border">
                                 <Table>
                                     <TableHeader>
@@ -126,18 +247,16 @@ const OrderLabels = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {pallets?.map(pallet =>
-                                            pallet.boxes.map(box => (
-                                                <TableRow key={box.id}>
-                                                    <TableCell><Checkbox /></TableCell>
-                                                    <TableCell>{pallet.id}</TableCell>
-                                                    <TableCell>{box.id}</TableCell>
-                                                    <TableCell>{box.article.name}</TableCell>
-                                                    <TableCell>{box.lot}</TableCell>
-                                                    <TableCell className="text-right">{box.netWeight}</TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
+                                        {filteredBoxes.map((box) => (
+                                            <TableRow key={box.id}>
+                                                <TableCell><Checkbox /></TableCell>
+                                                <TableCell>{box.palletId}</TableCell>
+                                                <TableCell>{box.id}</TableCell>
+                                                <TableCell>{box.article.name}</TableCell>
+                                                <TableCell>{box.lot}</TableCell>
+                                                <TableCell className="text-right">{box.netWeight}</TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table>
                             </div>
