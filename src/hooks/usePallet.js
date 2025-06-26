@@ -544,6 +544,19 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     };
 
 
+    /* Set printed: true on box for boxId */
+
+    const setBoxPrinted = (boxId) => {
+        if (!temporalPallet) return;
+        setTemporalPallet((prev) => ({
+            ...prev,
+            boxes: prev.boxes.map((box) =>
+                box.id === boxId ? { ...box, printed: true } : box
+            )
+        }));
+    };
+
+
 
 
 
@@ -571,6 +584,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         getPieChartData,
         onSavingChanges,
         onClose,
+        setBoxPrinted,
     };
 
 }

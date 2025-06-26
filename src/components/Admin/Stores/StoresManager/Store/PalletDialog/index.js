@@ -28,6 +28,7 @@ import { createPortal } from "react-dom";
 import PalletLabel from "../PositionSlideover/PalletCard/PalletLabel";
 import { Test } from "../PositionSlideover/PalletCard";
 import { usePrintElement } from "@/hooks/usePrintElement";
+import BoxesLabels from "./BoxesLabels";
 /* import printJS from "print-js"; */
 
 
@@ -52,6 +53,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         getPieChartData,
         onSavingChanges,
         onClose,
+        setBoxPrinted,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId });
 
 
@@ -166,7 +168,10 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                         <Eye className="h-4 w-4" /> Resumen
                                     </TabsTrigger>
                                     <TabsTrigger value="etiqueta" className="flex items-center gap-2">
-                                        <FileText className="h-4 w-4" /> Etiqueta
+                                        <FileText className="h-4 w-4" /> Etiqueta Palet
+                                    </TabsTrigger>
+                                    <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
+                                        <FileText className="h-4 w-4" /> Etiquetas Cajas
                                     </TabsTrigger>
 
                                 </TabsList>
@@ -723,6 +728,11 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                         </Button>
                                     </div>
                                 </TabsContent>
+
+                                <TabsContent value="boxesLabels" className="mt-0 w-full">
+                                    <BoxesLabels pallet={temporalPallet} setBoxPrinted={setBoxPrinted} />
+                                </TabsContent>
+
                             </Tabs>
                         </div>
                         <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">

@@ -14,84 +14,9 @@ import { Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 
-// Simulamos campos manuales y número de etiquetas
-const mockManualFields = ['Cliente', 'Destino', 'Fecha de salida'];
-const mockSelectedCount = 12;
-
-const initialBoxes = [
-    {
-        id: 124391,
-        palletId: 3528,
-        product: {
-            id: 224,
-            name: "Pulpo eviscerado congelado IQF T4 (15% - Agua) - Terranosa",
-            category: {
-                id: 1,
-                name: "product",
-            },
-            species: {
-                id: 1,
-                name: "Pulpo común",
-                scientificName: "Octopus Vulgaris",
-                fao: "OCC",
-                image: "pulpo-comun.png",
-            },
-            captureZone: {
-                id: 1,
-                name: "FAO 27.IX.a - Atlantic, Northeast (Portuguese Waters / East)",
-            },
-            articleGtin: "8436613931752",
-            boxGtin: "98436613931755",
-            palletGtin: "",
-            fixedWeight: "0.00",
-            a3erpCode: "10044",
-            facilcomCode: null,
-        },
-        lot: "190625OCC01001",
-        gs1128: "(01)98436613931755(3100)001850(10)190625OCC01001",
-        grossWeight: "18.50",
-        netWeight: "18.50",
-        createdAt: "2025-06-20T06:18:13.000000Z",
-    },
-    {
-        id: 124391,
-        palletId: 3528,
-        product: {
-            id: 224,
-            name: "Pulpo eviscerado congelado IQF T4 (15% - Agua) - Terranosa",
-            category: {
-                id: 1,
-                name: "product",
-            },
-            species: {
-                id: 1,
-                name: "Pulpo común",
-                scientificName: "Octopus Vulgaris",
-                fao: "OCC",
-                image: "pulpo-comun.png",
-            },
-            captureZone: {
-                id: 1,
-                name: "FAO 27.IX.a - Atlantic, Northeast (Portuguese Waters / East)",
-            },
-            articleGtin: "8436613931752",
-            boxGtin: "98436613931755",
-            palletGtin: "",
-            fixedWeight: "0.00",
-            a3erpCode: "10044",
-            facilcomCode: null,
-        },
-        lot: "190625OCC01001",
-        gs1128: "(01)98436613931755(3100)001850(10)190625OCC01001",
-        grossWeight: "18.50",
-        netWeight: "18.50",
-        createdAt: "2025-06-20T06:18:13.000000Z",
-    },
-];
-
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
-    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton } = useLabel({ boxes , open });
+    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
