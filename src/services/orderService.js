@@ -413,3 +413,83 @@ export async function getOrderRanking({ groupBy, valueType, dateFrom, dateTo, sp
         });
 }
 
+// services/orderService.js
+
+/**
+ * Obtener las ventas totales agrupadas por comercial (por cantidad).
+ * @param {Object} params - Parámetros de filtro.
+ * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
+ * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Array>} - Lista de objetos con { name, quantity }
+ */
+export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
+    const query = new URLSearchParams({ dateFrom, dateTo });
+
+    return fetch(`${API_URL_V2}orders/sales-by-salesperson?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener las ventas por comercial');
+                });
+            }
+            return response.json();
+        })
+        .catch((error) => {
+            console.error("getSalesBySalesperson error:", error);
+            throw error;
+        })
+        .finally(() => {
+            console.log('getSalesBySalesperson finalizado');
+        });
+}
+
+
+/**
+ * Obtener la cantidad total de kg vendidos en el período especificado.
+ * @param {Object} params - Parámetros de filtro.
+ * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
+ * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<number>} - Total de kg vendidos.
+ */
+export async function getTotalQuantity({ dateFrom, dateTo }, token) {
+    const query = new URLSearchParams({ dateFrom, dateTo })
+
+    return fetch(`${API_URL_V2}orders/total-quantity?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener la cantidad total vendida')
+                })
+            }
+            return response.json()
+        })
+        .then((data) => {
+            return data// Ajusta esta línea si tu backend responde con otra estructura
+        })
+        .catch((error) => {
+            console.error("getTotalQuantity error:", error)
+            throw error
+        })
+        .finally(() => {
+            console.log('getTotalQuantity finalizado')
+        })
+}
+

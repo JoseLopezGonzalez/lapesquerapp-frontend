@@ -351,3 +351,42 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
   /* Estilo para la caja */
 }
+
+
+@layer base {
+  :root {
+    --chart-1: theme('colors.sky.400');
+    --chart-2: theme('colors.sky.500');
+    --chart-3: theme('colors.sky.600');
+    --chart-4: theme('colors.sky.700');
+    --chart-5: theme('colors.sky.800');
+    --chart-6: theme('colors.sky.900');
+  }
+
+  .dark {
+    --chart-1: theme('colors.sky.300');
+    --chart-2: theme('colors.sky.400');
+    --chart-3: theme('colors.sky.500');
+    --chart-4: theme('colors.sky.600');
+    --chart-5: theme('colors.sky.700');
+    --chart-6: theme('colors.sky.800');
+  }
+}
+
+/* @layer base {
+  :root {
+    --chart-1: hsl(var(--primary) / 1);
+    --chart-2: hsl(var(--primary) / 0.9);
+    --chart-3: hsl(var(--primary) / 0.75);
+    --chart-4: hsl(var(--primary) / 0.6);
+    --chart-5: hsl(var(--primary) / 0.45);
+  }
+
+  .dark {
+    --chart-1: hsl(var(--primary) / 1);
+    --chart-2: hsl(var(--primary) / 0.9);
+    --chart-3: hsl(var(--primary) / 0.75);
+    --chart-4: hsl(var(--primary) / 0.6);
+    --chart-5: hsl(var(--primary) / 0.45);
+  }
+} */

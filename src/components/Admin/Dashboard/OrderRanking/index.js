@@ -36,13 +36,16 @@ import { useSession } from "next-auth/react"
 import { getOrderRanking } from "@/services/orderService"
 import Loader from "@/components/Utilities/Loader"
 
+const today = new Date()
+const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
+
 export function OrderRankingChart() {
     const [groupBy, setGroupBy] = useState("client")
     const [valueType, setValueType] = useState("totalAmount")
     const [speciesId, setSpeciesId] = useState("all")
     const [speciesOptions, setSpeciesOptions] = useState([])
-    const [dateFrom, setDateFrom] = useState("")
-    const [dateTo, setDateTo] = useState("")
+    const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
+    const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
     const [isLoading, setIsLoading] = useState(true)
     const [chartData, setChartData] = useState([])
     const { data: session, status } = useSession();
@@ -51,14 +54,14 @@ export function OrderRankingChart() {
         totalAmount: {
             value: {
                 label: "Importe",
-                color: "var(--chart-2)",
+                color: "var(--chart-1)",
             },
             formatter: formatDecimalCurrency,
         },
         totalQuantity: {
             value: {
                 label: "Cantidad",
-                color: "var(--chart-2)",
+                color: "var(--chart-1)",
             },
             formatter: formatDecimalWeight,
         },
@@ -96,10 +99,8 @@ export function OrderRankingChart() {
         if (status !== "authenticated") {
             return
         }
-        const today = new Date()
-        const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
-        setDateFrom(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-        setDateTo(today.toISOString().split("T")[0])
+
+
 
         const token = session.user.accessToken;
         getSpeciesOptions(token).then((speciesOptions) => {
@@ -132,17 +133,17 @@ export function OrderRankingChart() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
-                        <Label className="text-sm">Desde</Label>
+                        {/* <Label className="text-sm">Desde</Label> */}
                         <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                     </div>
                     <div>
-                        <Label className="text-sm">Hasta</Label>
+                        {/* <Label className="text-sm">Hasta</Label> */}
                         <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                     </div>
                     <div>
-                        <Label className="text-sm">Especie</Label>
+                        {/* <Label className="text-sm">Especie</Label> */}
                         <Select value={speciesId} onValueChange={setSpeciesId}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Todas las especies" />
