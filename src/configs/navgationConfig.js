@@ -13,7 +13,7 @@ export const navigationConfig = [
     {
         name: 'Inicio',
         icon: HomeIcon,
-        href: 'admin/home',
+        href: '/admin/home',
         allowedRoles: ["admin", "manager", "superuser"],
     },
     {
