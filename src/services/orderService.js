@@ -362,3 +362,54 @@ export function getActiveOrdersOptions(token) {
             console.log('getActiveOrders finalizado');
         });
 }
+
+
+/**
+ * Obtener el ranking de pedidos agrupado por cliente o país.
+ * @param {Object} params - Parámetros de filtro y ordenación.
+ * @param {string} params.groupBy - 'client' o 'country'
+ * @param {string} params.valueType - 'totalAmount' o 'totalQuantity'
+ * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
+ * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
+ * @param {string|number} [params.speciesId] - ID de la especie (opcional)
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Array>} - Lista de objetos con { name, value }
+ */
+export async function getOrderRanking({ groupBy, valueType, dateFrom, dateTo, speciesId }, token) {
+    const query = new URLSearchParams({
+        groupBy,
+        valueType,
+        dateFrom,
+        dateTo,
+    });
+
+    if (speciesId && speciesId !== 'all') {
+        query.append('speciesId', speciesId);
+    }
+
+    return fetch(`${API_URL_V2}orders/ranking?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener el ranking de pedidos');
+                });
+            }
+            return response.json();
+        })
+        .catch((error) => {
+            console.error("getOrderRanking error:", error);
+            throw error;
+        })
+        .finally(() => {
+            console.log('getOrderRanking finalizado');
+        });
+}
+
