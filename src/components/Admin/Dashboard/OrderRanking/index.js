@@ -31,7 +31,7 @@ import {
     formatDecimalCurrency,
     formatDecimalWeight,
 } from "@/helpers/formats/numbers/formatNumbers"
-import { getSpeciesOptions } from "@/services/SpeciesService"
+import { getSpeciesOptions } from "@/services/speciesService"
 import { useSession } from "next-auth/react"
 import { getOrderRanking } from "@/services/orderService"
 import Loader from "@/components/Utilities/Loader"
@@ -114,7 +114,7 @@ export function OrderRankingChart() {
     return (
         <Card className="w-full">
             <CardHeader className="pb-2 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-row items-center justify-between gap-4">
                     <div>
                         <CardTitle className="text-base">Ranking Pedidos</CardTitle>
                         <CardDescription>

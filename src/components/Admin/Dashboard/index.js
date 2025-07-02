@@ -12,6 +12,8 @@ import { StockByProductsCard } from "./StockByProductsCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
 import { CurrentStockCard } from "./CurrentStockCard";
+import { SalesChart } from "./SalesChart";
+import { TransportRadarChart } from "./TransportTadarChart";
 
 export default function Dashboard() {
     const [greeting, setGreeting] = useState("Hola");
@@ -72,6 +74,12 @@ export default function Dashboard() {
                         </div>
                         <div className="break-inside-avoid mb-4">
                             <StockByProductsCard />
+                        </div>
+                        <div className="break-inside-avoid mb-4">
+                            <SalesChart />
+                        </div>
+                        <div className="break-inside-avoid mb-4">
+                            <TransportRadarChart />
                         </div>
                     </div>
                 </div>

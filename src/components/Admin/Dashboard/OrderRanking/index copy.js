@@ -31,7 +31,7 @@ import {
     formatDecimalCurrency,
     formatDecimalWeight,
 } from "@/helpers/formats/numbers/formatNumbers"
-import { getSpeciesOptions } from "@/services/SpeciesService"
+import { getSpeciesOptions } from "@/services/speciesService"
 import { useSession } from "next-auth/react"
 import { getOrderRanking } from "@/services/orderService"
 import Loader from "@/components/Utilities/Loader"

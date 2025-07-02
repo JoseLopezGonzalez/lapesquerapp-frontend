@@ -533,4 +533,90 @@ export async function getTotalAmount({ dateFrom, dateTo }, token) {
         })
 }
 
+/**
+ * Obtener datos de ventas formateados para gráfico (por especie, rango de fechas y unidad).
+ * @param {Object} params
+ * @param {string} params.token
+ * @param {string|null} params.speciesId
+ * @param {string} params.from - Fecha inicio formato YYYY-MM-DD
+ * @param {string} params.to - Fecha fin formato YYYY-MM-DD
+ * @param {string} params.unit - 'quantity' o 'amount'
+ * @param {string} params.groupBy - 'day' | 'week' | 'month'
+ * @returns {Promise<Array<{ date: string, value: number }>>}
+ */
+export async function getSalesChartData({ token, speciesId, from, to, unit, groupBy }) {
+    const query = new URLSearchParams({
+        dateFrom: from,
+        dateTo: to,
+        valueType: unit,
+        groupBy: groupBy,
+    });
+
+    if (speciesId && speciesId !== "all") {
+        query.append("speciesId", speciesId);
+    }
+
+    return fetch(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "User-Agent": navigator.userAgent,
+        },
+    }).then((response) => {
+        if (!response.ok) {
+            return response.json().then((errorData) => {
+                throw new Error(errorData.message || "Error al obtener datos del gráfico de ventas");
+            });
+        }
+        return response.json();
+    });
+}
+
+/**
+ * Obtener kilos transportados por empresa de transporte en un rango de fechas.
+ * @param {Object} params
+ * @param {string} params.token - Token JWT de autenticación
+ * @param {string} params.from - Fecha desde (YYYY-MM-DD)
+ * @param {string} params.to - Fecha hasta (YYYY-MM-DD)
+ * @returns {Promise<Array<{ transport: string, netWeight: number }>>}
+ */
+export async function getTransportChartData({ token, from, to }) {
+    const query = new URLSearchParams({
+        dateFrom: from,
+        dateTo: to,
+    })
+
+    return fetch(`${API_URL_V2}orders/transport-chart-data?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener los datos de transporte');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data; // Formato esperado: [{ transport: "Seur", netWeight: 18250.25 }, ...]
+        })
+        .catch((error) => {
+            console.error("getTransportChartData error:", error);
+            throw error;
+        })
+        .finally(() => {
+            console.log('getTransportChartData finalizado');
+        });
+}
+
+
+
+
+
 
