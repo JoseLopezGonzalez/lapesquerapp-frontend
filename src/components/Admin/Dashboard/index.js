@@ -7,9 +7,11 @@ import { OrderRankingChart } from "./OrderRanking";
 import { SalesBySalespersonPieChart } from "./SalesBySalespersonPieChart";
 import { TotalQuantitySoldCard } from "./TotalQuantitySoldCard";
 import { TotalAmountSoldCard } from "./TotalAmountSoldCard";
-import { CurrentStockCard } from "./CurrentStockCard";
 import { StockBySpeciesCard } from "./StockBySpeciesCard";
 import { StockByProductsCard } from "./StockByProductsCard";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
+import { CurrentStockCard } from "./CurrentStockCard";
 
 export default function Dashboard() {
     const [greeting, setGreeting] = useState("Hola");
@@ -27,39 +29,54 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className="h-full w-full flex flex-col gap-2 px-6 py-3 overflow-y-auto">
-            <div className="w-full">
-                {/* Saludo dinámico */}
-                <div className="flex flex-col items-start justify-center mb-4">
-                    <p className="text-md text-gray-500">{greeting}</p>
-                    <h1 className="text-4xl font-light">Administración</h1>
-                </div>
-            </div>
+        <div className="h-full w-full flex flex-col gap-4 px-6 py-3">
+            <ScrollArea className="w-full h-full pr-4 ">
+                <div className="w-full h-full flex flex-col gap-4 pb-4">
 
-            {/* MASONRY LAYOUT con columns */}
-            <div className="columns-1 sm:columns-2 xl:columns-3 gap-4 space-y-4">
-                <div className="break-inside-avoid mb-4">
-                    <OrderRankingChart />
+                    <div className="w-full">
+                        <div className="flex flex-col items-start justify-center mb-4">
+                            <p className="text-md text-gray-500">{greeting}</p>
+                            <h1 className="text-4xl font-light">Administración</h1>
+                        </div>
+                    </div>
+
+                    <div className="w-full grid grid-cols-4 gap-4">
+                        <div className=" w-full overflow-hidden">
+                            <CurrentStockCard />
+                        </div>
+                        <div className="">
+                            <TotalQuantitySoldCard />
+                        </div>
+                        <div className="">
+                            <TotalAmountSoldCard />
+                        </div>
+                        {/* <div className="">
+                            <CurrentStockCard />
+                        </div> */}
+
+                        <div className="w-full overflow-hidden">
+                            <NewLabelingFeatureCard />
+                        </div>
+
+                    </div>
+
+                    <div className="columns-1 sm:columns-2 xl:columns-3 gap-4 space-y-4">
+                        <div className="break-inside-avoid mb-4">
+                            <OrderRankingChart />
+                        </div>
+                        <div className="break-inside-avoid mb-4">
+                            <SalesBySalespersonPieChart />
+                        </div>
+                        <div className="break-inside-avoid mb-4">
+                            <StockBySpeciesCard />
+                        </div>
+                        <div className="break-inside-avoid mb-4">
+                            <StockByProductsCard />
+                        </div>
+                    </div>
                 </div>
-                <div className="break-inside-avoid mb-4">
-                    <SalesBySalespersonPieChart />
-                </div>
-                <div className="break-inside-avoid mb-4">
-                    <TotalQuantitySoldCard />
-                </div>
-                <div className="break-inside-avoid mb-4">
-                    <TotalAmountSoldCard />
-                </div>
-                <div className="break-inside-avoid mb-4">
-                    <CurrentStockCard />
-                </div>
-                <div className="break-inside-avoid mb-4">
-                    <StockBySpeciesCard />
-                </div>
-                <div className="break-inside-avoid mb-4">
-                    <StockByProductsCard />
-                </div>
-            </div>
+
+            </ScrollArea>
         </div>
 
     );
