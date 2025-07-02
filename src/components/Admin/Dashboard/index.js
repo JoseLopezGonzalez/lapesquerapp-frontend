@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import { OrderRankingChart } from "./OrderRanking";
 import { SalesBySalespersonPieChart } from "./SalesBySalespersonPieChart";
 import { TotalQuantitySoldCard } from "./TotalQuantitySoldCard";
+import { TotalAmountSoldCard } from "./TotalAmountSoldCard";
+import { CurrentStockCard } from "./CurrentStockCard";
+import { StockBySpeciesCard } from "./StockBySpeciesCard";
+import { StockByProductsCard } from "./StockByProductsCard";
 
 export default function Dashboard() {
     const [greeting, setGreeting] = useState("Hola");
@@ -23,7 +27,7 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className="h-full w-full flex flex-col gap-2 px-6 py-3">
+        <div className="h-full w-full flex flex-col gap-2 px-6 py-3 overflow-y-auto">
             <div className="w-full">
                 {/* Saludo dinámico */}
                 <div className="flex flex-col items-start justify-center mb-4">
@@ -43,9 +47,18 @@ export default function Dashboard() {
                 <div className="break-inside-avoid mb-4">
                     <TotalQuantitySoldCard />
                 </div>
-                {/* <div className="break-inside-avoid mb-4">
-                    <TotalQuantitySoldCard />
-                </div> */}
+                <div className="break-inside-avoid mb-4">
+                    <TotalAmountSoldCard />
+                </div>
+                <div className="break-inside-avoid mb-4">
+                    <CurrentStockCard />
+                </div>
+                <div className="break-inside-avoid mb-4">
+                    <StockBySpeciesCard />
+                </div>
+                <div className="break-inside-avoid mb-4">
+                    <StockByProductsCard />
+                </div>
             </div>
         </div>
 

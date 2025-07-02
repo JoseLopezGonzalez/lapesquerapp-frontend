@@ -493,3 +493,44 @@ export async function getTotalQuantity({ dateFrom, dateTo }, token) {
         })
 }
 
+/**
+ * Obtener el importe total vendido en el período especificado.
+ * @param {Object} params - Parámetros de filtro.
+ * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
+ * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Object>} - Objeto con el valor total y la comparación
+ */
+export async function getTotalAmount({ dateFrom, dateTo }, token) {
+    const query = new URLSearchParams({ dateFrom, dateTo })
+
+    return fetch(`${API_URL_V2}orders/total-amount?${query.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener el importe total vendido')
+                })
+            }
+            return response.json()
+        })
+        .then((data) => {
+            return data // Ajusta según la estructura de tu backend, puede ser { value, comparisonValue, percentageChange }
+        })
+        .catch((error) => {
+            console.error("getTotalAmount error:", error)
+            throw error
+        })
+        .finally(() => {
+            console.log('getTotalAmount finalizado')
+        })
+}
+
+
