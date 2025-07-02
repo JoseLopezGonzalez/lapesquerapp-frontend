@@ -30,7 +30,7 @@ export default function AdminLayout({ children }) {
             {children}
           </div>
         </main>
-        <FloatingHelpButton />
+       {/*  <FloatingHelpButton /> */}
       </SidebarProvider>
 
     </div>
