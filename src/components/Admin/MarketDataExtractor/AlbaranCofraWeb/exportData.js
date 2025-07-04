@@ -23,6 +23,9 @@ export const barcos = [
   { barco: "JUAN Y MARIA", armador: "EVA MARIA MARTIN GONZALEZ", cifArmador: "44236035C", codA3erp: "236035", codBrisapp: '90' },
   /* BELLI Y TOÑI */
   { barco: "BELI Y TOÑI", armador: "PERICO Y MENDEZ S.L.", cifArmador: "B55470421", codA3erp: "988234", codBrisapp: '147' },
+  /* PESCAITO GABRIEL Y JESUS , cod 956 ,  cif: '29489841T', codA3erp: '988285', codBrisapp:116*/
+  { barco: "PESCAITOGABRIEL Y", armador: "Manuel Jesus Yaque Camacho", cifArmador: "29489841T", codA3erp: "988285", codBrisapp: '164' },
+
 ];
 
 export const armadores = [
@@ -54,6 +57,8 @@ export const armadores = [
   { armador: "EVA MARIA MARTIN GONZALEZ", cif: "44236035C", codA3erp: "236035" },
   { armador: "PERICO Y MENDEZ S.L.", cif: "B55470421", codA3erp: "988234" },
 ];
+
+/* 988285 */
 
 
 export const lonjas = [
