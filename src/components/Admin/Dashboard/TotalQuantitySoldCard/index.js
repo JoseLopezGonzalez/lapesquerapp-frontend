@@ -11,8 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, Loader } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { getTotalQuantity } from "@/services/orderService"
+import { getOrdersTotalNetWeightStats } from "@/services/orderService"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function TotalQuantitySoldCard() {
     const { data: session, status } = useSession()
@@ -28,7 +29,7 @@ export function TotalQuantitySoldCard() {
         const dateTo = today.toISOString().split("T")[0]
         const token = session.user.accessToken
 
-        getTotalQuantity({ dateFrom, dateTo }, token)
+        getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token)
             .then(setData)
             .catch((err) => {
                 console.error("Error al obtener la cantidad total:", err)
@@ -65,13 +66,18 @@ export function TotalQuantitySoldCard() {
                         )}
                     </div>
                 </div>
-                <CardTitle className="text-3xl font-medium tracking-tight">
+                <CardTitle className=" ">
                     {isLoading ? (
                         <div className="h-8 flex items-center">
                             <Loader className="w-4 h-4 animate-spin text-muted-foreground" />
                         </div>
                     ) : data?.value !== null ? (
-                        formatDecimalWeight(data.value)
+                        <>
+                            <h1 className="text-3xl font-medium tracking-tight">{formatDecimalWeight(data.value)}</h1>
+                            <div className="text-xs text-gray-500 mt-1 italic">
+                                {formatDecimalWeight(data?.comparisonValue)} el año anterior
+                            </div>
+                        </>
                     ) : (
                         <span className="text-muted-foreground text-base">Sin datos</span>
                     )}

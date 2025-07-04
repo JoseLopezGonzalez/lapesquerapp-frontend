@@ -461,10 +461,10 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<number>} - Total de kg vendidos.
  */
-export async function getTotalQuantity({ dateFrom, dateTo }, token) {
+export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
-    return fetch(`${API_URL_V2}orders/total-quantity?${query.toString()}`, {
+    return fetch(`${API_URL_V2}statistics/orders/total-net-weight?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
