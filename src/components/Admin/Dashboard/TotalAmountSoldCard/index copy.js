@@ -11,11 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, Loader } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { getOrdersTotalNetWeightStats } from "@/services/orderService"
-import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { getOrdersTotalAmountStats } from "@/services/orderService" // <-- función que debes implementar
+import { formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers" // formateador de moneda
 
-export function TotalQuantitySoldCard() {
+export function TotalAmountSoldCard() {
     const { data: session, status } = useSession()
     const [data, setData] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -29,10 +28,10 @@ export function TotalQuantitySoldCard() {
         const dateTo = today.toISOString().split("T")[0]
         const token = session.user.accessToken
 
-        getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token)
+        getOrdersTotalAmountStats({ dateFrom, dateTo }, token)
             .then(setData)
             .catch((err) => {
-                console.error("Error al obtener la cantidad total:", err)
+                console.error("Error al obtener el importe total:", err)
                 setData(null)
             })
             .finally(() => setIsLoading(false))
@@ -46,12 +45,14 @@ export function TotalQuantitySoldCard() {
     const trendText = isUp ? "al alza" : isDown ? "a la baja" : null
     const trendColor = isUp ? "text-green-600" : isDown ? "text-red-600" : ""
 
+    console.log(data)
+
     return (
         <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
                     <CardDescription className="text-sm text-muted-foreground">
-                        Producto vendido
+                        Importe vendido
                     </CardDescription>
                     <div>
                         {hasValidPercentage && TrendIcon && (
@@ -66,18 +67,13 @@ export function TotalQuantitySoldCard() {
                         )}
                     </div>
                 </div>
-                <CardTitle className=" ">
+                <CardTitle className="text-3xl font-medium tracking-tight">
                     {isLoading ? (
                         <div className="h-8 flex items-center">
                             <Loader className="w-4 h-4 animate-spin text-muted-foreground" />
                         </div>
                     ) : data?.value !== null ? (
-                        <div className="">
-                            <h1 className="text-3xl font-medium tracking-tight">{formatDecimalWeight(data.value)}</h1>
-                            <div className="text-xs text-gray-500 mt-1 italic">
-                                {formatDecimalWeight(data?.comparisonValue)} el año anterior
-                            </div>
-                        </div>
+                        formatDecimalCurrency(data.value)
                     ) : (
                         <span className="text-muted-foreground text-base">Sin datos</span>
                     )}
@@ -98,7 +94,7 @@ export function TotalQuantitySoldCard() {
                     )}
                 </div>
                 <div className="text-muted-foreground text-xs">
-                    Producto vendido desde Enero hasta hoy
+                    Importe vendido desde enero hasta hoy
                 </div>
             </CardFooter>
         </Card>

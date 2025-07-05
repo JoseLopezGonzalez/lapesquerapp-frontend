@@ -501,10 +501,10 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<Object>} - Objeto con el valor total y la comparación
  */
-export async function getTotalAmount({ dateFrom, dateTo }, token) {
+export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
-    return fetch(`${API_URL_V2}orders/total-amount?${query.toString()}`, {
+    return fetch(`${API_URL_V2}statistics/orders/total-amount?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
