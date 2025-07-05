@@ -1,19 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardFooter,
-} from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, TrendingDown, Loader } from "lucide-react"
+import { TrendingUp, TrendingDown } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { getOrdersTotalNetWeightStats } from "@/services/orderService"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function TotalQuantitySoldCard() {
     const { data: session, status } = useSession()
@@ -36,25 +30,42 @@ export function TotalQuantitySoldCard() {
                 setData(null)
             })
             .finally(() => setIsLoading(false))
-    }, [status])
+    }, [status, session])
 
     const percentage = data?.percentageChange
     const hasValidPercentage = typeof percentage === "number" && !isNaN(percentage)
     const isUp = hasValidPercentage && percentage > 0
     const isDown = hasValidPercentage && percentage < 0
     const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : null
-    const trendText = isUp ? "al alza" : isDown ? "a la baja" : null
     const trendColor = isUp ? "text-green-600" : isDown ? "text-red-600" : ""
+
+    if (isLoading) return (
+        <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+            <CardHeader className="p-0 pb-2">
+                <div className="flex justify-between items-center mb-2">
+                    <Skeleton className="w-44 h-4 " />
+                    <Skeleton className="h-4 w-12 " />
+                </div>
+                <CardTitle>
+                    <div className="flex flex-col gap-2 mt-2">
+                        <Skeleton className="h-8 w-36 " />
+                        <Skeleton className="h-3 w-28 " />
+                    </div>
+                </CardTitle>
+            </CardHeader>
+        </Card>
+    )
+
 
     return (
         <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
                     <CardDescription className="text-sm text-muted-foreground">
-                        Producto vendido
+                        Cantidad Total de Ventas
                     </CardDescription>
                     <div>
-                        {hasValidPercentage && TrendIcon && (
+                        {hasValidPercentage && (
                             <Badge
                                 variant="outline"
                                 className={`flex items-center gap-1 text-xs px-2 py-1 ${trendColor}`}
@@ -67,15 +78,14 @@ export function TotalQuantitySoldCard() {
                     </div>
                 </div>
                 <CardTitle className=" ">
-                    {isLoading ? (
-                        <div className="h-8 flex items-center">
-                            <Loader className="w-4 h-4 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : data?.value !== null ? (
-                        <div className="">
+                    {data?.value !== null ? (
+                        <div>
                             <h1 className="text-3xl font-medium tracking-tight">{formatDecimalWeight(data.value)}</h1>
                             <div className="text-xs text-gray-500 mt-1 italic">
-                                {formatDecimalWeight(data?.comparisonValue)} el año anterior
+                                {!data?.comparisonValue
+                                    ? "No hay datos de años anteriores"
+                                    : `${formatDecimalWeight(data?.comparisonValue)} el año anterior`
+                                }
                             </div>
                         </div>
                     ) : (
@@ -83,24 +93,6 @@ export function TotalQuantitySoldCard() {
                     )}
                 </CardTitle>
             </CardHeader>
-
-            <CardFooter className="flex-col items-start gap-1.5 text-sm mt-4 mb-6 p-0">
-                <div className="flex items-center font-medium">
-                    {trendText ? (
-                        <>
-                            Tendencia {trendText} respecto al año pasado
-                            {TrendIcon && (
-                                <TrendIcon className={`ml-2 w-4 h-4 ${trendColor}`} />
-                            )}
-                        </>
-                    ) : (
-                        <>Sin comparación disponible</>
-                    )}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                    Producto vendido desde Enero hasta hoy
-                </div>
-            </CardFooter>
         </Card>
     )
 }
