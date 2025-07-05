@@ -63,7 +63,7 @@ export function TransportRadarChart() {
     }
 
     return (
-        <Card>
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className="items-center">
                 <div className="flex items-center gap-2 justify-between w-full">
                     <div className="flex flex-col items-startgap-2">

@@ -112,7 +112,7 @@ export function OrderRankingChart() {
     }, [status])
 
     return (
-        <Card className="w-full">
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className="pb-2 space-y-4">
                 <div className="flex flex-row items-center justify-between gap-4">
                     <div>

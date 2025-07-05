@@ -390,3 +390,9 @@
     --chart-5: hsl(var(--primary) / 0.45);
   }
 } */
+
+
+.masonry-column {
+  background-clip: padding-box;
+}
+

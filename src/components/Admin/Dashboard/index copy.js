@@ -30,8 +30,6 @@ export default function Dashboard() {
         }
     }, []);
 
-
-
     return (
         <div className="h-full w-full flex flex-col gap-4 px-6 py-3">
             <ScrollArea className="w-full h-full pr-4 ">
@@ -58,21 +56,8 @@ export default function Dashboard() {
                             <NewLabelingFeatureCard />
                         </div>
                     </div>
-                    {/*  <Masonry
-                        breakpointCols={breakpointColumnsObj}
-                        className="flex gap-4"
-                        columnClassName="masonry-column "
-                    >
-                        <div><OrderRankingChart /></div>
-                        <div><SalesBySalespersonPieChart /></div>
-                        <div><StockBySpeciesCard /></div>
-                        <div><StockByProductsCard /></div>
-                        <div><SalesChart /></div>
-                        <div><TransportRadarChart /></div>
-                    </Masonry> */}
 
                     <div className="w-full columns-1 sm:columns-1 md:columns-1 lg:columns-1 xl:columns-2 2xl:columns-3 gap-4 space-y-4">
-
                         <div className="break-inside-avoid mb-4">
                             <OrderRankingChart />
                         </div>

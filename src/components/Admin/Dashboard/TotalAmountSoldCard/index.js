@@ -49,10 +49,10 @@ export function TotalAmountSoldCard() {
 
     if (isLoading) {
         return (
-            <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+            <Card className="relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
                 <CardHeader className="p-0 pb-2">
                     <div className="flex justify-between items-center mb-2">
-                        <Skeleton className="w-44 h-4" />
+                        <Skeleton className="w-44 h-4 " />
                         <Skeleton className="h-4 w-12" />
                     </div>
                     <CardTitle>
@@ -68,7 +68,7 @@ export function TotalAmountSoldCard() {
 
 
     return (
-        <Card className="p-4 rounded-2xl shadow-sm border bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+        <Card className="p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
                     <CardDescription className="text-sm text-muted-foreground">

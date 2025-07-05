@@ -40,7 +40,7 @@ export function TotalQuantitySoldCard() {
     const trendColor = isUp ? "text-green-600" : isDown ? "text-red-600" : ""
 
     if (isLoading) return (
-        <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+        <Card className="relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center mb-2">
                     <Skeleton className="w-44 h-4 " />
@@ -58,7 +58,7 @@ export function TotalQuantitySoldCard() {
 
 
     return (
-        <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+        <Card className="relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
                     <CardDescription className="text-sm text-muted-foreground">

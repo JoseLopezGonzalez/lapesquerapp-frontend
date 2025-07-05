@@ -31,7 +31,7 @@ export function StockBySpeciesCard() {
     }, [status])
 
     return (
-        <Card className="">
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className="">
                 <CardTitle className="text-xl font-semibold">
                     Stock por especie

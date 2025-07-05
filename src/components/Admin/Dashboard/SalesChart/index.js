@@ -48,7 +48,7 @@ export function SalesChart() {
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month") // NEW
     const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-        const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
+    const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
     const [chartData, setChartData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -80,7 +80,7 @@ export function SalesChart() {
     }, [speciesId, dateFrom, dateTo, unit, status, groupBy]) // NEW
 
     return (
-        <Card className='w-full'>
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className=" w-full ">
                 <div className="flex items-center gap-2 justify-between w-full">
                     <div className="grid flex-1 gap-1">
@@ -89,7 +89,7 @@ export function SalesChart() {
                             Comparativa de ventas en {unit === "quantity" ? "kilogramos" : "euros"}.
                         </CardDescription>
                     </div>
-                    <Tabs  onValueChange={setGroupBy} className="" value={groupBy}>
+                    <Tabs onValueChange={setGroupBy} className="" value={groupBy}>
                         <TabsList>
                             <TabsTrigger value="day">Día</TabsTrigger>
                             <TabsTrigger value="week">Semana</TabsTrigger>

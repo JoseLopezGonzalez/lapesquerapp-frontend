@@ -82,7 +82,7 @@ export function SalesBySalespersonPieChart() {
     }
 
     return (
-        <Card className="flex flex-col w-full h-fit">
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className="items-start space-y-4">
                 <div className="flex justify-between flex-col sm:flex-row w-full gap-4">
                     <div>
@@ -151,7 +151,7 @@ export function SalesBySalespersonPieChart() {
                             <ChartLegend
                                 content={
                                     <ChartLegendContent nameKey="name"
-                                        
+
                                     />
                                 }
                                 className="flex flex-wrap gap-2 justify-center"

@@ -41,7 +41,7 @@ export function StockByProductsCard() {
     const totalKg = stockData.reduce((sum, item) => sum + item.total_kg, 0)
 
     return (
-        <Card>
+        <Card className="w-full max-w-full overflow-hidden">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>

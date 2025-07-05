@@ -102,8 +102,8 @@ export function getStoreOptions(token) {
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<number>} - Total de kg en stock
  */
-export async function getTotalStock(token) {
-    return fetch(`${API_URL_V2}stores/total-stock`, {
+export async function getTotalStockStats(token) {
+    return fetch(`${API_URL_V2}statistics/stock/total`, {
         method: 'GET',
         headers: {
             // 'Content-Type' no es necesario en GET con body vacío
@@ -121,7 +121,7 @@ export async function getTotalStock(token) {
         })
         .then(data => {
             // Asumimos que la respuesta es { totalStock: number }
-            return data.totalStock;
+            return data;
         })
         .catch(error => {
             // Logging o manejo global aquí

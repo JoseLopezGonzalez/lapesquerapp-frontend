@@ -11,16 +11,16 @@ export function NewLabelingFeatureCard() {
                 <CardHeader className="p-0 pb-2">
                     <CardDescription className="text-sm  flex items-center gap-1">
                         <Sparkles className="w-4 h-4 text-yellow-500" />
-                        Nueva funcionalidad
+                        Nueva Funcionalidad
                     </CardDescription>
                     <CardTitle className="text-2xl font-semibold tracking-tight">
                         Editor de Etiquetas
                     </CardTitle>
                 </CardHeader>
 
-                <CardFooter className="flex-col items-start gap-3 mt-4 p-0 text-sm max-w-[200px]">
+                <CardFooter className="flex-col items-start gap-3 mt-1 p-0 text-sm max-w-[200px]">
                     <p className="text-muted-foreground ">
-                        Crea, personaliza e imprime etiquetas para tus productos de forma rápida y visual.
+                        Crea, personaliza e imprime etiquetas. {/* para tus productos de forma rápida y visual. */}
                     </p>
                 </CardFooter>
             </div>
