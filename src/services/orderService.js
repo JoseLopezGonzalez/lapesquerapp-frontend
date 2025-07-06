@@ -375,7 +375,7 @@ export function getActiveOrdersOptions(token) {
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<Array>} - Lista de objetos con { name, value }
  */
-export async function getOrderRanking({ groupBy, valueType, dateFrom, dateTo, speciesId }, token) {
+export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateTo, speciesId }, token) {
     const query = new URLSearchParams({
         groupBy,
         valueType,
@@ -387,7 +387,7 @@ export async function getOrderRanking({ groupBy, valueType, dateFrom, dateTo, sp
         query.append('speciesId', speciesId);
     }
 
-    return fetch(`${API_URL_V2}orders/ranking?${query.toString()}`, {
+    return fetch(`${API_URL_V2}statistics/orders/ranking?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

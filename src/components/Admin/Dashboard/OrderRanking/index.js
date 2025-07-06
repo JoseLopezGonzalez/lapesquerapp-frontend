@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { getSpeciesOptions } from "@/services/speciesService"
 import { useSession } from "next-auth/react"
-import { getOrderRanking } from "@/services/orderService"
+import { getOrderRankingStats } from "@/services/orderService"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const today = new Date()
@@ -61,7 +61,7 @@ export function OrderRankingChart() {
             speciesId,
         };
 
-        getOrderRanking(params, token)
+        getOrderRankingStats(params, token)
             .then((data) => {
                 const formattedData = data.slice(0, 5)
                 setChartData(formattedData)
