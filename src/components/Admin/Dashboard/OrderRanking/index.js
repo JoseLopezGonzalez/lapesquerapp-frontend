@@ -1,32 +1,43 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { SearchX } from "lucide-react"
+import { ChevronDownIcon, SearchX, FileSpreadsheet } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { getSpeciesOptions } from "@/services/speciesService"
 import { useSession } from "next-auth/react"
 import { getOrderRankingStats } from "@/services/orderService"
 import { Skeleton } from "@/components/ui/skeleton"
+import { actualYearRange } from "@/helpers/dates"
+import { Button } from "@/components/ui/button"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
+import Loader from "@/components/Utilities/Loader"
+import * as XLSX from "xlsx"
+import { saveAs } from "file-saver"
+import toast from "react-hot-toast"
+import { getToastTheme } from "@/customs/reactHotToast"
+import { PiMicrosoftExcelLogoFill } from "react-icons/pi"
 
-const today = new Date()
-const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
+const initialDateRange = {
+    from: actualYearRange.from,
+    to: actualYearRange.to,
+}
 
 export function OrderRankingChart() {
     const [groupBy, setGroupBy] = useState("client")
     const [valueType, setValueType] = useState("totalAmount")
     const [speciesId, setSpeciesId] = useState("all")
     const [speciesOptions, setSpeciesOptions] = useState([])
-    const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-    const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
+    const [isLoadingFirst, setIsLoadingFirst] = useState(true)
     const [isLoading, setIsLoading] = useState(true)
     const [chartData, setChartData] = useState([])
-    const { data: session, status } = useSession();
+    const [fullData, setFullData] = useState([])
+    const [range, setRange] = useState(initialDateRange)
+    const { data: session, status } = useSession()
 
     const chartConfig = {
         totalAmount: {
@@ -43,51 +54,75 @@ export function OrderRankingChart() {
             },
             formatter: formatDecimalWeight,
         },
-    }[valueType];
+    }[valueType]
 
     useEffect(() => {
-        if (status !== "authenticated") return;
+        if (status !== "authenticated") return
+        if (!range.from || !range.to || !groupBy || !valueType) return
 
-        if (!dateFrom || !dateTo || !speciesId || !groupBy || !valueType) return
+        setIsLoading(true)
+        const token = session.user.accessToken
 
-        setIsLoading(true);
-
-        const token = session.user.accessToken;
         const params = {
             groupBy,
             valueType,
-            dateFrom,
-            dateTo,
+            dateFrom: range.from.toLocaleDateString("sv-SE"),
+            dateTo: range.to.toLocaleDateString("sv-SE"),
             speciesId,
-        };
+        }
 
         getOrderRankingStats(params, token)
             .then((data) => {
+                setFullData(data) // guardamos todos
+
                 const formattedData = data.slice(0, 5)
                 setChartData(formattedData)
             })
             .catch((err) => {
-                console.error("Error:", err);
-                setChartData([]);
+                console.error("Error:", err)
+                setChartData([])
             })
-            .finally(() => setIsLoading(false));
-    }, [groupBy, valueType, dateFrom, dateTo, speciesId, status, session]);
+            .finally(() => {
+                setIsLoading(false)
+                setIsLoadingFirst(false)
+            })
+    }, [groupBy, valueType, speciesId, status, session, range])
 
     useEffect(() => {
-        if (status !== "authenticated") {
+        if (status !== "authenticated") return
+
+        const token = session.user.accessToken
+        getSpeciesOptions(token)
+            .then(setSpeciesOptions)
+            .catch((error) => {
+                console.error("Error fetching species options:", error)
+                setSpeciesOptions([])
+            })
+    }, [status, session])
+
+    const handleExportToExcel = () => {
+        if (fullData.length === 0) {
+            toast.error("No hay datos para exportar", getToastTheme())
             return
         }
 
-        const token = session.user.accessToken;
-        getSpeciesOptions(token).then((speciesOptions) => {
-            setSpeciesOptions(speciesOptions)
-        }).catch((error) => {
-            console.error("Error fetching species options:", error)
-            setSpeciesOptions([])
-        })
-    }, [status, session])
+        const rows = fullData.map((item) => ({
+            Agrupación: item.name,
+            [valueType === "totalAmount" ? "Importe (€)" : "Cantidad (kg)"]: item.value,
+        }))
 
-    if (isLoading) return (
+        const worksheet = XLSX.utils.json_to_sheet(rows)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, "RankingPedidos")
+
+        const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" })
+        const blob = new Blob([buffer], { type: "application/octet-stream" })
+
+        const fileName = `ranking_pedidos_${groupBy}_${valueType}.xlsx`
+        saveAs(blob, fileName)
+    }
+
+    if (isLoadingFirst) return (
         <Card className="w-full max-w-full overflow-hidden">
             <CardHeader className="pb-2 space-y-4">
                 <div className="flex flex-row items-center justify-between gap-4">
@@ -129,7 +164,7 @@ export function OrderRankingChart() {
                             Agrupado por {valueType === "totalAmount" ? "importe total" : "cantidad total"}
                         </CardDescription>
                     </div>
-                    <div className=" items-center gap-4 hidden 3xl:flex">
+                    <div className="items-center gap-4 hidden 3xl:flex">
                         <Tabs value={groupBy} onValueChange={setGroupBy}>
                             <TabsList>
                                 <TabsTrigger value="client">Clientes</TabsTrigger>
@@ -139,7 +174,8 @@ export function OrderRankingChart() {
                         </Tabs>
                     </div>
                 </div>
-                <div className=" items-center gap-4 flex 3xl:hidden">
+
+                <div className="items-center gap-4 flex 3xl:hidden">
                     <Tabs value={groupBy} onValueChange={setGroupBy}>
                         <TabsList>
                             <TabsTrigger value="client">Clientes</TabsTrigger>
@@ -148,9 +184,11 @@ export function OrderRankingChart() {
                         </TabsList>
                     </Tabs>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 3xl:grid-cols-3">
-                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                    <div className="w-full col-span-1 sm:col-span-2">
+                        <DateRangePicker dateRange={range} onChange={setRange} />
+                    </div>
                     <Select value={speciesId} onValueChange={setSpeciesId}>
                         <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
                             <SelectValue placeholder="Todas las especies" />
@@ -168,31 +206,24 @@ export function OrderRankingChart() {
             </CardHeader>
 
             <CardContent>
-                {chartData.length > 0 ? (
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-60 w-full">
+                        <Loader />
+                    </div>
+                ) : chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={chartData.length * 45}>
                         <ChartContainer config={chartConfig}>
                             <BarChart
                                 data={chartData}
                                 layout="vertical"
                                 barCategoryGap={12}
-                                margin={{ right: 60, top: 8, bottom: 8 }}
+                                margin={{ right: 90, top: 8, bottom: 8 }}
                             >
                                 <CartesianGrid horizontal={false} />
-                                <YAxis
-                                    dataKey="name"
-                                    type="category"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    hide
-                                />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} hide />
                                 <XAxis type="number" hide />
                                 <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                <Bar
-                                    dataKey="value"
-                                    fill={chartConfig.value.color}
-                                    radius={4}
-                                    barSize={28}
-                                >
+                                <Bar dataKey="value" fill={chartConfig.value.color} radius={4} barSize={28}>
                                     <LabelList
                                         dataKey="value"
                                         position="right"
@@ -222,12 +253,8 @@ export function OrderRankingChart() {
                                     <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
                                 </div>
                             </div>
-
-                            <h2 className="mt-3 text-lg font-medium tracking-tight">
-                                No hay datos
-                            </h2>
-
-                            <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs  whitespace-normal">
+                            <h2 className="mt-3 text-lg font-medium tracking-tight">No hay datos</h2>
+                            <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
                                 Ajusta el rango de fechas, selecciona una especie o cambia el tipo de agrupación para ver los datos.
                             </p>
                         </div>
@@ -237,15 +264,10 @@ export function OrderRankingChart() {
 
             <CardFooter className="flex items-center justify-between gap-2 text-sm">
                 <div className="text-muted-foreground hidden 3xl:flex items-center gap-1">
-                    *
-                    Mostrando {valueType === "totalAmount" ? "importe" : "cantidad"} agrupado por{" "}
-                    {groupBy === "client"
-                        ? "cliente"
-                        : groupBy === "country"
-                            ? "país"
-                            : "producto"}
+                    * Mostrando {valueType === "totalAmount" ? "importe" : "cantidad"} agrupado por{" "}
+                    {groupBy === "client" ? "cliente" : groupBy === "country" ? "país" : "producto"}
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                     <Select value={valueType} onValueChange={setValueType}>
                         <SelectTrigger className="w-[160px] h-8 text-sm">
                             <SelectValue />
@@ -255,6 +277,14 @@ export function OrderRankingChart() {
                             <SelectItem value="totalQuantity">Cantidad - kg</SelectItem>
                         </SelectContent>
                     </Select>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleExportToExcel}
+                    >
+                        <PiMicrosoftExcelLogoFill className="w-4 h-4 text-green-700" />
+                        {/* Exportar Excel */}
+                    </Button>
                 </div>
             </CardFooter>
         </Card>
