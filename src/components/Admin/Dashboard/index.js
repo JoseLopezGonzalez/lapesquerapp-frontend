@@ -71,24 +71,24 @@ export default function Dashboard() {
                         <div><TransportRadarChart /></div>
                     </Masonry> */}
 
-                    <div className="w-full columns-1 sm:columns-1 md:columns-1 lg:columns-1 xl:columns-2 2xl:columns-3 gap-4 space-y-4">
+                    <div className="w-full columns-1 sm:columns-1 md:columns-1 lg:columns-1 xl:columns-2 xl-2xl:columns-2 2xl:columns-2   3xl:columns-3 gap-4 space-y-4">
 
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <OrderRankingChart />
                         </div>
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <SalesBySalespersonPieChart />
                         </div>
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <StockBySpeciesCard />
                         </div>
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <StockByProductsCard />
                         </div>
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <SalesChart />
                         </div>
-                        <div className="break-inside-avoid mb-4">
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <TransportRadarChart />
                         </div>
                     </div>

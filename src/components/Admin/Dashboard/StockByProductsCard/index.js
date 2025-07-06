@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { getStockByProducts } from "@/services/storeService"
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDecimal, formatDecimalWeight, formatInteger } from "@/helpers/formats/numbers/formatNumbers"
@@ -32,7 +26,7 @@ export function StockByProductsCard() {
                 setStockData([])
             })
             .finally(() => setIsLoading(false))
-    }, [status])
+    }, [status, session])
 
     const filteredData = stockData.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
@@ -60,7 +54,7 @@ export function StockByProductsCard() {
                 </div>
             </CardHeader>
 
-            <CardContent className="  ">
+            <CardContent>
                 <ScrollArea className="h-[200px] pr-2">
                     <Table>
                         <TableBody>
@@ -100,6 +94,5 @@ export function StockByProductsCard() {
                 </ScrollArea>
             </CardContent>
         </Card>
-
     )
 }
