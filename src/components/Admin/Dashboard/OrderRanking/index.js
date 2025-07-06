@@ -1,40 +1,18 @@
 'use client'
 
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { SearchX } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts"
-
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import {
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from "@/components/ui/chart"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import {
-    formatDecimalCurrency,
-    formatDecimalWeight,
-} from "@/helpers/formats/numbers/formatNumbers"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
+import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { getSpeciesOptions } from "@/services/speciesService"
 import { useSession } from "next-auth/react"
 import { getOrderRanking } from "@/services/orderService"
-import Loader from "@/components/Utilities/Loader"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const today = new Date()
 const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
@@ -93,14 +71,12 @@ export function OrderRankingChart() {
                 setChartData([]);
             })
             .finally(() => setIsLoading(false));
-    }, [groupBy, valueType, dateFrom, dateTo, speciesId, status]);
+    }, [groupBy, valueType, dateFrom, dateTo, speciesId, status, session]);
 
     useEffect(() => {
         if (status !== "authenticated") {
             return
         }
-
-
 
         const token = session.user.accessToken;
         getSpeciesOptions(token).then((speciesOptions) => {
@@ -109,7 +85,39 @@ export function OrderRankingChart() {
             console.error("Error fetching species options:", error)
             setSpeciesOptions([])
         })
-    }, [status])
+    }, [status, session])
+
+    if (isLoading) return (
+        <Card className="w-full max-w-full overflow-hidden">
+            <CardHeader className="pb-2 space-y-4">
+                <div className="flex flex-row items-center justify-between gap-4">
+                    <div>
+                        <Skeleton className="h-5 w-40" />
+                        <Skeleton className="h-4 w-64 mt-1" />
+                    </div>
+                    <Skeleton className="h-8 w-40 hidden 3xl:block" />
+                </div>
+                <Skeleton className="h-8 w-full max-w-md" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 3xl:grid-cols-3 gap-2">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4 mt-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between gap-4">
+                        <Skeleton className="h-5 w-1/3" />
+                        <Skeleton className="h-3 w-2/3" />
+                    </div>
+                ))}
+            </CardContent>
+            <CardFooter className="flex items-center justify-between gap-2 text-sm">
+                <Skeleton className="h-4 w-64 hidden 3xl:block" />
+                <Skeleton className="h-8 w-40" />
+            </CardFooter>
+        </Card>
+    )
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
@@ -121,7 +129,6 @@ export function OrderRankingChart() {
                             Agrupado por {valueType === "totalAmount" ? "importe total" : "cantidad total"}
                         </CardDescription>
                     </div>
-
                     <div className=" items-center gap-4 hidden 3xl:flex">
                         <Tabs value={groupBy} onValueChange={setGroupBy}>
                             <TabsList>
@@ -141,13 +148,9 @@ export function OrderRankingChart() {
                         </TabsList>
                     </Tabs>
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 3xl:grid-cols-3">
-                    {/* <Label className="text-sm">Desde</Label> */}
                     <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                    {/* <Label className="text-sm">Hasta</Label> */}
                     <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    {/* <Label className="text-sm">Especie</Label> */}
                     <Select value={speciesId} onValueChange={setSpeciesId}>
                         <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
                             <SelectValue placeholder="Todas las especies" />
@@ -165,11 +168,7 @@ export function OrderRankingChart() {
             </CardHeader>
 
             <CardContent>
-                {isLoading ? (
-                    <div className="flex items-center justify-center h-48">
-                        <Loader />
-                    </div>
-                ) : chartData.length > 0 ? (
+                {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={chartData.length * 45}>
                         <ChartContainer config={chartConfig}>
                             <BarChart
