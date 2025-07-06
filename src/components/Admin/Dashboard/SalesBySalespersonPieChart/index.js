@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Pie, PieChart } from "recharts"
+import { Pie, PieChart, ResponsiveContainer } from "recharts"
 import {
     Card,
     CardContent,
@@ -91,76 +91,81 @@ export function SalesBySalespersonPieChart() {
                             Fechas seleccionadas
                         </CardDescription>
                     </div>
-                    <div className="hidden 3xl:flex gap-2">
+                    {/* <div className="hidden 3xl:flex gap-2">
                         <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                         <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    </div>
+                    </div> */}
                 </div>
-                <div className="flex 3xl:hidden gap-2">
-                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                <div className="flex flex-col sm:flex-row gap-2 w-full justify-center items-center">
+                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-fit" />
+                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-fit" />
                 </div>
             </CardHeader>
 
-            <CardContent className="flex-1">
+            <CardContent className="flex-1 ">
                 {isLoading ? (
                     <div className="flex items-center justify-center h-48">
                         <Loader />
                     </div>
                 ) : (
+
+
                     <ChartContainer
                         config={chartConfig}
-                        className="mx-auto aspect-square max-h-[300px]"
-                    >
-                        <PieChart>
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        formatter={(value, name, { payload }) => {
-                                            const color = payload?.fill ?? "#000"
-                                            return (
-                                                <div className="w-full flex justify-between items-center gap-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span
-                                                            className="h-2.5 w-2.5 rounded-sm"
-                                                            style={{ backgroundColor: color }}
-                                                        />
-                                                        <span className="text-muted-foreground">{name}</span>
-                                                    </div>
-                                                    <span className="text-xs text-muted-foreground font-medium">
-                                                        {(
-                                                            (value / chartData.reduce((acc, item) => acc + item.quantity, 0)) *
-                                                            100
-                                                        ).toFixed(2)}
-                                                        %
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        {formatDecimalWeight(value)}
-                                                    </span>
-                                                </div>
-                                            )
-                                        }}
-                                        hideLabel
-                                    />
-                                }
-                            />
-                            <Pie
-                                data={chartData}
-                                dataKey="quantity"
-                                nameKey="name"
-                                outerRadius={100}
-                                innerRadius={50}
-                                paddingAngle={2}
-                            />
-                            <ChartLegend
-                                content={
-                                    <ChartLegendContent nameKey="name"
+                        className="mx-auto aspect-square max-h-[300px] "
 
-                                    />
-                                }
-                                className="flex flex-wrap gap-2 justify-center"
-                            />
-                        </PieChart>
+                    >
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <ChartTooltip
+                                    content={
+                                        <ChartTooltipContent
+                                            formatter={(value, name, { payload }) => {
+                                                const color = payload?.fill ?? "#000"
+                                                return (
+                                                    <div className="w-full flex justify-between items-center gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className="h-2.5 w-2.5 rounded-sm"
+                                                                style={{ backgroundColor: color }}
+                                                            />
+                                                            <span className="text-muted-foreground">{name}</span>
+                                                        </div>
+                                                        <span className="text-xs text-muted-foreground font-medium">
+                                                            {(
+                                                                (value / chartData.reduce((acc, item) => acc + item.quantity, 0)) *
+                                                                100
+                                                            ).toFixed(2)}
+                                                            %
+                                                        </span>
+                                                        <span className="font-semibold">
+                                                            {formatDecimalWeight(value)}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            }}
+                                            hideLabel
+                                        />
+                                    }
+                                />
+                                <Pie
+                                    data={chartData}
+                                    dataKey="quantity"
+                                    nameKey="name"
+                                    outerRadius={100}
+                                    innerRadius={50}
+                                    paddingAngle={2}
+                                />
+                                <ChartLegend
+                                    content={
+                                        <ChartLegendContent nameKey="name"
+
+                                        />
+                                    }
+                                    className="flex flex-wrap gap-2 justify-center"
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
                     </ChartContainer>
                 )}
             </CardContent>

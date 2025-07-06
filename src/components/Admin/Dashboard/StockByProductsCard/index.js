@@ -81,15 +81,31 @@ export function StockByProductsCard() {
                             ) : filteredData.length > 0 ? (
                                 filteredData.map((item, i) => (
                                     <TableRow key={i} className="border-muted border-b">
-                                        <TableCell className="text-sm ">{item.name}</TableCell>
+                                        {/* Nombre */}
+                                        <TableCell className="text-sm">{item.name}</TableCell>
 
-                                        <TableCell className="text-right text-xs font-mono font-bold text-nowrap">
+                                        {/* % visible solo en sm+ */}
+                                        <TableCell className="text-right hidden sm:table-cell text-xs font-mono font-bold text-nowrap">
                                             {formatDecimal(item.percentage)}%
                                         </TableCell>
-                                        <TableCell className="text-right text-sm font-mono text-muted-foreground text-nowrap">
+
+                                        {/* kg visible solo en sm+ */}
+                                        <TableCell className="text-right hidden sm:table-cell text-sm font-mono text-muted-foreground text-nowrap">
                                             {formatDecimalWeight(item.total_kg)}
                                         </TableCell>
+
+                                        {/* Celda combinada para móvil */}
+                                        <TableCell
+                                            className="sm:hidden text-right text-xs font-mono  text-nowrap"
+                                            colSpan={2}
+                                        >
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-right text-xs text-muted-foreground">{formatDecimalWeight(item.total_kg)}</span>
+                                                <span className="text-right text-xs font-bold">{formatDecimal(item.percentage)}%</span>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
+
                                 ))
                             ) : (
                                 <TableRow>

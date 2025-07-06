@@ -26,6 +26,7 @@ import { TrendingUp } from "lucide-react"
 import { getTransportChartData } from "@/services/orderService"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
 
 const today = new Date()
 const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
@@ -75,18 +76,18 @@ export function TransportRadarChart() {
             </CardHeader>
 
             <CardContent className="flex flex-col items-center gap-4">
-                <div className="flex gap-2 w-full justify-center">
-                    <input
+                <div className="flex sm:flex-row flex-col items-center gap-2 w-full justify-center">
+                    <Input
                         type="date"
                         value={from}
                         onChange={(e) => setFrom(e.target.value)}
-                        className="rounded-md border px-2 py-1 text-sm"
+                        className=" text-sm w-fit"
                     />
-                    <input
+                    <Input
                         type="date"
                         value={to}
                         onChange={(e) => setTo(e.target.value)}
-                        className="rounded-md border px-2 py-1 text-sm"
+                        className=" text-sm w-fit"
                     />
                 </div>
 

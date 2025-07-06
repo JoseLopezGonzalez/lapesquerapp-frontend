@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react"
 import { SearchX } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts"
 
 import {
     Card,
@@ -170,48 +170,50 @@ export function OrderRankingChart() {
                         <Loader />
                     </div>
                 ) : chartData.length > 0 ? (
-                    <ChartContainer config={chartConfig}>
-                        <BarChart
-                            data={chartData}
-                            layout="vertical"
-                            barCategoryGap={12}
-                            margin={{ right: 60, top: 8, bottom: 8 }}
-                        >
-                            <CartesianGrid horizontal={false} />
-                            <YAxis
-                                dataKey="name"
-                                type="category"
-                                axisLine={false}
-                                tickLine={false}
-                                hide
-                            />
-                            <XAxis type="number" hide />
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                            <Bar
-                                dataKey="value"
-                                fill={chartConfig.value.color}
-                                radius={4}
-                                barSize={28}
+                    <ResponsiveContainer width="100%" height={chartData.length * 45}>
+                        <ChartContainer config={chartConfig}>
+                            <BarChart
+                                data={chartData}
+                                layout="vertical"
+                                barCategoryGap={12}
+                                margin={{ right: 60, top: 8, bottom: 8 }}
                             >
-                                <LabelList
-                                    dataKey="value"
-                                    position="right"
-                                    offset={8}
-                                    className="fill-foreground text-nowrap"
-                                    fontSize={12}
-                                    formatter={chartConfig.formatter}
-                                />
-                                <LabelList
+                                <CartesianGrid horizontal={false} />
+                                <YAxis
                                     dataKey="name"
-                                    position="insideLeft"
-                                    offset={8}
-                                    className="fill-background text-nowrap"
-                                    fontSize={12}
-                                    formatter={(name) => name}
+                                    type="category"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    hide
                                 />
-                            </Bar>
-                        </BarChart>
-                    </ChartContainer>
+                                <XAxis type="number" hide />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                <Bar
+                                    dataKey="value"
+                                    fill={chartConfig.value.color}
+                                    radius={4}
+                                    barSize={28}
+                                >
+                                    <LabelList
+                                        dataKey="value"
+                                        position="right"
+                                        offset={8}
+                                        className="fill-foreground text-nowrap"
+                                        fontSize={12}
+                                        formatter={chartConfig.formatter}
+                                    />
+                                    <LabelList
+                                        dataKey="name"
+                                        position="insideLeft"
+                                        offset={8}
+                                        className="fill-background text-nowrap"
+                                        fontSize={12}
+                                        formatter={(name) => name}
+                                    />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    </ResponsiveContainer>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-60">
                         <div className="flex flex-col items-center justify-center w-full h-full">
