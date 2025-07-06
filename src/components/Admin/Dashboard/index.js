@@ -54,7 +54,7 @@ export default function Dashboard() {
                         <div className="w-full h-full overflow-hidden">
                             <TotalAmountSoldCard />
                         </div>
-                        <div className="w-full overflow-hidden hidden sm:flex">
+                        <div className="w-full overflow-hidden hidden sm:block">
                             <NewLabelingFeatureCard />
                         </div>
                     </div>

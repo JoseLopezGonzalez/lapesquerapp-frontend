@@ -138,8 +138,8 @@ export async function getTotalStockStats(token) {
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<Array>} - Array de objetos con { id, name, total_kg }
  */
-export async function getStockBySpecies(token) {
-    return fetch(`${API_URL_V2}stores/total-stock-by-species`, {
+export async function getStockBySpeciesStats(token) {
+    return fetch(`${API_URL_V2}statistics/stock/total-by-species`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
