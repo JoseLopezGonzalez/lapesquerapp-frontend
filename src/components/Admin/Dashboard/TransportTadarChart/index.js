@@ -139,7 +139,6 @@ export function TransportRadarChart() {
                                         .join("")              // une las letras
                                 }
                             />
-                            {/* <PolarRadiusAxis /> */}
                             <Radar
                                 dataKey="netWeight"
                                 fill="var(--color-netWeight)"

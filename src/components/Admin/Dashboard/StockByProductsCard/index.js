@@ -44,14 +44,23 @@ export function StockByProductsCard() {
                             Total: {formatDecimalWeight(totalKg)}
                         </CardDescription>
                     </div>
+
                     <Input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Buscar producto"
-                        className="max-w-[200px] text-sm"
+                        className="max-w-[200px] text-sm hidden 3xl:flex "
                     />
                 </div>
+
+                <Input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar producto"
+                    className="max-w-[200px] text-sm 3xl:hidden "
+                />
             </CardHeader>
 
             <CardContent>

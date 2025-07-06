@@ -91,10 +91,14 @@ export function SalesBySalespersonPieChart() {
                             Fechas seleccionadas
                         </CardDescription>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="hidden 3xl:flex gap-2">
                         <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                         <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                     </div>
+                </div>
+                <div className="flex 3xl:hidden gap-2">
+                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                 </div>
             </CardHeader>
 

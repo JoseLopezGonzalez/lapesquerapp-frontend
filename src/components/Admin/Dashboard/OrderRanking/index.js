@@ -122,7 +122,7 @@ export function OrderRankingChart() {
                         </CardDescription>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className=" items-center gap-4 hidden 3xl:flex">
                         <Tabs value={groupBy} onValueChange={setGroupBy}>
                             <TabsList>
                                 <TabsTrigger value="client">Clientes</TabsTrigger>
@@ -132,32 +132,35 @@ export function OrderRankingChart() {
                         </Tabs>
                     </div>
                 </div>
+                <div className=" items-center gap-4 flex 3xl:hidden">
+                    <Tabs value={groupBy} onValueChange={setGroupBy}>
+                        <TabsList>
+                            <TabsTrigger value="client">Clientes</TabsTrigger>
+                            <TabsTrigger value="country">Países</TabsTrigger>
+                            <TabsTrigger value="product">Productos</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div>
-                        {/* <Label className="text-sm">Desde</Label> */}
-                        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                    </div>
-                    <div>
-                        {/* <Label className="text-sm">Hasta</Label> */}
-                        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    </div>
-                    <div>
-                        {/* <Label className="text-sm">Especie</Label> */}
-                        <Select value={speciesId} onValueChange={setSpeciesId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Todas las especies" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas las especies</SelectItem>
-                                {speciesOptions.map((option) => (
-                                    <SelectItem key={option.id} value={option.id}>
-                                        {option.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 3xl:grid-cols-3">
+                    {/* <Label className="text-sm">Desde</Label> */}
+                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                    {/* <Label className="text-sm">Hasta</Label> */}
+                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                    {/* <Label className="text-sm">Especie</Label> */}
+                    <Select value={speciesId} onValueChange={setSpeciesId}>
+                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                            <SelectValue placeholder="Todas las especies" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las especies</SelectItem>
+                            {speciesOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardHeader>
 
@@ -232,7 +235,7 @@ export function OrderRankingChart() {
             </CardContent>
 
             <CardFooter className="flex items-center justify-between gap-2 text-sm">
-                <div className="text-muted-foreground flex items-center gap-1">
+                <div className="text-muted-foreground hidden 3xl:flex items-center gap-1">
                     *
                     Mostrando {valueType === "totalAmount" ? "importe" : "cantidad"} agrupado por{" "}
                     {groupBy === "client"

@@ -89,7 +89,7 @@ export function SalesChart() {
                             Comparativa de ventas en {unit === "quantity" ? "kilogramos" : "euros"}.
                         </CardDescription>
                     </div>
-                    <Tabs onValueChange={setGroupBy} className="" value={groupBy}>
+                    <Tabs onValueChange={setGroupBy} className="hidden 3xl:flex" value={groupBy}>
                         <TabsList>
                             <TabsTrigger value="day">Día</TabsTrigger>
                             <TabsTrigger value="week">Semana</TabsTrigger>
@@ -97,7 +97,13 @@ export function SalesChart() {
                         </TabsList>
                     </Tabs>
                 </div>
-
+                <Tabs onValueChange={setGroupBy} className=" 3xl:hidden" value={groupBy}>
+                    <TabsList>
+                        <TabsTrigger value="day">Día</TabsTrigger>
+                        <TabsTrigger value="week">Semana</TabsTrigger>
+                        <TabsTrigger value="month">Mes</TabsTrigger>
+                    </TabsList>
+                </Tabs>
 
 
             </CardHeader>
@@ -106,13 +112,13 @@ export function SalesChart() {
 
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6  3xl:grid-cols-3">
 
 
                     <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                     <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    <Select value={speciesId} onValueChange={setSpeciesId}>
-                        <SelectTrigger>
+                    <Select value={speciesId} onValueChange={setSpeciesId} className="">
+                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
                             <SelectValue placeholder="Seleccionar especie" />
                         </SelectTrigger>
                         <SelectContent>
@@ -126,7 +132,7 @@ export function SalesChart() {
                     </Select>
                 </div>
 
-                <div className="h-[250px] w-full">
+                <div className="max-h-[250px] w-full">
                     {isLoading ? (
                         <Skeleton className="h-full w-full" />
                     ) : chartData.length > 0 ? (
@@ -219,8 +225,8 @@ export function SalesChart() {
                     )}
                 </div>
             </CardContent>
-            <CardFooter className=" flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+            <CardFooter className=" flex items-center justify-between flex-col xl-2xl:flex-row gap-2">
+                <span className="text-sm text-muted-foreground hidden 3xl:flex">
                     * Análisis de las ventas de productos.
                 </span>
                 <Select value={unit} onValueChange={setUnit}>
