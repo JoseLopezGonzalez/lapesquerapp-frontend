@@ -29,12 +29,15 @@ const initialboxCreationData = {
     numberOfBoxes: "", // para promedio
     scannedCode: "", // para lector
     deleteScannedCode: "",//para lector eliminar
+    gs1codes: "", // <- NUEVO
 };
 
+let nextBoxId = Date.now(); // base inicial
+
 function generateUniqueIntId() {
-    // Usa timestamp + número aleatorio para asegurar unicidad
-    return Math.floor(Date.now() + Math.random() * 1000);
+    return nextBoxId++;
 }
+
 
 const emptyPallet = {
     id: null,
@@ -215,7 +218,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         const boxToDuplicate = temporalPallet.boxes.find((box) => box.id === boxId);
         if (!boxToDuplicate) return;
 
-        const newBox = { ...boxToDuplicate, id: Date.now(), new: true }; // Generar un nuevo ID único
+        const newBox = { ...boxToDuplicate, id: generateUniqueIntId(), new: true }; // Generar un nuevo ID único
         setTemporalPallet((prev) => (
             recalculatePalletStats({
                 ...prev,
@@ -445,7 +448,64 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             addBox(newBox);
             toast.success('Caja añadida correctamente por lector', getToastTheme());
+        } else if (method === 'gs1') {
+            const { gs1codes } = boxCreationData;
+
+            if (!gs1codes) {
+                toast.error('Por favor, pega los códigos GS1-128.', getToastTheme());
+                return;
+            }
+
+            const lines = gs1codes
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+
+            const parsedBoxes = [];
+            const failedLines = [];
+
+            for (const line of lines) {
+                const match = line.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+                if (!match) {
+                    failedLines.push(line);
+                    continue;
+                }
+
+                const [, gtin, weightStr, lot] = match;
+                const netWeight = parseFloat(weightStr) / 100;
+
+                const product = productsOptions.find(p => p.boxGtin === gtin);
+
+                if (!product) {
+                    failedLines.push(line);
+                    continue;
+                }
+
+                parsedBoxes.push({
+                    product: { id: product.value, name: product.label },
+                    lot,
+                    netWeight,
+                    scannedCode: line
+                });
+            }
+
+            if (parsedBoxes.length === 0) {
+                toast.error('Ninguno de los códigos pudo ser procesado. Verifica el formato y los productos.', getToastTheme());
+                return;
+            }
+
+            parsedBoxes.forEach(addBox);
+
+            if (failedLines.length > 0) {
+                toast.error(`${failedLines.length} códigos no fueron reconocidos.`, getToastTheme());
+                console.warn("Códigos fallidos:", failedLines);
+            } else {
+                toast.success(`Se agregaron ${parsedBoxes.length} cajas correctamente.`, getToastTheme());
+            }
+
+            setBoxCreationData(initialboxCreationData);
         }
+
 
         setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
     }

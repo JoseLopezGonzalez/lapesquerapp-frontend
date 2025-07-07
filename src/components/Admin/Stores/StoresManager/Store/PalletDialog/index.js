@@ -190,7 +190,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                 </CardHeader>
                                                 <CardContent>
                                                     <Tabs defaultValue="lector" className="w-full">
-                                                        <TabsList className="grid w-full grid-cols-5">
+                                                        <TabsList className="grid w-full grid-cols-6">
                                                             <TabsTrigger value="lector" className="flex items-center gap-2">
                                                                 <Scan className="h-4 w-4" /> Lector
                                                             </TabsTrigger>
@@ -202,6 +202,9 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                             </TabsTrigger>
                                                             <TabsTrigger value="promedio" className="flex items-center gap-2">
                                                                 <Package className="h-4 w-4" /> Promedio
+                                                            </TabsTrigger>
+                                                            <TabsTrigger value="codes" className="flex items-center gap-2">
+                                                                <Package className="h-4 w-4" /> Codigos GS1
                                                             </TabsTrigger>
                                                             <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300">
                                                                 <Trash2 className="h-4 w-4" /> Eliminar
@@ -224,6 +227,31 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                                 </p>
                                                             </div>
                                                         </TabsContent>
+
+                                                        <TabsContent value="codes" className="space-y-3">
+                                                            <div className="space-y-4">
+                                                                <Textarea
+                                                                    value={boxCreationData.gs1codes}
+                                                                    onChange={(e) => boxCreationDataChange("gs1codes", e.target.value)}
+                                                                    placeholder="Ingresa los códigos GS1-128, uno por línea"
+                                                                    className="min-h-[100px]"
+                                                                />
+
+                                                                <div className="col-span-2 grid grid-cols-2 gap-x-2">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        onClick={() => boxCreationDataChange("gs1codes", "")}
+                                                                    >
+                                                                        <RotateCcw className="h-4 w-4" /> Resetear
+                                                                    </Button>
+
+                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: "gs1" })}>
+                                                                        <Upload className="h-4 w-4" /> Agregar Cajas en Lote
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        </TabsContent>
+
 
                                                         <TabsContent value="manual" className="">
                                                             <div className=" grid grid-cols-2 gap-4">
