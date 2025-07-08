@@ -58,7 +58,7 @@ export function SalesChart() {
     useEffect(() => {
         if (status !== "authenticated") return
 
-        getSpeciesOptions(tokenAccess)
+        getSpeciesOptions(accessToken)
             .then(setSpeciesOptions)
             .catch((err) => console.error("Error al cargar especies:", err))
     }, [status, accessToken])
