@@ -287,6 +287,10 @@ export const configs = {
         { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight" },
         { name: "totalBoxes", label: "Cajas", type: "text", path: "totalBoxes" },
         { name: "pallets", label: "Palets", type: "text", path: "pallets" },
+        /* subtotalAmount */
+        { name: "subtotalAmount", label: "Subtotal", type: "currency", path: "subtotalAmount" },
+        /* totalAmount */
+        { name: "totalAmount", label: "Total", type: "currency", path: "totalAmount" },
         { name: "salesperson", label: "Vendedor", type: "text", path: "salesperson.name" },
         { name: "incoterm", label: "Incoterm", type: "text", path: "incoterm.code" },
         { name: "transport", label: "Transporte", type: "text", path: "transport.name" },

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates';
-import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@nextui-org/react';
 import React, { useEffect, useState } from 'react';
@@ -166,7 +166,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </span>
                                         )}
                                         {header.type === 'weight' && (
-                                            <span className="">
+                                            <span className="text-nowrap">
                                                 {formatDecimalWeight(row[header.name])}
                                             </span>
                                         )}
@@ -191,6 +191,13 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 {row[header.name] === 'N/A' ? '-' : formatDateHour(row[header.name])}
                                             </span>
                                         )}
+                                        {/* currency */}
+                                        {header.type === 'currency' && (
+                                            <span className="flex items-center justify-end text-nowrap">
+                                                {row[header.name] === 'N/A' ? '-' : formatDecimalCurrency(row[header.name])}
+                                            </span>
+                                        )}
+                                        {/* number */}
                                     </td>
                                 ))}
                             </tr>
