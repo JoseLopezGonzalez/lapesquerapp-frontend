@@ -12,17 +12,19 @@ export function StockBySpeciesCard() {
     const [stockData, setStockData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
+    const accessToken = session?.user?.accessToken
+
     useEffect(() => {
         if (status !== "authenticated") return
 
-        getStockBySpeciesStats(session.user.accessToken)
+        getStockBySpeciesStats(accessToken)
             .then(setStockData)
             .catch((err) => {
                 console.error("Error al cargar stock por especie:", err)
                 setStockData([])
             })
             .finally(() => setIsLoading(false))
-    }, [status, session])
+    }, [status, accessToken])
 
     if (isLoading) return (
         <Card className="w-full max-w-full overflow-hidden">

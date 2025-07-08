@@ -52,14 +52,16 @@ export function SalesChart() {
     const [chartData, setChartData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         if (status !== "authenticated") return
 
-        const token = session.user.accessToken
-        getSpeciesOptions(token)
+        getSpeciesOptions(tokenAccess)
             .then(setSpeciesOptions)
             .catch((err) => console.error("Error al cargar especies:", err))
-    }, [status])
+    }, [status, accessToken])
 
     useEffect(() => {
         if (status !== "authenticated") return

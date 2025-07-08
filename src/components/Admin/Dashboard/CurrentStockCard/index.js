@@ -12,19 +12,20 @@ export function CurrentStockCard() {
     const [isLoading, setIsLoading] = useState(true)
     const [data, setData] = useState(null)
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         if (status !== "authenticated") return
 
-        const token = session.user.accessToken
-
-        getTotalStockStats(token)
+        getTotalStockStats(accessToken)
             .then(setData)
             .catch((err) => {
                 console.error("Error al obtener el stock:", err)
                 setData(null)
             })
             .finally(() => setIsLoading(false))
-    }, [status, session])
+    }, [status, accessToken])
 
     if (isLoading) return (
         <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">

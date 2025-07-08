@@ -16,6 +16,9 @@ export function TotalAmountSoldCard() {
     const [data, setData] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         if (status !== "authenticated") return
 
@@ -23,16 +26,15 @@ export function TotalAmountSoldCard() {
         const firstDay = new Date(today.getFullYear(), 0, 1)
         const dateFrom = firstDay.toISOString().split("T")[0]
         const dateTo = today.toISOString().split("T")[0]
-        const token = session.user.accessToken
 
-        getOrdersTotalAmountStats({ dateFrom, dateTo }, token)
+        getOrdersTotalAmountStats({ dateFrom, dateTo }, accessToken)
             .then(setData)
             .catch((err) => {
                 console.error("Error al obtener el importe total:", err)
                 setData(null)
             })
             .finally(() => setIsLoading(false))
-    }, [status, session])
+    }, [status, accessToken])
 
     const percentage = data?.percentageChange
     const hasValidPercentage = typeof percentage === "number" && !isNaN(percentage)

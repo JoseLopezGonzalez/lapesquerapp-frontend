@@ -16,17 +16,20 @@ export function StockByProductsCard() {
     const [isLoading, setIsLoading] = useState(true)
     const [search, setSearch] = useState("")
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         if (status !== "authenticated") return
 
-        getStockByProducts(session.user.accessToken)
+        getStockByProducts(accessToken)
             .then(setStockData)
             .catch((err) => {
                 console.error("Error al cargar stock por productos:", err)
                 setStockData([])
             })
             .finally(() => setIsLoading(false))
-    }, [status, session])
+    }, [status, accessToken])
 
     const filteredData = stockData.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())

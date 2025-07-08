@@ -44,16 +44,15 @@ export function SalesBySalespersonPieChart() {
     const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
     const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
 
-
+    const accessToken = session?.user?.accessToken
 
     useEffect(() => {
         if (status !== "authenticated") return
         if (!dateFrom || !dateTo) return
 
         setIsLoading(true)
-        const token = session.user.accessToken
 
-        getSalesBySalesperson({ dateFrom, dateTo }, token)
+        getSalesBySalesperson({ dateFrom, dateTo }, accessToken)
             .then((data) => {
                 const colored = data.map((item, index) => ({
                     ...item,
@@ -66,7 +65,7 @@ export function SalesBySalespersonPieChart() {
                 setChartData([])
             })
             .finally(() => setIsLoading(false))
-    }, [status, dateFrom, dateTo])
+    }, [status, dateFrom, dateTo, accessToken])
 
     const chartConfig = {
         quantity: {

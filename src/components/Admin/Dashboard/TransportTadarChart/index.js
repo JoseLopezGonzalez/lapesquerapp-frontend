@@ -40,6 +40,9 @@ export function TransportRadarChart() {
 
     console.log(data)
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         if (status !== "authenticated") return
         if (!from || !to) return
@@ -47,14 +50,14 @@ export function TransportRadarChart() {
         setIsLoading(true)
 
         getTransportChartData({
-            token: session.user.accessToken,
+            token: accessToken,
             from,
             to,
         })
             .then(setData)
             .catch((err) => console.error("Error al obtener datos de transporte:", err))
             .finally(() => setIsLoading(false))
-    }, [status, from, to])
+    }, [status, from, to, accessToken])
 
     const chartConfig = {
         netWeight: {
