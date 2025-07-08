@@ -39,6 +39,9 @@ export function OrderRankingChart() {
     const [range, setRange] = useState(initialDateRange)
     const { data: session, status } = useSession()
 
+    const accessToken = session?.user?.accessToken
+
+
     const chartConfig = {
         totalAmount: {
             value: {
@@ -61,7 +64,6 @@ export function OrderRankingChart() {
         if (!range.from || !range.to || !groupBy || !valueType) return
 
         setIsLoading(true)
-        const token = session.user.accessToken
 
         const params = {
             groupBy,
@@ -71,7 +73,7 @@ export function OrderRankingChart() {
             speciesId,
         }
 
-        getOrderRankingStats(params, token)
+        getOrderRankingStats(params, accessToken)
             .then((data) => {
                 setFullData(data) // guardamos todos
 
@@ -86,7 +88,7 @@ export function OrderRankingChart() {
                 setIsLoading(false)
                 setIsLoadingFirst(false)
             })
-    }, [groupBy, valueType, speciesId, status, session, range])
+    }, [groupBy, valueType, speciesId, status,  range, accessToken])
 
     useEffect(() => {
         if (status !== "authenticated") return
