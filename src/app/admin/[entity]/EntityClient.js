@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { getSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import { EllipsisVertical } from 'lucide-react';
 
 
 
@@ -72,6 +73,26 @@ const formatFilters = (filters) => {
 
     return queryParams.toString();
 };
+
+const formatFiltersObject = (filters) => {
+    const result = {};
+
+    filters.forEach((filter) => {
+        if (filter.type === 'autocomplete') {
+            result[filter.name] = (filter.value || []).map((item) => item.id);
+        } else if (filter.type === 'dateRange') {
+            result[filter.name] = {
+                start: filter.value?.from || null,
+                end: filter.value?.to || null,
+            };
+        } else {
+            result[filter.name] = filter.value;
+        }
+    });
+
+    return result;
+};
+
 
 
 /* Fetch Export */
@@ -409,6 +430,49 @@ export default function EntityClient({ config }) {
     };
 
 
+    const handleGlobalAction = async (action) => {
+        const applyTo =
+            selectedRows.length > 0 ? 'selected' :
+                filters.length > 0 ? 'filtered' : 'all';
+
+        if (action.confirmation && !window.confirm(action.confirmation)) return;
+
+        let body = { ...(action.body || {}) };
+
+        if (applyTo === 'selected') {
+            body.ids = selectedRows;
+        } else if (applyTo === 'filtered') {
+            body.filters = formatFiltersObject(filters);
+        } else {
+            body.applyToAll = true;
+        }
+
+        try {
+            const session = await getSession();
+
+            const response = await fetch(`${API_URL_V2}${action.endpoint}`, {
+                method: action.method || 'POST',
+                headers: {
+                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                    'User-Agent': navigator.userAgent,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+                toast.success(action.successMessage || 'Acción completada con éxito');
+                setSelectedRows([]);
+            } else {
+                throw new Error();
+            }
+        } catch (error) {
+            toast.error(action.errorMessage || 'Hubo un error al ejecutar la acción.');
+        }
+    };
+
+
+
 
     const handleExport = async (exportOption) => {
         const { endpoint, fileName, type, waitingMessage } = exportOption;
@@ -581,6 +645,9 @@ export default function EntityClient({ config }) {
                                     ))}
                                 </DropdownMenu>
                             </Dropdown>
+
+
+
                         </>
                     )}
 
@@ -634,6 +701,27 @@ export default function EntityClient({ config }) {
                                 </DropdownMenu>
                             </Dropdown>
                         </>
+                    )}
+                    {config.actions?.length > 0 && (
+                        <Dropdown backdrop="opaque">
+                            <DropdownTrigger>
+                                <Button variant="outline"
+                                    size="icon"
+                                >
+                                    <EllipsisVertical className="h-5 w-5" aria-hidden="true" />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu variant="faded" aria-label="Dropdown de acciones globales">
+                                {config.actions.map((action) => (
+                                    <DropdownItem
+                                        key={action.title}
+                                        onClick={() => handleGlobalAction(action)}
+                                    >
+                                        {action.title}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
                     )}
                     <GenericFilters
                         data={{

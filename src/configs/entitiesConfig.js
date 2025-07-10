@@ -1455,6 +1455,44 @@ export const configs = {
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
+    actions: [
+      /* {
+        title: 'Cambiar estado a Enviado',
+        endpoint: '/orders/mark-as-sent',
+        confirmation: '¿Estás seguro de que deseas marcar estos pedidos como enviados?',
+        successMessage: 'Pedidos actualizados correctamente.',
+        errorMessage: 'Error al actualizar pedidos.',
+        method: 'POST'
+      }, */
+      /* {
+        title: 'Cambiar estado a Almacenado',
+        endpoint: '/orders/mark-as-sent',
+        confirmation: '¿Estás seguro de que deseas marcar estos pedidos como enviados?',
+        successMessage: 'Pedidos actualizados correctamente.',
+        errorMessage: 'Error al actualizar pedidos.',
+        method: 'POST'
+      }, */
+      {
+        title: 'Cambiar estado a Enviado',
+        endpoint: 'pallets/update-state',
+        confirmation: '¿Deseas marcar estos pallets como enviados?',
+        successMessage: 'Palets actualizados correctamente.',
+        errorMessage: 'Hubo un error al actualizar los palets.',
+        method: 'POST',
+        body: { state_id: 3 } // Estado "shipped"
+      },
+      {
+        title: 'Cambiar estado a Almacenado',
+        endpoint: 'pallets/update-state',
+        confirmation: '¿Deseas marcar estos pallets como almacenados?',
+        successMessage: 'Palets actualizados correctamente.',
+        errorMessage: 'Hubo un error al actualizar los palets.',
+        method: 'POST',
+        body: { state_id: 2 } // Estado "stored"
+      }
+      // Puedes añadir más
+    ]
+
   },
   /* customers */
   customers: {
