@@ -1,61 +1,62 @@
-# PesquerApp – Laravel API (Backend)
+# BrisApp – Panel de Administración
 
-**PesquerApp** es una plataforma ERP multiempresa (_multi-tenant_) diseñada especialmente para pequeñas y medianas industrias del sector pesquero y distribuidores. Este repositorio contiene la API principal, desarrollada en Laravel, que sirve como núcleo de comunicación entre las interfaces de usuario y las bases de datos de cada empresa.
-
----
-
-## 🚀 Características principales
-
-- 🌐 Arquitectura SaaS multi-tenant con subdominios tipo `empresa.pesquerapp.es`
-- 🔁 Cambio dinámico de base de datos según el subdominio (`X-Tenant`)
-- 🧾 Módulo avanzado de gestión de pedidos con generación de documentos PDF y envío por email
-- 🏷️ Generación e impresión de etiquetas con códigos de barras y QR
-- 📦 Control de stock en almacenes reales mediante mapas interactivos de palets y cajas
-- 🧠 Análisis de producción con sistema de diagrama de nodos
-- 🤖 Extracción de datos con IA desde PDFs de lonjas locales
-- 🔐 Sistema de autenticación por token (Laravel Sanctum)
+BrisApp es la interfaz web desarrollada en **Next.js** para gestionar la plataforma pesquera BlueApp/PesquerApp. Actúa como cliente para la API Laravel y proporciona todas las herramientas necesarias para la administración diaria.
 
 ---
 
-## 🧱 Tecnologías utilizadas
+## ✨ Características principales
 
-- **Laravel 11**
-- **MySQL** (una base central + una por tenant)
-- **Sanctum** para autenticación
-- **Docker / Coolify** para despliegue
-
----
-
-## ⚙️ Arquitectura
-
-- Una sola API (`api.pesquerapp.es`) sirve a todas las empresas
-- Cada empresa tiene su propia base de datos (`db_empresa1`, `db_empresa2`, etc.)
-- Se utiliza un **middleware** que:
-  - Detecta la cabecera `X-Tenant`
-  - Busca el subdominio en la tabla `tenants` de la base central
-  - Cambia la conexión activa a la base de datos correspondiente (`DB::setDefaultConnection`)
+- **Next.js 15** con App Router y componentes de servidor/cliente.
+- **Autenticación** mediante [NextAuth](https://next-auth.js.org/) conectada a la API.
+- **Panel de administración** con múltiples módulos (almacenes, pedidos, productos, clientes, transportes…).
+- **Gestor de pedidos** y control de producción con pallets y cajas.
+- **Editor de etiquetas** y generación de códigos de barras/QR.
+- **Extracción de datos de lonjas** usando Azure Document AI.
+- **Gráficos y analíticas** de ventas y stock.
+- Componentes basados en [NextUI](https://nextui.org/) y [shadcn/ui](https://ui.shadcn.com/) + Tailwind CSS.
+- Hooks y contextos personalizados (`useOrder`, `useStore`, etc.).
 
 ---
 
-## 🧑‍💼 Superusuario (modo invisible)
+## 📂 Estructura básica
 
-- Existen usuarios `superadmin` definidos en la base central
-- Estos pueden iniciar sesión desde cualquier subdominio sin estar presentes en su base de datos
-- Laravel simula la sesión de forma segura y sin alterar el sistema de usuarios del tenant
+```
+src/
+├── app/                # Rutas con App Router (login, admin, api…)
+├── components/         # Componentes reutilizables
+├── configs/            # Configuraciones (endpoints, navegación…)
+├── context/            # Contextos de React para pedidos y almacenes
+├── hooks/              # Hooks personalizados
+├── services/           # Llamadas a la API Laravel
+└── docs/               # Documentación de componentes y configuraciones
+```
+
+Consulta `notes.md` para un diagrama más detallado de carpetas y componentes.
 
 ---
 
-## 📦 Instalación local
+## 🚀 Puesta en marcha
 
-```bash
-git clone https://github.com/tuusuario/pesquerapp-backend.git
-cd pesquerapp-backend
+1. Clona el repositorio y entra en la carpeta
+   ```bash
+   git clone <repo-url>
+   cd brisapp-nextjs
+   ```
+2. Instala las dependencias
+   ```bash
+   npm install
+   ```
+3. Copia tu archivo de variables de entorno (`NEXTAUTH_SECRET`, endpoints de API, etc.).
+4. Inicia el entorno de desarrollo
+   ```bash
+   npm run dev
+   ```
 
-composer install
-cp .env.example .env
-php artisan key:generate
+La aplicación se abrirá en `http://localhost:3000`.
 
-# Configura tu .env con la base de datos central (ej: db_pesquerapp_main)
+---
 
-php artisan migrate
-php artisan serve
+## 📝 Contribución
+
+Se agradecen issues y PRs para mejorar el proyecto. Revisa la documentación en `docs/` antes de añadir nuevos componentes o configuraciones.
+
