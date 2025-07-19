@@ -1,15 +1,19 @@
+import { headers } from 'next/headers';
+
 export async function fetchWithTenant(url, options = {}) {
-  const tenant = process.env.NODE_ENV === 'development'
-  ? 'brisamar'
-  : window.location.hostname.split('.')[0] || 'brisamar';
+  const headersList = headers();
+  const host = headersList.get('host'); // ej. brisamar.lapesquerapp.es
 
-  console.log('tenant:', tenant);
+  const tenant =
+    process.env.NODE_ENV === 'development'
+      ? 'brisamar'
+      : host?.split('.')[0] || 'brisamar';
 
-  console.log(`Fetching from tenant: ${tenant}`);
-  console.log(`Fetching URL: ${url}`);
-  console.log('Options:', options);
+  console.error('🌐 Tenant detectado (servidor):', tenant);
+  console.log(`➡️ URL de fetch: ${url}`);
+  console.log('📦 Opciones de fetch:', options);
 
-  const headers = {
+  const customHeaders = {
     ...(options.headers || {}),
     'X-Tenant': tenant,
     'Content-Type': 'application/json',
@@ -17,7 +21,7 @@ export async function fetchWithTenant(url, options = {}) {
 
   const config = {
     ...options,
-    headers,
+    headers: customHeaders,
   };
 
   const res = await fetch(url, config);
@@ -25,16 +29,15 @@ export async function fetchWithTenant(url, options = {}) {
   if (!res.ok) {
     try {
       const errorJson = await res.json();
-      console.error('Error JSON recibido:', errorJson);
+      console.error('❌ Error JSON recibido:', errorJson);
       const errorText = errorJson.message || JSON.stringify(errorJson);
       throw new Error(errorText || 'Error inesperado en la solicitud');
     } catch (e) {
       const rawText = await res.text();
-      console.error('Respuesta no es JSON. Texto recibido:', rawText);
+      console.error('❌ Respuesta no es JSON. Texto recibido:', rawText);
       throw new Error(`Respuesta no JSON: ${rawText}`);
     }
   }
-
 
   return res;
 }
