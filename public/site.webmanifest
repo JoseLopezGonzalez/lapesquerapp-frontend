@@ -1,0 +1,15 @@
+{
+  "name": "La PesquerApp ERP",
+  "short_name": "PesquerApp",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0E1E2A",
+  "background_color": "#ffffff"
+}
