@@ -3,6 +3,8 @@ export async function fetchWithTenant(url, options = {}) {
   ? 'brisamar'
   : window.location.hostname.split('.')[0] || 'brisamar';
 
+  console.log('tenant:', tenant);
+
   console.log(`Fetching from tenant: ${tenant}`);
   console.log(`Fetching URL: ${url}`);
   console.log('Options:', options);

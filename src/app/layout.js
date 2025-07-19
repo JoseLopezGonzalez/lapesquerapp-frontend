@@ -11,7 +11,7 @@ export const metadata = {
   metadataBase: new URL("https://lapesquerapp.es"),
   openGraph: {
     title: "La PesquerApp | El ERP de la industria pesquera",
-    description: "Solución ERP moderna para pequeñas y medianas empresas.",
+    description: "Solución ERP moderna para pequeñas y medianas empresas del sector pesquero.",
     url: "https://lapesquerapp.es",
     siteName: "La PesquerApp",
     images: [
