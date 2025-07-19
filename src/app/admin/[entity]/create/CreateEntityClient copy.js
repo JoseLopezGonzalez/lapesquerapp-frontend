@@ -6,6 +6,7 @@ import { classNames } from "@/helpers/styles/classNames";
 import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import { getSession } from "next-auth/react";
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export default function CreateEntityClient({ config }) {
 
@@ -26,7 +27,7 @@ export default function CreateEntityClient({ config }) {
         try {
             const session = await getSession(); // Obtener sesión actual
 
-            const response = await fetch('/api/submit-entity', {
+            const response = await fetchWithTenant('/api/submit-entity', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

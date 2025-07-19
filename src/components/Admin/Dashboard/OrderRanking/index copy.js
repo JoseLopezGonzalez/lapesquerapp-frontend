@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react"
 import { SearchX } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 import {
     Card,
@@ -105,7 +106,7 @@ export function OrderRankingChart() {
         getSpeciesOptions(token).then((speciesOptions) => {
             setSpeciesOptions(speciesOptions)
         }).catch((error) => {
-            console.error("Error fetching species options:", error)
+            console.error("Error fetchWithTenanting species options:", error)
             setSpeciesOptions([])
         })
     }, [status])

@@ -19,6 +19,7 @@ import DatePicker from "@/components/Shadcn/Dates/DatePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
 import { API_URL_V2 } from "@/configs/config";
 import EmailListInput from "@/components/ui/emailListInput";
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 function prepareValidations(fields) {
     return fields.map((field) => {
@@ -55,7 +56,7 @@ export default function CreateEntityClient({ config }) {
 
     // Cargar dinámicamente los options de los campos con endpoint
     useEffect(() => {
-        const fetchOptions = async () => {
+        const fetchWithTenantOptions = async () => {
             const result = {};
             const session = await getSession();
 
@@ -63,7 +64,7 @@ export default function CreateEntityClient({ config }) {
                 fields.map(async (field) => {
                     if (field.type === "Autocomplete" && field.endpoint) {
                         try {
-                            const res = await fetch(`${API_URL_V2}${field.endpoint}`, {
+                            const res = await fetchWithTenant(`${API_URL_V2}${field.endpoint}`, {
                                 headers: {
                                     Authorization: `Bearer ${session?.user?.accessToken}`,
                                     Accept: "application/json",
@@ -89,7 +90,7 @@ export default function CreateEntityClient({ config }) {
             setLoadedOptions(result);
         };
 
-        fetchOptions();
+        fetchWithTenantOptions();
     }, [fields]);
 
 
@@ -97,7 +98,7 @@ export default function CreateEntityClient({ config }) {
     const onSubmit = async (data) => {
         try {
             const session = await getSession();
-            const response = await fetch(`${API_URL_V2}${endpoint}`, {
+            const response = await fetchWithTenant(`${API_URL_V2}${endpoint}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

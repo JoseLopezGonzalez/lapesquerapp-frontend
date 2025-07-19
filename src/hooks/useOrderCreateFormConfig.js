@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { getIncotermsOptions } from '@/services/incotermService';
 import { getPaymentTermsOptions } from '@/services/paymentTernService';
 import { getSalespeopleOptions } from '@/services/salespersonService';
@@ -254,7 +255,7 @@ export function useOrderCreateFormConfig() {
 
 
     useEffect(() => {
-        const fetchOptions = async () => {
+        const fetchWithTenantOptions = async () => {
             try {
 
                 if (!token) {
@@ -324,7 +325,7 @@ export function useOrderCreateFormConfig() {
             }
         };
 
-        fetchOptions();
+        fetchWithTenantOptions();
     }, [token]);
 
     return { defaultValues, formGroups, loading };

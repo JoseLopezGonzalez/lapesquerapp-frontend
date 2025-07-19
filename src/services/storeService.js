@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
@@ -7,7 +8,7 @@ import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 
 /* getStores*/
 export async function getStore(id, token) {
-    return fetch(`${API_URL_V2}stores/${id}`, {
+    return fetchWithTenant(`${API_URL_V2}stores/${id}`, {
         method: 'GET',
         headers: {
             /* 'Content-Type': 'application/json', */
@@ -38,7 +39,7 @@ export async function getStore(id, token) {
 
 /* getStores*/
 export async function getStores(token) {
-    return fetch(`${API_URL_V2}stores`, {
+    return fetchWithTenant(`${API_URL_V2}stores`, {
         method: 'GET',
         headers: {
             /* 'Content-Type': 'application/json', */
@@ -68,7 +69,7 @@ export async function getStores(token) {
 }
 
 export function getStoreOptions(token) {
-    return fetch(`${API_URL_V2}stores/options`, {
+    return fetchWithTenant(`${API_URL_V2}stores/options`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ export function getStoreOptions(token) {
  * @returns {Promise<number>} - Total de kg en stock
  */
 export async function getTotalStockStats(token) {
-    return fetch(`${API_URL_V2}statistics/stock/total`, {
+    return fetchWithTenant(`${API_URL_V2}statistics/stock/total`, {
         method: 'GET',
         headers: {
             // 'Content-Type' no es necesario en GET con body vacío
@@ -139,7 +140,7 @@ export async function getTotalStockStats(token) {
  * @returns {Promise<Array>} - Array de objetos con { id, name, total_kg }
  */
 export async function getStockBySpeciesStats(token) {
-    return fetch(`${API_URL_V2}statistics/stock/total-by-species`, {
+    return fetchWithTenant(`${API_URL_V2}statistics/stock/total-by-species`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -172,7 +173,7 @@ export async function getStockBySpeciesStats(token) {
  * @returns {Promise<Array>} - Array de objetos con { id, name, total_kg, percentage }
  */
 export async function getStockByProducts(token) {
-    return fetch(`${API_URL_V2}stores/total-stock-by-products`, {
+    return fetchWithTenant(`${API_URL_V2}stores/total-stock-by-products`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,

@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
@@ -10,7 +11,7 @@ import { API_URL_V1, API_URL_V2 } from "@/configs/config";
  * @returns {Promise<Object>} - Los datos del pedido.
  */
 export function getCustomersOptions(token) {
-    return fetch(`${API_URL_V2}customers/options`, {
+    return fetchWithTenant(`${API_URL_V2}customers/options`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +42,7 @@ export function getCustomersOptions(token) {
 
 /* getCustomer*/
 export async function getCustomer(id, token) {
-    return fetch(`${API_URL_V2}customers/${id}`, {
+    return fetchWithTenant(`${API_URL_V2}customers/${id}`, {
         method: 'GET',
         headers: {
             /* 'Content-Type': 'application/json', */

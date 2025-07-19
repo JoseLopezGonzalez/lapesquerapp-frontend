@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import roleConfig from "./configs/roleConfig";
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -9,7 +10,7 @@ export async function middleware(req) {
   // Si no hay token, redirigir al login
   if (!token) {
     console.log("No hay token, redirigiendo al login.");
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/", req.url);
     loginUrl.searchParams.set("from", pathname); // Guardar la página actual para redirigir después del login
     return NextResponse.redirect(loginUrl);
   }
@@ -18,14 +19,14 @@ export async function middleware(req) {
   const tokenExpiration = token?.exp * 1000; // Convertir de segundos a milisegundos
   if (Date.now() > tokenExpiration) {
     console.log("Token expirado, redirigiendo al login.");
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/", req.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // Validar token con el backend para detectar revocación/cancelación
   try {
-    const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, {
+    const verifyResponse = await fetchWithTenant(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token.accessToken}`,
@@ -34,13 +35,13 @@ export async function middleware(req) {
 
     if (!verifyResponse.ok) {
       console.log("Token inválido o sesión cancelada, redirigiendo al login.");
-      const loginUrl = new URL("/login", req.url);
+      const loginUrl = new URL("/", req.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
     }
   } catch (error) {
     console.error("Error al validar el token con el backend:", error);
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL("/", req.url);
     return NextResponse.redirect(loginUrl);
   }
 

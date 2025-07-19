@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 'use client'
 
 import React, { useEffect } from 'react';
@@ -118,7 +119,7 @@ const CreateOrderForm = ({ onCreate }) => {
                 })),
             };
 
-            const res = await fetch(`${API_URL_V2}orders`, {
+            const res = await fetchWithTenant(`${API_URL_V2}orders`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

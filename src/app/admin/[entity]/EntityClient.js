@@ -18,6 +18,7 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import { getSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { EllipsisVertical } from 'lucide-react';
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 
 
@@ -95,14 +96,14 @@ const formatFiltersObject = (filters) => {
 
 
 
-/* Fetch Export */
+/* fetchWithTenant Export */
 const getEntityExport = async (url, fileName) => {
     /* Current date formatted DD-MM-AAAA*/
     const currentDate = new Date().toLocaleDateString().split('/').join('-');
 
     const session = await getSession(); // Obtener sesión actual
 
-    return await fetch(url, {
+    return await fetchWithTenant(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ const getEntityReport = async (url, fileName) => {
     const session = await getSession(); // Obtener sesión actual
 
 
-    return await fetch(url, {
+    return await fetchWithTenant(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -192,11 +193,11 @@ export default function EntityClient({ config }) {
 
 
 
-    // Fetch Data
+    // fetchWithTenant Data
 
 
     useEffect(() => {
-        const fetchDataWithFilters = async () => {
+        const fetchWithTenantDataWithFilters = async () => {
             // Restablece la página a 1 cuando los filtros cambian
 
             setData((prevData) => ({ ...prevData, loading: true }));
@@ -210,7 +211,7 @@ export default function EntityClient({ config }) {
             try {
                 const session = await getSession(); // Obtener sesión actual
 
-                const response = await fetch(url, {
+                const response = await fetchWithTenant(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -270,14 +271,14 @@ export default function EntityClient({ config }) {
             }
         };
 
-        fetchDataWithFilters();
+        fetchWithTenantDataWithFilters();
     }, [config.endpoint, filters]); // Este useEffect depende solo de los filtros
 
 
     // useEffect para manejar cambios en la página
     useEffect(() => {
         if (currentPage === 1) return;
-        const fetchDataWithPageChange = async () => {
+        const fetchWithTenantDataWithPageChange = async () => {
             setData((prevData) => ({ ...prevData, loading: true }));
 
             const queryString = formatFilters(filters);
@@ -288,7 +289,7 @@ export default function EntityClient({ config }) {
             try {
                 const session = await getSession(); // Obtener sesión actual
 
-                const response = await fetch(url, {
+                const response = await fetchWithTenant(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -349,7 +350,7 @@ export default function EntityClient({ config }) {
         };
 
 
-        fetchDataWithPageChange();
+        fetchWithTenantDataWithPageChange();
     }, [currentPage]); // Este useEffect depende solo de la página
 
     const handlePageChange = (newPage) => {
@@ -365,7 +366,7 @@ export default function EntityClient({ config }) {
         try {
             const session = await getSession();
 
-            const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
+            const response = await fetchWithTenant(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${session?.user?.accessToken}`,
@@ -399,7 +400,7 @@ export default function EntityClient({ config }) {
         try {
             const session = await getSession();
 
-            const response = await fetch(`${API_URL_V2}${deleteUrl}`, {
+            const response = await fetchWithTenant(`${API_URL_V2}${deleteUrl}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${session?.user?.accessToken}`,
@@ -450,7 +451,7 @@ export default function EntityClient({ config }) {
         try {
             const session = await getSession();
 
-            const response = await fetch(`${API_URL_V2}${action.endpoint}`, {
+            const response = await fetchWithTenant(`${API_URL_V2}${action.endpoint}`, {
                 method: action.method || 'POST',
                 headers: {
                     Authorization: `Bearer ${session?.user?.accessToken}`,

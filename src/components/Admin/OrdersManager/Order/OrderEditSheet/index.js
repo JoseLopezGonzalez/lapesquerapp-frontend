@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 'use client'
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -36,7 +37,7 @@ const OrderEditSheet = () => {
 
 
     const onSubmit = async (data) => {
-        /* toast fetch */
+        /* toast fetchWithTenant */
         const toastId = toast.loading('Actualizando pedido...', getToastTheme());
 
         updateOrderData(data)

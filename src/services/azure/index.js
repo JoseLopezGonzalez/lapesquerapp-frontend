@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 const { parseAzureDocumentAIResult } = require("@/helpers/azure/documentAI");
 
 
@@ -46,7 +47,7 @@ export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => 
         const fileBuffer = await file.arrayBuffer();
 
         // Hacer llamada inicial a Azure
-        const response = await fetch(url, {
+        const response = await fetchWithTenant(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/pdf',
@@ -71,7 +72,7 @@ export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => 
 
         do {
             await new Promise(resolve => setTimeout(resolve, 2000)); // esperar 2 segundos
-            const resultResponse = await fetch(operationLocation, {
+            const resultResponse = await fetchWithTenant(operationLocation, {
                 headers: { 'Ocp-Apim-Subscription-Key': apiKey },
             });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { API_URL_V2 } from '@/configs/config';
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export async function POST(req) {
     try {
@@ -21,7 +22,7 @@ export async function POST(req) {
         console.log(`🌐 Enviando datos a: ${API_URL_V2}${body.endpoint}`);
         console.log("📦 Datos enviados:", body.data);
 
-        const apiResponse = await fetch(`${API_URL_V2}${body.endpoint}`, {
+        const apiResponse = await fetchWithTenant(`${API_URL_V2}${body.endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

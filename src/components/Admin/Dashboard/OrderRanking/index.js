@@ -21,6 +21,7 @@ import { saveAs } from "file-saver"
 import toast from "react-hot-toast"
 import { getToastTheme } from "@/customs/reactHotToast"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi"
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 const initialDateRange = {
     from: actualYearRange.from,
@@ -97,7 +98,7 @@ export function OrderRankingChart() {
         getSpeciesOptions(token)
             .then(setSpeciesOptions)
             .catch((error) => {
-                console.error("Error fetching species options:", error)
+                console.error("Error fetchWithTenanting species options:", error)
                 setSpeciesOptions([])
             })
     }, [status, session])

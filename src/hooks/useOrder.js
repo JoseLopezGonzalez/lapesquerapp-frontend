@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
@@ -230,7 +231,7 @@ export function useOrder(orderId, onChange) {
     const exportDocument = async (documentName, type, documentLabel) => {
         const toastId = toast.loading(`Exportando ${documentLabel}.${type}`, getToastTheme());
         try {
-            const response = await fetch(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
+            const response = await fetchWithTenant(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${session.user.accessToken}`,
@@ -266,7 +267,7 @@ export function useOrder(orderId, onChange) {
 
         const token = session?.user?.accessToken;
 
-        return fetch(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
+        return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -292,7 +293,7 @@ export function useOrder(orderId, onChange) {
     const sendStandarDocuments = async () => {
         const token = session?.user?.accessToken;
 
-        return fetch(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
+        return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

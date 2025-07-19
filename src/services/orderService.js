@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
@@ -10,7 +11,7 @@ import { API_URL_V1, API_URL_V2 } from "@/configs/config";
  * @returns {Promise<Object>} - Los datos del pedido.
  */
 export function getOrder(orderId, token) {
-    return fetch(`${API_URL_V2}orders/${orderId}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ export function getOrder(orderId, token) {
  */
 export function updateOrder(orderId, orderData, token) {
 
-    return fetch(`${API_URL_V2}orders/${orderId}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -81,7 +82,7 @@ export function updateOrder(orderId, orderData, token) {
 
 /* getActiveOrders */
 export function getActiveOrders(token) {
-    return fetch(`${API_URL_V1}orders?active=true`, {
+    return fetchWithTenant(`${API_URL_V1}orders?active=true`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -113,7 +114,7 @@ export function getActiveOrders(token) {
 /* Update OrderPlannedProductDetail */
 export async function updateOrderPlannedProductDetail(detailId, detailData, token) {
 
-    return fetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+    return fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export async function updateOrderPlannedProductDetail(detailId, detailData, toke
 /* Delete OrderPlannedProductDetail */
 export async function deleteOrderPlannedProductDetail(detailId, token) {
 
-    return fetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+    return fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -176,7 +177,7 @@ export async function deleteOrderPlannedProductDetail(detailId, token) {
 /* Create OrderPlannedProductDetail */
 export async function createOrderPlannedProductDetail(detailData, token) {
 
-    return fetch(`${API_URL_V2}order-planned-product-details`, {
+    return fetchWithTenant(`${API_URL_V2}order-planned-product-details`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -207,7 +208,7 @@ export async function createOrderPlannedProductDetail(detailData, token) {
 
 export async function setOrderStatus(orderId, status, token) {
 
-    return fetch(`${API_URL_V2}orders/${orderId}/status?status=${status}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/status?status=${status}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -239,7 +240,7 @@ export async function setOrderStatus(orderId, status, token) {
 
 export async function createOrderIncident(orderId, description, token) {
 
-    return fetch(`${API_URL_V2}orders/${orderId}/incident`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -271,7 +272,7 @@ export async function createOrderIncident(orderId, description, token) {
 }
 
 export async function updateOrderIncident(orderId, resolutionType, resolutionNotes, token) {
-    return fetch(`${API_URL_V2}orders/${orderId}/incident`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -305,7 +306,7 @@ export async function updateOrderIncident(orderId, resolutionType, resolutionNot
 
 /* destroy order incident */
 export async function destroyOrderIncident(orderId, token) {
-    return fetch(`${API_URL_V2}orders/${orderId}/incident`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -334,7 +335,7 @@ export async function destroyOrderIncident(orderId, token) {
 }
 
 export function getActiveOrdersOptions(token) {
-    return fetch(`${API_URL_V2}active-orders/options`, {
+    return fetchWithTenant(`${API_URL_V2}active-orders/options`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -387,7 +388,7 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
         query.append('speciesId', speciesId);
     }
 
-    return fetch(`${API_URL_V2}statistics/orders/ranking?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}statistics/orders/ranking?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -426,7 +427,7 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
 export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo });
 
-    return fetch(`${API_URL_V2}orders/sales-by-salesperson?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/sales-by-salesperson?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -464,7 +465,7 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
 export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
-    return fetch(`${API_URL_V2}statistics/orders/total-net-weight?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}statistics/orders/total-net-weight?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -504,7 +505,7 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
 export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
-    return fetch(`${API_URL_V2}statistics/orders/total-amount?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}statistics/orders/total-amount?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -556,7 +557,7 @@ export async function getSalesChartData({ token, speciesId, from, to, unit, grou
         query.append("speciesId", speciesId);
     }
 
-    return fetch(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -586,7 +587,7 @@ export async function getTransportChartData({ token, from, to }) {
         dateTo: to,
     })
 
-    return fetch(`${API_URL_V2}orders/transport-chart-data?${query.toString()}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/transport-chart-data?${query.toString()}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

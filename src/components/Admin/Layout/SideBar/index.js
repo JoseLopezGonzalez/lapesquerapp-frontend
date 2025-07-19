@@ -51,7 +51,7 @@ export function AppSidebar() {
     const handleLogout = async () => {
         try {
             await signOut({ redirect: false });
-            window.location.href = '/login';
+            window.location.href = '/';
             toast.success('Sesión cerrada correctamente', getToastTheme());
         } catch (err) {
             toast.error(err.message || 'Error al cerrar sesión');

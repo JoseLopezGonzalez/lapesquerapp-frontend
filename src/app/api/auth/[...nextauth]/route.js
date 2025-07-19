@@ -1,4 +1,5 @@
 import { API_URL_V2 } from '@/configs/config';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -12,11 +13,13 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(`${API_URL_V2}login`, {
+          const res = await fetchWithTenant(`${API_URL_V2}login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
           });
+
+          console.log('Response from login:', res);
 
           const data = await res.json();
 
@@ -70,8 +73,8 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: '/login', // Página personalizada de inicio de sesión
-    error: '/login', // Redirigir a login en caso de error
+    signIn: '/', // Página personalizada de inicio de sesión
+    error: '/', // Redirigir a login en caso de error
   },
   secret: process.env.NEXTAUTH_SECRET,
 });

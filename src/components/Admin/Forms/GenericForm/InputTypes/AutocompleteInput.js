@@ -4,6 +4,7 @@ import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector';
 import { API_URL_V2 } from '@/configs/config';
 import { getSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export const AutocompleteInput = ({ placeholder, endpoint, onChange}) => {
 
@@ -13,13 +14,13 @@ export const AutocompleteInput = ({ placeholder, endpoint, onChange}) => {
     useEffect(() => {
         if (!endpoint) return;
 
-        const fetchOptions = async () => {
+        const fetchWithTenantOptions = async () => {
             setLoading(true);
             try {
                 const session = await getSession(); // Obtener sesión actual
 
 
-                const response = await fetch(`${API_URL_V2}${endpoint}`,
+                const response = await fetchWithTenant(`${API_URL_V2}${endpoint}`,
                     {
                         method: 'GET',
                         headers: {
@@ -32,13 +33,13 @@ export const AutocompleteInput = ({ placeholder, endpoint, onChange}) => {
                 const data =await response.json();
                 setOptions(data.map((item) => ({ id: item.id, name: item.name })));
             } catch (error) {
-                console.error("Error fetching options:", error);
+                console.error("Error fetchWithTenanting options:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchOptions();
+        fetchWithTenantOptions();
     }, [endpoint]);
 
 

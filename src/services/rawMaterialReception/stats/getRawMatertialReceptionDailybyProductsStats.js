@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1 } from "@/configs/config";
 
 export const getRawMatertialReceptionDailybyProductsStats = async (date , species) => {
@@ -6,7 +7,7 @@ export const getRawMatertialReceptionDailybyProductsStats = async (date , specie
     const url = `${API_URL_V1}raw-material-receptions-daily-by-products-stats?date=${date}&species=${species}`;
 
     // Realizar la solicitud a la API
-    return await fetch(url)
+    return await fetchWithTenant(url)
         .then(response => response.json())
         .then(data => data.data)
         .catch(error => console.log(error))

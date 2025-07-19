@@ -20,6 +20,7 @@ import { API_URL_V2 } from "@/configs/config";
 import get from "lodash.get";
 import { getToastTheme } from "@/customs/reactHotToast";
 import Loader from "@/components/Utilities/Loader";
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -73,9 +74,9 @@ export default function EditEntityClient({ config }) {
 
     // Cargar datos de la entidad
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchWithTenantData = async () => {
             const session = await getSession();
-            const res = await fetch(`${API_URL_V2}${endpoint}/${id}`, {
+            const res = await fetchWithTenant(`${API_URL_V2}${endpoint}/${id}`, {
                 headers: {
                     Authorization: `Bearer ${session?.user?.accessToken}`,
                 },
@@ -86,19 +87,19 @@ export default function EditEntityClient({ config }) {
             reset(formValues);
             setLoading(false);
         };
-        fetchData();
+        fetchWithTenantData();
     }, [id]);
 
     // Cargar opciones para Autocomplete
     useEffect(() => {
-        const fetchOptions = async () => {
+        const fetchWithTenantOptions = async () => {
             const session = await getSession();
             const result = {};
             await Promise.all(
                 fields.map(async (field) => {
                     if (field.type === "Autocomplete" && field.endpoint) {
                         try {
-                            const res = await fetch(`${API_URL_V2}${field.endpoint}`, {
+                            const res = await fetchWithTenant(`${API_URL_V2}${field.endpoint}`, {
                                 headers: {
                                     Authorization: `Bearer ${session?.user?.accessToken}`,
                                 },
@@ -118,13 +119,13 @@ export default function EditEntityClient({ config }) {
             setLoadedOptions(result);
         };
 
-        fetchOptions();
+        fetchWithTenantOptions();
     }, [fields]);
 
     const onSubmit = async (data) => {
         try {
             const session = await getSession();
-            const res = await fetch(`${API_URL_V2}${endpoint}/${id}`, {
+            const res = await fetchWithTenant(`${API_URL_V2}${endpoint}/${id}`, {
                 method,
                 headers: {
                     "Content-Type": "application/json",

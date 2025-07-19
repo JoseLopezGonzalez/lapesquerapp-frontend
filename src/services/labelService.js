@@ -1,7 +1,8 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 
 export function getLabel(labelId, token) {
-    return fetch(`${API_URL_V2}labels/${labelId}`, {
+    return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -28,7 +29,7 @@ export function getLabel(labelId, token) {
 
 
 export function createLabel(labelName, labelFormat, token) {
-    return fetch(`${API_URL_V2}labels`, {
+    return fetchWithTenant(`${API_URL_V2}labels`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ export function createLabel(labelName, labelFormat, token) {
 }
 
 export function updateLabel(labelId, labelName, labelFormat, token) {
-    return fetch(`${API_URL_V2}labels/${labelId}`, {
+    return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ export function updateLabel(labelId, labelName, labelFormat, token) {
 
 
 export function getLabels(token) {
-    return fetch(`${API_URL_V2}labels`, {
+    return fetchWithTenant(`${API_URL_V2}labels`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ export function getLabels(token) {
 
 /* Delete label */
 export function deleteLabel(labelId, token) {
-    return fetch(`${API_URL_V2}labels/${labelId}`, {
+    return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export function deleteLabel(labelId, token) {
 
 /* Labels Options */
 export function getLabelsOptions(token) {
-    return fetch(`${API_URL_V2}labels/options`, {
+    return fetchWithTenant(`${API_URL_V2}labels/options`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

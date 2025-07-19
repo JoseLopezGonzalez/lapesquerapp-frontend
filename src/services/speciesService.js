@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V2 } from "@/configs/config";
@@ -8,7 +9,7 @@ import { API_URL_V2 } from "@/configs/config";
 
 /* getActiveOrders */
 export function getSpeciesOptions(token) {
-    return fetch(`${API_URL_V2}species/options`, {
+    return fetchWithTenant(`${API_URL_V2}species/options`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

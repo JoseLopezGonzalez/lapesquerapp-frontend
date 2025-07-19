@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useState } from 'react'
 import { Check, X, FileSpreadsheet, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -198,7 +199,7 @@ const ExportModal = ({ document }) => {
 
         await Promise.allSettled(comprasValidas.map(async (linea) => {
             try {
-                const res = await fetch(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
+                const res = await fetchWithTenant(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

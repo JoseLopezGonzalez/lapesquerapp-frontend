@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
@@ -5,7 +6,7 @@ import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 
 
 export function getPallet(palletId, token) {
-    return fetch(`${API_URL_V2}pallets/${palletId}`, {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ export function getPallet(palletId, token) {
  */
 export function updatePallet(palletId, palletData, token) {
 
-    return fetch(`${API_URL_V2}pallets/${palletId}`, {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ export function updatePallet(palletId, palletData, token) {
 /* Create OrderPlannedProductDetail */
 export async function createPallet(palletData, token) {
 
-    return fetch(`${API_URL_V2}pallets`, {
+    return fetchWithTenant(`${API_URL_V2}pallets`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ export async function createPallet(palletData, token) {
  * @returns {Promise<Object>} - Mensaje de éxito o error del backend.
  */
 export async function assignPalletsToPosition(positionId, palletIds, token) {
-    return fetch(`${API_URL_V2}pallets/assign-to-position`, {
+    return fetchWithTenant(`${API_URL_V2}pallets/assign-to-position`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ export async function assignPalletsToPosition(positionId, palletIds, token) {
  * @returns {Promise<Object>} - Respuesta del backend.
  */
 export function movePalletToStore(palletId, storeId, token) {
-    return fetch(`${API_URL_V2}pallets/move-to-store`, {
+    return fetchWithTenant(`${API_URL_V2}pallets/move-to-store`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ export function movePalletToStore(palletId, storeId, token) {
  * @returns {Promise<Object>} - Respuesta del backend.
  */
 export function removePalletPosition(palletId, token) {
-    return fetch(`${API_URL_V2}pallets/${palletId}/unassign-position`, {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}/unassign-position`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

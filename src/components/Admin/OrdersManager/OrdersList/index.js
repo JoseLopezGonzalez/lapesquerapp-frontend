@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { useState } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 
@@ -44,7 +45,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
     const exportDocument = async () => {
         const toastId = toast.loading(`Exportando `, getToastTheme());
         try {
-            const response = await fetch(`${API_URL_V2}orders/xlsx/active-planned-products`, {
+            const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${session.user.accessToken}`,

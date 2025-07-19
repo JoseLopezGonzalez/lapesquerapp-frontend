@@ -1,3 +1,4 @@
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 // useLabelEditor.js
 
 import { getLabel, getLabelsOptions } from "@/services/labelService";
@@ -76,7 +77,7 @@ export function useLabel({ boxes = [], open }) {
                     setLabelsOptions(data);
                 })
                 .catch((error) => {
-                    console.error("Error fetching labels options:", error);
+                    console.error("Error fetchWithTenanting labels options:", error);
                 })
                 .finally(() => {
                     setIsLoading(false);
@@ -125,7 +126,7 @@ export function useLabel({ boxes = [], open }) {
                 setFields(filledFieldsArray);
             })
             .catch((error) => {
-                console.error("Error fetching label:", error);
+                console.error("Error fetchWithTenanting label:", error);
             });
     }
 
