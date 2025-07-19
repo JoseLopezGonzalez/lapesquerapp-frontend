@@ -73,7 +73,7 @@ export default function LoginPage() {
             >
               <div className="text-center flex flex-col gap-3">
                 <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
-                  BlueApp
+                   La PesquerApp
                 </h2>
                 <div className="flex items-center justify-center gap-1 text-nowrap">
                   <span className="text-xl text-primary">Mantén tu producción</span>
