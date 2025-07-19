@@ -1,11 +1,6 @@
-"use client"
-
-import { Toaster } from "react-hot-toast";
+import ClientLayout from "./ClientLayout";
 import "./globals.css";
-import { SessionProvider } from 'next-auth/react';
 
-
-// app/layout.tsx o layout.js
 export const metadata = {
   title: {
     default: "La PesquerApp | ERP para pequeñas y medianas empresas pesqueras",
@@ -13,7 +8,7 @@ export const metadata = {
   },
   description: "ERP diseñado para empresas pesqueras. Controla producción, trazabilidad, compras, ventas y etiquetado.",
   keywords: ["ERP", "pesca", "trazabilidad", "producción", "ventas", "industria alimentaria"],
-  metadataBase: new URL("https://lapesquerapp.es"), // cambia si usas otro dominio
+  metadataBase: new URL("https://lapesquerapp.es"),
   openGraph: {
     title: "La PesquerApp | ERP pesquero",
     description: "Solución ERP moderna para la industria pesquera.",
@@ -43,20 +38,12 @@ export const metadata = {
   manifest: "/site.webmanifest",
 };
 
-
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="">
-      <body
-        className={` bg-background  w-full  `}
-      >
-        <SessionProvider>{children}</SessionProvider>
-        <Toaster />
-
+    <html lang="es">
+      <body className="bg-background w-full">
+        <ClientLayout>{children}</ClientLayout>
       </body>
-
     </html>
   );
 }
-
-

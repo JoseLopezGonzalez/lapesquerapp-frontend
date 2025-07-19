@@ -39,12 +39,12 @@ export default function LandingPage() {
                             <Button
                                 onClick={() => window.open("https://test.lapesquerapp.es", "_blank")}
                                 size="lg"
-                                className="bg-sky-500 hover:bg-sky-400 w-full"
+                                className="bg-sky-500 hover:bg-sky-400 w-full sm:w-fit"
                             >
                                 Ver demo
                                 <ArrowUpRight className="h-5 w-5" />
                             </Button>
-                            <Button variant="outline" size="lg" className="w-full">
+                            <Button variant="outline" size="lg" className="w-full sm:w-fit">
                                 Ver características
                             </Button>
                         </div>
