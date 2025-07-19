@@ -35,16 +35,16 @@ export default function LandingPage() {
                                 Producción ∷ Compras ∷ Ventas ∷ Etiquetado ∷ Trazabilidad
                             </span>
                         </p>
-                        <div className="flex gap-2 sm:gap-4 flex-row sm:justify-center">
+                        <div className="flex gap-2 sm:gap-4 flex-row sm:justify-center w-full ">
                             <Button
                                 onClick={() => window.open("https://test.lapesquerapp.es", "_blank")}
                                 size="lg"
-                                className="bg-sky-500 hover:bg-sky-400"
+                                className="bg-sky-500 hover:bg-sky-400 w-full"
                             >
                                 Ver demo
                                 <ArrowUpRight className="h-5 w-5" />
                             </Button>
-                            <Button variant="outline" size="lg" className="">
+                            <Button variant="outline" size="lg" className="w-full">
                                 Ver características
                             </Button>
                         </div>
