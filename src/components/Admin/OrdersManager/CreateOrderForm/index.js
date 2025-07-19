@@ -1,6 +1,6 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
 'use client'
 
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
