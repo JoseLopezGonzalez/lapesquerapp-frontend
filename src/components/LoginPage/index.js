@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,36 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [tenantActive, setTenantActive] = useState(true);
+  const [brandingImageUrl, setBrandingImageUrl] = useState("");
+  const [tenantChecked, setTenantChecked] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const subdomain = hostname.split(".")[0];
+
+    fetch(`/api/public/tenant/${subdomain}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data || data.error || data.active === false) {
+          setTenantActive(false);
+        } else {
+          setBrandingImageUrl(data.branding_image_url);
+        }
+      })
+      .catch(() => setTenantActive(false))
+      .finally(() => setTenantChecked(true));
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!tenantActive) {
+      toast.error("La suscripción está caducada o no ha sido renovada", getToastTheme());
+      return;
+    }
+
     setLoading(true);
     try {
-      // Usamos window.location.search directamente
       const params = new URLSearchParams(window.location.search);
       const redirectTo = params.get("from") || "/admin/home";
 
@@ -50,15 +74,30 @@ export default function LoginPage() {
     }
   };
 
+  if (!tenantChecked) {
+    return <div className="text-center py-10">Cargando...</div>;
+  }
+
+  if (!tenantActive) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black text-center p-8">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Acceso no disponible</h2>
+        <p className="text-muted-foreground">
+          La suscripción de esta empresa está caducada o pendiente de renovación.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black">
       <div className="w-full max-w-[1000px] py-20">
         <Card className="flex w-full h-full p-2">
-          {/* Panel izquierdo con imagen */}
+          {/* Panel izquierdo con imagen dinámica */}
           <div className="relative hidden w-full max-w-[500px] overflow-hidden rounded-lg bg-black lg:block">
             <Image
-              src="/images/landing.png"
-              alt="Space landscape with mountains and planet"
+              src={brandingImageUrl || "/images/landing.png"}
+              alt="Imagen de branding"
               fill
               className="object-cover"
               priority
@@ -73,7 +112,7 @@ export default function LoginPage() {
             >
               <div className="text-center flex flex-col gap-3">
                 <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
-                   La PesquerApp
+                  La PesquerApp
                 </h2>
                 <div className="flex items-center justify-center gap-1 text-nowrap">
                   <span className="text-xl text-primary">Mantén tu producción</span>
