@@ -83,6 +83,8 @@ export default function LoginPage() {
     </div>;
   }
 
+  console.log("Branding Image URL:", brandingImageUrl);
+  /*  */
   return (
     <div className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black">
       <div className="w-full max-w-[1000px] py-20">
