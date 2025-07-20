@@ -93,6 +93,19 @@ export default function LoginPage() {
   return (
     <div className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black">
       <div className="w-full max-w-[1000px] py-20">
+        {!tenantActive && (
+          <Alert variant="destructive">
+            <AlertCircleIcon />
+            <AlertTitle>Cuentas deshabilitadas para esta empresa</AlertTitle>
+            <AlertDescription>
+              <p>La suscripción de esta empresa está caducada o pendiente de renovación.</p>
+              <ul className="list-inside list-disc text-sm">
+                <li>Contacta con soporte para más información.</li>
+                <li> Puedes enviar un correo a <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link></li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
         <Card className="flex w-full h-full p-2">
           {/* Panel izquierdo con imagen dinámica */}
           <div className="relative hidden w-full max-w-[500px] overflow-hidden rounded-lg bg-black lg:block">
@@ -136,32 +149,7 @@ export default function LoginPage() {
               </div>
 
               {/* Alerta si el tenant no está activo */}
-              {!tenantActive && (
-                <>
-                  <Alert variant="destructive">
-                    <AlertCircleIcon />
-                    <AlertTitle>Cuentas deshabilitadas para esta empresa</AlertTitle>
-                    <AlertDescription>
-                      <p>La suscripción de esta empresa está caducada o pendiente de renovación.</p>
-                      <ul className="list-inside list-disc text-sm">
-                        <li>Contacta con soporte para más información.</li>
-                        <li> Puedes enviar un correo a <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link></li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                  {/* <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-xs">
-                    La suscripción de esta empresa está caducada o pendiente de renovación.
-                    <br />
-                    <span className="mt-2 block text-muted-foreground">
-                      Contacta con{" "}
-                      <a href="mailto:soporte@pesquerapp.com" className="underline font-medium ">
-                        soporte@pesquerapp.com
-                      </a>{" "}
-                      para reactivar tu suscripción.
-                    </span>
-                  </div> */}
-                </>
-              )}
+
 
               <div className="space-y-4">
                 <div className="grid w-full max-w-sm items-center gap-1.5">
