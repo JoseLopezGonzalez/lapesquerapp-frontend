@@ -30,7 +30,7 @@ export default function LoginPage() {
     const subdomain = hostname.split(".")[0];
 
     if (subdomain === "test") {
-      setEmail("admin@lapesquera.es");
+      setEmail("admin@lapesquerapp.es");
       setPassword("admin");
       setIsDemo(true);
     }
