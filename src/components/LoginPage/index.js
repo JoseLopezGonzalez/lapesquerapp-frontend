@@ -92,7 +92,7 @@ export default function LoginPage() {
 
   return (
     <div className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black">
-      <div className="w-full max-w-[1000px] py-20">
+      <div className="w-full max-w-[1000px] py-20 px-6">
         {!tenantActive && (
           <Alert variant="destructive">
             <AlertCircleIcon />
@@ -105,9 +105,9 @@ export default function LoginPage() {
             </AlertDescription>
           </Alert>
         )}
-        <Card className="flex w-full h-full p-2 mt-4">
+        <Card className="flex sm:flex-row flex-col w-full h-full p-2 mt-4">
           {/* Panel izquierdo con imagen dinámica */}
-          <div className="relative hidden w-full max-w-[500px] overflow-hidden rounded-lg bg-black lg:block">
+          <div className="relative  w-full max-w-[500px] overflow-hidden rounded-lg   min-h-[240px]">
             <Image
               src={brandingImageUrl || "/images/landing.png"}
               alt="Imagen de branding"
@@ -124,14 +124,14 @@ export default function LoginPage() {
           <div className="flex w-full flex-col items-center justify-center p-8 lg:p-12">
             <form
               onSubmit={handleLogin}
-              className="mx-auto w-full max-w-xs space-y-8 py-20"
+              className="mx-auto w-full max-w-xs space-y-8 py-5 sm:py-20"
             >
               <div className="text-center flex flex-col gap-3">
-                <h2 className="text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-bold text-primary sm:text-[2.5rem] bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
                   La PesquerApp
                 </h2>
                 <div className="flex items-center justify-center gap-1 text-nowrap">
-                  <span className="text-xl text-primary">Mantén tu producción</span>
+                  <span className="text-md sm:text-xl text-primary">Mantén tu producción</span>
                   <RotatingText
                     texts={["al día.", "segura.", "eficiente.", "organizada."]}
                     mainClassName="text-xl text-primary font-medium"

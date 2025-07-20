@@ -1,76 +1,61 @@
-// src/lib/fetchWithTenant.js
-
-// NO importamos `headers` directamente aquí a nivel superior.
-// Se importará condicionalmente dentro de la función para el lado del servidor.
-
 export async function fetchWithTenant(url, options = {}) {
-  let tenant = 'brisamar'; // Valor por defecto del tenant
+  let tenant = 'brisamar'; // Valor por defecto si no se detecta ninguno
 
-  // --- Lógica de Detección y Asignación del Tenant ---
-  // Detecta si el código se está ejecutando en el servidor (Node.js) o en el cliente (navegador).
   if (typeof window === 'undefined') {
-    // Estamos en el SERVIDOR (Node.js/Edge Runtime del Middleware).
-    // Aquí es donde `next/headers` está disponible y `window` NO existe.
-    // Importación dinámica para asegurar que `next/headers` solo se cargue en el servidor.
-    const { headers } = await import('next/headers'); // Importación a nivel de función/bloque
+    // ---- SERVIDOR ----
+    const { headers } = await import('next/headers');
     const headersList = headers();
-    const host = headersList.get('host'); // Obtiene el host de los encabezados de la solicitud del servidor
+    const host = headersList.get('host');
 
-    tenant =
-      process.env.NODE_ENV === 'development'
-        ? 'brisamar' // En desarrollo, usa un tenant fijo (ej. para pruebas locales)
-        : host?.split('.')[0] || 'brisamar'; // En producción, obtiene el tenant del subdominio o usa el por defecto
+    if (host) {
+      const parts = host.split('.');
+      const isLocal = host.includes('localhost');
+      tenant = isLocal
+        ? parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'brisamar'
+        : host.split('.')[0];
+    }
 
-    console.error('🌐 Tenant detectado (servidor):', tenant); // Esto aparecerá en los logs del servidor
+    console.error('🌐 Tenant detectado (servidor):', tenant);
   } else {
-    // Estamos en el CLIENTE (Navegador).
-    // Aquí es donde `window` existe y `next/headers` NO está disponible.
-    const clientHost = window.location.host; // Obtiene el host de la URL actual del navegador
-    tenant =
-      process.env.NODE_ENV === 'development'
-        ? 'brisamar'
-        : clientHost?.split('.')[0] || 'brisamar'; // Usa el subdominio del navegador como tenant
+    // ---- CLIENTE ----
+    const clientHost = window.location.host;
+    const parts = clientHost.split('.');
+    const isLocal = clientHost.includes('localhost');
 
-    console.log('🌐 Tenant detectado (cliente):', tenant); // Esto aparecerá en la consola del navegador
+    tenant = isLocal
+      ? parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'brisamar'
+      : parts[0];
+
+    console.log('🌐 Tenant detectado (cliente):', tenant);
   }
 
-  // --- Logging de depuración ---
-  console.log(`➡️ URL de fetch: ${url}`);
-  console.log('📦 Opciones de fetch (originales):', options);
-
-  // --- Construcción de Encabezados Personalizados ---
+  // --- Headers personalizados ---
   const customHeaders = {
-    ...(options.headers || {}), // Mantiene cualquier encabezado ya proporcionado en `options`
-    'X-Tenant': tenant, // Añade o sobrescribe el encabezado 'X-Tenant'
-    'Content-Type': options.headers?.['Content-Type'] || 'application/json', // Establece Content-Type, permitiendo sobrescribir
-    // Define el User-Agent: Si estamos en el cliente usa navigator.userAgent, si no, un string para el servidor.
+    ...(options.headers || {}),
+    'X-Tenant': tenant,
+    'Content-Type': options.headers?.['Content-Type'] || 'application/json',
     'User-Agent': typeof window !== 'undefined' ? navigator.userAgent : 'Node.js Fetch/Next.js',
   };
 
-  // --- Configuración final para la solicitud fetch ---
   const config = {
-    ...options, // Mantiene todas las demás opciones de fetch (method, body, cache, etc.)
-    headers: customHeaders, // Aplica los encabezados personalizados
+    ...options,
+    headers: customHeaders,
   };
 
-  // --- Realiza la solicitud fetch ---
   const res = await fetch(url, config);
 
-  // --- Manejo de la Respuesta y Errores ---
   if (!res.ok) {
-    // Si la respuesta no es exitosa (ej. 4xx, 5xx)
     try {
-      const errorJson = await res.json(); // Intenta parsear la respuesta como JSON
+      const errorJson = await res.json();
       console.error('❌ Error JSON recibido:', errorJson);
       const errorText = errorJson.message || JSON.stringify(errorJson);
       throw new Error(errorText || 'Error inesperado en la solicitud');
     } catch (e) {
-      // Si la respuesta no es un JSON válido o hay otro error al parsear
-      const rawText = await res.text(); // Lee la respuesta como texto plano
+      const rawText = await res.text();
       console.error('❌ Respuesta no es JSON o error de parseo. Texto recibido:', rawText);
       throw new Error(`Error en la respuesta de la API: ${rawText}`);
     }
   }
 
-  return res; // Devuelve la respuesta si todo fue bien
+  return res;
 }
