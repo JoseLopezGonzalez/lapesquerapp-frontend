@@ -100,8 +100,7 @@ export default function LoginPage() {
             <AlertDescription>
               <p>La suscripción de esta empresa está caducada o pendiente de renovación.</p>
               <ul className="list-inside list-disc text-sm">
-                <li>Contacta con soporte para más información.</li>
-                <li> Puedes enviar un correo a <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link></li>
+                <li>Contacta con soporte para más información (<Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link>)</li>
               </ul>
             </AlertDescription>
           </Alert>
