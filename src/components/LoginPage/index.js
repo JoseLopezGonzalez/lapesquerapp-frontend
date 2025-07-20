@@ -130,7 +130,7 @@ export default function LoginPage() {
               {/* Alerta si el tenant no está activo */}
               {!tenantActive && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-xs">
-                  {/* <strong>Atención:</strong>  */}La suscripción de esta empresa está caducada o pendiente de renovación. El acceso está deshabilitado.
+                  {/* <strong>Atención:</strong>  */}La suscripción de esta empresa está caducada o pendiente de renovación.
                   <br />
                   <span className="mt-2 block text-muted-foreground">
                     Contacta con{" "}
