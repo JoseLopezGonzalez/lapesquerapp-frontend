@@ -105,7 +105,7 @@ export default function LoginPage() {
             </AlertDescription>
           </Alert>
         )}
-        <Card className="flex w-full h-full p-2">
+        <Card className="flex w-full h-full p-2 mt-4">
           {/* Panel izquierdo con imagen dinámica */}
           <div className="relative hidden w-full max-w-[500px] overflow-hidden rounded-lg bg-black lg:block">
             <Image
