@@ -11,6 +11,7 @@ import RotatingText from "@/components/Utilities/RotatingText";
 import Image from "next/image";
 import Link from "next/link";
 import { getToastTheme } from "@/customs/reactHotToast";
+import { API_URL_V2 } from "@/configs/config";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function LoginPage() {
     const hostname = window.location.hostname;
     const subdomain = hostname.split(".")[0];
 
-    fetch(`/api/public/tenant/${subdomain}`)
+    fetch(`${API_URL_V2}tenant/${subdomain}`)
       .then((res) => res.json())
       .then((data) => {
         if (!data || data.error || data.active === false) {
