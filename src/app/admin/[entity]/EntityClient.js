@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { EllipsisVertical } from 'lucide-react';
 
 // Import new entityService functions
-import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/EntityService';
+import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
 
 
 const initialData = {
