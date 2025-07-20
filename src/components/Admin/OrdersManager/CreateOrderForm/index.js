@@ -1,43 +1,49 @@
+// components/CreateOrderForm.jsx
 'use client'
 
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import React, { useEffect } from 'react';
+// Importaciones existentes (mantenerlas o refactorizar si es necesario)
+import React, { useEffect, useCallback } from 'react'; // Añadido useCallback
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { Save, PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import DatePicker from '@/components/Shadcn/Dates/DatePicker';
-import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig';
+import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig'; // Hook personalizado
 import { useSession } from 'next-auth/react';
-import { getCustomer } from '@/services/customerService';
-import { useProductOptions } from '@/hooks/useProductOptions';
-import { useTaxOptions } from '@/hooks/useTaxOptions';
+import { getCustomer } from '@/services/customerService'; // Ya externalizado
+import { useProductOptions } from '@/hooks/useProductOptions'; // Hook personalizado
+import { useTaxOptions } from '@/hooks/useTaxOptions'; // Hook personalizado
 import Loader from '@/components/Utilities/Loader';
 import { getToastTheme } from '@/customs/reactHotToast';
 import toast from 'react-hot-toast';
-import { API_URL_V2 } from '@/configs/config';
+
 import EmailListInput from '@/components/ui/emailListInput';
+
+// Importa el nuevo servicio para la creación de pedidos
+import { createOrder } from '@/services/orderService';
+import { Textarea } from '@nextui-org/react';
 
 const CreateOrderForm = ({ onCreate }) => {
     const { productOptions } = useProductOptions();
     const { taxOptions } = useTaxOptions();
 
     const { data: session } = useSession();
-    const token = session?.user?.accessToken;
+    // Ya no necesitamos 'token' directamente aquí para 'createOrder',
+    // porque el servicio lo obtiene con getSession().
+    // const token = session?.user?.accessToken;
 
-    const { defaultValues, formGroups, loading, handleGetCustomer } = useOrderCreateFormConfig();
+    const { defaultValues, formGroups, loading, handleGetCustomer } = useOrderCreateFormConfig(); // Asumiendo que handleGetCustomer no hace llamadas directas a fetchWithTenant aquí
 
     const {
         register,
         handleSubmit,
         control,
         reset,
-        formState: { errors },
+        formState: { errors, isSubmitting }, // Añadido isSubmitting para controlar el estado del botón
         watch,
         setValue
     } = useForm({
@@ -48,49 +54,54 @@ const CreateOrderForm = ({ onCreate }) => {
         mode: 'onChange',
     });
 
+    // Efecto para cargar datos del cliente cuando cambia el cliente seleccionado
     useEffect(() => {
         const selectedCustomerId = watch('customer');
         if (!selectedCustomerId) return;
 
-        getCustomer(selectedCustomerId, token).then((customer) => {
-            setValue('salesperson', customer.salesperson?.id?.toString() || '');
-            setValue('payment', customer.paymentTerm?.id?.toString() || '');
-            setValue('incoterm', customer.incoterm?.id?.toString() || '');
-            setValue('billingAddress', customer.billingAddress || '');
-            setValue('shippingAddress', customer.shippingAddress || '');
-            setValue('transportationNotes', customer.transportationNotes || '');
-            setValue('productionNotes', customer.productionNotes || '');
-            setValue('accountingNotes', customer.accountingNotes || '');
-            setValue('transport', customer.transport?.id?.toString() || '');
-
-            // ✅ Corrección aquí
-            setValue('emails', customer.emails || []);
-            setValue('ccEmails', customer.ccEmails || []);
-        }).catch((err) => {
-            console.error('Error al cargar datos del cliente:', err);
-        });
-    }, [watch('customer')]);
-
-
-
+        // Asegúrate de que 'getCustomer' en services/customerService.js obtenga el token internamente
+        // o que tu hook useOrderCreateFormConfig ya lo maneje si 'handleGetCustomer' lo llama.
+        // Si 'getCustomer' necesita el token explícitamente, pásalo como argumento.
+        // Por la forma en que lo tienes ahora, parece que 'getCustomer' no necesita el token directamente.
+        getCustomer(selectedCustomerId, session?.user?.accessToken) // Pasa el token si getCustomer lo espera
+            .then((customer) => {
+                setValue('salesperson', customer.salesperson?.id?.toString() || '');
+                setValue('payment', customer.paymentTerm?.id?.toString() || '');
+                setValue('incoterm', customer.incoterm?.id?.toString() || '');
+                setValue('billingAddress', customer.billingAddress || '');
+                setValue('shippingAddress', customer.shippingAddress || '');
+                setValue('transportationNotes', customer.transportationNotes || '');
+                setValue('productionNotes', customer.productionNotes || '');
+                setValue('accountingNotes', customer.accountingNotes || '');
+                setValue('transport', customer.transport?.id?.toString() || '');
+                setValue('emails', customer.emails || []);
+                setValue('ccEmails', customer.ccEmails || []);
+            })
+            .catch((err) => {
+                console.error('Error al cargar datos del cliente:', err);
+                toast.error('Error al cargar la información del cliente. Intente de nuevo.', getToastTheme());
+            });
+    }, [watch('customer'), setValue, session]); // Añadido setValue y session a las dependencias
 
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'plannedProducts',
     });
 
+    // Efecto para resetear el formulario con valores por defecto
     useEffect(() => {
         reset({
             ...defaultValues,
             plannedProducts: [],
         });
-    }, [defaultValues]);
+    }, [defaultValues, reset]); // Añadido reset a las dependencias
 
-
+    // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {
         const toastId = toast.loading('Creando pedido...', getToastTheme());
 
         try {
+            // Prepara el payload tal como lo hacías
             const payload = {
                 customer: parseInt(formData.customer),
                 entryDate: formData.entryDate,
@@ -119,34 +130,19 @@ const CreateOrderForm = ({ onCreate }) => {
                 })),
             };
 
-            const res = await fetchWithTenant(`${API_URL_V2}orders`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.message || 'Error al crear el pedido');
-            }
-
-            const data = await res.json();
+            // Llama al servicio `createOrder`
+            const newOrderData = await createOrder(payload);
 
             toast.success('Pedido creado correctamente', { id: toastId });
-
-            // Aquí podrías redirigir o limpiar el formulario
-            // reset(); // si quieres resetear
-            onCreate(data.data.id);
+            reset(); // Resetea el formulario después de una creación exitosa
+            onCreate(newOrderData.id); // Llama a la prop onCreate con el ID del nuevo pedido
 
         } catch (error) {
             console.error('Error al crear el pedido:', error);
-            toast.error(error.message || 'Error desconocido', { id: toastId });
+            // Mostrar el mensaje de error del servicio o un mensaje genérico
+            toast.error(error.message || 'Error desconocido al crear el pedido', { id: toastId });
         }
     };
-
 
     const renderField = (field) => {
         const commonProps = {
@@ -227,16 +223,13 @@ const CreateOrderForm = ({ onCreate }) => {
                         rules={field.rules}
                         render={({ field: { value, onChange } }) => (
                             <EmailListInput
-                                /* value={value} */
-                                value={Array.isArray(value) ? value : []}
+                                value={Array.isArray(value) ? value : []} // Asegura que 'value' es un array
                                 onChange={onChange}
                                 placeholder={field.props?.placeholder}
                             />
                         )}
                     />
                 );
-
-
             case 'Input':
             default:
                 return <Input {...commonProps} />;
@@ -281,6 +274,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                     <Controller
                                         control={control}
                                         name={`plannedProducts.${index}.product`}
+                                        rules={{ required: 'Producto es requerido' }}
                                         render={({ field: { onChange, value } }) => (
                                             <Combobox
                                                 options={productOptions}
@@ -290,18 +284,44 @@ const CreateOrderForm = ({ onCreate }) => {
                                             />
                                         )}
                                     />
-                                    {/* <Input {...register(`plannedProducts.${index}.product`)} placeholder="Producto" /> */}
-                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.quantity`)} placeholder="Cantidad" />
-                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.boxes`)} placeholder="Cajas" />
-                                    <Input type="number" step="any" {...register(`plannedProducts.${index}.unitPrice`)} placeholder="Precio" />
-
+                                    <Input
+                                        type="number"
+                                        step="any"
+                                        {...register(`plannedProducts.${index}.quantity`, {
+                                            required: 'Cantidad es requerida',
+                                            valueAsNumber: true,
+                                            min: { value: 0.01, message: 'Cantidad debe ser mayor que 0' }
+                                        })}
+                                        placeholder="Cantidad"
+                                    />
+                                    <Input
+                                        type="number"
+                                        step="any"
+                                        {...register(`plannedProducts.${index}.boxes`, {
+                                            required: 'Cajas son requeridas',
+                                            valueAsNumber: true,
+                                            min: { value: 1, message: 'Cajas debe ser al menos 1' }
+                                        })}
+                                        placeholder="Cajas"
+                                    />
+                                    <Input
+                                        type="number"
+                                        step="any"
+                                        {...register(`plannedProducts.${index}.unitPrice`, {
+                                            required: 'Precio unitario es requerido',
+                                            valueAsNumber: true,
+                                            min: { value: 0.01, message: 'Precio debe ser mayor que 0' }
+                                        })}
+                                        placeholder="Precio"
+                                    />
                                     <Controller
                                         control={control}
                                         name={`plannedProducts.${index}.tax`}
+                                        rules={{ required: 'IVA es requerido' }}
                                         render={({ field: { onChange, value } }) => (
                                             <Select value={value} onValueChange={onChange}>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="iva" />
+                                                    <SelectValue placeholder="IVA" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {taxOptions.map((tax) => (
@@ -313,10 +333,15 @@ const CreateOrderForm = ({ onCreate }) => {
                                             </Select>
                                         )}
                                     />
-                                    {/* <Input {...register(`plannedProducts.${index}.tax`)} placeholder="IVA" /> */}
                                     <Button type="button" variant="outline" onClick={() => remove(index)}>
                                         <Trash2 className="h-4 w-4 " />
                                     </Button>
+                                    {/* Muestra errores para campos de productos planificados */}
+                                    {errors.plannedProducts?.[index]?.product && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].product.message}</p>}
+                                    {errors.plannedProducts?.[index]?.quantity && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].quantity.message}</p>}
+                                    {errors.plannedProducts?.[index]?.boxes && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].boxes.message}</p>}
+                                    {errors.plannedProducts?.[index]?.unitPrice && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].unitPrice.message}</p>}
+                                    {errors.plannedProducts?.[index]?.tax && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].tax.message}</p>}
                                 </div>
                             ))}
                             <Button type="button" variant="outline" onClick={() => append({ product: '', quantity: '', boxes: '', unitPrice: '', tax: '' })}>
@@ -326,9 +351,9 @@ const CreateOrderForm = ({ onCreate }) => {
                     </div>
 
                     <div className="flex justify-end gap-4 pt-4">
-                        <Button type="submit">
+                        <Button type="submit" disabled={isSubmitting}>
                             <Save className="h-4 w-4 mr-2" />
-                            Guardar Pedido
+                            {isSubmitting ? 'Guardando...' : 'Guardar Pedido'}
                         </Button>
                     </div>
                 </form>

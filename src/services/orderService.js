@@ -2,6 +2,8 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { getSession } from "next-auth/react";
+
 
 
 /**
@@ -618,6 +620,44 @@ export async function getTransportChartData({ token, from, to }) {
 
 
 
+// services/orderCreationService.js
 
+/**
+ * Crea un nuevo pedido enviando los datos a la API.
+ * @param {Object} orderPayload - Los datos del pedido a crear.
+ * @returns {Promise<Object>} La respuesta de la API (los datos del pedido creado).
+ * @throws {Error} Si la sesión no está autenticada o si la API devuelve un error.
+ */
+export const createOrder = async (orderPayload) => {
+    const session = await getSession(); // Obtener la sesión dentro del servicio
 
+    if (!session || !session.user || !session.user.accessToken) {
+        throw new Error("No hay sesión autenticada. No se puede crear el pedido.");
+    }
+
+    try {
+        const response = await fetchWithTenant(`${API_URL_V2}orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json', // Es buena práctica incluir Accept
+                Authorization: `Bearer ${session.user.accessToken}`,
+                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            },
+            body: JSON.stringify(orderPayload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            // Lanza un error con el mensaje del backend si está disponible
+            throw new Error(errorData.message || `Error ${response.status}: Error al crear el pedido.`);
+        }
+
+        const data = await response.json();
+        return data.data; // Asumiendo que la API devuelve los datos creados bajo 'data'
+    } catch (error) {
+        console.error("Error en createOrder:", error);
+        throw error; // Re-lanza el error para que el componente pueda manejarlo con toast
+    }
+};
 

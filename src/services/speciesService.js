@@ -1,10 +1,7 @@
+// services/speciesService.js
+// This file would contain the actual fetchWithTenant call for species options.
+import { API_URL_V2 } from "@/configs/config"; // Assuming API_URL_V2 is also used here
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-// /src/services/orderService.js
-
-import { API_URL_V2 } from "@/configs/config";
-
-
-
 
 
 /* getActiveOrders */
@@ -37,3 +34,8 @@ export function getSpeciesOptions(token) {
             console.log('getSpeciesOptions finalizado');
         });
 }
+
+
+
+
+

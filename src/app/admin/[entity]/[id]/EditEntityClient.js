@@ -1,9 +1,9 @@
+// components/EditEntityClient.jsx
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
-import { getSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,9 @@ import { API_URL_V2 } from "@/configs/config";
 import get from "lodash.get";
 import { getToastTheme } from "@/customs/reactHotToast";
 import Loader from "@/components/Utilities/Loader";
-import { fetchWithTenant } from "@lib/fetchWithTenant";
+
+// Import the new service functions
+import { fetchEntityData, fetchAutocompleteOptions, submitEntityForm } from '@/services/editEntityService';
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -29,13 +31,11 @@ export function mapApiDataToFormValues(fields, data) {
         const key = field.name;
 
         if (field.path) {
-            // Usamos lodash.get para acceder a rutas anidadas como 'fishingGear.id'
             result[key] = get(data, field.path, null);
         } else {
             result[key] = data[key];
         }
     }
-
     return result;
 }
 
@@ -62,7 +62,6 @@ export default function EditEntityClient({ config }) {
     } = config.editForm;
 
     const fields = config.fields;
-    // Reutilizamos solo los campos
 
     const {
         register, handleSubmit, control, reset,
@@ -72,77 +71,73 @@ export default function EditEntityClient({ config }) {
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loading, setLoading] = useState(true);
 
-    // Cargar datos de la entidad
-    useEffect(() => {
-        const fetchWithTenantData = async () => {
-            const session = await getSession();
-            const res = await fetchWithTenant(`${API_URL_V2}${endpoint}/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${session?.user?.accessToken}`,
-                },
-            });
-
-            const data = await res.json();
-            const formValues = mapApiDataToFormValues(fields, data.data);
+    // Function to fetch and set entity data
+    const loadEntityData = useCallback(async () => {
+        try {
+            const data = await fetchEntityData(`${API_URL_V2}${endpoint}/${id}`);
+            const formValues = mapApiDataToFormValues(fields, data);
             reset(formValues);
+        } catch (err) {
+            let userMessage = "Error al cargar los datos de la entidad.";
+            if (err instanceof Response) {
+                if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
+                else if (err.status === 403) userMessage = "Permiso denegado.";
+                else userMessage = `Error ${err.status}: ${userMessage}`;
+            }
+            toast.error(userMessage, getToastTheme());
+            console.error("Error loading entity data:", err);
+            // Optionally redirect on error if data is critical
+            // router.push('/error-page');
+        } finally {
             setLoading(false);
-        };
-        fetchWithTenantData();
-    }, [id]);
+        }
+    }, [id, endpoint, fields, reset]); // Add reset to dependencies
 
-    // Cargar opciones para Autocomplete
-    useEffect(() => {
-        const fetchWithTenantOptions = async () => {
-            const session = await getSession();
-            const result = {};
-            await Promise.all(
-                fields.map(async (field) => {
-                    if (field.type === "Autocomplete" && field.endpoint) {
-                        try {
-                            const res = await fetchWithTenant(`${API_URL_V2}${field.endpoint}`, {
-                                headers: {
-                                    Authorization: `Bearer ${session?.user?.accessToken}`,
-                                },
-                            });
-                            const data = await res.json();
-                            result[field.name] = data.map((item) => ({
-                                value: item.id,
-                                label: item.name,
-                            }));
-                        } catch (err) {
-                            console.error(`Error cargando ${field.name}`, err);
-                            result[field.name] = [];
-                        }
+    // Function to fetch autocomplete options
+    const loadAutocompleteOptions = useCallback(async () => {
+        const result = {};
+        await Promise.all(
+            fields.map(async (field) => {
+                if (field.type === "Autocomplete" && field.endpoint) {
+                    try {
+                        const options = await fetchAutocompleteOptions(`${API_URL_V2}${field.endpoint}`);
+                        result[field.name] = options;
+                    } catch (err) {
+                        console.error(`Error cargando opciones de ${field.name}:`, err);
+                        result[field.name] = [];
+                        // Optionally show a toast here if an individual autocomplete fails
                     }
-                })
-            );
-            setLoadedOptions(result);
-        };
+                }
+            })
+        );
+        setLoadedOptions(result);
+    }, [fields]); // Add fields to dependencies
 
-        fetchWithTenantOptions();
-    }, [fields]);
+    // Load initial data and options on component mount
+    useEffect(() => {
+        loadEntityData();
+        loadAutocompleteOptions();
+    }, [loadEntityData, loadAutocompleteOptions]);
+
 
     const onSubmit = async (data) => {
         try {
-            const session = await getSession();
-            const res = await fetchWithTenant(`${API_URL_V2}${endpoint}/${id}`, {
-                method,
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session?.user?.accessToken}`,
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (res.ok) {
-                toast.success(successMessage, getToastTheme());
-                /* router.push(`/admin/${endpoint}`); */
-            } else {
-                toast.error(errorMessage, getToastTheme());
-            }
+            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, data);
+            toast.success(successMessage, getToastTheme());
+            // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
         } catch (err) {
-            console.error(err);
-            toast.error("Error inesperado");
+            let userMessage = errorMessage || "Error inesperado al guardar.";
+            if (err instanceof Response) {
+                if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
+                else if (err.status === 403) userMessage = "Permiso denegado.";
+                else if (err.status === 422) { // Unprocessable Entity - often for validation errors
+                    const errorBody = await err.json();
+                    userMessage = errorBody.message || userMessage;
+                    // You might want to display specific field errors from errorBody.errors here
+                }
+            }
+            toast.error(userMessage, getToastTheme());
+            console.error("Submission error:", err);
         }
     };
 
@@ -224,7 +219,8 @@ export default function EditEntityClient({ config }) {
     if (loading) return (
         <div className="h-full w-full flex items-center justify-center">
             <Loader className="h-10 w-10" />
-        </div>)
+        </div>
+    );
 
     return (
         <div className="h-full">
@@ -262,4 +258,3 @@ export default function EditEntityClient({ config }) {
         </div>
     );
 }
-

@@ -1,4 +1,3 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
 // useLabelEditor.js
 
 import { getLabel, getLabelsOptions } from "@/services/labelService";

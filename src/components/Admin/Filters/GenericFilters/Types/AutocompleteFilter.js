@@ -1,56 +1,56 @@
+// components/AutocompleteFilter.jsx
 'use client';
 
 import { Combobox } from '@/components/Shadcn/Combobox/index';
 import { Badge } from '@/components/ui/badge';
-import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector';
-import { API_URL_V2 } from '@/configs/config';
+// import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector'; // Comentado, ya que no se usa en el render
+// import { API_URL_V2 } from '@/configs/config'; // Ya no es necesario aquí, lo usa el servicio
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { getSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { fetchWithTenant } from "@lib/fetchWithTenant";
+// import { getSession } from 'next-auth/react'; // Ya no es necesario aquí, lo usa el servicio
+import { useEffect, useState, useCallback } from 'react'; // Añadido useCallback
+import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService'; // Importa el nuevo servicio
+import toast from 'react-hot-toast'; // Para mostrar mensajes de error al usuario
 
 export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete, value }) => {
 
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
+    // Utilizamos useCallback para memoizar la función de carga de opciones.
+    // Esto previene que se re-cree en cada render si sus dependencias no cambian.
+    const loadOptions = useCallback(async () => {
         if (!endpoint) return;
 
-        const fetchWithTenantOptions = async () => {
-            setLoading(true);
-            try {
-                const session = await getSession(); // Obtener sesión actual
+        setLoading(true);
+        try {
+            // Llama a la función del servicio para obtener las opciones
+            const fetchedOptions = await fetchAutocompleteFilterOptions(endpoint);
+            setOptions(fetchedOptions);
+        } catch (error) {
+            console.error("Error al cargar opciones del filtro de autocompletado:", error);
+            // Muestra un mensaje de error amigable al usuario
+            toast.error(`Error al cargar las opciones para ${label}. Por favor, inténtelo de nuevo.`);
+            setOptions([]); // Asegúrate de que las opciones estén vacías en caso de error
+        } finally {
+            setLoading(false);
+        }
+    }, [endpoint, label]); // 'label' añadido como dependencia por si se usa en el mensaje de error
 
+    // Llama a loadOptions cuando el componente se monta o cuando 'endpoint' cambia.
+    useEffect(() => {
+        loadOptions();
+    }, [loadOptions]); // Dependencia de loadOptions
 
-                const response = await fetchWithTenant(`${API_URL_V2}${endpoint}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${session?.user?.accessToken}`, // Enviar el token
-                            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
-                        },
-                    }
-                );
-                const data = await response.json();
-                setOptions(data.map((item) => ({ value: item.id, label: item.name })));
-            } catch (error) {
-                console.error("Error fetchWithTenanting options:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchWithTenantOptions();
-    }, [endpoint]);
-
-    const handleOnAdd = (item) => {
-        const selectedOption = options.find((option) => option.value === item);
-        const newItem = { id: selectedOption.value, name: selectedOption.label };
-        onAdd(newItem);
+    const handleOnAdd = (itemValue) => { // Renombrado a itemValue para claridad
+        const selectedOption = options.find((option) => option.value === itemValue);
+        if (selectedOption) {
+            const newItem = { id: selectedOption.value, name: selectedOption.label };
+            onAdd(newItem);
+        } else {
+            console.warn("Opción seleccionada no encontrada en las opciones cargadas:", itemValue);
+            // Opcionalmente, mostrar un toast aquí si es un escenario inesperado
+        }
     }
-
 
     return (
         <div className="grid grid-cols-2 gap-y-6 gap-x-3">
@@ -62,21 +62,16 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                     >
                         {label}
                     </label>
+                    {/* Puedes mostrar un indicador de carga en el Combobox si lo soporta,
+                        o deshabilitarlo mientras carga. */}
                     <Combobox
                         options={options}
                         placeholder={placeholder || 'Escribe para buscar...'}
                         searchPlaceholder={'Buscar...'}
                         notFoundMessage={'No se encontraron resultados'}
-                        /* value={value} */
                         onChange={handleOnAdd}
-                    /* onBlur={onBlur} */
+                        disabled={loading} // Deshabilita el Combobox mientras carga
                     />
-                    {/*  <AutocompleteSelector
-                        placeholder={placeholder || 'Escribe para buscar...'}
-                        inputClassName="w-full bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-xl focus:ring-sky-500 focus:border-sky-500 block p-2.5 dark:bg-neutral-700/50 dark:border-neutral-600 dark:placeholder-neutral-500 placeholder:italic dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-                        elements={options}
-                        onChange={onAdd}
-                    /> */}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {value?.length > 0 && value?.map((item) => (

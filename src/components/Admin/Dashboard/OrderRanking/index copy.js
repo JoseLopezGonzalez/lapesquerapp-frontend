@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from "react"
 import { SearchX } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
-import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 import {
     Card,
