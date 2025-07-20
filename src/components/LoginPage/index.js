@@ -40,6 +40,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (!tenantActive) {
       toast.error("La suscripción está caducada o no ha sido renovada", getToastTheme());
       return;
@@ -77,17 +78,6 @@ export default function LoginPage() {
 
   if (!tenantChecked) {
     return <div className="text-center py-10">Cargando...</div>;
-  }
-
-  if (!tenantActive) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black text-center p-8">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">Acceso no disponible</h2>
-        <p className="text-muted-foreground">
-          La suscripción de esta empresa está caducada o pendiente de renovación.
-        </p>
-      </div>
-    );
   }
 
   return (
@@ -132,6 +122,21 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Alerta si el tenant no está activo */}
+              {!tenantActive && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm">
+                  <strong>Atención:</strong> La suscripción de esta empresa está caducada o pendiente de renovación. El acceso está deshabilitado.
+                  <br />
+                  <span className="mt-2 block text-muted-foreground">
+                    Contacta con{" "}
+                    <a href="mailto:soporte@pesquerapp.com" className="underline font-medium text-red-700">
+                      soporte@pesquerapp.com
+                    </a>{" "}
+                    para reactivar tu suscripción.
+                  </span>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="email">Email</Label>
@@ -143,6 +148,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ejemplo@pymcolorao.es"
                     required
+                    disabled={!tenantActive}
                   />
                 </div>
 
@@ -157,16 +163,17 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="*******"
                     required
+                    disabled={!tenantActive}
                   />
                 </div>
 
-                <Button className="w-full" type="submit" disabled={loading}>
+                <Button className="w-full" type="submit" disabled={loading || !tenantActive}>
                   {loading ? "Entrando..." : "Login"}
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
                   ¿Algún problema?{" "}
-                  <Link href="#" className="text-primary hover:text-muted-foreground">
+                  <Link href="mailto:soporte@pesquerapp.com" className="text-primary hover:text-muted-foreground">
                     Contáctanos
                   </Link>
                 </p>
