@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { API_URL_V2 } from "@/configs/config";
+import Loader from "../Utilities/Loader";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -77,7 +78,9 @@ export default function LoginPage() {
   };
 
   if (!tenantChecked) {
-    return <div className="text-center py-10">Cargando...</div>;
+    return <div className="h-screen w-full flex items-center justify-center">
+      <Loader />
+    </div>;
   }
 
   return (
@@ -124,12 +127,12 @@ export default function LoginPage() {
 
               {/* Alerta si el tenant no está activo */}
               {!tenantActive && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm">
-                  <strong>Atención:</strong> La suscripción de esta empresa está caducada o pendiente de renovación. El acceso está deshabilitado.
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-xs">
+                  {/* <strong>Atención:</strong>  */}La suscripción de esta empresa está caducada o pendiente de renovación. El acceso está deshabilitado.
                   <br />
                   <span className="mt-2 block text-muted-foreground">
                     Contacta con{" "}
-                    <a href="mailto:soporte@pesquerapp.com" className="underline font-medium text-red-700">
+                    <a href="mailto:soporte@pesquerapp.com" className="underline font-medium ">
                       soporte@pesquerapp.com
                     </a>{" "}
                     para reactivar tu suscripción.
