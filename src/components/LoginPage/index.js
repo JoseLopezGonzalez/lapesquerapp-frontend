@@ -23,16 +23,21 @@ export default function LoginPage() {
   const [tenantActive, setTenantActive] = useState(true);
   const [brandingImageUrl, setBrandingImageUrl] = useState("");
   const [tenantChecked, setTenantChecked] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     const hostname = window.location.hostname;
     const subdomain = hostname.split(".")[0];
 
-    // Construimos directamente la URL de la imagen
+    if (subdomain === "test") {
+      setEmail("admin@lapesquera.es");
+      setPassword("admin");
+      setIsDemo(true);
+    }
+
     const brandingImagePath = `/images/tenants/${subdomain}/image.png`;
     setBrandingImageUrl(brandingImagePath);
 
-    // Validamos la suscripción con el backend
     fetch(`${API_URL_V2}public/tenant/${subdomain}`)
       .then((res) => res.json())
       .then((data) => {
@@ -100,14 +105,24 @@ export default function LoginPage() {
             <AlertDescription>
               <p>La suscripción de esta empresa está caducada o pendiente de renovación.</p>
               <ul className="list-inside list-disc text-sm">
-                <li>Contacta con soporte para más información (<Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link>)</li>
+                <li>
+                  Contacta con soporte para más información (
+                  <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link>)
+                </li>
               </ul>
             </AlertDescription>
           </Alert>
         )}
-        <Card className="flex sm:flex-row flex-col w-full h-full p-2 mt-4">
+
+        <Card className="relative flex sm:flex-row flex-col w-full h-full p-2 mt-4">
+          {isDemo && (
+            <div className="absolute top-2 right-2 z-10 bg-lime-100 text-lime-800 text-xs font-semibold px-3 py-1 rounded-lg shadow">
+              MODO DEMO
+            </div>
+          )}
+
           {/* Panel izquierdo con imagen dinámica */}
-          <div className="relative  w-full max-w-[500px] overflow-hidden rounded-lg   min-h-[240px]">
+          <div className="relative w-full max-w-[500px] overflow-hidden rounded-lg min-h-[240px]">
             <Image
               src={brandingImageUrl || "/images/landing.png"}
               alt="Imagen de branding"
@@ -147,9 +162,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Alerta si el tenant no está activo */}
-
-
               <div className="space-y-4">
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="email">Email</Label>
@@ -186,7 +198,10 @@ export default function LoginPage() {
 
                 <p className="text-center text-sm text-muted-foreground">
                   ¿Algún problema?{" "}
-                  <Link href="mailto:soporte@pesquerapp.com" className="text-primary hover:text-muted-foreground">
+                  <Link
+                    href="mailto:soporte@pesquerapp.com"
+                    className="text-primary hover:text-muted-foreground"
+                  >
                     Contáctanos
                   </Link>
                 </p>
