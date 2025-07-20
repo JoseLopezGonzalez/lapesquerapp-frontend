@@ -25,7 +25,7 @@ export default function LoginPage() {
     const hostname = window.location.hostname;
     const subdomain = hostname.split(".")[0];
 
-    fetch(`${API_URL_V2}tenant/${subdomain}`)
+    fetch(`${API_URL_V2}public/tenant/${subdomain}`)
       .then((res) => res.json())
       .then((data) => {
         if (!data || data.error || data.active === false) {
