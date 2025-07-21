@@ -171,7 +171,7 @@ export default function LoginPage() {
                     name="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ejemplo@pymcolorao.es"
+                    placeholder="ejemplo@lapesquerapp.es"
                     required
                     disabled={!tenantActive}
                   />
