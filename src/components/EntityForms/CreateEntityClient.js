@@ -43,7 +43,7 @@ function prepareValidations(fields) {
 }
 
 
-export default function CreateEntityClient({ config }) {
+export default function CreateEntityClient({ config, onSuccess, onCancel }) {
     const { title, endpoint, successMessage, errorMessage } = config.createForm;
     const fields = config.fields;
 
@@ -94,10 +94,11 @@ export default function CreateEntityClient({ config }) {
             if (response.ok) {
                 toast.success(successMessage || "Entidad creada con éxito!", getToastTheme());
                 reset(); // Clear form after successful submission
+                if (typeof onSuccess === 'function') onSuccess();
                 // Redirect to the entity table page
                 // Note: Using window.location.href forces a full page reload.
                 // Consider useRouter().push() for a smoother Next.js navigation if appropriate.
-                window.location.href = `/admin/${endpoint.split("/").pop()}`;
+                // window.location.href = `/admin/${endpoint.split("/").pop()}`;
             } else {
                 let userErrorMessage = errorMessage || "Error al crear la entidad";
                 // Attempt to parse response for more specific error messages (e.g., validation errors)
@@ -236,7 +237,7 @@ export default function CreateEntityClient({ config }) {
                     type="button"
                     variant="outline"
                     className="ml-2"
-                    onClick={() => reset()}
+                    onClick={onCancel ? onCancel : () => reset()}
                 >
                     Cancelar
                 </Button>
