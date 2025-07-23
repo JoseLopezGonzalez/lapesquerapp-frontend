@@ -557,12 +557,14 @@ export default function EntityClient({ config }) {
                             </DropdownMenu>
                         </Dropdown>
                     )}
-                    <GenericFilters
-                        data={{
-                            configFiltersGroup: config.filtersGroup, // Pasa tanto `search` como `groups`
-                            updateFilters: (updatedFilters) => setFilters(updatedFilters),
-                        }}
-                    />
+                    {config.filtersGroup && (
+                        <GenericFilters
+                            data={{
+                                configFiltersGroup: config.filtersGroup, // Pasa tanto `search` como `groups`
+                                updateFilters: (updatedFilters) => setFilters(updatedFilters),
+                            }}
+                        />
+                    )}
                     {!config.hideCreateButton && (
                         <Button
                             onClick={handleOpenCreate}
