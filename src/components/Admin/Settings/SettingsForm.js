@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
 import { getSettings, updateSettings } from '@/services/settingsService';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const SECTIONS = [
   {
@@ -97,32 +98,36 @@ export default function SettingsForm() {
   if (loading) return <div className="p-8">Cargando configuración...</div>;
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-6 space-y-8">
-      <h1 className="text-2xl font-bold mb-4">Configuración de la empresa</h1>
-      {SECTIONS.map((section) => (
-        <div key={section.title} className="bg-white dark:bg-neutral-900 rounded-xl shadow p-4 space-y-4">
-          <h2 className="text-lg font-semibold mb-2">{section.title}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {section.fields.map((field) => (
-              <div key={field.name}>
-                <Label htmlFor={field.name}>{field.label}</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  value={values[field.name] || ''}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
+    <div className="h-full w-full flex flex-col">
+      <ScrollArea className="flex-1 h-full w-full">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-6 space-y-8 min-h-full">
+          <h1 className="text-2xl font-bold mb-4">Configuración de la empresa</h1>
+          {SECTIONS.map((section) => (
+            <div key={section.title} className="bg-white dark:bg-neutral-900 rounded-xl shadow p-4 space-y-4">
+              <h2 className="text-lg font-semibold mb-2">{section.title}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {section.fields.map((field) => (
+                  <div key={field.name}>
+                    <Label htmlFor={field.name}>{field.label}</Label>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={values[field.name] || ''}
+                      onChange={handleChange}
+                      autoComplete="off"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          ))}
+          <div className="flex justify-end">
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </Button>
           </div>
-        </div>
-      ))}
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Guardando...' : 'Guardar cambios'}
-        </Button>
-      </div>
-    </form>
+        </form>
+      </ScrollArea>
+    </div>
   );
 } 
