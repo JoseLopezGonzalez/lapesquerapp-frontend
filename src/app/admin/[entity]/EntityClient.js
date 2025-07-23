@@ -398,8 +398,8 @@ export default function EntityClient({ config }) {
     }
 
     const headerData = {
-        title: config.title,
-        description: config.description,
+        title: config.title || '',
+        description: config.description || '',
     };
 
     // Handler para abrir modal de creación
@@ -579,9 +579,9 @@ export default function EntityClient({ config }) {
                     )}
                 </Header>
                 <Body
-                    table={config.table}
+                    table={config.table || { headers: [] }}
                     data={data}
-                    emptyState={config.emptyState}
+                    emptyState={config.emptyState || { title: '', description: '' }}
                     isSelectable={true}
                     selectedRows={selectedRows}
                     onSelectionChange={handleOnSelectionChange}
