@@ -591,6 +591,7 @@ export default function EntityClient({ config }) {
             {/* Modal de creación/edición */}
             <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
                 <DialogContent className="max-w-5xl w-full">
+                    <h1 className="text-xl font-semibold p-2 pb-0">{config.title}</h1>
                     {modal.mode === 'create' && (
                         <CreateEntityClient config={config} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
                     )}

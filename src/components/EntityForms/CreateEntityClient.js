@@ -208,7 +208,6 @@ export default function CreateEntityClient({ config }) {
     return (
         <div className="h-full flex flex-col pt-4">
             <ScrollArea className="w-full h-full max-h-[80vh] p-2 ">
-                <h1 className="text-xl p-2">{title}</h1>
                 <form
                     id="entity-form"
                     onSubmit={handleSubmit(onSubmit)}
