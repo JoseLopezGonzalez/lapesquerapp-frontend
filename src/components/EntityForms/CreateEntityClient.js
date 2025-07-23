@@ -19,6 +19,7 @@ import DatePicker from "@/components/Shadcn/Dates/DatePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
 import { API_URL_V2 } from "@/configs/config";
 import EmailListInput from "@/components/ui/emailListInput";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import the new service functions
 import { fetchAutocompleteOptions, createEntity } from '@/services/createEntityService';
@@ -205,10 +206,11 @@ export default function CreateEntityClient({ config }) {
     };
 
     return (
-        <div className="h-full">
-            <div className="flex flex-col w-full h-full max-h-[80vh] overflow-y-auto p-2 sm:p-6">
+        <div className="h-full flex flex-col">
+            <ScrollArea className="w-full h-full max-h-[80vh] p-2 sm:p-6">
                 <h1 className="text-xl p-2">{title}</h1>
                 <form
+                    id="entity-form"
                     onSubmit={handleSubmit(onSubmit)}
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5"
                 >
@@ -228,21 +230,20 @@ export default function CreateEntityClient({ config }) {
                             )}
                         </div>
                     ))}
-
-                    <div className="sm:col-span-6 justify-end p-4 flex gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="ml-2"
-                            onClick={() => reset()}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            Crear
-                        </Button>
-                    </div>
                 </form>
+            </ScrollArea>
+            <div className="sm:col-span-6 justify-end p-4 flex gap-2 border-t bg-background">
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => reset()}
+                >
+                    Cancelar
+                </Button>
+                <Button type="submit" form="entity-form" disabled={isSubmitting}>
+                    Crear
+                </Button>
             </div>
         </div>
     );

@@ -20,6 +20,7 @@ import { API_URL_V2 } from "@/configs/config";
 import get from "lodash.get";
 import { getToastTheme } from "@/customs/reactHotToast";
 import Loader from "@/components/Utilities/Loader";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import the new service functions
 import { fetchEntityData, fetchAutocompleteOptions, submitEntityForm } from '@/services/editEntityService';
@@ -225,8 +226,8 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
     );
 
     return (
-        <div className="h-full">
-            <div className="flex flex-col w-full h-full max-h-[80vh] overflow-y-auto p-2 sm:p-6">
+        <div className="h-full flex flex-col">
+            <ScrollArea className="w-full h-full max-h-[80vh] p-2 sm:p-6">
                 <h1 className="text-xl p-2">{title}</h1>
                 <form
                     onSubmit={handleSubmit(onSubmit)}
@@ -246,16 +247,15 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
                             )}
                         </div>
                     ))}
-
-                    <div className="sm:col-span-6 justify-end p-4 flex gap-2">
-                        <Button type="button" variant="outline" onClick={onCancel}>
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            Guardar
-                        </Button>
-                    </div>
                 </form>
+            </ScrollArea>
+            <div className="sm:col-span-6 justify-end p-4 flex gap-2 border-t bg-background">
+                <Button type="button" variant="outline" onClick={onCancel}>
+                    Cancelar
+                </Button>
+                <Button type="submit" form="entity-form" disabled={isSubmitting}>
+                    Guardar
+                </Button>
             </div>
         </div>
     );
