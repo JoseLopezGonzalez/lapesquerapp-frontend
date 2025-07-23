@@ -408,6 +408,7 @@ export default function EntityClient({ config }) {
     };
     // Handler para abrir modal de edición
     const handleOpenEdit = (id) => {
+        console.log('id', id);
         setModal({ open: true, mode: 'edit', editId: id });
     };
     // Handler para cerrar modal y refrescar datos si es necesario
