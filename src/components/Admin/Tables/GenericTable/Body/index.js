@@ -7,6 +7,7 @@ import { formatDate, formatDateHour } from '@/helpers/formats/dates/formatDates'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { ArrowRightIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@nextui-org/react';
+import { Pencil } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 // Predefinir los colores y estilos para los badges
@@ -158,7 +159,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 </Button>
                                                 {onEdit && (
                                                     <Button
-                                                        variant="outline"
+                                                        /* variant="outline" */
                                                         size="icon"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -167,9 +168,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                         className="rounded-l-md"
                                                     >
                                                         <span className="sr-only">Editar</span>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487a2.1 2.1 0 1 1 2.97 2.97L7.5 19.788l-4 1 1-4 12.362-12.3ZM19 7l-2-2" />
-                                                        </svg>
+                                                        <Pencil className="h-4 w-4" />
                                                     </Button>
                                                 )}
                                             </div>

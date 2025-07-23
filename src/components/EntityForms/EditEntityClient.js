@@ -226,7 +226,7 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
 
     return (
         <div className="h-full">
-            <div className="flex flex-col w-full h-full overflow-y-auto p-2 sm:p-14">
+            <div className="flex flex-col w-full h-full overflow-y-auto p-2 sm:p-6">
                 <h1 className="text-xl p-2">{title}</h1>
                 <form
                     onSubmit={handleSubmit(onSubmit)}
