@@ -3,6 +3,20 @@ import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+// --- Rate limiting simple en memoria ---
+const loginAttempts = {};
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+
+function getClientIp(req) {
+  // Next.js API routes: req.headers['x-forwarded-for'] o req.socket.remoteAddress
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    "unknown"
+  );
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -11,7 +25,20 @@ const handler = NextAuth({
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
+        // --- Rate limiting por IP ---
+        const ip = getClientIp(req);
+        const now = Date.now();
+        if (!loginAttempts[ip]) {
+          loginAttempts[ip] = [];
+        }
+        // Eliminar intentos viejos
+        loginAttempts[ip] = loginAttempts[ip].filter((ts) => now - ts < WINDOW_MS);
+        if (loginAttempts[ip].length >= MAX_ATTEMPTS) {
+          throw new Error("Demasiados intentos de inicio de sesión. Intenta de nuevo más tarde.");
+        }
+        loginAttempts[ip].push(now);
+        // --- Fin rate limiting ---
         try {
           const res = await fetchWithTenant(`${API_URL_V2}login`, {
             method: 'POST',

@@ -3,9 +3,13 @@
 import LandingPage from "@/components/LandingPage";
 import LoginPage from "@/components/LoginPage";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [isSubdomain, setIsSubdomain] = useState(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -28,6 +32,12 @@ export default function HomePage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (isSubdomain && status === "authenticated") {
+      router.replace("/admin/home");
+    }
+  }, [isSubdomain, status, router]);
 
   if (isSubdomain === null) return null; // loading/spinner
 
