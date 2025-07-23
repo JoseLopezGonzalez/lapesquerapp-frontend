@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2 } from 'lucide-react';
 
 export const navigationConfig = [
     {
