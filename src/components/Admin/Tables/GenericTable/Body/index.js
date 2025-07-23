@@ -37,6 +37,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     const { headers } = table;
 
     console.log(table);
+    console.log(data);
 
 
     const toggleSelectAll = (checked) => {
