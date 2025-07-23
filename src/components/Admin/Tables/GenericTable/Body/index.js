@@ -36,7 +36,7 @@ const badgeStyles = {
 export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange, selectedRows, onEdit }) => {
     const { headers } = table;
 
-    console.log(headers);
+    console.log(table);
 
 
     const toggleSelectAll = (checked) => {
