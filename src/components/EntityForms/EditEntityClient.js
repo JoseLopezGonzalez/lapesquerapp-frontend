@@ -229,6 +229,7 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
         <div className="h-full flex flex-col ">
             <ScrollArea className="w-full h-full max-h-[70vh] p-2 ">
                 <form
+                    id="entity-form"
                     onSubmit={handleSubmit(onSubmit)}
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 "
                 >
