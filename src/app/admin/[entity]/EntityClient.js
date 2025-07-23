@@ -18,8 +18,8 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import { Button } from '@/components/ui/button';
 import { EllipsisVertical } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import CreateEntityClient from '../create/CreateEntityClient';
-import EditEntityClient from '../[id]/EditEntityClient';
+import CreateEntityClient from '@/components/EntityForms/CreateEntityClient';
+import EditEntityClient from '@/components/EntityForms/EditEntityClient';
 
 // Import new entityService functions
 import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
