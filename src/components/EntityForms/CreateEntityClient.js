@@ -206,7 +206,7 @@ export default function CreateEntityClient({ config }) {
 
     return (
         <div className="h-full">
-            <div className="flex flex-col w-full h-full  overflow-y-auto p-2 sm:p-6">
+            <div className="flex flex-col w-full h-full max-h-[80vh] overflow-y-auto p-2 sm:p-6">
                 <h1 className="text-xl p-2">{title}</h1>
                 <form
                     onSubmit={handleSubmit(onSubmit)}
