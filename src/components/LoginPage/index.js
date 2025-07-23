@@ -15,6 +15,7 @@ import { API_URL_V2 } from "@/configs/config";
 import Loader from "../Utilities/Loader";
 import { AlertCircleIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const [brandingImageUrl, setBrandingImageUrl] = useState("");
   const [tenantChecked, setTenantChecked] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -179,17 +181,28 @@ export default function LoginPage() {
 
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    type="password"
-                    id="password"
-                    name="password"
-                    autoComplete="off"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="*******"
-                    required
-                    disabled={!tenantActive}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      autoComplete="off"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="*******"
+                      required
+                      disabled={!tenantActive}
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary focus:outline-none"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <Button className="w-full" type="submit" disabled={loading || !tenantActive}>
