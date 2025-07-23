@@ -49,8 +49,9 @@ function prepareValidations(fields) {
     });
 }
 
-export default function EditEntityClient({ config }) {
-    const { id } = useParams();
+export default function EditEntityClient({ config, id: propId }) {
+    const params = useParams();
+    const id = propId || params.id;
     const router = useRouter();
 
     const {
@@ -224,7 +225,7 @@ export default function EditEntityClient({ config }) {
 
     return (
         <div className="h-full">
-            <div className="flex flex-col w-full h-full rounded-lg shadow-lg overflow-y-auto p-2 sm:p-14">
+            <div className="flex flex-col w-full h-full overflow-y-auto p-2 sm:p-14">
                 <h1 className="text-xl p-2">{title}</h1>
                 <form
                     onSubmit={handleSubmit(onSubmit)}
