@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
+import { getSettings, updateSettings } from '@/services/settingsService';
 
 const SECTIONS = [
   {
@@ -70,8 +71,7 @@ export default function SettingsForm() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/settings')
-      .then((res) => res.json())
+    getSettings()
       .then((data) => setValues(data))
       .catch(() => toast.error('Error al cargar configuración'))
       .finally(() => setLoading(false));
@@ -85,12 +85,7 @@ export default function SettingsForm() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error('Error al guardar');
+      await updateSettings(values);
       toast.success('Configuración guardada');
     } catch {
       toast.error('Error al guardar');
