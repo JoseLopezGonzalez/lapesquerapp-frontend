@@ -487,53 +487,57 @@ export default function EntityClient({ config }) {
 
                     {selectedRows.length === 0 && (
                         <>
-                            {/* Reports */}
-                            <Dropdown backdrop="opaque">
-                                <DropdownTrigger>
-                                    <Button
-                                        variant='outline'
-                                    >
-                                        <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
-                                        <span className='hidden xl:flex'>Reportes</span>
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                    {config.reports?.map((reportOption) => (
-                                        <DropdownItem
-                                            key={reportOption.title}
-                                            onClick={() => handleReport(reportOption)}
-                                        >
-                                            {reportOption.title}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                            {/* Export */}
-                            <Dropdown backdrop="opaque">
-                                <DropdownTrigger>
-                                    <Button
-                                        variant='outline'
-                                    >
-                                        <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-                                        <span className='hidden xl:flex'>Exportar</span>
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                    {config.exports?.map((exportOption) => (
-                                        <DropdownItem
-                                            key={exportOption.title}
-                                            onClick={() => handleExport(exportOption)}
-                                            startContent={
-                                                exportOption.type === 'excel'
-                                                    ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
-                                                    : <FaRegFilePdf className="text-red-800 w-5 h-5" />
-                                            }
-                                        >
-                                            {exportOption.title}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
+                            {selectedRows.length > 0 && config.reports && config.reports.length > 0 && (
+                                <>
+                                    {/* Reports */}
+                                    <Dropdown backdrop="opaque">
+                                        <DropdownTrigger>
+                                            <Button variant='outline'>
+                                                <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
+                                                <span className='hidden xl:flex'>Reportes</span>
+                                            </Button>
+                                        </DropdownTrigger>
+                                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                            {config.reports.map((reportOption) => (
+                                                <DropdownItem
+                                                    key={reportOption.title}
+                                                    onClick={() => handleReport(reportOption)}
+                                                >
+                                                    {reportOption.title}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                </>
+                            )}
+                            {selectedRows.length === 0 && config.exports && config.exports.length > 0 && (
+                                <>
+                                    {/* Export */}
+                                    <Dropdown backdrop="opaque">
+                                        <DropdownTrigger>
+                                            <Button variant='outline'>
+                                                <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
+                                                <span className='hidden xl:flex'>Exportar</span>
+                                            </Button>
+                                        </DropdownTrigger>
+                                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                            {config.exports.map((exportOption) => (
+                                                <DropdownItem
+                                                    key={exportOption.title}
+                                                    onClick={() => handleExport(exportOption)}
+                                                    startContent={
+                                                        exportOption.type === 'excel'
+                                                            ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
+                                                            : <FaRegFilePdf className="text-red-800 w-5 h-5" />
+                                                    }
+                                                >
+                                                    {exportOption.title}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                </>
+                            )}
                         </>
                     )}
                     {config.actions?.length > 0 && (
