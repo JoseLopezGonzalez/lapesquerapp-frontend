@@ -211,7 +211,7 @@ export default function CreateEntityClient({ config }) {
                 <form
                     id="entity-form"
                     onSubmit={handleSubmit(onSubmit)}
-                    className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 p-5"
+                    className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 "
                 >
                     {prepareValidations(fields).map((field, index) => (
                         <div
