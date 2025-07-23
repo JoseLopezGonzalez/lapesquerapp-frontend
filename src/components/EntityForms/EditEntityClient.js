@@ -49,7 +49,7 @@ function prepareValidations(fields) {
     });
 }
 
-export default function EditEntityClient({ config, id: propId }) {
+export default function EditEntityClient({ config, id: propId, onSuccess, onCancel }) {
     const params = useParams();
     const id = propId || params.id;
     const router = useRouter();
@@ -248,7 +248,7 @@ export default function EditEntityClient({ config, id: propId }) {
                     ))}
 
                     <div className="sm:col-span-6 justify-end p-4 flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => router.back()}>
+                        <Button type="button" variant="outline" onClick={onCancel}>
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
