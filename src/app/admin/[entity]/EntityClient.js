@@ -17,6 +17,9 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { Button } from '@/components/ui/button';
 import { EllipsisVertical } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import CreateEntityClient from '../create/CreateEntityClient';
+import EditEntityClient from '../[id]/EditEntityClient';
 
 // Import new entityService functions
 import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
@@ -101,6 +104,7 @@ export default function EntityClient({ config }) {
     const [selectedRows, setSelectedRows] = useState([]);
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
+    const [modal, setModal] = useState({ open: false, mode: null, editId: null });
 
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
@@ -398,6 +402,20 @@ export default function EntityClient({ config }) {
         description: config.description,
     };
 
+    // Handler para abrir modal de creación
+    const handleOpenCreate = () => {
+        setModal({ open: true, mode: 'create', editId: null });
+    };
+    // Handler para abrir modal de edición
+    const handleOpenEdit = (id) => {
+        setModal({ open: true, mode: 'edit', editId: id });
+    };
+    // Handler para cerrar modal y refrescar datos si es necesario
+    const handleCloseModal = (shouldRefresh = false) => {
+        setModal({ open: false, mode: null, editId: null });
+        if (shouldRefresh) fetchData(currentPage, filters);
+    };
+
     return (
         <div className='h-full w-full '>
             <GenericTable>
@@ -546,20 +564,40 @@ export default function EntityClient({ config }) {
                     />
                     {!config.hideCreateButton && (
                         <Button
-                            onClick={() => router.push(config.createPath)}
+                            onClick={handleOpenCreate}
                         >
                             <PlusIcon className="h-5 w-5" aria-hidden="true" />
                             Nuevo
                         </Button>
                     )}
                 </Header>
-                <Body table={config.table} data={data} emptyState={config.emptyState} isSelectable={true} selectedRows={selectedRows} onSelectionChange={handleOnSelectionChange} />
+                <Body
+                    table={config.table}
+                    data={data}
+                    emptyState={config.emptyState}
+                    isSelectable={true}
+                    selectedRows={selectedRows}
+                    onSelectionChange={handleOnSelectionChange}
+                    // Nuevo: pasar handler de edición
+                    onEdit={handleOpenEdit}
+                />
                 <Footer>
                     <div className='w-full pr-24 '>
                         <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </Footer>
             </GenericTable>
+            {/* Modal de creación/edición */}
+            <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
+                <DialogContent className="max-w-2xl w-full">
+                    {modal.mode === 'create' && (
+                        <CreateEntityClient config={config} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
+                    )}
+                    {modal.mode === 'edit' && modal.editId && (
+                        <EditEntityClient config={config} id={modal.editId} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

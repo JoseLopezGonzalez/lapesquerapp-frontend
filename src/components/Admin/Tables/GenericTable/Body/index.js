@@ -33,7 +33,7 @@ const badgeStyles = {
     },
 };
 
-export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange, selectedRows }) => {
+export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange, selectedRows, onEdit }) => {
     const { headers } = table;
 
 
@@ -139,7 +139,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                     >
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
                                         {header.type === "button" && (
-                                            <div className="flex min-w-14  items-center justify-center">
+                                            <div className="flex min-w-14  items-center justify-center gap-2">
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
@@ -153,6 +153,22 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                                 >
                                                     <ArrowRightIcon className="h-4 w-4" />
                                                 </Button>
+                                                {onEdit && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onEdit(row.id);
+                                                        }}
+                                                        className="rounded-l-md"
+                                                    >
+                                                        <span className="sr-only">Editar</span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487a2.1 2.1 0 1 1 2.97 2.97L7.5 19.788l-4 1 1-4 12.362-12.3ZM19 7l-2-2" />
+                                                        </svg>
+                                                    </Button>
+                                                )}
                                             </div>
                                         )}
                                         {header.type === 'text' && (
