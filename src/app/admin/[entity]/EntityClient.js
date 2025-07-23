@@ -165,19 +165,15 @@ export default function EntityClient({ config }) {
 
     // useEffect for initial data fetch and filter changes
     useEffect(() => {
-        // Reset to page 1 when filters change, then fetch data
+        // Reset to page 1 when filters change
         setCurrentPage(1);
-        fetchData(1, filters);
-    }, [filters, fetchData]); // Dependencia actualizada a fetchData
-
+    }, [filters]);
 
     // useEffect for page changes
     useEffect(() => {
-        // Only fetch if currentPage is not 1 (already handled by filters useEffect if currentPage was 1)
-        if (currentPage !== 1) {
-            fetchData(currentPage, filters);
-        }
-    }, [currentPage, filters, fetchData]); // Dependencia actualizada a fetchData
+        fetchData(currentPage, filters);
+    }, [currentPage, filters, fetchData]);
+
 
     const handlePageChange = (newPage) => {
         setCurrentPage(parseInt(newPage, 10));
