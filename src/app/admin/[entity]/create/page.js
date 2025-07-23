@@ -1,5 +1,5 @@
 import { configs } from "@/configs/entitiesConfig"; // Configuraciones centralizadas
-import CreateEntityClient from "./CreateEntityClient";
+import CreateEntityClient from '@/components/EntityForms/CreateEntityClient';
 
 export default async function CreatePage({ params }) {
   const entity = params.entity; // Capturamos el segmento dinámico desde la URL
