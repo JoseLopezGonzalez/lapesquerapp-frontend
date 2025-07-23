@@ -1,16 +1,16 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
-
+import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
 
 
-
 /**
- * Función para obtener los detalles de un pedido.
- * @param {string|number} orderId - ID del pedido a obtener.
- * @param {string} token - Token de autenticación.
- * @returns {Promise<Object>} - Los datos del pedido.
+ * Fetches the details of an order by its ID.
+ *
+ * @param {string} orderId - The ID of the order to retrieve.
+ * @param {string} token - The authentication token for the request.
+ * @returns {Promise<Object>} A promise that resolves to the order data.
+ * @throws {Error} Throws an error if the request fails or the response is not OK.
  */
 export function getOrder(orderId, token) {
     return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
@@ -42,12 +42,15 @@ export function getOrder(orderId, token) {
         });
 }
 
+
 /**
- * Función para actualizar los datos de un pedido.
- * @param {string|number} orderId - ID del pedido a actualizar.
- * @param {Object} orderData - Datos actualizados del pedido.
- * @param {string} token - Token de autenticación.
- * @returns {Promise<Object>} - Los datos actualizados del pedido.
+ * Updates an order with the given data.
+ *
+ * @param {string} orderId - The ID of the order to update.
+ * @param {Object} orderData - The data to update the order with.
+ * @param {string} token - The authorization token for the request.
+ * @returns {Promise<Object>} A promise that resolves to the updated order data.
+ * @throws {Error} Throws an error if the update fails or the server responds with an error.
  */
 export function updateOrder(orderId, orderData, token) {
 
@@ -82,7 +85,13 @@ export function updateOrder(orderId, orderData, token) {
 }
 
 
-/* getActiveOrders */
+/**
+ * Fetches the active orders from the API.
+ *
+ * @param {string} token - The authentication token to be included in the request headers.
+ * @returns {Promise<Array>} A promise that resolves to an array of active orders.
+ * @throws {Error} Throws an error if the request fails or the response contains an error message.
+ */
 export function getActiveOrders(token) {
     return fetchWithTenant(`${API_URL_V1}orders?active=true`, {
         method: 'GET',
@@ -113,7 +122,15 @@ export function getActiveOrders(token) {
         });
 }
 
-/* Update OrderPlannedProductDetail */
+/**
+ * Updates the planned product detail of an order.
+ *
+ * @param {string} detailId - The ID of the detail to be updated.
+ * @param {Object} detailData - The data to update the detail with.
+ * @param {string} token - The authentication token for the request.
+ * @returns {Promise<Object>} A promise that resolves to the updated detail data.
+ * @throws {Error} Throws an error if the update fails or the response is not successful.
+ */
 export async function updateOrderPlannedProductDetail(detailId, detailData, token) {
 
     return fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
@@ -145,7 +162,6 @@ export async function updateOrderPlannedProductDetail(detailId, detailData, toke
         });
 }
 
-/* Delete OrderPlannedProductDetail */
 export async function deleteOrderPlannedProductDetail(detailId, token) {
 
     return fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
@@ -176,7 +192,6 @@ export async function deleteOrderPlannedProductDetail(detailId, token) {
         });
 }
 
-/* Create OrderPlannedProductDetail */
 export async function createOrderPlannedProductDetail(detailData, token) {
 
     return fetchWithTenant(`${API_URL_V2}order-planned-product-details`, {
@@ -306,7 +321,6 @@ export async function updateOrderIncident(orderId, resolutionType, resolutionNot
         });
 }
 
-/* destroy order incident */
 export async function destroyOrderIncident(orderId, token) {
     return fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
         method: 'DELETE',
@@ -366,18 +380,6 @@ export function getActiveOrdersOptions(token) {
         });
 }
 
-
-/**
- * Obtener el ranking de pedidos agrupado por cliente o país.
- * @param {Object} params - Parámetros de filtro y ordenación.
- * @param {string} params.groupBy - 'client' o 'country'
- * @param {string} params.valueType - 'totalAmount' o 'totalQuantity'
- * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
- * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
- * @param {string|number} [params.speciesId] - ID de la especie (opcional)
- * @param {string} token - Token JWT de autenticación
- * @returns {Promise<Array>} - Lista de objetos con { name, value }
- */
 export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateTo, speciesId }, token) {
     const query = new URLSearchParams({
         groupBy,
@@ -416,16 +418,7 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
         });
 }
 
-// services/orderService.js
 
-/**
- * Obtener las ventas totales agrupadas por comercial (por cantidad).
- * @param {Object} params - Parámetros de filtro.
- * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
- * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
- * @param {string} token - Token JWT de autenticación
- * @returns {Promise<Array>} - Lista de objetos con { name, quantity }
- */
 export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo });
 
@@ -456,14 +449,7 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
 }
 
 
-/**
- * Obtener la cantidad total de kg vendidos en el período especificado.
- * @param {Object} params - Parámetros de filtro.
- * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
- * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
- * @param {string} token - Token JWT de autenticación
- * @returns {Promise<number>} - Total de kg vendidos.
- */
+
 export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
@@ -496,14 +482,7 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
         })
 }
 
-/**
- * Obtener el importe total vendido en el período especificado.
- * @param {Object} params - Parámetros de filtro.
- * @param {string} params.dateFrom - Fecha desde (YYYY-MM-DD)
- * @param {string} params.dateTo - Fecha hasta (YYYY-MM-DD)
- * @param {string} token - Token JWT de autenticación
- * @returns {Promise<Object>} - Objeto con el valor total y la comparación
- */
+
 export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
     const query = new URLSearchParams({ dateFrom, dateTo })
 
@@ -536,17 +515,7 @@ export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
         })
 }
 
-/**
- * Obtener datos de ventas formateados para gráfico (por especie, rango de fechas y unidad).
- * @param {Object} params
- * @param {string} params.token
- * @param {string|null} params.speciesId
- * @param {string} params.from - Fecha inicio formato YYYY-MM-DD
- * @param {string} params.to - Fecha fin formato YYYY-MM-DD
- * @param {string} params.unit - 'quantity' o 'amount'
- * @param {string} params.groupBy - 'day' | 'week' | 'month'
- * @returns {Promise<Array<{ date: string, value: number }>>}
- */
+
 export async function getSalesChartData({ token, speciesId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
         dateFrom: from,
@@ -575,14 +544,7 @@ export async function getSalesChartData({ token, speciesId, from, to, unit, grou
     });
 }
 
-/**
- * Obtener kilos transportados por empresa de transporte en un rango de fechas.
- * @param {Object} params
- * @param {string} params.token - Token JWT de autenticación
- * @param {string} params.from - Fecha desde (YYYY-MM-DD)
- * @param {string} params.to - Fecha hasta (YYYY-MM-DD)
- * @returns {Promise<Array<{ transport: string, netWeight: number }>>}
- */
+
 export async function getTransportChartData({ token, from, to }) {
     const query = new URLSearchParams({
         dateFrom: from,
@@ -619,14 +581,14 @@ export async function getTransportChartData({ token, from, to }) {
 }
 
 
-
-// services/orderCreationService.js
-
 /**
- * Crea un nuevo pedido enviando los datos a la API.
- * @param {Object} orderPayload - Los datos del pedido a crear.
- * @returns {Promise<Object>} La respuesta de la API (los datos del pedido creado).
- * @throws {Error} Si la sesión no está autenticada o si la API devuelve un error.
+ * Creates a new order by sending a POST request to the API.
+ *
+ * @async
+ * @function createOrder
+ * @param {Object} orderPayload - The payload containing order details to be sent to the API.
+ * @throws {Error} Throws an error if there is no authenticated session or if the API request fails.
+ * @returns {Promise<Object>} The created order data returned by the API.
  */
 export const createOrder = async (orderPayload) => {
     const session = await getSession(); // Obtener la sesión dentro del servicio
