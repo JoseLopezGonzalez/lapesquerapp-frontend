@@ -125,6 +125,7 @@ export default function EditEntityClient({ config, id: propId }) {
         try {
             await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, data);
             toast.success(successMessage, getToastTheme());
+            if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
         } catch (err) {
             let userMessage = errorMessage || "Error inesperado al guardar.";
