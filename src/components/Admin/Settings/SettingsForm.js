@@ -9,6 +9,7 @@ import { getSettings, updateSettings } from '@/services/settingsService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSettings } from '@/context/SettingsContext';
 import { Separator } from '@/components/ui/separator';
+import Loader from '@/components/Utilities/Loader';
 
 const SECTIONS = [
   {
