@@ -99,7 +99,11 @@ export default function SettingsForm() {
     }
   };
 
-  if (loading) return <div className="p-8">Cargando configuración...</div>;
+  if (loading) return (
+    <div className="w-full h-full flex items-center justify-center">
+      <Loader />
+    </div>
+  );
 
   return (
     <div className="h-full w-full flex flex-col">
