@@ -247,7 +247,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         });
 
         setFilteredPositionsMap(map);
-    }, [store, filters]);
+    }, [store, filters, UNLOCATED_POSITION_ID]);
 
 
 

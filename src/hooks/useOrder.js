@@ -109,7 +109,7 @@ export function useOrder(orderId, onChange) {
 
 
 
-    }, [orderId, status]);
+    }, [orderId, status, session]);
 
     const reload = async () => {
         const token = session?.user?.accessToken;

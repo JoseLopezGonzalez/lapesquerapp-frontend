@@ -116,7 +116,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             .catch((err) => {
                 console.error('Error al cargar las opciones de productos:', err);
             });
-    }, [id, token, reload]);
+    }, [id, token, reload, initialStoreId, initialOrderId, emptyPallet]);
 
     const onClose = () => {
         setTimeout(() => {
