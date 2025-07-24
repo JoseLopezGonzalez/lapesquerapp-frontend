@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronsUpDown, CircleHelp, Plus } from "lucide-react"
+import { Skeleton } from '@/components/ui/skeleton';
 
 import {
   DropdownMenu,
@@ -19,9 +20,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function AppSwitcher({ apps }) {
+export function AppSwitcher({ apps, loading }) {
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = useState(apps.find((app) => app.current))
+
+  // Sincroniza activeTeam cuando apps cambie
+  useEffect(() => {
+    setActiveTeam(apps.find((app) => app.current));
+  }, [apps]);
 
   if (!activeTeam) {
     return null
@@ -41,7 +47,7 @@ export function AppSwitcher({ apps }) {
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {activeTeam.name}
+                  {loading ? <Skeleton className="h-4 w-32" /> : activeTeam.name}
                 </span>
                 <span className="truncate text-xs">{activeTeam.description}</span>
               </div>
@@ -69,7 +75,7 @@ export function AppSwitcher({ apps }) {
                 
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {app.name}
+                    {loading ? <Skeleton className="h-4 w-32" /> : app.name}
                   </span>
                   <span className="truncate text-xs">{app.description}</span>
                 </div>

@@ -32,7 +32,8 @@ import { signOut, useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
-import { COMPANY_NAME } from "@/configs/config"
+import { useSettings } from '@/context/SettingsContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // This is sample data.
 
@@ -47,6 +48,11 @@ export function AppSidebar() {
 
     const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
     const email = session?.user?.email || 'Desconocido'; // Nombre del usuario actual
+
+    const { settings, loading } = useSettings();
+    const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
+    console.log('[Sidebar] settings:', settings);
+    console.log('[Sidebar] companyName:', companyName);
 
     const handleLogout = async () => {
         try {
@@ -67,19 +73,19 @@ export function AppSidebar() {
         },
         apps: [
             {
-                name: COMPANY_NAME,
+                name: companyName, // Siempre string
                 logo: GalleryVerticalEnd,
                 description: "Administración",
                 current: true,
             },
             {
-                name: COMPANY_NAME,
+                name: companyName,
                 logo: AudioWaveform,
                 description: "Producción",
                 current: false,
             },
             {
-                name: COMPANY_NAME,
+                name: companyName,
                 logo: Earth,
                 description: "World Trade",
                 current: false,
@@ -104,7 +110,7 @@ export function AppSidebar() {
         <Sidebar collapsible="icon" variant='floating'
            >
             <SidebarHeader>
-                <AppSwitcher apps={data.apps} />
+                <AppSwitcher apps={data.apps} loading={loading} />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navigationItems} />

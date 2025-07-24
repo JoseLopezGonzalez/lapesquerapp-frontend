@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
 import { getSettings, updateSettings } from '@/services/settingsService';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSettings } from '@/context/SettingsContext';
 
 const SECTIONS = [
   {
@@ -69,6 +70,7 @@ export default function SettingsForm() {
   const [values, setValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { setSettings } = useSettings();
 
   useEffect(() => {
     setLoading(true);
@@ -87,6 +89,7 @@ export default function SettingsForm() {
     setSaving(true);
     try {
       await updateSettings(values);
+      setSettings(values); // Notifica a todos los consumidores del Context
       toast.success('Configuración guardada');
     } catch {
       toast.error('Error al guardar');
