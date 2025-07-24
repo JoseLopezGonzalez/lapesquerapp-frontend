@@ -70,7 +70,7 @@ const SECTIONS = [
 
 export default function SettingsForm() {
   const [values, setValues] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { setSettings } = useSettings();
 
