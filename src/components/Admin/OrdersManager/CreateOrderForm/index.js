@@ -25,7 +25,7 @@ import EmailListInput from '@/components/ui/emailListInput';
 
 // Importa el nuevo servicio para la creación de pedidos
 import { createOrder } from '@/services/orderService';
-import { Textarea } from '@nextui-org/react';
+import { Textarea } from '@/components/ui/textarea';
 
 const CreateOrderForm = ({ onCreate }) => {
     const { productOptions } = useProductOptions();
@@ -213,7 +213,7 @@ const CreateOrderForm = ({ onCreate }) => {
                     />
                 );
             case 'Textarea':
-                return <Textarea {...commonProps} /* className={field.props?.className} */ rows={field.props?.rows} />;
+                return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
             case 'emailList':
                 return (
                     <Controller
