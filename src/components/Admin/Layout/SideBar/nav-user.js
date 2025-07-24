@@ -6,6 +6,7 @@ import {
     ChevronsUpDown,
     CreditCard,
     LogOut,
+    Settings,
     Sparkles,
 } from "lucide-react"
 
@@ -30,10 +31,12 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser({user}) {
-    const { isMobile } = useSidebar()
+import { useRouter } from "next/navigation"
 
-/* iniciales 2 caracteres en mayuscula */
+export function NavUser({ user }) {
+    const { isMobile } = useSidebar()
+    const router = useRouter()
+    /* iniciales 2 caracteres en mayuscula */
     const initials = user.name.split(' ').map((n) => n[0]).join('').toUpperCase()
 
     return (
@@ -90,6 +93,15 @@ export function NavUser({user}) {
                             <DropdownMenuItem>
                                 <Bell />
                                 Notificaciones
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => {
+                                    router.push('/admin/settings')
+                                }}
+                            >
+                                <Settings />
+                                Configuración
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
