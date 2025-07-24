@@ -213,7 +213,7 @@ const CreateOrderForm = ({ onCreate }) => {
                     />
                 );
             case 'Textarea':
-                return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
+                return <Textarea {...commonProps} /* className={field.props?.className} */ rows={field.props?.rows} />;
             case 'emailList':
                 return (
                     <Controller
