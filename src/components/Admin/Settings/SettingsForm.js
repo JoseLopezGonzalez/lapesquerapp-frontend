@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { getSettings, updateSettings } from '@/services/settingsService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSettings } from '@/context/SettingsContext';
+import { Separator } from '@/components/ui/separator';
 
 const SECTIONS = [
   {
@@ -103,12 +104,12 @@ export default function SettingsForm() {
   return (
     <div className="h-full w-full flex flex-col">
       <ScrollArea className="flex-1 h-full w-full">
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-6 space-y-8 min-h-full">
-          <h1 className="text-2xl font-bold mb-4">Configuración de la empresa</h1>
-          {SECTIONS.map((section) => (
-            <div key={section.title} className="bg-white dark:bg-neutral-900 rounded-xl shadow p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="max-w-7xl mx-auto p-6 space-y-8 min-h-full">
+          <h1 className="text-xl font-light mb-4">Configuración de la empresa</h1>
+          {SECTIONS.map((section, idx) => (
+            <div key={section.title} className="p-0 space-y-4">
               <h2 className="text-lg font-semibold mb-2">{section.title}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 ">
                 {section.fields.map((field) => (
                   <div key={field.name}>
                     <Label htmlFor={field.name}>{field.label}</Label>
@@ -122,6 +123,9 @@ export default function SettingsForm() {
                   </div>
                 ))}
               </div>
+              {idx < SECTIONS.length - 1 && (
+                <Separator className="" />
+              )}
             </div>
           ))}
           <div className="flex justify-end">
