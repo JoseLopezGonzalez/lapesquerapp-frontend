@@ -1,7 +1,3 @@
-
-
-
-
 export const configs = {
   'raw-material-receptions': {
     hideCreateButton: true,
@@ -99,8 +95,8 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "date", label: "Fecha", type: "date", path: "date" },
         { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
-        { name: "species", label: "Especie", type: "text", path: "species.name" },
-        { name: "notes", label: "Notas", type: "text", path: "notes" },
+        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
+        { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true },
         { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" },
         { name: "actions", label: "Acciones", type: "button" },
       ],
@@ -272,7 +268,7 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "loadDate", label: "Fecha Salida", type: "date", path: "loadDate" },
         { name: "customerName", label: "Cliente", type: "text", path: "customer.name" },
-        { name: "buyerReference", label: "Referencia", type: "text", path: "buyerReference" },
+        { name: "buyerReference", label: "Referencia", type: "text", path: "buyerReference", hideOnMobile: true },
         {
           name: "status",
           label: "Estado",
@@ -284,16 +280,16 @@ export const configs = {
             default: { label: "Desconocido", color: "secondary", outline: true },
           },
         },
-        { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight" },
-        { name: "totalBoxes", label: "Cajas", type: "text", path: "totalBoxes" },
-        { name: "pallets", label: "Palets", type: "text", path: "pallets" },
+        { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight", hideOnMobile: true },
+        { name: "totalBoxes", label: "Cajas", type: "text", path: "totalBoxes", hideOnMobile: true },
+        { name: "pallets", label: "Palets", type: "text", path: "pallets", hideOnMobile: true },
         /* subtotalAmount */
-        { name: "subtotalAmount", label: "Subtotal", type: "currency", path: "subtotalAmount" },
+        { name: "subtotalAmount", label: "Subtotal", type: "currency", path: "subtotalAmount", hideOnMobile: true },
         /* totalAmount */
-        { name: "totalAmount", label: "Total", type: "currency", path: "totalAmount" },
-        { name: "salesperson", label: "Vendedor", type: "text", path: "salesperson.name" },
-        { name: "incoterm", label: "Incoterm", type: "text", path: "incoterm.code" },
-        { name: "transport", label: "Transporte", type: "text", path: "transport.name" },
+        { name: "totalAmount", label: "Total", type: "currency", path: "totalAmount", hideOnMobile: true },
+        { name: "salesperson", label: "Vendedor", type: "text", path: "salesperson.name", hideOnMobile: true },
+        { name: "incoterm", label: "Incoterm", type: "text", path: "incoterm.code", hideOnMobile: true },
+        { name: "transport", label: "Transporte", type: "text", path: "transport.name", hideOnMobile: true },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -605,11 +601,9 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "email", label: "Correo electrónico", type: "text", path: "email" },
-        { name: "roles", label: "Rol", type: "text", path: "roles" },
-
-
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" },
+        { name: "email", label: "Correo electrónico", type: "text", path: "email", hideOnMobile: true },
+        { name: "roles", label: "Rol", type: "text", path: "roles", hideOnMobile: true },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at", hideOnMobile: true },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },
@@ -943,13 +937,13 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode" },
-        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
-        { name: "species", label: "Especie", type: "text", path: "species.name" },
-        { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name" },
-        { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin" },
-        { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin" },
-        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin" },
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode", hideOnMobile: true },
+        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode", hideOnMobile: true },
+        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
+        { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name", hideOnMobile: true },
+        { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin", hideOnMobile: true },
+        { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin", hideOnMobile: true },
+        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin", hideOnMobile: true },
         { name: "actions", label: "Acciones", type: "button" },
       ],
     },

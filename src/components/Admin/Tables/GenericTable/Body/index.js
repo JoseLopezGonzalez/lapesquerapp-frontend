@@ -77,7 +77,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                 <thead className="bg-foreground-50 sticky top-0 z-10">
                     <tr>
                         {isSelectable && (
-                            <th className="py-3.5 px-4 text-left text-sm font-semibold ">
+                            <th className="py-3.5 px-4 text-left text-xs font-semibold ">
                                 <Checkbox
                                     onValueChange={toggleSelectAll}
                                     isSelected={
@@ -88,11 +88,11 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                             </th>
                         )}
                         {headers.map((header) => header.type === 'button' ? (
-                            <th key={header.name} scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6 whitespace-nowrap">
+                            <th key={header.name} scope="col" className={`py-3.5 pl-4 pr-3 text-left text-xs font-semibold sm:pl-6 whitespace-nowrap${header.hideOnMobile ? ' hidden md:table-cell' : ''}`}>
                                 <span className="sr-only">{header.label}</span>
                             </th>
                         ) : (
-                            <th key={header.name} scope="col" className="px-6 py-3 text-start">
+                            <th key={header.name} scope="col" className={`px-6 py-3 text-start text-xs whitespace-nowrap${header.hideOnMobile ? ' hidden md:table-cell' : ''}`}>
                                 <a className="group inline-flex items-center gap-x-2" href="#">
                                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                         {header.label}
@@ -109,14 +109,14 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                     {data.loading ? (
                         [...Array(14)].map((_, index) => (
                             <tr key={index}>
-                                <td className="py-2 px-4">
+                                <td className="py-1 px-2">
                                     <Checkbox
                                         disabled
                                         size="sm" />
                                 </td>
-                                {headers.map((_, index) => (
-                                    <td key={index} className="px-6 py-3">
-                                        <Skeleton className="w-full h-6 rounded-lg " />
+                                {headers.map((header, idx) => (
+                                    <td key={idx} className={`text-sm px-2 py-1${header.hideOnMobile ? ' hidden md:table-cell' : ''} whitespace-nowrap max-w-[120px] truncate`}>
+                                        <Skeleton className="w-full h-6 rounded-lg" />
                                     </td>
                                 ))}
                             </tr>
@@ -129,7 +129,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 onClick={() => toggleSelectRow(row.id)}
                             >
                                 {isSelectable && (
-                                    <td className="py-2 px-4">
+                                    <td className="py-1 px-2">
                                         <Checkbox
                                             onValueChange={() => toggleSelectRow(row.id)}
                                             isSelected={selectedRows.includes(row.id)}
@@ -139,7 +139,12 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                 {headers.map((header, index) => (
                                     <td
                                         key={header.name}
-                                        className={` ${index === 0 && 'font-bold'} print:w-fit w-full py-2 pl-4 pr-3 text-sm sm:w-auto sm:max-w-none sm:pl-6 `}
+                                        className={`text-sm px-2 py-1${header.hideOnMobile ? ' hidden md:table-cell' : ''} ${index === 0 && 'font-bold'} print:w-fit w-full sm:w-auto sm:max-w-none sm:pl-4 whitespace-nowrap max-w-[120px] truncate`}
+                                        title={
+                                            (header.type === 'text' || header.type === 'id' || header.type === 'currency' || header.type === 'date' || header.type === 'dateHour' || header.type === 'weight')
+                                                ? (row[header.name] === 'N/A' ? '-' : String(row[header.name]))
+                                                : undefined
+                                        }
                                     >
                                         {header.type === 'badge' && renderBadge(header, row[header.name])}
                                         {header.type === "button" && (
@@ -174,7 +179,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </div>
                                         )}
                                         {header.type === 'text' && (
-                                            <span className="">
+                                            <span>
                                                 {row[header.name] === 'N/A' ? '-' : row[header.name]}
                                             </span>
                                         )}
@@ -184,14 +189,13 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </span>
                                         )}
                                         {header.type === 'weight' && (
-                                            <span className="text-nowrap">
+                                            <span>
                                                 {formatDecimalWeight(row[header.name])}
                                             </span>
                                         )}
                                         {header.type === 'list' && (
-                                            <ul className=" text-nowrap">
+                                            <ul>
                                                 {row[header.name].length > 0 &&
-
                                                     row[header.name].map((item, index) => (
                                                         <li key={index}>
                                                             {item}
@@ -200,18 +204,18 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                                             </ul>
                                         )}
                                         {header.type === 'date' && (
-                                            <span className="">
+                                            <span>
                                                 {row[header.name] === 'N/A' ? '-' : formatDate(row[header.name])}
                                             </span>
                                         )}
                                         {header.type === 'dateHour' && (
-                                            <span className=" text-nowrap">
+                                            <span>
                                                 {row[header.name] === 'N/A' ? '-' : formatDateHour(row[header.name])}
                                             </span>
                                         )}
                                         {/* currency */}
                                         {header.type === 'currency' && (
-                                            <span className="flex items-center justify-end text-nowrap">
+                                            <span className="flex items-center justify-end">
                                                 {row[header.name] === 'N/A' ? '-' : formatDecimalCurrency(row[header.name])}
                                             </span>
                                         )}
@@ -222,7 +226,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                         ))
                     ) : (
                         <tr>
-                            <td className="h-full py-48" colSpan={headers.length}>
+                            <td className="h-full py-24" colSpan={headers.length}>
                                 <div className="flex flex-col items-center justify-center mb-4">
                                     <div className="w-full h-full flex flex-col items-center justify-center">
                                         <EmptyState
