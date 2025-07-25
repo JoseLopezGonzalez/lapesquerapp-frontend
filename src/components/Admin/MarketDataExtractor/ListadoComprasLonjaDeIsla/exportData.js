@@ -3595,7 +3595,9 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '922',
     barco: "BEATRIZ LA POLA",
+    codBrisapp: '60',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
@@ -5165,6 +5167,14 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Adan de las LLagas Orta',
       codA3erp: '56334',
+    }
+  },
+  {
+    cod: '922',
+    barco: "BEATRIZ LA POLA",
+    armador: {
+      nombre: 'Adrimar C.B.',
+      codA3erp: '988214',
     }
   },
   {
