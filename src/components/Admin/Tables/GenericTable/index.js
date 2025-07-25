@@ -3,7 +3,7 @@ import React from "react";
 
 export const GenericTable = ({ children }) => {
   return (
-    <Card className="w-full h-full flex flex-col">
+    <Card className="w-full max-h-full flex flex-col">
       {children}
     </Card>
   );

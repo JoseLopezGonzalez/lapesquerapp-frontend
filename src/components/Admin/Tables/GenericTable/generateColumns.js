@@ -64,19 +64,7 @@ export function generateColumns(headers, { onEdit } = {}) {
           case "button":
             return (
               <div className={`flex min-w-14 items-center justify-center gap-2 ${cellClass}`}>
-                {safeValue?.view && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      safeValue.view.onClick();
-                    }}
-                    className="rounded-r-md"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                )}
+
                 {onEdit && (
                   <Button
                     size="icon"
@@ -88,6 +76,19 @@ export function generateColumns(headers, { onEdit } = {}) {
                   >
                     <span className="sr-only">Editar</span>
                     <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+                {safeValue?.view && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      safeValue.view.onClick();
+                    }}
+                    className="rounded-r-md"
+                  >
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -111,7 +112,8 @@ export function generateColumns(headers, { onEdit } = {}) {
           case "boolean":
             return safeValue === true ? "Sí" : safeValue === false ? "No" : "-";
           case "text":
-            return safeValue;
+            /* Prevent N/A */
+            return safeValue === "N/A" ? "-" : safeValue;
           default:
             return safeValue;
         }

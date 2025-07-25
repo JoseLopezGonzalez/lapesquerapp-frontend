@@ -418,7 +418,7 @@ export default function EntityClient({ config }) {
     };
 
     return (
-        <div className='h-full w-full  overflow-hidden'>
+        <div className='h-full w-full overflow-hidden'>
             <GenericTable>
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (
@@ -588,8 +588,8 @@ export default function EntityClient({ config }) {
                     onEdit={handleOpenEdit}
                 />
                 <Footer>
-                    <div className='w-full pr-24 '>
-                        <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
+                    <div className='w-full  '>
+                        <PaginationFooter selectedRows={selectedRows} meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </Footer>
             </GenericTable>

@@ -87,7 +87,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     // Empty state
     if (!data.rows.length) {
         return (
-            <div className="flex flex-col items-center justify-center mb-4 py-24">
+            <div className="flex flex-col items-center justify-center mb-4 py-24 h-full">
                 <EmptyState title={emptyState.title} description={emptyState.description} />
             </div>
         );
@@ -96,7 +96,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     // Tabla normal
     return (
         <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-foreground-50   ">
                 {reactTable.getHeaderGroups().map(headerGroup => (
                     <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
