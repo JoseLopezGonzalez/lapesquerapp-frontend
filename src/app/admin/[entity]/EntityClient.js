@@ -418,7 +418,7 @@ export default function EntityClient({ config }) {
     };
 
     return (
-        <div className='h-full w-full '>
+        <div className='h-full w-full  overflow-hidden'>
             <GenericTable>
                 <Header data={headerData}>
                     {selectedRows.length > 0 && (
@@ -585,7 +585,6 @@ export default function EntityClient({ config }) {
                     isSelectable={true}
                     selectedRows={selectedRows}
                     onSelectionChange={handleOnSelectionChange}
-                    // Nuevo: pasar handler de edición
                     onEdit={handleOpenEdit}
                 />
                 <Footer>
