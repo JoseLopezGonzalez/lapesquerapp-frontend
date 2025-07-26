@@ -1,101 +1,64 @@
-// components/EditEntityClient.jsx
+// components/CreateEntityClient.jsx
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useEffect, useState, useCallback } from "react"; // Added useCallback
-import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select, SelectTrigger, SelectValue, SelectContent, SelectItem
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/Shadcn/Dates/DatePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
-import EmailListInput from "@/components/ui/emailListInput";
 import { API_URL_V2 } from "@/configs/config";
-
-import get from "lodash.get";
-import { getToastTheme } from "@/customs/reactHotToast";
-import Loader from "@/components/Utilities/Loader";
+import EmailListInput from "@/components/ui/emailListInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import the new service functions
-import { fetchEntityData, fetchAutocompleteOptions, submitEntityForm } from '@/services/editEntityService';
+import { fetchAutocompleteOptions, createEntity } from '@/services/createEntityService';
+import { getToastTheme } from "@/customs/reactHotToast"; // Make sure this import exists and is correct
 
-export function mapApiDataToFormValues(fields, data) {
-    const result = {};
-
-    for (const field of fields) {
-        const key = field.name;
-
-        if (field.path) {
-            result[key] = get(data, field.path, null);
-        } else {
-            result[key] = data[key];
-        }
-    }
-    return result;
-}
 
 function prepareValidations(fields) {
     return fields.map((field) => {
         const newField = { ...field };
-        if (newField.validation?.pattern?.value && typeof newField.validation.pattern.value === "string") {
-            newField.validation.pattern.value = new RegExp(newField.validation.pattern.value.replace(/^\/|\/$/g, ""));
+
+        if (
+            newField.validation?.pattern?.value &&
+            typeof newField.validation.pattern.value === "string"
+        ) {
+            const raw = newField.validation.pattern.value;
+            const regexBody = raw.replace(/^\/|\/$/g, ""); // Remove leading and trailing slashes
+            newField.validation.pattern.value = new RegExp(regexBody);
         }
         return newField;
     });
 }
 
-export default function EditEntityClient({ config, id: propId, onSuccess, onCancel }) {
-    const params = useParams();
-    const id = propId || params.id;
-    const router = useRouter();
 
-    const {
-        title,
-        endpoint,
-        method = "PUT",
-        successMessage,
-        errorMessage,
-    } = config.editForm;
-
+export default function CreateEntityForm({ config, onSuccess, onCancel }) {
+    const { title, endpoint, successMessage, errorMessage } = config.createForm;
     const fields = config.fields;
 
+
     const {
-        register, handleSubmit, control, reset,
+        register,
+        handleSubmit,
+        control,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
-    const [loading, setLoading] = useState(true);
 
-    // Function to fetch and set entity data
-    const loadEntityData = useCallback(async () => {
-        try {
-            const data = await fetchEntityData(`${API_URL_V2}${endpoint}/${id}`);
-            const formValues = mapApiDataToFormValues(fields, data);
-            reset(formValues);
-        } catch (err) {
-            let userMessage = "Error al cargar los datos de la entidad.";
-            if (err instanceof Response) {
-                if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
-                else if (err.status === 403) userMessage = "Permiso denegado.";
-                else userMessage = `Error ${err.status}: ${userMessage}`;
-            }
-            toast.error(userMessage, getToastTheme());
-            console.error("Error loading entity data:", err);
-            // Optionally redirect on error if data is critical
-            // router.push('/error-page');
-        } finally {
-            setLoading(false);
-        }
-    }, [id, endpoint, fields, reset]); // Add reset to dependencies
-
-    // Function to fetch autocomplete options
+    // Cargar dinámicamente los options de los campos con endpoint
     const loadAutocompleteOptions = useCallback(async () => {
         const result = {};
         await Promise.all(
@@ -105,9 +68,9 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
                         const options = await fetchAutocompleteOptions(`${API_URL_V2}${field.endpoint}`);
                         result[field.name] = options;
                     } catch (err) {
-                        console.error(`Error cargando opciones de ${field.name}:`, err);
+                        console.error(`Error cargando opciones para ${field.name}:`, err);
                         result[field.name] = [];
-                        // Optionally show a toast here if an individual autocomplete fails
+                        // Optionally, show a more specific toast here if an individual autocomplete fails
                     }
                 }
             })
@@ -115,32 +78,55 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
         setLoadedOptions(result);
     }, [fields]); // Add fields to dependencies
 
-    // Load initial data and options on component mount
     useEffect(() => {
-        loadEntityData();
         loadAutocompleteOptions();
-    }, [loadEntityData, loadAutocompleteOptions]);
+    }, [loadAutocompleteOptions]); // Dependency on the useCallback function
 
 
     const onSubmit = async (data) => {
         try {
-            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, data);
-            toast.success(successMessage, getToastTheme());
-            if (typeof onSuccess === 'function') onSuccess();
-            // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
-        } catch (err) {
-            let userMessage = errorMessage || "Error inesperado al guardar.";
-            if (err instanceof Response) {
-                if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
-                else if (err.status === 403) userMessage = "Permiso denegado.";
-                else if (err.status === 422) { // Unprocessable Entity - often for validation errors
-                    const errorBody = await err.json();
-                    userMessage = errorBody.message || userMessage;
-                    // You might want to display specific field errors from errorBody.errors here
+            const response = await createEntity(`${API_URL_V2}${endpoint}`, data);
+
+            // You might not need to await response.json() here unless you need it for specific error details.
+            // If response.ok, you likely just care that it succeeded.
+            // const result = await response.json(); // Uncomment if needed
+
+            if (response.ok) {
+                toast.success(successMessage || "Entidad creada con éxito!", getToastTheme());
+                reset(); // Clear form after successful submission
+                if (typeof onSuccess === 'function') onSuccess();
+                // Redirect to the entity table page
+                // Note: Using window.location.href forces a full page reload.
+                // Consider useRouter().push() for a smoother Next.js navigation if appropriate.
+                // window.location.href = `/admin/${endpoint.split("/").pop()}`;
+            } else {
+                let userErrorMessage = errorMessage || "Error al crear la entidad";
+                // Attempt to parse response for more specific error messages (e.g., validation errors)
+                try {
+                    const errorData = await response.json();
+                    userErrorMessage = errorData.message || userErrorMessage;
+                    // If your API returns field-specific errors, you could use them here
+                    // e.g., if (errorData.errors) { /* map to form errors */ }
+                } catch (parseError) {
+                    console.error("Error parsing error response:", parseError);
                 }
+                toast.error(userErrorMessage, getToastTheme());
             }
-            toast.error(userMessage, getToastTheme());
-            console.error("Submission error:", err);
+        } catch (error) {
+            console.error("Error al enviar el formulario:", error);
+            let userErrorMessage = "Ocurrió un error inesperado";
+            if (error instanceof Response) { // Catch errors thrown by the service
+                if (error.status === 401) userErrorMessage = "No autorizado. Por favor, inicie sesión.";
+                else if (error.status === 403) userErrorMessage = "Permiso denegado.";
+                else if (error.status === 422) { // Unprocessable Entity - often for validation errors
+                    // You might want to parse and display specific validation errors here
+                    const errorBody = await error.json();
+                    userErrorMessage = errorBody.message || userErrorMessage;
+                }
+            } else if (error instanceof Error) {
+                userErrorMessage = error.message;
+            }
+            toast.error(userErrorMessage, getToastTheme());
         }
     };
 
@@ -209,8 +195,9 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
                     <Controller
                         name={field.name}
                         control={control}
+                        defaultValue={[]}
                         render={({ field: { value, onChange } }) => (
-                            <EmailListInput value={value || []} onChange={onChange} placeholder={field.placeholder} />
+                            <EmailListInput value={value} onChange={onChange} placeholder={field.placeholder} />
                         )}
                     />
                 );
@@ -219,14 +206,8 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
         }
     };
 
-    if (loading) return (
-        <div className="h-full w-full flex items-center justify-center">
-            <Loader className="h-10 w-10" />
-        </div>
-    );
-
     return (
-        <div className="h-full flex flex-col ">
+        <div className="h-full flex flex-col">
             <ScrollArea className="w-full h-full max-h-[70vh] p-2 ">
                 <form
                     id="entity-form"
@@ -243,18 +224,25 @@ export default function EditEntityClient({ config, id: propId, onSuccess, onCanc
                             </Label>
                             {renderField(field)}
                             {errors[field.name] && (
-                                <p className="text-red-400 text-xs pt-1">* {errors[field.name].message}</p>
+                                <p className="text-red-400 text-xs pt-1">
+                                    * {errors[field.name].message}
+                                </p>
                             )}
                         </div>
                     ))}
                 </form>
             </ScrollArea>
             <div className="sm:col-span-6 justify-end p-4 flex gap-2 border-t bg-background">
-                <Button type="button" variant="outline" onClick={onCancel}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="ml-2"
+                    onClick={onCancel ? onCancel : () => reset()}
+                >
                     Cancelar
                 </Button>
                 <Button type="submit" form="entity-form" disabled={isSubmitting}>
-                    Guardar
+                    Crear
                 </Button>
             </div>
         </div>

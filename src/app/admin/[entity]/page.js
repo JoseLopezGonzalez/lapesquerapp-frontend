@@ -1,5 +1,5 @@
+import EntityClient from "@/components/Admin/Entity/EntityClient";
 import { configs } from "@/configs/entitiesConfig"; // Configuraciones centralizadas
-import EntityClient from "./EntityClient"; // Componente cliente que manejará toda la lógica
 
 export default async function EntityPage({ params }) {
   const entity = params.entity; // Capturamos el segmento dinámico desde la URL

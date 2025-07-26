@@ -2,25 +2,26 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { GenericTable } from '@/components/Admin/Tables/GenericTable';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
-import { PaginationFooter } from '@/components/Admin/Tables/PaginationFooter';
-import { ResultsSummary } from '@/components/Admin/Tables/ResultsSummary';
-import { EntityTableHeader } from '@/components/Admin/Tables/EntityTableHeader';
-import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
+import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
+import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/ResultsSummary';
+import { Footer } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter';
 import { API_URL_V2 } from '@/configs/config';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import CreateEntityClient from '@/components/EntityForms/CreateEntityClient';
-import EditEntityClient from '@/components/EntityForms/EditEntityClient';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Import new entityService functions
 import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
-import { EntityTable } from '@/components/Admin/Entity/EntityTable';
-import { getEntityColumns, mapEntityRows } from '@/helpers/entityTableHelpers';
+import { EntityBody } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody';
+import { generateColumns2 } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/generateColumns';
+import { mapEntityRows } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/utils/mapEntityRows';
+import { EntityTableHeader } from './EntityTable/EntityHeader';
+import { EntityTable } from './EntityTable';
+import CreateEntityForm from '@/components/Admin/Entity/EntityForms/CreateEntityForm';
+import EditEntityForm from '@/components/Admin/Entity/EntityForms/EditEntityForm';
 
 
 const initialData = {
@@ -388,12 +389,13 @@ export default function EntityClient({ config }) {
     };
 
     // Preparar columns y rows para EntityTable
-    const columns = getEntityColumns(config.table.headers, handleOpenEdit);
-    const rows = mapEntityRows(data.rows, config.table.headers, handleDelete, config);
+    const columns = generateColumns2(config.table.headers, { onEdit: handleOpenEdit });
+    const rows = data.rows;
+
 
     return (
         <div className='h-full w-full overflow-hidden'>
-            <GenericTable>
+            <EntityTable>
                 <EntityTableHeader
                     title={config.title}
                     description={config.description}
@@ -421,7 +423,7 @@ export default function EntityClient({ config }) {
                     onExport={handleExport}
                     onReport={handleReport}
                 />
-                <EntityTable
+                <EntityBody
                     data={{ loading: data.loading, rows }}
                     columns={columns}
                     loading={data.loading}
@@ -433,7 +435,7 @@ export default function EntityClient({ config }) {
                 />
                 <Footer>
                     <div className='w-full flex justify-between items-center py-2'>
-                        <ResultsSummary 
+                        <ResultsSummary
                             totalItems={paginationMeta.totalItems}
                             selectedCount={selectedRows.length}
                             loading={data.loading}
@@ -441,16 +443,23 @@ export default function EntityClient({ config }) {
                         <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </Footer>
-            </GenericTable>
+            </EntityTable>
             {/* Modal de creación/edición */}
             <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
                 <DialogContent className="max-w-5xl w-full">
-                    <h1 className="text-xl font-semibold p-2 pb-0">{config.title}</h1>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {modal.mode === 'create' ? `Crear ${config.title}` : `Editar ${config.title}`}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {modal.mode === 'create' ? 'Completa el formulario para crear un nuevo elemento.' : 'Modifica los campos necesarios y guarda los cambios.'}
+                        </DialogDescription>
+                    </DialogHeader>
                     {modal.mode === 'create' && (
-                        <CreateEntityClient config={config} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
+                        <CreateEntityForm title="Crear" config={config} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
                     )}
                     {modal.mode === 'edit' && modal.editId && (
-                        <EditEntityClient config={config} id={modal.editId} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
+                        <EditEntityForm title="Editar" config={config} id={modal.editId} onSuccess={() => handleCloseModal(true)} onCancel={() => handleCloseModal(false)} />
                     )}
                 </DialogContent>
             </Dialog>
