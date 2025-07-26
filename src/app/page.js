@@ -41,5 +41,10 @@ export default function HomePage() {
 
   if (isSubdomain === null) return null; // loading/spinner
 
-  return isSubdomain ? <LoginPage /> : <LandingPage />;
+  if (isSubdomain) {
+    if (status === "loading") return null; // o un loader
+    if (status === "authenticated") return null; // o un loader, la redirección ya ocurre en el useEffect
+    return <LoginPage />;
+  }
+  return <LandingPage />;
 }
