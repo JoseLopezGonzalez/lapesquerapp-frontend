@@ -40,11 +40,23 @@ export default function HomePage() {
     }
   }, [isSubdomain, status, router]);
 
-  if (isSubdomain === null) return <Loader />; // loading/spinner
+  if (isSubdomain === null) return (
+    <div className="flex justify-center items-center h-screen w-full">
+      <Loader />;
+    </div>
+  )
 
   if (isSubdomain) {
-    if (status === "loading") return <Loader />; // o un loader
-    if (status === "authenticated") return <Loader />; // o un loader, la redirección ya ocurre en el useEffect
+    if (status === "loading") return (
+      <div className="flex justify-center items-center h-screen w-full">
+        <Loader />;
+      </div>
+    )
+    if (status === "authenticated") return (
+      <div className="flex justify-center items-center h-screen w-full">
+        <Loader />;
+      </div>
+    ); 
     return <LoginPage />;
   }
   return <LandingPage />;
