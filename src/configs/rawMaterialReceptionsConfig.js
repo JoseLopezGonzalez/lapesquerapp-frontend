@@ -22,7 +22,7 @@ export const rawMaterialReceptionsConfig = {
         { name: "notes", label: "Observaciones", type: "text" },
         { name: "netWeight", label: "Peso Neto", type: "text" },
         { name: "date", label: "Fecha", type: "text" },
-        { name: "actions", label: "Acciones", type: "button" }, // Botones como ver/eliminar
+        // La columna de acciones se genera automáticamente
       ],
     },
   

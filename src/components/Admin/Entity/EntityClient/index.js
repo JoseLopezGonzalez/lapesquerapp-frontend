@@ -2,6 +2,7 @@
 
 import toast from 'react-hot-toast';
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
 import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/ResultsSummary';
@@ -86,6 +87,7 @@ const formatFiltersObject = (filters) => {
 };
 
 export default function EntityClient({ config }) {
+    const router = useRouter();
     const [data, setData] = useState(initialData);
     const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
@@ -319,6 +321,15 @@ export default function EntityClient({ config }) {
         console.log('id', id);
         setModal({ open: true, mode: 'edit', editId: id });
     };
+
+    // Handler para navegar a la vista de detalles
+    const handleOpenView = (id) => {
+        if (config.viewRoute) {
+            const viewUrl = config.viewRoute.replace(':id', id);
+            router.push(viewUrl);
+        }
+    };
+
     // Handler para cerrar modal y refrescar datos si es necesario
     const handleCloseModal = (shouldRefresh = false) => {
         setModal({ open: false, mode: null, editId: null });
@@ -326,7 +337,11 @@ export default function EntityClient({ config }) {
     };
 
     // Preparar columns y rows para EntityTable
-    const columns = generateColumns2(config.table.headers, { onEdit: handleOpenEdit });
+    const columns = generateColumns2(config.table.headers, { 
+      onEdit: handleOpenEdit, 
+      onView: handleOpenView,
+      config: config 
+    });
     const rows = data.rows;
 
     const actions = config.actions?.map(action => ({

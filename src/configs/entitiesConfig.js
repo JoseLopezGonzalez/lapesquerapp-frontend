@@ -21,7 +21,7 @@ export const configs = {
             label: "Buscar",
             type: "search",
             placeholder: "Buscar por ID, proveedor o notas",
-          },
+          }
         ],
       },
       groups: [
@@ -45,7 +45,7 @@ export const configs = {
               name: "dates",
               label: "Fecha",
               type: "dateRange",
-            },
+            }
           ],
         },
         {
@@ -58,7 +58,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por proveedor",
               endpoint: "suppliers/options",
-            },
+            }
           ],
         },
         {
@@ -71,7 +71,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por especie",
               endpoint: "species/options",
-            },
+            }
           ],
         },
         /* Products */
@@ -85,9 +85,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por producto",
               endpoint: "products/options",
-            },
+            }
           ],
-        },
+        }
       ],
     },
     table: {
@@ -97,8 +97,7 @@ export const configs = {
         { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
         { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
         { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true },
-        { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" }
       ],
     },
 
@@ -164,7 +163,7 @@ export const configs = {
             label: "Buscar",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -199,9 +198,9 @@ export const configs = {
               type: "pairSelectBoxes",
               options: [
                 { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false },
+                { name: "finished", label: "Finalizado", value: false }
               ],
-            },
+            }
           ],
         },
 
@@ -216,7 +215,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por cliente",
               endpoint: "customers/options",
-            },
+            }
           ],
         },
         /* salesperson */
@@ -230,7 +229,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por comercial",
               endpoint: "salespeople/options",
-            },
+            }
           ],
         },
         /* Transporte */
@@ -244,7 +243,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por transporte",
               endpoint: "transports/options",
-            },
+            }
           ],
         },
         /* incoterm */
@@ -258,9 +257,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por incoterm",
               endpoint: "incoterms/options",
-            },
+            }
           ],
-        },
+        }
       ],
     },
     table: {
@@ -289,8 +288,7 @@ export const configs = {
         { name: "totalAmount", label: "Total", type: "currency", path: "totalAmount", hideOnMobile: true },
         { name: "salesperson", label: "Vendedor", type: "text", path: "salesperson.name", hideOnMobile: true },
         { name: "incoterm", label: "Incoterm", type: "text", path: "incoterm.code", hideOnMobile: true },
-        { name: "transport", label: "Transporte", type: "text", path: "transport.name", hideOnMobile: true },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "transport", label: "Transporte", type: "text", path: "transport.name", hideOnMobile: true }
       ],
     },
     createForm: {
@@ -559,8 +557,7 @@ export const configs = {
             label: "Nombre",
             type: "search",
             placeholder: "Buscar por nombre",
-          },
-
+          }
         ],
       },
       groups: [
@@ -580,7 +577,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Seleccionar roles",
               endpoint: "roles",
-            },
+            }
           ],
         },
         {
@@ -592,9 +589,9 @@ export const configs = {
               label: "Fecha de creación",
               type: "dateRange",
               visibleMonths: 1,
-            },
+            }
           ],
-        },
+        }
       ],
     },
     table: {
@@ -603,8 +600,7 @@ export const configs = {
         { name: "name", label: "Nombre", type: "text", path: "name" },
         { name: "email", label: "Correo electrónico", type: "text", path: "email", hideOnMobile: true },
         { name: "roles", label: "Rol", type: "text", path: "roles", hideOnMobile: true },
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at", hideOnMobile: true },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at", hideOnMobile: true }
       ],
     },
     /* createForm */
@@ -693,7 +689,7 @@ export const configs = {
             lg: 3,
             xl: 3,
           }
-        },
+        }
       ]
     }
   },
@@ -718,8 +714,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
-
+          }
         ],
       },
       groups: [
@@ -746,10 +741,9 @@ export const configs = {
               label: "Dirección",
               type: "textarea",
               placeholder: "Buscar por dirección",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -759,8 +753,7 @@ export const configs = {
         { name: "vatNumber", label: "NIF/CIF", type: "text", path: "vatNumber" },
         { name: "address", label: "Dirección", type: "text", path: "address" },
         { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" }
       ],
     },
     createForm: {
@@ -858,7 +851,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -899,7 +892,7 @@ export const configs = {
               label: "GTIN Palet",
               type: "text",
               placeholder: "Buscar por GTIN Palet",
-            },
+            }
           ],
         },
         /* Species */
@@ -913,7 +906,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por especie",
               endpoint: "species/options",
-            },
+            }
           ],
         },
         /* Capture Zones */
@@ -927,10 +920,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por zona de captura",
               endpoint: "capture-zones/options",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -943,8 +935,7 @@ export const configs = {
         { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name", hideOnMobile: true },
         { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin", hideOnMobile: true },
         { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin", hideOnMobile: true },
-        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin", hideOnMobile: true },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin", hideOnMobile: true }
       ],
     },
     createForm: {
@@ -1044,7 +1035,7 @@ export const configs = {
         type: "text",
         placeholder: "Ej. F4567",
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-      },
+      }
     ],
     editForm: {
       title: "Editar Producto",
@@ -1078,7 +1069,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1098,10 +1089,9 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -1113,8 +1103,7 @@ export const configs = {
         /* totalNetWeight */
         { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight" },
         /* Capacity */
-        { name: "capacity", label: "Capacidad", type: "weight", path: "capacity" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "capacity", label: "Capacidad", type: "weight", path: "capacity" }
       ],
     },
     createForm: {
@@ -1176,7 +1165,7 @@ export const configs = {
         cols: {
           sm: 3, md: 3, lg: 3, xl: 3,
         },
-      },
+      }
     ],
   },
   /* boxes */
@@ -1201,7 +1190,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1235,8 +1224,7 @@ export const configs = {
               label: "Fecha de lectura",
               type: "dateRange",
               visibleMonths: 1,
-            },
-
+            }
           ],
         },
         /* Products */
@@ -1250,7 +1238,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por producto",
               endpoint: "products/options",
-            },
+            }
           ],
         },
 
@@ -1264,10 +1252,9 @@ export const configs = {
               label: "Palets",
               type: "textAccumulator",
               placeholder: "Buscar por palet",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -1277,8 +1264,7 @@ export const configs = {
         { name: "lot", label: "Lote", type: "text", path: "lot" },
         { name: "gs1128", label: "GS1128", type: "text", path: "gs1128" },
         { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
-        { name: "palletId", label: "Palet", type: "text", path: "palletId" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "palletId", label: "Palet", type: "text", path: "palletId" }
       ],
     },
   },
@@ -1304,7 +1290,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1325,7 +1311,7 @@ export const configs = {
               type: "pairSelectBoxes",
               options: [
                 { name: "stored", label: "Almacenado", value: false },
-                { name: "shipped", label: "Enviado", value: false },
+                { name: "shipped", label: "Enviado", value: false }
               ]
             },
             /* orderState */
@@ -1335,7 +1321,7 @@ export const configs = {
               type: "pairSelectBoxes",
               options: [
                 { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false },
+                { name: "finished", label: "Finalizado", value: false }
               ]
             },
             /*  Position; locatd, unlocated*/
@@ -1345,7 +1331,7 @@ export const configs = {
               type: "pairSelectBoxes",
               options: [
                 { name: "located", label: "Ubicado", value: false },
-                { name: "unlocated", label: "No ubicado", value: false },
+                { name: "unlocated", label: "No ubicado", value: false }
               ]
             },
             /* Notes */
@@ -1361,7 +1347,7 @@ export const configs = {
               label: "Lotes",
               type: "textAccumulator",
               placeholder: "Buscar por lotes",
-            },
+            }
           ],
         },
         {
@@ -1373,7 +1359,7 @@ export const configs = {
               label: "Fecha de creación",
               type: "dateRange",
               visibleMonths: 1,
-            },
+            }
           ],
         },
         /* products */
@@ -1387,7 +1373,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por producto",
               endpoint: "products/options",
-            },
+            }
           ],
         },
         /* Stores */
@@ -1401,7 +1387,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por almacén",
               endpoint: "stores/options",
-            },
+            }
           ],
         },
         /* Order */
@@ -1414,9 +1400,9 @@ export const configs = {
               label: "Pedidos",
               type: "textAccumulator",
               placeholder: "Buscar por pedidos",
-            },
+            }
           ],
-        },
+        }
       ],
     },
     table: {
@@ -1445,8 +1431,7 @@ export const configs = {
         /* numberOfBoxes */
         { name: "numberOfBoxes", label: "Cajas", type: "text", path: "numberOfBoxes" },
         /* netWeight */
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" }
       ],
     },
     actions: [
@@ -1509,7 +1494,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1543,7 +1528,7 @@ export const configs = {
               label: "País",
               type: "text",
               placeholder: "Buscar por país",
-            },
+            }
           ],
         },
         /* Salespeople */
@@ -1557,7 +1542,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por comercial",
               endpoint: "salespeople/options",
-            },
+            }
           ],
         },
 
@@ -1572,7 +1557,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por país",
               endpoint: "countries/options",
-            },
+            }
           ],
         },
         /* paymentTerms */
@@ -1586,10 +1571,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por forma de pago",
               endpoint: "payment-terms/options",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -1605,8 +1589,7 @@ export const configs = {
         { name: "emails", label: "Emails", type: "list", path: "emails" },
         /* ccEmails */
         { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
-        { name: "country", label: "País", type: "text", path: "country.name" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "country", label: "País", type: "text", path: "country.name" }
       ],
     },
     createForm: {
@@ -1774,7 +1757,7 @@ export const configs = {
         type: "text",
         placeholder: "Introduce el código de proveedor Facilcom",
         cols: { sm: 6, md: 4, lg: 4, xl: 3 },
-      },
+      }
     ],
     editForm: {
       title: "Editar Cliente",
@@ -1810,7 +1793,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1830,10 +1813,9 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -1845,8 +1827,7 @@ export const configs = {
         { name: "contactPerson", label: "Persona de contacto", type: "text", path: "contactPerson" },
         { name: "phone", label: "Teléfono", type: "text", path: "phone" },
         { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails (CC)", type: "list", path: "ccEmails" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "ccEmails", label: "Emails (CC)", type: "list", path: "ccEmails" }
       ],
     },
     createForm: {
@@ -1910,7 +1891,7 @@ export const configs = {
         type: "text",
         placeholder: "Introduce el código de proveedor Facilcom",
         cols: { sm: 6, md: 4, lg: 4, xl: 3 },
-      },
+      }
     ],
     editForm: {
       title: "Editar Proveedor",
@@ -1943,7 +1924,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -1963,17 +1944,15 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "name", label: "Nombre", type: "text", path: "name" }
       ],
     },
     createForm: {
@@ -2005,7 +1984,7 @@ export const configs = {
           },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      },
+      }
     ],
 
   },
@@ -2030,7 +2009,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2064,7 +2043,7 @@ export const configs = {
               label: "FAO",
               type: "text",
               placeholder: "Buscar por FAO",
-            },
+            }
           ],
         },
         /* fishingGears */
@@ -2078,10 +2057,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por arte de pesca",
               endpoint: "fishing-gears/options",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2092,8 +2070,7 @@ export const configs = {
         /* fao */
         { name: "fao", label: "FAO", type: "text", path: "fao" },
         /* fishingGear */
-        { name: "fishingGear", label: "Arte de pesca", type: "text", path: "fishingGear.name" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "fishingGear", label: "Arte de pesca", type: "text", path: "fishingGear.name" }
       ],
     },
     createForm: {
@@ -2165,7 +2142,7 @@ export const configs = {
           required: "El arte de pesca es obligatorio",
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-      },
+      }
     ],
 
   },
@@ -2191,7 +2168,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2218,10 +2195,9 @@ export const configs = {
               label: "Descripción",
               type: "text",
               placeholder: "Buscar por descripción",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2229,8 +2205,7 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "code", label: "Código", type: "text", path: "code" },
         /* description */
-        { name: "description", label: "Descripción", type: "text", path: "description" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "description", label: "Descripción", type: "text", path: "description" }
       ],
     },
     /* createForm */
@@ -2270,7 +2245,7 @@ export const configs = {
           lg: 4,
           xl: 4,
         },
-      },
+      }
     ],
     /* editForm */
     editForm: {
@@ -2303,8 +2278,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
-
+          }
         ],
       },
       groups: [
@@ -2324,10 +2298,9 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2335,8 +2308,7 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
         { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" }
       ],
     },
     createForm: {
@@ -2371,7 +2343,7 @@ export const configs = {
         type: "emailList",
         placeholder: "Introduce un correo y pulsa Enter",
         cols: { sm: 6, md: 6, lg: 6, xl: 3 },
-      },
+      }
     ],
     editForm: {
       title: "Editar comercial",
@@ -2404,7 +2376,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2424,17 +2396,15 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "name", label: "Nombre", type: "text", path: "name" }
       ],
     },
     createForm: {
@@ -2459,7 +2429,7 @@ export const configs = {
           },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      },
+      }
     ],
     editForm: {
       title: "Editar Arte de Pesca",
@@ -2493,7 +2463,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2513,11 +2483,9 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
-
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2525,7 +2493,7 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
         /* action */
-        { name: "actions", label: "Acciones", type: "button" },
+
       ],
     },
     createForm: {
@@ -2551,7 +2519,7 @@ export const configs = {
           lg: 6,
           xl: 6,
         },
-      },
+      }
     ],
     editForm: {
       title: "Editar país",
@@ -2583,7 +2551,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2604,18 +2572,16 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         /* name */
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "name", label: "Nombre", type: "text", path: "name" }
       ],
     },
     createForm: {
@@ -2641,7 +2607,7 @@ export const configs = {
           lg: 6,
           xl: 6,
         },
-      },
+      }
     ],
     editForm: {
       title: "Editar método de pago",
@@ -2675,7 +2641,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2703,7 +2669,7 @@ export const configs = {
               label: "Fecha",
               type: "dateRange",
               visibleMonths: 1,
-            },
+            }
           ],
         },
         /* suppliers */
@@ -2717,7 +2683,7 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por proveedor",
               endpoint: "suppliers/options",
-            },
+            }
           ],
         },
         /* products */
@@ -2731,9 +2697,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por producto",
               endpoint: "products/options",
-            },
+            }
           ],
-        },
+        }
       ],
     },
     table: {
@@ -2746,8 +2712,7 @@ export const configs = {
         /* notes */
         { name: "notes", label: "Notas", type: "text", path: "notes" },
         /* netWeight */
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" }
       ],
     },
   },
@@ -2774,7 +2739,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2795,10 +2760,9 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2811,8 +2775,7 @@ export const configs = {
         /* last_used_at */
         { name: "last_used_at", label: "Último uso", type: "date", path: "last_used_at" },
         /* expires_at */
-        { name: "expires_at", label: "Expira", type: "date", path: "expires_at" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "expires_at", label: "Expira", type: "date", path: "expires_at" }
       ],
     },
   },
@@ -2839,7 +2802,7 @@ export const configs = {
             label: "Id",
             type: "search",
             placeholder: "Buscar por id",
-          },
+          }
         ],
       },
       groups: [
@@ -2869,7 +2832,7 @@ export const configs = {
               label: "Fecha",
               type: "dateRange",
               visibleMonths: 1,
-            },
+            }
           ],
         },
         /* users */
@@ -2883,10 +2846,9 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por usuario",
               endpoint: "users/options",
-            },
+            }
           ],
-        },
-
+        }
       ],
     },
     table: {
@@ -2926,8 +2888,7 @@ export const configs = {
         /* path */
         { name: "path", label: "Ruta", type: "text", path: "path" },
         /* method */
-        { name: "method", label: "Método", type: "text", path: "method" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: "method", label: "Método", type: "text", path: "method" }
       ],
     },
   },
