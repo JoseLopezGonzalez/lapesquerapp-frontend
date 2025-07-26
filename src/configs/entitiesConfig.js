@@ -1,16 +1,18 @@
 export const configs = {
   'raw-material-receptions': {
     hideCreateButton: true,
+    hideEditButton: true,
+    hideViewButton: true,
     title: "Recepciones de materia prima",
     description: "Crea, edita, genera reportes y más.",
     emptyState: {
       title: "No existen recepciones según los filtros",
       description: "Ajusta los filtros o crea una nueva recepción.",
     },
+    perPage: 15,
     endpoint: "raw-material-receptions",
     viewRoute: "/admin/raw-material-receptions/:id",
     deleteEndpoint: "/raw-material-receptions/:id",
-    createPath: "/admin/raw-material-receptions/create",
     filtersGroup: {
       search: {
         name: "search",
@@ -104,7 +106,8 @@ export const configs = {
 
   },
   orders: {
-    hideCreateButton: true,
+    /* hideCreateButton: true, */
+    hideEditButton: true,
     title: "Pedidos",
     description: "Gestiona, edita, y consulta pedidos.",
     emptyState: {
@@ -115,7 +118,7 @@ export const configs = {
     endpoint: "orders",
     viewRoute: "/admin/orders/:id",
     deleteEndpoint: "/orders/:id",
-    createPath: "/admin/orders/create",
+    createRedirect: "/admin/orders-manager",
     exports: [
       {
         title: "Exportar a A3ERP",
@@ -539,6 +542,8 @@ export const configs = {
   },
   users: {
     title: "Usuarios",
+    hideEditButton: true,
+    hideViewButton: true,
     description: "Gestiona, edita y consulta usuarios.",
     emptyState: {
       title: "No existen usuarios según los filtros",
@@ -547,7 +552,6 @@ export const configs = {
     endpoint: "users",
     viewRoute: "/admin/users/:id",
     deleteEndpoint: "/users/:id",
-    createPath: "/admin/users/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -704,7 +708,6 @@ export const configs = {
     endpoint: "transports",
     viewRoute: "/admin/transports/:id",
     deleteEndpoint: "transports/:id",
-    createPath: "/admin/transports/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -841,7 +844,6 @@ export const configs = {
     endpoint: "products",
     viewRoute: "/admin/products/:id",
     deleteEndpoint: "products/:id",
-    createPath: "/admin/products/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1059,7 +1061,6 @@ export const configs = {
     endpoint: "stores",
     viewRoute: "/admin/stores/:id",
     deleteEndpoint: "stores/:id",
-    createPath: "/admin/stores/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1171,16 +1172,18 @@ export const configs = {
   /* boxes */
   boxes: {
     hideCreateButton: true,
+    hideEditButton: true,
+    hideViewButton: true,
     title: "Cajas",
     description: "Gestiona, edita y consulta cajas.",
     emptyState: {
       title: "No existen cajas según los filtros",
       description: "Ajusta los filtros o crea una nueva caja.",
     },
+    perPage: 15,
     endpoint: "boxes",
     viewRoute: "/admin/boxes/:id",
     deleteEndpoint: "/boxes/:id",
-    createPath: "/admin/boxes/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1270,7 +1273,8 @@ export const configs = {
   },
   /* Pallets */
   pallets: {
-    hideCreateButton: true,
+    hideEditButton: true,
+    hideViewButton: true,
     title: "Palets",
     description: "Gestiona, edita y consulta palets.",
     emptyState: {
@@ -1280,7 +1284,7 @@ export const configs = {
     endpoint: "pallets",
     viewRoute: "/admin/pallets/:id",
     deleteEndpoint: "/pallets/:id",
-    createPath: "/admin/pallets/create",
+    createRedirect: "/admin/stores-manager",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1470,8 +1474,8 @@ export const configs = {
         body: { state_id: 2 } // Estado "stored"
       }
       // Puedes añadir más
-    ]
-
+    ],
+    createRedirect: "/admin/stores-manager",
   },
   /* customers */
   customers: {
@@ -1484,7 +1488,6 @@ export const configs = {
     endpoint: "customers",
     viewRoute: "/admin/customers/:id",
     deleteEndpoint: "customers/:id",
-    createPath: "/admin/customers/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1783,7 +1786,6 @@ export const configs = {
     endpoint: "suppliers",
     viewRoute: "/admin/suppliers/:id",
     deleteEndpoint: "suppliers/:id",
-    createPath: "/admin/suppliers/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1914,7 +1916,6 @@ export const configs = {
     endpoint: "capture-zones",
     viewRoute: "/admin/capture-zones/:id",
     deleteEndpoint: "capture-zones/:id",
-    createPath: "/admin/capture-zones/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1999,7 +2000,6 @@ export const configs = {
     endpoint: "species",
     viewRoute: "/admin/species/:id",
     deleteEndpoint: "species/:id",
-    createPath: "/admin/species/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2158,7 +2158,6 @@ export const configs = {
     endpoint: "incoterms",
     viewRoute: "/admin/incoterms/:id",
     deleteEndpoint: "incoterms/:id",
-    createPath: "/admin/incoterms/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2268,7 +2267,6 @@ export const configs = {
     endpoint: "salespeople",
     viewRoute: "/admin/salespeople/:id",
     deleteEndpoint: "salespeople/:id",
-    createPath: "/admin/salespeople/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2366,7 +2364,6 @@ export const configs = {
     endpoint: "fishing-gears",
     viewRoute: "/admin/fishing-gears/:id",
     deleteEndpoint: "fishing-gears/:id",
-    createPath: "/admin/fishing-gears/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2440,7 +2437,6 @@ export const configs = {
     },
 
   },
-  /* payment-terms */
 
   /* countries */
   countries: {
@@ -2453,7 +2449,6 @@ export const configs = {
     endpoint: "countries",
     viewRoute: "/admin/countries/:id",
     deleteEndpoint: "countries/:id",
-    createPath: "/admin/countries/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2541,7 +2536,6 @@ export const configs = {
     endpoint: "payment-terms",
     viewRoute: "/admin/payment-terms/:id",
     deleteEndpoint: "payment-terms/:id",
-    createPath: "/admin/payment-terms/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2621,17 +2615,19 @@ export const configs = {
 
   /* ceboDispatches*/
   'cebo-dispatches': {
+    hideEditButton: true,
     hideCreateButton: true,
+    hideViewButton: true,
     title: "Envíos de cebo",
     description: "Gestiona, edita y consulta envíos de cebo.",
     emptyState: {
       title: "No existen envíos de cebo según los filtros",
       description: "Ajusta los filtros o crea un nuevo envío de cebo.",
     },
+    perPage: 15,
     endpoint: "cebo-dispatches",
     viewRoute: "/admin/cebo-dispatches/:id",
     deleteEndpoint: "/cebo-dispatches/:id",
-    createPath: "/admin/cebo-dispatches/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2720,6 +2716,8 @@ export const configs = {
   /* Sessions */
   sessions: {
     hideCreateButton: true,
+    hideEditButton: true,
+    hideViewButton: true,
     title: "Sesiones",
     description: "Gestiona, edita y consulta sesiones.",
     emptyState: {
@@ -2727,9 +2725,9 @@ export const configs = {
       description: "Ajusta los filtros o crea una nueva sesión.",
     },
     endpoint: "sessions",
+    perPage: 15,
     viewRoute: "/admin/sessions/:id",
     deleteEndpoint: "sessions/:id",
-    createPath: "/admin/sessions/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2783,6 +2781,9 @@ export const configs = {
   /* activity-logs */
   'activity-logs': {
     hideCreateButton: true,
+    hideEditButton: true,
+    hideViewButton: true,
+    perPage: 15,
     title: "Registros de actividad",
     description: "Gestiona, edita y consulta registros de actividad.",
     emptyState: {
@@ -2792,7 +2793,6 @@ export const configs = {
     endpoint: "activity-logs",
     viewRoute: "/admin/activity-logs/:id",
     deleteEndpoint: "activity-logs/:id",
-    createPath: "/admin/activity-logs/create",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2893,18 +2893,7 @@ export const configs = {
     },
   },
 
-
 };
 
 
 
-
-
-
-/* POR IMPLEMENTAR 
-- type: "number"
-
-
-
-
-*/

@@ -1,7 +1,7 @@
 import { getSafeValue } from "./utils/getSafeValue";
 import { renderByType } from "./utils/renderByType";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye } from "lucide-react";
+import { ArrowBigRight, ArrowLeft, ArrowRight, Edit, Eye, Pencil } from "lucide-react";
 
 export function generateColumns2(headers, { onEdit, onView, config } = {}) {
   // Generate columns from headers
@@ -23,9 +23,9 @@ export function generateColumns2(headers, { onEdit, onView, config } = {}) {
   });
 
   // Check if actions should be hidden
-  const hideActions = config?.hideActions || false;
   const hideViewButton = config?.hideViewButton || false;
   const hideEditButton = config?.hideEditButton || false;
+  const hideActions = (config?.hideActions || false) || (hideEditButton && hideViewButton);
 
   // Only add actions column if not hidden and at least one action is available
   if (hideActions || (!onView && !onEdit)) {
@@ -35,33 +35,30 @@ export function generateColumns2(headers, { onEdit, onView, config } = {}) {
   // Automatically add actions column at the end
   const actionsColumn = {
     id: "actions",
-    header: () => <span className="text-center">Acciones</span>,
+    header: () => <span className="text-center"></span>, // Header vacío
     cell: ({ row }) => {
       const id = row.original.id;
       return (
         <div className="flex items-center justify-center gap-2">
-          {onView && !hideViewButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onView(id)}
-              className="h-8 w-8 p-0"
-              title="Ver detalles"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
           {onEdit && !hideEditButton && (
             <Button
-              variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => onEdit(id)}
-              className="h-8 w-8 p-0"
-              title="Editar"
             >
-              <Edit className="h-4 w-4" />
+              <Pencil className="h-4 w-4" />
             </Button>
           )}
+          {onView && !hideViewButton && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onView(id)}
+              title="Ver detalles"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
+
         </div>
       );
     },

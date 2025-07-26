@@ -314,7 +314,11 @@ export default function EntityClient({ config }) {
 
     // Handler para abrir modal de creación
     const handleOpenCreate = () => {
-        setModal({ open: true, mode: 'create', editId: null });
+        if (config.createRedirect) {
+            router.push(config.createRedirect);
+        } else {
+            setModal({ open: true, mode: 'create', editId: null });
+        }
     };
     // Handler para abrir modal de edición
     const handleOpenEdit = (id) => {
