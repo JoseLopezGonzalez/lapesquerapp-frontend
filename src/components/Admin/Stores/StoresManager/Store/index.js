@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import PositionSlideover from './PositionSlideover';
 import AddElementToPosition from './AddElementToPositionDialog';
 import { useState } from 'react';
-import PalletDialog from './PalletDialog';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import UnallocatedPositionSlideover from './UnallocatedPositionSlideover';
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 
@@ -29,7 +29,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import PalletLabelDialog from './PalletLabelDialog';
+import PalletLabelDialog from '../../../Pallets/PalletLabelDialog';
 import MovePalletToStoreDialog from './MovePalletToStoreDialog';
 
 
@@ -44,6 +44,7 @@ export const StoreContent = () => {
         updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
         store,
+        isOpenPalletLabelDialog, closePalletLabelDialog, palletLabelDialogData
     } = useStoreContext();
 
     const storeId = store?.id;
@@ -130,9 +131,9 @@ export const StoreContent = () => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} initialOrderId={null} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} />
 
-                <PalletLabelDialog />
+                <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
 
                 <MovePalletToStoreDialog />
 

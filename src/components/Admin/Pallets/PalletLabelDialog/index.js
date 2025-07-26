@@ -1,24 +1,18 @@
 "use client";
 
+import { PALLET_LABEL_SIZE } from "@/configs/config";
+
 import { AlertTriangle, CloudAlert, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-import { useStoreContext } from "@/context/StoreContext";
-
-import { PALLET_LABEL_SIZE } from "@/configs/config";
-
-import PalletLabel from "../PositionSlideover/PalletCard/PalletLabel";
-import { usePrintElement } from "@/hooks/usePrintElement";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import { usePrintElement } from "@/hooks/usePrintElement";
 
-export default function PalletLabelDialog() {
-    const { isOpenPalletLabelDialog, closePalletLabelDialog, palletLabelDialogData } = useStoreContext();
+import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 
-    const isOpen = isOpenPalletLabelDialog;
-    const onClose = closePalletLabelDialog;
-    const pallet = palletLabelDialogData || null;
+
+export default function PalletLabelDialog({isOpen , onClose , pallet}) {
 
     const { onPrint } = usePrintElement({ id: 'print-area-id', width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height });
 

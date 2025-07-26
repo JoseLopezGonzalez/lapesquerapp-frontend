@@ -1,9 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
+import { PALLET_LABEL_SIZE } from "@/configs/config";
+
 import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer } from "lucide-react";
+import { PiShrimp } from "react-icons/pi";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,24 +18,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { useStoreContext } from "@/context/StoreContext";
-import { usePallet } from "@/hooks/usePallet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+import { Combobox } from "@/components/Shadcn/Combobox";
 import Loader from "@/components/Utilities/Loader";
+
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
-import { useRef, useState } from "react";
-import { Combobox } from "@/components/Shadcn/Combobox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { PiShrimp } from "react-icons/pi";
-import SummaryPieChart from "./SummaryPieChart";
-import { PALLET_LABEL_SIZE } from "@/configs/config";
-import { createPortal } from "react-dom";
-/* import { useReactToPrint } from "react-to-print"; */
-import PalletLabel from "../PositionSlideover/PalletCard/PalletLabel";
-import { Test } from "../PositionSlideover/PalletCard";
+
+import { useStoreContext } from "@/context/StoreContext";
+
+import { usePallet } from "@/hooks/usePallet";
 import { usePrintElement } from "@/hooks/usePrintElement";
+
+import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
+import SummaryPieChart from "./SummaryPieChart";
 import BoxesLabels from "./BoxesLabels";
-/* import printJS from "print-js"; */
 
 
 export default function PalletDialog({ palletId, isOpen, onChange, initialStoreId = null, initialOrderId = null }) {
@@ -65,16 +69,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         onPrint();
     }
 
-
-
-
-
-
-
-
     const [selectedBox, setSelectedBox] = useState(null);
-
-    /* Handles */
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -87,6 +82,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
     const handleOnChangeBoxLot = (boxId, lot) => {
         editPallet.box.edit.lot(boxId, lot);
     };
+
     const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
         editPallet.box.edit.netWeight(boxId, netWeight);
     };
@@ -119,9 +115,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
 
     return (
         <>
-            {/* Estilos específicos de impresión */}
-
-
             <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
                 {loading || !temporalPallet ? (
                     <DialogContent className="w-full min-h-[40vh] overflow-hidden flex flex-col">
@@ -173,7 +166,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                     <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> Etiquetas Cajas
                                     </TabsTrigger>
-
                                 </TabsList>
 
                                 <TabsContent value="edicion" className="mt-0">
@@ -236,7 +228,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                                     placeholder="Ingresa los códigos GS1-128, uno por línea"
                                                                     className="min-h-[100px]"
                                                                 />
-
                                                                 <div className="col-span-2 grid grid-cols-2 gap-x-2">
                                                                     <Button
                                                                         variant="outline"
@@ -251,7 +242,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                                 </div>
                                                             </div>
                                                         </TabsContent>
-
 
                                                         <TabsContent value="manual" className="">
                                                             <div className=" grid grid-cols-2 gap-4">
@@ -454,9 +444,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                 </CardContent>
                                             </Card>
 
-
-
-
                                             <Card className="border-2 border-muted">
                                                 <CardHeader className="pb-4">
                                                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -504,7 +491,6 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                             </button>
                                                         )}
                                                     </div>
-
                                                 </CardContent>
                                             </Card>
                                         </div>
