@@ -1,19 +1,16 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import toast from 'react-hot-toast';
+import { useState, useEffect, useCallback } from 'react';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
 import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/ResultsSummary';
-import { Footer } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter';
+import { EntityFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter';
 import { API_URL_V2 } from '@/configs/config';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
-import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-// Import new entityService functions
 import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
 import { EntityBody } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody';
 import { generateColumns2 } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/generateColumns';
@@ -22,7 +19,6 @@ import { EntityTableHeader } from './EntityTable/EntityHeader';
 import { EntityTable } from './EntityTable';
 import CreateEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm';
 import EditEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm';
-
 
 const initialData = {
     loading: true,
@@ -36,7 +32,6 @@ const initialPaginationMeta = {
     perPage: 12,
 };
 
-// Reusable filter formatting function
 const formatFilters = (filters) => {
     const formattedFilters = filters.reduce((acc, filter) => {
         if (filter.type === 'dateRange' && filter.value) {
@@ -90,13 +85,11 @@ const formatFiltersObject = (filters) => {
     return result;
 };
 
-
 export default function EntityClient({ config }) {
     const [data, setData] = useState(initialData);
     const [filters, setFilters] = useState([]);
     const [paginationMeta, setPaginationMeta] = useState(initialPaginationMeta);
     const [selectedRows, setSelectedRows] = useState([]);
-    const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
     const [modal, setModal] = useState({ open: false, mode: null, editId: null });
 
@@ -159,7 +152,7 @@ export default function EntityClient({ config }) {
             toast.error(errorMessage, getToastTheme());
             setData((prevData) => ({ ...prevData, loading: false }));
         }
-    }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]); // Added handleDelete dependency
+    }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]);
 
 
     // useEffect for initial data fetch and filter changes
@@ -205,7 +198,6 @@ export default function EntityClient({ config }) {
         }
     };
 
-
     const handleGlobalAction = async (action) => {
         const applyTo =
             selectedRows.length > 0 ? 'selected' :
@@ -240,138 +232,83 @@ export default function EntityClient({ config }) {
         }
     };
 
-
     const handleExport = async (exportOption) => {
         const { endpoint, fileName, type, waitingMessage } = exportOption;
-        const queryString = formatFilters(filters); // No need for paginationMeta in export query
+        const hasSelectedRows = selectedRows?.length > 0;
+        const queryString = hasSelectedRows
+            ? `ids[]=${selectedRows.join('&ids[]=')}`
+            : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
-        const toastId = toast.loading((t) => (
-            <span className="flex gap-2 items-center justify-center" >
-                {type === 'pdf' ? (<FaRegFilePdf className="h-6 w-6 text-red-500" aria-hidden="true" />)
-                    : type === 'excel' ? (<PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" aria-hidden="true" />)
-                        : null}
-                {waitingMessage || 'Generando exportación...'}
-            </span>
-        ), getToastTheme());
+        const toastId = toast.loading(
+            (t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    {type === 'pdf' && <FaRegFilePdf className="h-6 w-6 text-red-500" />}
+                    {type === 'excel' && <PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" />}
+                    {waitingMessage || 'Generando exportación...'}
+                </span>
+            ),
+            getToastTheme()
+        );
 
         try {
             await downloadFile(url, fileName, type);
-            toast.success((t) => (
+            toast.success(
                 <span className="flex gap-2 items-center justify-center">
                     Exportación generada correctamente
-                </span>
-            ), { id: toastId });
+                </span>,
+                { id: toastId }
+            );
         } catch (error) {
-            let errorMessage = 'Error: ocurrió algo inesperado al generar la exportación.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para generar esta exportación.';
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage, { id: toastId, });
+            const errorMessage =
+                error instanceof Response && error.status === 403
+                    ? 'No tienes permiso para generar esta exportación.'
+                    : error instanceof Error
+                        ? error.message
+                        : 'Error: ocurrió algo inesperado al generar la exportación.';
+            toast.error(errorMessage, { id: toastId });
         }
     };
 
     const handleReport = async (reportOption) => {
-        const { endpoint, fileName, type, waitingMessage } = reportOption; // Added 'type' for consistency, though reports might typically be PDF
-        const queryString = formatFilters(filters);
+        const { endpoint, fileName, type, waitingMessage } = reportOption;
+        const hasSelectedRows = selectedRows?.length > 0;
+        const queryString = hasSelectedRows
+            ? `ids[]=${selectedRows.join('&ids[]=')}`
+            : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
-        const toastId = toast.loading((t) => (
-            <span className="flex gap-2 items-center justify-center" >
-                {waitingMessage || 'Generando reporte...'}
-            </span>
-        ), getToastTheme());
+        const toastId = toast.loading(
+            (t) => (
+                <span className="flex gap-2 items-center justify-center">
+                    {waitingMessage || 'Generando reporte...'}
+                </span>
+            ),
+            getToastTheme()
+        );
 
         try {
-            // Assuming reports are typically PDFs for now, adjust 'pdf' if your reports can be other types
             await downloadFile(url, fileName, type || 'pdf');
-            toast.success((t) => (
+            toast.success(
                 <span className="flex gap-2 items-center justify-center">
                     Reporte generado correctamente
-                </span>
-            ), { id: toastId });
+                </span>,
+                { id: toastId }
+            );
         } catch (error) {
-            let errorMessage = 'Error: ocurrió algo inesperado al generar el reporte.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para generar este reporte.';
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage, { id: toastId, });
-        }
-    };
-
-    const handleSelectedRowsExport = async (exportOption) => {
-        const { endpoint, fileName, type, waitingMessage } = exportOption;
-        const queryString = `ids[]=${selectedRows.join('&ids[]=')}`;
-        const url = `${API_URL_V2}${endpoint}?${queryString}`;
-
-        const toastId = toast.loading((t) => (
-            <span className="flex gap-2 items-center justify-center" >
-                {type === 'pdf' ? (<FaRegFilePdf className="h-6 w-6 text-red-500" aria-hidden="true" />)
-                    : type === 'excel' ? (<PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" aria-hidden="true" />)
-                        : null}
-                {waitingMessage || 'Generando exportación...'}
-            </span>
-        ), getToastTheme());
-
-        try {
-            await downloadFile(url, fileName, type);
-            toast.success((t) => (
-                <span className="flex gap-2 items-center justify-center">
-                    Exportación generada correctamente
-                </span>
-            ), { id: toastId });
-        } catch (error) {
-            let errorMessage = 'Error: ocurrió algo inesperado al generar la exportación.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para generar esta exportación.';
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage, { id: toastId, });
-        }
-    };
-
-    const handleSelectedRowsReport = async (reportOption) => {
-        const { endpoint, fileName, type, waitingMessage } = reportOption; // Added 'type' for consistency
-        const queryString = `ids[]=${selectedRows.join('&ids[]=')}`;
-        const url = `${API_URL_V2}${endpoint}?${queryString}`;
-
-        const toastId = toast.loading((t) => (
-            <span className="flex gap-2 items-center justify-center" >
-                {waitingMessage || 'Generando reporte...'}
-            </span>
-        ), getToastTheme());
-
-        try {
-            await downloadFile(url, fileName, type || 'pdf'); // Assuming reports are PDFs
-            toast.success((t) => (
-                <span className="flex gap-2 items-center justify-center">
-                    Reporte generado correctamente
-                </span>
-            ), { id: toastId });
-        } catch (error) {
-            let errorMessage = 'Error: ocurrió algo inesperado al generar el reporte.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para generar este reporte.';
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage, { id: toastId, });
+            const errorMessage =
+                error instanceof Response && error.status === 403
+                    ? 'No tienes permiso para generar este reporte.'
+                    : error instanceof Error
+                        ? error.message
+                        : 'Error: ocurrió algo inesperado al generar el reporte.';
+            toast.error(errorMessage, { id: toastId });
         }
     };
 
     const handleOnSelectionChange = (selectedRows) => {
         setSelectedRows(selectedRows);
     }
-
-    const headerData = {
-        title: config.title || '',
-        description: config.description || '',
-    };
 
     // Handler para abrir modal de creación
     const handleOpenCreate = () => {
@@ -392,6 +329,10 @@ export default function EntityClient({ config }) {
     const columns = generateColumns2(config.table.headers, { onEdit: handleOpenEdit });
     const rows = data.rows;
 
+    const actions = config.actions?.map(action => ({
+        ...action,
+        onClick: () => handleGlobalAction(action)
+    }))
 
     return (
         <div className='h-full w-full overflow-hidden'>
@@ -410,18 +351,13 @@ export default function EntityClient({ config }) {
                             />
                         )
                     }
-                    actions={config.actions?.map(action => ({
-                        ...action,
-                        onClick: () => handleGlobalAction(action)
-                    }))}
                     exports={config.exports}
                     reports={config.reports}
                     selectedRows={selectedRows}
                     onSelectedRowsDelete={handleSelectedRowsDelete}
-                    onSelectedRowsExport={handleSelectedRowsExport}
-                    onSelectedRowsReport={handleSelectedRowsReport}
                     onExport={handleExport}
                     onReport={handleReport}
+                    actions={actions}
                 />
                 <EntityBody
                     data={{ loading: data.loading, rows }}
@@ -433,7 +369,7 @@ export default function EntityClient({ config }) {
                     onSelectionChange={handleOnSelectionChange}
                     onEdit={handleOpenEdit}
                 />
-                <Footer>
+                <EntityFooter>
                     <div className='w-full flex justify-between items-center py-2'>
                         <ResultsSummary
                             totalItems={paginationMeta.totalItems}
@@ -442,7 +378,7 @@ export default function EntityClient({ config }) {
                         />
                         <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
-                </Footer>
+                </EntityFooter>
             </EntityTable>
             {/* Modal de creación/edición */}
             <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
