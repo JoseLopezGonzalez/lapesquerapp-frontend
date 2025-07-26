@@ -20,8 +20,8 @@ import { generateColumns2 } from '@/components/Admin/Entity/EntityClient/EntityT
 import { mapEntityRows } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/utils/mapEntityRows';
 import { EntityTableHeader } from './EntityTable/EntityHeader';
 import { EntityTable } from './EntityTable';
-import CreateEntityForm from '@/components/Admin/Entity/EntityForms/CreateEntityForm';
-import EditEntityForm from '@/components/Admin/Entity/EntityForms/EditEntityForm';
+import CreateEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm';
+import EditEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm';
 
 
 const initialData = {

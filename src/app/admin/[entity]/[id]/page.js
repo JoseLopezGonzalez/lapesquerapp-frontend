@@ -1,5 +1,5 @@
 import { configs } from "@/configs/entitiesConfig"; // Configuraciones centralizadas
-import EditEntityClient from '@/components/Admin/Entity/EntityForms/EditEntityForm';
+import EditEntityClient from '@/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm';
 
 export default async function EditPage({ params }) {
   const entity = params.entity; // Capturamos el segmento dinámico desde la URL
