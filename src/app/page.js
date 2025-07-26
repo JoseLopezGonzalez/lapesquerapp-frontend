@@ -5,6 +5,7 @@ import LoginPage from "@/components/LoginPage";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Loader from "@/components/Utilities/Loader";
 
 export default function HomePage() {
   const [isSubdomain, setIsSubdomain] = useState(null);
@@ -39,11 +40,11 @@ export default function HomePage() {
     }
   }, [isSubdomain, status, router]);
 
-  if (isSubdomain === null) return null; // loading/spinner
+  if (isSubdomain === null) return <Loader />; // loading/spinner
 
   if (isSubdomain) {
-    if (status === "loading") return null; // o un loader
-    if (status === "authenticated") return null; // o un loader, la redirección ya ocurre en el useEffect
+    if (status === "loading") return <Loader />; // o un loader
+    if (status === "authenticated") return <Loader />; // o un loader, la redirección ya ocurre en el useEffect
     return <LoginPage />;
   }
   return <LandingPage />;
