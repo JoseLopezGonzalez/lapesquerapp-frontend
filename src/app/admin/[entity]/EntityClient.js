@@ -5,24 +5,22 @@ import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { GenericTable } from '@/components/Admin/Tables/GenericTable';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Tables/PaginationFooter';
-import { Header } from '@/components/Admin/Tables/GenericTable/Header';
-import { Body } from '@/components/Admin/Tables/GenericTable/Body';
+import { ResultsSummary } from '@/components/Admin/Tables/ResultsSummary';
+import { EntityTableHeader } from '@/components/Admin/Tables/EntityTableHeader';
 import { Footer } from '@/components/Admin/Tables/GenericTable/Footer';
 import { API_URL_V2 } from '@/configs/config';
-import { ArrowDownTrayIcon, ChartPieIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
-import { Button } from '@/components/ui/button';
-import { EllipsisVertical } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CreateEntityClient from '@/components/EntityForms/CreateEntityClient';
 import EditEntityClient from '@/components/EntityForms/EditEntityClient';
 
 // Import new entityService functions
 import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
+import { EntityTable } from '@/components/Admin/Entity/EntityTable';
+import { getEntityColumns, mapEntityRows } from '@/helpers/entityTableHelpers';
 
 
 const initialData = {
@@ -36,11 +34,6 @@ const initialPaginationMeta = {
     totalItems: 0,
     perPage: 12,
 };
-
-// Helper function to handle nested paths
-function getValueByPath(object, path) {
-    return path?.split('.').reduce((acc, key) => acc?.[key] ?? 'N/A', object);
-}
 
 // Reusable filter formatting function
 const formatFilters = (filters) => {
@@ -106,6 +99,30 @@ export default function EntityClient({ config }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [modal, setModal] = useState({ open: false, mode: null, editId: null });
 
+    const handleDelete = useCallback(async (id) => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
+
+        const deleteUrl = config.deleteEndpoint.replace(':id', id);
+
+        try {
+            await deleteEntity(`${API_URL_V2}${deleteUrl}`);
+            toast.success('Elemento eliminado con éxito.');
+            setData((prevData) => ({
+                ...prevData,
+                rows: prevData.rows.filter((item) => item.id !== id),
+            }));
+            setSelectedRows((prevSelected) => prevSelected.filter((rowId) => rowId !== id));
+        } catch (error) {
+            let errorMessage = 'Hubo un error al intentar eliminar el elemento.';
+            if (error instanceof Response && error.status === 403) {
+                errorMessage = 'No tienes permiso para eliminar este elemento.';
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
+        }
+    }, [config.deleteEndpoint]);
+
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
         const queryString = formatFilters(currentFilters);
@@ -115,31 +132,8 @@ export default function EntityClient({ config }) {
         try {
             const result = await fetchEntities(url);
 
-            const processedRows = result.data.map((row) => {
-                const rowData = config.table.headers.reduce((acc, header) => {
-                    acc[header.name] = header.path
-                        ? getValueByPath(row, header.path)
-                        : row[header.name] || 'N/A';
-                    return acc;
-                }, {});
-
-                return {
-                    ...rowData,
-                    actions: {
-                        view: {
-                            label: 'Ver',
-                            onClick: () => {
-                                const viewUrl = config.viewRoute.replace(':id', row.id);
-                                window.open(viewUrl, '_blank');
-                            },
-                        },
-                        delete: {
-                            label: 'Eliminar',
-                            onClick: async () => handleDelete(row.id),
-                        },
-                    },
-                };
-            });
+            // Usar el helper para procesar los datos
+            const processedRows = mapEntityRows(result.data, config.table.headers, handleDelete, config);
 
             setData({ loading: false, rows: processedRows });
             setPaginationMeta({
@@ -164,7 +158,7 @@ export default function EntityClient({ config }) {
             toast.error(errorMessage, getToastTheme());
             setData((prevData) => ({ ...prevData, loading: false }));
         }
-    }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute]); // Added dependencies for useCallback
+    }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]); // Added handleDelete dependency
 
 
     // useEffect for initial data fetch and filter changes
@@ -181,30 +175,6 @@ export default function EntityClient({ config }) {
 
     const handlePageChange = (newPage) => {
         setCurrentPage(parseInt(newPage, 10));
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
-
-        const deleteUrl = config.deleteEndpoint.replace(':id', id);
-
-        try {
-            await deleteEntity(`${API_URL_V2}${deleteUrl}`);
-            toast.success('Elemento eliminado con éxito.');
-            setData((prevData) => ({
-                ...prevData,
-                rows: prevData.rows.filter((item) => item.id !== id),
-            }));
-            setSelectedRows((prevSelected) => prevSelected.filter((rowId) => rowId !== id));
-        } catch (error) {
-            let errorMessage = 'Hubo un error al intentar eliminar el elemento.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para eliminar este elemento.';
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage);
-        }
     };
 
     const handleSelectedRowsDelete = async () => {
@@ -417,170 +387,44 @@ export default function EntityClient({ config }) {
         if (shouldRefresh) fetchData(currentPage, filters);
     };
 
+    // Preparar columns y rows para EntityTable
+    const columns = getEntityColumns(config.table.headers, handleOpenEdit);
+    const rows = mapEntityRows(data.rows, config.table.headers, handleDelete, config);
+
     return (
         <div className='h-full w-full overflow-hidden'>
             <GenericTable>
-                <Header data={headerData}>
-                    {selectedRows.length > 0 && (
-                        <>
-                            <Button
-                                onClick={handleSelectedRowsDelete}
-                                variant='destructive'
-                            >
-                                <TrashIcon className="h-4 w-4" aria-hidden="true" />
-                                <span className='hidden xl:flex'>Eliminar</span>
-                            </Button>
-
-                            {/* Reports */}
-                            <Dropdown backdrop="opaque">
-                                <DropdownTrigger>
-                                    <Button
-                                        variant='outline'
-                                    >
-                                        <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
-                                        <span className='hidden xl:flex'>Reportes</span>
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                    {config.reports?.map((reportOption) => (
-                                        <DropdownItem
-                                            key={reportOption.title}
-                                            onClick={() => handleSelectedRowsReport(reportOption)}
-                                        >
-                                            {reportOption.title}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-
-                            {/* Export */}
-                            <Dropdown backdrop="opaque">
-                                <DropdownTrigger>
-                                    <Button
-                                        variant='outline'
-                                    >
-                                        <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-                                        <span className='hidden xl:flex'>Exportar</span>
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                    {config.exports?.map((exportOption) => (
-                                        <DropdownItem
-                                            key={exportOption.title}
-                                            onClick={() => handleSelectedRowsExport(exportOption)}
-                                            startContent={
-                                                exportOption.type === 'excel'
-                                                    ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
-                                                    : <FaRegFilePdf className="text-red-800 w-5 h-5" />
-                                            }
-                                        >
-                                            {exportOption.title}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-
-
-
-                        </>
-                    )}
-
-                    {selectedRows.length === 0 && (
-                        <>
-                            {selectedRows.length > 0 && config.reports && config.reports.length > 0 && (
-                                <>
-                                    {/* Reports */}
-                                    <Dropdown backdrop="opaque">
-                                        <DropdownTrigger>
-                                            <Button variant='outline'>
-                                                <ChartPieIcon className="h-4 w-4" aria-hidden="true" />
-                                                <span className='hidden xl:flex'>Reportes</span>
-                                            </Button>
-                                        </DropdownTrigger>
-                                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                            {config.reports.map((reportOption) => (
-                                                <DropdownItem
-                                                    key={reportOption.title}
-                                                    onClick={() => handleReport(reportOption)}
-                                                >
-                                                    {reportOption.title}
-                                                </DropdownItem>
-                                            ))}
-                                        </DropdownMenu>
-                                    </Dropdown>
-                                </>
-                            )}
-                            {selectedRows.length === 0 && config.exports && config.exports.length > 0 && (
-                                <>
-                                    {/* Export */}
-                                    <Dropdown backdrop="opaque">
-                                        <DropdownTrigger>
-                                            <Button variant='outline'>
-                                                <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-                                                <span className='hidden xl:flex'>Exportar</span>
-                                            </Button>
-                                        </DropdownTrigger>
-                                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                            {config.exports.map((exportOption) => (
-                                                <DropdownItem
-                                                    key={exportOption.title}
-                                                    onClick={() => handleExport(exportOption)}
-                                                    startContent={
-                                                        exportOption.type === 'excel'
-                                                            ? <PiMicrosoftExcelLogoFill className="text-green-700 w-6 h-6" />
-                                                            : <FaRegFilePdf className="text-red-800 w-5 h-5" />
-                                                    }
-                                                >
-                                                    {exportOption.title}
-                                                </DropdownItem>
-                                            ))}
-                                        </DropdownMenu>
-                                    </Dropdown>
-                                </>
-                            )}
-                        </>
-                    )}
-                    {config.actions?.length > 0 && (
-                        <Dropdown backdrop="opaque">
-                            <DropdownTrigger>
-                                <Button variant="outline"
-                                    size="icon"
-                                >
-                                    <EllipsisVertical className="h-5 w-5" aria-hidden="true" />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu variant="faded" aria-label="Dropdown de acciones globales">
-                                {config.actions.map((action) => (
-                                    <DropdownItem
-                                        key={action.title}
-                                        onClick={() => handleGlobalAction(action)}
-                                    >
-                                        {action.title}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-                    )}
-                    {config.filtersGroup && (
-                        <GenericFilters
-                            data={{
-                                configFiltersGroup: config.filtersGroup, // Pasa tanto `search` como `groups`
-                                updateFilters: (updatedFilters) => setFilters(updatedFilters),
-                            }}
-                        />
-                    )}
-                    {!config.hideCreateButton && (
-                        <Button
-                            onClick={handleOpenCreate}
-                        >
-                            <PlusIcon className="h-5 w-5" aria-hidden="true" />
-                            Nuevo
-                        </Button>
-                    )}
-                </Header>
-                <Body
-                    table={config.table || { headers: [] }}
-                    data={data}
+                <EntityTableHeader
+                    title={config.title}
+                    description={config.description}
+                    onCreate={!config.hideCreateButton ? handleOpenCreate : undefined}
+                    filtersComponent={
+                        config.filtersGroup && (
+                            <GenericFilters
+                                data={{
+                                    configFiltersGroup: config.filtersGroup,
+                                    updateFilters: (updatedFilters) => setFilters(updatedFilters),
+                                }}
+                            />
+                        )
+                    }
+                    actions={config.actions?.map(action => ({
+                        ...action,
+                        onClick: () => handleGlobalAction(action)
+                    }))}
+                    exports={config.exports}
+                    reports={config.reports}
+                    selectedRows={selectedRows}
+                    onSelectedRowsDelete={handleSelectedRowsDelete}
+                    onSelectedRowsExport={handleSelectedRowsExport}
+                    onSelectedRowsReport={handleSelectedRowsReport}
+                    onExport={handleExport}
+                    onReport={handleReport}
+                />
+                <EntityTable
+                    data={{ loading: data.loading, rows }}
+                    columns={columns}
+                    loading={data.loading}
                     emptyState={config.emptyState || { title: '', description: '' }}
                     isSelectable={true}
                     selectedRows={selectedRows}
@@ -588,8 +432,13 @@ export default function EntityClient({ config }) {
                     onEdit={handleOpenEdit}
                 />
                 <Footer>
-                    <div className='w-full  '>
-                        <PaginationFooter selectedRows={selectedRows} meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
+                    <div className='w-full flex justify-between items-center py-2'>
+                        <ResultsSummary 
+                            totalItems={paginationMeta.totalItems}
+                            selectedCount={selectedRows.length}
+                            loading={data.loading}
+                        />
+                        <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </Footer>
             </GenericTable>

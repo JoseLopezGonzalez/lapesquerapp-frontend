@@ -60,7 +60,8 @@ export function generateColumns(headers, { onEdit } = {}) {
         const safeValue = value === undefined || value === null ? "-" : value;
         switch (header.type) {
           case "badge":
-            return renderBadge(header, safeValue);
+            // Para badges, pasar el valor original (undefined si no existe) para que renderBadge pueda usar default
+            return renderBadge(header, value);
           case "button":
             return (
               <div className={`flex min-w-14 items-center justify-center gap-2 ${cellClass}`}>

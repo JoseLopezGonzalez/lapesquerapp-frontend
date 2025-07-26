@@ -3,18 +3,24 @@
 import React from "react";
 import { useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { generateColumns } from "@/helpers/entityTable/generateColumns";
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { Checkbox } from '@/components/ui/checkbox';
 
-export const Body = ({ table, data, emptyState, isSelectable = false, onSelectionChange, selectedRows = [], onEdit }) => {
-    // columns se memoiza para evitar renders innecesarios
-    const baseColumns = React.useMemo(() => generateColumns(table.headers, { onEdit }), [table.headers, onEdit]);
-
+export const EntityTable = ({ 
+    data, 
+    columns, 
+    loading = false, 
+    emptyState, 
+    isSelectable = false, 
+    selectedRows = [], 
+    onSelectionChange,
+    onEdit 
+}) => {
     // Añadir columna de selección si corresponde
-    const columns = React.useMemo(() => {
-        if (!isSelectable) return baseColumns;
+    const tableColumns = React.useMemo(() => {
+        if (!isSelectable) return columns;
+        
         return [
             {
                 id: "select",
@@ -25,7 +31,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                             selectedRows.length === data.rows.length
                         }
                         onCheckedChange={checked => {
-        if (checked) {
+                            if (checked) {
                                 const allIds = data.rows.map(row => row.id);
                                 onSelectionChange?.(allIds);
                             } else {
@@ -42,7 +48,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                             const id = row.original.id;
                             if (selectedRows.includes(id)) {
                                 onSelectionChange?.(selectedRows.filter(rid => rid !== id));
-        } else {
+                            } else {
                                 onSelectionChange?.([...selectedRows, id]);
                             }
                         }}
@@ -54,25 +60,24 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
                 size: 32,
                 meta: { cellClass: "!px-2 w-8" },
             },
-            ...baseColumns,
+            ...columns,
         ];
-    }, [isSelectable, baseColumns, selectedRows, data.rows, onSelectionChange]);
+    }, [isSelectable, columns, selectedRows, data.rows, onSelectionChange]);
 
     const reactTable = useReactTable({
         data: data.rows,
-        columns,
+        columns: tableColumns,
         getCoreRowModel: getCoreRowModel(),
-        // No usamos el state de selección interno, lo gestionamos externamente
     });
 
     // Loading state
-    if (data.loading) {
+    if (loading) {
         return (
             <Table>
                 <TableBody>
                     {[...Array(14)].map((_, idx) => (
                         <TableRow key={idx}>
-                            {columns.map((col, i) => (
+                            {tableColumns.map((col, i) => (
                                 <TableCell key={i}>
                                     <Skeleton className="w-full h-6 rounded-lg" />
                                 </TableCell>
@@ -96,7 +101,7 @@ export const Body = ({ table, data, emptyState, isSelectable = false, onSelectio
     // Tabla normal
     return (
         <Table>
-            <TableHeader className="sticky top-0 z-10 bg-foreground-50   ">
+            <TableHeader className="sticky top-0 z-10 bg-foreground-50">
                 {reactTable.getHeaderGroups().map(headerGroup => (
                     <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
