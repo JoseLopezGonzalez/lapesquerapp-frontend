@@ -1412,8 +1412,8 @@ export const configs = {
     table: {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
-        /* articlesNames */
-        { name: "articlesNames", label: "Artículos", type: "list", path: "articlesNames" },
+        /* productsNames */
+        { name: "productsNames", label: "Artículos", type: "list", path: "productsNames" },
         /* lots */
         { name: "lots", label: "Lotes", type: "list", path: "lots" },
         /* observations */

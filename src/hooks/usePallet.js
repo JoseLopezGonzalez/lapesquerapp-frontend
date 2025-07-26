@@ -43,7 +43,7 @@ const emptyPallet = {
     id: null,
     observations: '',
     state: { id: 2, name: 'Almacenado' }, // opcional
-    articlesNames: [],
+    productsNames: [],
     boxes: [],
     lots: [],
     netWeight: 0,

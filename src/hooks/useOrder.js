@@ -75,6 +75,9 @@ export function useOrder(orderId, onChange) {
         if (!orderId) return;
 
         const token = session?.user?.accessToken;
+        
+        // Si no hay token, no hacer nada
+        if (!token) return;
 
         setLoading(true);
         getOrder(orderId, token)
@@ -109,7 +112,7 @@ export function useOrder(orderId, onChange) {
 
 
 
-    }, [orderId, status, session]);
+    }, [orderId, status]);
 
     const reload = async () => {
         const token = session?.user?.accessToken;
@@ -547,6 +550,36 @@ export function useOrder(orderId, onChange) {
             });
     }
 
+    const onEditingPallet = (updatedPallet) => {
+        const isPalletVinculated = updatedPallet.orderId === order.id;
+        if (!isPalletVinculated) {
+            toast.error('El pallet no está vinculado a este pedido');
+            return;
+        } 
+        setOrder(prevOrder => {
+            return {
+                ...prevOrder,
+                pallets: prevOrder.pallets.map(pallet => pallet.id == updatedPallet.id ? updatedPallet : pallet)
+            }
+        })
+        reload();
+    }
+
+    const onCreatingPallet = (newPallet) => {
+        const isPalletVinculated = newPallet.orderId === order.id;
+        if (!isPalletVinculated) {
+            toast.error('El pallet no está vinculado a este pedido');
+            return;
+        }
+        setOrder(prevOrder => {
+            return {
+                ...prevOrder,
+                pallets: [...prevOrder.pallets, newPallet]
+            }
+        })
+        reload();
+    }
+
 
 
     return {
@@ -569,6 +602,8 @@ export function useOrder(orderId, onChange) {
         updateTemperatureOrder,
         openOrderIncident,
         resolveOrderIncident,
-        deleteOrderIncident
+        deleteOrderIncident,
+        onEditingPallet,
+        onCreatingPallet
     };
 }

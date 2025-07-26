@@ -26,8 +26,6 @@ import Loader from "@/components/Utilities/Loader";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 
-import { useStoreContext } from "@/context/StoreContext";
-
 import { usePallet } from "@/hooks/usePallet";
 import { usePrintElement } from "@/hooks/usePrintElement";
 
@@ -36,8 +34,9 @@ import SummaryPieChart from "./SummaryPieChart";
 import BoxesLabels from "./BoxesLabels";
 
 
-export default function PalletDialog({ palletId, isOpen, onChange, initialStoreId = null, initialOrderId = null }) {
-    const { closePalletDialog } = useStoreContext();
+export default function PalletDialog({ palletId, isOpen, onChange, initialStoreId = null, initialOrderId = null , onCloseDialog  }) {
+    
+    /* Arreglar que no se puede crear con pedido vinculado */
     const {
         productsOptions,
         boxCreationData,
@@ -60,6 +59,8 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
         setBoxPrinted,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId });
 
+
+    const orderIdBlocked = initialOrderId !== null;
 
 
     const { onPrint } = usePrintElement({ id: 'print-area-id', width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height });
@@ -108,7 +109,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
     };
 
     const handleOnClickClose = () => {
-        closePalletDialog();
+        onCloseDialog();
         onClose();
     };
 
@@ -137,7 +138,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                             <p className="text-muted-foreground text-sm max-w-xs">
                                 Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
                             </p>
-                            <Button variant="destructive" className="px-20 mt-5" onClick={closePalletDialog}>
+                            <Button variant="destructive" className="px-20 mt-5" onClick={onCloseDialog}>
                                 Cerrar
                             </Button>
                         </div>
@@ -462,7 +463,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label>Pedido vinculado (opcional)</Label>
-                                                        <Select value={temporalPallet.orderId} onValueChange={(value) => editPallet.orderId(value)}>
+                                                        <Select disabled={orderIdBlocked} value={temporalPallet.orderId} onValueChange={(value) => editPallet.orderId(value)}>
                                                             <SelectTrigger>
                                                                 <SelectValue placeholder="Sin pedido asignado" />
                                                             </SelectTrigger>
@@ -480,7 +481,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                                                                     )}
                                                             </SelectContent>
                                                         </Select>
-                                                        {temporalPallet.orderId && (
+                                                        {temporalPallet.orderId && !orderIdBlocked && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => editPallet.orderId(null)}

@@ -44,7 +44,8 @@ export const StoreContent = () => {
         updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
         store,
-        isOpenPalletLabelDialog, closePalletLabelDialog, palletLabelDialogData
+        isOpenPalletLabelDialog, closePalletLabelDialog, palletLabelDialogData,
+        closePalletDialog        
     } = useStoreContext();
 
     const storeId = store?.id;
@@ -131,7 +132,7 @@ export const StoreContent = () => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} />
 
                 <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
 
