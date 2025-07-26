@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
+import { deletePallet, unlinkPalletFromOrder } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -580,6 +581,38 @@ export function useOrder(orderId, onChange) {
         reload();
     }
 
+    const onDeletePallet = async (palletId) => {
+        const token = session?.user?.accessToken;
+        try {
+            await deletePallet(palletId, token);
+            setOrder(prevOrder => ({
+                ...prevOrder,
+                pallets: prevOrder.pallets.filter(pallet => pallet.id !== palletId)
+            }));
+            onChange?.();
+            toast.success('Palet eliminado correctamente');
+        } catch (error) {
+            toast.error(error.message || 'Error al eliminar el palet');
+            throw error;
+        }
+    };
+
+    const onUnlinkPallet = async (palletId) => {
+        const token = session?.user?.accessToken;
+        try {
+            await unlinkPalletFromOrder(palletId, token);
+            setOrder(prevOrder => ({
+                ...prevOrder,
+                pallets: prevOrder.pallets.filter(pallet => pallet.id !== palletId)
+            }));
+            onChange?.();
+            toast.success('Palet desvinculado correctamente');
+        } catch (error) {
+            toast.error(error.message || 'Error al desvincular el palet');
+            throw error;
+        }
+    };
+
 
 
     return {
@@ -604,6 +637,8 @@ export function useOrder(orderId, onChange) {
         resolveOrderIncident,
         deleteOrderIncident,
         onEditingPallet,
-        onCreatingPallet
+        onCreatingPallet,
+        onDeletePallet,
+        onUnlinkPallet
     };
 }

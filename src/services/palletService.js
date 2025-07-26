@@ -225,3 +225,73 @@ export function removePalletPosition(palletId, token) {
             console.log('removePalletPosition finalizado');
         });
 }
+
+/**
+ * Elimina un palet completamente.
+ * @param {number|string} palletId - ID del palet a eliminar.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend.
+ */
+export function deletePallet(palletId, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al eliminar el palet');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('deletePallet finalizado');
+        });
+}
+
+/**
+ * Desvincula un palet de su pedido (establece orderId a null).
+ * @param {number|string} palletId - ID del palet a desvincular.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend.
+ */
+export function unlinkPalletFromOrder(palletId, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}/unlink-order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al desvincular el palet');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+            console.log('unlinkPalletFromOrder finalizado');
+        });
+}

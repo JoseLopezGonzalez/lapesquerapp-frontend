@@ -2,23 +2,26 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Warehouse } from 'lucide-react';
+import { Plus, Edit, Warehouse, Trash2, Unlink } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import Loader from '@/components/Utilities/Loader';
 
 const OrderPallets = () => {
-    const { pallets, order, onEditingPallet, onCreatingPallet } = useOrderContext();
+    const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet } = useOrderContext();
     const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
     const [selectedPalletId, setSelectedPalletId] = useState(null);
     const [isStoreSelectionOpen, setIsStoreSelectionOpen] = useState(false);
     const [selectedStoreId, setSelectedStoreId] = useState(null);
+    const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+    const [confirmPalletId, setConfirmPalletId] = useState(null);
     const { storeOptions, loading: storesLoading } = useStoresOptions();
 
     const handleOpenNewPallet = () => {
@@ -56,6 +59,39 @@ const OrderPallets = () => {
         } else {
             onCreatingPallet(pallet);
         }
+    };
+
+    const handleDeletePallet = (palletId) => {
+        setConfirmAction('delete');
+        setConfirmPalletId(palletId);
+        setIsConfirmDialogOpen(true);
+    };
+
+    const handleUnlinkPallet = (palletId) => {
+        setConfirmAction('unlink');
+        setConfirmPalletId(palletId);
+        setIsConfirmDialogOpen(true);
+    };
+
+    const handleConfirmAction = async () => {
+        try {
+            if (confirmAction === 'delete') {
+                await onDeletePallet(confirmPalletId);
+            } else if (confirmAction === 'unlink') {
+                await onUnlinkPallet(confirmPalletId);
+            }
+            setIsConfirmDialogOpen(false);
+            setConfirmAction(null);
+            setConfirmPalletId(null);
+        } catch (error) {
+            console.error('Error al ejecutar la acción:', error);
+        }
+    };
+
+    const handleCancelAction = () => {
+        setIsConfirmDialogOpen(false);
+        setConfirmAction(null);
+        setConfirmPalletId(null);
     };
 
     console.log('pallets ahiiiiii', pallets);
@@ -97,7 +133,7 @@ const OrderPallets = () => {
                                     <TableHead>Lotes</TableHead>
                                     <TableHead>Cajas</TableHead>
                                     <TableHead>Peso</TableHead>
-                                    <TableHead className="w-[100px]">Acciones</TableHead>
+                                    <TableHead className="w-[150px]">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -125,14 +161,35 @@ const OrderPallets = () => {
                                             {formatDecimalWeight(pallet.netWeight)}
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => handleOpenEditPallet(pallet.id)}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => handleOpenEditPallet(pallet.id)}
+                                                    title="Editar palet"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                                    onClick={() => handleUnlinkPallet(pallet.id)}
+                                                    title="Desvincular del pedido"
+                                                >
+                                                    <Unlink className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => handleDeletePallet(pallet.id)}
+                                                    title="Eliminar palet"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -176,6 +233,41 @@ const OrderPallets = () => {
                             El palet se creará en el almacén seleccionado y se vinculará automáticamente a este pedido.
                         </p>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Confirmation Dialog */}
+            <Dialog open={isConfirmDialogOpen} onOpenChange={handleCancelAction}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            {confirmAction === 'delete' ? (
+                                <Trash2 className="h-5 w-5 text-red-600" />
+                            ) : (
+                                <Unlink className="h-5 w-5 text-orange-600" />
+                            )}
+                            {confirmAction === 'delete' ? 'Eliminar Palet' : 'Desvincular Palet'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            {confirmAction === 'delete' 
+                                ? '¿Estás seguro de que quieres eliminar este palet? Esta acción no se puede deshacer.'
+                                : '¿Estás seguro de que quieres desvincular este palet del pedido? El palet permanecerá en el almacén pero ya no estará asociado a este pedido.'
+                            }
+                        </p>
+                    </div>
+                    <DialogFooter className="flex gap-2">
+                        <Button variant="outline" onClick={handleCancelAction}>
+                            Cancelar
+                        </Button>
+                        <Button 
+                            variant={confirmAction === 'delete' ? 'destructive' : 'default'}
+                            onClick={handleConfirmAction}
+                        >
+                            {confirmAction === 'delete' ? 'Eliminar' : 'Desvincular'}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
