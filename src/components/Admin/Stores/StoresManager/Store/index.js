@@ -11,7 +11,6 @@ import { Card } from '@/components/ui/card';
 import PositionSlideover from './PositionSlideover';
 import AddElementToPosition from './AddElementToPositionDialog';
 import { useState } from 'react';
-import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import UnallocatedPositionSlideover from './UnallocatedPositionSlideover';
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 
@@ -31,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import PalletLabelDialog from '../../../Pallets/PalletLabelDialog';
 import MovePalletToStoreDialog from './MovePalletToStoreDialog';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 
 
 export const StoreContent = () => {

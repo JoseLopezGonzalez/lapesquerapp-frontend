@@ -6,13 +6,13 @@ import { Plus, Edit, Warehouse, Trash2, Unlink } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
-import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import Loader from '@/components/Utilities/Loader';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 
 const OrderPallets = () => {
     const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet } = useOrderContext();
