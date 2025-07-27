@@ -1274,7 +1274,6 @@ export const configs = {
   /* Pallets */
   pallets: {
     hideEditButton: true,
-    hideViewButton: true,
     title: "Palets",
     description: "Gestiona, edita y consulta palets.",
     emptyState: {

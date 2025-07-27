@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
           <div className='p-1'>
             <SidebarTrigger />
           </div>
-          <div className='flex-1 w-full h-full overflow-hidden p-4'>
+          <div className='flex-1 w-full h-full overflow-hidden p-2'>
             {children}
           </div>
         </main>

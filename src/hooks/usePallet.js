@@ -75,6 +75,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         setError(null);
         setLoading(true);
         setTemporalPallet(null);
+        
+        // Si no hay token, no continuar
+        if (!token) {
+            setError('No hay token de autenticación');
+            setLoading(false);
+            return;
+        }
+        
         // NUEVO: si no hay id => crear palet temporal nuevo
         if (id === 'new') {
             setPallet({
@@ -116,7 +124,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             .catch((err) => {
                 console.error('Error al cargar las opciones de productos:', err);
             });
-    }, [id, token, reload, initialStoreId, initialOrderId, emptyPallet]);
+    }, [id, token, reload, initialStoreId, initialOrderId]);
 
     const onClose = () => {
         setTimeout(() => {

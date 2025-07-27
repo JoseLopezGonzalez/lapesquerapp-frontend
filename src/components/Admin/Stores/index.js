@@ -49,7 +49,7 @@ export default function StoresManager() {
 
   return (
     <>
-      <div className='w-full h-full  flex flex-col items-center justify-center p-6'>
+      <div className='w-full h-full  flex flex-col items-center justify-center p-2'>
         {loading ? (
           <>
             <div className="flex flex-col items-center justify-center h-full w-full gap-6">
