@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import Loader from '@/components/Utilities/Loader';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const OrderPallets = () => {
     const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet } = useOrderContext();
@@ -171,19 +172,25 @@ const OrderPallets = () => {
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8 "
+                                                            onClick={() => handleUnlinkPallet(pallet.id)}
+                                                        >
+                                                            <Unlink className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Desvincular palet de pedido</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="destructive"
                                                     size="icon"
-                                                    className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                                                    onClick={() => handleUnlinkPallet(pallet.id)}
-                                                    title="Desvincular del pedido"
-                                                >
-                                                    <Unlink className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    className="h-8 w-8 "
                                                     onClick={() => handleDeletePallet(pallet.id)}
                                                     title="Eliminar palet"
                                                 >
@@ -251,7 +258,7 @@ const OrderPallets = () => {
                     </DialogHeader>
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                            {confirmAction === 'delete' 
+                            {confirmAction === 'delete'
                                 ? '¿Estás seguro de que quieres eliminar este palet? Esta acción no se puede deshacer.'
                                 : '¿Estás seguro de que quieres desvincular este palet del pedido? El palet permanecerá en el almacén pero ya no estará asociado a este pedido.'
                             }
@@ -261,7 +268,7 @@ const OrderPallets = () => {
                         <Button variant="outline" onClick={handleCancelAction}>
                             Cancelar
                         </Button>
-                        <Button 
+                        <Button
                             variant={confirmAction === 'delete' ? 'destructive' : 'default'}
                             onClick={handleConfirmAction}
                         >

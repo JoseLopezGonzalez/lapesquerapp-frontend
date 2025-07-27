@@ -68,6 +68,9 @@ export function useOrder(orderId, onChange) {
 
     const pallets = order?.pallets || [];
 
+    const accessToken = session?.user?.accessToken
+
+
     useEffect(() => {
         // Espera a que la sesión esté lista
         if (!orderId || status === "loading") return; // Espera a que la sesión esté lista
@@ -75,13 +78,11 @@ export function useOrder(orderId, onChange) {
 
         if (!orderId) return;
 
-        const token = session?.user?.accessToken;
-        
         // Si no hay token, no hacer nada
-        if (!token) return;
+        if (!accessToken) return;
 
         setLoading(true);
-        getOrder(orderId, token)
+        getOrder(orderId, accessToken)
             .then((data) => {
                 setOrder(data);
                 setLoading(false);
@@ -90,7 +91,7 @@ export function useOrder(orderId, onChange) {
             .catch((err) => setError(err))
             .finally();
 
-        getProductOptions(token)
+        getProductOptions(accessToken)
             .then((data) => {
                 setProductOptions(data.map((product) => ({
                     value: product.id,
@@ -100,7 +101,7 @@ export function useOrder(orderId, onChange) {
             })
             .catch((err) => setError(err))
             .finally();
-        getTaxOptions(token)
+        getTaxOptions(accessToken)
             .then((data) => {
                 setTaxOptions(data.map((tax) => ({
                     value: tax.id,
@@ -113,7 +114,7 @@ export function useOrder(orderId, onChange) {
 
 
 
-    }, [orderId, status]);
+    }, [orderId, status, accessToken]);
 
     const reload = async () => {
         const token = session?.user?.accessToken;
