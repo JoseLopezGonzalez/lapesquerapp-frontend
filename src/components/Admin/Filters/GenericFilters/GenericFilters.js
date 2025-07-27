@@ -145,6 +145,7 @@ export const GenericFilters = ({ data }) => {
                 <DialogTrigger asChild>
                     <Button
                         variant="secondary"
+                        size="sm"
                     >
                         <IoFilter className="h-4 w-4" />
                         <span className='hidden xl:flex'>Filtros</span>

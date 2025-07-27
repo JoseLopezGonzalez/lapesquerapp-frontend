@@ -340,6 +340,11 @@ export default function EntityClient({ config }) {
         if (shouldRefresh) fetchData(currentPage, filters);
     };
 
+    // Handler para recargar datos con filtros actuales
+    const handleRefresh = () => {
+        fetchData(currentPage, filters);
+    };
+
     // Preparar columns y rows para EntityTable
     const columns = generateColumns2(config.table.headers, { 
       onEdit: handleOpenEdit, 
@@ -376,6 +381,7 @@ export default function EntityClient({ config }) {
                     onSelectedRowsDelete={handleSelectedRowsDelete}
                     onExport={handleExport}
                     onReport={handleReport}
+                    onRefresh={handleRefresh}
                     actions={actions}
                 />
                 <EntityBody

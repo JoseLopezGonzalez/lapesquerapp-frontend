@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { EllipsisVertical, PlusIcon, ChartPieIcon, TrashIcon } from 'lucide-react';
+import { EllipsisVertical, PlusIcon, ChartPieIcon, TrashIcon, RefreshCw } from 'lucide-react';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from 'react-icons/fa';
 
@@ -28,6 +28,7 @@ export const EntityTableHeader = ({
     onSelectedRowsDelete,
     onExport,
     onReport,
+    onRefresh,
     actions = [],
 }) => {
 
@@ -43,8 +44,15 @@ export const EntityTableHeader = ({
 
             <div>
                 <div className="inline-flex gap-x-2">
+                    {onRefresh && (
+                        <Button onClick={onRefresh} variant="outline" size="sm">
+                            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                            <span className='hidden xl:block'>Recargar</span>
+                        </Button>
+                    )}
+
                     {existsSelectedRows && onSelectedRowsDelete && (
-                        <Button onClick={onSelectedRowsDelete} variant="destructive">
+                        <Button onClick={onSelectedRowsDelete} variant="destructive" size="sm">
                             <TrashIcon className="h-4 w-4" aria-hidden="true" />
                             <span className='hidden xl:block'>Eliminar</span>
                         </Button>
@@ -53,7 +61,7 @@ export const EntityTableHeader = ({
                     {existsAnyOptions && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" >
+                                <Button variant="outline" size="sm" >
                                     Opciones <EllipsisVertical className="w-5 h-5" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -122,7 +130,7 @@ export const EntityTableHeader = ({
                     {filtersComponent && filtersComponent}
 
                     {onCreate && (
-                        <Button onClick={onCreate}>
+                        <Button onClick={onCreate} size="sm">
                             <PlusIcon className="h-5 w-5" aria-hidden="true" />
                             Nuevo
                         </Button>
