@@ -168,7 +168,6 @@ const OrderPallets = () => {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     onClick={() => handleOpenEditPallet(pallet.id)}
-                                                    title="Editar palet"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -192,7 +191,6 @@ const OrderPallets = () => {
                                                     size="icon"
                                                     className="h-8 w-8 "
                                                     onClick={() => handleDeletePallet(pallet.id)}
-                                                    title="Eliminar palet"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
