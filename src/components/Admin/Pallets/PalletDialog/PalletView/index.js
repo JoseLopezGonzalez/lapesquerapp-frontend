@@ -169,6 +169,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> Etiquetas Cajas
                                     </TabsTrigger>
+                                    <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300">
+                                        <Trash2 className="h-4 w-4" /> Eliminar
+                                    </TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="edicion" className="mt-0 ">
@@ -185,7 +188,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 </CardHeader>
                                                 <CardContent>
                                                     <Tabs defaultValue="lector" className="w-full">
-                                                        <TabsList className="grid w-full grid-cols-6">
+                                                        <TabsList className="grid w-full grid-cols-5"> {/* Cambiar de 6 a 5 columnas */}
                                                             <TabsTrigger value="lector" className="flex items-center gap-2">
                                                                 <Scan className="h-4 w-4" /> Lector
                                                             </TabsTrigger>
@@ -200,9 +203,6 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             </TabsTrigger>
                                                             <TabsTrigger value="codes" className="flex items-center gap-2">
                                                                 <Package className="h-4 w-4" /> Codigos GS1
-                                                            </TabsTrigger>
-                                                            <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300">
-                                                                <Trash2 className="h-4 w-4" /> Eliminar
                                                             </TabsTrigger>
                                                         </TabsList>
 
@@ -422,27 +422,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             </div>
                                                         </TabsContent>
 
-                                                        <TabsContent value="eliminar" className="space-y-4">
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="codigo-escaneado">Código escaneado</Label>
-                                                                <div className="grid grid-cols-3  gap-x-2">
-                                                                    <Input
-                                                                        value={boxCreationData.deleteScannedCode}
-                                                                        onChange={(e) => {
-                                                                            boxCreationDataChange("deleteScannedCode", e.target.value);
-                                                                        }}
-
-                                                                        type="text"
-                                                                        id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono col-span-2" />
-                                                                    <Button variant='destructive' className="w-full" onClick={() => handleOnClickDeleteAllBoxes()}>
-                                                                        <Trash2 className="h-4 w-4 " /> Eliminar todas las cajas
-                                                                    </Button>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    La caja se eliminará automáticamente al detectar un código válido
-                                                                </p>
-                                                            </div>
-                                                        </TabsContent>
+                                                        
                                                     </Tabs>
                                                 </CardContent>
                                             </Card>
@@ -748,6 +728,112 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
                                 <TabsContent value="boxesLabels" className="mt-0 w-full">
                                     <BoxesLabels pallet={temporalPallet} setBoxPrinted={setBoxPrinted} />
+                                </TabsContent>
+
+                                <TabsContent value="eliminar" className="mt-0 ">
+                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-180px)]">
+                                        {/* Columna izquierda: opciones de eliminación */}
+                                        <div className="space-y-6 overflow-y-auto pr-2 col-span-2 ">
+                                            <Card className="border-2 border-muted bg-foreground-50 w-full">
+                                                <CardHeader className="pb-4 w-full">
+                                                    <CardTitle className="flex items-center gap-2 text-lg w-full">
+                                                        <Trash2 className="h-5 w-5 text-destructive" /> Eliminar cajas
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="codigo-escaneado">Código escaneado</Label>
+                                                        <Input
+                                                            value={boxCreationData.deleteScannedCode}
+                                                            onChange={(e) => {
+                                                                boxCreationDataChange("deleteScannedCode", e.target.value);
+                                                            }}
+                                                            type="text"
+                                                            id="codigo-escaneado"
+                                                            placeholder="Escanea aquí..."
+                                                            className="font-mono"
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">
+                                                            La caja se eliminará automáticamente al detectar un código válido
+                                                        </p>
+                                                    </div>
+                                                    <div className="mt-4">
+                                                        <Button variant='destructive' className="w-full" onClick={() => handleOnClickDeleteAllBoxes()}>
+                                                            <Trash2 className="h-4 w-4 " /> Eliminar todas las cajas
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+
+                                        <div className="space-y-4 overflow-y-auto col-span-3 ">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
+                                                <div className="text-sm text-muted-foreground/90 bg-foreground-50 rounded-full px-4 py-1  flex items-center">
+                                                    <span>{temporalPallet.numberOfBoxes} cajas</span>
+                                                    <Separator orientation="vertical" className="mx-2 h-3" />
+                                                    <span>{formatDecimalWeight(temporalPallet.netWeight)}</span>
+                                                    <Separator orientation="vertical" className="mx-2 h-3" />
+                                                    <span>{temporalTotalProducts} productos</span>
+                                                    <Separator orientation="vertical" className="mx-2 h-3" />
+                                                    <span>{temporalTotalLots} lotes</span>
+                                                </div>
+                                            </div>
+                                            <div className="border rounded-lg overflow-hidden">
+                                                <div className="overflow-y-auto max-h-[calc(90vh-260px)]">
+                                                    <Table>
+                                                        <TableHeader className="sticky top-0 bg-background">
+                                                            <TableRow>
+                                                                <TableHead>Artículo</TableHead>
+                                                                <TableHead>Lote</TableHead>
+                                                                <TableHead>GS1 128</TableHead>
+                                                                <TableHead>Peso Neto</TableHead>
+                                                                <TableHead className="w-[100px]">Acciones</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {temporalPallet.boxes.map((box) => (
+                                                                <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)}
+                                                                    className={`cursor-text hover:bg-muted ${box?.new === true ? "bg-foreground-50" : ""}`}
+                                                                >
+                                                                    <TableCell>{box.product.name}</TableCell>
+                                                                    <TableCell>{box.lot}</TableCell>
+                                                                    <TableCell>{box.gs1128}</TableCell>
+                                                                    <TableCell>{box.netWeight} kg</TableCell>
+                                                                    <TableCell>
+                                                                        <div className="flex gap-1">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="h-8 w-8"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleOnClickDuplicateBox(box.id)
+                                                                                }}
+                                                                            >
+                                                                                <Copy className="h-4 w-4" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="h-8 w-8 text-destructive"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleOnClickDeleteBox(box.id);
+                                                                                }}
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </TabsContent>
 
                             </Tabs>

@@ -42,19 +42,19 @@ export default function HomePage() {
 
   if (isSubdomain === null) return (
     <div className="flex justify-center items-center h-screen w-full">
-      <Loader />;
+      <Loader />
     </div>
   )
 
   if (isSubdomain) {
     if (status === "loading") return (
       <div className="flex justify-center items-center h-screen w-full">
-        <Loader />;
+        <Loader />
       </div>
     )
     if (status === "authenticated") return (
       <div className="flex justify-center items-center h-screen w-full">
-        <Loader />;
+        <Loader />
       </div>
     ); 
     return <LoginPage />;
