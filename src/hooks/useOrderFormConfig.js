@@ -7,8 +7,8 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
 
 const initialDefaultValues = {
-    entryDate: '',
-    loadDate: '',
+    entryDate: null, // Cambiado de '' a objeto Date
+    loadDate: null, // Cambiado de '' a null
     salesperson: '',
     payment: '',
     incoterm: '',
@@ -230,8 +230,8 @@ export function useOrderFormConfig({ orderData }) {
     useEffect(() => {
         if (orderData) {
             setDefaultValues({
-                entryDate: orderData.entryDate || '',
-                loadDate: orderData.loadDate || '',
+                entryDate: orderData.entryDate ? (typeof orderData.entryDate === 'string' ? new Date(orderData.entryDate) : orderData.entryDate) : null,
+                loadDate: orderData.loadDate ? (typeof orderData.loadDate === 'string' ? new Date(orderData.loadDate) : orderData.loadDate) : null,
                 salesperson: `${orderData.salesperson.id}` || '',
                 payment: `${orderData.paymentTerm.id}` || '',
                 incoterm: `${orderData.incoterm.id}` || '',
@@ -247,7 +247,6 @@ export function useOrderFormConfig({ orderData }) {
                 transportNotes: orderData.transportNotes || '',
                 emails: orderData.emails || [],
                 ccEmails: orderData.ccEmails || [],
-
             });
         }
 

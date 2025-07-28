@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import DatePicker from "@/components/Shadcn/Dates/DatePicker";
+import { DatePicker } from "@/components/ui/datePicker";
+import { format } from "date-fns"
 import { Combobox } from "@/components/Shadcn/Combobox";
 import EmailListInput from "@/components/ui/emailListInput";
 import { API_URL_V2 } from "@/configs/config";
@@ -35,6 +36,11 @@ export function mapApiDataToFormValues(fields, data) {
             result[key] = get(data, field.path, null);
         } else {
             result[key] = data[key];
+        }
+
+        // Convertir fechas de string a Date si el campo es de tipo date
+        if (field.type === "date" && result[key]) {
+            result[key] = typeof result[key] === 'string' ? new Date(result[key]) : result[key];
         }
     }
     return result;
@@ -124,7 +130,15 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
     const onSubmit = async (data) => {
         try {
-            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, data);
+            // Convertir fechas a string YYYY-MM-DD si son Date
+            const processedData = { ...data };
+            Object.keys(processedData).forEach(key => {
+                if (processedData[key] instanceof Date) {
+                    processedData[key] = format(processedData[key], 'yyyy-MM-dd');
+                }
+            });
+
+            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, processedData);
             toast.success(successMessage, getToastTheme());
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
@@ -159,7 +173,12 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                         control={control}
                         rules={field.validation}
                         render={({ field: { onChange, value, onBlur } }) => (
-                            <DatePicker value={value} onChange={onChange} onBlur={onBlur} />
+                            <DatePicker 
+                                date={value} 
+                                onChange={onChange} 
+                                onBlur={onBlur}
+                                formatStyle="short"
+                            />
                         )}
                     />
                 );

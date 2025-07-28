@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import DatePicker from '@/components/Shadcn/Dates/DatePicker';
+/* import DatePicker from '@/components/Shadcn/Dates/DatePicker'; */
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,6 +16,8 @@ import { useOrderContext } from '@/context/OrderContext';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import EmailListInput from '@/components/ui/emailListInput';
+import { DatePicker } from '@/components/ui/datePicker';
+import { format } from "date-fns"
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
@@ -38,7 +40,14 @@ const OrderEditSheet = () => {
     const onSubmit = async (data) => {
         const toastId = toast.loading('Actualizando pedido...', getToastTheme());
 
-        updateOrderData(data)
+        // Convertir fechas a string YYYY-MM-DD si son Date
+        const payload = {
+            ...data,
+            entryDate: data.entryDate instanceof Date ? format(data.entryDate, 'yyyy-MM-dd') : data.entryDate,
+            loadDate: data.loadDate instanceof Date ? format(data.loadDate, 'yyyy-MM-dd') : data.loadDate,
+        };
+
+        updateOrderData(payload)
             .then((updatedData) => {
                 toast.success('Pedido actualizado correctamente', { id: toastId });
             })
@@ -69,12 +78,21 @@ const OrderEditSheet = () => {
                             // Aquí renderizas el componente, por ejemplo un Select
                             // y usas onChange / value / onBlur para la sincronización
                             return (
-                                <DatePicker
+                              /*   <DatePicker
                                     value={value}
                                     onChange={onChange}
                                     onBlur={onBlur}
                                     {...field.props}
-                                />
+                                /> */
+                                <DatePicker
+                                date={value}
+                                onChange={(newValue) => {
+                                    onChange(newValue);
+                                }}
+                                onBlur={onBlur}
+                                formatStyle="short"
+                                {...field.props}
+                            />
                             )
                         }}
                     />

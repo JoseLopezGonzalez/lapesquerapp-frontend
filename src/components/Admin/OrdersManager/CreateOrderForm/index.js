@@ -11,7 +11,6 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Save, PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import DatePicker from '@/components/Shadcn/Dates/DatePicker';
 import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig'; // Hook personalizado
 import { useSession } from 'next-auth/react';
 import { getCustomer } from '@/services/customerService'; // Ya externalizado
@@ -26,6 +25,8 @@ import EmailListInput from '@/components/ui/emailListInput';
 // Importa el nuevo servicio para la creación de pedidos
 import { createOrder } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/datePicker';
+import { format } from "date-fns"
 
 const CreateOrderForm = ({ onCreate }) => {
     const { productOptions } = useProductOptions();
@@ -104,8 +105,8 @@ const CreateOrderForm = ({ onCreate }) => {
             // Prepara el payload tal como lo hacías
             const payload = {
                 customer: parseInt(formData.customer),
-                entryDate: formData.entryDate,
-                loadDate: formData.loadDate,
+                entryDate: formData.entryDate ? format(formData.entryDate, 'yyyy-MM-dd') : null,
+                loadDate: formData.loadDate ? format(formData.loadDate, 'yyyy-MM-dd') : null,
                 salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
                 payment: formData.payment ? parseInt(formData.payment) : null,
                 incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
@@ -160,9 +161,10 @@ const CreateOrderForm = ({ onCreate }) => {
                         rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <DatePicker
-                                value={value}
+                                date={value}
                                 onChange={onChange}
                                 onBlur={onBlur}
+                                formatStyle="short"
                                 {...field.props}
                             />
                         )}

@@ -3,14 +3,7 @@
 import { useState } from "react"
 import { Layers, Search, X, Check, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
@@ -95,7 +88,6 @@ const availablePallets = [
 
 export default function AddElementToPosition({ open }) {
 
-
     const { addElementToPositionDialogData, closeAddElementToPosition, unlocatedPallets, pallets, changePalletsPosition } = useStoreContext()
 
     const position = addElementToPositionDialogData
@@ -107,21 +99,18 @@ export default function AddElementToPosition({ open }) {
     const token = session?.user?.accessToken;
 
     const onSubmit = () => {
-
         assignPalletsToPosition(position, selectedPalletIds, token)
             .then((response) => {
                 toast.success("Pallets ubicados correctamente", getToastTheme())
                 setSelectedPalletIds([])
                 setSearchQuery("")
-                changePalletsPosition(selectedPalletIds,position )
+                changePalletsPosition(selectedPalletIds, position)
                 closeAddElementToPosition()
             })
             .catch((error) => {
                 console.error("Error al ubicar los pallets:", error)
                 toast.error("Error al ubicar los pallets", getToastTheme())
             })
-
-
     }
 
     const handleOnClose = () => {
@@ -136,7 +125,6 @@ export default function AddElementToPosition({ open }) {
             return
         }
         onSubmit(selectedPalletIds)
-
     }
 
     const togglePalletSelection = (palletId) => {
@@ -152,10 +140,22 @@ export default function AddElementToPosition({ open }) {
         }
         if (!searchQuery) return true
         const query = searchQuery.toLowerCase()
-        if (pallet.id.toLowerCase().includes(query)) return true
-        if (pallet.products.some((product) => product.name.toLowerCase().includes(query))) return true
-        if (pallet.lotNumbers.some((lot) => lot.toLowerCase().includes(query))) return true
-        if (pallet.location && pallet.location.toLowerCase().includes(query)) return true
+        if (String(pallet.id).toLowerCase().includes(query)) return true
+        if (Array.isArray(pallet.products) && pallet.products.some((product) => 
+            String(product.name || "").toLowerCase().includes(query)
+        )) return true
+        if (Array.isArray(pallet.lotNumbers) && pallet.lotNumbers.some((lot) => 
+            String(lot || "").toLowerCase().includes(query)
+        )) return true
+        if (pallet.location && String(pallet.location).toLowerCase().includes(query)) return true
+        // Buscar por producto en boxes
+        if (Array.isArray(pallet.boxes) && pallet.boxes.some((box) =>
+            String(box.product?.name || "").toLowerCase().includes(query)
+        )) return true
+        // Buscar por lote en boxes
+        if (Array.isArray(pallet.boxes) && pallet.boxes.some((box) =>
+            String(box.lot || "").toLowerCase().includes(query)
+        )) return true
         return false
     })
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { es } from "date-fns/locale"
+import { format } from "date-fns"
 
 import {
   Popover,
@@ -47,8 +48,18 @@ function parseShortDate(input) {
 
 export function DatePicker({ date, onChange, formatStyle = "short" }) {
   const [open, setOpen] = React.useState(false)
-  const [month, setMonth] = React.useState(date)
+  const [month, setMonth] = React.useState(date || new Date())
   const [value, setValue] = React.useState(formatDate(date, formatStyle))
+
+  // Actualizar month cuando cambie date
+  React.useEffect(() => {
+    setMonth(date || new Date())
+  }, [date])
+
+  // Actualizar value cuando cambie date
+  React.useEffect(() => {
+    setValue(formatDate(date, formatStyle))
+  }, [date, formatStyle])
 
   const handleInputChange = (e) => {
     setValue(e.target.value)
@@ -64,9 +75,13 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
       }
 
       if (isValidDate(parsed)) {
-        onChange(parsed)
-        setMonth(parsed)
-        setValue(formatDate(parsed, formatStyle))
+        // Crear una fecha con la zona horaria correcta (mediodía para evitar problemas de UTC)
+        const localDate = new Date(parsed)
+        localDate.setHours(12, 0, 0, 0)
+        
+        onChange(localDate)
+        setMonth(localDate)
+        setValue(formatDate(localDate, formatStyle))
       }
     }
 
@@ -77,9 +92,13 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
   }
 
   const handleSelect = (newDate) => {
-    onChange(newDate)
-    setMonth(newDate)
-    setValue(formatDate(newDate, formatStyle))
+    // Crear una fecha con la zona horaria correcta (mediodía para evitar problemas de UTC)
+    const localDate = new Date(newDate)
+    localDate.setHours(12, 0, 0, 0)
+    
+    onChange(localDate)
+    setMonth(localDate)
+    setValue(formatDate(localDate, formatStyle))
     setOpen(false)
   }
 

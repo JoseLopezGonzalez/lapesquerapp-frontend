@@ -11,8 +11,8 @@ const today = new Date();
 
 const initialDefaultValues = {
     customer: '',
-    entryDate: today.toISOString().split('T')[0],
-    loadDate: '',
+    entryDate: today, // Cambiado de string a objeto Date
+    loadDate: null, // Cambiado de '' a null
     salesperson: '',
     payment: '',
     incoterm: '',

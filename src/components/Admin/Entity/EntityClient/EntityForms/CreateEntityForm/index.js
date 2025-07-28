@@ -15,11 +15,12 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import DatePicker from "@/components/Shadcn/Dates/DatePicker";
+import { DatePicker } from "@/components/ui/datePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
 import { API_URL_V2 } from "@/configs/config";
 import EmailListInput from "@/components/ui/emailListInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { format } from "date-fns"
 
 // Import the new service functions
 import { fetchAutocompleteOptions, createEntity } from '@/services/createEntityService';
@@ -85,7 +86,15 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
     const onSubmit = async (data) => {
         try {
-            const response = await createEntity(`${API_URL_V2}${endpoint}`, data);
+            // Convertir fechas a string YYYY-MM-DD si son Date
+            const processedData = { ...data };
+            Object.keys(processedData).forEach(key => {
+                if (processedData[key] instanceof Date) {
+                    processedData[key] = format(processedData[key], 'yyyy-MM-dd');
+                }
+            });
+
+            const response = await createEntity(`${API_URL_V2}${endpoint}`, processedData);
 
             // You might not need to await response.json() here unless you need it for specific error details.
             // If response.ok, you likely just care that it succeeded.
@@ -145,7 +154,12 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                         control={control}
                         rules={field.validation}
                         render={({ field: { onChange, value, onBlur } }) => (
-                            <DatePicker value={value} onChange={onChange} onBlur={onBlur} />
+                            <DatePicker 
+                                date={value} 
+                                onChange={onChange} 
+                                onBlur={onBlur}
+                                formatStyle="short"
+                            />
                         )}
                     />
                 );
