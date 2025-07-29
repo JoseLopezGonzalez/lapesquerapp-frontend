@@ -330,7 +330,7 @@ export default function EntityClient({ config }) {
     const handleOpenView = (id) => {
         if (config.viewRoute) {
             const viewUrl = config.viewRoute.replace(':id', id);
-            router.push(viewUrl);
+            window.open(viewUrl, '_blank');
         }
     };
 
