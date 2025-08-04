@@ -1054,6 +1054,7 @@ export const configs = {
   stores: {
     title: "Almacenes",
     description: "Gestiona, edita y consulta almacenes.",
+    hideViewButton: true,
     emptyState: {
       title: "No existen almacenes según los filtros",
       description: "Ajusta los filtros o crea un nuevo almacén.",
@@ -1180,7 +1181,7 @@ export const configs = {
       title: "No existen cajas según los filtros",
       description: "Ajusta los filtros o crea una nueva caja.",
     },
-    perPage: 15,
+    perPage: 17,
     endpoint: "boxes",
     viewRoute: "/admin/boxes/:id",
     deleteEndpoint: "/boxes/:id",
@@ -1205,20 +1206,20 @@ export const configs = {
               name: "ids",
               label: "IDs",
               type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              placeholder: "Introduce un ID",
             },
             {
               name: "lots",
               label: "Lotes",
               type: "textAccumulator",
-              placeholder: "Buscar por lotes",
+              placeholder: "Introduce un lote",
             },
             /* gs1128 */
             {
               name: "gs1128",
               label: "GS1128",
               type: "textAccumulator",
-              placeholder: "Buscar por GS1128",
+              placeholder: "Introduce un GS1128",
             },
 
             /* createdAt */
@@ -1230,7 +1231,6 @@ export const configs = {
             }
           ],
         },
-        /* Products */
         {
           name: "products",
           label: "Productos",
@@ -1239,8 +1239,21 @@ export const configs = {
               name: "products",
               label: "Productos",
               type: "autocomplete",
-              placeholder: "Buscar por producto",
+              placeholder: "Selecciona un producto",
               endpoint: "products/options",
+            }
+          ],
+        },
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Selecciona una especie",
+              endpoint: "species/options",
             }
           ],
         },
@@ -1254,7 +1267,7 @@ export const configs = {
               name: "pallets",
               label: "Palets",
               type: "textAccumulator",
-              placeholder: "Buscar por palet",
+              placeholder: 'Introduce un número de palet',
             }
           ],
         }

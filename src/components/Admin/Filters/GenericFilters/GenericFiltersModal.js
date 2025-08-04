@@ -7,6 +7,7 @@ import { CheckIcon } from '@heroicons/react/20/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
+import { CircleXIcon } from 'lucide-react';
 
 export const GenericFiltersModal = ({
     filtersGroup,
@@ -41,7 +42,7 @@ export const GenericFiltersModal = ({
                         onClick={resetFilters}
                         variant='outline'
                     >
-                        <ArrowPathIcon className="h-4 w-4" />
+                        <CircleXIcon className="h-4 w-4" />
                         Resetear
                     </Button>
                 </DialogTrigger>
