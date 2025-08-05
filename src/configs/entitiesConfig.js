@@ -1338,7 +1338,7 @@ export const configs = {
         endpoint: "boxes/xlsx",
         type: "xlsx",
         waitingMessage: "Generando exportación a excel",
-        fileName: "cajas",
+        fileName: "Cajas",
       },
     ],
   },

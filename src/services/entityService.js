@@ -55,7 +55,15 @@ export const performAction = async (url, method, body) => {
 
 export const downloadFile = async (url, fileName, type) => {
     const headers = await getAuthHeaders();
-    const currentDate = new Date().toLocaleDateString().split('/').join('-');
+
+    const now = new Date();
+
+    const formattedDate = now.toLocaleDateString().replace(/\//g, '-'); // Ej: 05-08-2025
+    const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // "12-34-56"
+
+    const currentDateTime = `${formattedDate}__${formattedTime}`;
+
+
 
     try {
         const response = await fetchWithTenant(url, {
@@ -71,7 +79,7 @@ export const downloadFile = async (url, fileName, type) => {
         const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = `${fileName} (${currentDate}).${type === 'excel' ? 'xls' : type === 'xlsx' ? 'xlsx' : 'pdf'}`; // Dynamic file extension
+        a.download = `${fileName}__${currentDateTime}.${type === 'excel' ? 'xls' : type === 'xlsx' ? 'xlsx' : 'pdf'}`; // Dynamic file extension
         document.body.appendChild(a);
         a.click();
         a.remove();
