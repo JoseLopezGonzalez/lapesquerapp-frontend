@@ -1268,6 +1268,55 @@ export const configs = {
               label: "Palets",
               type: "textAccumulator",
               placeholder: 'Introduce un número de palet',
+            },
+            {
+              name: "palletState",
+              label: "Estado del Palet",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "stored", label: "Almacenado", value: false },
+                { name: "shipped", label: "Enviado", value: false },
+              ],
+            },
+            {
+              name: "orderState",
+              label: "Estado de la Orden",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "pending", label: "Pendiente", value: false },
+                { name: "finished", label: "Finalizada", value: false },
+              ],
+            },
+            {
+              name: "position",
+              label: "Posición",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "located", label: "Ubicado", value: false },
+                { name: "unlocated", label: "Sin Ubicar", value: false },
+              ],
+            },
+            {
+              name: "stores",
+              label: "Almacenes",
+              type: "autocomplete",
+              placeholder: "Selecciona almacenes",
+              endpoint: "stores/options",
+              multiple: true,
+            },
+            {
+              name: "orders",
+              label: "Pedidos",
+              type: "autocomplete",
+              placeholder: "Selecciona órdenes",
+              endpoint: "orders/options",
+              multiple: true,
+            },
+            {
+              name: "notes",
+              label: "Observaciones del Palet",
+              type: "text",
+              placeholder: "Buscar en observaciones del palet",
             }
           ],
         }
