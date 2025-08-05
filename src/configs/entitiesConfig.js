@@ -1353,7 +1353,7 @@ export const configs = {
     },
     endpoint: "pallets",
     viewRoute: "/admin/pallets/:id",
-    deleteEndpoint: "/pallets/:id",
+    deleteEndpoint: "pallets/:id",
     createRedirect: "/admin/stores-manager",
     filtersGroup: {
       search: {
@@ -1447,6 +1447,20 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por producto",
               endpoint: "products/options",
+            }
+          ],
+        },
+        /* Species   */
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Buscar por especie",
+              endpoint: "species/options",
             }
           ],
         },
