@@ -75,6 +75,7 @@ export const EntityTableHeader = ({
                                                 <DropdownMenuItem
                                                     key={action.title}
                                                     onClick={() => action.onClick?.(existsSelectedRows)}
+                                                    className="cursor-pointer"
                                                 >
                                                     {action.title}
                                                 </DropdownMenuItem>
@@ -92,6 +93,7 @@ export const EntityTableHeader = ({
                                                 <DropdownMenuItem
                                                     key={`export-${opt.title}`}
                                                     onClick={() => onExport(opt, existsSelectedRows)}
+                                                    className="cursor-pointer"
                                                 >
                                                     {opt.type === "excel" ? (
                                                         <PiMicrosoftExcelLogoFill className="w-5 h-5 text-green-700 mr-2" />

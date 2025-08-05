@@ -1184,7 +1184,7 @@ export const configs = {
     perPage: 17,
     endpoint: "boxes",
     viewRoute: "/admin/boxes/:id",
-    deleteEndpoint: "/boxes/:id",
+    deleteEndpoint: "boxes/:id",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -1486,6 +1486,36 @@ export const configs = {
         body: { state_id: 2 } // Estado "stored"
       }
       // Puedes añadir más
+    ],
+    exports: [
+      {
+        title: "Reporte de cajas",
+        endpoint: "boxes/xlsx",
+        type: "excel",
+        waitingMessage: "Generando exportación a A3ERP",
+        fileName: "cajas",
+      },
+     /*  {
+        title: "Exportar a Facilcom",
+        endpoint: "orders/xls/facilcom-sales-delivery-note",
+        type: "excel",
+        waitingMessage: "Generando exportación a Facilcom",
+        fileName: "Exportacion_pedidos_Facilcom",
+      },
+      {
+        title: "Exportar a Excel",
+        endpoint: "orders_report",
+        type: "excel",
+        waitingMessage: "Generando exportación a excel",
+        fileName: "export_pedidos",
+      },
+      {
+        title: "Exportar a PDF",
+        endpoint: "/exports/orders_report/pdf",
+        type: "pdf",
+        waitingMessage: "Generando exportación a pdf",
+        fileName: "export_pedidos",
+      } */
     ],
     createRedirect: "/admin/stores-manager",
   },

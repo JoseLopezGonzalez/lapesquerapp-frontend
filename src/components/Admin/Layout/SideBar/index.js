@@ -107,14 +107,13 @@ export function AppSidebar() {
 
 
     return (
-        <Sidebar collapsible="icon" variant='floating'
-           >
+        <Sidebar collapsible="icon" variant='floating'>
             <SidebarHeader>
                 <AppSwitcher apps={data.apps} loading={loading} />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navigationItems} />
                 <NavManagers items={data.navigationManagersItems} />
+                <NavMain items={data.navigationItems} />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={data.user} />
