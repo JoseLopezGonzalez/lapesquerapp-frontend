@@ -95,7 +95,7 @@ export const EntityTableHeader = ({
                                                     onClick={() => onExport(opt, existsSelectedRows)}
                                                     className="cursor-pointer"
                                                 >
-                                                    {opt.type === "excel" ? (
+                                                    {opt.type === "excel" || opt.type === "xlsx" ? (
                                                         <PiMicrosoftExcelLogoFill className="w-5 h-5 text-green-700 mr-2" />
                                                     ) : (
                                                         <FaRegFilePdf className="w-5 h-5 text-red-700 mr-2" />

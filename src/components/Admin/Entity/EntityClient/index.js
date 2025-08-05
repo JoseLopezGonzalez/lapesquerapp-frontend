@@ -246,7 +246,7 @@ export default function EntityClient({ config }) {
             (t) => (
                 <span className="flex gap-2 items-center justify-center">
                     {type === 'pdf' && <FaRegFilePdf className="h-6 w-6 text-red-500" />}
-                    {type === 'excel' && <PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" />}
+                    {type === 'excel' || type === 'xlsx' && <PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" />}
                     {waitingMessage || 'Generando exportación...'}
                 </span>
             ),

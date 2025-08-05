@@ -71,7 +71,7 @@ export const downloadFile = async (url, fileName, type) => {
         const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = `${fileName} (${currentDate}).${type === 'excel' ? 'xls' : 'pdf'}`; // Dynamic file extension
+        a.download = `${fileName} (${currentDate}).${type === 'excel' ? 'xls' : type === 'xlsx' ? 'xlsx' : 'pdf'}`; // Dynamic file extension
         document.body.appendChild(a);
         a.click();
         a.remove();

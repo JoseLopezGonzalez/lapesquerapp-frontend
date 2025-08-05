@@ -1280,11 +1280,11 @@ export const configs = {
             },
             {
               name: "orderState",
-              label: "Estado de la Orden",
+              label: "Estado del Pedido",
               type: "pairSelectBoxes",
               options: [
                 { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizada", value: false },
+                { name: "finished", label: "Finalizado", value: false },
               ],
             },
             {
@@ -1332,6 +1332,15 @@ export const configs = {
         { name: "palletId", label: "Palet", type: "text", path: "palletId" }
       ],
     },
+    exports: [
+      {
+        title: "Exportar a excel",
+        endpoint: "boxes/xlsx",
+        type: "xlsx",
+        waitingMessage: "Generando exportación a excel",
+        fileName: "cajas",
+      },
+    ],
   },
   /* Pallets */
   pallets: {
@@ -1536,36 +1545,7 @@ export const configs = {
       }
       // Puedes añadir más
     ],
-    exports: [
-      {
-        title: "Reporte de cajas",
-        endpoint: "boxes/xlsx",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP",
-        fileName: "cajas",
-      },
-     /*  {
-        title: "Exportar a Facilcom",
-        endpoint: "orders/xls/facilcom-sales-delivery-note",
-        type: "excel",
-        waitingMessage: "Generando exportación a Facilcom",
-        fileName: "Exportacion_pedidos_Facilcom",
-      },
-      {
-        title: "Exportar a Excel",
-        endpoint: "orders_report",
-        type: "excel",
-        waitingMessage: "Generando exportación a excel",
-        fileName: "export_pedidos",
-      },
-      {
-        title: "Exportar a PDF",
-        endpoint: "/exports/orders_report/pdf",
-        type: "pdf",
-        waitingMessage: "Generando exportación a pdf",
-        fileName: "export_pedidos",
-      } */
-    ],
+
     createRedirect: "/admin/stores-manager",
   },
   /* customers */
