@@ -9,10 +9,10 @@ export const configs = {
       title: "No existen recepciones según los filtros",
       description: "Ajusta los filtros o crea una nueva recepción.",
     },
-    perPage: 15,
+    perPage: 17,
     endpoint: "raw-material-receptions",
     viewRoute: "/admin/raw-material-receptions/:id",
-    deleteEndpoint: "/raw-material-receptions/:id",
+    deleteEndpoint: "raw-material-receptions/:id",
     filtersGroup: {
       search: {
         name: "search",
@@ -103,7 +103,15 @@ export const configs = {
       ],
     },
 
-
+    exports: [
+      {
+        title: "Exportar a Facilcom",
+        endpoint: "raw-material-receptions/facilcom-xls",
+        type: "excel",
+        waitingMessage: "Generando exportación a Facilcom",
+        fileName: "Exportacion_recepciones_Facilcom",
+      },
+    ],
   },
   orders: {
     /* hideCreateButton: true, */
@@ -2703,16 +2711,16 @@ export const configs = {
     hideEditButton: true,
     hideCreateButton: true,
     hideViewButton: true,
-    title: "Envíos de cebo",
-    description: "Gestiona, edita y consulta envíos de cebo.",
+    title: "Salidas de cebo",
+    description: "Gestiona, edita y consulta salidas de cebo.",
     emptyState: {
-      title: "No existen envíos de cebo según los filtros",
-      description: "Ajusta los filtros o crea un nuevo envío de cebo.",
+      title: "No existen salidas de cebo según los filtros",
+      description: "Ajusta los filtros o crea una nueva salida de cebo.",
     },
-    perPage: 15,
+    perPage: 17,
     endpoint: "cebo-dispatches",
     viewRoute: "/admin/cebo-dispatches/:id",
-    deleteEndpoint: "/cebo-dispatches/:id",
+    deleteEndpoint: "cebo-dispatches/:id",
     filtersGroup: {
       search: {
         label: "Buscar",
@@ -2780,6 +2788,20 @@ export const configs = {
               endpoint: "products/options",
             }
           ],
+        },
+        /* species */
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Buscar por especie",
+              endpoint: "species/options",
+            }
+          ],
         }
       ],
     },
@@ -2796,6 +2818,24 @@ export const configs = {
         { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" }
       ],
     },
+    exports: [
+      /* cebo-dispatches/facilcom-xlsx */
+      {
+        title: "Exportar a Facilcom",
+        endpoint: "cebo-dispatches/facilcom-xlsx",
+        type: "xlsx",
+        waitingMessage: "Generando exportación a Facilcom",
+        fileName: "Salidas_cebo_Facilcom",
+      },
+      /* cebo-dispatches/a3erp-xlsx */
+      {
+        title: "Exportar a A3ERP",
+        endpoint: "cebo-dispatches/a3erp-xlsx",
+        type: "xlsx",
+        waitingMessage: "Generando exportación a A3ERP",
+        fileName: "Salidas_cebo_A3ERP",
+      },
+    ],
   },
 
   /* Sessions */

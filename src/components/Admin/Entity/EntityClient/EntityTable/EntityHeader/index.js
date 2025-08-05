@@ -96,9 +96,9 @@ export const EntityTableHeader = ({
                                                     className="cursor-pointer"
                                                 >
                                                     {opt.type === "excel" || opt.type === "xlsx" ? (
-                                                        <PiMicrosoftExcelLogoFill className="w-5 h-5 text-green-700 mr-2" />
+                                                        <PiMicrosoftExcelLogoFill className="w-5 h-5 text-green-700 " />
                                                     ) : (
-                                                        <FaRegFilePdf className="w-5 h-5 text-red-700 mr-2" />
+                                                        <FaRegFilePdf className="w-5 h-5 text-red-700 " />
                                                     )}
                                                     {opt.title}
                                                 </DropdownMenuItem>

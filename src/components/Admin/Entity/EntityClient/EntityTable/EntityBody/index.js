@@ -75,7 +75,7 @@ export const EntityBody = ({
         return (
             <Table>
                 <TableBody>
-                    {[...Array(14)].map((_, idx) => (
+                    {[...Array(17)].map((_, idx) => (
                         <TableRow key={idx}>
                             {tableColumns.map((col, i) => (
                                 <TableCell key={i}>
