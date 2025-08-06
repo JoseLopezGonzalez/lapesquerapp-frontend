@@ -46,14 +46,23 @@ export async function fetchWithTenant(url, options = {}) {
 
   if (!res.ok) {
     try {
-      const errorJson = await res.json();
+      // Clonar la respuesta para poder leer el body
+      const responseClone = res.clone();
+      const errorJson = await responseClone.json();
       console.error('❌ Error JSON recibido:', errorJson);
       const errorText = errorJson.message || JSON.stringify(errorJson);
       throw new Error(errorText || 'Error inesperado en la solicitud');
     } catch (e) {
-      const rawText = await res.text();
-      console.error('❌ Respuesta no es JSON o error de parseo. Texto recibido:', rawText);
-      throw new Error(`Error en la respuesta de la API: ${rawText}`);
+      // Si no es JSON, intentar leer como texto
+      try {
+        const responseClone = res.clone();
+        const rawText = await responseClone.text();
+        console.error('❌ Respuesta no es JSON o error de parseo. Texto recibido:', rawText);
+        throw new Error(`Error en la respuesta de la API: ${rawText}`);
+      } catch (textError) {
+        // Si tampoco se puede leer como texto, crear un error genérico
+        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
+      }
     }
   }
 

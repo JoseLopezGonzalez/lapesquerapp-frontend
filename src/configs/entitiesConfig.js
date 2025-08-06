@@ -149,22 +149,22 @@ export const configs = {
         waitingMessage: "Generando exportación a excel",
         fileName: "export_pedidos",
       },
-      {
+      /* {
         title: "Exportar a PDF",
         endpoint: "/exports/orders_report/pdf",
         type: "pdf",
         waitingMessage: "Generando exportación a pdf",
         fileName: "export_pedidos",
-      }
+      } */
     ],
-    reports: [
+    /* reports: [
       {
         title: "Reporte de pedidos (Repetido)",
         endpoint: "orders_report",
         waitingMessage: "Generando reporte excel",
         fileName: "report_pedidos",
       }
-    ],
+    ], */
     filtersGroup: {
       search: {
         label: "Buscar",

@@ -63,18 +63,48 @@ export const downloadFile = async (url, fileName, type) => {
 
     const currentDateTime = `${formattedDate}__${formattedTime}`;
 
-
-
     try {
         const response = await fetchWithTenant(url, {
             method: 'GET',
             headers: headers,
         });
 
+        // Verificar si la respuesta es exitosa
         if (!response.ok) {
-            throw response;
+            // Intentar obtener el error como JSON primero
+            let errorData = null;
+            let errorText = null;
+            
+            try {
+                // Clonar la respuesta para poder leer el body
+                const responseClone = response.clone();
+                errorData = await responseClone.json();
+            } catch (jsonError) {
+                // Si no es JSON, intentar leer como texto
+                try {
+                    const responseClone = response.clone();
+                    errorText = await responseClone.text();
+                } catch (textError) {
+                    errorText = 'No se pudo leer el contenido del error';
+                }
+            }
+
+            // Crear un objeto de error más detallado
+            const detailedError = {
+                type: 'HTTP_ERROR',
+                status: response.status,
+                statusText: response.statusText,
+                url: url,
+                data: errorData,
+                text: errorText,
+                message: `Error HTTP ${response.status}: ${response.statusText}`
+            };
+
+            console.error("Error durante la descarga del archivo:", detailedError);
+            throw detailedError;
         }
 
+        // Si la respuesta es exitosa, proceder con la descarga
         const blob = await response.blob();
         const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -86,7 +116,37 @@ export const downloadFile = async (url, fileName, type) => {
         window.URL.revokeObjectURL(downloadUrl);
         return true; // Indicate success
     } catch (error) {
-        console.error("Error during file download:", error);
-        throw error; // Re-throw to be caught by the component
+        // Determinar el tipo de error
+        let errorType = 'UNKNOWN';
+        let errorMessage = 'Error desconocido durante la descarga del archivo';
+        
+        if (error.type === 'HTTP_ERROR') {
+            errorType = 'HTTP_ERROR';
+            errorMessage = error.message;
+        } else if (error.name === 'TypeError' && error.message.includes('body stream already read')) {
+            errorType = 'STREAM_READ_ERROR';
+            errorMessage = 'Error: El stream de respuesta ya fue leído';
+        } else if (error.name === 'TypeError') {
+            errorType = 'TYPE_ERROR';
+            errorMessage = `Error de tipo: ${error.message}`;
+        } else if (error.name === 'NetworkError') {
+            errorType = 'NETWORK_ERROR';
+            errorMessage = 'Error de red durante la descarga';
+        } else if (error.name === 'AbortError') {
+            errorType = 'ABORT_ERROR';
+            errorMessage = 'La descarga fue cancelada';
+        }
+
+        const detailedError = {
+            type: errorType,
+            message: errorMessage,
+            originalError: error,
+            url: url,
+            fileName: fileName,
+            fileType: type
+        };
+
+        console.error("Error durante la descarga del archivo:", detailedError);
+        throw detailedError; // Re-throw para que sea capturado por el componente
     }
 };
