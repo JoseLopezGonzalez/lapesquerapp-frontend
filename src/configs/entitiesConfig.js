@@ -1293,6 +1293,44 @@ export const configs = {
             }
           ],
         },
+        /* ordersGroup - orderIds - orderDates - orderBuyerReference- orderState */
+        {
+          name: "ordersGroup",
+          label: "Pedidos",
+          filters: [
+            /* orderIds */
+            {
+              name: "orderIds",
+              label: "IDs de pedidos",
+              type: "textAccumulator",
+              placeholder: "Buscar por IDs de pedidos",
+            },
+            /* orderDates */
+            {
+              name: "orderDates",
+              label: "Fechas de pedidos",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+            /* orderBuyerReference */
+            {
+              name: "orderBuyerReference",
+              label: "Referencia de compra",
+              type: "text",
+              placeholder: "Buscar por referencia de compra",
+            },
+            /* orderState */
+            {
+              name: "orderState",
+              label: "Estado del Pedido",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "pending", label: "Pendiente", value: false },
+                { name: "finished", label: "Finalizado", value: false },
+              ],
+            },
+          ],
+        },
 
         /* Pallets */
         {
