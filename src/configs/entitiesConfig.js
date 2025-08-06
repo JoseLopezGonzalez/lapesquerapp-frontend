@@ -125,7 +125,7 @@ export const configs = {
     perPage: 12,
     endpoint: "orders",
     viewRoute: "/admin/orders/:id",
-    deleteEndpoint: "/orders/:id",
+    deleteEndpoint: "orders/:id",
     createRedirect: "/admin/orders-manager",
     exports: [
       {
@@ -226,6 +226,34 @@ export const configs = {
               type: "autocomplete",
               placeholder: "Buscar por cliente",
               endpoint: "customers/options",
+            }
+          ],
+        },
+        /* Species */
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Buscar por especie",
+              endpoint: "species/options",
+            }
+          ],
+        },
+        /* Products */
+        {
+          name: "products",
+          label: "Productos",
+          filters: [
+            {
+              name: "products",
+              label: "Productos",
+              type: "autocomplete",
+              placeholder: "Buscar por producto",
+              endpoint: "products/options",
             }
           ],
         },
