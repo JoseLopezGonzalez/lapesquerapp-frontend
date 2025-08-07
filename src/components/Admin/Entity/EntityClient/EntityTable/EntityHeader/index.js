@@ -132,7 +132,18 @@ export const EntityTableHeader = ({
                     {filtersComponent && filtersComponent}
 
                     {onCreate && (
-                        <Button onClick={onCreate} size="sm">
+                        <Button 
+                            onClick={() => {
+                                if (typeof onCreate === 'string') {
+                                    // Si es una URL, abrir en nueva pestaña
+                                    window.open(onCreate, '_blank');
+                                } else {
+                                    // Si es una función, ejecutarla normalmente
+                                    onCreate();
+                                }
+                            }} 
+                            size="sm"
+                        >
                             <PlusIcon className="h-5 w-5" aria-hidden="true" />
                             Nuevo
                         </Button>
