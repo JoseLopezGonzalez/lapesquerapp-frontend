@@ -134,11 +134,16 @@ export const EntityTableHeader = ({
                     {onCreate && (
                         <Button 
                             onClick={() => {
+                                // Si es una string (URL), abrir en nueva pestaña
                                 if (typeof onCreate === 'string') {
-                                    // Si es una URL, abrir en nueva pestaña
                                     window.open(onCreate, '_blank');
-                                } else {
-                                    // Si es una función, ejecutarla normalmente
+                                }
+                                // Si es un objeto con href, abrir en nueva pestaña
+                                else if (onCreate && typeof onCreate === 'object' && onCreate.href) {
+                                    window.open(onCreate.href, '_blank');
+                                }
+                                // Si es una función, ejecutarla normalmente
+                                else if (typeof onCreate === 'function') {
                                     onCreate();
                                 }
                             }} 
