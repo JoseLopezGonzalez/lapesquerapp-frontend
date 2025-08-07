@@ -76,6 +76,7 @@ export function PalletsListDialog() {
 
             return {
                 "Palet": p.id,
+                "Ubicación": fullPallet?.position || '-', // Nueva columna
                 "Artículos": productNames,
                 "Lotes": lots,
                 "Observaciones": observations,
