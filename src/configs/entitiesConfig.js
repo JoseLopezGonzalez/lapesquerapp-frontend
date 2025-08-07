@@ -1634,8 +1634,6 @@ export const configs = {
       }
       // Puedes añadir más
     ],
-
-    createRedirect: "/admin/stores-manager",
   },
   /* customers */
   customers: {
