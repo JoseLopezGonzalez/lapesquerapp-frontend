@@ -1298,12 +1298,13 @@ export const configs = {
           name: "ordersGroup",
           label: "Pedidos",
           filters: [
-            /* orderIds */
+            /* orderIds - options */
             {
               name: "orderIds",
               label: "IDs de pedidos",
-              type: "textAccumulator",
+              type: "autocomplete",
               placeholder: "Buscar por IDs de pedidos",
+              endpoint: "orders/options",
             },
             /* orderDates */
             {
@@ -1315,7 +1316,7 @@ export const configs = {
             /* orderBuyerReference */
             {
               name: "orderBuyerReference",
-              label: "Referencia de compra",
+              label: "Referencia de cliente",
               type: "text",
               placeholder: "Buscar por referencia de compra",
             },
