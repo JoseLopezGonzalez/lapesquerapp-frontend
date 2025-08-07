@@ -84,7 +84,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         }
         
         // NUEVO: si no hay id => crear palet temporal nuevo
-        if (id === 'new') {
+        if (id === 'new' || id === null) {
             setPallet({
                 ...emptyPallet,
                 store: initialStoreId ? { id: initialStoreId } : null, // Asignar store si se proporciona

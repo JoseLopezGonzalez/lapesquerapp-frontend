@@ -1429,7 +1429,7 @@ export const configs = {
     endpoint: "pallets",
     viewRoute: "/admin/pallets/:id",
     deleteEndpoint: "pallets/:id",
-    createRedirect: "/admin/stores-manager",
+    createRedirect: "/admin/pallets/create",
     filtersGroup: {
       search: {
         label: "Buscar",
