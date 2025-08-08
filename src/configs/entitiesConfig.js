@@ -965,13 +965,13 @@ export const configs = {
         /* Product Families */
         {
           name: "productFamilies",
-          label: "Familias de producto",
+          label: "Familias",
           filters: [
             {
               name: "productFamilies",
-              label: "Familias de producto",
+              label: "Familias",
               type: "autocomplete",
-              placeholder: "Buscar por familia de producto",
+              placeholder: "Buscar por familia",
               endpoint: "product-families/options",
             }
           ],
@@ -1039,7 +1039,7 @@ export const configs = {
       {
         name: "familyId",
         path: "family.id",
-        label: "Familia de producto",
+        label: "Familia",
         type: "Autocomplete",
         placeholder: "Selecciona la familia",
         endpoint: "product-families/options",
