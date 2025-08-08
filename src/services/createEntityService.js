@@ -36,7 +36,13 @@ export const fetchAutocompleteOptions = async (autocompleteEndpoint) => {
             throw response; // Throw the full response for detailed error handling in component
         }
         const data = await response.json();
-        return data.map((item) => ({
+        
+        // Eliminar duplicados basándose en el ID
+        const uniqueData = data.filter((item, index, self) => 
+            index === self.findIndex(t => t.id === item.id)
+        );
+        
+        return uniqueData.map((item) => ({
             value: item.id,
             label: item.name,
         }));

@@ -960,6 +960,21 @@ export const configs = {
               endpoint: "capture-zones/options",
             }
           ],
+        },
+
+        /* Product Families */
+        {
+          name: "productFamilies",
+          label: "Familias de producto",
+          filters: [
+            {
+              name: "productFamilies",
+              label: "Familias de producto",
+              type: "autocomplete",
+              placeholder: "Buscar por familia de producto",
+              endpoint: "product-families/options",
+            }
+          ],
         }
       ],
     },
@@ -967,6 +982,7 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "family", label: "Familia", type: "text", path: "family.name", hideOnMobile: true },
         { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode", hideOnMobile: true },
         { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode", hideOnMobile: true },
         { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
@@ -1017,7 +1033,20 @@ export const configs = {
         validation: {
           required: "La zona de captura es obligatoria",
         },
-        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+
+      {
+        name: "familyId",
+        path: "family.id",
+        label: "Familia de producto",
+        type: "Autocomplete",
+        placeholder: "Selecciona la familia",
+        endpoint: "product-families/options",
+        validation: {
+          required: "La familia es obligatoria",
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
         name: "articleGtin",
@@ -3080,6 +3109,229 @@ export const configs = {
         /* method */
         { name: "method", label: "Método", type: "text", path: "method" }
       ],
+    },
+  },
+
+  /* Product Categories */
+  'product-categories': {
+    title: "Categorías de Productos",
+    description: "Gestiona, edita y consulta categorías de productos.",
+    emptyState: {
+      title: "No existen categorías de productos según los filtros",
+      description: "Ajusta los filtros o crea una nueva categoría de producto.",
+    },
+    endpoint: "product-categories",
+    viewRoute: "/admin/product-categories/:id",
+    deleteEndpoint: "product-categories/:id",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            {
+              name: "active",
+              label: "Estado",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "active", label: "Activo", value: true },
+                { name: "inactive", label: "Inactivo", value: false },
+              ],
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt" },
+        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt" }
+      ],
+    },
+    createForm: {
+      title: "Nueva Categoría de Producto",
+      endpoint: "product-categories",
+      method: "POST",
+      successMessage: "Categoría de producto creada con éxito",
+      errorMessage: "Error al crear la categoría de producto",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre de la categoría",
+        type: "text",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "description",
+        label: "Descripción",
+        type: "textarea",
+        placeholder: "Descripción opcional de la categoría",
+        validation: {},
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      }
+    ],
+    editForm: {
+      title: "Editar Categoría de Producto",
+      endpoint: "product-categories",
+      method: "PUT",
+      successMessage: "Categoría de producto actualizada con éxito",
+      errorMessage: "Error al actualizar la categoría de producto",
+    },
+  },
+
+  /* Product Families */
+  'product-families': {
+    title: "Familias de Productos",
+    description: "Gestiona, edita y consulta familias de productos.",
+    emptyState: {
+      title: "No existen familias de productos según los filtros",
+      description: "Ajusta los filtros o crea una nueva familia de producto.",
+    },
+    endpoint: "product-families",
+    viewRoute: "/admin/product-families/:id",
+    deleteEndpoint: "product-families/:id",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            {
+              name: "active",
+              label: "Estado",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "active", label: "Activo", value: true },
+                { name: "inactive", label: "Inactivo", value: false },
+              ],
+            }
+          ],
+        },
+        {
+          name: "category",
+          label: "Categoría",
+          filters: [
+            {
+              name: "categoryId",
+              label: "Categoría",
+              type: "autocomplete",
+              placeholder: "Buscar por categoría",
+              endpoint: "product-categories/options",
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
+        { name: "category", label: "Categoría", type: "text", path: "category.name" },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt" },
+        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt" }
+      ],
+    },
+    createForm: {
+      title: "Nueva Familia de Producto",
+      endpoint: "product-families",
+      method: "POST",
+      successMessage: "Familia de producto creada con éxito",
+      errorMessage: "Error al crear la familia de producto",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre de la familia",
+        type: "text",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "description",
+        label: "Descripción",
+        type: "textarea",
+        placeholder: "Descripción opcional de la familia",
+        validation: {},
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "categoryId",
+        path: "category.id",
+        label: "Categoría",
+        type: "Autocomplete",
+        placeholder: "Selecciona la categoría",
+        endpoint: "product-categories/options",
+        validation: {
+          required: "La categoría es obligatoria",
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+
+    ],
+    editForm: {
+      title: "Editar Familia de Producto",
+      endpoint: "product-families",
+      method: "PUT",
+      successMessage: "Familia de producto actualizada con éxito",
+      errorMessage: "Error al actualizar la familia de producto",
     },
   },
 

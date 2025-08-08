@@ -33,8 +33,14 @@ export const fetchAutocompleteFilterOptions = async (endpoint) => {
         }
 
         const data = await response.json();
+        
+        // Eliminar duplicados basándose en el ID
+        const uniqueData = data.filter((item, index, self) => 
+            index === self.findIndex(t => t.id === item.id)
+        );
+        
         // Mapea los datos para que tengan el formato { value: id, label: name }
-        return data.map((item) => ({ value: item.id, label: item.name }));
+        return uniqueData.map((item) => ({ value: item.id, label: item.name }));
     } catch (error) {
         console.error("Error en fetchAutocompleteFilterOptions:", error);
         throw error; // Re-lanza el error para que el componente cliente pueda manejarlo.
@@ -72,8 +78,14 @@ export const fetchAutocompleteInputOptions = async (endpoint) => {
         }
 
         const data = await response.json();
+        
+        // Eliminar duplicados basándose en el ID
+        const uniqueData = data.filter((item, index, self) => 
+            index === self.findIndex(t => t.id === item.id)
+        );
+        
         // Mapea los datos al formato { id: item.id, name: item.name } que AutocompleteSelector espera
-        return data.map((item) => ({ id: item.id, name: item.name }));
+        return uniqueData.map((item) => ({ id: item.id, name: item.name }));
     } catch (error) {
         console.error("Error en fetchAutocompleteInputOptions:", error);
         throw error;

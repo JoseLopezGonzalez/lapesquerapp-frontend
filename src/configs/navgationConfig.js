@@ -75,6 +75,16 @@ export const navigationConfig = [
                 allowedRoles: ["admin", "manager", "superuser"],
             },
             {
+                name: 'Categorías',
+                href: '/admin/product-categories',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
+                name: 'Familias',
+                href: '/admin/product-families',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
                 name: 'Zonas de Captura',
                 href: '/admin/capture-zones',
                 allowedRoles: ["admin", "manager", "superuser"],
