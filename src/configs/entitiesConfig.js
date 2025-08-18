@@ -580,6 +580,7 @@ export const configs = {
     title: "Usuarios",
     hideEditButton: true,
     hideViewButton: true,
+    hideCreateButton: true,
     description: "Gestiona, edita y consulta usuarios.",
     emptyState: {
       title: "No existen usuarios según los filtros",
@@ -819,20 +820,20 @@ export const configs = {
           required: "El nombre es obligatorio",
           minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
         },
-        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 4, xl: 4 },
       },
       {
         name: "vatNumber",
-        label: "NIF/CIF",
+        label: "CIF",
         type: "text",
         validation: {
-          required: "El NIF o CIF es obligatorio",
+          required: "El CIF es obligatorio",
           pattern: {
             value: '/^[A-Z0-9]{8,12}$/',
             message: "Formato no válido",
           },
         },
-        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 2, xl: 2 },
       },
       {
         name: "address",
@@ -855,7 +856,7 @@ export const configs = {
         cols: {
           sm: 6,
           md: 6,
-          lg: 6,
+          lg: 3,
           xl: 3,
         },
       },
@@ -864,7 +865,7 @@ export const configs = {
         label: "Emails en copia",
         type: "emailList",
         placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       }
     ],
   },
@@ -998,7 +999,6 @@ export const configs = {
       method: "POST",
       successMessage: "Producto creado con éxito",
       errorMessage: "Error al crear el producto",
-
     },
     fields: [
       {
@@ -1021,7 +1021,7 @@ export const configs = {
         validation: {
           required: "La especie es obligatoria",
         },
-        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 2, xl: 2 },
       },
       {
         name: "captureZoneId",
@@ -1033,7 +1033,7 @@ export const configs = {
         validation: {
           required: "La zona de captura es obligatoria",
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        cols: { sm: 6, md: 3, lg: 2, xl: 2 },
       },
 
       {
@@ -1046,53 +1046,40 @@ export const configs = {
         validation: {
           required: "La familia es obligatoria",
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        cols: { sm: 6, md: 6, lg: 2, xl: 2 },
       },
       {
         name: "articleGtin",
-        label: "GTIN del artículo",
+        label: "GTIN-13 del artículo",
         type: "text",
-        placeholder: "Ej. 8431234567890",
+        placeholder: "13 dígitos",
         validation: {
           pattern: {
             value: '/^[0-9]{8,14}$/',
             message: "GTIN inválido. Debe contener entre 8 y 14 dígitos.",
           },
         },
-        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 4, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "boxGtin",
-        label: "GTIN de caja",
+        label: "GTIN-14 de caja",
         type: "text",
-        placeholder: "Ej. 8431234567890",
+        placeholder: "14 dígitos",
         validation: {
           pattern: {
             value: '/^[0-9]{8,14}$/',
             message: "GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.",
           },
         },
-        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
-      },
-      {
-        name: "palletGtin",
-        label: "GTIN de palet",
-        type: "text",
-        placeholder: "Ej. 8431234567890",
-        validation: {
-          pattern: {
-            value: '/^[0-9]{8,14}$/',
-            message: "GTIN de palet inválido. Debe contener entre 8 y 14 dígitos.",
-          },
-        },
-        cols: { sm: 4, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 4, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "a3erp_code",
         path: "a3erpCode",
         label: "Código A3ERP",
         type: "text",
-        placeholder: "Ej. 123456",
+        placeholder: 'Código para exportaciones a "a3ERP - Software ERP"',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
@@ -1100,19 +1087,17 @@ export const configs = {
         path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
-        placeholder: "Ej. F4567",
+        placeholder: 'Código para exportaciones a "Facilcom - Gestión comercial integral"',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       }
     ],
     editForm: {
       title: "Editar Producto",
-      endpoint: "products", // sin /:id, lo añadiremos dinámicamente
+      endpoint: "products",
       method: "PUT",
       successMessage: "Producto actualizado con éxito",
       errorMessage: "Error al actualizar el producto",
     },
-
-
   },
 
   /* Stores */
@@ -1179,7 +1164,6 @@ export const configs = {
       method: "POST",
       successMessage: "Almacén creado con éxito",
       errorMessage: "Error al crear el almacén",
-
     },
     editForm: {
       title: "Editar Almacén",
@@ -1799,7 +1783,7 @@ export const configs = {
         validation: {
           required: "El nombre es obligatorio",
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 4 },
+        cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
         name: "vatNumber",
@@ -1809,7 +1793,7 @@ export const configs = {
         validation: {
           required: "El NIF es obligatorio",
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 2 },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
         name: "billing_address",
@@ -1819,7 +1803,7 @@ export const configs = {
         validation: {
           required: "La dirección de facturación es obligatoria",
         },
-        cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "shipping_address",
@@ -1829,28 +1813,28 @@ export const configs = {
         validation: {
           required: "La dirección de envío es obligatoria",
         },
-        cols: { sm: 12, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "transportation_notes",
         path: "transportationNotes",
         label: "Notas para transporte",
         type: "textarea",
-        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 2 },
       },
       {
         name: "production_notes",
         path: "productionNotes",
         label: "Notas para producción",
         type: "textarea",
-        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 2 },
       },
       {
         name: "accounting_notes",
         path: "accountingNotes",
         label: "Notas contables",
         type: "textarea",
-        cols: { sm: 12, md: 4, lg: 4, xl: 2 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 2 },
       },
       {
         name: "emails",
@@ -1860,7 +1844,7 @@ export const configs = {
         validation: {
           required: "Al menos un correo electrónico es obligatorio",
         },
-        cols: { sm: 12, md: 12, lg: 12, xl: 3 },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       /* ccEmails */
       {
@@ -1871,7 +1855,7 @@ export const configs = {
         validation: {
           required: "Al menos un correo electrónico en copia es obligatorio",
         },
-        cols: { sm: 12, md: 12, lg: 12, xl: 3 },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "contact_info",
@@ -1882,7 +1866,7 @@ export const configs = {
         validation: {
           required: "La información de contacto es obligatoria",
         },
-        cols: { sm: 12, md: 12, lg: 12, xl: 6 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
         name: "salesperson_id",
@@ -1894,7 +1878,7 @@ export const configs = {
         validation: {
           required: "El comercial es obligatorio",
         },
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "country_id",
@@ -1906,7 +1890,7 @@ export const configs = {
           required: "El país es obligatorio",
         },
         placeholder: "Selecciona el país",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "payment_term_id",
@@ -1918,7 +1902,7 @@ export const configs = {
           required: "La forma de pago es obligatoria",
         },
         placeholder: "Selecciona la forma de pago",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "transport_id",
@@ -1930,23 +1914,23 @@ export const configs = {
           required: "El transporte es obligatorio",
         },
         placeholder: "Selecciona el transporte",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "a3erp_code",
         path: "a3erpCode",
         label: "Código A3ERP",
         type: "text",
-        placeholder: "Introduce el código de cliente A3ERP",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        placeholder: "Código para exportaciones a 'a3ERP - Software ERP'",
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
         name: "facilcom_code",
         path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
-        placeholder: "Introduce el código de proveedor Facilcom",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        placeholder: "Código para exportaciones a 'Facilcom - Gestión comercial integral'",
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       }
     ],
     editForm: {
@@ -2043,28 +2027,28 @@ export const configs = {
         label: "Persona de contacto",
         type: "text",
         placeholder: "Introduce la persona de contacto",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "phone",
         label: "Teléfono",
         type: "text",
         placeholder: "Introduce el teléfono",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
         name: "emails",
         label: "Emails principales",
         type: "emailList",
         placeholder: "Introduce un correo electronico y pulsa Enter",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
         name: "ccEmails",
         label: "Emails en copia (CC)",
         type: "emailList",
         placeholder: "Introduce un correo electronico y pulsa Enter",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
         name: "address",
@@ -2078,8 +2062,8 @@ export const configs = {
         path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
-        placeholder: "Introduce el código de proveedor Facilcom",
-        cols: { sm: 6, md: 4, lg: 4, xl: 3 },
+        placeholder: "Código para exportaciones a 'Facilcom - Gestión comercial integral'",
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       }
     ],
     editForm: {
@@ -2288,7 +2272,7 @@ export const configs = {
             message: "Debe tener al menos 2 caracteres",
           },
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
         name: "scientificName",
@@ -2302,7 +2286,7 @@ export const configs = {
             message: "Debe tener al menos 2 caracteres",
           },
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
         name: "fao",
@@ -2316,7 +2300,7 @@ export const configs = {
             message: "Debe contener entre 3 y 5 letras mayúsculas",
           },
         },
-        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
         name: "fishingGearId",
@@ -2328,7 +2312,7 @@ export const configs = {
         validation: {
           required: "El arte de pesca es obligatorio",
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       }
     ],
 
@@ -2516,18 +2500,22 @@ export const configs = {
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
+        /* required */
         name: "emails",
         label: "Emails",
         type: "emailList",
         placeholder: "Introduce un correo y pulsa Enter",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        validation: {
+          required: "Al menos un email es obligatorio",
+        },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
         name: "ccEmails",
         label: "Emails en copia (CC)",
         type: "emailList",
         placeholder: "Introduce un correo y pulsa Enter",
-        cols: { sm: 6, md: 6, lg: 6, xl: 3 },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       }
     ],
     editForm: {
@@ -3302,15 +3290,7 @@ export const configs = {
           required: "El nombre es obligatorio",
           minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
         },
-        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      },
-      {
-        name: "description",
-        label: "Descripción",
-        type: "textarea",
-        placeholder: "Descripción opcional de la familia",
-        validation: {},
-        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
         name: "categoryId",
@@ -3322,8 +3302,17 @@ export const configs = {
         validation: {
           required: "La categoría es obligatoria",
         },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: "description",
+        label: "Descripción",
+        type: "textarea",
+        placeholder: "Descripción opcional de la familia",
+        validation: {},
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
+
 
     ],
     editForm: {

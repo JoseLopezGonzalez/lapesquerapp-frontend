@@ -103,6 +103,7 @@ const initialFormGroups = [
                 name: 'buyerReference',
                 label: 'Referencia del comprador',
                 component: 'Input',
+                rules: { required: 'La referencia del comprador es obligatoria' },
                 props: { placeholder: 'Referencia del comprador' },
 
             }

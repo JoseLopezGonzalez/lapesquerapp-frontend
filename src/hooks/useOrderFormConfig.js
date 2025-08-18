@@ -77,7 +77,7 @@ const initialFormGroups = [
                 name: 'buyerReference',
                 label: 'Referencia del comprador',
                 component: 'Input',
-                rules: { maxLength: { value: 50, message: 'Máximo 50 caracteres' } },
+                rules: { required: 'La referencia del comprador es obligatoria' },
                 props: { placeholder: 'Referencia del comprador' },
             },
         ],
