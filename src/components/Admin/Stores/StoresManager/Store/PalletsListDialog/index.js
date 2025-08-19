@@ -18,11 +18,12 @@ import { cn } from "@/lib/utils";
 import { useStoreContext } from "@/context/StoreContext";
 import { formatDecimalWeight, formatDecimal } from "@/helpers/formats/numbers/formatNumbers";
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
+import { Edit, Printer } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 export function PalletsListDialog() {
-    const { speciesSummary, store, pallets } = useStoreContext();
+    const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog } = useStoreContext();
     const [selectedSpecies, setSelectedSpecies] = useState(null);
     const [filteredPallets, setFilteredPallets] = useState([]);
     const [searchText, setSearchText] = useState("");
@@ -44,7 +45,31 @@ export function PalletsListDialog() {
             pallet.boxes.some((box) => box?.product?.species?.name === selectedSpecies)
         );
 
+        const search = searchText.trim().toLowerCase();
+
         const filtered = speciesPallets
+            .filter((pallet) => {
+                if (!search) return true;
+
+                const idMatch = pallet.id?.toString()?.toLowerCase().includes(search);
+
+                const productNames = (pallet.boxes ?? [])
+                    .map((box) => box?.product?.name)
+                    .filter(Boolean);
+                const productsMatch = productNames.some((name) => name.toLowerCase().includes(search));
+
+                const lotsArray = Array.isArray(pallet.lots)
+                    ? pallet.lots
+                    : (pallet.lots ? [pallet.lots] : []);
+                const lotsMatch = lotsArray.some((lot) => lot?.toString().toLowerCase().includes(search));
+
+                const observationsMatch = (pallet.observations ?? "")
+                    .toString()
+                    .toLowerCase()
+                    .includes(search);
+
+                return idMatch || productsMatch || lotsMatch || observationsMatch;
+            })
             .map((pallet) => {
                 const totalWeight = pallet.boxes.reduce((sum, b) => sum + (parseFloat(b.netWeight) || 0), 0);
                 const totalBoxes = pallet.boxes.length;
@@ -53,8 +78,7 @@ export function PalletsListDialog() {
                     totalWeight,
                     totalBoxes,
                 };
-            })
-            .filter((p) => p.id.toString().includes(searchText));
+            });
 
         setFilteredPallets(filtered);
     }, [selectedSpecies, searchText, pallets]);
@@ -174,8 +198,8 @@ export function PalletsListDialog() {
                     <div className="flex items-center justify-between mb-3">
                         <Input
                             type="text"
-                            placeholder="Buscar palet por ID..."
-                            className="max-w-[300px]"
+                            placeholder="Buscar palet por ID, producto, lote u observaciones..."
+                            className="max-w-[500px]"
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
                         />
@@ -198,6 +222,7 @@ export function PalletsListDialog() {
                                     <th className="px-4 py-2">Observaciones</th>
                                     <th className="px-4 py-2 text-right">Cajas</th>
                                     <th className="px-4 py-2 text-right text-nowrap">Peso neto</th>
+                                    <th className="px-4 py-2 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -225,6 +250,16 @@ export function PalletsListDialog() {
                                             <td className="px-4 py-3 text-right">{pallet.totalBoxes}</td>
                                             <td className="px-4 py-3 text-right text-nowrap">
                                                 {formatDecimalWeight(pallet.totalWeight)}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button variant="outline" size="icon" onClick={() => openPalletDialog(pallet.id)}>
+                                                        <Edit className="h-4 w-4 " />
+                                                    </Button>
+                                                    <Button variant="" size="icon" onClick={() => openPalletLabelDialog(pallet.id)}>
+                                                        <Printer className="h-4 w-4 " />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
