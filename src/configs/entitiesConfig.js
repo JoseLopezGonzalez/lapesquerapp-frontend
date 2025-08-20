@@ -2990,7 +2990,7 @@ export const configs = {
     hideCreateButton: true,
     hideEditButton: true,
     hideViewButton: true,
-    perPage: 15,
+    perPage: 18,
     title: "Registros de actividad",
     description: "Gestiona, edita y consulta registros de actividad.",
     emptyState: {
