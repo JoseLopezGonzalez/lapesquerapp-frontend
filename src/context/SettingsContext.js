@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getSettings } from "@/services/settingsService";
 import { invalidateSettingsCache } from "@/helpers/getSettingValue";
+import { isAuthError } from "@/configs/authConfig";
 
 const SettingsContext = createContext();
 
@@ -17,7 +18,12 @@ export function SettingsProvider({ children }) {
       })
       .catch((err) => {
         console.error("[SettingsProvider] Error al obtener settings:", err);
-        setSettings({});
+        
+        // Para errores de autenticación, el AuthErrorInterceptor se encargará de la redirección
+        // Para otros errores, establecer settings vacío
+        if (!isAuthError(err)) {
+          setSettings({});
+        }
       })
       .finally(() => setLoading(false));
   }, []);

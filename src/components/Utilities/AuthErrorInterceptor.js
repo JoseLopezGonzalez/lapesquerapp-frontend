@@ -1,0 +1,91 @@
+"use client";
+
+import { useEffect } from 'react';
+import { signOut } from 'next-auth/react';
+import toast from 'react-hot-toast';
+import { getToastTheme } from '@/customs/reactHotToast';
+import { isAuthError, isAuthStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
+
+export default function AuthErrorInterceptor() {
+  useEffect(() => {
+    // Interceptar errores de fetch para detectar errores de autenticación
+    const originalFetch = window.fetch;
+    
+    window.fetch = async (...args) => {
+      try {
+        const response = await originalFetch(...args);
+        
+        // Si es un error de autenticación, manejar la redirección
+        if (isAuthStatusCode(response.status)) {
+          console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado, redirigiendo al login');
+          
+          // Mostrar notificación al usuario
+          toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
+          
+          // Cerrar sesión y redirigir después de un breve delay
+          setTimeout(async () => {
+            await signOut({ redirect: false });
+            const currentPath = window.location.pathname;
+            const loginUrl = buildLoginUrl(currentPath);
+            window.location.href = loginUrl;
+          }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+          
+          return response;
+        }
+        
+        return response;
+      } catch (error) {
+        // Si el error contiene información de autenticación
+        if (isAuthError(error)) {
+          console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado en fetch, redirigiendo al login');
+          
+          // Mostrar notificación al usuario
+          toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
+          
+          // Cerrar sesión y redirigir después de un breve delay
+          setTimeout(async () => {
+            await signOut({ redirect: false });
+            const currentPath = window.location.pathname;
+            const loginUrl = buildLoginUrl(currentPath);
+            window.location.href = loginUrl;
+          }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+        }
+        
+        throw error;
+      }
+    };
+
+    // Interceptar errores globales de JavaScript
+    const handleGlobalError = (event) => {
+      const error = event.error || event.reason;
+      
+      if (isAuthError(error)) {
+        console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado globalmente');
+        
+        // Mostrar notificación al usuario
+        toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
+        
+        // Cerrar sesión y redirigir después de un breve delay
+        setTimeout(async () => {
+          await signOut({ redirect: false });
+          const currentPath = window.location.pathname;
+          const loginUrl = buildLoginUrl(currentPath);
+          window.location.href = loginUrl;
+        }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+      }
+    };
+
+    // Agregar listeners para errores globales
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleGlobalError);
+
+    // Cleanup: restaurar fetch original y remover listeners cuando el componente se desmonte
+    return () => {
+      window.fetch = originalFetch;
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleGlobalError);
+    };
+  }, []);
+
+  return null; // Este componente no renderiza nada
+}
