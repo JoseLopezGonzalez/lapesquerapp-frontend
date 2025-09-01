@@ -20,23 +20,31 @@ const OrderPlannedProductDetails = () => {
     const { productOptions, taxOptions } = options;
 
     const [details, setDetails] = useState([]);
+    const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
     const [editIndex, setEditIndex] = useState(null);
 
     useEffect(() => {
-        setDetails(plannedProductDetails);
-    }, [plannedProductDetails]);
+        // Combinar las líneas persistentes del contexto con las temporales locales
+        const allDetails = [...plannedProductDetails, ...temporaryDetails];
+        setDetails(allDetails);
+    }, [plannedProductDetails, temporaryDetails]);
 
     const handleOnClickAddLine = () => {
         if (editIndex !== null) return;
 
-        setDetails([...details, {
+        const newTemporaryDetail = {
             product: { name: "", id: null },
             boxes: '',
             quantity: '',
             unitPrice: '',
-            tax: { rate: 0 }
-        }]);
-        setEditIndex(details.length);
+            tax: { rate: 0 },
+            isTemporary: true, // Marca para identificar líneas temporales
+            tempId: Date.now() + Math.random() // ID único temporal para identificación
+        };
+        
+        setTemporaryDetails([...temporaryDetails, newTemporaryDetail]);
+        // El índice será la posición final en la lista combinada
+        setEditIndex(plannedProductDetails.length + temporaryDetails.length);
     };
 
     const handleInputChange = (index, field, value) => {
@@ -51,6 +59,16 @@ const OrderPlannedProductDetails = () => {
             updatedDetails[index][field] = value == '' ? '' : Number(value);
         }
         setDetails(updatedDetails);
+
+        // También actualizar el estado temporal si es una línea temporal
+        if (updatedDetails[index].isTemporary) {
+            const tempIndex = temporaryDetails.findIndex(temp => temp.tempId === updatedDetails[index].tempId);
+            if (tempIndex !== -1) {
+                const updatedTemporaryDetails = [...temporaryDetails];
+                updatedTemporaryDetails[tempIndex] = updatedDetails[index];
+                setTemporaryDetails(updatedTemporaryDetails);
+            }
+        }
     };
 
     const handleOnClickSaveLine = async () => {
@@ -67,6 +85,8 @@ const OrderPlannedProductDetails = () => {
             plannedProductDetailActions.create(detail)
                 .then(() => {
                     toast.success('Linea creada correctamente', { id: toastId });
+                    // Remover la línea temporal del estado local usando tempId
+                    setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
                     setEditIndex(null);
                 })
                 .catch((error) => {
@@ -75,7 +95,6 @@ const OrderPlannedProductDetails = () => {
                 });
             return;
         }
-
 
         /* Toast */
         const toastId = toast.loading('Actualizando linea...', getToastTheme());
@@ -92,13 +111,21 @@ const OrderPlannedProductDetails = () => {
     };
 
     const handleOnClickDeleteLine = async (detailId) => {
+        // Si es una línea temporal, solo removerla del estado local
+        if (detailId === null || detailId === undefined) {
+            const detail = details[editIndex];
+            if (detail.isTemporary) {
+                setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
+            }
+            setEditIndex(null);
+            return;
+        }
 
         const toastId = toast.loading('Eliminando linea...', getToastTheme());
 
         plannedProductDetailActions.delete(detailId)
             .then(() => {
                 toast.success('Linea eliminada correctamente', { id: toastId });
-                setDetails(details.filter((detail) => detail.id !== detailId));
                 setEditIndex(null);
             })
             .catch((error) => {
@@ -109,7 +136,8 @@ const OrderPlannedProductDetails = () => {
 
     const handleOnClickCloseLine = (detail) => {
         if (!detail.id) {
-            setDetails(details.splice(0, details.length - 1));
+            // Remover línea temporal del estado local usando tempId
+            setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
         }
         setEditIndex(null);
     };
@@ -123,14 +151,19 @@ const OrderPlannedProductDetails = () => {
             return;
         }
         const product = detail.product;
-        setDetails([...details, {
+        const newTemporaryDetail = {
             product: { name: product.name, id: product.id },
             boxes: detail.productionBoxes,
             quantity: detail.productionQuantity,
             unitPrice: '',
-            tax: { rate: 0 }
-        }]);
-        setEditIndex(details.length);
+            tax: { rate: 0 },
+            isTemporary: true,
+            tempId: Date.now() + Math.random() // ID único temporal para identificación
+        };
+        
+        setTemporaryDetails([...temporaryDetails, newTemporaryDetail]);
+        // El índice será la posición final en la lista combinada
+        setEditIndex(plannedProductDetails.length + temporaryDetails.length);
     };
 
     const isSomeProductDetected = mergedProductDetails.some((productDetail) => productDetail.status === 'noPlanned');
@@ -206,7 +239,7 @@ const OrderPlannedProductDetails = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {details.map((detail, index) => (
-                                        <TableRow key={index} className='text-nowrap'>
+                                        <TableRow key={detail.id || detail.tempId} className='text-nowrap'>
                                             <TableCell>
                                                 {editIndex === index ? (
                                                     <Combobox
