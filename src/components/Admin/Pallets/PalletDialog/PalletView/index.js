@@ -496,17 +496,17 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     <Table>
                                                         <TableHeader className="sticky top-0 bg-background">
                                                             <TableRow>
-                                                                <TableHead>Artículo</TableHead>
-                                                                <TableHead>Lote</TableHead>
-                                                                <TableHead>GS1 128</TableHead>
-                                                                <TableHead>Peso Neto</TableHead>
+                                                                <TableHead className="min-w-[200px]">Artículo</TableHead>
+                                                                <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
+                                                                <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                                                <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
                                                                 <TableHead className="w-[100px]">Acciones</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
                                                             {temporalPallet.boxes.map((box) => box.id === selectedBox ? (
                                                                 <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className=" hover:bg-muted">
-                                                                    <TableCell className='whitespace-nowrap'>{box.product.name}</TableCell>
+                                                                    <TableCell>{box.product.name}</TableCell>
                                                                     <TableCell>
                                                                         <Input
                                                                             defaultValue={box.lot}
