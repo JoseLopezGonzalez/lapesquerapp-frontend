@@ -31,7 +31,8 @@ export default function WarehouseOperatorPage({ params }) {
 
       // Validar que el usuario tenga acceso a este almacén específico (superuser puede acceder a cualquier almacén)
       if (session.user.role === "store_operator" && session.user.assignedStoreId !== parseInt(storeId)) {
-        router.push("/unauthorized");
+        // Redirigir automáticamente a su almacén asignado en lugar de mostrar error
+        router.replace(`/warehouse/${session.user.assignedStoreId}`);
         return;
       }
 
@@ -44,7 +45,8 @@ export default function WarehouseOperatorPage({ params }) {
     try {
       // Validar que el usuario tenga acceso a este almacén (superuser puede acceder a cualquier almacén)
       if (session.user.role === "store_operator" && session.user.assignedStoreId !== parseInt(storeId)) {
-        router.push("/unauthorized");
+        // Redirigir automáticamente a su almacén asignado
+        router.replace(`/warehouse/${session.user.assignedStoreId}`);
         return;
       }
 

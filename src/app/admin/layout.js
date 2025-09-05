@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import AdminRouteProtection from '@/components/AdminRouteProtection';
 
 
 export const metadata = {
@@ -31,19 +32,21 @@ const styleSidebar = {
 
 export default function AdminLayout({ children }) {
   return (
-    <div className='h-screen  overflow-hidden' >
-      <SidebarProvider className='h-full' style={styleSidebar}>
-        <AppSidebar />
-        <main className='flex flex-col h-full overflow-hidden w-full p-2  '>
-          <div className='p-1'>
-            <SidebarTrigger />
-          </div>
-          <div className='flex-1 w-full h-full overflow-hidden p-2'>
-            {children}
-          </div>
-        </main>
-        {/*  <FloatingHelpButton /> */}
-      </SidebarProvider>
-    </div>
+    <AdminRouteProtection>
+      <div className='h-screen  overflow-hidden' >
+        <SidebarProvider className='h-full' style={styleSidebar}>
+          <AppSidebar />
+          <main className='flex flex-col h-full overflow-hidden w-full p-2  '>
+            <div className='p-1'>
+              <SidebarTrigger />
+            </div>
+            <div className='flex-1 w-full h-full overflow-hidden p-2'>
+              {children}
+            </div>
+          </main>
+          {/*  <FloatingHelpButton /> */}
+        </SidebarProvider>
+      </div>
+    </AdminRouteProtection>
   );
 }

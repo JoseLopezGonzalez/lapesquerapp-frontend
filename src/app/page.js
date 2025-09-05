@@ -36,9 +36,14 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isSubdomain && status === "authenticated") {
-      router.replace("/admin/home");
+      // Redirección específica para store_operator
+      if (session?.user?.role === "store_operator" && session?.user?.assignedStoreId) {
+        router.replace(`/warehouse/${session.user.assignedStoreId}`);
+      } else {
+        router.replace("/admin/home");
+      }
     }
-  }, [isSubdomain, status, router]);
+  }, [isSubdomain, status, session, router]);
 
   if (isSubdomain === null) return (
     <div className="flex justify-center items-center h-screen w-full">
