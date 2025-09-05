@@ -35,9 +35,9 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (isSubdomain && status === "authenticated") {
+    if (isSubdomain && status === "authenticated" && session?.user) {
       // Redirección específica para store_operator
-      if (session?.user?.role === "store_operator" && session?.user?.assignedStoreId) {
+      if (session.user.role === "store_operator" && session.user.assignedStoreId) {
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
       } else {
         router.replace("/admin/home");
@@ -62,7 +62,11 @@ export default function HomePage() {
         <Loader />
       </div>
     ); 
-    return <LoginPage />;
+    return (
+      <div className="space-y-4">
+        <LoginPage />
+      </div>
+    );
   }
   return <LandingPage />;
 }

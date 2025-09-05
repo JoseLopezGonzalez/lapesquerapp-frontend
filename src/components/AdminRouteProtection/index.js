@@ -10,9 +10,10 @@ export default function AdminRouteProtection({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user) {
       // Si es store_operator, redirigir a su almacén asignado
       if (session.user.role === "store_operator" && session.user.assignedStoreId) {
+        console.log("🚫 Store_operator intentando acceder a admin, redirigiendo a:", `/warehouse/${session.user.assignedStoreId}`);
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
         return;
       }

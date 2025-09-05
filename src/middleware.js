@@ -77,21 +77,24 @@ export async function middleware(req) {
   // Verificar si al menos uno de los roles del usuario está permitido
   const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
 
+  // Excepción especial: si es store_operator intentando acceder a /admin, redirigir a su almacén
+  if (!hasAccess && userRoles.includes("store_operator") && pathname.startsWith("/admin")) {
+    console.log("🔐 [Middleware] Store_operator intentando acceder a admin, redirigiendo a su almacén");
+    if (token.assignedStoreId) {
+      const warehouseUrl = new URL(`/warehouse/${token.assignedStoreId}`, req.url);
+      return NextResponse.redirect(warehouseUrl);
+    } else {
+      const unauthorizedUrl = new URL("/unauthorized", req.url);
+      return NextResponse.redirect(unauthorizedUrl);
+    }
+  }
+
   if (!rolesAllowed.length || !hasAccess) {
     console.log("🔐 [Middleware] Acceso denegado para los roles:", userRoles, "en ruta:", pathname);
     const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);
   }
 
-  // Validación específica para operadores de almacén (superuser puede acceder a cualquier almacén)
-  if (pathname.startsWith("/warehouse/") && token.role === "store_operator") {
-    const storeIdFromUrl = pathname.split("/")[2];
-    if (token.assignedStoreId !== parseInt(storeIdFromUrl)) {
-      console.log("🔐 [Middleware] Operador intentando acceder a almacén no asignado");
-      const unauthorizedUrl = new URL("/unauthorized", req.url);
-      return NextResponse.redirect(unauthorizedUrl);
-    }
-  }
 
   // Si todo está bien, continuar con la solicitud
   console.log("🔐 [Middleware] Acceso permitido para usuario con roles:", userRoles, "en ruta:", pathname);

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { Store } from "@/components/Admin/Stores/StoresManager/Store";
 import WarehouseOperatorLayout from "@/components/WarehouseOperatorLayout";
 import Loader from "@/components/Utilities/Loader";
@@ -14,7 +14,8 @@ export default function WarehouseOperatorPage({ params }) {
   const [storeData, setStoreData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const { storeId } = params;
+  // Unwrap params using React.use() for Next.js 15 compatibility
+  const { storeId } = use(params);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -29,13 +30,6 @@ export default function WarehouseOperatorPage({ params }) {
         return;
       }
 
-      // Validar que el usuario tenga acceso a este almacén específico (superuser puede acceder a cualquier almacén)
-      if (session.user.role === "store_operator" && session.user.assignedStoreId !== parseInt(storeId)) {
-        // Redirigir automáticamente a su almacén asignado en lugar de mostrar error
-        router.replace(`/warehouse/${session.user.assignedStoreId}`);
-        return;
-      }
-
       // Cargar datos del almacén
       loadStoreData();
     }
@@ -43,13 +37,6 @@ export default function WarehouseOperatorPage({ params }) {
 
   const loadStoreData = async () => {
     try {
-      // Validar que el usuario tenga acceso a este almacén (superuser puede acceder a cualquier almacén)
-      if (session.user.role === "store_operator" && session.user.assignedStoreId !== parseInt(storeId)) {
-        // Redirigir automáticamente a su almacén asignado
-        router.replace(`/warehouse/${session.user.assignedStoreId}`);
-        return;
-      }
-
       // Cargar datos del almacén desde la API
       const storeData = await getStore(storeId, session.user.accessToken);
       
@@ -70,6 +57,22 @@ export default function WarehouseOperatorPage({ params }) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />
+      </div>
+    );
+  }
+
+  // Filtro simple: si es store_operator y no es su almacén asignado, mostrar no autorizado
+  if (status === "authenticated" && session?.user?.role?.includes("store_operator") && session.user.assignedStoreId !== parseInt(storeId)) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            No autorizado
+          </h2>
+          <p className="text-gray-600">
+            No tienes acceso a este almacén.
+          </p>
+        </div>
       </div>
     );
   }

@@ -52,7 +52,7 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
                   <img
                     src={session.user.companyLogoUrl}
                     alt={`Logo ${session.user.companyName || 'Empresa'}`}
-                    className="h-8 w-auto"
+                    className="h-14 w-auto"
                     onError={handleLogoError}
                   />
                   <div className="flex flex-col">
