@@ -218,7 +218,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const addBox = (box) => {
         if (!temporalPallet) return;
         const uniqueId = generateUniqueIntId(); // Generar un nuevo ID único
-        const gs1128 = getGs1128(box.product.id, box.lot, box.netWeight);
+        // Usar el código escaneado original si está disponible, sino generar uno nuevo
+        const gs1128 = box.scannedCode || getGs1128(box.product.id, box.lot, box.netWeight);
         const boxWithId = { ...box, id: uniqueId, new: true, gs1128, grossWeight: box.netWeight }; // Añadir el ID y marcar como nueva
         setTemporalPallet((prev) => (
             recalculatePalletStats({
@@ -457,7 +458,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             
             // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
             if (isPounds) {
-                netWeight = netWeight * 0.453592;
+                netWeight = Math.round((netWeight * 0.453592) * 1000) / 1000; // Redondear a 3 decimales
             }
 
             const product = productsOptions.find(p => p.boxGtin === gtin);
@@ -515,7 +516,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 
                 // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
                 if (isPounds) {
-                    netWeight = netWeight * 0.453592;
+                    netWeight = Math.round((netWeight * 0.453592) * 1000) / 1000; // Redondear a 3 decimales
                 }
 
                 const product = productsOptions.find(p => p.boxGtin === gtin);
