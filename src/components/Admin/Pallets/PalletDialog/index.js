@@ -20,7 +20,7 @@ export default function PalletDialog({ palletId, isOpen, onChange, initialStoreI
                 <DialogContent className="w-full max-w-[95vw] max-h-[90vi] overflow-hidden">
                     <DialogHeader>
                         <DialogTitle className="">
-                            {palletId ? `Editar Palet #${palletId}` : "Nuevo Palet"}
+                            {palletId && palletId !== 'new' ? `Editar Palet #${palletId}` : "Nuevo Palet"}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="flex justify-center flex-1 items-center w-full h-full">

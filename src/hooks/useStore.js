@@ -375,6 +375,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         setStore(prevStore => {
             const existingPallets = prevStore.content.pallets || [];
             const palletIndex = existingPallets.findIndex(p => p.id === updatedPallet.id);
+            const isNewPallet = palletIndex === -1;
             const updatedPallets =
                 palletIndex !== -1
                     ? existingPallets.map(p => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
@@ -400,6 +401,11 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
             if (onUpdateCurrentStoreTotalNetWeight) onUpdateCurrentStoreTotalNetWeight(prevStore.id, newStore.totalNetWeight);
             return newStore;
         });
+
+        // Si es un palet nuevo, actualizar el palletDialogData con el nuevo ID
+        if (palletDialogData === 'new') {
+            setPalletDialogData(updatedPallet.id);
+        }
     };
 
 

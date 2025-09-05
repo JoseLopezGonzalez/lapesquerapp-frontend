@@ -150,7 +150,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                         {!wrappedInDialog && (
                             <div className="flex items-center justify-between mb-4">
                                 <h1 className="text-lg font-medium">
-                                    {palletId ? `Editar Palet #${palletId}` : "Nuevo Palet"}
+                                    {palletId && palletId !== 'new' ? `Editar Palet #${palletId}` : "Nuevo Palet"}
                                 </h1>
                             </div>
                         )}
