@@ -218,8 +218,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const addBox = (box) => {
         if (!temporalPallet) return;
         const uniqueId = generateUniqueIntId(); // Generar un nuevo ID único
-        // Usar el código escaneado original si está disponible, sino generar uno nuevo
-        const gs1128 = box.scannedCode || getGs1128(box.product.id, box.lot, box.netWeight);
+        const gs1128 = getGs1128(box.product.id, box.lot, box.netWeight);
         const boxWithId = { ...box, id: uniqueId, new: true, gs1128, grossWeight: box.netWeight }; // Añadir el ID y marcar como nueva
         setTemporalPallet((prev) => (
             recalculatePalletStats({
