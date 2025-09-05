@@ -211,6 +211,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         return `(01)${boxGtin}(3100)${formattedNetWeight}(10)${lot}`;
     }
 
+    const getGs1128WithPounds = (productId, lot, netWeightInPounds) => {
+        const boxGtin = getBoxGtinById(productId);
+        const formattedNetWeight = netWeightInPounds.toFixed(2).replace('.', '').padStart(6, '0');
+        return `(01)${boxGtin}(3200)${formattedNetWeight}(10)${lot}`;
+    }
+
     /* ----------------- */
 
 
@@ -218,7 +224,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const addBox = (box) => {
         if (!temporalPallet) return;
         const uniqueId = generateUniqueIntId(); // Generar un nuevo ID único
-        const gs1128 = getGs1128(box.product.id, box.lot, box.netWeight);
+        // Usar el código correcto según si es libras o kg
+        const gs1128 = box.isPounds ? 
+            getGs1128WithPounds(box.product.id, box.lot, box.originalWeightInPounds) : 
+            getGs1128(box.product.id, box.lot, box.netWeight);
         const boxWithId = { ...box, id: uniqueId, new: true, gs1128, grossWeight: box.netWeight }; // Añadir el ID y marcar como nueva
         setTemporalPallet((prev) => (
             recalculatePalletStats({
@@ -473,7 +482,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 },
                 lot: lotFromCode,
                 netWeight,
-                scannedCode
+                scannedCode,
+                isPounds,
+                originalWeightInPounds: isPounds ? parseFloat(weightStr) / 100 : null
             };
 
             addBox(newBox);
@@ -529,7 +540,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     product: { id: product.value, name: product.label },
                     lot,
                     netWeight,
-                    scannedCode: line
+                    scannedCode: line,
+                    isPounds,
+                    originalWeightInPounds: isPounds ? parseFloat(weightStr) / 100 : null
                 });
             }
 
