@@ -601,6 +601,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             return;
         }
 
+        
         const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === gs1128Code);
         if (!boxToDelete) {
             toast.error('No se encontró ninguna caja que coincida con el código escaneado.', getToastTheme());
