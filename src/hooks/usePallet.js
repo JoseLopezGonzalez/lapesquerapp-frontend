@@ -6,6 +6,12 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+/**
+ * Soporte para códigos GS1-128 con peso en libras (3200):
+ * - (3100): peso en kg (formato original)
+ * - (3200): peso en libras (se convierte automáticamente a kg usando factor 0.453592)
+ */
+
 const recalculatePalletStats = (pallet) => {
     const numberOfBoxes = pallet.boxes.length;
     const netWeight = pallet.boxes.reduce(
@@ -429,14 +435,28 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 return;
             }
 
-            const match = scannedCode.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+            // Intentar primero con (3100) - kg
+            let match = scannedCode.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+            let isPounds = false;
+            
+            // Si no coincide, intentar con (3200) - libras
             if (!match) {
-                toast.error('Formato de código escaneado no válido.', getToastTheme());
+                match = scannedCode.match(/\(01\)(\d{14})\(3200\)(\d{6})\(10\)(.+)/);
+                isPounds = true;
+            }
+            
+            if (!match) {
+                toast.error('Formato de código escaneado no válido. Se espera (3100) para kg o (3200) para libras.', getToastTheme());
                 return;
             }
 
             const [, gtin, weightStr, lotFromCode] = match;
-            const netWeight = parseFloat(weightStr) / 100;
+            let netWeight = parseFloat(weightStr) / 100;
+            
+            // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
+            if (isPounds) {
+                netWeight = netWeight * 0.453592;
+            }
 
             const product = productsOptions.find(p => p.boxGtin === gtin);
             if (!product) {
@@ -473,14 +493,28 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const failedLines = [];
 
             for (const line of lines) {
-                const match = line.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+                // Intentar primero con (3100) - kg
+                let match = line.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+                let isPounds = false;
+                
+                // Si no coincide, intentar con (3200) - libras
+                if (!match) {
+                    match = line.match(/\(01\)(\d{14})\(3200\)(\d{6})\(10\)(.+)/);
+                    isPounds = true;
+                }
+                
                 if (!match) {
                     failedLines.push(line);
                     continue;
                 }
 
                 const [, gtin, weightStr, lot] = match;
-                const netWeight = parseFloat(weightStr) / 100;
+                let netWeight = parseFloat(weightStr) / 100;
+                
+                // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
+                if (isPounds) {
+                    netWeight = netWeight * 0.453592;
+                }
 
                 const product = productsOptions.find(p => p.boxGtin === gtin);
 
