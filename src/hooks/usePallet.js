@@ -217,6 +217,24 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         return `(01)${boxGtin}(3200)${formattedNetWeight}(10)${lot}`;
     }
 
+    const convertScannedCodeToGs1128 = (scannedCode) => {
+        // Intentar primero con 3100 - kg
+        let match = scannedCode.match(/01(\d{14})3100(\d{6})10(.+)/);
+        if (match) {
+            const [, gtin, weightStr, lot] = match;
+            return `(01)${gtin}(3100)${weightStr}(10)${lot}`;
+        }
+        
+        // Si no coincide, intentar con 3200 - libras
+        match = scannedCode.match(/01(\d{14})3200(\d{6})10(.+)/);
+        if (match) {
+            const [, gtin, weightStr, lot] = match;
+            return `(01)${gtin}(3200)${weightStr}(10)${lot}`;
+        }
+        
+        return null; // No se pudo convertir
+    }
+
     /* ----------------- */
 
 
@@ -576,7 +594,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             return;
         }
 
-        const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === scannedCode);
+        // Convertir el código escaneado sin paréntesis al formato con paréntesis
+        const gs1128Code = convertScannedCodeToGs1128(scannedCode);
+        if (!gs1128Code) {
+            toast.error('Formato de código escaneado no válido para eliminar.', getToastTheme());
+            return;
+        }
+
+        const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === gs1128Code);
         if (!boxToDelete) {
             toast.error('No se encontró ninguna caja que coincida con el código escaneado.', getToastTheme());
             return;
