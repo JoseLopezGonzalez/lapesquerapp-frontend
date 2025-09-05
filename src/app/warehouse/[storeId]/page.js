@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Store } from "@/components/Admin/Stores/StoresManager/Store";
 import WarehouseOperatorLayout from "@/components/WarehouseOperatorLayout";
 import Loader from "@/components/Utilities/Loader";
+import { getStore } from "@/services/storeService";
 
 export default function WarehouseOperatorPage({ params }) {
   const { data: session, status } = useSession();
@@ -47,15 +48,12 @@ export default function WarehouseOperatorPage({ params }) {
         return;
       }
 
-      // Aquí cargarías los datos del almacén desde la API
-      // Por ejemplo, usando el servicio existente
-      // const storeResponse = await fetch(`/api/v2/stores/${storeId}`);
-      // const storeData = await storeResponse.json();
-
-      // Por ahora, datos de ejemplo
+      // Cargar datos del almacén desde la API
+      const storeData = await getStore(storeId, session.user.accessToken);
+      
       setStoreData({
-        id: storeId,
-        name: "Almacén Principal",
+        id: storeData.id,
+        name: storeData.name,
         companyName: session.user.companyName
       });
     } catch (error) {
