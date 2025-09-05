@@ -73,6 +73,16 @@ const handler = NextAuth({
       if (user) {
         token.accessToken = user.accessToken;
         token.role = user.role;
+        // Campos opcionales para store_operator
+        if (user.assignedStoreId) {
+          token.assignedStoreId = user.assignedStoreId;
+        }
+        if (user.companyName) {
+          token.companyName = user.companyName;
+        }
+        if (user.companyLogoUrl) {
+          token.companyLogoUrl = user.companyLogoUrl;
+        }
       }
 
       // Validar si el token ha expirado o es inválido (simular esto con un backend en el futuro)

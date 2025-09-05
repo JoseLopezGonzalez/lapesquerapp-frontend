@@ -78,10 +78,10 @@ export const StoreContent = () => {
 
     return (
         <>
-            <div className='flex items-center justify-center w-full h-full gap-4'>
+            <div className='flex items-center justify-center w-full h-full gap-4 '>
 
                 {/* Map */}
-                <Card className=' relative grow flex items-center justify-center w-full h-full overflow-hidden'>
+                <Card className=' relative flex-1 flex items-center justify-center w-full h-full overflow-hidden'>
                     <MapContainer>
                         <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
                     </MapContainer>

@@ -83,11 +83,21 @@ export async function middleware(req) {
     return NextResponse.redirect(unauthorizedUrl);
   }
 
+  // Validación específica para operadores de almacén (superuser puede acceder a cualquier almacén)
+  if (pathname.startsWith("/warehouse/") && token.role === "store_operator") {
+    const storeIdFromUrl = pathname.split("/")[2];
+    if (token.assignedStoreId !== parseInt(storeIdFromUrl)) {
+      console.log("🔐 [Middleware] Operador intentando acceder a almacén no asignado");
+      const unauthorizedUrl = new URL("/unauthorized", req.url);
+      return NextResponse.redirect(unauthorizedUrl);
+    }
+  }
+
   // Si todo está bien, continuar con la solicitud
   console.log("🔐 [Middleware] Acceso permitido para usuario con roles:", userRoles, "en ruta:", pathname);
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/production/:path*"],
+  matcher: ["/admin/:path*", "/production/:path*", "/warehouse/:path*"],
 };
