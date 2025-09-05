@@ -15,9 +15,11 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useStoreContext } from "@/context/StoreContext"
+import { useSession } from 'next-auth/react'
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 export default function PalletCard({ pallet }) {
+    const { data: session } = useSession();
 
     const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition } = useStoreContext();
 
@@ -54,6 +56,9 @@ export default function PalletCard({ pallet }) {
 
 
     const hasMultipleProducts = productsSummaryArray.length > 1
+
+    // Verificar si el usuario es store_operator (no puede reubicar pallets)
+    const isStoreOperator = session?.user?.role?.includes('store_operator');
 
 
     return (
@@ -109,13 +114,16 @@ export default function PalletCard({ pallet }) {
                             Ver detalles
                         </DropdownMenuItem> */}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className='cursor-pointer'
-                            onClick={() => openMovePalletToStoreDialog(pallet.id)}
-                        >
-                            <MapPinHouse className="h-4 w-4 mr-2" />
-                            Reubicar
-                        </DropdownMenuItem>
+                        {/* Opción Reubicar - Solo visible para usuarios que no son store_operator */}
+                        {!isStoreOperator && (
+                            <DropdownMenuItem
+                                className='cursor-pointer'
+                                onClick={() => openMovePalletToStoreDialog(pallet.id)}
+                            >
+                                <MapPinHouse className="h-4 w-4 mr-2" />
+                                Reubicar
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                             className='cursor-pointer'
                             onClick={handleOnCLickEdit}

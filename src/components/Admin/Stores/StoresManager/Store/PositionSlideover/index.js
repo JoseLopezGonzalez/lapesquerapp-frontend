@@ -68,9 +68,10 @@ const typeIcons = {
 export default function PositionSlideover({ onClose, position = "A5" }) {
 
 
-    const { isOpenPositionSlideover, closePositionSlideover, selectedPosition, getPositionPallets, openAddElementToPosition } = useStoreContext()
+    const { isOpenPositionSlideover, closePositionSlideover, selectedPosition, getPositionPallets, openAddElementToPosition, getPosition } = useStoreContext()
 
     const pallets = getPositionPallets(selectedPosition)
+    const positionData = getPosition(selectedPosition)
 
     const open = isOpenPositionSlideover
 
@@ -85,7 +86,7 @@ export default function PositionSlideover({ onClose, position = "A5" }) {
             {/*  <SheetTrigger>Open</SheetTrigger> */}
             <SheetContent className='w-[400px] sm:w-[900px] sm:min-w-[430px] flex flex-col h-full'  >
                 <SheetHeader>
-                    <SheetTitle>Posicion A4</SheetTitle>
+                    <SheetTitle>Posición {positionData?.nombre || 'Desconocida'}</SheetTitle>
                     <SheetDescription>
                         Detalles de la posición seleccionada
                     </SheetDescription>

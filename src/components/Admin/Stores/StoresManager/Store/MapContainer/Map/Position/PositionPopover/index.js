@@ -2,14 +2,16 @@ import React from 'react'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useStoreContext } from '@/context/StoreContext';
+import { useSession } from 'next-auth/react';
 import { CircleDot, Edit, MapPinHouse, MapPinX, Plus, Trash2 } from 'lucide-react';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
+    const { data: session } = useSession();
 
     const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition, openMovePalletToStoreDialog } = useStoreContext();
 
@@ -40,35 +42,39 @@ const PositionPopover = ({ position }) => {
         'bg-green-500 text-background border-green-400 dark:border-green-600'
         : '';
 
+    // Verificar si el usuario es store_operator (no puede reubicar pallets)
+    const isStoreOperator = session?.user?.role?.includes('store_operator');
+
     return (
-        <Card className="border-0 shadow-none">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <CircleDot className="h-5 w-5 " />
-                    <CardTitle className="text-lg">Posición {name}</CardTitle>
-                </div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={handleAddPallet}
+        <TooltipProvider>
+            <Card className="border-0 shadow-none">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <CircleDot className="h-5 w-5 " />
+                        <CardTitle className="text-lg">Posición {name}</CardTitle>
+                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={handleAddPallet}
 
 
-                        /*  onClick={(e) => {
-                             e.stopPropagation();
-                             handleAddPallet(position.id);
-                         }} */
-                        >
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    {/*  <TooltipContent>
-                <p>Agregar palet</p>
-            </TooltipContent> */}
-                </Tooltip>
-            </CardHeader>
+                            /*  onClick={(e) => {
+                                 e.stopPropagation();
+                                 handleAddPallet(position.id);
+                             }} */
+                            >
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        {/*  <TooltipContent>
+                    <p>Agregar palet</p>
+                </TooltipContent> */}
+                    </Tooltip>
+                </CardHeader>
             <CardContent className="py-0">
                 <div className={`${pallets.length === 0 ? 'h-20' : pallets.length <= 3 ? 'h-auto' : 'h-[160px]'}`}>
                     <ScrollArea className={`${pallets.length <= 3 ? 'h-auto' : 'h-full'} px-4`}>
@@ -107,25 +113,27 @@ const PositionPopover = ({ position }) => {
                                                     <p>Editar palet</p>
                                                 </TooltipContent>
                                             </Tooltip>
-                                            {/* Button  Reubicar Tooltip*/}
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-7 w-7"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleOnCLickMovePalletToStore(pallet.id);
-                                                        }}
-                                                    >
-                                                        <MapPinHouse className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Reubicar palet</p>
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            {/* Button  Reubicar Tooltip - Solo visible para usuarios que no son store_operator */}
+                                            {!isStoreOperator && (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOnCLickMovePalletToStore(pallet.id);
+                                                            }}
+                                                        >
+                                                            <MapPinHouse className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Reubicar palet</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
                                             {/* Button deletePalletFromPosition Tooltip */}
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -166,7 +174,8 @@ const PositionPopover = ({ position }) => {
                     </Button>
                 </CardFooter>
             )}
-        </Card>
+            </Card>
+        </TooltipProvider>
     )
 }
 

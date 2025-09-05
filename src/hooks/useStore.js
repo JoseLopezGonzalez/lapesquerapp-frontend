@@ -312,6 +312,10 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
             ?.sort((a, b) => a.id - b.id) ?? [];
     };
 
+    const getPosition = (positionId) => {
+        return store?.map?.posiciones?.find(p => p.id === positionId) ?? null;
+    };
+
 
 
     const openAddElementToPosition = (id) => {
@@ -514,6 +518,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         speciesSummary,
 
         getPositionPallets,
+        getPosition,
         openPositionSlideover,
         closePositionSlideover,
         isOpenPositionSlideover,
