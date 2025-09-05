@@ -8,8 +8,10 @@ import toast from "react-hot-toast";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
- * - (3100): peso en kg (formato original)
- * - (3200): peso en libras (se convierte automáticamente a kg usando factor 0.453592)
+ * - 3100: peso en kg (formato original)
+ * - 3200: peso en libras (se convierte automáticamente a kg usando factor 0.453592)
+ * 
+ * Formato esperado: 01GTIN3100peso10lote o 01GTIN3200peso10lote
  */
 
 const recalculatePalletStats = (pallet) => {
@@ -435,18 +437,18 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 return;
             }
 
-            // Intentar primero con (3100) - kg
-            let match = scannedCode.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+            // Intentar primero con 3100 - kg
+            let match = scannedCode.match(/01(\d{14})3100(\d{6})10(.+)/);
             let isPounds = false;
             
-            // Si no coincide, intentar con (3200) - libras
+            // Si no coincide, intentar con 3200 - libras
             if (!match) {
-                match = scannedCode.match(/\(01\)(\d{14})\(3200\)(\d{6})\(10\)(.+)/);
+                match = scannedCode.match(/01(\d{14})3200(\d{6})10(.+)/);
                 isPounds = true;
             }
             
             if (!match) {
-                toast.error('Formato de código escaneado no válido. Se espera (3100) para kg o (3200) para libras.', getToastTheme());
+                toast.error('Formato de código escaneado no válido. Se espera 3100 para kg o 3200 para libras.', getToastTheme());
                 return;
             }
 
@@ -493,13 +495,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const failedLines = [];
 
             for (const line of lines) {
-                // Intentar primero con (3100) - kg
-                let match = line.match(/\(01\)(\d{14})\(3100\)(\d{6})\(10\)(.+)/);
+                // Intentar primero con 3100 - kg
+                let match = line.match(/01(\d{14})3100(\d{6})10(.+)/);
                 let isPounds = false;
                 
-                // Si no coincide, intentar con (3200) - libras
+                // Si no coincide, intentar con 3200 - libras
                 if (!match) {
-                    match = line.match(/\(01\)(\d{14})\(3200\)(\d{6})\(10\)(.+)/);
+                    match = line.match(/01(\d{14})3200(\d{6})10(.+)/);
                     isPounds = true;
                 }
                 
