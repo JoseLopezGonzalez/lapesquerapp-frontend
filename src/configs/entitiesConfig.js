@@ -111,6 +111,14 @@ export const configs = {
         waitingMessage: "Generando exportación a Facilcom",
         fileName: "Exportacion_recepciones_Facilcom",
       },
+      /* raw-material-receptions/a3erp-xlsx */
+      {
+        title: "Exportar a A3ERP",
+        endpoint: "raw-material-receptions/a3erp-xlsx",
+        type: "xlsx",
+        waitingMessage: "Generando exportación a A3ERP",
+        fileName: "Exportacion_recepciones_A3ERP",
+      },
     ],
   },
   orders: {
