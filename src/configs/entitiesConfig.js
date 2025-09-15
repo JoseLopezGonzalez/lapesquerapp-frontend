@@ -114,8 +114,8 @@ export const configs = {
       /* raw-material-receptions/a3erp-xlsx */
       {
         title: "Exportar a A3ERP",
-        endpoint: "raw-material-receptions/a3erp-xlsx",
-        type: "xlsx",
+        endpoint: "raw-material-receptions/a3erp-xls",
+        type: "excel",
         waitingMessage: "Generando exportación a A3ERP",
         fileName: "Exportacion_recepciones_A3ERP",
       },
