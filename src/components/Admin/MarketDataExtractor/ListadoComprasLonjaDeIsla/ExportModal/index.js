@@ -1,5 +1,5 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Check, X, FileSpreadsheet, CircleX, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx';
@@ -36,6 +37,7 @@ const ExportModal = ({ document }) => {
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
     const [errors, setErrors] = useState([])
+    const [selectedLinks, setSelectedLinks] = useState([])
     const ventasVendidurias = []
     const ventasDirectas = []
 
@@ -252,20 +254,56 @@ const ExportModal = ({ document }) => {
     })
     );
 
+    // Inicializar las selecciones cuando cambia linkedSummary
+    useEffect(() => {
+        // Seleccionar por defecto solo las que no tienen error
+        const initialSelection = linkedSummary
+            .map((linea, index) => (!linea.error ? index : null))
+            .filter(index => index !== null);
+        setSelectedLinks(initialSelection);
+    }, [linkedSummary.length]);
 
+    // Función para manejar selección/deselección de una línea
+    const handleToggleLink = (index) => {
+        setSelectedLinks(prev => {
+            if (prev.includes(index)) {
+                return prev.filter(i => i !== index);
+            } else {
+                return [...prev, index];
+            }
+        });
+    };
+
+    // Función para seleccionar/deseleccionar todas las líneas sin error
+    const handleToggleAll = () => {
+        const validIndices = linkedSummary
+            .map((linea, index) => (!linea.error ? index : null))
+            .filter(index => index !== null);
+        
+        if (selectedLinks.length === validIndices.length) {
+            // Si todas están seleccionadas, deseleccionar todas
+            setSelectedLinks([]);
+        } else {
+            // Si no todas están seleccionadas, seleccionar todas las válidas
+            setSelectedLinks(validIndices);
+        }
+    };
 
     const handleOnClickLinkPurchases = async () => {
-        const comprasValidas = linkedSummary.filter(linea => !linea.error);
+        // Filtrar solo las compras seleccionadas
+        const comprasSeleccionadas = linkedSummary.filter((linea, index) => 
+            selectedLinks.includes(index) && !linea.error
+        );
 
-        if (comprasValidas.length === 0) {
-            toast.error('No hay compras válidas para vincular.', getToastTheme());
+        if (comprasSeleccionadas.length === 0) {
+            toast.error('No hay compras seleccionadas para vincular.', getToastTheme());
             return;
         }
 
         let correctas = 0;
         let errores = 0;
 
-        await Promise.allSettled(comprasValidas.map(async (linea) => {
+        await Promise.allSettled(comprasSeleccionadas.map(async (linea) => {
             try {
                 const res = await fetchWithTenant(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
                     method: 'POST',
@@ -443,16 +481,32 @@ const ExportModal = ({ document }) => {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-12">
+                                                <Checkbox 
+                                                    checked={
+                                                        linkedSummary.filter(l => !l.error).length > 0 &&
+                                                        selectedLinks.length === linkedSummary.filter(l => !l.error).length
+                                                    }
+                                                    onCheckedChange={handleToggleAll}
+                                                />
+                                            </TableHead>
                                             <TableHead>Barco</TableHead>
                                             <TableHead>Fecha</TableHead>
                                             <TableHead className="text-right">Peso Neto</TableHead>
                                             <TableHead className="text-right">Importe</TableHead>
-                                            <TableHead>Error</TableHead>
+                                            <TableHead>Estado</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {linkedSummary.map((linea, index) => (
                                             <TableRow key={index} className="hover:bg-muted/50">
+                                                <TableCell>
+                                                    <Checkbox 
+                                                        checked={selectedLinks.includes(index)}
+                                                        disabled={linea.error}
+                                                        onCheckedChange={() => handleToggleLink(index)}
+                                                    />
+                                                </TableCell>
                                                 <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
                                                 <TableCell className="font-medium">{linea.date}</TableCell>
                                                 <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
@@ -461,9 +515,15 @@ const ExportModal = ({ document }) => {
                                                 </TableCell>
                                                 <TableCell className={` ${linea.error ? 'text-red-500' : 'text-green-500'}`}>
                                                     {linea.error ? (
-                                                        <X className="h-4 w-4" />
+                                                        <div className="flex items-center gap-2">
+                                                            <X className="h-4 w-4" />
+                                                            <span className="text-xs">No enlazable</span>
+                                                        </div>
                                                     ) : (
-                                                        <Check className="h-4 w-4" />
+                                                        <div className="flex items-center gap-2">
+                                                            <Check className="h-4 w-4" />
+                                                            <span className="text-xs">Listo</span>
+                                                        </div>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -471,10 +531,18 @@ const ExportModal = ({ document }) => {
                                     </TableBody>
                                 </Table>
                             </CardContent>
-                            <div className="flex justify-end p-2 mb-2">
-                                <Button variant="" className="" onClick={() => handleOnClickLinkPurchases()}>
+                            <div className="flex justify-between items-center p-2 mb-2">
+                                <span className="text-sm text-muted-foreground">
+                                    {selectedLinks.length} de {linkedSummary.filter(l => !l.error).length} seleccionadas
+                                </span>
+                                <Button 
+                                    variant="" 
+                                    className="" 
+                                    onClick={() => handleOnClickLinkPurchases()}
+                                    disabled={selectedLinks.length === 0}
+                                >
                                     <Link className="h-4 w-4" />
-                                    Enlazar Compras
+                                    Enlazar Compras ({selectedLinks.length})
                                 </Button>
                             </div>
 
