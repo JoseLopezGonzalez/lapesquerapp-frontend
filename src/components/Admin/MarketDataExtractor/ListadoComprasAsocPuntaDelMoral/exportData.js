@@ -7,7 +7,7 @@ export const barcos = [
   { nombre: "Tres Cuñaos", matricula: "HU-2-2007", cifArmador: "29617231Q", codA3erp: "", codBrisapp: '13' },
   { nombre: "Nova Selesa", matricula: "T-767-L", cifArmador: "513587853", codA3erp: "", codBrisapp: '30' },
   { nombre: "Maria Jesus Segunda", matricula: "3 CA 1-7-98", cifArmador: "E-21492228", codA3erp: "", codBrisapp: '76' },
-  { nombre: "Ajuda Do Mar", matricula: "PTVRE-118863-C", cifArmador: "PRT000020421", codA3erp: "", codBrisapp: '74' },
+  { nombre: "Ajuda Do Mar", matricula: "VR-556-C-", cifArmador: "PRT000020421", codA3erp: "", codBrisapp: '74' },
   { nombre: "Pepe Manuel", matricula: "3HU1420", cifArmador: "49056334W", codA3erp: "", codBrisapp: '14' },
   { nombre: 'Som do Mar', matricula: 'PTTVR-118920-L-1189', cifArmador: '', codA3erp: "", codBrisapp: '153' },
   { nombre: 'Diogo Miguel', matricula: 'PTPEN-113936-C-1139', cifArmador: '', codA3erp: "", codBrisapp: '148' },
