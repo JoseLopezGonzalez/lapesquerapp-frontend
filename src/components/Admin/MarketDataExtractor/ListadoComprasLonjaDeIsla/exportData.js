@@ -1149,6 +1149,8 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
+    cod: '416',
+    codBrisapp: '10',
     barco: "PABLO Y MOISES",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -4536,7 +4538,7 @@ export const barcos = [
   },
 
   {
-    cod: '189',
+    cod: '705',
     codBrisapp: '190',
     barco: "MI NIÑA CORAIMA",
     vendiduria: "HIJOS DE MANUEL GEY, S.L.",
