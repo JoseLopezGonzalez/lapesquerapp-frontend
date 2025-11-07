@@ -26,6 +26,8 @@ const documentTypes = [
 
 ];
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => {
 
     try {
@@ -69,12 +71,37 @@ export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => 
         // Esperar el resultado final (polling)
         let analysisResult = null;
         let status = null;
+        let attempts = 0;
+        const maxAttempts = 45; // ~15 minutos con intervalos normales
+        const defaultPollingDelay = 5000; // 5 segundos
+        const rateLimitDelay = 17000; // esperar 17 segundos en caso de 429 (retry-after sugerido)
 
         do {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // esperar 2 segundos
-            const resultResponse = await fetchWithTenant(operationLocation, {
-                headers: { 'Ocp-Apim-Subscription-Key': apiKey },
-            });
+            attempts += 1;
+            if (attempts > maxAttempts) {
+                throw new Error("Tiempo de espera agotado al obtener el resultado del análisis de Azure.");
+            }
+
+            await sleep(defaultPollingDelay);
+
+            let resultResponse;
+
+            try {
+                resultResponse = await fetchWithTenant(operationLocation, {
+                    headers: { 'Ocp-Apim-Subscription-Key': apiKey },
+                });
+            } catch (error) {
+                const errorMessage = error?.message || "";
+                const isRateLimitError = /429|Too Many Requests|rate limit/i.test(errorMessage);
+
+                if (isRateLimitError) {
+                    console.warn("⚠️ Azure rate limit alcanzado. Reintentando en 17 segundos.");
+                    await sleep(rateLimitDelay);
+                    continue;
+                }
+
+                throw error;
+            }
 
             if (!resultResponse.ok) {
                 throw new Error(`Error Azure resultado: ${resultResponse.statusText}`);
