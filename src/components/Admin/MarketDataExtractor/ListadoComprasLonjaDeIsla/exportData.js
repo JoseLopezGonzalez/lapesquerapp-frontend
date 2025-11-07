@@ -2972,7 +2972,9 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
-    barco: "NUEVO ALDARA",
+    cod: '797',
+    codBrisapp: '189',
+    barco: "MI NIÑA ZOE",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
@@ -5177,6 +5179,14 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Adan de las LLagas Orta',
       codA3erp: '56334',
+    }
+  },
+  {
+    cod: '797',
+    barco: "MI NIÑA ZOE",
+    armador: {
+      nombre: 'Andres Lopez Barro',
+      codA3erp: '988312',
     }
   },
   {
