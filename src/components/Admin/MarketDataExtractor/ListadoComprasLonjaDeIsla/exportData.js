@@ -828,6 +828,8 @@ export const barcos = [
     codVendiduria: 'EX'
   },
   {
+    cod: '325',
+    codBrisapp: '9',
     barco: "JOSE PRIN",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -5179,6 +5181,14 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Adan de las LLagas Orta',
       codA3erp: '56334',
+    }
+  },
+  {
+    cod: '325',
+    barco: "JOSE PRIN",
+    armador: {
+      nombre: 'Jose Manuel Evangelista Cordero',
+      codA3erp: '485871',
     }
   },
   {
