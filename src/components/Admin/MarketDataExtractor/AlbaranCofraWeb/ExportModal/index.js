@@ -17,6 +17,43 @@ import toast from 'react-hot-toast'
 import { getToastTheme } from '@/customs/reactHotToast'
 import { API_URL_V1 } from '@/configs/config'
 
+const parseDecimalValue = (value) => {
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') return 0;
+        if (trimmed.includes(',')) {
+            const parsed = parseEuropeanNumber(trimmed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const dotMatches = trimmed.match(/\./g);
+        if (dotMatches && dotMatches.length > 1) {
+            const parts = trimmed.split('.');
+            const decimalPart = parts.pop();
+            const integerPart = parts.join('');
+            const reconstructed = `${integerPart}.${decimalPart}`;
+            const parsed = Number(reconstructed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const parsed = Number(trimmed);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    return 0;
+};
+
+const calculateImporte = (weight, price) => {
+    const kilos = parseDecimalValue(weight);
+    const precio = parseDecimalValue(price);
+    const importe = kilos * precio;
+    return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
+};
+
+const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
+
 const ExportModal = ({ document }) => {
     const { detalles: { numero, fecha, cifLonja, lonja } } = document
     const [software, setSoftware] = useState("A3ERP")
@@ -76,8 +113,8 @@ const ExportModal = ({ document }) => {
                         CABREFERENCIA: `${fecha} - ${numero} -  ${barco.nombre}`,
                         LINCODART: 95,
                         LINDESCLIN: 'PULPO FRESCO LONJA',
-                        LINUNIDADES: linea.kilos,
-                        LINPRCMONEDA: linea.precio,
+                        LINUNIDADES: parseDecimalValue(linea.kilos),
+                        LINPRCMONEDA: parseDecimalValue(linea.precio),
                         LINTIPIVA: 'RED10',
                     });
                 });
@@ -92,7 +129,9 @@ const ExportModal = ({ document }) => {
             console.error(`Falta código de conversión para la lonja ${cifLonja}`);
         } else {
             servicios.forEach(line => {
-                const calculatedPrecio = parseEuropeanNumber(line.importe) / parseEuropeanNumber(line.unidades);
+                const unidades = parseDecimalValue(line.unidades);
+                const importe = parseDecimalValue(line.importe);
+                const calculatedPrecio = unidades === 0 ? 0 : Number((importe / unidades).toFixed(4));
                 processedRows.push({
                     CABNUMDOC: albaranNumber,
                     CABFECHA: fecha,
@@ -136,8 +175,8 @@ const ExportModal = ({ document }) => {
     };
 
     const linkedSummary = subastas.map((barco) => {
-        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.kilos), 0);
-        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.importe), 0);
+        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
+        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
 
         const barcoEncontrado = barcos.find(b =>
             b.barco === barco.nombre);

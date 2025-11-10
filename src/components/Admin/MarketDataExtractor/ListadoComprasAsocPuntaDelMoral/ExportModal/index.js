@@ -18,8 +18,43 @@ import { getToastTheme } from '@/customs/reactHotToast'
 import toast from 'react-hot-toast'
 import { API_URL_V1 } from '@/configs/config'
 
+const parseDecimalValue = (value) => {
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') return 0;
+        if (trimmed.includes(',')) {
+            const parsed = parseEuropeanNumber(trimmed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const dotMatches = trimmed.match(/\./g);
+        if (dotMatches && dotMatches.length > 1) {
+            const parts = trimmed.split('.');
+            const decimalPart = parts.pop();
+            const integerPart = parts.join('');
+            const reconstructed = `${integerPart}.${decimalPart}`;
+            const parsed = Number(reconstructed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const parsed = Number(trimmed);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    return 0;
+};
+
+const calculateImporte = (weight, price) => {
+    const kilos = parseDecimalValue(weight);
+    const precio = parseDecimalValue(price);
+    const importe = kilos * precio;
+    return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
+};
+
 const ExportModal = ({ document }) => {
-    const { details: { lonja, cifComprador, comprador, fecha, tipoSubasta, importeTotal }, tables } = document
+    const { details: { fecha, tipoSubasta }, tables } = document
     const [software, setSoftware] = useState("A3ERP")
     const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
     const [selectedLinks, setSelectedLinks] = useState([])
@@ -49,13 +84,17 @@ const ExportModal = ({ document }) => {
         return barcos.some((barco) => normalizeText(barco.matricula) === normalizeText(matricula));
     };
 
+    const importeTotalCalculado = tables.subastas.reduce((acc, linea) => {
+        return acc + calculateImporte(linea.pesoNeto, linea.precio);
+    }, 0);
+
     const servicios = serviciosAsocArmadoresPuntaDelMoral.map((servicio) => {
         return {
             ...servicio,
             unidades: 1,
-            base: parseEuropeanNumber(importeTotal),
-            precio: (parseEuropeanNumber(importeTotal) * servicio.porcentaje) / 100,
-            importe: (parseEuropeanNumber(importeTotal) * servicio.porcentaje) / 100,
+            base: importeTotalCalculado,
+            precio: (importeTotalCalculado * servicio.porcentaje) / 100,
+            importe: (importeTotalCalculado * servicio.porcentaje) / 100,
         }
     })
     const servicioExtra = {
@@ -98,8 +137,8 @@ const ExportModal = ({ document }) => {
                             CABREFERENCIA: `${fecha} - ${barcoData.nombre}`,
                             LINCODART: productos.find(p => p.nombre === linea.especie).codA3erp,
                             LINDESCLIN: linea.especie,
-                            LINUNIDADES: parseEuropeanNumber(linea.pesoNeto),
-                            LINPRCMONEDA: parseEuropeanNumber(linea.precio),
+                            LINUNIDADES: parseDecimalValue(linea.pesoNeto),
+                            LINPRCMONEDA: parseDecimalValue(linea.precio),
                             LINTIPIVA: 'RED10',
                         });
                     });
@@ -117,8 +156,8 @@ const ExportModal = ({ document }) => {
                     CABREFERENCIA: `${fecha} - SUBASTA`,
                     LINCODART: productos.find(p => p.nombre === linea.especie).codA3erp,
                     LINDESCLIN: linea.especie,
-                    LINUNIDADES: parseEuropeanNumber(linea.pesoNeto),
-                    LINPRCMONEDA: parseEuropeanNumber(linea.precio),
+                    LINUNIDADES: parseDecimalValue(linea.pesoNeto),
+                    LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
                 });
             });
@@ -134,7 +173,7 @@ const ExportModal = ({ document }) => {
                 CABREFERENCIA: isVentaDirecta ? `${fecha} - SERVICIOS` : `${fecha} - SERVICIOS SUBASTA`,
                 LINCODART: 9999,
                 LINDESCLIN: line.descripcion,
-                LINUNIDADES: line.unidades,
+                LINUNIDADES: parseDecimalValue(line.unidades),
                 LINPRCMONEDA: line.precio,
                 LINTIPIVA: 'RED10',
             });
@@ -173,8 +212,8 @@ const ExportModal = ({ document }) => {
     };
 
     const linkedSummary = subastas.map((barco) => {
-        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.pesoNeto), 0);
-        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + parseEuropeanNumber(linea.importe), 0);
+        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.pesoNeto), 0);
+        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + calculateImporte(linea.pesoNeto, linea.precio), 0);
 
         const codBrisappBarco = barcos.find((barcoData) => normalizeText(barcoData.matricula) === normalizeText(barco.matricula))?.codBrisapp ?? null;
 
