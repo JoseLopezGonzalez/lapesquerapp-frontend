@@ -17,19 +17,39 @@ import toast from 'react-hot-toast'
 import { getToastTheme } from '@/customs/reactHotToast'
 import { API_URL_V1 } from '@/configs/config'
 
-const formatLonjaIslaImporte = (importe) => {
-
-    const importeString = String(importe);
-    const partes = importeString.split('.');
-
-    if (partes.length <= 2) {
-        return importeString;
+const parseDecimalValue = (value) => {
+    if (typeof value === 'number') {
+        return value;
     }
 
-    const parteDecimal = partes.pop();
-    const parteEntera = partes.join('');
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') return 0;
+        if (trimmed.includes(',')) {
+            const parsed = parseEuropeanNumber(trimmed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const dotMatches = trimmed.match(/\./g);
+        if (dotMatches && dotMatches.length > 1) {
+            const parts = trimmed.split('.');
+            const decimalPart = parts.pop();
+            const integerPart = parts.join('');
+            const reconstructed = `${integerPart}.${decimalPart}`;
+            const parsed = Number(reconstructed);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        const parsed = Number(trimmed);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
 
-    return `${parteEntera}.${parteDecimal}`;
+    return 0;
+};
+
+const calculateImporteFromLinea = (linea) => {
+    const kilos = parseDecimalValue(linea.kilos);
+    const precio = parseDecimalValue(linea.precio);
+    const importe = kilos * precio;
+    return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
 };
 
 const ExportModal = ({ document }) => {
@@ -105,15 +125,15 @@ const ExportModal = ({ document }) => {
     });
 
     const getImporteServiciosVendiduria = (lineas) => {
-        const importeTotal = lineas.reduce((acc, linea) => {
-            return acc + Number(formatLonjaIslaImporte(linea.importe));
-        }, 0);
+    const importeTotal = lineas.reduce((acc, linea) => {
+        return acc + calculateImporteFromLinea(linea);
+    }, 0);
         return (importeTotal * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100).toFixed(2);
     }
 
     const importeTotalVentasDirectas = ventasDirectas.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
-            return acc + Number(formatLonjaIslaImporte(linea.importe));
+            return acc + calculateImporteFromLinea(linea);
         }, 0);
     }, 0);
 
@@ -124,7 +144,7 @@ const ExportModal = ({ document }) => {
         }
         const vendiduria = barco.vendiduria?.cod;
         const totalBarco = barco.lineas.reduce((acc, linea) => {
-            return acc + Number(formatLonjaIslaImporte(linea.importe));
+            return acc + calculateImporteFromLinea(linea);
         }, 0);
         if (!acc[vendiduria]) {
             acc[vendiduria] = {
@@ -195,7 +215,7 @@ const ExportModal = ({ document }) => {
 
     const getImporteTotal = (lineasBarco) => {
         const importeTotal = lineasBarco.reduce((acc, linea) => {
-            return acc + Number(formatLonjaIslaImporte(linea.importe));
+            return acc + calculateImporteFromLinea(linea);
         }, 0);
         return importeTotal;
     }
@@ -226,8 +246,8 @@ const ExportModal = ({ document }) => {
     };
 
     const linkedSummary = Object.values(ventasVendidurias).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.importe), 0);
+        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
+        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
         const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
 
         return {
@@ -239,8 +259,8 @@ const ExportModal = ({ document }) => {
             error: codBrisappBarco === null ? true : false,
         };
     }).concat(Object.values(ventasDirectas).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseFloat(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + parseFloat(formatLonjaIslaImporte(linea.importe)), 0);
+        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
+        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
         const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
 
         return {
@@ -347,8 +367,8 @@ const ExportModal = ({ document }) => {
                     CABREFERENCIA: `${fecha} - ${barco.nombre}`,
                     LINCODART: productos.find(p => p.nombre == linea.especie)?.codA3erp,
                     LINDESCLIN: linea.especie,
-                    LINUNIDADES: Number(linea.kilos),
-                    LINPRCMONEDA: Number(linea.precio),
+                    LINUNIDADES: parseDecimalValue(linea.kilos),
+                    LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
                 });
             });
@@ -364,8 +384,8 @@ const ExportModal = ({ document }) => {
                     CABREFERENCIA: `${fecha} - ${barco.nombre}`,
                     LINCODART: productos.find(p => p.nombre == linea.especie).codA3erp,
                     LINDESCLIN: linea.especie,
-                    LINUNIDADES: Number(linea.kilos),
-                    LINPRCMONEDA: Number(linea.precio),
+                    LINUNIDADES: parseDecimalValue(linea.kilos),
+                    LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
                 });
             });
