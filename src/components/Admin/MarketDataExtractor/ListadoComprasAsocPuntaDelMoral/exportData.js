@@ -12,6 +12,8 @@ export const barcos = [
   { nombre: 'Som do Mar', matricula: 'PTTVR-118920-L-1189', cifArmador: '', codA3erp: "", codBrisapp: '153' },
   { nombre: 'Diogo Miguel', matricula: 'PTPEN-113936-C-1139', cifArmador: '', codA3erp: "", codBrisapp: '148' },
   { nombre: 'Hnos. Perez Rivero', matricula: 'HU-2-4-01', cifArmador: '', codA3erp: "", codBrisapp: '180' },
+  /* Soledade */
+  { nombre: 'Soledade', matricula: 'VR-427-L', cifArmador: '', codA3erp: '', codBrisapp: '191' },
 ];
 
 export const asocArmadoresPuntaDelMoral = {
