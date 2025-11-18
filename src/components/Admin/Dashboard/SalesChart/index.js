@@ -189,7 +189,7 @@ export function SalesChart() {
                     </Select>
                 </div>
 
-                <div className="h-[250px] w-full overflow-hidden">
+                <div className="h-[250px] w-full">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center w-full h-full">
                             <Loader2 className="h-8 w-8 text-primary animate-spin" />
@@ -205,15 +205,7 @@ export function SalesChart() {
                             }}
                             className="h-full w-full"
                         >
-                            <AreaChart 
-                                data={chartData}
-                                margin={{ 
-                                    top: 10, 
-                                    right: 10, 
-                                    left: 0, 
-                                    bottom: chartData.length > 8 ? 40 : 20 
-                                }}
-                            >
+                            <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
@@ -227,10 +219,7 @@ export function SalesChart() {
                                     tickLine={false}
                                     axisLine={false}
                                     tickMargin={8}
-                                    minTickGap={Math.max(32, Math.floor(chartData.length / 10))}
-                                    angle={chartData.length > 8 ? -45 : 0}
-                                    textAnchor={chartData.length > 8 ? "end" : "middle"}
-                                    height={chartData.length > 8 ? 40 : 20}
+                                    minTickGap={32}
                                     tickFormatter={(value) => {
                                         // Formateo condicional según tipo
                                         if (groupBy === "month") return new Date(value + "-01").toLocaleDateString("es-ES", { month: "short", year: "2-digit" })
