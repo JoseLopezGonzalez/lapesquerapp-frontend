@@ -145,7 +145,7 @@ export function SalesChart() {
 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-6">
-                    <div className="w-full col-span-6 sm:col-span-4">
+                    <div className="w-full col-span-6 3xl:col-span-4">
                         <DateRangePicker dateRange={range} onChange={setRange} />
                     </div>
                 <Select value={speciesId} onValueChange={setSpeciesId} className="">
@@ -297,12 +297,14 @@ export function SalesChart() {
                 </div>
             </CardContent>
             <CardFooter className=" flex items-center justify-between flex-col xl-2xl:flex-row gap-2">
-                <span className="text-sm text-muted-foreground hidden 3xl:flex">
-                    {unit === "quantity" && chartData.length > 0
+                <span className="text-sm text-muted-foreground flex">
+                    {!isLoading && unit === "quantity" && chartData.length > 0
                         ? `Total: ${formatDecimalWeight(totalKg)}`
-                        : unit === "amount" && chartData.length > 0
+                        : !isLoading && unit === "amount" && chartData.length > 0
                         ? `Total: ${formatDecimalCurrency(totalAmount)}`
-                        : "* Análisis de las ventas de productos."}
+                        : !isLoading
+                        ? "* Análisis de las ventas de productos."
+                        : ""}
                 </span>
                 <Select value={unit} onValueChange={setUnit}>
                     <SelectTrigger className="w-[160px] h-8 text-sm">
