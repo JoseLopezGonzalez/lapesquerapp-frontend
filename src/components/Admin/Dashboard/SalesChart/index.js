@@ -10,7 +10,6 @@ import {
     CardContent,
     CardFooter,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectTrigger,
@@ -38,9 +37,13 @@ import { getProductCategoryOptions } from "@/services/productCategoryService"
 import { getProductFamilyOptions } from "@/services/productFamilyService"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { SearchX, Loader2 } from "lucide-react"
+import { actualYearRange } from "@/helpers/dates"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
 
-const today = new Date()
-const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
+const initialDateRange = {
+    from: actualYearRange.from,
+    to: actualYearRange.to,
+}
 
 export function SalesChart() {
     const { data: session, status } = useSession()
@@ -53,8 +56,7 @@ export function SalesChart() {
     const [familyOptions, setFamilyOptions] = useState([])
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month") // NEW
-    const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-    const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
+    const [range, setRange] = useState(initialDateRange)
     const [chartData, setChartData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -90,6 +92,7 @@ export function SalesChart() {
 
     useEffect(() => {
         if (status !== "authenticated") return
+        if (!range.from || !range.to) return
 
         setIsLoading(true)
 
@@ -98,15 +101,15 @@ export function SalesChart() {
             speciesId,
             categoryId,
             familyId,
-            from: dateFrom,
-            to: dateTo,
+            from: range.from.toLocaleDateString("sv-SE"),
+            to: range.to.toLocaleDateString("sv-SE"),
             unit,
             groupBy, // NEW
         })
             .then(setChartData)
             .catch((err) => console.error("Error al obtener ventas:", err))
             .finally(() => setIsLoading(false))
-    }, [speciesId, categoryId, familyId, dateFrom, dateTo, unit, status, groupBy]) // NEW
+    }, [speciesId, categoryId, familyId, range, unit, status, groupBy]) // NEW
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
@@ -141,17 +144,12 @@ export function SalesChart() {
 
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-2">
-
-
-                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-6">
+                    <div className="w-full col-span-6 sm:col-span-4">
+                        <DateRangePicker dateRange={range} onChange={setRange} />
+                    </div>
                 <Select value={speciesId} onValueChange={setSpeciesId} className="">
-                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                        <SelectTrigger className="sm:col-span-6 3xl:col-span-2">
                             <SelectValue placeholder="Seleccionar especie" />
                         </SelectTrigger>
                         <SelectContent>
@@ -164,7 +162,7 @@ export function SalesChart() {
                         </SelectContent>
                     </Select>
                     <Select value={categoryId} onValueChange={setCategoryId} className="">
-                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
                             <SelectValue placeholder="Seleccionar categoría" />
                         </SelectTrigger>
                         <SelectContent>
@@ -177,7 +175,7 @@ export function SalesChart() {
                         </SelectContent>
                     </Select>
                     <Select value={familyId} onValueChange={setFamilyId} className="">
-                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
                             <SelectValue placeholder="Seleccionar familia" />
                         </SelectTrigger>
                         <SelectContent>
