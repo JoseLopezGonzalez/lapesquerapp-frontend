@@ -211,7 +211,7 @@ export function SalesChart() {
                                     top: 10, 
                                     right: 10, 
                                     left: 0, 
-                                    bottom: chartData.length > 8 ? 60 : 30 
+                                    bottom: chartData.length > 8 ? 40 : 20 
                                 }}
                             >
                                 <defs>
@@ -230,7 +230,7 @@ export function SalesChart() {
                                     minTickGap={Math.max(32, Math.floor(chartData.length / 10))}
                                     angle={chartData.length > 8 ? -45 : 0}
                                     textAnchor={chartData.length > 8 ? "end" : "middle"}
-                                    height={chartData.length > 8 ? 60 : 30}
+                                    height={chartData.length > 8 ? 40 : 20}
                                     tickFormatter={(value) => {
                                         // Formateo condicional según tipo
                                         if (groupBy === "month") return new Date(value + "-01").toLocaleDateString("es-ES", { month: "short", year: "2-digit" })
