@@ -116,7 +116,7 @@ export function SalesChart() {
             <CardHeader className=" w-full ">
                 <div className="flex items-center gap-2 justify-between w-full">
                     <div className="grid flex-1 gap-1">
-                        <CardTitle>Ventas por especie</CardTitle>
+                        <CardTitle>Ventas</CardTitle>
                         <CardDescription>
                             Comparativa de ventas en {unit === "quantity" ? "kilogramos" : "euros"}.
                         </CardDescription>
