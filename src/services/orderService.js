@@ -516,7 +516,7 @@ export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
 }
 
 
-export async function getSalesChartData({ token, speciesId, from, to, unit, groupBy }) {
+export async function getSalesChartData({ token, speciesId, categoryId, familyId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
         dateFrom: from,
         dateTo: to,
@@ -526,6 +526,14 @@ export async function getSalesChartData({ token, speciesId, from, to, unit, grou
 
     if (speciesId && speciesId !== "all") {
         query.append("speciesId", speciesId);
+    }
+
+    if (categoryId && categoryId !== "all") {
+        query.append("categoryId", categoryId);
+    }
+
+    if (familyId && familyId !== "all") {
+        query.append("familyId", familyId);
     }
 
     return fetchWithTenant(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
@@ -541,6 +549,9 @@ export async function getSalesChartData({ token, speciesId, from, to, unit, grou
             });
         }
         return response.json();
+    }).then((data) => {
+        // Si el backend devuelve { data: [...] }, extraer el array
+        return data.data || data;
     });
 }
 

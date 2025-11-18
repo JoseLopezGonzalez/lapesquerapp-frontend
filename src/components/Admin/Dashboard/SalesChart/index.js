@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import {
     Card,
@@ -35,6 +35,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getSalesChartData } from "@/services/orderService"
 import { getSpeciesOptions } from "@/services/speciesService"
+import { getProductCategoryOptions } from "@/services/productCategoryService"
+import { getProductFamilyOptions } from "@/services/productFamilyService"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 
 const today = new Date()
@@ -45,6 +47,10 @@ export function SalesChart() {
 
     const [speciesId, setSpeciesId] = useState("all")
     const [speciesOptions, setSpeciesOptions] = useState([])
+    const [categoryId, setCategoryId] = useState("all")
+    const [categoryOptions, setCategoryOptions] = useState([])
+    const [familyId, setFamilyId] = useState("all")
+    const [familyOptions, setFamilyOptions] = useState([])
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month") // NEW
     const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
@@ -54,6 +60,11 @@ export function SalesChart() {
 
     const accessToken = session?.user?.accessToken
 
+    // Calcular el total de kilogramos desde los datos del backend
+    const totalKg = useMemo(() => {
+        if (unit !== "quantity" || !chartData || chartData.length === 0) return 0
+        return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
+    }, [chartData, unit])
 
     useEffect(() => {
         if (status !== "authenticated") return
@@ -61,6 +72,14 @@ export function SalesChart() {
         getSpeciesOptions(accessToken)
             .then(setSpeciesOptions)
             .catch((err) => console.error("Error al cargar especies:", err))
+
+        getProductCategoryOptions(accessToken)
+            .then(setCategoryOptions)
+            .catch((err) => console.error("Error al cargar categorías:", err))
+
+        getProductFamilyOptions(accessToken)
+            .then(setFamilyOptions)
+            .catch((err) => console.error("Error al cargar familias:", err))
     }, [status, accessToken])
 
     useEffect(() => {
@@ -71,6 +90,8 @@ export function SalesChart() {
         getSalesChartData({
             token: session.user.accessToken,
             speciesId,
+            categoryId,
+            familyId,
             from: dateFrom,
             to: dateTo,
             unit,
@@ -79,7 +100,7 @@ export function SalesChart() {
             .then(setChartData)
             .catch((err) => console.error("Error al obtener ventas:", err))
             .finally(() => setIsLoading(false))
-    }, [speciesId, dateFrom, dateTo, unit, status, groupBy]) // NEW
+    }, [speciesId, categoryId, familyId, dateFrom, dateTo, unit, status, groupBy]) // NEW
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
@@ -114,7 +135,7 @@ export function SalesChart() {
 
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6  3xl:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-5">
 
 
                     <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
@@ -126,6 +147,32 @@ export function SalesChart() {
                         <SelectContent>
                             <SelectItem value="all">Todas las especies</SelectItem>
                             {speciesOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={categoryId} onValueChange={setCategoryId} className="">
+                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                            <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las categorías</SelectItem>
+                            {categoryOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={familyId} onValueChange={setFamilyId} className="">
+                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                            <SelectValue placeholder="Seleccionar familia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las familias</SelectItem>
+                            {familyOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
                                     {option.name}
                                 </SelectItem>
@@ -229,7 +276,9 @@ export function SalesChart() {
             </CardContent>
             <CardFooter className=" flex items-center justify-between flex-col xl-2xl:flex-row gap-2">
                 <span className="text-sm text-muted-foreground hidden 3xl:flex">
-                    * Análisis de las ventas de productos.
+                    {unit === "quantity" && chartData.length > 0
+                        ? `Total: ${formatDecimalWeight(totalKg)}`
+                        : "* Análisis de las ventas de productos."}
                 </span>
                 <Select value={unit} onValueChange={setUnit}>
                     <SelectTrigger className="w-[160px] h-8 text-sm">
