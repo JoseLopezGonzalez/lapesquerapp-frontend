@@ -10,7 +10,6 @@ import {
     CardContent,
     CardFooter,
 } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import {
     Select,
@@ -38,6 +37,7 @@ import { getSpeciesOptions } from "@/services/speciesService"
 import { getProductCategoryOptions } from "@/services/productCategoryService"
 import { getProductFamilyOptions } from "@/services/productFamilyService"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
+import { SearchX, Loader2 } from "lucide-react"
 
 const today = new Date()
 const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
@@ -63,6 +63,12 @@ export function SalesChart() {
     // Calcular el total de kilogramos desde los datos del backend
     const totalKg = useMemo(() => {
         if (unit !== "quantity" || !chartData || chartData.length === 0) return 0
+        return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
+    }, [chartData, unit])
+
+    // Calcular el total de importe desde los datos del backend
+    const totalAmount = useMemo(() => {
+        if (unit !== "amount" || !chartData || chartData.length === 0) return 0
         return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
     }, [chartData, unit])
 
@@ -135,12 +141,16 @@ export function SalesChart() {
 
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-2">
 
 
                     <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                     <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    <Select value={speciesId} onValueChange={setSpeciesId} className="">
+                    
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-3">
+                <Select value={speciesId} onValueChange={setSpeciesId} className="">
                         <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
                             <SelectValue placeholder="Seleccionar especie" />
                         </SelectTrigger>
@@ -181,9 +191,12 @@ export function SalesChart() {
                     </Select>
                 </div>
 
-                <div className="max-h-[250px] w-full">
+                <div className="h-[250px] w-full">
                     {isLoading ? (
-                        <Skeleton className="h-full w-full" />
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                            <p className="mt-4 text-sm text-muted-foreground">Cargando datos...</p>
+                        </div>
                     ) : chartData.length > 0 ? (
                         <ChartContainer
                             config={{
@@ -268,8 +281,19 @@ export function SalesChart() {
                             </AreaChart>
                         </ChartContainer>
                     ) : (
-                        <div className="text-sm text-muted-foreground text-center mt-10">
-                            Sin datos en este periodo
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <div className="flex flex-col items-center justify-center w-full h-full">
+                                <div className="relative">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                        <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                    </div>
+                                </div>
+                                <h2 className="mt-3 text-lg font-medium tracking-tight">Sin datos</h2>
+                                <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                    Ajusta el rango de fechas, selecciona una especie, categoría o familia para ver los datos.
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -278,6 +302,8 @@ export function SalesChart() {
                 <span className="text-sm text-muted-foreground hidden 3xl:flex">
                     {unit === "quantity" && chartData.length > 0
                         ? `Total: ${formatDecimalWeight(totalKg)}`
+                        : unit === "amount" && chartData.length > 0
+                        ? `Total: ${formatDecimalCurrency(totalAmount)}`
                         : "* Análisis de las ventas de productos."}
                 </span>
                 <Select value={unit} onValueChange={setUnit}>
