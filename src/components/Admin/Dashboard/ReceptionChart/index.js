@@ -33,6 +33,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getReceptionChartData } from "@/services/rawMaterialReception/getReceptionChartData"
 import { getSpeciesOptions } from "@/services/speciesService"
+import { getProductCategoryOptions } from "@/services/productCategoryService"
+import { getProductFamilyOptions } from "@/services/productFamilyService"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { SearchX, Loader2 } from "lucide-react"
 import { actualYearRange } from "@/helpers/dates"
@@ -48,6 +50,10 @@ export function ReceptionChart() {
 
     const [speciesId, setSpeciesId] = useState("all")
     const [speciesOptions, setSpeciesOptions] = useState([])
+    const [categoryId, setCategoryId] = useState("all")
+    const [categoryOptions, setCategoryOptions] = useState([])
+    const [familyId, setFamilyId] = useState("all")
+    const [familyOptions, setFamilyOptions] = useState([])
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month")
     const [range, setRange] = useState(initialDateRange)
@@ -74,6 +80,14 @@ export function ReceptionChart() {
         getSpeciesOptions(accessToken)
             .then(setSpeciesOptions)
             .catch((err) => console.error("Error al cargar especies:", err))
+
+        getProductCategoryOptions(accessToken)
+            .then(setCategoryOptions)
+            .catch((err) => console.error("Error al cargar categorías:", err))
+
+        getProductFamilyOptions(accessToken)
+            .then(setFamilyOptions)
+            .catch((err) => console.error("Error al cargar familias:", err))
     }, [status, accessToken])
 
     useEffect(() => {
@@ -85,6 +99,8 @@ export function ReceptionChart() {
         getReceptionChartData({
             token: session.user.accessToken,
             speciesId,
+            categoryId,
+            familyId,
             from: range.from.toLocaleDateString("sv-SE"),
             to: range.to.toLocaleDateString("sv-SE"),
             unit,
@@ -93,7 +109,7 @@ export function ReceptionChart() {
             .then(setChartData)
             .catch((err) => console.error("Error al obtener recepciones:", err))
             .finally(() => setIsLoading(false))
-    }, [speciesId, range, unit, status, groupBy])
+    }, [speciesId, categoryId, familyId, range, unit, status, groupBy])
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
@@ -139,6 +155,32 @@ export function ReceptionChart() {
                         <SelectContent>
                             <SelectItem value="all">Todas las especies</SelectItem>
                             {speciesOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={categoryId} onValueChange={setCategoryId} className="">
+                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
+                            <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las categorías</SelectItem>
+                            {categoryOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={familyId} onValueChange={setFamilyId} className="">
+                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
+                            <SelectValue placeholder="Seleccionar familia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las familias</SelectItem>
+                            {familyOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
                                     {option.name}
                                 </SelectItem>
@@ -247,7 +289,7 @@ export function ReceptionChart() {
                                 </div>
                                 <h2 className="mt-3 text-lg font-medium tracking-tight">Sin datos</h2>
                                 <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
-                                    Ajusta el rango de fechas o selecciona una especie para ver los datos.
+                                    Ajusta el rango de fechas, selecciona una especie, categoría o familia para ver los datos.
                                 </p>
                             </div>
                         </div>

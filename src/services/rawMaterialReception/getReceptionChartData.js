@@ -1,7 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 
-export async function getReceptionChartData({ token, speciesId, from, to, unit, groupBy }) {
+export async function getReceptionChartData({ token, speciesId, categoryId, familyId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
         dateFrom: from,
         dateTo: to,
@@ -11,6 +11,14 @@ export async function getReceptionChartData({ token, speciesId, from, to, unit, 
 
     if (speciesId && speciesId !== "all") {
         query.append("speciesId", speciesId);
+    }
+
+    if (categoryId && categoryId !== "all") {
+        query.append("categoryId", categoryId);
+    }
+
+    if (familyId && familyId !== "all") {
+        query.append("familyId", familyId);
     }
 
     return fetchWithTenant(`${API_URL_V2}raw-material-receptions/reception-chart-data?${query.toString()}`, {
