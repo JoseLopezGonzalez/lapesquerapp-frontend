@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
 import { CurrentStockCard } from "./CurrentStockCard";
 import { SalesChart } from "./SalesChart";
+import { ReceptionChart } from "./ReceptionChart";
 import { TransportRadarChart } from "./TransportTadarChart";
 
 export default function Dashboard() {
@@ -87,6 +88,9 @@ export default function Dashboard() {
                         </div>
                         <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <SalesChart />
+                        </div>
+                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                            <ReceptionChart />
                         </div>
                         <div className="break-inside-avoid mb-4 max-w-full w-full">
                             <TransportRadarChart />

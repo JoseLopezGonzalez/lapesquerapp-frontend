@@ -1,0 +1,280 @@
+"use client"
+
+import { useEffect, useState, useMemo } from "react"
+import { useSession } from "next-auth/react"
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
+} from "@/components/ui/card"
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select"
+import {
+    AreaChart,
+    Area,
+    CartesianGrid,
+    XAxis,
+} from "recharts"
+import {
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
+} from "@/components/ui/chart"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getReceptionChartData } from "@/services/rawMaterialReception/getReceptionChartData"
+import { getSpeciesOptions } from "@/services/speciesService"
+import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
+import { SearchX, Loader2 } from "lucide-react"
+import { actualYearRange } from "@/helpers/dates"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
+
+const initialDateRange = {
+    from: actualYearRange.from,
+    to: actualYearRange.to,
+}
+
+export function ReceptionChart() {
+    const { data: session, status } = useSession()
+
+    const [speciesId, setSpeciesId] = useState("all")
+    const [speciesOptions, setSpeciesOptions] = useState([])
+    const [unit, setUnit] = useState("quantity")
+    const [groupBy, setGroupBy] = useState("month")
+    const [range, setRange] = useState(initialDateRange)
+    const [chartData, setChartData] = useState([])
+    const [isLoading, setIsLoading] = useState(false)
+
+    const accessToken = session?.user?.accessToken
+
+    // Calcular el total de kilogramos desde los datos del backend
+    const totalKg = useMemo(() => {
+        if (unit !== "quantity" || !chartData || chartData.length === 0) return 0
+        return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
+    }, [chartData, unit])
+
+    // Calcular el total de importe desde los datos del backend
+    const totalAmount = useMemo(() => {
+        if (unit !== "amount" || !chartData || chartData.length === 0) return 0
+        return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
+    }, [chartData, unit])
+
+    useEffect(() => {
+        if (status !== "authenticated") return
+
+        getSpeciesOptions(accessToken)
+            .then(setSpeciesOptions)
+            .catch((err) => console.error("Error al cargar especies:", err))
+    }, [status, accessToken])
+
+    useEffect(() => {
+        if (status !== "authenticated") return
+        if (!range.from || !range.to) return
+
+        setIsLoading(true)
+
+        getReceptionChartData({
+            token: session.user.accessToken,
+            speciesId,
+            from: range.from.toLocaleDateString("sv-SE"),
+            to: range.to.toLocaleDateString("sv-SE"),
+            unit,
+            groupBy,
+        })
+            .then(setChartData)
+            .catch((err) => console.error("Error al obtener recepciones:", err))
+            .finally(() => setIsLoading(false))
+    }, [speciesId, range, unit, status, groupBy])
+
+    return (
+        <Card className="w-full max-w-full overflow-hidden">
+            <CardHeader className=" w-full ">
+                <div className="flex items-center gap-2 justify-between w-full">
+                    <div className="grid flex-1 gap-1">
+                        <CardTitle>Recepciones</CardTitle>
+                        <CardDescription>
+                            Comparativa de recepciones en {unit === "quantity" ? "kilogramos" : "euros"}.
+                        </CardDescription>
+                    </div>
+                    <Tabs onValueChange={setGroupBy} className="hidden 3xl:flex" value={groupBy}>
+                        <TabsList>
+                            <TabsTrigger value="day">Día</TabsTrigger>
+                            <TabsTrigger value="week">Semana</TabsTrigger>
+                            <TabsTrigger value="month">Mes</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+                <Tabs onValueChange={setGroupBy} className=" 3xl:hidden" value={groupBy}>
+                    <TabsList>
+                        <TabsTrigger value="day">Día</TabsTrigger>
+                        <TabsTrigger value="week">Semana</TabsTrigger>
+                        <TabsTrigger value="month">Mes</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
+
+            </CardHeader>
+
+            <CardContent className="px-6">
+
+
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-6">
+                    <div className="w-full col-span-6 3xl:col-span-4">
+                        <DateRangePicker dateRange={range} onChange={setRange} />
+                    </div>
+                <Select value={speciesId} onValueChange={setSpeciesId} className="">
+                        <SelectTrigger className="sm:col-span-6 3xl:col-span-2">
+                            <SelectValue placeholder="Seleccionar especie" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las especies</SelectItem>
+                            {speciesOptions.map((option) => (
+                                <SelectItem key={option.id} value={option.id}>
+                                    {option.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="h-[250px] w-full">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                            <p className="mt-4 text-sm text-muted-foreground">Cargando datos...</p>
+                        </div>
+                    ) : chartData.length > 0 ? (
+                        <ChartContainer
+                            config={{
+                                value: {
+                                    label: unit === "quantity" ? "Kg" : "€",
+                                    color: "var(--chart-1)",
+                                },
+                            }}
+                            className="h-full w-full"
+                        >
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
+                                    </linearGradient>
+                                </defs>
+
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    minTickGap={32}
+                                    tickFormatter={(value) => {
+                                        // Formateo condicional según tipo
+                                        if (groupBy === "month") return new Date(value + "-01").toLocaleDateString("es-ES", { month: "short", year: "2-digit" })
+                                        if (groupBy === "week") return value.replace("W", "S")
+                                        return new Date(value).toLocaleDateString("es-ES", {
+                                            month: "short",
+                                            day: "numeric",
+                                        })
+                                    }}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                        <ChartTooltipContent
+                                            labelFormatter={(value) =>
+                                                groupBy === "month"
+                                                    ? new Date(value + "-01").toLocaleDateString("es-ES", { month: "long", year: "numeric" })
+                                                    : groupBy === "week"
+                                                        ? `Semana ${value.split("W")[1]}`
+                                                        : new Date(value).toLocaleDateString("es-ES", {
+                                                            weekday: "long",    // lunes, martes, etc.
+                                                            day: "numeric",     // 2
+                                                            month: "long",      // julio
+                                                            year: "numeric",    // 2025
+                                                        })
+                                            }
+                                            formatter={(value, name, { payload }) => {
+                                                const color = payload?.fill ?? "var(--chart-1)"
+                                                return (
+                                                    <div className="w-full flex justify-between items-center gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className="h-2.5 w-2.5 rounded-sm"
+                                                                style={{ backgroundColor: color }}
+                                                            />
+                                                            <span className="text-muted-foreground">Recepciones</span>
+                                                        </div>
+
+                                                        <span className="font-semibold">
+                                                            {unit === "quantity"
+                                                                ? formatDecimalWeight(value)
+                                                                : formatDecimalCurrency(value)}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            }}
+                                        />
+                                    }
+                                />
+                                <Area
+                                    dataKey="value"
+                                    type="natural"
+                                    fill="url(#fillValue)"
+                                    stroke="var(--chart-1)"
+                                />
+                                {/*  <ChartLegend content={<ChartLegendContent />} /> */}
+                            </AreaChart>
+                        </ChartContainer>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <div className="flex flex-col items-center justify-center w-full h-full">
+                                <div className="relative">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                        <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                    </div>
+                                </div>
+                                <h2 className="mt-3 text-lg font-medium tracking-tight">Sin datos</h2>
+                                <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                    Ajusta el rango de fechas o selecciona una especie para ver los datos.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </CardContent>
+            <CardFooter className=" flex items-center justify-between flex-col xl-2xl:flex-row gap-2">
+                <span className="text-sm text-muted-foreground flex">
+                    {!isLoading && unit === "quantity" && chartData.length > 0
+                        ? `Total: ${formatDecimalWeight(totalKg)}`
+                        : !isLoading && unit === "amount" && chartData.length > 0
+                        ? `Total: ${formatDecimalCurrency(totalAmount)}`
+                        : !isLoading
+                        ? "* Análisis de las recepciones de materia prima."
+                        : ""}
+                </span>
+                <Select value={unit} onValueChange={setUnit}>
+                    <SelectTrigger className="w-[160px] h-8 text-sm">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="quantity">Cantidad - Kg</SelectItem>
+                        <SelectItem value="amount">Importe - €</SelectItem>
+                    </SelectContent>
+                </Select>
+            </CardFooter>
+        </Card>
+    )
+}
+
