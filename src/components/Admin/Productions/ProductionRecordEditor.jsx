@@ -3,12 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { 
-    getProductionRecord, 
-    createProductionRecord, 
-    updateProductionRecord,
-    getProductionRecords 
-} from '@/services/productionService'
+import { getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecords } from '@/services/productionService'
 import { fetchWithTenant } from '@/lib/fetchWithTenant'
 import { API_URL_V2 } from '@/configs/config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,14 +22,14 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const { data: session } = useSession()
     const router = useRouter()
     const isEditMode = recordId !== null
-    
+
     const [processes, setProcesses] = useState([])
     const [existingRecords, setExistingRecords] = useState([])
     const [record, setRecord] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
-    
+
     const [formData, setFormData] = useState({
         process_id: 'none', // Obligatorio
         parent_record_id: 'none', // Opcional
@@ -52,19 +47,19 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             setLoading(true)
             setError(null)
             const token = session.user.accessToken
-            
+
             // Cargar procesos disponibles
             await loadProcesses(token)
-            
+
             // Cargar records existentes para el select de proceso padre
             const recordsResponse = await getProductionRecords(token, { production_id: productionId })
             setExistingRecords(recordsResponse.data || [])
-            
+
             // Si es modo edición, cargar el record
             if (isEditMode && recordId) {
                 const recordData = await getProductionRecord(recordId, token)
                 setRecord(recordData)
-                
+
                 // Rellenar el formulario con los datos existentes
                 setFormData({
                     process_id: recordData.process_id ? recordData.process_id.toString() : 'none',
@@ -107,7 +102,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             setSaving(true)
             setError(null)
             const token = session.user.accessToken
-            
+
             // Validar que process_id sea obligatorio
             if (!formData.process_id || formData.process_id === 'none') {
                 setError('El tipo de proceso es obligatorio')
@@ -133,7 +128,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 // Crear
                 response = await createProductionRecord(recordData, token)
                 const createdRecordId = response?.data?.id || response?.id
-                
+
                 if (createdRecordId) {
                     // Cargar el record recién creado
                     const newRecord = await getProductionRecord(createdRecordId, token)
@@ -142,11 +137,11 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     window.history.pushState({}, '', `/admin/productions/${productionId}/records/${createdRecordId}`)
                 }
             }
-            
+
             // Recargar records para actualizar el select de proceso padre
             const recordsResponse = await getProductionRecords(token, { production_id: productionId })
             setExistingRecords(recordsResponse.data || [])
-            
+
         } catch (err) {
             console.error('Error saving record:', err)
             setError(err.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el proceso`)
@@ -261,10 +256,35 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     <Label htmlFor="process_id" className="text-sm">
                                         Tipo de Proceso <span className="text-destructive">*</span>
                                     </Label>
+
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {processes.length > 0 && (
+                                        <Select
+                                            value={formData.process_id}
+                                            onValueChange={(value) => {
+                                                setFormData({ ...formData, process_id: value })
+                                            }}
+                                            disabled={saving}
+                                            required
+                                        >
+                                            <SelectTrigger className="h-9">
+                                                <SelectValue placeholder="Selecciona un tipo de proceso" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {processes
+                                                    .filter(process => process?.value != null)
+                                                    .map(process => (
+                                                        <SelectItem key={process.value} value={process.value.toString()}>
+                                                            {process.label || `Proceso #${process.value}`}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                     <Button
                                         type="button"
-                                        variant="outline"
-                                        size="sm"
+                                        
                                         onClick={() => {
                                             // TODO: Implementar funcionalidad para crear nuevo proceso
                                             console.log('Crear nuevo proceso')
@@ -276,42 +296,9 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                         Crear Proceso
                                     </Button>
                                 </div>
-                                {processes.length > 0 ? (
-                                    <Select
-                                        value={formData.process_id}
-                                        onValueChange={(value) => {
-                                            setFormData({ ...formData, process_id: value })
-                                        }}
-                                        disabled={saving}
-                                        required
-                                    >
-                                        <SelectTrigger className="h-9">
-                                            <SelectValue placeholder="Selecciona un tipo de proceso" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {processes
-                                                .filter(process => process?.value != null)
-                                                .map(process => (
-                                                    <SelectItem key={process.value} value={process.value.toString()}>
-                                                        {process.label || `Proceso #${process.value}`}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input
-                                        id="process_id"
-                                        type="number"
-                                        placeholder="ID del tipo de proceso"
-                                        value={formData.process_id === 'none' ? '' : formData.process_id}
-                                        onChange={(e) => setFormData({ ...formData, process_id: e.target.value || 'none' })}
-                                        disabled={saving}
-                                        required
-                                        className="h-9"
-                                    />
-                                )}
+
                             </div>
-                            
+
                             {/* Proceso Padre - OPCIONAL */}
                             <div className="space-y-1.5">
                                 <Label htmlFor="parent_record_id" className="text-sm">Proceso Padre (Opcional)</Label>
@@ -335,7 +322,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div className="space-y-1.5">
                                 <Label htmlFor="notes" className="text-sm">Notas</Label>
                                 <Textarea
@@ -348,7 +335,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     className="resize-none"
                                 />
                             </div>
-                            
+
                             <div className="flex justify-end gap-2 pt-1">
                                 <Button
                                     type="button"
@@ -360,8 +347,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={saving} size="sm">
-                                    {saving 
-                                        ? (isEditMode ? 'Guardando...' : 'Creando...') 
+                                    {saving
+                                        ? (isEditMode ? 'Guardando...' : 'Creando...')
                                         : (isEditMode ? 'Guardar' : 'Crear')}
                                 </Button>
                             </div>

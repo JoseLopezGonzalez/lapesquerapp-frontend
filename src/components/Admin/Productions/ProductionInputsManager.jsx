@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Package, Search, X } from 'lucide-react'
+import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -224,7 +224,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             Agregar Cajas
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh]">
+                    <DialogContent className="max-w-6xl max-h-[90vh]">
                         <DialogHeader>
                             <DialogTitle>Agregar Cajas desde Palet</DialogTitle>
                             <DialogDescription>
@@ -255,141 +255,187 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             <Search className="h-4 w-4 mr-2" />
                                             Buscar
                                         </Button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Información del palet seleccionado */}
-                            {selectedPallet && (
-                                <Card>
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle className="text-lg">Palet #{selectedPallet.id}</CardTitle>
-                                                {selectedPallet.store && (
-                                                    <CardDescription>
-                                                        Almacén: {selectedPallet.store.name}
-                                                    </CardDescription>
-                                                )}
-                                            </div>
+                                        {selectedPallet && (
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => {
                                                     setSelectedPallet(null)
                                                     setSelectedBoxes([])
+                                                    setPalletSearch('')
                                                 }}
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Transfer List */}
+                            {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
+                                <div className="grid grid-cols-12 gap-4 h-[500px]">
+                                    {/* Columna izquierda: Cajas disponibles */}
+                                    <div className="col-span-5 flex flex-col border rounded-lg">
+                                        <div className="p-3 border-b bg-muted/50">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="font-semibold">
+                                                    Cajas Disponibles
+                                                </Label>
+                                                <Badge variant="secondary">
+                                                    {selectedPallet.boxes.length - selectedBoxes.length}
+                                                </Badge>
+                                            </div>
                                         </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-4">
-                                            {/* Resumen agrupado */}
-                                            {groupedBoxesArray.length > 0 && (
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label>Selección por grupos</Label>
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={handleSelectAllBoxes}
-                                                            >
-                                                                Seleccionar todas
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={handleUnselectAllBoxes}
-                                                            >
-                                                                Deseleccionar todas
-                                                            </Button>
+                                        <ScrollArea className="flex-1">
+                                            <div className="p-2 space-y-1">
+                                                {selectedPallet.boxes
+                                                    .filter(box => !selectedBoxes.includes(box.id))
+                                                    .map((box) => (
+                                                        <div
+                                                            key={box.id}
+                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
+                                                            onClick={() => handleToggleBox(box.id)}
+                                                        >
+                                                            <Checkbox
+                                                                checked={false}
+                                                                onCheckedChange={() => handleToggleBox(box.id)}
+                                                            />
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium truncate">
+                                                                    Caja #{box.id}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {formatWeight(box.netWeight)}
+                                                                </p>
+                                                            </div>
                                                         </div>
+                                                    ))}
+                                                {selectedPallet.boxes.filter(box => !selectedBoxes.includes(box.id)).length === 0 && (
+                                                    <div className="text-center py-8 text-sm text-muted-foreground">
+                                                        Todas las cajas están seleccionadas
                                                     </div>
-                                                    <ScrollArea className="h-48 border rounded-md p-2">
-                                                        <div className="space-y-2">
-                                                            {groupedBoxesArray.map((group, idx) => (
-                                                                <div
-                                                                    key={idx}
-                                                                    className="flex items-center justify-between p-2 hover:bg-muted rounded-md cursor-pointer"
-                                                                    onClick={() => handleToggleGroup(group)}
-                                                                >
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Checkbox
-                                                                            checked={isGroupSelected(group)}
-                                                                            onCheckedChange={() => handleToggleGroup(group)}
-                                                                        />
-                                                                        <div>
-                                                                            <p className="font-medium">
-                                                                                {group.product?.name || 'Sin producto'}
-                                                                            </p>
-                                                                            <p className="text-sm text-muted-foreground">
-                                                                                Lote: {group.lot || 'Sin lote'} | 
-                                                                                {group.count} cajas | 
-                                                                                {formatWeight(group.totalWeight)}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </ScrollArea>
-                                                </div>
-                                            )}
+                                                )}
+                                            </div>
+                                        </ScrollArea>
+                                    </div>
 
-                                            {/* Lista individual de cajas */}
-                                            {selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
-                                                <div className="space-y-2">
-                                                    <Label>Selección individual ({selectedBoxes.length} seleccionadas)</Label>
-                                                    <ScrollArea className="h-64 border rounded-md">
-                                                        <Table>
-                                                            <TableHeader>
-                                                                <TableRow>
-                                                                    <TableHead className="w-12"></TableHead>
-                                                                    <TableHead>ID</TableHead>
-                                                                    <TableHead>Producto</TableHead>
-                                                                    <TableHead>Lote</TableHead>
-                                                                    <TableHead>Peso</TableHead>
-                                                                </TableRow>
-                                                            </TableHeader>
-                                                            <TableBody>
-                                                                {selectedPallet.boxes.map((box) => (
-                                                                    <TableRow
-                                                                        key={box.id}
-                                                                        className={selectedBoxes.includes(box.id) ? 'bg-muted' : ''}
-                                                                    >
-                                                                        <TableCell>
-                                                                            <Checkbox
-                                                                                checked={selectedBoxes.includes(box.id)}
-                                                                                onCheckedChange={() => handleToggleBox(box.id)}
-                                                                            />
-                                                                        </TableCell>
-                                                                        <TableCell className="font-medium">{box.id}</TableCell>
-                                                                        <TableCell>{box.product?.name || 'N/A'}</TableCell>
-                                                                        <TableCell>{box.lot || 'N/A'}</TableCell>
-                                                                        <TableCell>{formatWeight(box.netWeight)}</TableCell>
-                                                                    </TableRow>
-                                                                ))}
-                                                            </TableBody>
-                                                        </Table>
-                                                    </ScrollArea>
-                                                </div>
-                                            )}
+                                    {/* Botones de transferencia */}
+                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => {
+                                                const availableBoxes = selectedPallet.boxes
+                                                    .filter(box => !selectedBoxes.includes(box.id))
+                                                    .map(box => box.id)
+                                                if (availableBoxes.length > 0) {
+                                                    setSelectedBoxes(prev => [...prev, availableBoxes[0]])
+                                                }
+                                            }}
+                                            disabled={selectedPallet.boxes.filter(box => !selectedBoxes.includes(box.id)).length === 0}
+                                            title="Mover seleccionada"
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={handleSelectAllBoxes}
+                                            disabled={selectedPallet.boxes.length === selectedBoxes.length}
+                                            title="Mover todas"
+                                        >
+                                            <ChevronsRight className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => {
+                                                if (selectedBoxes.length > 0) {
+                                                    setSelectedBoxes(prev => prev.slice(0, -1))
+                                                }
+                                            }}
+                                            disabled={selectedBoxes.length === 0}
+                                            title="Quitar seleccionada"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={handleUnselectAllBoxes}
+                                            disabled={selectedBoxes.length === 0}
+                                            title="Quitar todas"
+                                        >
+                                            <ChevronsLeft className="h-4 w-4" />
+                                        </Button>
+                                    </div>
 
-                                            {(!selectedPallet.boxes || selectedPallet.boxes.length === 0) && (
-                                                <p className="text-sm text-muted-foreground text-center py-4">
-                                                    Este palet no tiene cajas
-                                                </p>
-                                            )}
+                                    {/* Columna derecha: Cajas seleccionadas */}
+                                    <div className="col-span-5 flex flex-col border rounded-lg">
+                                        <div className="p-3 border-b bg-muted/50">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="font-semibold">
+                                                    Cajas Seleccionadas
+                                                </Label>
+                                                <Badge variant="default">
+                                                    {selectedBoxes.length}
+                                                </Badge>
+                                            </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                        <ScrollArea className="flex-1">
+                                            <div className="p-2 space-y-1">
+                                                {selectedBoxes.map((boxId) => {
+                                                    const box = selectedPallet.boxes.find(b => b.id === boxId)
+                                                    if (!box) return null
+                                                    return (
+                                                        <div
+                                                            key={box.id}
+                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border bg-primary/5"
+                                                            onClick={() => handleToggleBox(box.id)}
+                                                        >
+                                                            <Checkbox
+                                                                checked={true}
+                                                                onCheckedChange={() => handleToggleBox(box.id)}
+                                                            />
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium truncate">
+                                                                    Caja #{box.id}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {formatWeight(box.netWeight)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                                {selectedBoxes.length === 0 && (
+                                                    <div className="text-center py-8 text-sm text-muted-foreground">
+                                                        No hay cajas seleccionadas
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </ScrollArea>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedPallet && (!selectedPallet.boxes || selectedPallet.boxes.length === 0) && (
+                                <div className="text-center py-8 border rounded-lg">
+                                    <p className="text-sm text-muted-foreground">
+                                        Este palet no tiene cajas
+                                    </p>
+                                </div>
                             )}
 
                             {/* Botones de acción */}
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-2 pt-2 border-t">
                                 <Button
                                     variant="outline"
                                     onClick={() => {
