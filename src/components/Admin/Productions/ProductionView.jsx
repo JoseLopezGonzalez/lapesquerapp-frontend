@@ -73,43 +73,49 @@ const ProductionView = ({ productionId }) => {
 
     if (loading) {
         return (
-            <div className="p-6 space-y-6">
-                <Skeleton className="h-10 w-64" />
-                <Skeleton className="h-96 w-full" />
+            <div className="h-full w-full overflow-y-auto">
+                <div className="p-6 space-y-6">
+                    <Skeleton className="h-10 w-64" />
+                    <Skeleton className="h-96 w-full" />
+                </div>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="p-6">
-                <Card className="border-destructive">
-                    <CardHeader>
-                        <CardTitle className="text-destructive flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5" />
-                            Error
-                        </CardTitle>
-                        <CardDescription>{error}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button onClick={() => router.back()}>Volver</Button>
-                    </CardContent>
-                </Card>
+            <div className="h-full w-full overflow-y-auto">
+                <div className="p-6">
+                    <Card className="border-destructive">
+                        <CardHeader>
+                            <CardTitle className="text-destructive flex items-center gap-2">
+                                <AlertCircle className="h-5 w-5" />
+                                Error
+                            </CardTitle>
+                            <CardDescription>{error}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button onClick={() => router.back()}>Volver</Button>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         )
     }
 
     if (!production) {
         return (
-            <div className="p-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Producción no encontrada</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Button onClick={() => router.back()}>Volver</Button>
-                    </CardContent>
-                </Card>
+            <div className="h-full w-full overflow-y-auto">
+                <div className="p-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Producción no encontrada</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Button onClick={() => router.back()}>Volver</Button>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         )
     }
@@ -118,9 +124,10 @@ const ProductionView = ({ productionId }) => {
     const isClosed = production.closedAt
 
     return (
-        <div className="p-6 space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="h-full w-full overflow-y-auto">
+            <div className="p-6 space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button
                         variant="outline"
@@ -317,6 +324,7 @@ const ProductionView = ({ productionId }) => {
                     </Card>
                 </TabsContent>
             </Tabs>
+            </div>
         </div>
     )
 }
