@@ -250,18 +250,15 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
 
                 {/* Formulario de Información del Proceso */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Información del Proceso</CardTitle>
-                        <CardDescription>
-                            {isEditMode ? 'Edita la información del proceso' : 'Completa la información para crear el proceso'}
-                        </CardDescription>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">Información del Proceso</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                    <CardContent className="pt-0">
+                        <form onSubmit={handleSubmit} className="space-y-3">
                             {/* Tipo de Proceso - OBLIGATORIO */}
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="process_id">
+                                    <Label htmlFor="process_id" className="text-sm">
                                         Tipo de Proceso <span className="text-destructive">*</span>
                                     </Label>
                                     <Button
@@ -273,8 +270,9 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                             console.log('Crear nuevo proceso')
                                         }}
                                         disabled={saving}
+                                        className="h-7 text-xs"
                                     >
-                                        <Plus className="h-4 w-4 mr-1" />
+                                        <Plus className="h-3 w-3 mr-1" />
                                         Crear Proceso
                                     </Button>
                                 </div>
@@ -287,8 +285,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                         disabled={saving}
                                         required
                                     >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecciona un tipo de proceso (obligatorio)" />
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Selecciona un tipo de proceso" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {processes
@@ -304,30 +302,26 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     <Input
                                         id="process_id"
                                         type="number"
-                                        placeholder="ID del tipo de proceso (obligatorio)"
+                                        placeholder="ID del tipo de proceso"
                                         value={formData.process_id === 'none' ? '' : formData.process_id}
                                         onChange={(e) => setFormData({ ...formData, process_id: e.target.value || 'none' })}
                                         disabled={saving}
                                         required
+                                        className="h-9"
                                     />
                                 )}
-                                <p className="text-xs text-muted-foreground">
-                                    {processes.length > 0 
-                                        ? 'Selecciona el tipo de proceso desde la lista (obligatorio)'
-                                        : 'ID del proceso desde la tabla processes (obligatorio)'}
-                                </p>
                             </div>
                             
                             {/* Proceso Padre - OPCIONAL */}
-                            <div className="space-y-2">
-                                <Label htmlFor="parent_record_id">Proceso Padre (Opcional)</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="parent_record_id" className="text-sm">Proceso Padre (Opcional)</Label>
                                 <Select
                                     value={formData.parent_record_id}
                                     onValueChange={(value) => setFormData({ ...formData, parent_record_id: value })}
                                     disabled={saving}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un proceso padre (dejar vacío para proceso raíz)" />
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue placeholder="Selecciona un proceso padre" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
@@ -340,36 +334,35 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                             ))}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-muted-foreground">
-                                    Los procesos raíz consumen cajas directamente de palets. Los procesos hijos consumen salidas de procesos anteriores.
-                                </p>
                             </div>
                             
-                            <div className="space-y-2">
-                                <Label htmlFor="notes">Notas</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="notes" className="text-sm">Notas</Label>
                                 <Textarea
                                     id="notes"
                                     placeholder="Notas adicionales sobre el proceso"
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    rows={3}
+                                    rows={2}
                                     disabled={saving}
+                                    className="resize-none"
                                 />
                             </div>
                             
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-2 pt-1">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => router.push(`/admin/productions/${productionId}`)}
                                     disabled={saving}
+                                    size="sm"
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={saving}>
+                                <Button type="submit" disabled={saving} size="sm">
                                     {saving 
                                         ? (isEditMode ? 'Guardando...' : 'Creando...') 
-                                        : (isEditMode ? 'Guardar Cambios' : 'Crear Proceso')}
+                                        : (isEditMode ? 'Guardar' : 'Crear')}
                                 </Button>
                             </div>
                         </form>
