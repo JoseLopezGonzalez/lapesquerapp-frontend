@@ -37,7 +37,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             loadOutputs()
             loadProducts()
         }
-    }, [session, productionRecordId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionRecordId])
 
     const loadOutputs = async () => {
         try {

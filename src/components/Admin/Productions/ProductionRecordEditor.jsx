@@ -40,7 +40,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
         if (session?.user?.accessToken && productionId) {
             loadInitialData()
         }
-    }, [session, productionId, recordId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionId, recordId])
 
     const loadInitialData = async () => {
         try {

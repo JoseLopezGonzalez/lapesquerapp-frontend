@@ -44,7 +44,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         if (session?.user?.accessToken && productionRecordId) {
             loadInputs()
         }
-    }, [session, productionRecordId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionRecordId])
 
     const loadInputs = async () => {
         try {
@@ -300,13 +301,13 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
-                        <DialogHeader>
+                        <DialogHeader className="flex-shrink-0">
                             <DialogTitle>Agregar Cajas desde Palet</DialogTitle>
                             <DialogDescription>
                                 Busca un palet y selecciona las cajas que se consumirán en este proceso
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+                        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
                             {/* Columna izquierda: Listado de palets y buscador */}
                             <div className="col-span-3 flex flex-col border rounded-lg overflow-hidden">
                                 <div className="p-3 border-b bg-muted/50 flex-shrink-0">
@@ -417,20 +418,20 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             </div>
                             
                             {/* Columna central: Cajas del palet seleccionado */}
-                            <div className="col-span-6 flex flex-col space-y-4 min-h-0">
+                            <div className="col-span-6 flex flex-col min-h-0 overflow-hidden">
 
                                 {/* Tabs para modo de selección */}
                                 {selectedPalletId && (
-                                    <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full flex-1 flex flex-col min-h-0">
-                                        <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+                                    <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full h-full flex flex-col min-h-0 overflow-hidden">
+                                        <TabsList className="grid w-full grid-cols-2 flex-shrink-0 mb-2">
                                             <TabsTrigger value="manual">Selección Manual</TabsTrigger>
                                             <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
                                         </TabsList>
                                         
                                         {/* Modo por peso */}
-                                        <TabsContent value="weight" className="space-y-3 mt-4 flex-1 flex flex-col min-h-0">
+                                        <TabsContent value="weight" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-2">
                                             {selectedPalletId && (
-                                                <Card className="p-3 flex-shrink-0">
+                                                <Card className="p-3 flex-shrink-0 mb-2">
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1">
                                                             <Label htmlFor={`target-weight-${selectedPalletId}`} className="text-sm">
@@ -467,11 +468,11 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         </TabsContent>
                                         
                                         {/* Transfer List - Solo mostrar en modo manual */}
-                                        <TabsContent value="manual" className="mt-4 flex-1 flex flex-col min-h-0">
+                                        <TabsContent value="manual" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-2">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0" style={{ height: 'calc(90vh - 450px)', minHeight: '400px' }}>
+                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
                                                     {/* Cajas disponibles del palet seleccionado */}
-                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
                                                             <div className="flex items-center justify-between">
                                                                 <Label className="font-semibold text-sm">
@@ -482,7 +483,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                 </Badge>
                                                             </div>
                                                         </div>
-                                                        <ScrollArea className="flex-1 min-h-0 overflow-hidden">
+                                                        <ScrollArea className="flex-1 min-h-0">
                                                             <div className="p-2 space-y-1">
                                                                 {getPalletBoxes(selectedPalletId)
                                                                     .filter(box => !isBoxSelected(box.id, selectedPalletId))
@@ -577,7 +578,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                     </div>
 
                                                     {/* Cajas seleccionadas del palet seleccionado */}
-                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
                                                             <div className="flex items-center justify-between">
                                                                 <Label className="font-semibold text-sm">
@@ -588,7 +589,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                 </Badge>
                                                             </div>
                                                         </div>
-                                                        <ScrollArea className="flex-1 min-h-0 overflow-hidden">
+                                                        <ScrollArea className="flex-1 min-h-0">
                                                             <div className="p-2 space-y-1">
                                                                 {getSelectedBoxesForPallet(selectedPalletId).map((selectedBox) => {
                                                                     const box = getPalletBoxes(selectedPalletId).find(b => b.id === selectedBox.boxId)
@@ -728,7 +729,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                         </div>
 
                         {/* Botones de acción */}
-                        <div className="flex justify-end gap-2 pt-2 border-t">
+                        <div className="flex justify-end gap-2 pt-2 border-t flex-shrink-0">
                             <Button
                                 variant="outline"
                                 onClick={() => {

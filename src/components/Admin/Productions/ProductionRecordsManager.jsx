@@ -25,7 +25,8 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         if (session?.user?.accessToken && productionId) {
             loadRecords()
         }
-    }, [session, productionId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionId])
 
     const loadRecords = async () => {
         try {

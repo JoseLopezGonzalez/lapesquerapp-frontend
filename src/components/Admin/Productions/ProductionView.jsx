@@ -26,7 +26,8 @@ const ProductionView = ({ productionId }) => {
         if (session?.user?.accessToken && productionId) {
             loadProductionData()
         }
-    }, [session, productionId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionId])
 
     const loadProductionData = async () => {
         try {
