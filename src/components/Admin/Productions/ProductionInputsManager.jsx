@@ -13,10 +13,10 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box } from 'lucide-react'
-import { EmptyState } from '@/components/Utilities/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/Utilities/EmptyState'
 
 const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = false }) => {
     const { data: session } = useSession()
@@ -165,6 +165,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             setSelectedBoxes([])
             setTargetWeight({})
             setSelectionMode('manual')
+            setSelectedPalletId(null)
             loadInputs()
             if (onRefresh) onRefresh()
         } catch (err) {
@@ -201,39 +202,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === selectedBox.palletId)
             return total + (parseFloat(box?.netWeight || 0))
         }, 0)
-    }
-
-    // Calcular peso total por palet
-    const calculateWeightByPallet = (palletId) => {
-        const allBoxes = getAllBoxes()
-        const selectedForPallet = getSelectedBoxesForPallet(palletId)
-        return selectedForPallet.reduce((total, selectedBox) => {
-            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === palletId)
-            return total + (parseFloat(box?.netWeight || 0))
-        }, 0)
-    }
-
-    // Calcular peso total por producto
-    const calculateWeightByProduct = () => {
-        const allBoxes = getAllBoxes()
-        const productWeights = {}
-        
-        selectedBoxes.forEach(selectedBox => {
-            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === selectedBox.palletId)
-            if (box && box.product) {
-                const productId = box.product.id
-                const productName = box.product.name || 'Sin producto'
-                if (!productWeights[productId]) {
-                    productWeights[productId] = {
-                        name: productName,
-                        weight: 0
-                    }
-                }
-                productWeights[productId].weight += parseFloat(box.netWeight || 0)
-            }
-        })
-        
-        return Object.values(productWeights)
     }
 
     // Seleccionar cajas basándose en peso total objetivo para un palet específico
@@ -293,12 +261,44 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }
     }
 
+    // Calcular peso total por palet
+    const calculateWeightByPallet = (palletId) => {
+        const allBoxes = getAllBoxes()
+        const selectedForPallet = getSelectedBoxesForPallet(palletId)
+        return selectedForPallet.reduce((total, selectedBox) => {
+            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === palletId)
+            return total + (parseFloat(box?.netWeight || 0))
+        }, 0)
+    }
+
+    // Calcular peso total por producto
+    const calculateWeightByProduct = () => {
+        const allBoxes = getAllBoxes()
+        const productWeights = {}
+        
+        selectedBoxes.forEach(selectedBox => {
+            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === selectedBox.palletId)
+            if (box && box.product) {
+                const productId = box.product.id
+                const productName = box.product.name || 'Sin producto'
+                if (!productWeights[productId]) {
+                    productWeights[productId] = {
+                        name: productName,
+                        weight: 0
+                    }
+                }
+                productWeights[productId].weight += parseFloat(box.netWeight || 0)
+            }
+        })
+        
+        return Object.values(productWeights)
+    }
 
     if (loading) {
         return (
             <div className="space-y-4">
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-64 w-full" />
             </div>
         )
     }
@@ -546,9 +546,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         </TabsContent>
                                         
                                         {/* Transfer List - Solo mostrar en modo manual */}
-                                        <TabsContent value="manual" className="flex-1 flex h-full items-center justify-center w-full overflow-hidden mt-2">
+                                        <TabsContent value="manual" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-2">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-11 gap-4 h-full w-full overflow-hidden">
+                                                <div className="grid grid-cols-11 gap-4 flex-1 min-h-0 overflow-hidden h-full">
                                                     {/* Cajas disponibles del palet seleccionado */}
                                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
@@ -891,16 +891,16 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         <TableHead>ID Caja</TableHead>
                                         <TableHead>Producto</TableHead>
                                         <TableHead>Lote</TableHead>
-                                        <TableHead>Peso</TableHead>
+                                        <TableHead>Peso Neto</TableHead>
                                         <TableHead>Palet</TableHead>
-                                        <TableHead className="w-20"></TableHead>
+                                        <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {inputs.map((input) => (
                                         <TableRow key={input.id}>
-                                            <TableCell className="font-medium">{input.box?.id || 'N/A'}</TableCell>
-                                            <TableCell>{input.box?.product?.name || 'N/A'}</TableCell>
+                                            <TableCell>{input.box?.id || 'N/A'}</TableCell>
+                                            <TableCell>{input.box?.product?.name || 'Sin producto'}</TableCell>
                                             <TableCell>{input.box?.lot || 'N/A'}</TableCell>
                                             <TableCell>{formatWeight(input.box?.netWeight)}</TableCell>
                                             <TableCell>
@@ -932,4 +932,3 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 }
 
 export default ProductionInputsManager
-
