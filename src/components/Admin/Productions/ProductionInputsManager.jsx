@@ -395,75 +395,10 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             El sistema seleccionará automáticamente las cajas que mejor se ajusten al peso objetivo
                                         </p>
                                     </TabsContent>
-                                </Tabs>
-                            )}
-
-                            {/* Resumen de selección */}
-                            {selectedPallet && selectedBoxes.length > 0 && (
-                                <Card className="bg-primary/5 border-primary/20">
-                                    <CardContent className="pt-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex gap-6">
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground">Cajas Seleccionadas</p>
-                                                    <p className="text-lg font-semibold">{selectedBoxes.length}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-muted-foreground">Peso Neto Total</p>
-                                                    <p className="text-lg font-semibold">{formatWeight(calculateTotalWeight())}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {/* Tabs para modo de selección */}
-                            {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
-                                <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2">
-                                        <TabsTrigger value="manual">Selección Manual</TabsTrigger>
-                                        <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
-                                    </TabsList>
                                     
-                                    {/* Modo por peso */}
-                                    <TabsContent value="weight" className="space-y-3 mt-4">
-                                        <div className="flex gap-2">
-                                            <div className="flex-1">
-                                                <Label htmlFor="target-weight">Peso Neto Objetivo (kg)</Label>
-                                                <Input
-                                                    id="target-weight"
-                                                    type="number"
-                                                    step="0.01"
-                                                    placeholder="Ej: 100.50"
-                                                    value={targetWeight}
-                                                    onChange={(e) => setTargetWeight(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleSelectByWeight()
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex items-end">
-                                                <Button
-                                                    onClick={handleSelectByWeight}
-                                                    disabled={!targetWeight || parseFloat(targetWeight) <= 0}
-                                                >
-                                                    <Calculator className="h-4 w-4 mr-2" />
-                                                    Calcular
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            El sistema seleccionará automáticamente las cajas que mejor se ajusten al peso objetivo
-                                        </p>
-                                    </TabsContent>
-                                </Tabs>
-                            )}
-
-                            {/* Transfer List - Solo mostrar en modo manual */}
-                            {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && selectionMode === 'manual' && (
+                                    {/* Transfer List - Solo mostrar en modo manual */}
+                                    <TabsContent value="manual" className="mt-4">
+                                        {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
                                 <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 280px)', minHeight: '400px', maxHeight: '600px' }}>
                                     {/* Columna izquierda: Cajas disponibles */}
                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
@@ -614,6 +549,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         </ScrollArea>
                                     </div>
                                 </div>
+                                        )}
+                                    </TabsContent>
+                                </Tabs>
                             )}
 
                             {selectedPallet && (!selectedPallet.boxes || selectedPallet.boxes.length === 0) && (
