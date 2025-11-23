@@ -31,6 +31,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const [loadingPallet, setLoadingPallet] = useState(false)
     const [selectionMode, setSelectionMode] = useState('manual') // 'manual' o 'weight'
     const [targetWeight, setTargetWeight] = useState({}) // {palletId: weight}
+    const [selectedPalletId, setSelectedPalletId] = useState(null) // Palet actualmente seleccionado para ver sus cajas
     
     // Obtener todas las cajas de todos los palets cargados
     const getAllBoxes = () => {
@@ -81,6 +82,10 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             const pallet = await getPallet(palletId, token)
             setLoadedPallets(prev => [...prev, pallet])
             setPalletSearch('')
+            // Si es el primer palet, seleccionarlo automáticamente
+            if (loadedPallets.length === 0) {
+                setSelectedPalletId(pallet.id)
+            }
         } catch (err) {
             console.error('Error loading pallet:', err)
             alert(err.message || 'Error al cargar el palet')
@@ -283,15 +288,15 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 Busca un palet y selecciona las cajas que se consumirán en este proceso
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            {/* Búsqueda de palet */}
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <Label htmlFor="pallet-search">ID del Palet</Label>
-                                    <div className="flex gap-2 mt-1">
+                        <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 200px)', minHeight: '500px' }}>
+                            {/* Columna izquierda: Listado de palets y buscador */}
+                            <div className="col-span-3 flex flex-col border rounded-lg overflow-hidden">
+                                <div className="p-3 border-b bg-muted/50 flex-shrink-0 space-y-2">
+                                    <Label htmlFor="pallet-search" className="text-sm font-semibold">Buscar Palet</Label>
+                                    <div className="flex gap-2">
                                         <Input
                                             id="pallet-search"
-                                            placeholder="Ingresa el ID del palet"
+                                            placeholder="ID del palet"
                                             value={palletSearch}
                                             onChange={(e) => setPalletSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -299,306 +304,405 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                     handleSearchPallet()
                                                 }
                                             }}
+                                            className="h-9"
                                         />
                                         <Button
                                             onClick={handleSearchPallet}
                                             disabled={loadingPallet || !palletSearch.trim()}
+                                            size="icon"
+                                            className="h-9 w-9"
                                         >
-                                            <Search className="h-4 w-4 mr-2" />
-                                            Buscar
+                                            <Search className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Resumen de selección - Compacto */}
-                            {selectedBoxes.length > 0 && (
-                                <div className="flex items-center gap-4 text-sm px-3 py-2 bg-muted/50 rounded-md border">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground">Cajas:</span>
-                                        <span className="font-semibold">{selectedBoxes.length}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground">Peso Total:</span>
-                                        <span className="font-semibold">{formatWeight(calculateTotalWeight())}</span>
-                                    </div>
-                                    {loadedPallets.length > 0 && (
-                                        <div className="flex items-center gap-2 ml-auto">
-                                            <span className="text-muted-foreground">Palets:</span>
-                                            <span className="font-semibold">{loadedPallets.length}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Lista de palets cargados */}
-                            {loadedPallets.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {loadedPallets.map((pallet) => (
-                                        <Badge key={pallet.id} variant="secondary" className="gap-2 pr-1">
-                                            <span>Palet #{pallet.id}</span>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-4 w-4 hover:bg-destructive/20"
-                                                onClick={() => handleRemovePallet(pallet.id)}
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </Button>
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Tabs para modo de selección */}
-                            {loadedPallets.length > 0 && getAllBoxes().length > 0 && (
-                                <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2">
-                                        <TabsTrigger value="manual">Selección Manual</TabsTrigger>
-                                        <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
-                                    </TabsList>
-                                    
-                                    {/* Modo por peso */}
-                                    <TabsContent value="weight" className="space-y-3 mt-4">
-                                        <div className="flex gap-2">
-                                            <div className="flex-1">
-                                                <Label htmlFor="target-weight">Peso Neto Objetivo (kg)</Label>
-                                                <Input
-                                                    id="target-weight"
-                                                    type="number"
-                                                    step="0.01"
-                                                    placeholder="Ej: 100.50"
-                                                    value={targetWeight}
-                                                    onChange={(e) => setTargetWeight(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleSelectByWeight()
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex items-end">
-                                                <Button
-                                                    onClick={handleSelectByWeight}
-                                                    disabled={!targetWeight || parseFloat(targetWeight) <= 0}
+                                
+                                {/* Lista de palets cargados */}
+                                <ScrollArea className="flex-1 min-h-0">
+                                    <div className="p-2 space-y-1">
+                                        {loadedPallets.map((pallet) => {
+                                            const selectedCount = getSelectedBoxesForPallet(pallet.id).length
+                                            const isSelected = selectedPalletId === pallet.id
+                                            return (
+                                                <div
+                                                    key={pallet.id}
+                                                    className={`p-2 rounded-md border cursor-pointer transition-colors ${
+                                                        isSelected ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
+                                                    }`}
+                                                    onClick={() => setSelectedPalletId(pallet.id)}
                                                 >
-                                                    <Calculator className="h-4 w-4 mr-2" />
-                                                    Calcular
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            El sistema seleccionará automáticamente las cajas que mejor se ajusten al peso objetivo
-                                        </p>
-                                    </TabsContent>
-                                    
-                                    {/* Transfer List - Solo mostrar en modo manual */}
-                                    <TabsContent value="manual" className="mt-4">
-                                        {getAllBoxes().length > 0 && (
-                                <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 380px)', minHeight: '350px', maxHeight: '500px' }}>
-                                    {/* Columna izquierda: Cajas disponibles - Separadas por palet */}
-                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
-                                        <div className="p-2 border-b bg-muted/50 flex-shrink-0">
-                                            <div className="flex items-center justify-between">
-                                                <Label className="font-semibold text-sm">
-                                                    Cajas Disponibles
-                                                </Label>
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {getAllBoxes().filter(box => !isBoxSelected(box.id, box.palletId)).length}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        <ScrollArea className="flex-1 min-h-0">
-                                            <div className="p-2 space-y-3">
-                                                {loadedPallets.map((pallet) => {
-                                                    const availableBoxes = (pallet.boxes || [])
-                                                        .filter(box => !isBoxSelected(box.id, pallet.id))
-                                                    
-                                                    if (availableBoxes.length === 0) return null
-                                                    
-                                                    return (
-                                                        <div key={pallet.id} className="space-y-2">
-                                                            <div className="flex items-center gap-2 px-2 py-1 bg-muted rounded-md">
-                                                                <Badge variant="outline" className="text-xs font-semibold">
-                                                                    Palet #{pallet.id}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium truncate">Palet #{pallet.id}</p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {pallet.boxes?.length || 0} cajas
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            {selectedCount > 0 && (
+                                                                <Badge variant="default" className="text-xs">
+                                                                    {selectedCount}
                                                                 </Badge>
-                                                                <span className="text-xs text-muted-foreground">
-                                                                    {availableBoxes.length} cajas disponibles
-                                                                </span>
-                                                            </div>
-                                                            <div className="space-y-1 pl-2 border-l-2 border-muted">
-                                                                {availableBoxes.map((box) => (
-                                                                    <div
-                                                                        key={`${pallet.id}-${box.id}`}
-                                                                        className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
-                                                                        onClick={() => handleToggleBox(box.id, pallet.id)}
-                                                                    >
-                                                                        <Checkbox
-                                                                            checked={false}
-                                                                            onCheckedChange={() => handleToggleBox(box.id, pallet.id)}
-                                                                        />
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <p className="text-sm font-medium truncate">
-                                                                                Caja #{box.id}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground truncate">
-                                                                                {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
-                                                                            </p>
-                                                                            <p className="text-xs text-muted-foreground">
-                                                                                {formatWeight(box.netWeight)}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
+                                                            )}
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-6 w-6 hover:bg-destructive/20"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleRemovePallet(pallet.id)
+                                                                }}
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                        {loadedPallets.length === 0 && (
+                                            <div className="text-center py-8 text-sm text-muted-foreground">
+                                                Busca y agrega palets para comenzar
+                                            </div>
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                            
+                            {/* Columna central: Cajas del palet seleccionado */}
+                            <div className="col-span-6 flex flex-col space-y-4 min-h-0">
+
+                                {/* Tabs para modo de selección */}
+                                {selectedPalletId && (
+                                    <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full flex-1 flex flex-col min-h-0">
+                                        <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+                                            <TabsTrigger value="manual">Selección Manual</TabsTrigger>
+                                            <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
+                                        </TabsList>
+                                        
+                                        {/* Modo por peso */}
+                                        <TabsContent value="weight" className="space-y-3 mt-4 flex-1 flex flex-col min-h-0">
+                                            {selectedPalletId && (
+                                                <Card className="p-3 flex-shrink-0">
+                                                    <div className="flex gap-2 items-end">
+                                                        <div className="flex-1">
+                                                            <Label htmlFor={`target-weight-${selectedPalletId}`} className="text-sm">
+                                                                Peso Objetivo (kg) - Palet #{selectedPalletId}
+                                                            </Label>
+                                                            <Input
+                                                                id={`target-weight-${selectedPalletId}`}
+                                                                type="number"
+                                                                step="0.01"
+                                                                placeholder="Ej: 100.50"
+                                                                value={targetWeight[selectedPalletId] || ''}
+                                                                onChange={(e) => setTargetWeight(prev => ({ ...prev, [selectedPalletId]: e.target.value }))}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') {
+                                                                        handleSelectByWeight(selectedPalletId)
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            onClick={() => handleSelectByWeight(selectedPalletId)}
+                                                            disabled={!targetWeight[selectedPalletId] || parseFloat(targetWeight[selectedPalletId]) <= 0}
+                                                            size="sm"
+                                                        >
+                                                            <Calculator className="h-4 w-4 mr-2" />
+                                                            Calcular
+                                                        </Button>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {getPalletBoxes(selectedPalletId).length} cajas disponibles
+                                                    </p>
+                                                </Card>
+                                            )}
+                                        </TabsContent>
+                                        
+                                        {/* Transfer List - Solo mostrar en modo manual */}
+                                        <TabsContent value="manual" className="mt-4 flex-1 flex flex-col min-h-0">
+                                            {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
+                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+                                                    {/* Cajas disponibles del palet seleccionado */}
+                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                                        <div className="p-2 border-b bg-muted/50 flex-shrink-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <Label className="font-semibold text-sm">
+                                                                    Disponibles
+                                                                </Label>
+                                                                <Badge variant="secondary" className="text-xs">
+                                                                    {getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length}
+                                                                </Badge>
                                                             </div>
                                                         </div>
-                                                    )
-                                                })}
-                                                {getAllBoxes().filter(box => !isBoxSelected(box.id, box.palletId)).length === 0 && (
-                                                    <div className="text-center py-8 text-sm text-muted-foreground">
-                                                        Todas las cajas están seleccionadas
+                                                        <ScrollArea className="flex-1 min-h-0">
+                                                            <div className="p-2 space-y-1">
+                                                                {getPalletBoxes(selectedPalletId)
+                                                                    .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                    .map((box) => (
+                                                                        <div
+                                                                            key={`${selectedPalletId}-${box.id}`}
+                                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
+                                                                            onClick={() => handleToggleBox(box.id, selectedPalletId)}
+                                                                        >
+                                                                            <Checkbox
+                                                                                checked={false}
+                                                                                onCheckedChange={() => handleToggleBox(box.id, selectedPalletId)}
+                                                                            />
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className="text-sm font-medium truncate">
+                                                                                    Caja #{box.id}
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {formatWeight(box.netWeight)}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                {getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0 && (
+                                                                    <div className="text-center py-8 text-sm text-muted-foreground">
+                                                                        Todas las cajas están seleccionadas
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
-                                                )}
+
+                                                    {/* Botones de transferencia */}
+                                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2 flex-shrink-0">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                const availableBoxes = getPalletBoxes(selectedPalletId)
+                                                                    .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                if (availableBoxes.length > 0) {
+                                                                    handleToggleBox(availableBoxes[0].id, selectedPalletId)
+                                                                }
+                                                            }}
+                                                            disabled={getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0}
+                                                            title="Mover seleccionada"
+                                                        >
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                const availableBoxes = getPalletBoxes(selectedPalletId)
+                                                                    .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                    .map(box => ({ boxId: box.id, palletId: selectedPalletId }))
+                                                                setSelectedBoxes(prev => [...prev, ...availableBoxes])
+                                                            }}
+                                                            disabled={getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0}
+                                                            title="Mover todas"
+                                                        >
+                                                            <ChevronsRight className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                const selectedForPallet = getSelectedBoxesForPallet(selectedPalletId)
+                                                                if (selectedForPallet.length > 0) {
+                                                                    setSelectedBoxes(prev => prev.filter(box => !(box.palletId === selectedPalletId && box.boxId === selectedForPallet[selectedForPallet.length - 1].boxId)))
+                                                                }
+                                                            }}
+                                                            disabled={getSelectedBoxesForPallet(selectedPalletId).length === 0}
+                                                            title="Quitar seleccionada"
+                                                        >
+                                                            <ChevronLeft className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                setSelectedBoxes(prev => prev.filter(box => box.palletId !== selectedPalletId))
+                                                            }}
+                                                            disabled={getSelectedBoxesForPallet(selectedPalletId).length === 0}
+                                                            title="Quitar todas"
+                                                        >
+                                                            <ChevronsLeft className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+
+                                                    {/* Cajas seleccionadas del palet seleccionado */}
+                                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                                        <div className="p-2 border-b bg-muted/50 flex-shrink-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <Label className="font-semibold text-sm">
+                                                                    Seleccionadas
+                                                                </Label>
+                                                                <Badge variant="default" className="text-xs">
+                                                                    {getSelectedBoxesForPallet(selectedPalletId).length}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <ScrollArea className="flex-1 min-h-0">
+                                                            <div className="p-2 space-y-1">
+                                                                {getSelectedBoxesForPallet(selectedPalletId).map((selectedBox) => {
+                                                                    const box = getPalletBoxes(selectedPalletId).find(b => b.id === selectedBox.boxId)
+                                                                    if (!box) return null
+                                                                    return (
+                                                                        <div
+                                                                            key={`${selectedPalletId}-${selectedBox.boxId}`}
+                                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border bg-primary/5"
+                                                                            onClick={() => handleToggleBox(box.id, selectedPalletId)}
+                                                                        >
+                                                                            <Checkbox
+                                                                                checked={true}
+                                                                                onCheckedChange={() => handleToggleBox(box.id, selectedPalletId)}
+                                                                            />
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className="text-sm font-medium truncate">
+                                                                                    Caja #{box.id}
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {formatWeight(box.netWeight)}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    )
+                                                                })}
+                                                                {getSelectedBoxesForPallet(selectedPalletId).length === 0 && (
+                                                                    <div className="text-center py-8 text-sm text-muted-foreground">
+                                                                        No hay cajas seleccionadas
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {selectedPalletId && getPalletBoxes(selectedPalletId).length === 0 && (
+                                                <div className="text-center py-8 border rounded-lg">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Este palet no tiene cajas
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </TabsContent>
+                                    </Tabs>
+                                )}
+                                
+                                {!selectedPalletId && loadedPallets.length > 0 && (
+                                    <div className="text-center py-8 border rounded-lg">
+                                        <p className="text-sm text-muted-foreground">
+                                            Selecciona un palet para ver sus cajas
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Columna derecha: Selección total de todos los palets */}
+                            <div className="col-span-3 flex flex-col border rounded-lg overflow-hidden">
+                                <div className="p-3 border-b bg-muted/50 flex-shrink-0">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="font-semibold text-sm">Selección Total</Label>
+                                        <Badge variant="default" className="text-xs">
+                                            {selectedBoxes.length}
+                                        </Badge>
+                                    </div>
+                                </div>
+                                
+                                {/* Resumen compacto */}
+                                {selectedBoxes.length > 0 && (
+                                    <div className="p-3 border-b bg-primary/5">
+                                        <div className="space-y-1 text-xs">
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Cajas:</span>
+                                                <span className="font-semibold">{selectedBoxes.length}</span>
                                             </div>
-                                        </ScrollArea>
-                                    </div>
-
-                                    {/* Botones de transferencia */}
-                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2 flex-shrink-0">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => {
-                                                const availableBoxes = getAllBoxes()
-                                                    .filter(box => !isBoxSelected(box.id, box.palletId))
-                                                if (availableBoxes.length > 0) {
-                                                    handleToggleBox(availableBoxes[0].id, availableBoxes[0].palletId)
-                                                }
-                                            }}
-                                            disabled={getAllBoxes().filter(box => !isBoxSelected(box.id, box.palletId)).length === 0}
-                                            title="Mover seleccionada"
-                                        >
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={handleSelectAllBoxes}
-                                            disabled={getAllBoxes().filter(box => !isBoxSelected(box.id, box.palletId)).length === 0}
-                                            title="Mover todas"
-                                        >
-                                            <ChevronsRight className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => {
-                                                if (selectedBoxes.length > 0) {
-                                                    setSelectedBoxes(prev => prev.slice(0, -1))
-                                                }
-                                            }}
-                                            disabled={selectedBoxes.length === 0}
-                                            title="Quitar seleccionada"
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={handleUnselectAllBoxes}
-                                            disabled={selectedBoxes.length === 0}
-                                            title="Quitar todas"
-                                        >
-                                            <ChevronsLeft className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-
-                                    {/* Columna derecha: Cajas seleccionadas */}
-                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
-                                        <div className="p-2 border-b bg-muted/50 flex-shrink-0">
-                                            <div className="flex items-center justify-between">
-                                                <Label className="font-semibold text-sm">
-                                                    Cajas Seleccionadas
-                                                </Label>
-                                                <Badge variant="default" className="text-xs">
-                                                    {selectedBoxes.length}
-                                                </Badge>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Peso Total:</span>
+                                                <span className="font-semibold">{formatWeight(calculateTotalWeight())}</span>
                                             </div>
                                         </div>
-                                        <ScrollArea className="flex-1 min-h-0">
-                                            <div className="p-2 space-y-1">
-                                                {selectedBoxes.map((selectedBox) => {
-                                                    const box = getAllBoxes().find(b => b.id === selectedBox.boxId && b.palletId === selectedBox.palletId)
-                                                    if (!box) return null
-                                                    return (
-                                                        <div
-                                                            key={`${selectedBox.palletId}-${selectedBox.boxId}`}
-                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border bg-primary/5"
-                                                            onClick={() => handleToggleBox(box.id, box.palletId)}
-                                                        >
-                                                            <Checkbox
-                                                                checked={true}
-                                                                onCheckedChange={() => handleToggleBox(box.id, box.palletId)}
-                                                            />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className="text-sm font-medium truncate">
-                                                                        Caja #{box.id}
-                                                                    </p>
-                                                                    <Badge variant="outline" className="text-xs">P{box.palletId}</Badge>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground truncate">
-                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {formatWeight(box.netWeight)}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })}
-                                                {selectedBoxes.length === 0 && (
-                                                    <div className="text-center py-8 text-sm text-muted-foreground">
-                                                        No hay cajas seleccionadas
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </ScrollArea>
                                     </div>
-                                </div>
+                                )}
+                                
+                                {/* Lista de todas las cajas seleccionadas agrupadas por palet */}
+                                <ScrollArea className="flex-1 min-h-0">
+                                    <div className="p-2 space-y-2">
+                                        {loadedPallets.map((pallet) => {
+                                            const selectedForPallet = getSelectedBoxesForPallet(pallet.id)
+                                            if (selectedForPallet.length === 0) return null
+                                            
+                                            return (
+                                                <div key={pallet.id} className="space-y-1">
+                                                    <div className="flex items-center gap-2 px-2 py-1 bg-muted rounded-md">
+                                                        <Badge variant="outline" className="text-xs font-semibold">
+                                                            Palet #{pallet.id}
+                                                        </Badge>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {selectedForPallet.length} cajas
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-1 pl-2 border-l-2 border-muted">
+                                                        {selectedForPallet.map((selectedBox) => {
+                                                            const box = getPalletBoxes(pallet.id).find(b => b.id === selectedBox.boxId)
+                                                            if (!box) return null
+                                                            return (
+                                                                <div
+                                                                    key={`${pallet.id}-${selectedBox.boxId}`}
+                                                                    className="flex items-center gap-2 p-1.5 hover:bg-muted rounded cursor-pointer border text-xs"
+                                                                    onClick={() => handleToggleBox(box.id, pallet.id)}
+                                                                >
+                                                                    <Checkbox
+                                                                        checked={true}
+                                                                        onCheckedChange={() => handleToggleBox(box.id, pallet.id)}
+                                                                        className="h-3 w-3"
+                                                                    />
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-medium truncate">Caja #{box.id}</p>
+                                                                        <p className="text-muted-foreground truncate">{formatWeight(box.netWeight)}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                        {selectedBoxes.length === 0 && (
+                                            <div className="text-center py-8 text-sm text-muted-foreground">
+                                                No hay cajas seleccionadas
+                                            </div>
                                         )}
-                                    </TabsContent>
-                                </Tabs>
-                            )}
-
-                            {loadedPallets.length > 0 && getAllBoxes().length === 0 && (
-                                <div className="text-center py-8 border rounded-lg">
-                                    <p className="text-sm text-muted-foreground">
-                                        Los palets cargados no tienen cajas
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Botones de acción */}
-                            <div className="flex justify-end gap-2 pt-2 border-t">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setAddDialogOpen(false)
-                                        setPalletSearch('')
-                                        setSelectedPallet(null)
-                                        setSelectedBoxes([])
-                                    }}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    onClick={handleAddInputs}
-                                    disabled={selectedBoxes.length === 0}
-                                >
-                                    Agregar {selectedBoxes.length > 0 && `(${selectedBoxes.length})`}
-                                </Button>
+                                    </div>
+                                </ScrollArea>
                             </div>
+                        </div>
+
+                        {/* Botones de acción */}
+                        <div className="flex justify-end gap-2 pt-2 border-t">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setAddDialogOpen(false)
+                                    setPalletSearch('')
+                                    setLoadedPallets([])
+                                    setSelectedBoxes([])
+                                    setTargetWeight({})
+                                    setSelectionMode('manual')
+                                    setSelectedPalletId(null)
+                                }}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleAddInputs}
+                                disabled={selectedBoxes.length === 0}
+                            >
+                                Agregar {selectedBoxes.length > 0 && `(${selectedBoxes.length})`}
+                            </Button>
+                        </div>
                         </div>
                     </DialogContent>
                 </Dialog>
