@@ -3335,6 +3335,7 @@ export const configs = {
   /* Productions */
   productions: {
     title: "Producciones",
+    hideEditButton: true,
     description: "Gestiona, edita y consulta lotes de producción.",
     emptyState: {
       title: "No existen producciones según los filtros",

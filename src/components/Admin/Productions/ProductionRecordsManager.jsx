@@ -11,8 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Trash2, CheckCircle, Clock } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import ProductionInputsManager from './ProductionInputsManager'
+import ProductionOutputsManager from './ProductionOutputsManager'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const { data: session } = useSession()
@@ -25,6 +28,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         parent_record_id: '',
         notes: ''
     })
+    const [expandedRecords, setExpandedRecords] = useState({})
 
     useEffect(() => {
         if (session?.user?.accessToken && productionId) {
@@ -116,10 +120,18 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         return records.filter(r => r.parent_record_id === parentId)
     }
 
+    const toggleRecordExpansion = (recordId) => {
+        setExpandedRecords(prev => ({
+            ...prev,
+            [recordId]: !prev[recordId]
+        }))
+    }
+
     const renderRecordTree = (record, level = 0) => {
         const children = getChildRecords(record.id)
         const isCompleted = record.finished_at !== null
         const isRoot = !record.parent_record_id
+        const isExpanded = expandedRecords[record.id]
 
         return (
             <div key={record.id} className={`${level > 0 ? 'ml-8 mt-2 border-l-2 pl-4' : ''}`}>
@@ -128,6 +140,17 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
+                                    <Collapsible open={isExpanded} onOpenChange={() => toggleRecordExpansion(record.id)}>
+                                        <CollapsibleTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                {isExpanded ? (
+                                                    <ChevronDown className="h-4 w-4" />
+                                                ) : (
+                                                    <ChevronRight className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        </CollapsibleTrigger>
+                                    </Collapsible>
                                     <CardTitle className="text-lg">
                                         Proceso #{record.id}
                                     </CardTitle>
@@ -201,6 +224,26 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Inputs y Outputs expandidos */}
+                        {isExpanded && (
+                            <div className="mt-4 pt-4 border-t space-y-4">
+                                <ProductionInputsManager
+                                    productionRecordId={record.id}
+                                    onRefresh={() => {
+                                        loadRecords()
+                                        if (onRefresh) onRefresh()
+                                    }}
+                                />
+                                <ProductionOutputsManager
+                                    productionRecordId={record.id}
+                                    onRefresh={() => {
+                                        loadRecords()
+                                        if (onRefresh) onRefresh()
+                                    }}
+                                />
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
                 {children.map(child => renderRecordTree(child, level + 1))}
