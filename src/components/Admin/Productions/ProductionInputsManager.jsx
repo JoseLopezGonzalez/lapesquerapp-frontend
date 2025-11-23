@@ -80,12 +80,14 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             setLoadingPallet(true)
             const token = session.user.accessToken
             const pallet = await getPallet(palletId, token)
-            setLoadedPallets(prev => [...prev, pallet])
+            setLoadedPallets(prev => {
+                // Si es el primer palet, seleccionarlo automáticamente
+                if (prev.length === 0) {
+                    setSelectedPalletId(pallet.id)
+                }
+                return [...prev, pallet]
+            })
             setPalletSearch('')
-            // Si es el primer palet, seleccionarlo automáticamente
-            if (loadedPallets.length === 0) {
-                setSelectedPalletId(pallet.id)
-            }
         } catch (err) {
             console.error('Error loading pallet:', err)
             alert(err.message || 'Error al cargar el palet')
@@ -98,6 +100,22 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         setLoadedPallets(prev => prev.filter(p => p.id !== palletId))
         // Remover las cajas seleccionadas de ese palet
         setSelectedBoxes(prev => prev.filter(box => box.palletId !== palletId))
+        // Si el palet eliminado era el seleccionado, seleccionar otro o null
+        if (selectedPalletId === palletId) {
+            const remainingPallets = loadedPallets.filter(p => p.id !== palletId)
+            setSelectedPalletId(remainingPallets.length > 0 ? remainingPallets[0].id : null)
+        }
+    }
+    
+    // Obtener cajas de un palet específico
+    const getPalletBoxes = (palletId) => {
+        const pallet = loadedPallets.find(p => p.id === palletId)
+        return pallet?.boxes || []
+    }
+    
+    // Obtener cajas seleccionadas de un palet específico
+    const getSelectedBoxesForPallet = (palletId) => {
+        return selectedBoxes.filter(box => box.palletId === palletId)
     }
 
     const handleToggleBox = (boxId, palletId) => {
