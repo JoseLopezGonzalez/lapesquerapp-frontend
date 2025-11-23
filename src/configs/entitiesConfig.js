@@ -3341,9 +3341,9 @@ export const configs = {
       description: "Ajusta los filtros o crea una nueva producción.",
     },
     perPage: 15,
-    endpoint: "v2/productions",
+    endpoint: "productions",
     viewRoute: "/admin/productions/:id",
-    deleteEndpoint: "v2/productions/:id",
+    deleteEndpoint: "productions/:id",
     filtersGroup: {
       search: {
         label: "Buscar",
