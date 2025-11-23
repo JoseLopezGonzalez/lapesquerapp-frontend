@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionRecords, createProductionRecord, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
+import { getProductionRecords, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
+import CreateProductionRecordForm from './CreateProductionRecordForm'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const { data: session } = useSession()
@@ -23,11 +20,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [createDialogOpen, setCreateDialogOpen] = useState(false)
-    const [formData, setFormData] = useState({
-        process_id: '',
-        parent_record_id: '',
-        notes: ''
-    })
     const [expandedRecords, setExpandedRecords] = useState({})
 
     useEffect(() => {
@@ -51,26 +43,14 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         }
     }
 
-    const handleCreateRecord = async (e) => {
-        e.preventDefault()
-        try {
-            const token = session.user.accessToken
-            const recordData = {
-                production_id: parseInt(productionId),
-                process_id: formData.process_id ? parseInt(formData.process_id) : null,
-                parent_record_id: formData.parent_record_id ? parseInt(formData.parent_record_id) : null,
-                notes: formData.notes || null
-            }
+    const handleCreateSuccess = () => {
+        setCreateDialogOpen(false)
+        loadRecords()
+        if (onRefresh) onRefresh()
+    }
 
-            await createProductionRecord(recordData, token)
-            setCreateDialogOpen(false)
-            setFormData({ process_id: '', parent_record_id: '', notes: '' })
-            loadRecords()
-            if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error creating record:', err)
-            alert(err.message || 'Error al crear el proceso')
-        }
+    const handleCreateCancel = () => {
+        setCreateDialogOpen(false)
     }
 
     const handleDeleteRecord = async (recordId) => {
@@ -290,69 +270,13 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Crear Nuevo Proceso</DialogTitle>
-                            <DialogDescription>
-                                Crea un nuevo proceso dentro de esta producción
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleCreateRecord} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="parent_record_id">Proceso Padre (Opcional)</Label>
-                                <Select
-                                    value={formData.parent_record_id}
-                                    onValueChange={(value) => setFormData({ ...formData, parent_record_id: value })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un proceso padre (dejar vacío para proceso raíz)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="">Ninguno (Proceso raíz)</SelectItem>
-                                        {records.map(record => (
-                                            <SelectItem key={record.id} value={record.id.toString()}>
-                                                Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <p className="text-xs text-muted-foreground">
-                                    Los procesos raíz consumen cajas directamente de palets. Los procesos hijos consumen salidas de procesos anteriores.
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="process_id">Tipo de Proceso (Opcional)</Label>
-                                <Input
-                                    id="process_id"
-                                    type="number"
-                                    placeholder="ID del tipo de proceso"
-                                    value={formData.process_id}
-                                    onChange={(e) => setFormData({ ...formData, process_id: e.target.value })}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    ID del proceso desde la tabla processes (opcional)
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="notes">Notas</Label>
-                                <Textarea
-                                    id="notes"
-                                    placeholder="Notas adicionales sobre el proceso"
-                                    value={formData.notes}
-                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setCreateDialogOpen(false)}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button type="submit">Crear Proceso</Button>
-                            </div>
-                        </form>
+                        <CreateProductionRecordForm
+                            productionId={productionId}
+                            existingRecords={records}
+                            onSuccess={handleCreateSuccess}
+                            onCancel={handleCreateCancel}
+                            mode="dialog"
+                        />
                     </DialogContent>
                 </Dialog>
             </div>
