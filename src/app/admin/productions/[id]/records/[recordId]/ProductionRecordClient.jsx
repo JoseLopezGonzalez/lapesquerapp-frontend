@@ -1,12 +1,12 @@
 'use client'
 
-import ProductionRecordView from '@/components/Admin/Productions/ProductionRecordView'
+import ProductionRecordEditor from '@/components/Admin/Productions/ProductionRecordEditor'
 import React from 'react'
 
 const ProductionRecordClient = ({ productionId, recordId }) => {
     return (
         <div className="h-full w-full overflow-hidden rounded-xl">
-            <ProductionRecordView
+            <ProductionRecordEditor
                 productionId={productionId}
                 recordId={recordId}
             />
