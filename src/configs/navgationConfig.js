@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch, Settings2 } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2, Factory } from 'lucide-react';
 
 export const navigationConfig = [
     {
@@ -55,6 +55,12 @@ export const navigationConfig = [
         icon: PiFishSimpleDuotone,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/cebo-dispatches',
+    },
+    {
+        name: 'Producciones',
+        icon: Factory,
+        allowedRoles: ["admin", "manager", "superuser", "store_operator"],
+        href: '/admin/productions',
     },
     {
         name: 'Pedidos',

@@ -16,7 +16,7 @@ import { Plus, Trash2, Package, Search, X } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const ProductionInputsManager = ({ productionRecordId, onRefresh }) => {
+const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = false }) => {
     const { data: session } = useSession()
     const [inputs, setInputs] = useState([])
     const [loading, setLoading] = useState(true)
@@ -206,13 +206,17 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh }) => {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-semibold">Entradas de Cajas</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Cajas consumidas en este proceso
-                    </p>
+            {!hideTitle && (
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold">Entradas de Cajas</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Cajas consumidas en este proceso
+                        </p>
+                    </div>
                 </div>
+            )}
+            <div className={`flex items-center ${hideTitle ? 'justify-end' : 'justify-between'}`}>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                     <DialogTrigger asChild>
                         <Button>
@@ -411,24 +415,24 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh }) => {
 
             {/* Lista de inputs existentes */}
             {inputs.length === 0 ? (
-                <Card>
-                    <CardContent className="py-8 text-center">
-                        <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                            No hay entradas registradas. Agrega cajas desde un palet para comenzar.
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="py-8 text-center border rounded-lg">
+                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                        No hay entradas registradas. Agrega cajas desde un palet para comenzar.
+                    </p>
+                </div>
             ) : (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Entradas Registradas ({inputs.length})</CardTitle>
-                        <CardDescription>
-                            Cajas asignadas a este proceso
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-96">
+                <div className="space-y-2">
+                    {!hideTitle && (
+                        <div>
+                            <h4 className="text-sm font-semibold">Entradas Registradas ({inputs.length})</h4>
+                            <p className="text-xs text-muted-foreground">
+                                Cajas asignadas a este proceso
+                            </p>
+                        </div>
+                    )}
+                    <div>
+                        <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -468,8 +472,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh }) => {
                                 </TableBody>
                             </Table>
                         </ScrollArea>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
         </div>
     )

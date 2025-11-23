@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
+const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false }) => {
     const { data: session } = useSession()
     const [outputs, setOutputs] = useState([])
     const [products, setProducts] = useState([])
@@ -175,13 +175,17 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-semibold">Salidas Lógicas</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Productos producidos en este proceso
-                    </p>
+            {!hideTitle && (
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold">Salidas Lógicas</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Productos producidos en este proceso
+                        </p>
+                    </div>
                 </div>
+            )}
+            <div className={`flex items-center ${hideTitle ? 'justify-end' : 'justify-between'}`}>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                     <DialogTrigger asChild>
                         <Button>
@@ -370,24 +374,24 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
 
             {/* Lista de outputs existentes */}
             {outputs.length === 0 ? (
-                <Card>
-                    <CardContent className="py-8 text-center">
-                        <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">
-                            No hay salidas registradas. Agrega una salida para registrar los productos producidos.
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="py-8 text-center border rounded-lg">
+                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                        No hay salidas registradas. Agrega una salida para registrar los productos producidos.
+                    </p>
+                </div>
             ) : (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Salidas Registradas ({outputs.length})</CardTitle>
-                        <CardDescription>
-                            Productos producidos en este proceso
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-96">
+                <div className="space-y-2">
+                    {!hideTitle && (
+                        <div>
+                            <h4 className="text-sm font-semibold">Salidas Registradas ({outputs.length})</h4>
+                            <p className="text-xs text-muted-foreground">
+                                Productos producidos en este proceso
+                            </p>
+                        </div>
+                    )}
+                    <div>
+                        <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -441,8 +445,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
                                 </TableBody>
                             </Table>
                         </ScrollArea>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
         </div>
     )

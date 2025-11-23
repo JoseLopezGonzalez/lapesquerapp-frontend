@@ -6,7 +6,7 @@ import { getProductionRecords, deleteProductionRecord, finishProductionRecord } 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import ProductionInputsManager from './ProductionInputsManager'
@@ -149,6 +149,14 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                 )}
                             </div>
                             <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
+                                >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Ver Detalle
+                                </Button>
                                 {!isCompleted && (
                                     <Button
                                         size="sm"
