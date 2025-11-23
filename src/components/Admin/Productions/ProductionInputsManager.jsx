@@ -12,9 +12,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft } from 'lucide-react'
+import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = false }) => {
     const { data: session } = useSession()
@@ -28,6 +29,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const [selectedPallet, setSelectedPallet] = useState(null)
     const [selectedBoxes, setSelectedBoxes] = useState([])
     const [loadingPallet, setLoadingPallet] = useState(false)
+    const [selectionMode, setSelectionMode] = useState('manual') // 'manual' o 'weight'
+    const [targetWeight, setTargetWeight] = useState('')
 
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
@@ -136,6 +139,64 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const formatWeight = (weight) => {
         if (!weight) return '0 kg'
         return `${parseFloat(weight).toFixed(2)} kg`
+    }
+
+    // Calcular peso total de las cajas seleccionadas
+    const calculateTotalWeight = () => {
+        if (!selectedPallet?.boxes) return 0
+        return selectedBoxes.reduce((total, boxId) => {
+            const box = selectedPallet.boxes.find(b => b.id === boxId)
+            return total + (parseFloat(box?.netWeight || 0))
+        }, 0)
+    }
+
+    // Seleccionar cajas basándose en peso total objetivo
+    const handleSelectByWeight = () => {
+        if (!selectedPallet?.boxes || !targetWeight) {
+            alert('Por favor ingresa un peso objetivo')
+            return
+        }
+
+        const target = parseFloat(targetWeight)
+        if (isNaN(target) || target <= 0) {
+            alert('Por favor ingresa un peso válido mayor a 0')
+            return
+        }
+
+        // Ordenar cajas por peso (de mayor a menor para optimizar)
+        const availableBoxes = selectedPallet.boxes
+            .filter(box => !selectedBoxes.includes(box.id))
+            .map(box => ({
+                ...box,
+                weight: parseFloat(box.netWeight || 0)
+            }))
+            .sort((a, b) => b.weight - a.weight)
+
+        // Algoritmo voraz: seleccionar cajas hasta alcanzar o acercarse al peso objetivo
+        let currentWeight = calculateTotalWeight()
+        const boxesToAdd = []
+        
+        for (const box of availableBoxes) {
+            if (currentWeight + box.weight <= target) {
+                boxesToAdd.push(box.id)
+                currentWeight += box.weight
+            }
+        }
+
+        // Si no alcanzamos el peso objetivo, agregar la caja más cercana que no lo exceda demasiado
+        if (boxesToAdd.length === 0 && availableBoxes.length > 0) {
+            const closestBox = availableBoxes.find(box => box.weight <= target)
+            if (closestBox) {
+                boxesToAdd.push(closestBox.id)
+            }
+        }
+
+        if (boxesToAdd.length > 0) {
+            setSelectedBoxes(prev => [...prev, ...boxesToAdd])
+            setTargetWeight('')
+        } else {
+            alert('No se pudieron encontrar cajas que se ajusten al peso objetivo')
+        }
     }
 
     // Agrupar cajas por producto y lote
@@ -263,6 +324,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                     setSelectedPallet(null)
                                                     setSelectedBoxes([])
                                                     setPalletSearch('')
+                                                    setTargetWeight('')
                                                 }}
                                             >
                                                 <X className="h-4 w-4" />
@@ -272,8 +334,136 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 </div>
                             </div>
 
-                            {/* Transfer List */}
+                            {/* Resumen de selección */}
+                            {selectedPallet && selectedBoxes.length > 0 && (
+                                <Card className="bg-primary/5 border-primary/20">
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex gap-6">
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground">Cajas Seleccionadas</p>
+                                                    <p className="text-lg font-semibold">{selectedBoxes.length}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground">Peso Neto Total</p>
+                                                    <p className="text-lg font-semibold">{formatWeight(calculateTotalWeight())}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Tabs para modo de selección */}
                             {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
+                                <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="manual">Selección Manual</TabsTrigger>
+                                        <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
+                                    </TabsList>
+                                    
+                                    {/* Modo por peso */}
+                                    <TabsContent value="weight" className="space-y-3 mt-4">
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <Label htmlFor="target-weight">Peso Neto Objetivo (kg)</Label>
+                                                <Input
+                                                    id="target-weight"
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Ej: 100.50"
+                                                    value={targetWeight}
+                                                    onChange={(e) => setTargetWeight(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSelectByWeight()
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex items-end">
+                                                <Button
+                                                    onClick={handleSelectByWeight}
+                                                    disabled={!targetWeight || parseFloat(targetWeight) <= 0}
+                                                >
+                                                    <Calculator className="h-4 w-4 mr-2" />
+                                                    Calcular
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            El sistema seleccionará automáticamente las cajas que mejor se ajusten al peso objetivo
+                                        </p>
+                                    </TabsContent>
+                                </Tabs>
+                            )}
+
+                            {/* Resumen de selección */}
+                            {selectedPallet && selectedBoxes.length > 0 && (
+                                <Card className="bg-primary/5 border-primary/20">
+                                    <CardContent className="pt-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex gap-6">
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground">Cajas Seleccionadas</p>
+                                                    <p className="text-lg font-semibold">{selectedBoxes.length}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-muted-foreground">Peso Neto Total</p>
+                                                    <p className="text-lg font-semibold">{formatWeight(calculateTotalWeight())}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Tabs para modo de selección */}
+                            {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
+                                <Tabs value={selectionMode} onValueChange={setSelectionMode} className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="manual">Selección Manual</TabsTrigger>
+                                        <TabsTrigger value="weight">Por Peso Total</TabsTrigger>
+                                    </TabsList>
+                                    
+                                    {/* Modo por peso */}
+                                    <TabsContent value="weight" className="space-y-3 mt-4">
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <Label htmlFor="target-weight">Peso Neto Objetivo (kg)</Label>
+                                                <Input
+                                                    id="target-weight"
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Ej: 100.50"
+                                                    value={targetWeight}
+                                                    onChange={(e) => setTargetWeight(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSelectByWeight()
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex items-end">
+                                                <Button
+                                                    onClick={handleSelectByWeight}
+                                                    disabled={!targetWeight || parseFloat(targetWeight) <= 0}
+                                                >
+                                                    <Calculator className="h-4 w-4 mr-2" />
+                                                    Calcular
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            El sistema seleccionará automáticamente las cajas que mejor se ajusten al peso objetivo
+                                        </p>
+                                    </TabsContent>
+                                </Tabs>
+                            )}
+
+                            {/* Transfer List - Solo mostrar en modo manual */}
+                            {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && selectionMode === 'manual' && (
                                 <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 280px)', minHeight: '400px', maxHeight: '600px' }}>
                                     {/* Columna izquierda: Cajas disponibles */}
                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
