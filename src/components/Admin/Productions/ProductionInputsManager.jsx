@@ -300,7 +300,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             Agregar Cajas
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
+                    <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
                         <DialogHeader className="flex-shrink-0">
                             <DialogTitle>Agregar Cajas desde Palet</DialogTitle>
                             <DialogDescription>
@@ -418,7 +418,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             </div>
                             
                             {/* Columna central: Cajas del palet seleccionado */}
-                            <div className="col-span-6 flex flex-col min-h-0 overflow-hidden">
+                            <div className="col-span-6 flex flex-col min-h-0 overflow-hidden h-full">
 
                                 {/* Tabs para modo de selección */}
                                 {selectedPalletId && (
@@ -470,7 +470,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         {/* Transfer List - Solo mostrar en modo manual */}
                                         <TabsContent value="manual" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-2">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
+                                                <div className="grid grid-cols-12 gap-4 h-full min-h-0 overflow-hidden">
                                                     {/* Cajas disponibles del palet seleccionado */}
                                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
