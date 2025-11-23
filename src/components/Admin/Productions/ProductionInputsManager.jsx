@@ -703,7 +703,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 Agregar {selectedBoxes.length > 0 && `(${selectedBoxes.length})`}
                             </Button>
                         </div>
-                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
