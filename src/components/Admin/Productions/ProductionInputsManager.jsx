@@ -299,22 +299,22 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             Agregar Cajas
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-6xl max-h-[90vh]">
+                    <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Agregar Cajas desde Palet</DialogTitle>
                             <DialogDescription>
                                 Busca un palet y selecciona las cajas que se consumirán en este proceso
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 200px)', minHeight: '500px' }}>
+                        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
                             {/* Columna izquierda: Listado de palets y buscador */}
                             <div className="col-span-3 flex flex-col border rounded-lg overflow-hidden">
-                                <div className="p-3 border-b bg-muted/50 flex-shrink-0 space-y-2">
-                                    <Label htmlFor="pallet-search" className="text-sm font-semibold">Buscar Palet</Label>
-                                    <div className="flex gap-2">
+                                <div className="p-3 border-b bg-muted/50 flex-shrink-0">
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="pallet-search"
-                                            placeholder="ID del palet"
+                                            placeholder="Buscar por ID del palet..."
                                             value={palletSearch}
                                             onChange={(e) => setPalletSearch(e.target.value)}
                                             onKeyDown={(e) => {
@@ -322,46 +322,67 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                     handleSearchPallet()
                                                 }
                                             }}
-                                            className="h-9"
+                                            className="pl-9 pr-9 h-9"
                                         />
+                                        {palletSearch && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute right-1 top-1 h-7 w-7"
+                                                onClick={() => setPalletSearch("")}
+                                            >
+                                                <X className="h-4 w-4" />
+                                                <span className="sr-only">Limpiar búsqueda</span>
+                                            </Button>
+                                        )}
+                                    </div>
+                                    {palletSearch && (
                                         <Button
                                             onClick={handleSearchPallet}
                                             disabled={loadingPallet || !palletSearch.trim()}
-                                            size="icon"
-                                            className="h-9 w-9"
+                                            className="w-full mt-2 h-9"
+                                            size="sm"
                                         >
-                                            <Search className="h-4 w-4" />
+                                            {loadingPallet ? 'Buscando...' : 'Buscar Palet'}
                                         </Button>
-                                    </div>
+                                    )}
                                 </div>
                                 
                                 {/* Lista de palets cargados */}
                                 <ScrollArea className="flex-1 min-h-0">
-                                    <div className="p-2 space-y-1">
+                                    <div className="p-2 space-y-2">
                                         {loadedPallets.map((pallet) => {
                                             const selectedCount = getSelectedBoxesForPallet(pallet.id).length
                                             const isSelected = selectedPalletId === pallet.id
+                                            const totalWeight = (pallet.boxes || []).reduce((sum, box) => sum + parseFloat(box.netWeight || 0), 0)
+                                            
                                             return (
                                                 <div
                                                     key={pallet.id}
-                                                    className={`p-2 rounded-md border cursor-pointer transition-colors ${
-                                                        isSelected ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
+                                                    className={`flex items-start space-x-3 border rounded-md p-3 cursor-pointer hover:bg-accent transition-colors ${
+                                                        isSelected ? 'border-primary bg-accent' : ''
                                                     }`}
                                                     onClick={() => setSelectedPalletId(pallet.id)}
                                                 >
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium truncate">Palet #{pallet.id}</p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {pallet.boxes?.length || 0} cajas
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            {selectedCount > 0 && (
-                                                                <Badge variant="default" className="text-xs">
-                                                                    {selectedCount}
-                                                                </Badge>
-                                                            )}
+                                                    <div className="flex h-5 w-5 items-center justify-center mt-1">
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            onCheckedChange={() => setSelectedPalletId(pallet.id)}
+                                                            className="pointer-events-none"
+                                                        />
+                                                    </div>
+                                                    
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center">
+                                                                <Package className="h-4 w-4 mr-2 text-muted-foreground" />
+                                                                <span className="font-medium">Palet #{pallet.id}</span>
+                                                                {selectedCount > 0 && (
+                                                                    <Badge variant="default" className="ml-2 text-xs">
+                                                                        {selectedCount} seleccionadas
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
@@ -373,6 +394,14 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                             >
                                                                 <X className="h-3 w-3" />
                                                             </Button>
+                                                        </div>
+                                                        
+                                                        <div className="mt-1.5 flex items-center text-xs text-muted-foreground">
+                                                            <span>Total: {formatWeight(totalWeight)}</span>
+                                                            <span className="mx-1.5">|</span>
+                                                            <span>
+                                                                {pallet.boxes?.length || 0} {pallet.boxes?.length === 1 ? 'caja' : 'cajas'}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -440,7 +469,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         {/* Transfer List - Solo mostrar en modo manual */}
                                         <TabsContent value="manual" className="mt-4 flex-1 flex flex-col min-h-0">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+                                                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0" style={{ height: 'calc(90vh - 450px)', minHeight: '400px' }}>
                                                     {/* Cajas disponibles del palet seleccionado */}
                                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
@@ -453,7 +482,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                 </Badge>
                                                             </div>
                                                         </div>
-                                                        <ScrollArea className="flex-1 min-h-0">
+                                                        <ScrollArea className="flex-1 min-h-0 overflow-hidden">
                                                             <div className="p-2 space-y-1">
                                                                 {getPalletBoxes(selectedPalletId)
                                                                     .filter(box => !isBoxSelected(box.id, selectedPalletId))
@@ -559,7 +588,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                 </Badge>
                                                             </div>
                                                         </div>
-                                                        <ScrollArea className="flex-1 min-h-0">
+                                                        <ScrollArea className="flex-1 min-h-0 overflow-hidden">
                                                             <div className="p-2 space-y-1">
                                                                 {getSelectedBoxesForPallet(selectedPalletId).map((selectedBox) => {
                                                                     const box = getPalletBoxes(selectedPalletId).find(b => b.id === selectedBox.boxId)
@@ -646,7 +675,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 )}
                                 
                                 {/* Lista de todas las cajas seleccionadas agrupadas por palet */}
-                                <ScrollArea className="flex-1 min-h-0">
+                                <ScrollArea className="flex-1 min-h-0" style={{ maxHeight: 'calc(90vh - 300px)' }}>
                                     <div className="p-2 space-y-2">
                                         {loadedPallets.map((pallet) => {
                                             const selectedForPallet = getSelectedBoxesForPallet(pallet.id)
