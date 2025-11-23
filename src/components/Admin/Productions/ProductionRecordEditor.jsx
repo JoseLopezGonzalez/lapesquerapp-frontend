@@ -39,9 +39,9 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const [error, setError] = useState(null)
     
     const [formData, setFormData] = useState({
-        name: '',
-        process_id: 'none',
-        parent_record_id: 'none',
+        process_id: 'none', // Obligatorio
+        name: '', // Opcional, puede venir del proceso seleccionado o ser personalizado
+        parent_record_id: 'none', // Opcional
         notes: ''
     })
     const [nameOpen, setNameOpen] = useState(false)
@@ -72,8 +72,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 
                 // Rellenar el formulario con los datos existentes
                 setFormData({
-                    name: recordData.name || '',
                     process_id: recordData.process_id ? recordData.process_id.toString() : 'none',
+                    name: recordData.name || '',
                     parent_record_id: recordData.parent_record_id ? recordData.parent_record_id.toString() : 'none',
                     notes: recordData.notes || ''
                 })
@@ -113,10 +113,17 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             setError(null)
             const token = session.user.accessToken
             
+            // Validar que process_id sea obligatorio
+            if (!formData.process_id || formData.process_id === 'none') {
+                setError('El tipo de proceso es obligatorio')
+                setSaving(false)
+                return
+            }
+
             const recordData = {
                 production_id: parseInt(productionId),
-                name: formData.name || null,
-                process_id: formData.process_id && formData.process_id !== 'none' ? parseInt(formData.process_id) : null,
+                process_id: parseInt(formData.process_id), // Obligatorio
+                name: formData.name || null, // Opcional
                 parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' ? parseInt(formData.parent_record_id) : null,
                 notes: formData.notes || null
             }
@@ -257,11 +264,64 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Tipo de Proceso - OBLIGATORIO */}
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nombre del Proceso</Label>
+                                <Label htmlFor="process_id">
+                                    Tipo de Proceso <span className="text-destructive">*</span>
+                                </Label>
+                                {processes.length > 0 ? (
+                                    <Select
+                                        value={formData.process_id}
+                                        onValueChange={(value) => {
+                                            // Si no hay nombre, usar el nombre del proceso seleccionado
+                                            const selectedProcess = processes.find(p => p.id.toString() === value)
+                                            if (!formData.name && value !== 'none' && selectedProcess?.name) {
+                                                setFormData({ ...formData, process_id: value, name: selectedProcess.name })
+                                            } else {
+                                                setFormData({ ...formData, process_id: value })
+                                            }
+                                        }}
+                                        disabled={saving}
+                                        required
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecciona un tipo de proceso (obligatorio)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {processes
+                                                .filter(process => process?.id != null)
+                                                .map(process => (
+                                                    <SelectItem key={process.id} value={process.id.toString()}>
+                                                        {process.name || `Proceso #${process.id}`}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        id="process_id"
+                                        type="number"
+                                        placeholder="ID del tipo de proceso (obligatorio)"
+                                        value={formData.process_id === 'none' ? '' : formData.process_id}
+                                        onChange={(e) => setFormData({ ...formData, process_id: e.target.value || 'none' })}
+                                        disabled={saving}
+                                        required
+                                    />
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    {processes.length > 0 
+                                        ? 'Selecciona el tipo de proceso desde la lista (obligatorio)'
+                                        : 'ID del proceso desde la tabla processes (obligatorio)'}
+                                </p>
+                            </div>
+
+                            {/* Nombre del Proceso - OPCIONAL */}
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Nombre del Proceso (Opcional)</Label>
                                 <Popover open={nameOpen} onOpenChange={setNameOpen}>
                                     <PopoverTrigger asChild>
                                         <Button
+                                            type="button"
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={nameOpen}
@@ -326,10 +386,11 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     className="mt-2"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Asigna un nombre descriptivo al proceso para identificarlo fácilmente
+                                    Asigna un nombre descriptivo al proceso para identificarlo fácilmente (opcional)
                                 </p>
                             </div>
                             
+                            {/* Proceso Padre - OPCIONAL */}
                             <div className="space-y-2">
                                 <Label htmlFor="parent_record_id">Proceso Padre (Opcional)</Label>
                                 <Select
@@ -346,52 +407,13 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                             .filter(record => record?.id != null && record.id !== currentRecordId)
                                             .map(record => (
                                                 <SelectItem key={record.id} value={record.id.toString()}>
-                                                    Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
+                                                    Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''} {record.name ? `(${record.name})` : ''}
                                                 </SelectItem>
                                             ))}
                                     </SelectContent>
                                 </Select>
                                 <p className="text-xs text-muted-foreground">
                                     Los procesos raíz consumen cajas directamente de palets. Los procesos hijos consumen salidas de procesos anteriores.
-                                </p>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <Label htmlFor="process_id">Tipo de Proceso (Opcional)</Label>
-                                {processes.length > 0 ? (
-                                    <Select
-                                        value={formData.process_id}
-                                        onValueChange={(value) => setFormData({ ...formData, process_id: value })}
-                                        disabled={saving}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecciona un tipo de proceso" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="none">Ninguno</SelectItem>
-                                            {processes
-                                                .filter(process => process?.id != null)
-                                                .map(process => (
-                                                    <SelectItem key={process.id} value={process.id.toString()}>
-                                                        {process.name || `Proceso #${process.id}`}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input
-                                        id="process_id"
-                                        type="number"
-                                        placeholder="ID del tipo de proceso (opcional)"
-                                        value={formData.process_id === 'none' ? '' : formData.process_id}
-                                        onChange={(e) => setFormData({ ...formData, process_id: e.target.value || 'none' })}
-                                        disabled={saving}
-                                    />
-                                )}
-                                <p className="text-xs text-muted-foreground">
-                                    {processes.length > 0 
-                                        ? 'Selecciona el tipo de proceso desde la lista'
-                                        : 'ID del proceso desde la tabla processes (opcional)'}
                                 </p>
                             </div>
                             
