@@ -30,7 +30,9 @@ const CreateProductionRecordPage = ({ productionId }) => {
     }
 
     const handleSuccess = () => {
-        // El formulario maneja la redirección
+        // Redirigir de vuelta a la página de producción
+        // El formulario ya maneja router.back() pero podemos forzar la recarga
+        window.location.href = `/admin/productions/${productionId}`
     }
 
     if (loading) {

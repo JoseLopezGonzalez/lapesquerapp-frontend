@@ -80,9 +80,9 @@ const CreateProductionRecordForm = ({
                 onSuccess()
             }
             
-            // If in page mode, redirect back
+            // If in page mode, redirect back to production page
             if (mode === 'page') {
-                router.back()
+                router.push(`/admin/productions/${productionId}`)
             }
         } catch (err) {
             console.error('Error creating record:', err)

@@ -6,20 +6,19 @@ import { getProductionRecords, deleteProductionRecord, finishProductionRecord } 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
-import CreateProductionRecordForm from './CreateProductionRecordForm'
+import { useRouter } from 'next/navigation'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const { data: session } = useSession()
+    const router = useRouter()
     const [records, setRecords] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [createDialogOpen, setCreateDialogOpen] = useState(false)
     const [expandedRecords, setExpandedRecords] = useState({})
 
     useEffect(() => {
@@ -43,14 +42,8 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         }
     }
 
-    const handleCreateSuccess = () => {
-        setCreateDialogOpen(false)
-        loadRecords()
-        if (onRefresh) onRefresh()
-    }
-
-    const handleCreateCancel = () => {
-        setCreateDialogOpen(false)
+    const handleNavigateToCreate = () => {
+        router.push(`/admin/productions/${productionId}/records/create`)
     }
 
     const handleDeleteRecord = async (recordId) => {
@@ -262,23 +255,10 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                         Gestiona los procesos dentro del lote de producción
                     </p>
                 </div>
-                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Nuevo Proceso
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                        <CreateProductionRecordForm
-                            productionId={productionId}
-                            existingRecords={records}
-                            onSuccess={handleCreateSuccess}
-                            onCancel={handleCreateCancel}
-                            mode="dialog"
-                        />
-                    </DialogContent>
-                </Dialog>
+                <Button onClick={handleNavigateToCreate}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Proceso
+                </Button>
             </div>
 
             {rootRecords.length === 0 ? (
