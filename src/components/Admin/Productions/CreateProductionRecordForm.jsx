@@ -70,20 +70,21 @@ const CreateProductionRecordForm = ({
                 notes: formData.notes || null
             }
 
-            await createProductionRecord(recordData, token)
+            const response = await createProductionRecord(recordData, token)
+            
+            // Get the created record ID from the response
+            const createdRecordId = response?.data?.id || response?.id
             
             // Reset form
             setFormData({ process_id: 'none', parent_record_id: 'none', notes: '' })
             
-            // Call success callback
+            // Call success callback with the created record ID
             if (onSuccess) {
-                onSuccess()
+                onSuccess(createdRecordId)
             }
             
-            // If in page mode, redirect back to production page
-            if (mode === 'page') {
-                router.push(`/admin/productions/${productionId}`)
-            }
+            // If in page mode, don't redirect - let the parent component handle it
+            // The parent will show inputs/outputs in the same page
         } catch (err) {
             console.error('Error creating record:', err)
             alert(err.message || 'Error al crear el proceso')
