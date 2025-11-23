@@ -468,9 +468,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         </TabsContent>
                                         
                                         {/* Transfer List - Solo mostrar en modo manual */}
-                                        <TabsContent value="manual" className="flex-1 flex flex-col min-h-0 overflow-hidden mt-2">
+                                        <TabsContent value="manual" className="flex-1 flex h-full overflow-hidden mt-2">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-12 gap-4 h-full min-h-0 overflow-hidden">
+                                                <div className="grid grid-cols-11 gap-4 h-full h-full overflow-hidden">
                                                     {/* Cajas disponibles del palet seleccionado */}
                                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
@@ -520,7 +520,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                     </div>
 
                                                     {/* Botones de transferencia */}
-                                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2 flex-shrink-0">
+                                                    <div className="col-span-1 flex flex-col items-center justify-center gap-2 flex-shrink-0">
                                                         <Button
                                                             variant="outline"
                                                             size="icon"
