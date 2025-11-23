@@ -26,8 +26,8 @@ const CreateProductionRecordForm = ({
     const [processes, setProcesses] = useState([])
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
-        process_id: '',
-        parent_record_id: '',
+        process_id: 'none',
+        parent_record_id: 'none',
         notes: ''
     })
 
@@ -65,15 +65,15 @@ const CreateProductionRecordForm = ({
             const token = session.user.accessToken
             const recordData = {
                 production_id: parseInt(productionId),
-                process_id: formData.process_id ? parseInt(formData.process_id) : null,
-                parent_record_id: formData.parent_record_id ? parseInt(formData.parent_record_id) : null,
+                process_id: formData.process_id && formData.process_id !== 'none' ? parseInt(formData.process_id) : null,
+                parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' ? parseInt(formData.parent_record_id) : null,
                 notes: formData.notes || null
             }
 
             await createProductionRecord(recordData, token)
             
             // Reset form
-            setFormData({ process_id: '', parent_record_id: '', notes: '' })
+            setFormData({ process_id: 'none', parent_record_id: 'none', notes: '' })
             
             // Call success callback
             if (onSuccess) {
@@ -93,7 +93,7 @@ const CreateProductionRecordForm = ({
     }
 
     const handleCancel = () => {
-        setFormData({ process_id: '', parent_record_id: '', notes: '' })
+        setFormData({ process_id: 'none', parent_record_id: 'none', notes: '' })
         if (onCancel) {
             onCancel()
         }
@@ -114,7 +114,7 @@ const CreateProductionRecordForm = ({
                         <SelectValue placeholder="Selecciona un proceso padre (dejar vacío para proceso raíz)" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">Ninguno (Proceso raíz)</SelectItem>
+                        <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
                         {existingRecords.map(record => (
                             <SelectItem key={record.id} value={record.id.toString()}>
                                 Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
@@ -137,7 +137,7 @@ const CreateProductionRecordForm = ({
                             <SelectValue placeholder="Selecciona un tipo de proceso" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Ninguno</SelectItem>
+                            <SelectItem value="none">Ninguno</SelectItem>
                             {processes.map(process => (
                                 <SelectItem key={process.id} value={process.id.toString()}>
                                     {process.name || `Proceso #${process.id}`}
