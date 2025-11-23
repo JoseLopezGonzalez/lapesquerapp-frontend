@@ -19,7 +19,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Clock, AlertCircle, Check, ChevronsUpDown } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { cn } from '@/lib/utils'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
 
@@ -36,10 +39,12 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const [error, setError] = useState(null)
     
     const [formData, setFormData] = useState({
+        name: '',
         process_id: 'none',
         parent_record_id: 'none',
         notes: ''
     })
+    const [nameOpen, setNameOpen] = useState(false)
 
     useEffect(() => {
         if (session?.user?.accessToken && productionId) {
@@ -67,6 +72,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 
                 // Rellenar el formulario con los datos existentes
                 setFormData({
+                    name: recordData.name || '',
                     process_id: recordData.process_id ? recordData.process_id.toString() : 'none',
                     parent_record_id: recordData.parent_record_id ? recordData.parent_record_id.toString() : 'none',
                     notes: recordData.notes || ''
@@ -109,6 +115,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             
             const recordData = {
                 production_id: parseInt(productionId),
+                name: formData.name || null,
                 process_id: formData.process_id && formData.process_id !== 'none' ? parseInt(formData.process_id) : null,
                 parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' ? parseInt(formData.parent_record_id) : null,
                 notes: formData.notes || null
@@ -250,6 +257,79 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Nombre del Proceso</Label>
+                                <Popover open={nameOpen} onOpenChange={setNameOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={nameOpen}
+                                            className="w-full justify-between"
+                                            disabled={saving}
+                                        >
+                                            {formData.name || "Selecciona o escribe un nombre..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                                        <Command>
+                                            <CommandInput placeholder="Buscar nombre..." />
+                                            <CommandList>
+                                                <CommandEmpty>
+                                                    <div className="py-2 text-center text-sm">
+                                                        <p className="mb-2">No se encontraron nombres.</p>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setNameOpen(false)
+                                                            }}
+                                                        >
+                                                            Usar nombre escrito
+                                                        </Button>
+                                                    </div>
+                                                </CommandEmpty>
+                                                <CommandGroup>
+                                                    {existingRecords
+                                                        .filter(record => record?.name && record.name.trim() !== '' && record.id !== currentRecordId)
+                                                        .map((record) => (
+                                                            <CommandItem
+                                                                key={record.id}
+                                                                value={record.name}
+                                                                onSelect={(currentValue) => {
+                                                                    setFormData({ ...formData, name: currentValue })
+                                                                    setNameOpen(false)
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4",
+                                                                        formData.name === record.name ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                {record.name}
+                                                            </CommandItem>
+                                                        ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <Input
+                                    id="name"
+                                    placeholder="O escribe un nombre personalizado"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    disabled={saving}
+                                    className="mt-2"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Asigna un nombre descriptivo al proceso para identificarlo fácilmente
+                                </p>
+                            </div>
+                            
                             <div className="space-y-2">
                                 <Label htmlFor="parent_record_id">Proceso Padre (Opcional)</Label>
                                 <Select
