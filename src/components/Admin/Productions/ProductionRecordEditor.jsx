@@ -98,6 +98,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             })
             if (response.ok) {
                 const data = await response.json()
+                // Los datos vienen como {value, label}
                 setProcesses(data.data || data || [])
             }
         } catch (err) {
@@ -273,10 +274,10 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     <Select
                                         value={formData.process_id}
                                         onValueChange={(value) => {
-                                            // Si no hay nombre, usar el nombre del proceso seleccionado
-                                            const selectedProcess = processes.find(p => p.id.toString() === value)
-                                            if (!formData.name && value !== 'none' && selectedProcess?.name) {
-                                                setFormData({ ...formData, process_id: value, name: selectedProcess.name })
+                                            // Si no hay nombre, usar el label del proceso seleccionado
+                                            const selectedProcess = processes.find(p => p.value.toString() === value)
+                                            if (!formData.name && value !== 'none' && selectedProcess?.label) {
+                                                setFormData({ ...formData, process_id: value, name: selectedProcess.label })
                                             } else {
                                                 setFormData({ ...formData, process_id: value })
                                             }
@@ -289,10 +290,10 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {processes
-                                                .filter(process => process?.id != null)
+                                                .filter(process => process?.value != null)
                                                 .map(process => (
-                                                    <SelectItem key={process.id} value={process.id.toString()}>
-                                                        {process.name || `Proceso #${process.id}`}
+                                                    <SelectItem key={process.value} value={process.value.toString()}>
+                                                        {process.label || `Proceso #${process.value}`}
                                                     </SelectItem>
                                                 ))}
                                         </SelectContent>
@@ -353,11 +354,11 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                                 </CommandEmpty>
                                                 <CommandGroup>
                                                     {processes
-                                                        .filter(process => process?.name && process.name.trim() !== '')
+                                                        .filter(process => process?.label && process.label.trim() !== '')
                                                         .map((process) => (
                                                             <CommandItem
-                                                                key={process.id}
-                                                                value={process.name}
+                                                                key={process.value}
+                                                                value={process.label}
                                                                 onSelect={(currentValue) => {
                                                                     setFormData({ ...formData, name: currentValue })
                                                                     setNameOpen(false)
@@ -366,10 +367,10 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                                                 <Check
                                                                     className={cn(
                                                                         "mr-2 h-4 w-4",
-                                                                        formData.name === process.name ? "opacity-100" : "opacity-0"
+                                                                        formData.name === process.label ? "opacity-100" : "opacity-0"
                                                                     )}
                                                                 />
-                                                                {process.name}
+                                                                {process.label}
                                                             </CommandItem>
                                                         ))}
                                                 </CommandGroup>
