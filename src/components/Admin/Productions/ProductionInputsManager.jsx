@@ -30,7 +30,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const [selectedBoxes, setSelectedBoxes] = useState([]) // Array de {boxId, palletId}
     const [loadingPallet, setLoadingPallet] = useState(false)
     const [selectionMode, setSelectionMode] = useState('manual') // 'manual' o 'weight'
-    const [targetWeight, setTargetWeight] = useState('')
+    const [targetWeight, setTargetWeight] = useState({}) // {palletId: weight}
     
     // Obtener todas las cajas de todos los palets cargados
     const getAllBoxes = () => {
@@ -138,7 +138,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             setPalletSearch('')
             setLoadedPallets([])
             setSelectedBoxes([])
-            setTargetWeight('')
+            setTargetWeight({})
             setSelectionMode('manual')
             loadInputs()
             if (onRefresh) onRefresh()
@@ -178,36 +178,43 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }, 0)
     }
 
-    // Seleccionar cajas basándose en peso total objetivo
-    const handleSelectByWeight = () => {
-        const allBoxes = getAllBoxes()
-        if (allBoxes.length === 0 || !targetWeight) {
-            alert('Por favor ingresa un peso objetivo y carga al menos un palet')
+    // Seleccionar cajas basándose en peso total objetivo para un palet específico
+    const handleSelectByWeight = (palletId) => {
+        const pallet = loadedPallets.find(p => p.id === palletId)
+        if (!pallet || !pallet.boxes || pallet.boxes.length === 0) {
+            alert('El palet no tiene cajas')
             return
         }
 
-        const target = parseFloat(targetWeight)
+        const weightValue = targetWeight[palletId]
+        if (!weightValue) {
+            alert('Por favor ingresa un peso objetivo para este palet')
+            return
+        }
+
+        const target = parseFloat(weightValue)
         if (isNaN(target) || target <= 0) {
             alert('Por favor ingresa un peso válido mayor a 0')
             return
         }
 
-        // Ordenar cajas por peso (de mayor a menor para optimizar)
-        const availableBoxes = allBoxes
-            .filter(box => !isBoxSelected(box.id, box.palletId))
+        // Ordenar cajas del palet por peso (de mayor a menor para optimizar)
+        const availableBoxes = pallet.boxes
+            .filter(box => !isBoxSelected(box.id, palletId))
             .map(box => ({
                 ...box,
-                weight: parseFloat(box.netWeight || 0)
+                weight: parseFloat(box.netWeight || 0),
+                palletId: palletId
             }))
             .sort((a, b) => b.weight - a.weight)
 
         // Algoritmo voraz: seleccionar cajas hasta alcanzar o acercarse al peso objetivo
-        let currentWeight = calculateTotalWeight()
         const boxesToAdd = []
+        let currentWeight = 0
         
         for (const box of availableBoxes) {
             if (currentWeight + box.weight <= target) {
-                boxesToAdd.push({ boxId: box.id, palletId: box.palletId })
+                boxesToAdd.push({ boxId: box.id, palletId: palletId })
                 currentWeight += box.weight
             }
         }
@@ -216,13 +223,13 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         if (boxesToAdd.length === 0 && availableBoxes.length > 0) {
             const closestBox = availableBoxes.find(box => box.weight <= target)
             if (closestBox) {
-                boxesToAdd.push({ boxId: closestBox.id, palletId: closestBox.palletId })
+                boxesToAdd.push({ boxId: closestBox.id, palletId: palletId })
             }
         }
 
         if (boxesToAdd.length > 0) {
             setSelectedBoxes(prev => [...prev, ...boxesToAdd])
-            setTargetWeight('')
+            setTargetWeight(prev => ({ ...prev, [palletId]: '' }))
         } else {
             alert('No se pudieron encontrar cajas que se ajusten al peso objetivo')
         }
@@ -389,7 +396,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     <TabsContent value="manual" className="mt-4">
                                         {getAllBoxes().length > 0 && (
                                 <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 380px)', minHeight: '350px', maxHeight: '500px' }}>
-                                    {/* Columna izquierda: Cajas disponibles */}
+                                    {/* Columna izquierda: Cajas disponibles - Separadas por palet */}
                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
                                             <div className="flex items-center justify-between">
@@ -402,35 +409,51 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             </div>
                                         </div>
                                         <ScrollArea className="flex-1 min-h-0">
-                                            <div className="p-2 space-y-1">
-                                                {getAllBoxes()
-                                                    .filter(box => !isBoxSelected(box.id, box.palletId))
-                                                    .map((box) => (
-                                                        <div
-                                                            key={`${box.palletId}-${box.id}`}
-                                                            className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
-                                                            onClick={() => handleToggleBox(box.id, box.palletId)}
-                                                        >
-                                                            <Checkbox
-                                                                checked={false}
-                                                                onCheckedChange={() => handleToggleBox(box.id, box.palletId)}
-                                                            />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className="text-sm font-medium truncate">
-                                                                        Caja #{box.id}
-                                                                    </p>
-                                                                    <Badge variant="outline" className="text-xs">P{box.palletId}</Badge>
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground truncate">
-                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {formatWeight(box.netWeight)}
-                                                                </p>
+                                            <div className="p-2 space-y-3">
+                                                {loadedPallets.map((pallet) => {
+                                                    const availableBoxes = (pallet.boxes || [])
+                                                        .filter(box => !isBoxSelected(box.id, pallet.id))
+                                                    
+                                                    if (availableBoxes.length === 0) return null
+                                                    
+                                                    return (
+                                                        <div key={pallet.id} className="space-y-2">
+                                                            <div className="flex items-center gap-2 px-2 py-1 bg-muted rounded-md">
+                                                                <Badge variant="outline" className="text-xs font-semibold">
+                                                                    Palet #{pallet.id}
+                                                                </Badge>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {availableBoxes.length} cajas disponibles
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-1 pl-2 border-l-2 border-muted">
+                                                                {availableBoxes.map((box) => (
+                                                                    <div
+                                                                        key={`${pallet.id}-${box.id}`}
+                                                                        className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
+                                                                        onClick={() => handleToggleBox(box.id, pallet.id)}
+                                                                    >
+                                                                        <Checkbox
+                                                                            checked={false}
+                                                                            onCheckedChange={() => handleToggleBox(box.id, pallet.id)}
+                                                                        />
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-sm font-medium truncate">
+                                                                                Caja #{box.id}
+                                                                            </p>
+                                                                            <p className="text-xs text-muted-foreground truncate">
+                                                                                {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                            </p>
+                                                                            <p className="text-xs text-muted-foreground">
+                                                                                {formatWeight(box.netWeight)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                    ))}
+                                                    )
+                                                })}
                                                 {getAllBoxes().filter(box => !isBoxSelected(box.id, box.palletId)).length === 0 && (
                                                     <div className="text-center py-8 text-sm text-muted-foreground">
                                                         Todas las cajas están seleccionadas
