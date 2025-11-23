@@ -115,11 +115,13 @@ const CreateProductionRecordForm = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
-                        {existingRecords.map(record => (
-                            <SelectItem key={record.id} value={record.id.toString()}>
-                                Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
-                            </SelectItem>
-                        ))}
+                        {existingRecords
+                            .filter(record => record?.id != null)
+                            .map(record => (
+                                <SelectItem key={record.id} value={record.id.toString()}>
+                                    Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
+                                </SelectItem>
+                            ))}
                     </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
@@ -138,11 +140,13 @@ const CreateProductionRecordForm = ({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="none">Ninguno</SelectItem>
-                            {processes.map(process => (
-                                <SelectItem key={process.id} value={process.id.toString()}>
-                                    {process.name || `Proceso #${process.id}`}
-                                </SelectItem>
-                            ))}
+                            {processes
+                                .filter(process => process?.id != null)
+                                .map(process => (
+                                    <SelectItem key={process.id} value={process.id.toString()}>
+                                        {process.name || `Proceso #${process.id}`}
+                                    </SelectItem>
+                                ))}
                         </SelectContent>
                     </Select>
                 ) : (

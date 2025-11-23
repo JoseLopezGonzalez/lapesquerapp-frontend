@@ -207,11 +207,13 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
                                         <SelectValue placeholder="Selecciona un producto" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {products.map(product => (
-                                            <SelectItem key={product.id} value={product.id.toString()}>
-                                                {product.name}
-                                            </SelectItem>
-                                        ))}
+                                        {products
+                                            .filter(product => product?.id != null)
+                                            .map(product => (
+                                                <SelectItem key={product.id} value={product.id.toString()}>
+                                                    {product.name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -299,11 +301,13 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh }) => {
                                         <SelectValue placeholder="Selecciona un producto" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {products.map(product => (
-                                            <SelectItem key={product.id} value={product.id.toString()}>
-                                                {product.name}
-                                            </SelectItem>
-                                        ))}
+                                        {products
+                                            .filter(product => product?.id != null)
+                                            .map(product => (
+                                                <SelectItem key={product.id} value={product.id.toString()}>
+                                                    {product.name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
