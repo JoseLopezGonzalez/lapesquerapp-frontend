@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator } from 'lucide-react'
+import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box } from 'lucide-react'
+import { EmptyState } from '@/components/Utilities/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -430,6 +431,46 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                             </Button>
                                                         </div>
                                                         
+                                                        {/* Productos y lotes */}
+                                                        {pallet.boxes && pallet.boxes.length > 0 && (() => {
+                                                            const productsMap = {}
+                                                            pallet.boxes.forEach(box => {
+                                                                if (box.product) {
+                                                                    const productId = box.product.id
+                                                                    if (!productsMap[productId]) {
+                                                                        productsMap[productId] = {
+                                                                            name: box.product.name,
+                                                                            lots: new Set()
+                                                                        }
+                                                                    }
+                                                                    if (box.lot) {
+                                                                        productsMap[productId].lots.add(box.lot)
+                                                                    }
+                                                                }
+                                                            })
+                                                            const productsArray = Object.values(productsMap)
+                                                            
+                                                            return (
+                                                                <div className="mt-1.5 space-y-1">
+                                                                    {productsArray.slice(0, 2).map((product, idx) => (
+                                                                        <div key={idx} className="text-xs">
+                                                                            <span className="font-medium text-foreground">{product.name}</span>
+                                                                            {product.lots.size > 0 && (
+                                                                                <span className="text-muted-foreground ml-1">
+                                                                                    (Lotes: {Array.from(product.lots).slice(0, 2).join(', ')}{product.lots.size > 2 ? '...' : ''})
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+                                                                    {productsArray.length > 2 && (
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            +{productsArray.length - 2} producto{productsArray.length - 2 > 1 ? 's' : ''} más
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        })()}
+                                                        
                                                         <div className="mt-1.5 flex items-center text-xs text-muted-foreground">
                                                             <span>Total: {formatWeight(totalWeight)}</span>
                                                             <span className="mx-1.5">|</span>
@@ -442,8 +483,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             )
                                         })}
                                         {loadedPallets.length === 0 && (
-                                            <div className="text-center py-8 text-sm text-muted-foreground">
-                                                Busca y agrega palets para comenzar
+                                            <div className="flex items-center justify-center h-full py-8">
+                                                <EmptyState
+                                                    icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                    title="No hay palets cargados"
+                                                    description="Busca un palet por su ID para comenzar a agregar cajas"
+                                                />
                                             </div>
                                         )}
                                     </div>
@@ -544,8 +589,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                         </div>
                                                                     ))}
                                                                 {getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0 && (
-                                                                    <div className="text-center py-8 text-sm text-muted-foreground">
-                                                                        Todas las cajas están seleccionadas
+                                                                    <div className="flex items-center justify-center h-full py-8">
+                                                                        <EmptyState
+                                                                            icon={<CheckCircle className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                            title="Todas las cajas seleccionadas"
+                                                                            description="Todas las cajas de este palet ya están en la lista de seleccionadas"
+                                                                        />
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -652,8 +701,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                     )
                                                                 })}
                                                                 {getSelectedBoxesForPallet(selectedPalletId).length === 0 && (
-                                                                    <div className="text-center py-8 text-sm text-muted-foreground">
-                                                                        No hay cajas seleccionadas
+                                                                    <div className="flex items-center justify-center h-full py-8">
+                                                                        <EmptyState
+                                                                            icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                            title="No hay cajas seleccionadas"
+                                                                            description="Selecciona cajas del palet para agregarlas a la producción"
+                                                                        />
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -662,10 +715,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                 </div>
                                             )}
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length === 0 && (
-                                                <div className="text-center py-8 border rounded-lg">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Este palet no tiene cajas
-                                                    </p>
+                                                <div className="flex items-center justify-center h-full py-8">
+                                                    <EmptyState
+                                                        icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                        title="Palet sin cajas"
+                                                        description="Este palet no contiene cajas disponibles"
+                                                    />
                                                 </div>
                                             )}
                                         </TabsContent>
@@ -673,10 +728,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 )}
                                 
                                 {!selectedPalletId && loadedPallets.length > 0 && (
-                                    <div className="text-center py-8 border rounded-lg">
-                                        <p className="text-sm text-muted-foreground">
-                                            Selecciona un palet para ver sus cajas
-                                        </p>
+                                    <div className="flex items-center justify-center h-full py-8">
+                                        <EmptyState
+                                            icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                            title="Selecciona un palet"
+                                            description="Haz clic en un palet de la lista para ver y seleccionar sus cajas"
+                                        />
                                     </div>
                                 )}
                             </div>
@@ -767,8 +824,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             )
                                         })}
                                         {selectedBoxes.length === 0 && (
-                                            <div className="text-center py-8 text-sm text-muted-foreground">
-                                                No hay cajas seleccionadas
+                                            <div className="flex items-center justify-center h-full py-8">
+                                                <EmptyState
+                                                    icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                    title="No hay cajas seleccionadas"
+                                                    description="Selecciona cajas de los palets para verlas aquí"
+                                                />
                                             </div>
                                         )}
                                     </div>
@@ -805,11 +866,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 
             {/* Lista de inputs existentes */}
             {inputs.length === 0 ? (
-                <div className="py-8 text-center border rounded-lg">
-                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                        No hay entradas registradas. Agrega cajas desde un palet para comenzar.
-                    </p>
+                <div className="flex items-center justify-center py-8">
+                    <EmptyState
+                        icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                        title="No hay entradas registradas"
+                        description="Agrega cajas desde un palet para comenzar a registrar las entradas de este proceso"
+                    />
                 </div>
             ) : (
                 <div className="space-y-2">
