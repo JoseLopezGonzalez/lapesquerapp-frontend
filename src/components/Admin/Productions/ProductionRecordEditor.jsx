@@ -292,12 +292,12 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                                     </div>
                                                 </CommandEmpty>
                                                 <CommandGroup>
-                                                    {existingRecords
-                                                        .filter(record => record?.name && record.name.trim() !== '' && record.id !== currentRecordId)
-                                                        .map((record) => (
+                                                    {processes
+                                                        .filter(process => process?.name && process.name.trim() !== '')
+                                                        .map((process) => (
                                                             <CommandItem
-                                                                key={record.id}
-                                                                value={record.name}
+                                                                key={process.id}
+                                                                value={process.name}
                                                                 onSelect={(currentValue) => {
                                                                     setFormData({ ...formData, name: currentValue })
                                                                     setNameOpen(false)
@@ -306,10 +306,10 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                                                 <Check
                                                                     className={cn(
                                                                         "mr-2 h-4 w-4",
-                                                                        formData.name === record.name ? "opacity-100" : "opacity-0"
+                                                                        formData.name === process.name ? "opacity-100" : "opacity-0"
                                                                     )}
                                                                 />
-                                                                {record.name}
+                                                                {process.name}
                                                             </CommandItem>
                                                         ))}
                                                 </CommandGroup>
