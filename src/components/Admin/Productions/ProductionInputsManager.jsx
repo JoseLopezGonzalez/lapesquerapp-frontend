@@ -274,10 +274,10 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 
                             {/* Transfer List */}
                             {selectedPallet && selectedPallet.boxes && selectedPallet.boxes.length > 0 && (
-                                <div className="grid grid-cols-12 gap-4 h-[500px]">
+                                <div className="grid grid-cols-12 gap-4" style={{ height: 'calc(90vh - 280px)', minHeight: '400px', maxHeight: '600px' }}>
                                     {/* Columna izquierda: Cajas disponibles */}
-                                    <div className="col-span-5 flex flex-col border rounded-lg">
-                                        <div className="p-3 border-b bg-muted/50">
+                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                        <div className="p-3 border-b bg-muted/50 flex-shrink-0">
                                             <div className="flex items-center justify-between">
                                                 <Label className="font-semibold">
                                                     Cajas Disponibles
@@ -287,7 +287,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <ScrollArea className="flex-1">
+                                        <ScrollArea className="flex-1 min-h-0">
                                             <div className="p-2 space-y-1">
                                                 {selectedPallet.boxes
                                                     .filter(box => !selectedBoxes.includes(box.id))
@@ -324,7 +324,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     </div>
 
                                     {/* Botones de transferencia */}
-                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2">
+                                    <div className="col-span-2 flex flex-col items-center justify-center gap-2 flex-shrink-0">
                                         <Button
                                             variant="outline"
                                             size="icon"
@@ -375,8 +375,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     </div>
 
                                     {/* Columna derecha: Cajas seleccionadas */}
-                                    <div className="col-span-5 flex flex-col border rounded-lg">
-                                        <div className="p-3 border-b bg-muted/50">
+                                    <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden">
+                                        <div className="p-3 border-b bg-muted/50 flex-shrink-0">
                                             <div className="flex items-center justify-between">
                                                 <Label className="font-semibold">
                                                     Cajas Seleccionadas
@@ -386,7 +386,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <ScrollArea className="flex-1">
+                                        <ScrollArea className="flex-1 min-h-0">
                                             <div className="p-2 space-y-1">
                                                 {selectedBoxes.map((boxId) => {
                                                     const box = selectedPallet.boxes.find(b => b.id === boxId)
