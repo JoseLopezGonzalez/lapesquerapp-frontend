@@ -3332,6 +3332,184 @@ export const configs = {
     },
   },
 
+  /* Productions */
+  productions: {
+    title: "Producciones",
+    description: "Gestiona, edita y consulta lotes de producción.",
+    emptyState: {
+      title: "No existen producciones según los filtros",
+      description: "Ajusta los filtros o crea una nueva producción.",
+    },
+    perPage: 15,
+    endpoint: "v2/productions",
+    viewRoute: "/admin/productions/:id",
+    deleteEndpoint: "v2/productions/:id",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id o lote",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            {
+              name: "lot",
+              label: "Lote",
+              type: "text",
+              placeholder: "Buscar por lote",
+            },
+            {
+              name: "notes",
+              label: "Notas",
+              type: "textarea",
+              placeholder: "Buscar por notas",
+            },
+            {
+              name: "dates",
+              label: "Fecha",
+              type: "dateRange",
+              visibleMonths: 1,
+            },
+            {
+              name: "status",
+              label: "Estado",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "open", label: "Abierto", value: false },
+                { name: "closed", label: "Cerrado", value: false },
+              ],
+            }
+          ],
+        },
+        {
+          name: "species",
+          label: "Especies",
+          filters: [
+            {
+              name: "species",
+              label: "Especies",
+              type: "autocomplete",
+              placeholder: "Buscar por especie",
+              endpoint: "species/options",
+            }
+          ],
+        },
+        {
+          name: "captureZones",
+          label: "Zonas de captura",
+          filters: [
+            {
+              name: "captureZones",
+              label: "Zonas de captura",
+              type: "autocomplete",
+              placeholder: "Buscar por zona de captura",
+              endpoint: "capture-zones/options",
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "lot", label: "Lote", type: "text", path: "lot" },
+        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
+        { name: "openedAt", label: "Fecha apertura", type: "date", path: "openedAt" },
+        { name: "closedAt", label: "Fecha cierre", type: "date", path: "closedAt", hideOnMobile: true },
+        {
+          name: "status",
+          label: "Estado",
+          type: "badge",
+          path: "status",
+          options: {
+            open: { label: "Abierto", color: "success", outline: true },
+            closed: { label: "Cerrado", color: "secondary", outline: true },
+            default: { label: "Desconocido", color: "secondary", outline: true },
+          }
+        },
+        { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true }
+      ],
+    },
+    createForm: {
+      title: "Nueva Producción",
+      endpoint: "v2/productions",
+      method: "POST",
+      successMessage: "Producción creada con éxito",
+      errorMessage: "Error al crear la producción",
+      fields: [
+        {
+          name: "lot",
+          label: "Número de lote",
+          type: "text",
+          placeholder: "Ej. LOT-2025-001",
+          validation: {
+            required: "El número de lote es obligatorio",
+            minLength: {
+              value: 3,
+              message: "El lote debe tener al menos 3 caracteres"
+            }
+          },
+          cols: {
+            sm: 6,
+            md: 4,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
+          name: "speciesId",
+          path: "species.id",
+          label: "Especie",
+          type: "Autocomplete",
+          placeholder: "Selecciona la especie (opcional)",
+          endpoint: "species/options",
+          validation: {},
+          cols: {
+            sm: 6,
+            md: 4,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
+          name: "notes",
+          label: "Notas",
+          type: "textarea",
+          placeholder: "Notas adicionales sobre la producción",
+          validation: {},
+          cols: {
+            sm: 6,
+            md: 6,
+            lg: 6,
+            xl: 6,
+          }
+        }
+      ]
+    },
+    editForm: {
+      title: "Editar Producción",
+      endpoint: "v2/productions",
+      method: "PUT",
+      successMessage: "Producción actualizada con éxito",
+      errorMessage: "Error al actualizar la producción",
+    },
+  },
+
 };
 
 

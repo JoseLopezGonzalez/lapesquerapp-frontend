@@ -1,0 +1,335 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { getProductionRecords, createProductionRecord, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Plus, Trash2, CheckCircle, Clock } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
+    const { data: session } = useSession()
+    const [records, setRecords] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [createDialogOpen, setCreateDialogOpen] = useState(false)
+    const [formData, setFormData] = useState({
+        process_id: '',
+        parent_record_id: '',
+        notes: ''
+    })
+
+    useEffect(() => {
+        if (session?.user?.accessToken && productionId) {
+            loadRecords()
+        }
+    }, [session, productionId])
+
+    const loadRecords = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const token = session.user.accessToken
+            const response = await getProductionRecords(token, { production_id: productionId })
+            setRecords(response.data || [])
+        } catch (err) {
+            console.error('Error loading records:', err)
+            setError(err.message || 'Error al cargar los procesos')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCreateRecord = async (e) => {
+        e.preventDefault()
+        try {
+            const token = session.user.accessToken
+            const recordData = {
+                production_id: parseInt(productionId),
+                process_id: formData.process_id ? parseInt(formData.process_id) : null,
+                parent_record_id: formData.parent_record_id ? parseInt(formData.parent_record_id) : null,
+                notes: formData.notes || null
+            }
+
+            await createProductionRecord(recordData, token)
+            setCreateDialogOpen(false)
+            setFormData({ process_id: '', parent_record_id: '', notes: '' })
+            loadRecords()
+            if (onRefresh) onRefresh()
+        } catch (err) {
+            console.error('Error creating record:', err)
+            alert(err.message || 'Error al crear el proceso')
+        }
+    }
+
+    const handleDeleteRecord = async (recordId) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este proceso?')) {
+            return
+        }
+
+        try {
+            const token = session.user.accessToken
+            await deleteProductionRecord(recordId, token)
+            loadRecords()
+            if (onRefresh) onRefresh()
+        } catch (err) {
+            console.error('Error deleting record:', err)
+            alert(err.message || 'Error al eliminar el proceso')
+        }
+    }
+
+    const handleFinishRecord = async (recordId) => {
+        try {
+            const token = session.user.accessToken
+            await finishProductionRecord(recordId, token)
+            loadRecords()
+            if (onRefresh) onRefresh()
+        } catch (err) {
+            console.error('Error finishing record:', err)
+            alert(err.message || 'Error al finalizar el proceso')
+        }
+    }
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'
+        return new Date(dateString).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    }
+
+    const getRootRecords = () => {
+        return records.filter(r => !r.parent_record_id)
+    }
+
+    const getChildRecords = (parentId) => {
+        return records.filter(r => r.parent_record_id === parentId)
+    }
+
+    const renderRecordTree = (record, level = 0) => {
+        const children = getChildRecords(record.id)
+        const isCompleted = record.finished_at !== null
+        const isRoot = !record.parent_record_id
+
+        return (
+            <div key={record.id} className={`${level > 0 ? 'ml-8 mt-2 border-l-2 pl-4' : ''}`}>
+                <Card className="mb-2">
+                    <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <CardTitle className="text-lg">
+                                        Proceso #{record.id}
+                                    </CardTitle>
+                                    {isRoot && (
+                                        <Badge variant="outline">Raíz</Badge>
+                                    )}
+                                    {isCompleted ? (
+                                        <Badge variant="default" className="bg-green-500">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Completado
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="outline">
+                                            <Clock className="h-3 w-3 mr-1" />
+                                            En progreso
+                                        </Badge>
+                                    )}
+                                </div>
+                                {record.process && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Tipo: {record.process.name}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                {!isCompleted && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleFinishRecord(record.id)}
+                                    >
+                                        Finalizar
+                                    </Button>
+                                )}
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteRecord(record.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2 text-sm">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-muted-foreground">Inicio:</p>
+                                    <p className="font-medium">{formatDate(record.started_at)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground">Fin:</p>
+                                    <p className="font-medium">{formatDate(record.finished_at) || 'Pendiente'}</p>
+                                </div>
+                            </div>
+                            {record.notes && (
+                                <div>
+                                    <p className="text-muted-foreground">Notas:</p>
+                                    <p>{record.notes}</p>
+                                </div>
+                            )}
+                            {record.inputs_count !== undefined && (
+                                <div>
+                                    <p className="text-muted-foreground">Entradas: {record.inputs_count || 0} cajas</p>
+                                </div>
+                            )}
+                            {record.outputs_count !== undefined && (
+                                <div>
+                                    <p className="text-muted-foreground">Salidas: {record.outputs_count || 0} registros</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+                {children.map(child => renderRecordTree(child, level + 1))}
+            </div>
+        )
+    }
+
+    if (loading) {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-32 w-full" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <Card className="border-destructive">
+                <CardHeader>
+                    <CardTitle className="text-destructive">Error</CardTitle>
+                    <CardDescription>{error}</CardDescription>
+                </CardHeader>
+            </Card>
+        )
+    }
+
+    const rootRecords = getRootRecords()
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-xl font-semibold">Procesos de Producción</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Gestiona los procesos dentro del lote de producción
+                    </p>
+                </div>
+                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Nuevo Proceso
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Crear Nuevo Proceso</DialogTitle>
+                            <DialogDescription>
+                                Crea un nuevo proceso dentro de esta producción
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateRecord} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="parent_record_id">Proceso Padre (Opcional)</Label>
+                                <Select
+                                    value={formData.parent_record_id}
+                                    onValueChange={(value) => setFormData({ ...formData, parent_record_id: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona un proceso padre (dejar vacío para proceso raíz)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="">Ninguno (Proceso raíz)</SelectItem>
+                                        {records.map(record => (
+                                            <SelectItem key={record.id} value={record.id.toString()}>
+                                                Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Los procesos raíz consumen cajas directamente de palets. Los procesos hijos consumen salidas de procesos anteriores.
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="process_id">Tipo de Proceso (Opcional)</Label>
+                                <Input
+                                    id="process_id"
+                                    type="number"
+                                    placeholder="ID del tipo de proceso"
+                                    value={formData.process_id}
+                                    onChange={(e) => setFormData({ ...formData, process_id: e.target.value })}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    ID del proceso desde la tabla processes (opcional)
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="notes">Notas</Label>
+                                <Textarea
+                                    id="notes"
+                                    placeholder="Notas adicionales sobre el proceso"
+                                    value={formData.notes}
+                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                    rows={3}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setCreateDialogOpen(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="submit">Crear Proceso</Button>
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            {rootRecords.length === 0 ? (
+                <Card>
+                    <CardContent className="py-8 text-center">
+                        <p className="text-muted-foreground">
+                            No hay procesos registrados. Crea el primer proceso para comenzar.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="space-y-4">
+                    {rootRecords.map(record => renderRecordTree(record))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default ProductionRecordsManager
+
