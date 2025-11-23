@@ -202,6 +202,39 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }, 0)
     }
 
+    // Calcular peso total por palet
+    const calculateWeightByPallet = (palletId) => {
+        const allBoxes = getAllBoxes()
+        const selectedForPallet = getSelectedBoxesForPallet(palletId)
+        return selectedForPallet.reduce((total, selectedBox) => {
+            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === palletId)
+            return total + (parseFloat(box?.netWeight || 0))
+        }, 0)
+    }
+
+    // Calcular peso total por producto
+    const calculateWeightByProduct = () => {
+        const allBoxes = getAllBoxes()
+        const productWeights = {}
+        
+        selectedBoxes.forEach(selectedBox => {
+            const box = allBoxes.find(b => b.id === selectedBox.boxId && b.palletId === selectedBox.palletId)
+            if (box && box.product) {
+                const productId = box.product.id
+                const productName = box.product.name || 'Sin producto'
+                if (!productWeights[productId]) {
+                    productWeights[productId] = {
+                        name: productName,
+                        weight: 0
+                    }
+                }
+                productWeights[productId].weight += parseFloat(box.netWeight || 0)
+            }
+        })
+        
+        return Object.values(productWeights)
+    }
+
     // Seleccionar cajas basándose en peso total objetivo para un palet específico
     const handleSelectByWeight = (palletId) => {
         const pallet = loadedPallets.find(p => p.id === palletId)
@@ -468,9 +501,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                         </TabsContent>
                                         
                                         {/* Transfer List - Solo mostrar en modo manual */}
-                                        <TabsContent value="manual" className="flex-1 flex h-full overflow-hidden mt-2">
+                                        <TabsContent value="manual" className="flex-1 flex h-full items-center justify-center w-full overflow-hidden mt-2">
                                             {selectedPalletId && getPalletBoxes(selectedPalletId).length > 0 && (
-                                                <div className="grid grid-cols-11 gap-4 h-full h-full overflow-hidden">
+                                                <div className="grid grid-cols-11 gap-4 h-full w-full overflow-hidden">
                                                     {/* Cajas disponibles del palet seleccionado */}
                                                     <div className="col-span-5 flex flex-col border rounded-lg overflow-hidden h-full">
                                                         <div className="p-2 border-b bg-muted/50 flex-shrink-0">
@@ -499,13 +532,13 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                             />
                                                                             <div className="flex-1 min-w-0">
                                                                                 <p className="text-sm font-medium truncate">
-                                                                                    Caja #{box.id}
+                                                                                    {box.product?.name || 'Sin producto'}
                                                                                 </p>
                                                                                 <p className="text-xs text-muted-foreground truncate">
-                                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                                    Lote: {box.lot || 'N/A'}
                                                                                 </p>
                                                                                 <p className="text-xs text-muted-foreground">
-                                                                                    {formatWeight(box.netWeight)}
+                                                                                    Peso Neto: {formatWeight(box.netWeight)}
                                                                                 </p>
                                                                             </div>
                                                                         </div>
@@ -606,13 +639,13 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                             />
                                                                             <div className="flex-1 min-w-0">
                                                                                 <p className="text-sm font-medium truncate">
-                                                                                    Caja #{box.id}
+                                                                                    {box.product?.name || 'Sin producto'}
                                                                                 </p>
                                                                                 <p className="text-xs text-muted-foreground truncate">
-                                                                                    {box.product?.name || 'Sin producto'} | Lote: {box.lot || 'N/A'}
+                                                                                    Lote: {box.lot || 'N/A'}
                                                                                 </p>
                                                                                 <p className="text-xs text-muted-foreground">
-                                                                                    {formatWeight(box.netWeight)}
+                                                                                    Peso Neto: {formatWeight(box.netWeight)}
                                                                                 </p>
                                                                             </div>
                                                                         </div>
@@ -671,6 +704,15 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                 <span className="text-muted-foreground">Peso Total:</span>
                                                 <span className="font-semibold">{formatWeight(calculateTotalWeight())}</span>
                                             </div>
+                                            <div className="pt-2 mt-2 border-t">
+                                                <p className="text-muted-foreground mb-1 font-semibold">Por Producto:</p>
+                                                {calculateWeightByProduct().map((product, idx) => (
+                                                    <div key={idx} className="flex justify-between">
+                                                        <span className="text-muted-foreground truncate">{product.name}:</span>
+                                                        <span className="font-semibold ml-2">{formatWeight(product.weight)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -684,12 +726,17 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                             
                                             return (
                                                 <div key={pallet.id} className="space-y-1">
-                                                    <div className="flex items-center gap-2 px-2 py-1 bg-muted rounded-md">
-                                                        <Badge variant="outline" className="text-xs font-semibold">
-                                                            Palet #{pallet.id}
-                                                        </Badge>
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {selectedForPallet.length} cajas
+                                                    <div className="flex items-center justify-between gap-2 px-2 py-1 bg-muted rounded-md">
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="text-xs font-semibold">
+                                                                Palet #{pallet.id}
+                                                            </Badge>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {selectedForPallet.length} cajas
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs font-semibold">
+                                                            {formatWeight(calculateWeightByPallet(pallet.id))}
                                                         </span>
                                                     </div>
                                                     <div className="space-y-1 pl-2 border-l-2 border-muted">
@@ -708,8 +755,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                         className="h-3 w-3"
                                                                     />
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="font-medium truncate">Caja #{box.id}</p>
-                                                                        <p className="text-muted-foreground truncate">{formatWeight(box.netWeight)}</p>
+                                                                        <p className="font-medium truncate">{box.product?.name || 'Sin producto'}</p>
+                                                                        <p className="text-muted-foreground truncate">Lote: {box.lot || 'N/A'}</p>
+                                                                        <p className="text-muted-foreground truncate">Peso Neto: {formatWeight(box.netWeight)}</p>
                                                                     </div>
                                                                 </div>
                                                             )
