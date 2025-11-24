@@ -558,11 +558,12 @@ export function createProductionInput(inputData, token) {
 
 /**
  * Crea múltiples production inputs
- * @param {Array} inputsData - Array de datos de inputs
+ * @param {number} productionRecordId - ID del registro de producción
+ * @param {Array<number>} boxIds - Array de IDs de cajas
  * @param {string} token - Token de autenticación
  * @returns {Promise<Object>} - Inputs creados
  */
-export function createMultipleProductionInputs(inputsData, token) {
+export function createMultipleProductionInputs(productionRecordId, boxIds, token) {
     return fetchWithTenant(`${API_URL_V2}production-inputs/multiple`, {
         method: 'POST',
         headers: {
@@ -571,7 +572,10 @@ export function createMultipleProductionInputs(inputsData, token) {
             'Authorization': `Bearer ${token}`,
             'User-Agent': navigator.userAgent,
         },
-        body: JSON.stringify({ inputs: inputsData }),
+        body: JSON.stringify({
+            production_record_id: productionRecordId,
+            box_ids: boxIds
+        }),
     })
         .then((response) => {
             if (!response.ok) {

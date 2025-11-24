@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false }) => {
+const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
     const [outputs, setOutputs] = useState([])
     const [products, setProducts] = useState([])
@@ -174,9 +174,207 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         )
     }
 
-    return (
-        <div className="space-y-4">
-            {!hideTitle && (
+    const addDialogContent = (
+        <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Agregar Salida Lógica</DialogTitle>
+                <DialogDescription>
+                    Registra la salida de este proceso (producto producido)
+                </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateOutput} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="product_id">Producto *</Label>
+                    <Select
+                        value={formData.product_id}
+                        onValueChange={(value) => setFormData({ ...formData, product_id: value })}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un producto" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {products
+                                .filter(product => product?.id != null)
+                                .map(product => (
+                                    <SelectItem key={product.id} value={product.id.toString()}>
+                                        {product.name}
+                                    </SelectItem>
+                                ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="lot_id">Lote</Label>
+                    <Input
+                        id="lot_id"
+                        placeholder="Ej. LOT-2025-001"
+                        value={formData.lot_id}
+                        onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Lote del producto producido (opcional)
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="boxes">Cantidad de Cajas *</Label>
+                        <Input
+                            id="boxes"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={formData.boxes}
+                            onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="weight_kg">Peso Total (kg) *</Label>
+                        <Input
+                            id="weight_kg"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            value={formData.weight_kg}
+                            onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                            required
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            setAddDialogOpen(false)
+                            resetForm()
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
+                        Crear Salida
+                    </Button>
+                </div>
+            </form>
+        </DialogContent>
+    )
+
+    const addDialog = (
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            {addDialogContent}
+        </Dialog>
+    )
+
+    const addButton = (
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Salida
+                </Button>
+            </DialogTrigger>
+            {addDialogContent}
+        </Dialog>
+    )
+
+    const editDialog = (
+        <Dialog open={editDialogOpen} onOpenChange={(open) => {
+            setEditDialogOpen(open)
+            if (!open) {
+                setEditingOutput(null)
+                resetForm()
+            }
+        }}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Editar Salida Lógica</DialogTitle>
+                    <DialogDescription>
+                        Modifica los datos de la salida
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleEditOutput} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="edit_product_id">Producto *</Label>
+                        <Select
+                            value={formData.product_id}
+                            onValueChange={(value) => setFormData({ ...formData, product_id: value })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un producto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {products
+                                    .filter(product => product?.id != null)
+                                    .map(product => (
+                                        <SelectItem key={product.id} value={product.id.toString()}>
+                                            {product.name}
+                                        </SelectItem>
+                                    ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit_lot_id">Lote</Label>
+                        <Input
+                            id="edit_lot_id"
+                            placeholder="Ej. LOT-2025-001"
+                            value={formData.lot_id}
+                            onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_boxes">Cantidad de Cajas *</Label>
+                            <Input
+                                id="edit_boxes"
+                                type="number"
+                                min="0"
+                                placeholder="0"
+                                value={formData.boxes}
+                                onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_weight_kg">Peso Total (kg) *</Label>
+                            <Input
+                                id="edit_weight_kg"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                value={formData.weight_kg}
+                                onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setEditDialogOpen(false)
+                                setEditingOutput(null)
+                                resetForm()
+                            }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
+                            Guardar Cambios
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+
+    const mainContent = (
+        <>
+            {!hideTitle && !renderInCard && (
                 <div className="flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold">Salidas Lógicas</h3>
@@ -186,192 +384,11 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                     </div>
                 </div>
             )}
-            <div className={`flex items-center ${hideTitle ? 'justify-end' : 'justify-between'}`}>
-                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar Salida
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Agregar Salida Lógica</DialogTitle>
-                            <DialogDescription>
-                                Registra la salida de este proceso (producto producido)
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleCreateOutput} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="product_id">Producto *</Label>
-                                <Select
-                                    value={formData.product_id}
-                                    onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un producto" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {products
-                                            .filter(product => product?.id != null)
-                                            .map(product => (
-                                                <SelectItem key={product.id} value={product.id.toString()}>
-                                                    {product.name}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="lot_id">Lote</Label>
-                                <Input
-                                    id="lot_id"
-                                    placeholder="Ej. LOT-2025-001"
-                                    value={formData.lot_id}
-                                    onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Lote del producto producido (opcional)
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="boxes">Cantidad de Cajas *</Label>
-                                    <Input
-                                        id="boxes"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        value={formData.boxes}
-                                        onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="weight_kg">Peso Total (kg) *</Label>
-                                    <Input
-                                        id="weight_kg"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        placeholder="0.00"
-                                        value={formData.weight_kg}
-                                        onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        setAddDialogOpen(false)
-                                        resetForm()
-                                    }}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
-                                    Crear Salida
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Dialog de edición */}
-                <Dialog open={editDialogOpen} onOpenChange={(open) => {
-                    setEditDialogOpen(open)
-                    if (!open) {
-                        setEditingOutput(null)
-                        resetForm()
-                    }
-                }}>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Editar Salida Lógica</DialogTitle>
-                            <DialogDescription>
-                                Modifica los datos de la salida
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleEditOutput} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="edit_product_id">Producto *</Label>
-                                <Select
-                                    value={formData.product_id}
-                                    onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un producto" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {products
-                                            .filter(product => product?.id != null)
-                                            .map(product => (
-                                                <SelectItem key={product.id} value={product.id.toString()}>
-                                                    {product.name}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="edit_lot_id">Lote</Label>
-                                <Input
-                                    id="edit_lot_id"
-                                    placeholder="Ej. LOT-2025-001"
-                                    value={formData.lot_id}
-                                    onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="edit_boxes">Cantidad de Cajas *</Label>
-                                    <Input
-                                        id="edit_boxes"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        value={formData.boxes}
-                                        onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="edit_weight_kg">Peso Total (kg) *</Label>
-                                    <Input
-                                        id="edit_weight_kg"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        placeholder="0.00"
-                                        value={formData.weight_kg}
-                                        onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        setEditDialogOpen(false)
-                                        setEditingOutput(null)
-                                        resetForm()
-                                    }}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
-                                    Guardar Cambios
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>
+            {!renderInCard && (
+                <div className={`flex items-center ${hideTitle ? 'justify-end' : 'justify-between'}`}>
+                    {addButton}
+                </div>
+            )}
 
             {/* Lista de outputs existentes */}
             {outputs.length === 0 ? (
@@ -449,6 +466,51 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                     </div>
                 </div>
             )}
+        </>
+    )
+
+    // Botón para el header (sin Dialog wrapper)
+    const headerButton = (
+        <Button
+            onClick={() => setAddDialogOpen(true)}
+        >
+            <Plus className="h-4 w-4 mr-2" />
+            Agregar Salida
+        </Button>
+    )
+
+    // Si renderInCard es true, envolver en Card con botón en header
+    if (renderInCard) {
+        return (
+            <>
+                {addDialog}
+                {editDialog}
+                <Card className="h-fit">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle>{cardTitle || 'Salidas Lógicas'}</CardTitle>
+                                <CardDescription>
+                                    {cardDescription || 'Productos producidos en este proceso'}
+                                </CardDescription>
+                            </div>
+                            {headerButton}
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {mainContent}
+                    </CardContent>
+                </Card>
+            </>
+        )
+    }
+
+    // Render normal
+    return (
+        <div className="space-y-4">
+            {addButton}
+            {editDialog}
+            {mainContent}
         </div>
     )
 }
