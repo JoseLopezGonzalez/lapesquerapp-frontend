@@ -2929,7 +2929,7 @@ export const configs = {
       {
         title: "Exportar a A3ERP2",
         endpoint: "cebo-dispatches/a3erp2-xlsx",
-        type: "xlsx",
+        type: "excel",
         waitingMessage: "Generando exportación a A3ERP2",
         fileName: "Salidas_cebo_A3ERP2",
       },
