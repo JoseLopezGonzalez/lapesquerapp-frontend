@@ -144,6 +144,13 @@ export const configs = {
         fileName: "Exportacion_pedidos_A3ERP",
       },
       {
+        title: "Exportar a A3ERP2",
+        endpoint: "orders/xls/A3ERP2-sales-delivery-note-filtered",
+        type: "excel",
+        waitingMessage: "Generando exportación a A3ERP2",
+        fileName: "Exportacion_pedidos_A3ERP2",
+      },
+      {
         title: "Exportar a Facilcom",
         endpoint: "orders/xls/facilcom-sales-delivery-note",
         type: "excel",
