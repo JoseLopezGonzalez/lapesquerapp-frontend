@@ -2925,6 +2925,14 @@ export const configs = {
         waitingMessage: "Generando exportación a A3ERP",
         fileName: "Salidas_cebo_A3ERP",
       },
+      /* cebo-dispatches/a3erp2-xlsx */
+      {
+        title: "Exportar a A3ERP2",
+        endpoint: "cebo-dispatches/a3erp2-xlsx",
+        type: "xlsx",
+        waitingMessage: "Generando exportación a A3ERP2",
+        fileName: "Salidas_cebo_A3ERP2",
+      },
     ],
   },
 
