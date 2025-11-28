@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X } from 'lucide-react'
+import { EmptyState } from '@/components/Utilities/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Combobox } from '@/components/Shadcn/Combobox'
 
 const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -31,6 +33,11 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         boxes: '',
         weight_kg: ''
     })
+    // Estado para el dialog de gestión múltiple
+    const [manageDialogOpen, setManageDialogOpen] = useState(false)
+    const [editableOutputs, setEditableOutputs] = useState([])
+    const [newRows, setNewRows] = useState([])
+    const [saving, setSaving] = useState(false)
 
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
@@ -40,9 +47,11 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
 
-    const loadOutputs = async () => {
+    const loadOutputs = async (showLoading = true) => {
         try {
-            setLoading(true)
+            if (showLoading) {
+                setLoading(true)
+            }
             setError(null)
             const token = session.user.accessToken
             const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
@@ -51,7 +60,9 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             console.error('Error loading outputs:', err)
             setError(err.message || 'Error al cargar las salidas')
         } finally {
-            setLoading(false)
+            if (showLoading) {
+                setLoading(false)
+            }
         }
     }
 
@@ -59,7 +70,15 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         try {
             const token = session.user.accessToken
             const response = await getProductOptions(token)
-            setProducts(response.data || [])
+            // Manejar tanto array directo como objeto con propiedad data
+            const productsData = Array.isArray(response) ? response : (response.data || response || [])
+            // Mapear a formato { value, label } para el Combobox
+            const formattedProducts = productsData.map(product => ({
+                value: product.id?.toString() || '',
+                label: product.name || `Producto #${product.id}`
+            }))
+            setProducts(formattedProducts)
+            console.log('Productos cargados:', formattedProducts.length, formattedProducts)
         } catch (err) {
             console.error('Error loading products:', err)
         }
@@ -152,6 +171,151 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
     const formatWeight = (weight) => {
         if (!weight) return '0 kg'
         return `${parseFloat(weight).toFixed(2)} kg`
+    }
+
+    // Funciones para el dialog de gestión múltiple
+    const openManageDialog = async () => {
+        // Asegurar que los productos estén cargados
+        if (products.length === 0) {
+            await loadProducts()
+        }
+        
+        // Inicializar con las salidas existentes
+        setEditableOutputs(outputs.map(output => ({
+            id: output.id,
+            product_id: output.product?.id?.toString() || '',
+            boxes: output.boxes?.toString() || '',
+            weight_kg: output.weight_kg?.toString() || '',
+            isNew: false
+        })))
+        setNewRows([])
+        setManageDialogOpen(true)
+    }
+
+    const addNewRow = () => {
+        setNewRows([...newRows, {
+            id: `new-${Date.now()}`,
+            product_id: '',
+            boxes: '',
+            weight_kg: '',
+            isNew: true
+        }])
+    }
+
+    const removeRow = (id) => {
+        if (id.toString().startsWith('new-')) {
+            setNewRows(newRows.filter(row => row.id !== id))
+        } else {
+            setEditableOutputs(editableOutputs.filter(row => row.id !== id))
+        }
+    }
+
+    const updateRow = (id, field, value) => {
+        if (id.toString().startsWith('new-')) {
+            setNewRows(newRows.map(row => 
+                row.id === id ? { ...row, [field]: value } : row
+            ))
+        } else {
+            setEditableOutputs(editableOutputs.map(row => 
+                row.id === id ? { ...row, [field]: value } : row
+            ))
+        }
+    }
+
+    const handleSaveAll = async () => {
+        try {
+            setSaving(true)
+            const token = session.user.accessToken
+
+            // Crear nuevas salidas
+            for (const row of newRows) {
+                if (row.product_id && row.boxes && row.weight_kg) {
+                    await createProductionOutput({
+                        production_record_id: parseInt(productionRecordId),
+                        product_id: parseInt(row.product_id),
+                        lot_id: null,
+                        boxes: parseInt(row.boxes) || 0,
+                        weight_kg: parseFloat(row.weight_kg) || 0
+                    }, token)
+                }
+            }
+
+            // Actualizar salidas existentes
+            for (const row of editableOutputs) {
+                if (row.product_id && row.boxes && row.weight_kg) {
+                    await updateProductionOutput(row.id, {
+                        product_id: parseInt(row.product_id),
+                        lot_id: null,
+                        boxes: parseInt(row.boxes) || 0,
+                        weight_kg: parseFloat(row.weight_kg) || 0
+                    }, token)
+                }
+            }
+
+            // Eliminar salidas que fueron removidas
+            const existingIds = editableOutputs.map(r => r.id)
+            const deletedIds = outputs
+                .filter(output => !existingIds.includes(output.id))
+                .map(output => output.id)
+
+            for (const id of deletedIds) {
+                await deleteProductionOutput(id, token)
+            }
+
+            // Construir el nuevo array de outputs basado en los datos editados
+            const productMap = new Map()
+            products.forEach(p => {
+                if (p.value) {
+                    productMap.set(p.value, { id: parseInt(p.value), name: p.label })
+                }
+            })
+
+            // Construir outputs actualizados desde editableOutputs
+            const updatedOutputs = editableOutputs
+                .filter(row => row.product_id && row.boxes && row.weight_kg)
+                .map(row => {
+                    const product = productMap.get(row.product_id)
+                    return {
+                        id: row.id,
+                        product: product || { id: parseInt(row.product_id), name: 'Producto' },
+                        lot_id: null,
+                        boxes: parseInt(row.boxes) || 0,
+                        weight_kg: parseFloat(row.weight_kg) || 0
+                    }
+                })
+
+            // Si no hay filas, significa que se eliminaron todas las salidas
+            // Actualizar el estado local directamente sin recargar
+            setOutputs(updatedOutputs)
+
+            // Cerrar el dialog
+            setManageDialogOpen(false)
+            
+            // Resetear estados del dialog
+            setEditableOutputs([])
+            setNewRows([])
+            
+            // Recargar datos en segundo plano sin afectar la UI
+            // Esto asegura que tenemos los datos completos del servidor
+            setTimeout(async () => {
+                try {
+                    const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
+                    setOutputs(response.data || [])
+                } catch (err) {
+                    console.error('Error refreshing outputs in background:', err)
+                }
+            }, 100)
+            
+        } catch (err) {
+            console.error('Error saving outputs:', err)
+            alert(err.message || 'Error al guardar las salidas')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const getAllRows = () => {
+        return [...editableOutputs, ...newRows]
     }
 
 
@@ -392,11 +556,20 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
 
             {/* Lista de outputs existentes */}
             {outputs.length === 0 ? (
-                <div className="py-8 text-center border rounded-lg">
-                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                        No hay salidas registradas. Agrega una salida para registrar los productos producidos.
-                    </p>
+                <div className="py-12 text-center border-2 border-dashed rounded-lg bg-muted/30">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="rounded-full bg-primary/10 p-4">
+                            <Package className="h-10 w-10 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-foreground">
+                                No hay salidas registradas
+                            </h4>
+                            <p className="text-sm text-muted-foreground max-w-md">
+                                Agrega una salida para registrar los productos producidos en este proceso
+                            </p>
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-2">
@@ -414,11 +587,9 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Producto</TableHead>
-                                        <TableHead>Lote</TableHead>
                                         <TableHead>Cajas</TableHead>
                                         <TableHead>Peso Total</TableHead>
                                         <TableHead>Peso Promedio</TableHead>
-                                        <TableHead className="w-24"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -431,32 +602,9 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                 <TableCell className="font-medium">
                                                     {output.product?.name || 'N/A'}
                                                 </TableCell>
-                                                <TableCell>
-                                                    {output.lot_id || (
-                                                        <span className="text-muted-foreground">Sin lote</span>
-                                                    )}
-                                                </TableCell>
                                                 <TableCell>{output.boxes || 0}</TableCell>
                                                 <TableCell>{formatWeight(output.weight_kg)}</TableCell>
                                                 <TableCell>{formatWeight(avgWeight)}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleEditClick(output)}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleDeleteOutput(output.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
                                             </TableRow>
                                         )
                                     })}
@@ -470,19 +618,184 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
     )
 
     // Botón para el header (sin Dialog wrapper)
+    const hasOutputs = outputs.length > 0
     const headerButton = (
         <Button
-            onClick={() => setAddDialogOpen(true)}
+            onClick={openManageDialog}
         >
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar Salida
+            {hasOutputs ? (
+                <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Salidas
+                </>
+            ) : (
+                <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Salidas
+                </>
+            )}
         </Button>
+    )
+
+    // Dialog de gestión múltiple
+    const manageDialog = (
+        <Dialog open={manageDialogOpen} onOpenChange={(open) => {
+            if (!open && !saving) {
+                // Resetear estados al cerrar sin guardar
+                setEditableOutputs([])
+                setNewRows([])
+            }
+            setManageDialogOpen(open)
+        }}>
+            <DialogContent className="max-w-5xl max-h-[90vh]">
+                <DialogHeader>
+                    <DialogTitle>Gestionar Salidas</DialogTitle>
+                    <DialogDescription>
+                        Agrega, edita o elimina múltiples salidas de forma rápida
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                    <div className="flex justify-end items-center">
+                        <Button
+                            onClick={addNewRow}
+                            variant="outline"
+                            size="sm"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Agregar Línea
+                        </Button>
+                    </div>
+
+                    <ScrollArea className="h-[500px] border rounded-md">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[300px]">Producto</TableHead>
+                                    <TableHead className="w-[120px]">Cajas</TableHead>
+                                    <TableHead className="w-[120px]">Peso (kg)</TableHead>
+                                    <TableHead className="w-[100px]">Peso Prom.</TableHead>
+                                    <TableHead className="w-[60px]"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {getAllRows().map((row) => {
+                                    const avgWeight = row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg
+                                        ? (parseFloat(row.weight_kg) / parseFloat(row.boxes)).toFixed(2)
+                                        : '0.00'
+                                    
+                                    const isValid = row.product_id && row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg && parseFloat(row.weight_kg) > 0
+                                    
+                                    return (
+                                        <TableRow 
+                                            key={row.id}
+                                            className={!isValid && (row.product_id || row.boxes || row.weight_kg) ? 'bg-muted/50' : ''}
+                                        >
+                                            <TableCell>
+                                                <div className={!row.product_id ? '[&_button]:border-destructive' : ''}>
+                                                    <Combobox
+                                                        options={products}
+                                                        value={row.product_id}
+                                                        onChange={(value) => updateRow(row.id, 'product_id', value)}
+                                                        placeholder="Buscar producto..."
+                                                        searchPlaceholder="Buscar producto..."
+                                                        notFoundMessage="No se encontraron productos"
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={row.boxes}
+                                                    onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
+                                                    placeholder="0"
+                                                    className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={row.weight_kg}
+                                                    onChange={(e) => updateRow(row.id, 'weight_kg', e.target.value)}
+                                                    placeholder="0.00"
+                                                    className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {formatWeight(avgWeight)}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => removeRow(row.id)}
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                                {getAllRows().length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="p-0">
+                                            <div className="py-12">
+                                                <EmptyState
+                                                    icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                    title="No hay salidas agregadas"
+                                                    description="Haz clic en 'Agregar Línea' para comenzar a agregar salidas al proceso"
+                                                />
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+
+                    <div className="flex justify-end gap-2 pt-2 border-t">
+                        <Button
+                            variant="outline"
+                            onClick={() => setManageDialogOpen(false)}
+                            disabled={saving}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleSaveAll}
+                            disabled={saving || getAllRows().some(row => 
+                                (row.product_id || row.boxes || row.weight_kg) && 
+                                (!row.product_id || !row.boxes || parseFloat(row.boxes) <= 0 || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
+                            )}
+                        >
+                            {saving ? (
+                                <>
+                                    <span className="mr-2">Guardando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Guardar
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     )
 
     // Si renderInCard es true, envolver en Card con botón en header
     if (renderInCard) {
         return (
             <>
+                {manageDialog}
                 {addDialog}
                 {editDialog}
                 <Card className="h-fit">
@@ -508,6 +821,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
     // Render normal
     return (
         <div className="space-y-4">
+            {manageDialog}
             {addButton}
             {editDialog}
             {mainContent}

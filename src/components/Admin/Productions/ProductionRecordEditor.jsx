@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecords } from '@/services/productionService'
+import { getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecords, getProduction } from '@/services/productionService'
 import { fetchWithTenant } from '@/lib/fetchWithTenant'
 import { API_URL_V2 } from '@/configs/config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
+import ProductionRecordImagesManager from './ProductionRecordImagesManager'
 
 const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const { data: session } = useSession()
@@ -26,6 +27,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const [processes, setProcesses] = useState([])
     const [existingRecords, setExistingRecords] = useState([])
     const [record, setRecord] = useState(null)
+    const [production, setProduction] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
@@ -48,6 +50,14 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             setLoading(true)
             setError(null)
             const token = session.user.accessToken
+
+            // Cargar información de la producción
+            try {
+                const productionData = await getProduction(productionId, token)
+                setProduction(productionData)
+            } catch (err) {
+                console.warn('Error loading production data:', err)
+            }
 
             // Cargar procesos disponibles
             await loadProcesses(token)
@@ -220,23 +230,32 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
             <div className="p-6 space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <Button
-                            variant="outline"
-                            size="icon"
+                            variant="icon"
+                            /* size="sm" */
                             onClick={() => router.push(`/admin/productions/${productionId}`)}
+                            className="gap-2 -ml-2"
                         >
                             <ArrowLeft className="h-4 w-4" />
+                            {/* <span className="hidden sm:inline">Volver</span> */}
                         </Button>
-                        <div>
-                            <h1 className="text-3xl font-bold">
+                        <div className="h-6 w-px bg-border" />
+                        <div className="space-y-1">
+                            <h1 className="text-3xl font-medium">
                                 {isEditMode 
-                                    ? `Proceso #${recordId}${record?.process?.name ? ` - ${record.process.name}` : ''}` 
+                                    ? record?.process?.name || `Proceso #${recordId}`
                                     : 'Crear Nuevo Proceso'}
                             </h1>
-                            <p className="text-muted-foreground">
-                                Producción #{productionId}
-                            </p>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                {/* <span>Producción #{productionId}</span> */}
+                                {production?.lot && (
+                                    <>
+                                       {/*  <span>•</span> */}
+                                        <span>Lote: <span className="font-medium text-foreground">{production.lot}</span></span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                     {isEditMode && record && (
@@ -366,6 +385,18 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     {/* Inputs y Outputs - Solo mostrar si el proceso ya existe o está en modo creación (se mostrarán vacíos hasta crear) */}
                     {currentRecordId && (
                         <>
+                            {/* Imágenes */}
+                            <div className="break-inside-avoid mb-6 max-w-full w-full">
+                                <ProductionRecordImagesManager
+                                    productionRecordId={currentRecordId}
+                                    onRefresh={handleRefresh}
+                                    hideTitle={true}
+                                    renderInCard={true}
+                                    cardTitle="Imágenes del Proceso"
+                                    cardDescription="Imágenes asociadas a este proceso de producción"
+                                />
+                            </div>
+
                             {/* Inputs */}
                             <div className="break-inside-avoid mb-6 max-w-full w-full">
                                 <ProductionInputsManager

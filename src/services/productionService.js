@@ -760,3 +760,104 @@ export function deleteProductionOutput(outputId, token) {
         });
 }
 
+// ==================== PRODUCTION RECORD IMAGES ====================
+
+/**
+ * Obtiene todas las imágenes de un production record
+ * @param {string|number} recordId - ID del record
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Lista de imágenes
+ */
+export function getProductionRecordImages(recordId, token) {
+    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener las imágenes');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data || data || [];
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Sube una imagen a un production record
+ * @param {string|number} recordId - ID del record
+ * @param {File} imageFile - Archivo de imagen
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Imagen subida
+ */
+export function uploadProductionRecordImage(recordId, imageFile, token) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: formData,
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al subir la imagen');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data || data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Elimina una imagen de un production record
+ * @param {string|number} recordId - ID del record
+ * @param {string|number} imageId - ID de la imagen
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Respuesta del servidor
+ */
+export function deleteProductionRecordImage(recordId, imageId, token) {
+    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al eliminar la imagen');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+

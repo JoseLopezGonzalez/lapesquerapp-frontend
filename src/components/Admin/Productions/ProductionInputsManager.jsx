@@ -51,6 +51,11 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const [lotsDialogOpen, setLotsDialogOpen] = useState(false)
     const [selectedProductLots, setSelectedProductLots] = useState(null) // {productName, lots, boxes}
 
+    // Helper function to check if box is available
+    const isBoxAvailable = (box) => {
+        return box.isAvailable !== false;
+    };
+
     // Obtener todas las cajas de todos los palets cargados
     const getAllBoxes = () => {
         return loadedPallets.flatMap(pallet =>
@@ -200,7 +205,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 
     const handleSelectAllBoxes = () => {
         const allBoxes = getAllBoxes()
-        const availableBoxes = allBoxes.filter(box => !isBoxSelected(box.id, box.palletId))
+        const availableBoxes = allBoxes.filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, box.palletId))
         setSelectedBoxes(prev => [...prev, ...availableBoxes.map(box => ({ boxId: box.id, palletId: box.palletId }))])
     }
 
@@ -432,8 +437,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }
 
         // Ordenar cajas del palet por peso (de mayor a menor para optimizar)
+        // Filtrar solo cajas disponibles y no seleccionadas
         const availableBoxes = pallet.boxes
-            .filter(box => !isBoxSelected(box.id, palletId))
+            .filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, palletId))
             .map(box => ({
                 ...box,
                 weight: parseFloat(box.netWeight || 0),
@@ -597,12 +603,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             return
         }
 
-        // Buscar la caja solo en el palet seleccionado
+        // Buscar la caja solo en el palet seleccionado (solo cajas disponibles)
         const palletBoxes = getPalletBoxes(selectedPalletId)
-        const foundBox = palletBoxes.find(box => box.gs1128 === gs1128Code)
+        const foundBox = palletBoxes.find(box => isBoxAvailable(box) && box.gs1128 === gs1128Code)
 
         if (!foundBox) {
-            alert(`No se encontró ninguna caja con ese código GS1-128 en el palet #${selectedPalletId}`)
+            alert(`No se encontró ninguna caja disponible con ese código GS1-128 en el palet #${selectedPalletId}`)
             setScannedCode('')
             return
         }
@@ -638,11 +644,14 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             return
         }
 
-        // Buscar cajas que coincidan con el peso objetivo solo en el palet seleccionado
+        // Buscar cajas que coincidan con el peso objetivo solo en el palet seleccionado (solo cajas disponibles)
         const palletBoxes = getPalletBoxes(selectedPalletId)
         const results = []
 
         palletBoxes.forEach(box => {
+            // Solo buscar en cajas disponibles
+            if (!isBoxAvailable(box)) return
+            
             const boxWeight = parseFloat(box.netWeight || 0)
             const difference = Math.abs(boxWeight - targetWeight)
 
@@ -941,14 +950,14 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                 Disponibles
                                                             </Label>
                                                             <Badge variant="secondary" className="text-xs">
-                                                                {getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length}
+                                                                {getPalletBoxes(selectedPalletId).filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId)).length}
                                                             </Badge>
                                                         </div>
                                                     </div>
                                                     <ScrollArea className="flex-1 min-h-0">
                                                         <div className="p-2 space-y-1">
                                                             {getPalletBoxes(selectedPalletId)
-                                                                .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                .filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId))
                                                                 .map((box) => (
                                                                     <div
                                                                         key={`${selectedPalletId}-${box.id}`}
@@ -972,7 +981,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                         </div>
                                                                     </div>
                                                                 ))}
-                                                            {getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0 && (
+                                                            {getPalletBoxes(selectedPalletId).filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId)).length === 0 && (
                                                                 <div className="flex items-center justify-center h-full py-8">
                                                                     <EmptyState
                                                                         icon={<CheckCircle className="h-12 w-12 text-primary" strokeWidth={1.5} />}
@@ -992,12 +1001,12 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                         size="icon"
                                                         onClick={() => {
                                                             const availableBoxes = getPalletBoxes(selectedPalletId)
-                                                                .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                .filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId))
                                                             if (availableBoxes.length > 0) {
                                                                 handleToggleBox(availableBoxes[0].id, selectedPalletId)
                                                             }
                                                         }}
-                                                        disabled={getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0}
+                                                        disabled={getPalletBoxes(selectedPalletId).filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId)).length === 0}
                                                         title="Mover seleccionada"
                                                     >
                                                         <ChevronRight className="h-4 w-4" />
@@ -1007,11 +1016,11 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                         size="icon"
                                                         onClick={() => {
                                                             const availableBoxes = getPalletBoxes(selectedPalletId)
-                                                                .filter(box => !isBoxSelected(box.id, selectedPalletId))
+                                                                .filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId))
                                                                 .map(box => ({ boxId: box.id, palletId: selectedPalletId }))
                                                             setSelectedBoxes(prev => [...prev, ...availableBoxes])
                                                         }}
-                                                        disabled={getPalletBoxes(selectedPalletId).filter(box => !isBoxSelected(box.id, selectedPalletId)).length === 0}
+                                                        disabled={getPalletBoxes(selectedPalletId).filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId)).length === 0}
                                                         title="Mover todas"
                                                     >
                                                         <ChevronsRight className="h-4 w-4" />

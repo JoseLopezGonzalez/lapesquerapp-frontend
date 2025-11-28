@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { Combobox } from "@/components/Shadcn/Combobox";
 import Loader from "@/components/Utilities/Loader";
@@ -70,6 +72,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     }
 
     const [selectedBox, setSelectedBox] = useState(null);
+    const [activeTab, setActiveTab] = useState("disponibles");
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -115,6 +118,56 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     /* click on back */
     const goBack = () => {
         window.history.back();
+    };
+
+    // Helper function to check if box is available
+    const isBoxAvailable = (box) => {
+        return box.isAvailable !== false;
+    };
+
+    // Helper function to get production information from box
+    const getBoxProductionInfo = (box) => {
+        // El campo production contiene { id, lot }
+        return box.production || null;
+    };
+
+    // Agrupar cajas por producción
+    const groupBoxesByProduction = () => {
+        const productionGroups = new Map();
+        const availableBoxes = [];
+
+        temporalPallet.boxes.forEach(box => {
+            if (isBoxAvailable(box)) {
+                availableBoxes.push(box);
+            } else {
+                const productionInfo = getBoxProductionInfo(box);
+                if (productionInfo) {
+                    const productionKey = productionInfo.id || 'unknown';
+                    if (!productionGroups.has(productionKey)) {
+                        productionGroups.set(productionKey, {
+                            production: productionInfo,
+                            boxes: []
+                        });
+                    }
+                    productionGroups.get(productionKey).boxes.push(box);
+                } else {
+                    // Si no tiene información de producción pero no está disponible, la agregamos a un grupo "sin producción"
+                    const unknownKey = 'unknown';
+                    if (!productionGroups.has(unknownKey)) {
+                        productionGroups.set(unknownKey, {
+                            production: { id: null, lot: null },
+                            boxes: []
+                        });
+                    }
+                    productionGroups.get(unknownKey).boxes.push(box);
+                }
+            }
+        });
+
+        return {
+            available: availableBoxes,
+            inProduction: Array.from(productionGroups.values())
+        };
     };
 
 
@@ -478,71 +531,86 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                             </Card>
                                         </div>
 
-                                        <div className="space-y-4 overflow-y-auto col-span-3 ">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
-                                                <div className="text-sm text-muted-foreground/90 bg-foreground-50 rounded-full px-4 py-1  flex items-center">
-                                                    <span>{temporalPallet.numberOfBoxes} cajas</span>
-                                                    <Separator orientation="vertical" className="mx-2 h-3" />
-                                                    <span>{formatDecimalWeight(temporalPallet.netWeight)}</span>
-                                                    <Separator orientation="vertical" className="mx-2 h-3" />
-                                                    <span>{temporalTotalProducts} productos</span>
-                                                    <Separator orientation="vertical" className="mx-2 h-3" />
-                                                    <span>{temporalTotalLots} lotes</span>
-                                                </div>
-                                            </div>
-                                            <div className="border rounded-lg overflow-hidden">
-                                                <div className="overflow-y-auto max-h-[calc(90vh-260px)]">
-                                                    <Table>
-                                                        <TableHeader className="sticky top-0 bg-background">
-                                                            <TableRow>
-                                                                <TableHead className="min-w-[200px]">Artículo</TableHead>
-                                                                <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
-                                                                <TableHead className="min-w-[150px]">GS1 128</TableHead>
-                                                                <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
-                                                                <TableHead className="w-[100px]">Acciones</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {temporalPallet.boxes.map((box) => box.id === selectedBox ? (
-                                                                <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className=" hover:bg-muted">
-                                                                    <TableCell>{box.product.name}</TableCell>
-                                                                    <TableCell>
-                                                                        <Input
-                                                                            defaultValue={box.lot}
-                                                                            onChange={(e) => {
-                                                                                handleOnChangeBoxLot(box.id, e.target.value);
-                                                                            }}
-                                                                            onClick={(e) => e.stopPropagation()} // 👈 Esto evita que el click llegue al TableRow
-                                                                            className="w-full"
-                                                                        />
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        {box.gs1128}
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <Input
-                                                                            type="number"
-                                                                            defaultValue={box.netWeight}
-                                                                            onClick={(e) => e.stopPropagation()} // 👈 Esto evita que el click llegue al TableRow
-                                                                            onChange={(e) => {
-                                                                                handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
-                                                                            }}
-                                                                            className="w-full "
-                                                                        />
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ) : (
-                                                                <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)}
-                                                                    className={`cursor-text hover:bg-muted ${box?.new === true ? "bg-foreground-50" : ""}`}
-                                                                >
-                                                                    <TableCell>{box.product.name}</TableCell>
-                                                                    <TableCell>{box.lot}</TableCell>
-                                                                    <TableCell>{box.gs1128}</TableCell>
-                                                                    <TableCell>{box.netWeight} kg</TableCell>
-                                                                    <TableCell>
+                                        <div className="space-y-4 overflow-y-auto col-span-3 flex flex-col">
+                                            {(() => {
+                                                const { available, inProduction } = groupBoxesByProduction();
+                                                
+                                                // Calcular datos resumen según el tab activo
+                                                const getSummaryData = () => {
+                                                    let boxesToShow = [];
+                                                    
+                                                    if (activeTab === "disponibles") {
+                                                        boxesToShow = available;
+                                                    } else if (activeTab === "produccion") {
+                                                        boxesToShow = inProduction.flatMap(group => group.boxes);
+                                                    } else {
+                                                        boxesToShow = temporalPallet.boxes;
+                                                    }
+                                                    
+                                                    const numberOfBoxes = boxesToShow.length;
+                                                    const netWeight = boxesToShow.reduce((sum, box) => sum + parseFloat(box.netWeight || 0), 0);
+                                                    
+                                                    // Calcular productos únicos
+                                                    const productsSet = new Set();
+                                                    boxesToShow.forEach(box => {
+                                                        if (box.product?.name) {
+                                                            productsSet.add(box.product.name);
+                                                        }
+                                                    });
+                                                    const totalProducts = productsSet.size;
+                                                    
+                                                    // Calcular lotes únicos
+                                                    const lotsSet = new Set();
+                                                    boxesToShow.forEach(box => {
+                                                        if (box.lot) {
+                                                            lotsSet.add(box.lot);
+                                                        }
+                                                    });
+                                                    const totalLots = lotsSet.size;
+                                                    
+                                                    return {
+                                                        numberOfBoxes,
+                                                        netWeight,
+                                                        totalProducts,
+                                                        totalLots
+                                                    };
+                                                };
+                                                
+                                                const summaryData = getSummaryData();
+                                                
+                                                // Función para renderizar una fila de caja (reutilizable)
+                                                const renderBoxRow = (box, isEditable = true) => {
+                                                    const isSelected = box.id === selectedBox;
+                                                    const boxAvailable = isBoxAvailable(box);
+                                                    
+                                                    if (isSelected && isEditable) {
+                                                        return (
+                                                            <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className="hover:bg-muted">
+                                                                <TableCell>{box.product.name}</TableCell>
+                                                                <TableCell>
+                                                                    <Input
+                                                                        defaultValue={box.lot}
+                                                                        onChange={(e) => {
+                                                                            handleOnChangeBoxLot(box.id, e.target.value);
+                                                                        }}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="w-full"
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell>{box.gs1128}</TableCell>
+                                                                <TableCell>
+                                                                    <Input
+                                                                        type="number"
+                                                                        defaultValue={box.netWeight}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        onChange={(e) => {
+                                                                            handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
+                                                                        }}
+                                                                        className="w-full "
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {isEditable && (
                                                                         <div className="flex gap-1">
                                                                             <Button
                                                                                 variant="ghost"
@@ -551,7 +619,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();
                                                                                     handleOnClickDuplicateBox(box.id)
-                                                                                }} // 👈 Añadido el evento de clic
+                                                                                }}
                                                                             >
                                                                                 <Copy className="h-4 w-4" />
                                                                             </Button>
@@ -567,14 +635,375 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 <Trash2 className="h-4 w-4" />
                                                                             </Button>
                                                                         </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            )
+                                                                    )}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    }
+                                                    
+                                                    return (
+                                                        <TableRow 
+                                                            key={box.id} 
+                                                            onClick={isEditable ? () => handleOnClickBoxRow(box.id) : undefined}
+                                                            className={`${isEditable ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/30" : ""}`}
+                                                        >
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    {box.product.name}
+                                                                    {!boxAvailable && (
+                                                                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                    )}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>{box.lot}</TableCell>
+                                                            <TableCell>{box.gs1128}</TableCell>
+                                                            <TableCell>{box.netWeight} kg</TableCell>
+                                                            <TableCell>
+                                                                {isEditable && (
+                                                                    <div className="flex gap-1">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleOnClickDuplicateBox(box.id)
+                                                                            }}
+                                                                        >
+                                                                            <Copy className="h-4 w-4" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8 text-destructive"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleOnClickDeleteBox(box.id);
+                                                                            }}
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                };
+                                                
+                                                return (
+                                                    <>
+                                                        <div className="flex items-center justify-between flex-shrink-0">
+                                                            <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
+                                                            <div className="text-sm text-muted-foreground/90 bg-foreground-50 rounded-full px-4 py-1  flex items-center">
+                                                                <span>{summaryData.numberOfBoxes} cajas</span>
+                                                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                                                <span>{formatDecimalWeight(summaryData.netWeight)}</span>
+                                                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                                                <span>{summaryData.totalProducts} productos</span>
+                                                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                                                <span>{summaryData.totalLots} lotes</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+                                                        <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+                                                            <TabsTrigger value="disponibles" className="flex items-center gap-2">
+                                                                <CheckCircle className="h-4 w-4" />
+                                                                Disponibles ({available.length})
+                                                            </TabsTrigger>
+                                                            <TabsTrigger value="produccion" className="flex items-center gap-2">
+                                                                <Factory className="h-4 w-4" />
+                                                                En Producción ({inProduction.reduce((sum, group) => sum + group.boxes.length, 0)})
+                                                            </TabsTrigger>
+                                                            <TabsTrigger value="todas">
+                                                                Todas ({temporalPallet.boxes.length})
+                                                            </TabsTrigger>
+                                                        </TabsList>
+                                                        
+                                                        {/* Tab: Todas las cajas */}
+                                                        <TabsContent value="todas" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
+                                                            <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                                <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                    <Table>
+                                                                        <TableHeader className="sticky top-0 bg-background z-10">
+                                                                            <TableRow>
+                                                                                <TableHead className="min-w-[200px]">Artículo</TableHead>
+                                                                                <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
+                                                                                <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                                                                <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                                <TableHead className="min-w-[150px]">Estado</TableHead>
+                                                                                <TableHead className="w-[100px]">Acciones</TableHead>
+                                                                            </TableRow>
+                                                                        </TableHeader>
+                                                                        <TableBody>
+                                                                            {temporalPallet.boxes.map((box) => {
+                                                                                const boxAvailable = isBoxAvailable(box);
+                                                                                const productionInfo = getBoxProductionInfo(box);
+                                                                                const isSelected = box.id === selectedBox;
+                                                                                
+                                                                                if (isSelected && boxAvailable) {
+                                                                                    return (
+                                                                                        <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className="hover:bg-muted">
+                                                                                            <TableCell>{box.product.name}</TableCell>
+                                                                                            <TableCell>
+                                                                                                <Input
+                                                                                                    defaultValue={box.lot}
+                                                                                                    onChange={(e) => {
+                                                                                                        handleOnChangeBoxLot(box.id, e.target.value);
+                                                                                                    }}
+                                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                                    className="w-full"
+                                                                                                />
+                                                                                            </TableCell>
+                                                                                            <TableCell>{box.gs1128}</TableCell>
+                                                                                            <TableCell>
+                                                                                                <Input
+                                                                                                    type="number"
+                                                                                                    defaultValue={box.netWeight}
+                                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                                    onChange={(e) => {
+                                                                                                        handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
+                                                                                                    }}
+                                                                                                    className="w-full "
+                                                                                                />
+                                                                                            </TableCell>
+                                                                                            <TableCell>
+                                                                                                <TooltipProvider>
+                                                                                                    <Tooltip>
+                                                                                                        <TooltipTrigger asChild>
+                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
+                                                                                                                <CheckCircle className="h-3.5 w-3.5" />
+                                                                                                            </div>
+                                                                                                        </TooltipTrigger>
+                                                                                                        <TooltipContent>
+                                                                                                            <p className="font-semibold">Disponible</p>
+                                                                                                        </TooltipContent>
+                                                                                                    </Tooltip>
+                                                                                                </TooltipProvider>
+                                                                                            </TableCell>
+                                                                                            <TableCell>
+                                                                                                <div className="flex gap-1">
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-8 w-8"
+                                                                                                        onClick={(e) => {
+                                                                                                            e.stopPropagation();
+                                                                                                            handleOnClickDuplicateBox(box.id)
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <Copy className="h-4 w-4" />
+                                                                                                    </Button>
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-8 w-8 text-destructive"
+                                                                                                        onClick={(e) => {
+                                                                                                            e.stopPropagation();
+                                                                                                            handleOnClickDeleteBox(box.id);
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <Trash2 className="h-4 w-4" />
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                            </TableCell>
+                                                                                        </TableRow>
+                                                                                    );
+                                                                                }
+                                                                                
+                                                                                return (
+                                                                                    <TableRow 
+                                                                                        key={box.id} 
+                                                                                        onClick={boxAvailable ? () => handleOnClickBoxRow(box.id) : undefined}
+                                                                                        className={`${boxAvailable ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/50" : ""}`}
+                                                                                    >
+                                                                                        <TableCell>
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                {box.product.name}
+                                                                                                {!boxAvailable && (
+                                                                                                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </TableCell>
+                                                                                        <TableCell>{box.lot}</TableCell>
+                                                                                        <TableCell>{box.gs1128}</TableCell>
+                                                                                        <TableCell>{box.netWeight} kg</TableCell>
+                                                                                        <TableCell>
+                                                                                            {!boxAvailable && productionInfo ? (
+                                                                                                <TooltipProvider>
+                                                                                                    <Tooltip>
+                                                                                                        <TooltipTrigger asChild>
+                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 border border-orange-200 cursor-help hover:bg-orange-200 transition-colors">
+                                                                                                                <Factory className="h-3.5 w-3.5" />
+                                                                                                            </div>
+                                                                                                        </TooltipTrigger>
+                                                                                                        <TooltipContent>
+                                                                                                            <div className="space-y-1">
+                                                                                                                <p className="font-semibold">En Producción</p>
+                                                                                                                <p className="text-xs">Producción #{productionInfo.id || 'N/A'}</p>
+                                                                                                                {productionInfo.lot && (
+                                                                                                                    <p className="text-xs">Lote: {productionInfo.lot}</p>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        </TooltipContent>
+                                                                                                    </Tooltip>
+                                                                                                </TooltipProvider>
+                                                                                            ) : (
+                                                                                                <TooltipProvider>
+                                                                                                    <Tooltip>
+                                                                                                        <TooltipTrigger asChild>
+                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
+                                                                                                                <CheckCircle className="h-3.5 w-3.5" />
+                                                                                                            </div>
+                                                                                                        </TooltipTrigger>
+                                                                                                        <TooltipContent>
+                                                                                                            <p className="font-semibold">Disponible</p>
+                                                                                                        </TooltipContent>
+                                                                                                    </Tooltip>
+                                                                                                </TooltipProvider>
+                                                                                            )}
+                                                                                        </TableCell>
+                                                                                        <TableCell>
+                                                                                            {boxAvailable && (
+                                                                                                <div className="flex gap-1">
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-8 w-8"
+                                                                                                        onClick={(e) => {
+                                                                                                            e.stopPropagation();
+                                                                                                            handleOnClickDuplicateBox(box.id)
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <Copy className="h-4 w-4" />
+                                                                                                    </Button>
+                                                                                                    <Button
+                                                                                                        variant="ghost"
+                                                                                                        size="icon"
+                                                                                                        className="h-8 w-8 text-destructive"
+                                                                                                        onClick={(e) => {
+                                                                                                            e.stopPropagation();
+                                                                                                            handleOnClickDeleteBox(box.id);
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <Trash2 className="h-4 w-4" />
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </TableCell>
+                                                                                    </TableRow>
+                                                                                );
+                                                                            })}
+                                                                        </TableBody>
+                                                                    </Table>
+                                                                </div>
+                                                            </div>
+                                                        </TabsContent>
+                                                        
+                                                        {/* Tab: Cajas disponibles */}
+                                                        <TabsContent value="disponibles" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
+                                                            {available.length > 0 ? (
+                                                                <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                        <Table>
+                                                                            <TableHeader className="sticky top-0 bg-background z-10">
+                                                                                <TableRow>
+                                                                                    <TableHead className="min-w-[200px]">Artículo</TableHead>
+                                                                                    <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
+                                                                                    <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                                                                    <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                                    <TableHead className="w-[100px]">Acciones</TableHead>
+                                                                                </TableRow>
+                                                                            </TableHeader>
+                                                                            <TableBody>
+                                                                                {available.map((box) => renderBoxRow(box, true))}
+                                                                            </TableBody>
+                                                                        </Table>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center py-8 border rounded-lg h-full">
+                                                                    <p className="text-muted-foreground">No hay cajas disponibles</p>
+                                                                </div>
                                                             )}
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                            </div>
+                                                        </TabsContent>
+                                                        
+                                                        {/* Tab: Cajas en producción */}
+                                                        <TabsContent value="produccion" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
+                                                            {inProduction.length > 0 ? (
+                                                                <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                        <Table>
+                                                                            <TableHeader className="sticky top-0 bg-background z-10">
+                                                                                <TableRow>
+                                                                                    <TableHead className="min-w-[200px]">Artículo</TableHead>
+                                                                                    <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
+                                                                                    <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                                                                    <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                                </TableRow>
+                                                                            </TableHeader>
+                                                                            <TableBody>
+                                                                                {inProduction.map((group, groupIndex) => (
+                                                                                    <React.Fragment key={group.production.id || `unknown-${groupIndex}`}>
+                                                                                        {/* Fila de encabezado del grupo */}
+                                                                                        {(() => {
+                                                                                            const totalWeight = group.boxes.reduce((sum, box) => sum + parseFloat(box.netWeight || 0), 0);
+                                                                                            return (
+                                                                                                <TableRow className="bg-orange-50/50 hover:bg-orange-50">
+                                                                                                    <TableCell colSpan={4} className="py-2">
+                                                                                                        <div className="flex items-center gap-2 font-semibold text-orange-900">
+                                                                                                            <Factory className="h-4 w-4" />
+                                                                                                            <span>Producción #{group.production.id || 'N/A'}</span>
+                                                                                                            {group.production.lot && (
+                                                                                                                <>
+                                                                                                                    <Separator orientation="vertical" className="h-4" />
+                                                                                                                    <span className="text-sm font-normal text-orange-700">Lote: {group.production.lot}</span>
+                                                                                                                </>
+                                                                                                            )}
+                                                                                                            <Separator orientation="vertical" className="h-4" />
+                                                                                                            <span className="text-sm font-normal text-orange-700">{group.boxes.length} {group.boxes.length === 1 ? 'caja' : 'cajas'}</span>
+                                                                                                            <Separator orientation="vertical" className="h-4" />
+                                                                                                            <span className="text-sm font-normal text-orange-700">{formatDecimalWeight(totalWeight)}</span>
+                                                                                                        </div>
+                                                                                                    </TableCell>
+                                                                                                </TableRow>
+                                                                                            );
+                                                                                        })()}
+                                                                                        {/* Filas de cajas del grupo - NO EDITABLES */}
+                                                                                        {group.boxes.map((box) => {
+                                                                                            return (
+                                                                                                <TableRow 
+                                                                                                    key={box.id}
+                                                                                                    className={`cursor-default bg-orange-50/30 ${box?.new === true ? "bg-foreground-50" : ""}`}
+                                                                                                >
+                                                                                                    <TableCell>
+                                                                                                        <div className="flex items-center gap-2">
+                                                                                                            {box.product.name}
+                                                                                                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                                        </div>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>{box.lot}</TableCell>
+                                                                                                    <TableCell>{box.gs1128}</TableCell>
+                                                                                                    <TableCell>{box.netWeight} kg</TableCell>
+                                                                                                </TableRow>
+                                                                                            );
+                                                                                        })}
+                                                                                    </React.Fragment>
+                                                                                ))}
+                                                                            </TableBody>
+                                                                        </Table>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center py-8 border rounded-lg h-full">
+                                                                    <p className="text-muted-foreground">No hay cajas en producción</p>
+                                                                </div>
+                                                            )}
+                                                        </TabsContent>
+                                                    </Tabs>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 </TabsContent>
@@ -788,46 +1217,89 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <TableHead>Lote</TableHead>
                                                                 <TableHead>GS1 128</TableHead>
                                                                 <TableHead>Peso Neto</TableHead>
+                                                                <TableHead>Estado</TableHead>
                                                                 <TableHead className="w-[100px]">Acciones</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {temporalPallet.boxes.map((box) => (
-                                                                <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)}
-                                                                    className={`cursor-text hover:bg-muted ${box?.new === true ? "bg-foreground-50" : ""}`}
-                                                                >
-                                                                    <TableCell>{box.product.name}</TableCell>
-                                                                    <TableCell>{box.lot}</TableCell>
-                                                                    <TableCell>{box.gs1128}</TableCell>
-                                                                    <TableCell>{box.netWeight} kg</TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex gap-1">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="icon"
-                                                                                className="h-8 w-8"
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleOnClickDuplicateBox(box.id)
-                                                                                }}
-                                                                            >
-                                                                                <Copy className="h-4 w-4" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="icon"
-                                                                                className="h-8 w-8 text-destructive"
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleOnClickDeleteBox(box.id);
-                                                                                }}
-                                                                            >
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))}
+                                                            {temporalPallet.boxes.map((box) => {
+                                                                const boxAvailable = isBoxAvailable(box);
+                                                                const productionInfo = getBoxProductionInfo(box);
+                                                                
+                                                                return (
+                                                                    <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)}
+                                                                        className={`cursor-text hover:bg-muted ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/50" : ""}`}
+                                                                    >
+                                                                        <TableCell>
+                                                                            <div className="flex items-center gap-2">
+                                                                                {box.product.name}
+                                                                                {!boxAvailable && (
+                                                                                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                )}
+                                                                            </div>
+                                                                        </TableCell>
+                                                                        <TableCell>{box.lot}</TableCell>
+                                                                        <TableCell>{box.gs1128}</TableCell>
+                                                                        <TableCell>{box.netWeight} kg</TableCell>
+                                                                        <TableCell>
+                                                                            {!boxAvailable && productionInfo ? (
+                                                                                <TooltipProvider>
+                                                                                    <Tooltip>
+                                                                                        <TooltipTrigger asChild>
+                                                                                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 cursor-help">
+                                                                                                <Factory className="h-3 w-3 mr-1" />
+                                                                                                En Producción
+                                                                                            </Badge>
+                                                                                        </TooltipTrigger>
+                                                                                        <TooltipContent>
+                                                                                            <div className="space-y-1">
+                                                                                                <p className="font-semibold">Producción #{productionInfo.id || 'N/A'}</p>
+                                                                                                {productionInfo.lot && (
+                                                                                                    <p className="text-xs">Lote: {productionInfo.lot}</p>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </TooltipContent>
+                                                                                    </Tooltip>
+                                                                                </TooltipProvider>
+                                                                            ) : (
+                                                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                                                                    Disponible
+                                                                                </Badge>
+                                                                            )}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            <div className="flex gap-1">
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-8 w-8"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handleOnClickDuplicateBox(box.id)
+                                                                                    }}
+                                                                                    disabled={!boxAvailable}
+                                                                                    title={!boxAvailable ? "No se puede duplicar una caja en producción" : "Duplicar caja"}
+                                                                                >
+                                                                                    <Copy className="h-4 w-4" />
+                                                                                </Button>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-8 w-8 text-destructive"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handleOnClickDeleteBox(box.id);
+                                                                                    }}
+                                                                                    disabled={!boxAvailable}
+                                                                                    title={!boxAvailable ? "No se puede eliminar una caja en producción" : "Eliminar caja"}
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                );
+                                                            })}
                                                         </TableBody>
                                                     </Table>
                                                 </div>
