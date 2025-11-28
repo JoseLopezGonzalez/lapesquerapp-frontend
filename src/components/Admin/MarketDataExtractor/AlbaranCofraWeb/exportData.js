@@ -25,7 +25,8 @@ export const barcos = [
   { barco: "BELI Y TOÑI", armador: "PERICO Y MENDEZ S.L.", cifArmador: "B55470421", codA3erp: "988234", codBrisapp: '147' },
   /* PESCAITO GABRIEL Y JESUS , cod 956 ,  cif: '29489841T', codA3erp: '988285', codBrisapp:116*/
   { barco: "PESCAITOGABRIEL Y", armador: "Manuel Jesus Yaque Camacho", cifArmador: "29489841T", codA3erp: "988285", codBrisapp: '164' },
-
+/* NUEVO SANMARTIN PORRE	 */
+  { barco: "NUEVO SANMARTIN PORRE", armador: "JAIRO ARAUJO GARCIA", cifArmador: "29490608P", codA3erp: "988317", codBrisapp: '192' },
 ];
 
 export const armadores = [
@@ -56,6 +57,7 @@ export const armadores = [
   { armador: "JUAN MANUEL RAMOS DE LA ROSA", cif: "48951215Q", codA3erp: "951215" },
   { armador: "EVA MARIA MARTIN GONZALEZ", cif: "44236035C", codA3erp: "236035" },
   { armador: "PERICO Y MENDEZ S.L.", cif: "B55470421", codA3erp: "988234" },
+  { armador: "JAIRO ARAUJO GARCIA", cif: "29490608P", codA3erp: "988317" },
 ];
 
 /* 988285 */

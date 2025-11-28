@@ -733,13 +733,12 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 <TableHead className="min-w-[150px]">GS1 128</TableHead>
                                                                                 <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
                                                                                 <TableHead className="min-w-[150px]">Estado</TableHead>
-                                                                                <TableHead className="w-[100px]">Acciones</TableHead>
                                                                             </TableRow>
                                                                         </TableHeader>
                                                                         <TableBody>
                                                                             {temporalPallet.boxes.length === 0 ? (
                                                                                 <TableRow>
-                                                                                    <TableCell colSpan={6} className="p-0">
+                                                                                    <TableCell colSpan={5} className="p-0">
                                                                                         <div className="py-12">
                                                                                             <EmptyState
                                                                                                 icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
@@ -753,160 +752,60 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 temporalPallet.boxes.map((box) => {
                                                                                     const boxAvailable = isBoxAvailable(box);
                                                                                     const productionInfo = getBoxProductionInfo(box);
-                                                                                    const isSelected = box.id === selectedBox;
                                                                                     
-                                                                                    if (isSelected && boxAvailable) {
                                                                                     return (
-                                                                                        <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className="hover:bg-muted">
-                                                                                            <TableCell>{box.product.name}</TableCell>
+                                                                                        <TableRow 
+                                                                                            key={box.id}
+                                                                                            className={`cursor-default ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/50" : ""}`}
+                                                                                        >
                                                                                             <TableCell>
-                                                                                                <Input
-                                                                                                    defaultValue={box.lot}
-                                                                                                    onChange={(e) => {
-                                                                                                        handleOnChangeBoxLot(box.id, e.target.value);
-                                                                                                    }}
-                                                                                                    onClick={(e) => e.stopPropagation()}
-                                                                                                    className="w-full"
-                                                                                                />
-                                                                                            </TableCell>
-                                                                                            <TableCell>{box.gs1128}</TableCell>
-                                                                                            <TableCell>
-                                                                                                <Input
-                                                                                                    type="number"
-                                                                                                    defaultValue={box.netWeight}
-                                                                                                    onClick={(e) => e.stopPropagation()}
-                                                                                                    onChange={(e) => {
-                                                                                                        handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
-                                                                                                    }}
-                                                                                                    className="w-full "
-                                                                                                />
-                                                                                            </TableCell>
-                                                                                            <TableCell>
-                                                                                                <TooltipProvider>
-                                                                                                    <Tooltip>
-                                                                                                        <TooltipTrigger asChild>
-                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
-                                                                                                                <CheckCircle className="h-3.5 w-3.5" />
-                                                                                                            </div>
-                                                                                                        </TooltipTrigger>
-                                                                                                        <TooltipContent>
-                                                                                                            <p className="font-semibold">Disponible</p>
-                                                                                                        </TooltipContent>
-                                                                                                    </Tooltip>
-                                                                                                </TooltipProvider>
-                                                                                            </TableCell>
-                                                                                            <TableCell>
-                                                                                                <div className="flex gap-1">
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-8 w-8"
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            handleOnClickDuplicateBox(box.id)
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <Copy className="h-4 w-4" />
-                                                                                                    </Button>
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-8 w-8 text-destructive"
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            handleOnClickDeleteBox(box.id);
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <Trash2 className="h-4 w-4" />
-                                                                                                    </Button>
+                                                                                                <div className="flex items-center gap-2">
+                                                                                                    {box.product.name}
+                                                                                                    {!boxAvailable && (
+                                                                                                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                                    )}
                                                                                                 </div>
+                                                                                            </TableCell>
+                                                                                            <TableCell>{box.lot}</TableCell>
+                                                                                            <TableCell>{box.gs1128}</TableCell>
+                                                                                            <TableCell>{box.netWeight} kg</TableCell>
+                                                                                            <TableCell>
+                                                                                                {!boxAvailable && productionInfo ? (
+                                                                                                    <TooltipProvider>
+                                                                                                        <Tooltip>
+                                                                                                            <TooltipTrigger asChild>
+                                                                                                                <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 border border-orange-200 cursor-help hover:bg-orange-200 transition-colors">
+                                                                                                                    <Factory className="h-3.5 w-3.5" />
+                                                                                                                </div>
+                                                                                                            </TooltipTrigger>
+                                                                                                            <TooltipContent>
+                                                                                                                <div className="space-y-1">
+                                                                                                                    <p className="font-semibold">En Producción</p>
+                                                                                                                    <p className="text-xs">Producción #{productionInfo.id || 'N/A'}</p>
+                                                                                                                    {productionInfo.lot && (
+                                                                                                                        <p className="text-xs">Lote: {productionInfo.lot}</p>
+                                                                                                                    )}
+                                                                                                                </div>
+                                                                                                            </TooltipContent>
+                                                                                                        </Tooltip>
+                                                                                                    </TooltipProvider>
+                                                                                                ) : (
+                                                                                                    <TooltipProvider>
+                                                                                                        <Tooltip>
+                                                                                                            <TooltipTrigger asChild>
+                                                                                                                <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
+                                                                                                                    <CheckCircle className="h-3.5 w-3.5" />
+                                                                                                                </div>
+                                                                                                            </TooltipTrigger>
+                                                                                                            <TooltipContent>
+                                                                                                                <p className="font-semibold">Disponible</p>
+                                                                                                            </TooltipContent>
+                                                                                                        </Tooltip>
+                                                                                                    </TooltipProvider>
+                                                                                                )}
                                                                                             </TableCell>
                                                                                         </TableRow>
                                                                                     );
-                                                                                }
-                                                                                
-                                                                                return (
-                                                                                    <TableRow 
-                                                                                        key={box.id} 
-                                                                                        onClick={boxAvailable ? () => handleOnClickBoxRow(box.id) : undefined}
-                                                                                        className={`${boxAvailable ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/50" : ""}`}
-                                                                                    >
-                                                                                        <TableCell>
-                                                                                            <div className="flex items-center gap-2">
-                                                                                                {box.product.name}
-                                                                                                {!boxAvailable && (
-                                                                                                    <AlertCircle className="h-4 w-4 text-orange-600" />
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </TableCell>
-                                                                                        <TableCell>{box.lot}</TableCell>
-                                                                                        <TableCell>{box.gs1128}</TableCell>
-                                                                                        <TableCell>{box.netWeight} kg</TableCell>
-                                                                                        <TableCell>
-                                                                                            {!boxAvailable && productionInfo ? (
-                                                                                                <TooltipProvider>
-                                                                                                    <Tooltip>
-                                                                                                        <TooltipTrigger asChild>
-                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 border border-orange-200 cursor-help hover:bg-orange-200 transition-colors">
-                                                                                                                <Factory className="h-3.5 w-3.5" />
-                                                                                                            </div>
-                                                                                                        </TooltipTrigger>
-                                                                                                        <TooltipContent>
-                                                                                                            <div className="space-y-1">
-                                                                                                                <p className="font-semibold">En Producción</p>
-                                                                                                                <p className="text-xs">Producción #{productionInfo.id || 'N/A'}</p>
-                                                                                                                {productionInfo.lot && (
-                                                                                                                    <p className="text-xs">Lote: {productionInfo.lot}</p>
-                                                                                                                )}
-                                                                                                            </div>
-                                                                                                        </TooltipContent>
-                                                                                                    </Tooltip>
-                                                                                                </TooltipProvider>
-                                                                                            ) : (
-                                                                                                <TooltipProvider>
-                                                                                                    <Tooltip>
-                                                                                                        <TooltipTrigger asChild>
-                                                                                                            <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
-                                                                                                                <CheckCircle className="h-3.5 w-3.5" />
-                                                                                                            </div>
-                                                                                                        </TooltipTrigger>
-                                                                                                        <TooltipContent>
-                                                                                                            <p className="font-semibold">Disponible</p>
-                                                                                                        </TooltipContent>
-                                                                                                    </Tooltip>
-                                                                                                </TooltipProvider>
-                                                                                            )}
-                                                                                        </TableCell>
-                                                                                        <TableCell>
-                                                                                            {boxAvailable && (
-                                                                                                <div className="flex gap-1">
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-8 w-8"
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            handleOnClickDuplicateBox(box.id)
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <Copy className="h-4 w-4" />
-                                                                                                    </Button>
-                                                                                                    <Button
-                                                                                                        variant="ghost"
-                                                                                                        size="icon"
-                                                                                                        className="h-8 w-8 text-destructive"
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            handleOnClickDeleteBox(box.id);
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <Trash2 className="h-4 w-4" />
-                                                                                                    </Button>
-                                                                                                </div>
-                                                                                            )}
-                                                                                        </TableCell>
-                                                                                    </TableRow>
-                                                                                );
                                                                                 })
                                                                             )}
                                                                         </TableBody>
