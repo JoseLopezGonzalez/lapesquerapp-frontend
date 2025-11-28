@@ -1622,7 +1622,15 @@ export const configs = {
         /* numberOfBoxes */
         { name: "numberOfBoxes", label: "Cajas", type: "text", path: "numberOfBoxes" },
         /* netWeight */
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" }
+        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        /* availableBoxesCount */
+        { name: "availableBoxesCount", label: "Cajas Disponibles", type: "text", path: "availableBoxesCount" },
+        /* usedBoxesCount */
+        { name: "usedBoxesCount", label: "Cajas en Producción", type: "text", path: "usedBoxesCount" },
+        /* totalAvailableWeight */
+        { name: "totalAvailableWeight", label: "Peso Disponible", type: "weight", path: "totalAvailableWeight" },
+        /* totalUsedWeight */
+        { name: "totalUsedWeight", label: "Peso en Producción", type: "weight", path: "totalUsedWeight" }
       ],
     },
     actions: [

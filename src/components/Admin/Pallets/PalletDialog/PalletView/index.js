@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { Combobox } from "@/components/Shadcn/Combobox";
 import Loader from "@/components/Utilities/Loader";
+import { EmptyState } from "@/components/Utilities/EmptyState";
 
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
@@ -736,12 +737,25 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             </TableRow>
                                                                         </TableHeader>
                                                                         <TableBody>
-                                                                            {temporalPallet.boxes.map((box) => {
-                                                                                const boxAvailable = isBoxAvailable(box);
-                                                                                const productionInfo = getBoxProductionInfo(box);
-                                                                                const isSelected = box.id === selectedBox;
-                                                                                
-                                                                                if (isSelected && boxAvailable) {
+                                                                            {temporalPallet.boxes.length === 0 ? (
+                                                                                <TableRow>
+                                                                                    <TableCell colSpan={6} className="p-0">
+                                                                                        <div className="py-12">
+                                                                                            <EmptyState
+                                                                                                icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                                                title="No hay cajas en el palet"
+                                                                                                description="Agrega cajas al palet usando las opciones de la izquierda"
+                                                                                            />
+                                                                                        </div>
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ) : (
+                                                                                temporalPallet.boxes.map((box) => {
+                                                                                    const boxAvailable = isBoxAvailable(box);
+                                                                                    const productionInfo = getBoxProductionInfo(box);
+                                                                                    const isSelected = box.id === selectedBox;
+                                                                                    
+                                                                                    if (isSelected && boxAvailable) {
                                                                                     return (
                                                                                         <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className="hover:bg-muted">
                                                                                             <TableCell>{box.product.name}</TableCell>
@@ -893,7 +907,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                         </TableCell>
                                                                                     </TableRow>
                                                                                 );
-                                                                            })}
+                                                                                })
+                                                                            )}
                                                                         </TableBody>
                                                                     </Table>
                                                                 </div>
@@ -922,8 +937,14 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex items-center justify-center py-8 border rounded-lg h-full">
-                                                                    <p className="text-muted-foreground">No hay cajas disponibles</p>
+                                                                <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                                    <div className="flex items-center justify-center h-full">
+                                                                        <EmptyState
+                                                                            icon={<CheckCircle className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                            title="No hay cajas disponibles"
+                                                                            description="Todas las cajas de este palet están en producción"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </TabsContent>
@@ -995,8 +1016,14 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex items-center justify-center py-8 border rounded-lg h-full">
-                                                                    <p className="text-muted-foreground">No hay cajas en producción</p>
+                                                                <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                                    <div className="flex items-center justify-center h-full">
+                                                                        <EmptyState
+                                                                            icon={<Factory className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                            title="No hay cajas en producción"
+                                                                            description="Todas las cajas de este palet están disponibles"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </TabsContent>
