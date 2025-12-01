@@ -861,3 +861,169 @@ export function deleteProductionRecordImage(recordId, imageId, token) {
         });
 }
 
+// ==================== PRODUCTION OUTPUT CONSUMPTIONS ====================
+
+/**
+ * Obtiene todos los consumos de outputs del padre
+ * @param {string} token - Token de autenticación
+ * @param {object} params - Parámetros de consulta
+ * @returns {Promise<Object>} - Lista de consumos
+ */
+export function getProductionOutputConsumptions(token, params = {}) {
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `${API_URL_V2}production-output-consumptions${queryParams ? `?${queryParams}` : ''}`;
+    
+    return fetchWithTenant(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener los consumos');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Obtiene los outputs disponibles del proceso padre para un proceso hijo
+ * @param {string|number} productionRecordId - ID del proceso hijo
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Lista de outputs disponibles
+ */
+export function getAvailableOutputs(productionRecordId, token) {
+    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/available-outputs/${productionRecordId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener los outputs disponibles');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Crea un nuevo consumo de output del padre
+ * @param {Object} consumptionData - Datos del consumo
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Consumo creado
+ */
+export function createProductionOutputConsumption(consumptionData, token) {
+    return fetchWithTenant(`${API_URL_V2}production-output-consumptions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(consumptionData),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al crear el consumo');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Actualiza un consumo de output del padre
+ * @param {string|number} consumptionId - ID del consumo
+ * @param {Object} consumptionData - Datos actualizados
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Consumo actualizado
+ */
+export function updateProductionOutputConsumption(consumptionId, consumptionData, token) {
+    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/${consumptionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(consumptionData),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al actualizar el consumo');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Elimina un consumo de output del padre
+ * @param {string|number} consumptionId - ID del consumo
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Respuesta del servidor
+ */
+export function deleteProductionOutputConsumption(consumptionId, token) {
+    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/${consumptionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al eliminar el consumo');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
