@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
+import ProductionOutputConsumptionsManager from './ProductionOutputConsumptionsManager'
 import ProductionRecordImagesManager from './ProductionRecordImagesManager'
 
 const ProductionRecordEditor = ({ productionId, recordId = null }) => {
@@ -406,6 +407,18 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     renderInCard={true}
                                     cardTitle="Consumo de Materia prima desde stock"
                                     cardDescription="Materia prima consumida desde el stock en este proceso"
+                                />
+                            </div>
+
+                            {/* Consumos del Padre */}
+                            <div className="break-inside-avoid mb-6 max-w-full w-full">
+                                <ProductionOutputConsumptionsManager
+                                    productionRecordId={currentRecordId}
+                                    onRefresh={handleRefresh}
+                                    hideTitle={true}
+                                    renderInCard={true}
+                                    cardTitle="Consumos del Proceso Padre"
+                                    cardDescription="Outputs consumidos del proceso padre en este proceso hijo"
                                 />
                             </div>
 

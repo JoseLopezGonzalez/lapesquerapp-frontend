@@ -2236,119 +2236,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                 </div>
                 )}
 
-            {/* Sección: Consumos del Proceso Padre */}
-            {productionRecord?.parent_record_id && (
-                <div className="space-y-4 mt-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h4 className="text-base font-semibold flex items-center gap-2">
-                                <ArrowDown className="h-4 w-4" />
-                                Consumos del Proceso Padre
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                                Outputs consumidos del proceso padre en este proceso hijo
-                            </p>
-                        </div>
-                        {!renderInCard && (
-                            <Dialog open={addConsumptionDialogOpen} onOpenChange={(open) => {
-                                if (open) {
-                                    handleOpenConsumptionDialog()
-                                } else {
-                                    setAddConsumptionDialogOpen(false)
-                                }
-                            }}>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">
-                                        {parentOutputConsumptions.length > 0 ? (
-                                            <>
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                Editar Consumo
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Plus className="h-4 w-4 mr-2" />
-                                                Consumir Output
-                                            </>
-                                        )}
-                                    </Button>
-                                </DialogTrigger>
-                                {consumptionDialog.props.children}
-                            </Dialog>
-                        )}
-                    </div>
-
-                    {parentOutputConsumptions.length === 0 ? (
-                        <div className="flex items-center justify-center py-8 border rounded-lg">
-                            <EmptyState
-                                icon={<ArrowDown className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-                                title="No hay consumos del padre"
-                                description="Consume outputs del proceso padre para utilizarlos en este proceso"
-                            />
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {parentOutputConsumptions.map((consumption) => (
-                                <div key={consumption.id} className="border rounded-lg p-4 bg-muted/30">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Badge variant="secondary" className="text-sm">
-                                                    {consumption.productionOutput?.product?.name || 'Sin nombre'}
-                                                </Badge>
-                                                <span className="text-sm text-muted-foreground">
-                                                    Output #{consumption.production_output_id}
-                                                </span>
-                                            </div>
-                                            <div className="space-y-1 text-sm">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-muted-foreground">Peso consumido:</span>
-                                                    <span className="font-semibold">{formatWeight(consumption.consumed_weight_kg)}</span>
-                                                </div>
-                                                {consumption.consumed_boxes && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-muted-foreground">Cajas consumidas:</span>
-                                                        <span className="font-semibold">{consumption.consumed_boxes}</span>
-                                                    </div>
-                                                )}
-                                                {consumption.notes && (
-                                                    <div className="mt-2 pt-2 border-t">
-                                                        <p className="text-xs text-muted-foreground">{consumption.notes}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setConsumptionFormData({
-                                                        production_output_id: consumption.production_output_id?.toString() || '',
-                                                        consumed_weight_kg: consumption.consumed_weight_kg?.toString() || '',
-                                                        consumed_boxes: consumption.consumed_boxes?.toString() || '',
-                                                        notes: consumption.notes || ''
-                                                    })
-                                                    handleOpenConsumptionDialog()
-                                                }}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDeleteConsumption(consumption.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* Totales Generales */}
             {(inputs.length > 0 || parentOutputConsumptions.length > 0) && (
                 <div className="mt-6 border rounded-lg overflow-hidden">
@@ -2464,7 +2351,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         return (
             <>
                 {dialog}
-                {consumptionDialog}
                 {lotsDialog}
                 <Card className="h-fit">
                     <CardHeader>
@@ -2475,35 +2361,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     {cardDescription || 'Materia prima consumida desde el stock en este proceso'}
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2">
-                                {headerButton}
-                                {productionRecord?.parent_record_id && (
-                                    <Dialog open={addConsumptionDialogOpen} onOpenChange={(open) => {
-                                        if (open) {
-                                            handleOpenConsumptionDialog()
-                                        } else {
-                                            setAddConsumptionDialogOpen(false)
-                                        }
-                                    }}>
-                                        <DialogTrigger asChild>
-                                            <Button size="sm" variant="outline">
-                                                {parentOutputConsumptions.length > 0 ? (
-                                                    <>
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Editar Consumo Padre
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        Consumir del Padre
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </DialogTrigger>
-                                        {consumptionDialog.props.children}
-                                    </Dialog>
-                                )}
-                            </div>
+                            {headerButton}
                         </div>
                     </CardHeader>
                     <CardContent className="">
@@ -2517,7 +2375,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     // Render normal
     return (
         <>
-            {consumptionDialog}
             {lotsDialog}
             {mainContent}
         </>
