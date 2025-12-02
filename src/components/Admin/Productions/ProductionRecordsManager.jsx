@@ -3,15 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { getProductionRecords, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
-import { formatDate } from '@/helpers/production/formatters'
+import { formatDateLong } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight, Eye } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, ChevronRight, Package, Scale } from 'lucide-react'
 import Loader from '@/components/Utilities/Loader'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import ProductionInputsManager from './ProductionInputsManager'
-import ProductionOutputsManager from './ProductionOutputsManager'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useRouter } from 'next/navigation'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
@@ -20,7 +18,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const [records, setRecords] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [expandedRecords, setExpandedRecords] = useState({})
 
     useEffect(() => {
         if (session?.user?.accessToken && productionId) {
@@ -85,142 +82,93 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         return records.filter(r => r.parent_record_id === parentId)
     }
 
-    const toggleRecordExpansion = (recordId) => {
-        setExpandedRecords(prev => ({
-            ...prev,
-            [recordId]: !prev[recordId]
-        }))
-    }
-
-    const renderRecordTree = (record, level = 0) => {
+    const renderRecordRow = (record, level = 0) => {
         const children = getChildRecords(record.id)
         const isCompleted = record.finished_at !== null
         const isRoot = !record.parent_record_id
-        const isExpanded = expandedRecords[record.id]
 
         return (
-            <div key={record.id} className={`${level > 0 ? 'ml-8 mt-2 border-l-2 pl-4' : ''}`}>
-                <Card className="mb-2">
-                    <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Collapsible open={isExpanded} onOpenChange={() => toggleRecordExpansion(record.id)}>
-                                        <CollapsibleTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                {isExpanded ? (
-                                                    <ChevronDown className="h-4 w-4" />
-                                                ) : (
-                                                    <ChevronRight className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        </CollapsibleTrigger>
-                                    </Collapsible>
-                                    <CardTitle className="text-lg">
-                                        Proceso #{record.id}
-                                    </CardTitle>
-                                    {isRoot && (
-                                        <Badge variant="outline">Raíz</Badge>
-                                    )}
-                                    {isCompleted ? (
-                                        <Badge variant="default" className="bg-green-500">
-                                            <CheckCircle className="h-3 w-3 mr-1" />
-                                            Completado
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline">
-                                            <Clock className="h-3 w-3 mr-1" />
-                                            En progreso
-                                        </Badge>
-                                    )}
-                                </div>
-                                {record.process && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Tipo: {record.process.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
-                                >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Ver Detalle
-                                </Button>
-                                {!isCompleted && (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleFinishRecord(record.id)}
-                                    >
-                                        Finalizar
-                                    </Button>
-                                )}
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteRecord(record.id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2 text-sm">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-muted-foreground">Inicio:</p>
-                                    <p className="font-medium">{formatDate(record.started_at)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground">Fin:</p>
-                                    <p className="font-medium">{formatDate(record.finished_at) || 'Pendiente'}</p>
-                                </div>
-                            </div>
-                            {record.notes && (
-                                <div>
-                                    <p className="text-muted-foreground">Notas:</p>
-                                    <p>{record.notes}</p>
-                                </div>
+            <React.Fragment key={record.id}>
+                <TableRow className={level > 0 ? 'bg-muted/30' : ''}>
+                    <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                            {level > 0 && <span className="text-muted-foreground">└─</span>}
+                            <span>#{record.id}</span>
+                            {isRoot && (
+                                <Badge variant="outline" className="text-xs">Raíz</Badge>
                             )}
+                        </div>
+                    </TableCell>
+                    <TableCell>
+                        {record.process?.name || 'Sin tipo'}
+                    </TableCell>
+                    <TableCell>
+                        {formatDateLong(record.started_at)}
+                    </TableCell>
+                    <TableCell>
+                        {record.finished_at ? formatDateLong(record.finished_at) : (
+                            <span className="text-muted-foreground">Pendiente</span>
+                        )}
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-2">
                             {record.inputs_count !== undefined && (
-                                <div>
-                                    <p className="text-muted-foreground">Entradas: {record.inputs_count || 0} cajas</p>
+                                <div className="flex items-center gap-1 text-sm">
+                                    <Package className="h-3 w-3 text-muted-foreground" />
+                                    <span>{record.inputs_count || 0}</span>
                                 </div>
                             )}
                             {record.outputs_count !== undefined && (
-                                <div>
-                                    <p className="text-muted-foreground">Salidas: {record.outputs_count || 0} registros</p>
+                                <div className="flex items-center gap-1 text-sm">
+                                    <Scale className="h-3 w-3 text-muted-foreground" />
+                                    <span>{record.outputs_count || 0}</span>
                                 </div>
                             )}
                         </div>
-
-                        {/* Inputs y Outputs expandidos */}
-                        {isExpanded && (
-                            <div className="mt-4 pt-4 border-t space-y-4">
-                                <ProductionInputsManager
-                                    productionRecordId={record.id}
-                                    onRefresh={() => {
-                                        loadRecords()
-                                        if (onRefresh) onRefresh()
-                                    }}
-                                />
-                                <ProductionOutputsManager
-                                    productionRecordId={record.id}
-                                    onRefresh={() => {
-                                        loadRecords()
-                                        if (onRefresh) onRefresh()
-                                    }}
-                                />
-                            </div>
+                    </TableCell>
+                    <TableCell>
+                        {isCompleted ? (
+                            <Badge variant="default" className="bg-green-500">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Completado
+                            </Badge>
+                        ) : (
+                            <Badge variant="outline">
+                                <Clock className="h-3 w-3 mr-1" />
+                                En progreso
+                            </Badge>
                         )}
-                    </CardContent>
-                </Card>
-                {children.map(child => renderRecordTree(child, level + 1))}
-            </div>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            {!isCompleted && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleFinishRecord(record.id)}
+                                >
+                                    Finalizar
+                                </Button>
+                            )}
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteRecord(record.id)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </TableCell>
+                </TableRow>
+                {children.map(child => renderRecordRow(child, level + 1))}
+            </React.Fragment>
         )
     }
 
@@ -269,9 +217,26 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="space-y-4">
-                    {rootRecords.map(record => renderRecordTree(record))}
-                </div>
+                <Card>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Tipo de Proceso</TableHead>
+                                    <TableHead>Fecha Inicio</TableHead>
+                                    <TableHead>Fecha Fin</TableHead>
+                                    <TableHead>Entradas/Salidas</TableHead>
+                                    <TableHead>Estado</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {rootRecords.map(record => renderRecordRow(record))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             )}
         </div>
     )

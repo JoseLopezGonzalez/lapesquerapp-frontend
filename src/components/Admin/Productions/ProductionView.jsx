@@ -109,10 +109,10 @@ const ProductionView = ({ productionId }) => {
 
     return (
         <div className="h-full w-full overflow-y-auto">
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
                         size="icon"
@@ -121,8 +121,8 @@ const ProductionView = ({ productionId }) => {
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-3xl font-bold">Producción #{production.id}</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="text-2xl font-bold">Producción #{production.id}</h1>
+                        <p className="text-sm text-muted-foreground">
                             Lote: {production.lot || 'Sin lote'}
                         </p>
                     </div>
@@ -135,159 +135,161 @@ const ProductionView = ({ productionId }) => {
                 </Badge>
             </div>
 
-            {/* Información General */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-primary" />
-                        Información General
-                    </CardTitle>
-                    <CardDescription>Datos básicos del lote de producción</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium text-muted-foreground">Especie</p>
-                            <p className="text-lg">{production.species?.name || 'No especificada'}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                Fecha de apertura
-                            </p>
-                            <p className="text-lg">{formatDateLong(production.openedAt)}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                Fecha de cierre
-                            </p>
-                            <p className="text-lg">{formatDateLong(production.closedAt) || 'No cerrado'}</p>
-                        </div>
-                        {production.notes && (
-                            <div className="space-y-1 md:col-span-2 lg:col-span-3">
-                                <p className="text-sm font-medium text-muted-foreground">Notas</p>
-                                <p className="text-base">{production.notes}</p>
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Totales */}
-            {totals && (
+            {/* Cards en fila para pantallas grandes */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Información General */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Calculator className="h-5 w-5 text-primary" />
-                            Totales
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Info className="h-4 w-4 text-primary" />
+                            Información General
                         </CardTitle>
-                        <CardDescription>Resumen de pesos y cantidades</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Package className="h-4 w-4" />
-                                    Cajas entrada
-                                </p>
-                                <p className="text-2xl font-bold">{totals.totalInputBoxes || 0}</p>
+                    <CardContent className="pt-0">
+                        <div className="space-y-2 text-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Especie:</span>
+                                <span className="font-medium">{production.species?.name || 'No especificada'}</span>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Scale className="h-4 w-4" />
-                                    Peso entrada
-                                </p>
-                                <p className="text-2xl font-bold">{formatWeight(totals.totalInputWeight)}</p>
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    Apertura:
+                                </span>
+                                <span className="font-medium">{formatDateLong(production.openedAt)}</span>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Package className="h-4 w-4" />
-                                    Cajas salida
-                                </p>
-                                <p className="text-2xl font-bold">{totals.totalOutputBoxes || 0}</p>
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    Cierre:
+                                </span>
+                                <span className="font-medium">{formatDateLong(production.closedAt) || 'No cerrado'}</span>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Scale className="h-4 w-4" />
-                                    Peso salida
-                                </p>
-                                <p className="text-2xl font-bold">{formatWeight(totals.totalOutputWeight)}</p>
-                            </div>
-                        </div>
-                        {totals.totalWaste !== undefined && (
-                            <div className="mt-4 pt-4 border-t">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-muted-foreground">Merma</p>
-                                    <div className="text-right">
-                                        <p className="text-xl font-bold">{formatWeight(totals.totalWaste)}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {totals.wastePercentage?.toFixed(2) || 0}%
-                                        </p>
-                                    </div>
+                            {production.notes && (
+                                <div className="pt-2 border-t">
+                                    <p className="text-xs text-muted-foreground mb-1">Notas:</p>
+                                    <p className="text-sm">{production.notes}</p>
                                 </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Conciliación */}
-            {reconciliation && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                            Conciliación
-                        </CardTitle>
-                        <CardDescription>Comparación entre producción declarada y stock real</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <p className="text-sm font-medium">Declarado</p>
-                                    <div className="space-y-1">
-                                        <p className="text-sm text-muted-foreground">
-                                            Cajas: <span className="font-semibold">{reconciliation.declaredBoxes || 0}</span>
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Peso: <span className="font-semibold">{formatWeight(reconciliation.declaredWeight)}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <p className="text-sm font-medium">Stock Real</p>
-                                    <div className="space-y-1">
-                                        <p className="text-sm text-muted-foreground">
-                                            Cajas: <span className="font-semibold">{reconciliation.stockBoxes || 0}</span>
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Peso: <span className="font-semibold">{formatWeight(reconciliation.stockWeight)}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="pt-4 border-t">
-                                <Badge
-                                    variant={reconciliation.status === 'green' ? 'default' : reconciliation.status === 'yellow' ? 'outline' : 'destructive'}
-                                    className={
-                                        reconciliation.status === 'green' ? 'bg-green-500' :
-                                        reconciliation.status === 'yellow' ? 'bg-yellow-500' :
-                                        'bg-red-500'
-                                    }
-                                >
-                                    Estado: {
-                                        reconciliation.status === 'green' ? 'Conciliado' :
-                                        reconciliation.status === 'yellow' ? 'Diferencia leve' :
-                                        'Diferencia importante'
-                                    }
-                                </Badge>
-                            </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
-            )}
+
+                {/* Totales */}
+                {totals && (
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Calculator className="h-4 w-4 text-primary" />
+                                Totales
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                                        <Package className="h-3 w-3" />
+                                        Cajas entrada
+                                    </p>
+                                    <p className="text-lg font-bold">{totals.totalInputBoxes || 0}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                                        <Scale className="h-3 w-3" />
+                                        Peso entrada
+                                    </p>
+                                    <p className="text-lg font-bold">{formatWeight(totals.totalInputWeight)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                                        <Package className="h-3 w-3" />
+                                        Cajas salida
+                                    </p>
+                                    <p className="text-lg font-bold">{totals.totalOutputBoxes || 0}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+                                        <Scale className="h-3 w-3" />
+                                        Peso salida
+                                    </p>
+                                    <p className="text-lg font-bold">{formatWeight(totals.totalOutputWeight)}</p>
+                                </div>
+                            </div>
+                            {totals.totalWaste !== undefined && (
+                                <div className="mt-3 pt-3 border-t">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">Merma:</span>
+                                        <div className="text-right">
+                                            <p className="text-base font-bold">{formatWeight(totals.totalWaste)}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {totals.wastePercentage?.toFixed(2) || 0}%
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Conciliación */}
+                {reconciliation && (
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" />
+                                Conciliación
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="space-y-3 text-sm">
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-2">Declarado</p>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">Cajas:</span>
+                                            <span className="font-semibold">{reconciliation.declaredBoxes || 0}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">Peso:</span>
+                                            <span className="font-semibold">{formatWeight(reconciliation.declaredWeight)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-2">Stock Real</p>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">Cajas:</span>
+                                            <span className="font-semibold">{reconciliation.stockBoxes || 0}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-muted-foreground">Peso:</span>
+                                            <span className="font-semibold">{formatWeight(reconciliation.stockWeight)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="pt-2 border-t">
+                                    <Badge
+                                        variant={reconciliation.status === 'green' ? 'default' : reconciliation.status === 'yellow' ? 'outline' : 'destructive'}
+                                        className={
+                                            reconciliation.status === 'green' ? 'bg-green-500' :
+                                            reconciliation.status === 'yellow' ? 'bg-yellow-500' :
+                                            'bg-red-500'
+                                        }
+                                    >
+                                        {
+                                            reconciliation.status === 'green' ? 'Conciliado' :
+                                            reconciliation.status === 'yellow' ? 'Diferencia leve' :
+                                            'Diferencia importante'
+                                        }
+                                    </Badge>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
 
             {/* Tabs para Procesos y más */}
             <Tabs defaultValue="processes" className="w-full">
