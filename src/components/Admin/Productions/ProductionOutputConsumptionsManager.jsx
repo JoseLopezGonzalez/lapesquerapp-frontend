@@ -9,6 +9,7 @@ import {
     createProductionOutputConsumption,
     updateProductionOutputConsumption,
     deleteProductionOutputConsumption,
+    createMultipleProductionOutputConsumptions,
     syncProductionOutputConsumptions
 } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
@@ -18,7 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Edit, ArrowDown, Save } from 'lucide-react'
+import { Plus, Trash2, Edit, ArrowDown, Save, Loader2 } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { EmptyState } from '@/components/Utilities/EmptyState'
@@ -57,6 +58,29 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
+
+    const loadConsumptionsOnly = async () => {
+        try {
+            const token = session.user.accessToken
+            const consumptionsResponse = await getProductionOutputConsumptions(token, {
+                production_record_id: productionRecordId
+            })
+            setConsumptions(consumptionsResponse.data || [])
+        } catch (consumptionErr) {
+            console.warn('Error loading consumptions:', consumptionErr)
+            // Si falla, intentar recargar desde el record
+            try {
+                const token = session.user.accessToken
+                const record = await getProductionRecord(productionRecordId, token)
+                if (record.parentOutputConsumptions) {
+                    setConsumptions(record.parentOutputConsumptions)
+                }
+            } catch (err) {
+                // Si también falla, dejar la lista vacía
+                setConsumptions([])
+            }
+        }
+    }
 
     const loadData = async () => {
         try {
@@ -144,7 +168,6 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                     }
                 }
             })
-            // console.log('Available outputs loaded:', enrichedOutputs.length, enrichedOutputs)
             setAvailableOutputs(enrichedOutputs)
         } catch (err) {
             console.error('Error loading available outputs:', err)
@@ -267,8 +290,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                 consumed_boxes: '',
                 notes: ''
             })
-            await loadData()
-            if (onRefresh) onRefresh()
+            // Solo recargar consumos, no todo el componente
+            await loadConsumptionsOnly()
         } catch (err) {
             console.error('Error saving consumption:', err)
             alert(err.message || 'Error al guardar el consumo')
@@ -285,8 +308,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         try {
             const token = session.user.accessToken
             await deleteProductionOutputConsumption(consumptionId, token)
-            await loadData()
-            if (onRefresh) onRefresh()
+            // Solo recargar consumos, no todo el componente
+            await loadConsumptionsOnly()
         } catch (err) {
             console.error('Error deleting consumption:', err)
             alert(err.message || 'Error al eliminar el consumo')
@@ -366,13 +389,17 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
 
     const updateConsumptionRow = (id, field, value) => {
         if (id.toString().startsWith('new-')) {
-            setNewConsumptionRows(newConsumptionRows.map(row => 
-                row.id === id ? { ...row, [field]: value } : row
-            ))
+            setNewConsumptionRows(prevRows => {
+                return prevRows.map(row => 
+                    row.id === id ? { ...row, [field]: value } : row
+                )
+            })
         } else {
-            setEditableConsumptions(editableConsumptions.map(row => 
-                row.id === id ? { ...row, [field]: value } : row
-            ))
+            setEditableConsumptions(prevRows => {
+                return prevRows.map(row => 
+                    row.id === id ? { ...row, [field]: value } : row
+                )
+            })
         }
     }
 
@@ -385,10 +412,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             setSavingAll(true)
             const token = session.user.accessToken
 
+            const allRows = getAllConsumptionRows()
+            
             // Validar que haya al menos una fila válida
-            const validRows = getAllConsumptionRows().filter(row => 
-                row.production_output_id && row.consumed_weight_kg && parseFloat(row.consumed_weight_kg || 0) > 0
-            )
+            const validRows = allRows.filter(row => {
+                return row.production_output_id && row.consumed_weight_kg && parseFloat(row.consumed_weight_kg || 0) > 0
+            })
             
             if (validRows.length === 0) {
                 alert('Debe haber al menos un consumo válido para guardar')
@@ -436,38 +465,105 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                 return
             }
 
-            // Usar el endpoint de sincronización que maneja crear, actualizar y eliminar en una sola petición
-            const response = await syncProductionOutputConsumptions(productionRecordId, {
-                consumptions: allConsumptions
-            }, token)
+            // Separar consumos nuevos (sin ID) de los existentes (con ID)
+            const newConsumptions = allConsumptions.filter(c => !c.id)
+            const existingConsumptions = allConsumptions.filter(c => c.id)
+            
+            // Identificar consumos a eliminar (los que están en la BD pero no en el array)
+            const existingIds = existingConsumptions.map(c => c.id)
+            const consumptionsToDelete = consumptions
+                .filter(c => !existingIds.includes(c.id))
+                .map(c => c.id)
 
-            // Actualizar el estado con los consumos sincronizados del servidor
-            if (response.data && response.data.parentOutputConsumptions) {
-                setConsumptions(response.data.parentOutputConsumptions)
-            } else {
-                // Si no vienen en la respuesta, recargar desde el servidor
-                await loadData()
+            // Intentar usar el endpoint de sincronización primero
+            let response
+            let useFallback = false
+            try {
+                response = await syncProductionOutputConsumptions(productionRecordId, {
+                    consumptions: allConsumptions
+                }, token)
+            } catch (syncError) {
+                // Si el endpoint de sincronización no existe (404), usar endpoints individuales
+                useFallback = true
             }
 
+            // Si el endpoint de sincronización no está disponible, usar endpoints individuales
+            if (useFallback) {
+                try {
+                    // Crear nuevos consumos uno por uno (el endpoint múltiple tampoco está disponible)
+                    for (const consumption of newConsumptions) {
+                        await createProductionOutputConsumption({
+                            production_record_id: parseInt(productionRecordId),
+                            production_output_id: consumption.production_output_id,
+                            consumed_weight_kg: consumption.consumed_weight_kg,
+                            consumed_boxes: consumption.consumed_boxes,
+                            notes: consumption.notes
+                        }, token)
+                    }
+
+                    // Actualizar consumos existentes
+                    for (const consumption of existingConsumptions) {
+                        await updateProductionOutputConsumption(consumption.id, {
+                            consumed_weight_kg: consumption.consumed_weight_kg,
+                            consumed_boxes: consumption.consumed_boxes,
+                            notes: consumption.notes
+                        }, token)
+                    }
+
+                    // Eliminar consumos que fueron removidos
+                    for (const id of consumptionsToDelete) {
+                        await deleteProductionOutputConsumption(id, token)
+                    }
+
+                    // Resetear estados antes de cerrar el diálogo
+                    setEditableConsumptions([])
+                    setNewConsumptionRows([])
+                    setSavingAll(false)
+                    
+                    // Cerrar el diálogo
+                    setManageDialogOpen(false)
+                    
+                    // Actualizar solo los consumos en segundo plano sin bloquear
+                    // No llamar a onRefresh para evitar recargar todo
+                    loadConsumptionsOnly().catch(err => {
+                        console.warn('Error al recargar consumos:', err)
+                    })
+                    return
+                } catch (fallbackError) {
+                    // Si el fallback también falla, lanzar el error
+                    throw fallbackError
+                }
+            }
+
+            // Resetear estados antes de cerrar el diálogo
+            setEditableConsumptions([])
+            setNewConsumptionRows([])
+            setSavingAll(false)
+            
             // Cerrar el diálogo
             setManageDialogOpen(false)
             
-            // Resetear estados
-            setEditableConsumptions([])
-            setNewConsumptionRows([])
-            
-            // Notificar al componente padre si es necesario
-            if (onRefresh) onRefresh()
+            // Actualizar el estado con los consumos sincronizados del servidor
+            if (response.data && response.data.parentOutputConsumptions) {
+                setConsumptions(response.data.parentOutputConsumptions)
+                // No llamar a onRefresh para evitar recargar todo
+            } else {
+                // Si no vienen en la respuesta, recargar solo consumos en segundo plano
+                // No llamar a onRefresh para evitar recargar todo
+                loadConsumptionsOnly().catch(err => {
+                    console.warn('Error al recargar consumos:', err)
+                })
+            }
             
         } catch (err) {
-            console.error('Error saving consumptions:', err)
-            console.error('Error details:', {
-                message: err.message,
-                stack: err.stack,
-                response: err.response
-            })
-            alert(err.message || 'Error al guardar los consumos. Revisa la consola para más detalles.')
-        } finally {
+            // Solo mostrar error si no es un 404 del endpoint de sync (porque usamos fallback)
+            const is404SyncError = err.message && err.message.includes('404') && err.message.includes('parent-output-consumptions')
+            
+            if (!is404SyncError) {
+                console.error('Error saving consumptions:', err)
+                alert(err.message || 'Error al guardar los consumos. Revisa la consola para más detalles.')
+            }
+            // Asegurar que el estado se resetee incluso si hay error
             setSavingAll(false)
         }
     }
@@ -858,26 +954,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                                 const outputId = o.output?.id
                                                 if (!outputId) return false
                                                 // Comparar tanto como string como number para evitar problemas de tipo
-                                                const matches = String(outputId) === rowOutputId || Number(outputId) === Number(rowOutputId)
-                                                return matches
+                                                return String(outputId) === rowOutputId || Number(outputId) === Number(rowOutputId)
                                             }
                                           )
                                         : null
-                                    
-                                    // Debug temporal para verificar que se encuentra el output
-                                    if (rowOutputId && availableOutputs.length > 0) {
-                                        // console.log('Buscando output:', {
-                                        //     rowOutputId,
-                                        //     availableOutputsCount: availableOutputs.length,
-                                        //     availableIds: availableOutputs.map(o => o.output?.id),
-                                        //     found: !!selectedOutput,
-                                        //     selectedOutputData: selectedOutput ? {
-                                        //         availableWeight: selectedOutput.availableWeight,
-                                        //         totalWeight: selectedOutput.totalWeight,
-                                        //         productName: selectedOutput.output?.product?.name
-                                        //     } : null
-                                        // })
-                                    }
                                     
                                     // Si es una edición (no es nueva), ajustar disponibilidad sumando el peso original
                                     // porque ese consumo se va a reemplazar
@@ -1106,7 +1186,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                         >
                             {savingAll ? (
                                 <>
-                                    <Loader className="mr-2" />
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                     Guardando...
                                 </>
                             ) : (

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit, Save, X } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X, Loader2 } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -46,6 +46,16 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
+
+    const loadOutputsOnly = async () => {
+        try {
+            const token = session.user.accessToken
+            const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
+            setOutputs(response.data || [])
+        } catch (err) {
+            console.warn('Error loading outputs:', err)
+        }
+    }
 
     const loadOutputs = async (showLoading = true) => {
         try {
@@ -99,8 +109,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             await createProductionOutput(outputData, token)
             setAddDialogOpen(false)
             resetForm()
-            loadOutputs()
-            if (onRefresh) onRefresh()
+            // Solo recargar outputs, no todo el componente
+            await loadOutputsOnly()
         } catch (err) {
             console.error('Error creating output:', err)
             alert(err.message || 'Error al crear la salida')
@@ -124,8 +134,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             setEditDialogOpen(false)
             setEditingOutput(null)
             resetForm()
-            loadOutputs()
-            if (onRefresh) onRefresh()
+            // Solo recargar outputs, no todo el componente
+            await loadOutputsOnly()
         } catch (err) {
             console.error('Error updating output:', err)
             alert(err.message || 'Error al actualizar la salida')
@@ -140,8 +150,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         try {
             const token = session.user.accessToken
             await deleteProductionOutput(outputId, token)
-            loadOutputs()
-            if (onRefresh) onRefresh()
+            // Solo recargar outputs, no todo el componente
+            await loadOutputsOnly()
         } catch (err) {
             console.error('Error deleting output:', err)
             alert(err.message || 'Error al eliminar la salida')
@@ -257,29 +267,28 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                 outputs: allOutputs
             }, token)
 
+            // Resetear estados antes de cerrar el diálogo
+            setEditableOutputs([])
+            setNewRows([])
+            setSaving(false)
+            
+            // Cerrar el dialog
+            setManageDialogOpen(false)
+            
             // Actualizar el estado con los outputs sincronizados del servidor
             if (response.data && response.data.outputs) {
                 setOutputs(response.data.outputs)
             } else {
-                // Si no vienen en la respuesta, recargar desde el servidor
-                const outputsResponse = await getProductionOutputs(token, { production_record_id: productionRecordId })
-                setOutputs(outputsResponse.data || [])
+                // Si no vienen en la respuesta, recargar solo outputs en segundo plano
+                loadOutputsOnly().catch(err => {
+                    console.warn('Error al recargar outputs:', err)
+                })
             }
-
-            // Cerrar el dialog
-            setManageDialogOpen(false)
-            
-            // Resetear estados del dialog
-            setEditableOutputs([])
-            setNewRows([])
-            
-            // Notificar al componente padre si es necesario
-            if (onRefresh) onRefresh()
             
         } catch (err) {
             console.error('Error saving outputs:', err)
             alert(err.message || 'Error al guardar las salidas')
-        } finally {
+            // Asegurar que el estado se resetee incluso si hay error
             setSaving(false)
         }
     }
@@ -746,9 +755,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             )}
                         >
                             {saving ? (
-                                <>
-                                    <span className="mr-2">Guardando...</span>
-                                </>
+                                <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
                                     <Save className="h-4 w-4 mr-2" />

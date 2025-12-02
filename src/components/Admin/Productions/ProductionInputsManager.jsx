@@ -76,6 +76,16 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
 
+    const loadInputsOnly = async () => {
+        try {
+            const token = session.user.accessToken
+            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
+            setInputs(response.data || [])
+        } catch (err) {
+            console.warn('Error loading inputs:', err)
+        }
+    }
+
     const loadInputs = async () => {
         try {
             setLoading(true)
@@ -253,8 +263,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             setWeightSearch('')
             setWeightSearchResults([])
             setTargetWeightResults([])
-            loadInputs()
-            if (onRefresh) onRefresh()
+            // Solo recargar inputs, no todo el componente
+            await loadInputsOnly()
         } catch (err) {
             console.error('Error adding/editing inputs:', err)
             alert(err.message || 'Error al guardar las entradas')
@@ -271,8 +281,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         try {
             const token = session.user.accessToken
             await deleteProductionInput(inputId, token)
-            loadInputs()
-            if (onRefresh) onRefresh()
+            // Solo recargar inputs, no todo el componente
+            await loadInputsOnly()
         } catch (err) {
             console.error('Error deleting input:', err)
             alert(err.message || 'Error al eliminar la entrada')
@@ -1878,33 +1888,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                     </div>
                 </div>
                 )}
-
-            {/* Totales Generales */}
-            {inputs.length > 0 && (
-                <div className="mt-6 border rounded-lg overflow-hidden">
-                    <div className="bg-muted/30 p-5 border-b">
-                        <h4 className="text-sm font-semibold mb-4 uppercase tracking-wide">Totales Generales</h4>
-                        <div className="grid grid-cols-4 gap-6 text-center">
-                            <div className="flex flex-col items-center justify-center">
-                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Palets</p>
-                                <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalPallets}</p>
-                            </div>
-                            <div className="flex flex-col items-center justify-center">
-                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Cajas</p>
-                                <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalBoxes}</p>
-                            </div>
-                            <div className="flex flex-col items-center justify-center">
-                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Productos</p>
-                                <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalProducts}</p>
-                            </div>
-                            <div className="flex flex-col items-center justify-center">
-                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Peso Total</p>
-                                <p className="text-2xl font-bold text-foreground">{formatWeight(calculateTotalSummary().totalWeight)}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
             </div>
         </>
     )
