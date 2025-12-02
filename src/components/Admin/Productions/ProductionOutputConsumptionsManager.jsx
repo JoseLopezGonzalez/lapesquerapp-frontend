@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Edit, ArrowDown, Save, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Edit, ArrowDown, Save, Loader2, Sparkles } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { EmptyState } from '@/components/Utilities/EmptyState'
@@ -35,6 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import Loader from '@/components/Utilities/Loader'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -58,6 +59,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
     const [editableConsumptions, setEditableConsumptions] = useState([])
     const [newConsumptionRows, setNewConsumptionRows] = useState([])
     const [savingAll, setSavingAll] = useState(false)
+    const [addingFromParent, setAddingFromParent] = useState(false)
     
     // Estado para mostrar/ocultar cajas (con localStorage)
     const [showBoxes, setShowBoxes] = useState(() => {
@@ -386,6 +388,84 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             notes: '',
             isNew: true
         }])
+    }
+
+    const handleAddAllFromParent = async () => {
+        const hasParent = productionRecord?.parent_record_id || productionRecord?.parentRecordId
+        if (!hasParent) {
+            alert('Este proceso no tiene un proceso padre. Selecciona un proceso padre en el formulario primero.')
+            return
+        }
+
+        try {
+            setAddingFromParent(true)
+            // Asegurarse de que los outputs disponibles estén cargados
+            if (availableOutputs.length === 0) {
+                await loadAvailableOutputs()
+            }
+
+            if (availableOutputs.length === 0) {
+                alert('No hay outputs disponibles del proceso padre.')
+                return
+            }
+
+            // Obtener los IDs de outputs que ya están en consumos existentes o en nuevas líneas
+            const existingOutputIds = new Set()
+            
+            // Agregar IDs de consumos existentes
+            editableConsumptions.forEach(consumption => {
+                if (consumption.production_output_id) {
+                    existingOutputIds.add(consumption.production_output_id.toString())
+                }
+            })
+            
+            // Agregar IDs de nuevas líneas ya añadidas
+            newConsumptionRows.forEach(row => {
+                if (row.production_output_id) {
+                    existingOutputIds.add(row.production_output_id.toString())
+                }
+            })
+
+            // Filtrar outputs que no están ya añadidos y tienen disponibilidad
+            const outputsToAdd = availableOutputs.filter(output => {
+                const outputId = output.output?.id?.toString()
+                if (!outputId) return false
+                if (existingOutputIds.has(outputId)) return false
+                
+                // Solo añadir si tiene peso disponible
+                const availableWeight = parseFloat(output.availableWeight || 0)
+                return availableWeight > 0
+            })
+
+            if (outputsToAdd.length === 0) {
+                alert('Todos los outputs disponibles del proceso padre ya están añadidos o no tienen disponibilidad.')
+                return
+            }
+
+            // Crear nuevas líneas para cada output disponible
+            const newRows = outputsToAdd.map((output, index) => {
+                const outputId = output.output?.id
+                const availableWeight = parseFloat(output.availableWeight || 0)
+                const availableBoxes = output.availableBoxes || 0
+                
+                return {
+                    id: `new-${Date.now()}-${index}-${outputId}`,
+                    production_output_id: outputId?.toString() || '',
+                    consumed_weight_kg: availableWeight > 0 ? availableWeight.toString() : '',
+                    consumed_boxes: availableBoxes > 0 ? availableBoxes.toString() : '',
+                    notes: '',
+                    isNew: true
+                }
+            })
+
+            // Añadir las nuevas líneas
+            setNewConsumptionRows([...newConsumptionRows, ...newRows])
+        } catch (err) {
+            console.error('Error adding all lines from parent:', err)
+            alert(err.message || 'Error al añadir las líneas del proceso padre')
+        } finally {
+            setAddingFromParent(false)
+        }
     }
 
     const removeConsumptionRow = (id) => {
@@ -881,8 +961,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                     />
                 </div>
             ) : (
-                <ScrollArea className="h-64">
-                    <Table>
+                    <ScrollArea className="h-64">
+                        <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Producto</TableHead>
@@ -903,8 +983,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                     </TableRow>
                                 ))}
                             </TableBody>
-                            </Table>
-                        </ScrollArea>
+                        </Table>
+                    </ScrollArea>
             )}
         </>
     )
@@ -941,14 +1021,45 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                 Mostrar Cajas
                             </label>
                         </div>
-                        <Button
-                            onClick={addNewConsumptionRow}
-                            variant="outline"
-                            size="sm"
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar Línea
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={handleAddAllFromParent}
+                                            variant="default"
+                                            size="sm"
+                                            disabled={addingFromParent}
+                                        >
+                                            {addingFromParent ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    Añadiendo...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="h-4 w-4 mr-2" />
+                                                    Añadir automáticamente disponibles
+                                                </>
+                                            )}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                            Añade automáticamente todas las líneas de consumo con los productos y disponibilidades del proceso padre. Solo se añaden los outputs que tienen disponibilidad y que no están ya en la lista.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <Button
+                                onClick={addNewConsumptionRow}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar Línea
+                            </Button>
+                        </div>
                     </div>
 
                     <ScrollArea className="h-[500px] border rounded-md">
@@ -1134,19 +1245,19 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                                     </div>
                                                 </TableCell>
                                                 {showBoxes && (
-                                                    <TableCell className="align-top">
-                                                        <div className="py-1">
-                                                            <Input
-                                                                type="number"
-                                                                min="0"
-                                                                max={adjustedAvailableBoxes}
-                                                                value={row.consumed_boxes}
-                                                                onChange={(e) => updateConsumptionRow(row.id, 'consumed_boxes', e.target.value)}
-                                                                placeholder="0"
-                                                                className="h-9 w-full"
-                                                            />
-                                                        </div>
-                                                    </TableCell>
+                                                <TableCell className="align-top">
+                                                    <div className="py-1">
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            max={adjustedAvailableBoxes}
+                                                            value={row.consumed_boxes}
+                                                            onChange={(e) => updateConsumptionRow(row.id, 'consumed_boxes', e.target.value)}
+                                                            placeholder="0"
+                                                            className="h-9 w-full"
+                                                        />
+                                                    </div>
+                                                </TableCell>
                                                 )}
                                                 <TableCell className="align-top">
                                                     <div className="py-1 flex items-start">

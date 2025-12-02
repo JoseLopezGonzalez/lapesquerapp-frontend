@@ -1623,24 +1623,24 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                     </TooltipProvider>
                 )
             })()}
-            <Button
-                onClick={() => {
-                    setAddDialogOpen(true)
-                    loadExistingDataForEdit()
-                }}
-            >
-                {inputs.length > 0 ? (
-                    <>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar Consumo
-                    </>
-                ) : (
-                    <>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Agregar Consumo
-                    </>
-                )}
-            </Button>
+        <Button
+            onClick={() => {
+                setAddDialogOpen(true)
+                loadExistingDataForEdit()
+            }}
+        >
+            {inputs.length > 0 ? (
+                <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Consumo
+                </>
+            ) : (
+                <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Consumo
+                </>
+            )}
+        </Button>
         </div>
     )
 
@@ -1701,21 +1701,21 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     </TooltipProvider>
                                 )
                             })()}
-                            <DialogTrigger asChild>
-                                <Button>
-                                    {inputs.length > 0 ? (
-                                        <>
-                                            <Edit className="h-4 w-4 mr-2" />
-                                            Editar Consumo
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Agregar Consumo
-                                        </>
-                                    )}
-                                </Button>
-                            </DialogTrigger>
+                        <DialogTrigger asChild>
+                            <Button>
+                                {inputs.length > 0 ? (
+                                    <>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Editar Consumo
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Agregar Consumo
+                                    </>
+                                )}
+                            </Button>
+                        </DialogTrigger>
                         </div>
                         {dialog.props.children}
                     </Dialog>
@@ -1774,8 +1774,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                     </div>
                 ) : (
                 <div className="space-y-4">
-                    {/* Desglose por producto */}
-                    {calculateProductsBreakdown().length > 0 && (
+                        {/* Desglose por producto */}
+                        {calculateProductsBreakdown().length > 0 && (
                         <ScrollArea className="h-64">
                             <Table>
                                 <TableHeader>
@@ -1789,19 +1789,19 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                     {calculateProductsBreakdown().map((product, idx) => (
                                         <TableRow key={idx}>
                                             <TableCell className="font-medium">
-                                                {product.name}
+                                                        {product.name}
                                             </TableCell>
                                             <TableCell>
                                                 {product.boxesCount}
                                             </TableCell>
                                             <TableCell>
-                                                {formatWeight(product.totalWeight)}
+                                                    {formatWeight(product.totalWeight)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
-                        </ScrollArea>
+                                </ScrollArea>
                     )}
                 </div>
                 )}

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs } from '@/services/productionService'
+import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
-import { formatWeight, getWeight, formatAverageWeight } from '@/helpers/production/formatters'
+import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,13 +12,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -40,6 +41,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
     const [editableOutputs, setEditableOutputs] = useState([])
     const [newRows, setNewRows] = useState([])
     const [saving, setSaving] = useState(false)
+    const [copyingFromConsumption, setCopyingFromConsumption] = useState(false)
     
     // Estado para mostrar/ocultar cajas (con localStorage)
     const [showBoxes, setShowBoxes] = useState(() => {
@@ -228,6 +230,104 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             weight_kg: '',
             isNew: true
         }])
+    }
+
+    const handleCopyFromParentConsumptions = async () => {
+        try {
+            setCopyingFromConsumption(true)
+            const token = session.user.accessToken
+            
+            // Obtener el record para verificar si tiene padre
+            const record = await getProductionRecord(productionRecordId, token)
+            const hasParent = record.parent_record_id || record.parentRecordId
+            
+            if (!hasParent) {
+                alert('Este proceso no tiene un proceso padre. No se pueden copiar consumos.')
+                return
+            }
+
+            // Obtener los consumos del padre
+            let consumptions = []
+            if (record.parentOutputConsumptions) {
+                consumptions = record.parentOutputConsumptions
+            } else {
+                try {
+                    const consumptionsResponse = await getProductionOutputConsumptions(token, {
+                        production_record_id: productionRecordId
+                    })
+                    consumptions = consumptionsResponse.data || []
+                } catch (err) {
+                    console.warn('Error loading consumptions:', err)
+                    alert('Error al cargar los consumos del proceso padre.')
+                    return
+                }
+            }
+
+            if (consumptions.length === 0) {
+                alert('El proceso padre no tiene consumos para copiar.')
+                return
+            }
+
+            // Obtener los IDs de productos que ya están en outputs existentes o en nuevas líneas
+            const existingProductIds = new Set()
+            
+            // Agregar IDs de outputs existentes
+            editableOutputs.forEach(output => {
+                if (output.product_id) {
+                    existingProductIds.add(output.product_id.toString())
+                }
+            })
+            
+            // Agregar IDs de nuevas líneas ya añadidas
+            newRows.forEach(row => {
+                if (row.product_id) {
+                    existingProductIds.add(row.product_id.toString())
+                }
+            })
+
+            // Filtrar consumos que no están ya añadidos
+            const consumptionsToAdd = consumptions.filter(consumption => {
+                const productId = consumption.productionOutput?.product?.id || 
+                                 consumption.productionOutput?.productId ||
+                                 consumption.production_output?.product?.id ||
+                                 consumption.production_output?.product_id
+                
+                if (!productId) return false
+                return !existingProductIds.has(productId.toString())
+            })
+
+            if (consumptionsToAdd.length === 0) {
+                alert('Todos los productos de los consumos del padre ya están añadidos como salidas.')
+                return
+            }
+
+            // Crear nuevas líneas para cada consumo
+            const newRowsToAdd = consumptionsToAdd.map((consumption, index) => {
+                const productId = consumption.productionOutput?.product?.id || 
+                                 consumption.productionOutput?.productId ||
+                                 consumption.production_output?.product?.id ||
+                                 consumption.production_output?.product_id
+                
+                const weight = getConsumedWeight(consumption)
+                const boxes = getConsumedBoxes(consumption)
+                
+                return {
+                    id: `new-${Date.now()}-${index}-${productId}`,
+                    product_id: productId?.toString() || '',
+                    boxes: boxes > 0 ? boxes.toString() : '',
+                    weight_kg: weight > 0 ? weight.toString() : '',
+                    isNew: true
+                }
+            })
+
+            // Añadir las nuevas líneas
+            setNewRows([...newRows, ...newRowsToAdd])
+        } catch (err) {
+            console.error('Error copying from parent consumptions:', err)
+            alert(err.message || 'Error al copiar los consumos del proceso padre')
+        } finally {
+            setCopyingFromConsumption(false)
+        }
     }
 
     const removeRow = (id) => {
@@ -574,8 +674,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             </p>
                         </div>
                     )}
-                    <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
-                        <Table>
+                        <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
+                            <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Producto</TableHead>
@@ -660,14 +760,45 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                 Mostrar Cajas
                             </label>
                         </div>
-                        <Button
-                            onClick={addNewRow}
-                            variant="outline"
-                            size="sm"
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar Línea
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={handleCopyFromParentConsumptions}
+                                            variant="default"
+                                            size="sm"
+                                            disabled={copyingFromConsumption}
+                                        >
+                                            {copyingFromConsumption ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    Añadiendo...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="h-4 w-4 mr-2" />
+                                                    Añadir automáticamente desde consumo
+                                                </>
+                                            )}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                            Añade automáticamente todas las líneas de salida copiando los productos, pesos y cajas de los consumos del proceso padre. Solo se añaden los productos que no están ya en la lista.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <Button
+                                onClick={addNewRow}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar Línea
+                            </Button>
+                        </div>
                     </div>
 
                     <ScrollArea className="h-[500px] border rounded-md">
@@ -707,16 +838,16 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                 </div>
                                             </TableCell>
                                             {showBoxes && (
-                                                <TableCell>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        value={row.boxes}
-                                                        onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
-                                                        placeholder="0"
-                                                        className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
-                                                    />
-                                                </TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={row.boxes}
+                                                    onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
+                                                    placeholder="0"
+                                                    className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
+                                                />
+                                            </TableCell>
                                             )}
                                             <TableCell>
                                                 <Input
@@ -730,11 +861,11 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                 />
                                             </TableCell>
                                             {showBoxes && (
-                                                <TableCell>
-                                                    <span className="text-sm text-muted-foreground">
-                                                        {formatWeight(avgWeight)}
-                                                    </span>
-                                                </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {formatWeight(avgWeight)}
+                                                </span>
+                                            </TableCell>
                                             )}
                                             <TableCell>
                                                 <Button

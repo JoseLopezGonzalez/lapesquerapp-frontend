@@ -137,110 +137,110 @@ const ProductionView = ({ productionId }) => {
 
             {/* Cards en fila para pantallas grandes */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Información General */}
-                <Card>
+            {/* Información General */}
+            <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Info className="h-4 w-4 text-primary" />
                             Información General
                         </CardTitle>
-                    </CardHeader>
+                </CardHeader>
                     <CardContent className="pt-0">
                         <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground">Especie:</span>
                                 <span className="font-medium">{production.species?.name || 'No especificada'}</span>
-                            </div>
+                        </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground flex items-center gap-1">
                                     <Calendar className="h-3 w-3" />
                                     Apertura:
                                 </span>
                                 <span className="font-medium">{formatDateLong(production.openedAt)}</span>
-                            </div>
+                        </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground flex items-center gap-1">
                                     <Calendar className="h-3 w-3" />
                                     Cierre:
                                 </span>
                                 <span className="font-medium">{formatDateLong(production.closedAt) || 'No cerrado'}</span>
-                            </div>
-                            {production.notes && (
+                        </div>
+                        {production.notes && (
                                 <div className="pt-2 border-t">
                                     <p className="text-xs text-muted-foreground mb-1">Notas:</p>
                                     <p className="text-sm">{production.notes}</p>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
-                {/* Totales */}
-                {totals && (
-                    <Card>
+            {/* Totales */}
+            {totals && (
+                <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Calculator className="h-4 w-4 text-primary" />
                                 Totales
                             </CardTitle>
-                        </CardHeader>
+                    </CardHeader>
                         <CardContent className="pt-0">
                             <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                                         <Package className="h-3 w-3" />
-                                        Cajas entrada
-                                    </p>
+                                    Cajas entrada
+                                </p>
                                     <p className="text-lg font-bold">{totals.totalInputBoxes || 0}</p>
-                                </div>
+                            </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                                         <Scale className="h-3 w-3" />
-                                        Peso entrada
-                                    </p>
+                                    Peso entrada
+                                </p>
                                     <p className="text-lg font-bold">{formatWeight(totals.totalInputWeight)}</p>
-                                </div>
+                            </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                                         <Package className="h-3 w-3" />
-                                        Cajas salida
-                                    </p>
+                                    Cajas salida
+                                </p>
                                     <p className="text-lg font-bold">{totals.totalOutputBoxes || 0}</p>
-                                </div>
+                            </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                                         <Scale className="h-3 w-3" />
-                                        Peso salida
-                                    </p>
+                                    Peso salida
+                                </p>
                                     <p className="text-lg font-bold">{formatWeight(totals.totalOutputWeight)}</p>
-                                </div>
                             </div>
-                            {totals.totalWaste !== undefined && (
+                        </div>
+                        {totals.totalWaste !== undefined && (
                                 <div className="mt-3 pt-3 border-t">
-                                    <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between">
                                         <span className="text-xs text-muted-foreground">Merma:</span>
-                                        <div className="text-right">
+                                    <div className="text-right">
                                             <p className="text-base font-bold">{formatWeight(totals.totalWaste)}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {totals.wastePercentage?.toFixed(2) || 0}%
-                                            </p>
-                                        </div>
+                                            {totals.wastePercentage?.toFixed(2) || 0}%
+                                        </p>
                                     </div>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
-                {/* Conciliación */}
-                {reconciliation && (
-                    <Card>
+            {/* Conciliación */}
+            {reconciliation && (
+                <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-primary" />
                                 Conciliación
                             </CardTitle>
-                        </CardHeader>
+                    </CardHeader>
                         <CardContent className="pt-0">
                             <div className="space-y-3 text-sm">
                                 <div>
@@ -270,25 +270,25 @@ const ProductionView = ({ productionId }) => {
                                     </div>
                                 </div>
                                 <div className="pt-2 border-t">
-                                    <Badge
-                                        variant={reconciliation.status === 'green' ? 'default' : reconciliation.status === 'yellow' ? 'outline' : 'destructive'}
-                                        className={
-                                            reconciliation.status === 'green' ? 'bg-green-500' :
-                                            reconciliation.status === 'yellow' ? 'bg-yellow-500' :
-                                            'bg-red-500'
-                                        }
-                                    >
+                                <Badge
+                                    variant={reconciliation.status === 'green' ? 'default' : reconciliation.status === 'yellow' ? 'outline' : 'destructive'}
+                                    className={
+                                        reconciliation.status === 'green' ? 'bg-green-500' :
+                                        reconciliation.status === 'yellow' ? 'bg-yellow-500' :
+                                        'bg-red-500'
+                                    }
+                                >
                                         {
-                                            reconciliation.status === 'green' ? 'Conciliado' :
-                                            reconciliation.status === 'yellow' ? 'Diferencia leve' :
-                                            'Diferencia importante'
-                                        }
-                                    </Badge>
-                                </div>
+                                        reconciliation.status === 'green' ? 'Conciliado' :
+                                        reconciliation.status === 'yellow' ? 'Diferencia leve' :
+                                        'Diferencia importante'
+                                    }
+                                </Badge>
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
             </div>
 
             {/* Tabs para Procesos y más */}

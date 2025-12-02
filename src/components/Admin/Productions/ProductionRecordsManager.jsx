@@ -127,44 +127,44 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                         </div>
                     </TableCell>
                     <TableCell>
-                        {isCompleted ? (
-                            <Badge variant="default" className="bg-green-500">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Completado
-                            </Badge>
-                        ) : (
-                            <Badge variant="outline">
-                                <Clock className="h-3 w-3 mr-1" />
-                                En progreso
-                            </Badge>
-                        )}
+                                    {isCompleted ? (
+                                        <Badge variant="default" className="bg-green-500">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Completado
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="outline">
+                                            <Clock className="h-3 w-3 mr-1" />
+                                            En progreso
+                                        </Badge>
+                                    )}
                     </TableCell>
                     <TableCell>
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
+                                <Button
+                                    variant="outline"
                                 size="icon"
-                                onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
-                            >
+                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
+                                >
                                 <ChevronRight className="h-4 w-4" />
-                            </Button>
-                            {!isCompleted && (
+                                </Button>
+                                {!isCompleted && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleFinishRecord(record.id)}
+                                    >
+                                        Finalizar
+                                    </Button>
+                                )}
                                 <Button
                                     size="sm"
-                                    variant="outline"
-                                    onClick={() => handleFinishRecord(record.id)}
+                                    variant="destructive"
+                                    onClick={() => handleDeleteRecord(record.id)}
                                 >
-                                    Finalizar
+                                    <Trash2 className="h-4 w-4" />
                                 </Button>
-                            )}
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteRecord(record.id)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
+                            </div>
                     </TableCell>
                 </TableRow>
                 {children.map(child => renderRecordRow(child, level + 1))}
