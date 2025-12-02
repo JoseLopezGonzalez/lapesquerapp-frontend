@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Image as ImageIcon, Plus, X, Upload, AlertCircle } from 'lucide-react'
@@ -12,6 +12,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+
+// Constantes
+const MAX_IMAGES = 6
+const MAX_FILE_SIZE_MB = 10
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
 
 const ProductionRecordImagesManager = ({ 
     productionRecordId, 
@@ -38,29 +44,25 @@ const ProductionRecordImagesManager = ({
     const fileInputRef = useRef(null)
 
     // Máximo 6 imágenes visibles
-    const visibleImages = images.slice(0, 6)
-    const remainingCount = images.length - 6
+    const visibleImages = images.slice(0, MAX_IMAGES)
+    const remainingCount = images.length - MAX_IMAGES
 
-    const validateImage = (file) => {
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
-        const maxSizeMB = 10
-        const maxSizeBytes = maxSizeMB * 1024 * 1024
-
-        if (!validTypes.includes(file.type)) {
+    const validateImage = useCallback((file) => {
+        if (!VALID_IMAGE_TYPES.includes(file.type)) {
             setError('El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)')
             return false
         }
 
-        if (file.size > maxSizeBytes) {
-            setError(`La imagen excede el tamaño máximo de ${maxSizeMB}MB`)
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            setError(`La imagen excede el tamaño máximo de ${MAX_FILE_SIZE_MB}MB`)
             return false
         }
 
         setError(null)
         return true
-    }
+    }, [])
 
-    const handleFileSelect = (files) => {
+    const handleFileSelect = useCallback((files) => {
         const file = files?.[0]
         if (!file) return
 
@@ -76,14 +78,14 @@ const ProductionRecordImagesManager = ({
                 url: e.target.result,
                 name: file.name
             }
-            setImages([...images, newImage])
+            setImages(prev => [...prev, newImage])
             setError(null)
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
             }
         }
         reader.readAsDataURL(file)
-    }
+    }, [validateImage])
 
     const handleFileChange = (e) => {
         handleFileSelect(e.target.files)
@@ -105,20 +107,20 @@ const ProductionRecordImagesManager = ({
         handleFileSelect(e.dataTransfer.files)
     }
 
-    const handleDeleteImage = (imageId) => {
+    const handleDeleteImage = useCallback((imageId) => {
         if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
             return
         }
-        setImages(images.filter(img => img.id !== imageId))
-    }
+        setImages(prev => prev.filter(img => img.id !== imageId))
+    }, [])
 
     const triggerFileInput = () => {
         fileInputRef.current?.click()
     }
 
-    const getImageUrl = (image) => {
-        return image.url || image.path || null
-    }
+    const getImageUrl = useCallback((image) => {
+        return image?.url || image?.path || null
+    }, [])
 
     const content = (
         <div className="space-y-4">
@@ -353,8 +355,8 @@ const ProductionRecordImagesManager = ({
                                 )
                             })}
                             
-                            {/* Botón para agregar más imágenes - solo si hay menos de 6 */}
-                            {images.length < 6 && (
+                            {/* Botón para agregar más imágenes - solo si hay menos de MAX_IMAGES */}
+                            {images.length < MAX_IMAGES && (
                                 <button
                                     onClick={() => setIsAddDialogOpen(true)}
                                     className="aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
@@ -365,8 +367,8 @@ const ProductionRecordImagesManager = ({
                         </div>
                     )}
                     
-                    {/* Botón para agregar más imágenes - cuando hay 6 o más */}
-                    {images.length >= 6 && (
+                    {/* Botón para agregar más imágenes - cuando hay MAX_IMAGES o más */}
+                    {images.length >= MAX_IMAGES && (
                         <div className="mt-2">
                             <button
                                 onClick={() => setIsAddDialogOpen(true)}
@@ -487,7 +489,10 @@ const ProductionRecordImagesManager = ({
         return (
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{cardTitle}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5 text-primary" />
+                        {cardTitle}
+                    </CardTitle>
                     {cardDescription && (
                         <CardDescription>{cardDescription}</CardDescription>
                     )}
@@ -503,7 +508,10 @@ const ProductionRecordImagesManager = ({
         <div>
             {!hideTitle && (
                 <div className="mb-4">
-                    <h3 className="text-lg font-semibold">{cardTitle}</h3>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5 text-primary" />
+                        {cardTitle}
+                    </h3>
                     {cardDescription && (
                         <p className="text-sm text-muted-foreground">{cardDescription}</p>
                     )}

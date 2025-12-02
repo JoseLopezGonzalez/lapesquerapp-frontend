@@ -1,202 +1,89 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecords, getProduction } from '@/services/productionService'
-import { fetchWithTenant } from '@/lib/fetchWithTenant'
-import { API_URL_V2 } from '@/configs/config'
+import { useProductionRecord } from '@/hooks/useProductionRecord'
+import { formatDateLong } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
+import Loader from '@/components/Utilities/Loader'
+import { ArrowLeft, CheckCircle, Clock, AlertCircle, Info, Package, ArrowDown, Image as ImageIcon } from 'lucide-react'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
 import ProductionOutputConsumptionsManager from './ProductionOutputConsumptionsManager'
 import ProductionRecordImagesManager from './ProductionRecordImagesManager'
 
 const ProductionRecordEditor = ({ productionId, recordId = null }) => {
-    const { data: session } = useSession()
     const router = useRouter()
-    const isEditMode = recordId !== null
-
-    const [processes, setProcesses] = useState([])
-    const [existingRecords, setExistingRecords] = useState([])
-    const [record, setRecord] = useState(null)
-    const [production, setProduction] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
-    const [error, setError] = useState(null)
+    
+    const {
+        record,
+        production,
+        processes,
+        existingRecords,
+        loading,
+        saving,
+        error,
+        isEditMode,
+        saveRecord,
+        refresh
+    } = useProductionRecord(productionId, recordId)
 
     const [formData, setFormData] = useState({
-        process_id: 'none', // Obligatorio
-        parent_record_id: 'none', // Opcional
+        process_id: 'none',
+        parent_record_id: 'none',
         notes: ''
     })
 
+    // Inicializar formulario cuando se carga el record
     useEffect(() => {
-        if (session?.user?.accessToken && productionId) {
-            loadInitialData()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionId, recordId])
-
-    const loadInitialData = async () => {
-        try {
-            setLoading(true)
-            setError(null)
-            const token = session.user.accessToken
-
-            // Cargar información de la producción
-            try {
-                const productionData = await getProduction(productionId, token)
-                setProduction(productionData)
-            } catch (err) {
-                console.warn('Error loading production data:', err)
-            }
-
-            // Cargar procesos disponibles
-            await loadProcesses(token)
-
-            // Cargar records existentes para el select de proceso padre
-            const recordsResponse = await getProductionRecords(token, { production_id: productionId })
-            setExistingRecords(recordsResponse.data || [])
-
-            // Si es modo edición, cargar el record
-            if (isEditMode && recordId) {
-                const recordData = await getProductionRecord(recordId, token)
-                setRecord(recordData)
-
-                // Rellenar el formulario con los datos existentes
-                // El processId viene en camelCase (processId) o dentro de process.id
-                const processId = recordData.processId || recordData.process?.id || null
-                
-                // Verificar que el proceso esté disponible en la lista antes de establecerlo
-                // Normalizar los valores para comparar (ambos como string)
-                const matchingProcess = processes.find(p => {
-                    const pValue = p.value?.toString()
-                    const rValue = processId?.toString()
-                    return pValue && rValue && pValue === rValue
-                })
-                
-                const finalProcessId = matchingProcess ? matchingProcess.value.toString() : (processId ? processId.toString() : 'none')
-                
-                // Debug: verificar si el proceso existe
-                if (processId && !matchingProcess) {
-                    // console.warn('Process ID not found in available processes:', {
-                    //     processId,
-                    //     processIdType: typeof processId,
-                    //     availableProcesses: processes.map(p => ({ value: p.value?.toString(), valueType: typeof p.value, label: p.label }))
-                    // })
-                }
-                
-                setFormData({
-                    process_id: finalProcessId,
-                    parent_record_id: recordData.parentRecordId ? recordData.parentRecordId.toString() : 'none',
-                    notes: recordData.notes || ''
-                })
-            }
-        } catch (err) {
-            console.error('Error loading data:', err)
-            setError(err.message || 'Error al cargar los datos')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const loadProcesses = async (token) => {
-        try {
-            const response = await fetchWithTenant(`${API_URL_V2}processes/options`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                    'User-Agent': navigator.userAgent,
-                },
+        if (record && isEditMode) {
+            const processId = record.processId || record.process?.id || null
+            const matchingProcess = processes.find(p => {
+                const pValue = p.value?.toString()
+                const rValue = processId?.toString()
+                return pValue && rValue && pValue === rValue
             })
-            if (response.ok) {
-                const data = await response.json()
-                // Los datos vienen como {value, label}
-                setProcesses(data.data || data || [])
-            }
-        } catch (err) {
-            console.warn('No se pudieron cargar los tipos de proceso:', err)
-            setProcesses([])
+            
+            const finalProcessId = matchingProcess 
+                ? matchingProcess.value.toString() 
+                : (processId ? processId.toString() : 'none')
+            
+            setFormData({
+                process_id: finalProcessId,
+                parent_record_id: record.parentRecordId ? record.parentRecordId.toString() : 'none',
+                notes: record.notes || ''
+            })
         }
-    }
+    }, [record, processes, isEditMode])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            setSaving(true)
-            setError(null)
-            const token = session.user.accessToken
-
-            // Validar que process_id sea obligatorio
-            if (!formData.process_id || formData.process_id === 'none') {
-                setError('El tipo de proceso es obligatorio')
-                setSaving(false)
-                return
+            await saveRecord(formData)
+            
+            // Si es creación, actualizar la URL
+            if (!isEditMode && record?.id) {
+                window.history.pushState({}, '', `/admin/productions/${productionId}/records/${record.id}`)
             }
-
-            const recordData = {
-                production_id: parseInt(productionId),
-                process_id: parseInt(formData.process_id), // Obligatorio
-                parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' ? parseInt(formData.parent_record_id) : null,
-                notes: formData.notes || null
-            }
-
-            let response
-            if (isEditMode) {
-                // Actualizar
-                response = await updateProductionRecord(recordId, recordData, token)
-                // Recargar el record actualizado
-                const updatedRecord = await getProductionRecord(recordId, token)
-                setRecord(updatedRecord)
-            } else {
-                // Crear
-                response = await createProductionRecord(recordData, token)
-                const createdRecordId = response?.data?.id || response?.id
-
-                if (createdRecordId) {
-                    // Cargar el record recién creado
-                    const newRecord = await getProductionRecord(createdRecordId, token)
-                    setRecord(newRecord)
-                    // Actualizar la URL sin recargar la página
-                    window.history.pushState({}, '', `/admin/productions/${productionId}/records/${createdRecordId}`)
-                }
-            }
-
-            // Recargar records para actualizar el select de proceso padre
-            const recordsResponse = await getProductionRecords(token, { production_id: productionId })
-            setExistingRecords(recordsResponse.data || [])
-
         } catch (err) {
+            // El error ya está manejado en el hook
             console.error('Error saving record:', err)
-            setError(err.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el proceso`)
-        } finally {
-            setSaving(false)
         }
     }
 
     const handleRefresh = () => {
-        if (record?.id) {
-            loadInitialData()
-        }
+        refresh()
     }
 
     if (loading) {
         return (
-            <div className="h-full w-full overflow-y-auto">
-                <div className="p-6 space-y-6">
-                    <Skeleton className="h-10 w-64" />
-                    <Skeleton className="h-96 w-full" />
-                </div>
+            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
+                <Loader />
             </div>
         )
     }
@@ -249,12 +136,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     : 'Crear Nuevo Proceso'}
                             </h1>
                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                {/* <span>Producción #{productionId}</span> */}
                                 {production?.lot && (
-                                    <>
-                                       {/*  <span>•</span> */}
-                                        <span>Lote: <span className="font-medium text-foreground">{production.lot}</span></span>
-                                    </>
+                                    <span>Lote: <span className="font-medium text-foreground">{production.lot}</span></span>
                                 )}
                             </div>
                         </div>
@@ -292,7 +175,10 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     <div className="break-inside-avoid mb-6 max-w-full w-full">
                         <Card>
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-lg">Información del Proceso</CardTitle>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Info className="h-5 w-5 text-primary" />
+                                    Información del Proceso
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-0">
                                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -405,8 +291,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     onRefresh={handleRefresh}
                                     hideTitle={true}
                                     renderInCard={true}
-                                    cardTitle="Consumo de Materia prima desde stock"
-                                    cardDescription="Materia prima consumida desde el stock en este proceso"
+                                    cardTitle="Consumo de materia prima desde stock"
+                                    cardDescription="Materia prima consumida desde el stock"
                                 />
                             </div>
 
@@ -417,8 +303,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     onRefresh={handleRefresh}
                                     hideTitle={true}
                                     renderInCard={true}
-                                    cardTitle="Consumos del Proceso Padre"
-                                    cardDescription="Outputs consumidos del proceso padre en este proceso hijo"
+                                    cardTitle="Consumos de proceso anterior"
+                                    cardDescription="Productos consumidos del proceso anterior"
                                 />
                             </div>
 
@@ -429,8 +315,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                     onRefresh={handleRefresh}
                                     hideTitle={true}
                                     renderInCard={true}
-                                    cardTitle="Salidas Lógicas"
-                                    cardDescription="Productos producidos en este proceso"
+                                    cardTitle="Productos resultantes"
+                                    cardDescription="Productos resultantes de este proceso"
                                 />
                             </div>
                         </>

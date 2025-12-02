@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { getProductionRecords, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
+import { formatDate } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2, CheckCircle, Clock, ChevronDown, ChevronRight, Eye } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
+import Loader from '@/components/Utilities/Loader'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import ProductionInputsManager from './ProductionInputsManager'
 import ProductionOutputsManager from './ProductionOutputsManager'
@@ -75,16 +76,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         }
     }
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A'
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
 
     const getRootRecords = () => {
         return records.filter(r => !r.parent_record_id)
@@ -235,9 +226,8 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-32 w-full" />
+            <div className="space-y-4 flex items-center justify-center py-12">
+                <Loader />
             </div>
         )
     }

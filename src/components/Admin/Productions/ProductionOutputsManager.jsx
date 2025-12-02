@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
+import { formatWeight, getWeight, formatAverageWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,12 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit, Save, X, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import { Skeleton } from '@/components/ui/skeleton'
+import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Combobox } from '@/components/Shadcn/Combobox'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -38,6 +40,15 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
     const [editableOutputs, setEditableOutputs] = useState([])
     const [newRows, setNewRows] = useState([])
     const [saving, setSaving] = useState(false)
+    
+    // Estado para mostrar/ocultar cajas (con localStorage)
+    const [showBoxes, setShowBoxes] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('production_show_boxes')
+            return saved !== null ? saved === 'true' : true
+        }
+        return true
+    })
 
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
@@ -46,6 +57,13 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
+
+    const handleToggleBoxes = (checked) => {
+        setShowBoxes(checked)
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('production_show_boxes', checked.toString())
+        }
+    }
 
     const loadOutputsOnly = async () => {
         try {
@@ -178,10 +196,6 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         })
     }
 
-    const formatWeight = (weight) => {
-        if (!weight) return '0 kg'
-        return `${parseFloat(weight).toFixed(2)} kg`
-    }
 
     // Funciones para el dialog de gestión múltiple
     const openManageDialog = async () => {
@@ -300,8 +314,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                <Skeleton className="h-32 w-full" />
+            <div className="space-y-4 flex items-center justify-center py-12">
+                <Loader />
             </div>
         )
     }
@@ -552,7 +566,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                 </div>
             ) : (
                 <div className="space-y-2">
-                    {!hideTitle && (
+                    {!hideTitle && !renderInCard && (
                         <div>
                             <h4 className="text-sm font-semibold">Salidas Registradas ({outputs.length})</h4>
                             <p className="text-xs text-muted-foreground">
@@ -560,38 +574,34 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             </p>
                         </div>
                     )}
-                    <div>
-                        <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
-                            <Table>
+                    <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
+                        <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Producto</TableHead>
-                                        <TableHead>Cajas</TableHead>
+                                        {showBoxes && <TableHead>Cajas</TableHead>}
                                         <TableHead>Peso Total</TableHead>
-                                        <TableHead>Peso Promedio</TableHead>
+                                        {showBoxes && <TableHead>Peso Promedio</TableHead>}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {outputs.map((output) => {
-                                        const weight = output.weightKg || output.weight_kg || 0
-                                        const avgWeight = output.boxes > 0 
-                                            ? (weight / output.boxes).toFixed(2)
-                                            : '0.00'
+                                        const weight = getWeight(output)
+                                        const avgWeight = formatAverageWeight(weight, output.boxes)
                                         return (
                                             <TableRow key={output.id}>
                                                 <TableCell className="font-medium">
                                                     {output.product?.name || 'N/A'}
                                                 </TableCell>
-                                                <TableCell>{output.boxes || 0}</TableCell>
+                                                {showBoxes && <TableCell>{output.boxes || 0}</TableCell>}
                                                 <TableCell>{formatWeight(weight)}</TableCell>
-                                                <TableCell>{formatWeight(avgWeight)}</TableCell>
+                                                {showBoxes && <TableCell>{avgWeight}</TableCell>}
                                             </TableRow>
                                         )
                                     })}
                                 </TableBody>
                             </Table>
                         </ScrollArea>
-                    </div>
                 </div>
             )}
         </>
@@ -636,7 +646,20 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                 </DialogHeader>
                 
                 <div className="space-y-4">
-                    <div className="flex justify-end items-center">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="show-boxes-outputs-dialog"
+                                checked={showBoxes}
+                                onCheckedChange={handleToggleBoxes}
+                            />
+                            <label
+                                htmlFor="show-boxes-outputs-dialog"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                                Mostrar Cajas
+                            </label>
+                        </div>
                         <Button
                             onClick={addNewRow}
                             variant="outline"
@@ -652,9 +675,9 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[300px]">Producto</TableHead>
-                                    <TableHead className="w-[120px]">Cajas</TableHead>
+                                    {showBoxes && <TableHead className="w-[120px]">Cajas</TableHead>}
                                     <TableHead className="w-[120px]">Peso (kg)</TableHead>
-                                    <TableHead className="w-[100px]">Peso Prom.</TableHead>
+                                    {showBoxes && <TableHead className="w-[100px]">Peso Prom.</TableHead>}
                                     <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -683,16 +706,18 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                     />
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    value={row.boxes}
-                                                    onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
-                                                    placeholder="0"
-                                                    className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
-                                                />
-                                            </TableCell>
+                                            {showBoxes && (
+                                                <TableCell>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={row.boxes}
+                                                        onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
+                                                        placeholder="0"
+                                                        className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
+                                                    />
+                                                </TableCell>
+                                            )}
                                             <TableCell>
                                                 <Input
                                                     type="number"
@@ -704,11 +729,13 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                     className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
                                                 />
                                             </TableCell>
-                                            <TableCell>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {formatWeight(avgWeight)}
-                                                </span>
-                                            </TableCell>
+                                            {showBoxes && (
+                                                <TableCell>
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {formatWeight(avgWeight)}
+                                                    </span>
+                                                </TableCell>
+                                            )}
                                             <TableCell>
                                                 <Button
                                                     variant="ghost"
@@ -780,7 +807,10 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>{cardTitle || 'Salidas Lógicas'}</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <ArrowUp className="h-5 w-5 text-primary" />
+                                    {cardTitle || 'Salidas Lógicas'}
+                                </CardTitle>
                                 <CardDescription>
                                     {cardDescription || 'Productos producidos en este proceso'}
                                 </CardDescription>

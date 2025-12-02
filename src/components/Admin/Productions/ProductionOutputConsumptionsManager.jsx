@@ -13,6 +13,14 @@ import {
     syncProductionOutputConsumptions
 } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
+import { 
+    formatWeight, 
+    formatNumber, 
+    getOutputId, 
+    getConsumedWeight, 
+    getConsumedBoxes,
+    getProductName
+} from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,10 +31,10 @@ import { Plus, Trash2, Edit, ArrowDown, Save, Loader2 } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import Loader from '@/components/Utilities/Loader'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -50,6 +58,15 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
     const [editableConsumptions, setEditableConsumptions] = useState([])
     const [newConsumptionRows, setNewConsumptionRows] = useState([])
     const [savingAll, setSavingAll] = useState(false)
+    
+    // Estado para mostrar/ocultar cajas (con localStorage)
+    const [showBoxes, setShowBoxes] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('production_show_boxes')
+            return saved !== null ? saved === 'true' : true
+        }
+        return true
+    })
 
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
@@ -58,6 +75,13 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
+
+    const handleToggleBoxes = (checked) => {
+        setShowBoxes(checked)
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('production_show_boxes', checked.toString())
+        }
+    }
 
     const loadConsumptionsOnly = async () => {
         try {
@@ -232,11 +256,11 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
 
         // Si hay un consumo existente de este output, ajustar disponibilidad sumando el peso original
         const existingConsumption = consumptions.find(c => {
-            const cOutputId = c.productionOutputId || c.production_output_id
+            const cOutputId = getOutputId(c)
             return cOutputId?.toString() === formData.production_output_id
         })
-        const originalWeight = existingConsumption ? parseFloat(existingConsumption.consumedWeightKg || existingConsumption.consumed_weight_kg || 0) : 0
-        const originalBoxes = existingConsumption ? (existingConsumption.consumedBoxes || existingConsumption.consumed_boxes || 0) : 0
+        const originalWeight = existingConsumption ? getConsumedWeight(existingConsumption) : 0
+        const originalBoxes = existingConsumption ? getConsumedBoxes(existingConsumption) : 0
         const adjustedAvailableWeight = parseFloat(selectedOutput.availableWeight || 0) + originalWeight
         const adjustedAvailableBoxes = (selectedOutput.availableBoxes || 0) + originalBoxes
 
@@ -267,9 +291,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             }
 
             // Si ya existe un consumo de este output, actualizarlo
-            // Manejar tanto camelCase como snake_case
             const existingConsumption = consumptions.find(c => {
-                const cOutputId = c.productionOutputId || c.production_output_id
+                const cOutputId = getOutputId(c)
                 return cOutputId?.toString() === formData.production_output_id
             })
 
@@ -316,19 +339,6 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         }
     }
 
-    const formatWeight = (weight) => {
-        if (!weight && weight !== 0) return '0 kg'
-        const num = parseFloat(weight)
-        if (isNaN(num)) return '0 kg'
-        return `${num.toFixed(2)} kg`
-    }
-
-    const formatNumber = (value, decimals = 2) => {
-        if (value === null || value === undefined) return '0'
-        const num = parseFloat(value)
-        if (isNaN(num)) return '0'
-        return num.toFixed(decimals)
-    }
 
     // Funciones para el diálogo masivo
     const openManageDialog = async () => {
@@ -347,11 +357,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
 
         // Inicializar con los consumos existentes, guardando el peso original para ajustar disponibilidad
         setEditableConsumptions(consumptions.map(consumption => {
-            const outputId = consumption.productionOutputId || consumption.production_output_id
-            const weight = consumption.consumedWeightKg || consumption.consumed_weight_kg
-            const boxes = consumption.consumedBoxes || consumption.consumed_boxes
-            // Guardar también el nombre del producto del consumo para mostrarlo en el selector
-            const productName = consumption.productionOutput?.product?.name || null
+            const outputId = getOutputId(consumption)
+            const weight = getConsumedWeight(consumption)
+            const boxes = getConsumedBoxes(consumption)
+            const productName = getProductName(consumption.productionOutput)
             return {
                 id: consumption.id,
                 production_output_id: outputId?.toString() || '',
@@ -359,9 +368,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                 consumed_boxes: boxes?.toString() || '',
                 notes: consumption.notes || '',
                 isNew: false,
-                originalWeight: parseFloat(weight || 0), // Guardar peso original para ajustar disponibilidad
-                originalBoxes: boxes ? parseInt(boxes) : 0,
-                productName: productName // Guardar nombre del producto para mostrar en el selector
+                originalWeight: weight,
+                originalBoxes: boxes,
+                productName: productName
             }
         }))
         setNewConsumptionRows([])
@@ -573,9 +582,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-32 w-full" />
+            <div className="space-y-4 flex items-center justify-center py-12">
+                <Loader />
             </div>
         )
     }
@@ -728,10 +736,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                         if (!output) return 0
                                         // Ajustar disponibilidad si hay consumo existente
                                         const existingConsumption = consumptions.find(c => {
-                                            const cOutputId = c.productionOutputId || c.production_output_id
+                                            const cOutputId = getOutputId(c)
                                             return cOutputId?.toString() === formData.production_output_id
                                         })
-                                        const originalWeight = existingConsumption ? parseFloat(existingConsumption.consumedWeightKg || existingConsumption.consumed_weight_kg || 0) : 0
+                                        const originalWeight = existingConsumption ? getConsumedWeight(existingConsumption) : 0
                                         return parseFloat(output.availableWeight || 0) + originalWeight
                                     })() : undefined}
                                     value={formData.consumed_weight_kg}
@@ -752,10 +760,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                         if (!output) return 0
                                         // Ajustar disponibilidad si hay consumo existente
                                         const existingConsumption = consumptions.find(c => {
-                                            const cOutputId = c.productionOutputId || c.production_output_id
+                                            const cOutputId = getOutputId(c)
                                             return cOutputId?.toString() === formData.production_output_id
                                         })
-                                        const originalBoxes = existingConsumption ? (existingConsumption.consumedBoxes || existingConsumption.consumed_boxes || 0) : 0
+                                        const originalBoxes = existingConsumption ? getConsumedBoxes(existingConsumption) : 0
                                         return (output.availableBoxes || 0) + originalBoxes
                                     })() : undefined}
                                     value={formData.consumed_boxes}
@@ -794,7 +802,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                         Guardando...
                                     </>
                                 ) : consumptions.find(c => {
-                                    const cOutputId = c.productionOutputId || c.production_output_id
+                                    const cOutputId = getOutputId(c)
                                     return cOutputId?.toString() === formData.production_output_id
                                 }) ? (
                                     'Actualizar Consumo'
@@ -832,9 +840,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             {!hideTitle && !renderInCard && (
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-lg font-semibold">Consumos del Proceso Padre</h3>
+                        <h3 className="text-lg font-semibold">Consumos de proceso anterior</h3>
                         <p className="text-sm text-muted-foreground">
-                            Outputs consumidos del proceso padre en este proceso hijo
+                            Productos consumidos del proceso anterior
                         </p>
                     </div>
                 </div>
@@ -873,34 +881,30 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                     />
                 </div>
             ) : (
-                <div>
-                    <ScrollArea className="h-64">
-                        <Table>
+                <ScrollArea className="h-64">
+                    <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Producto</TableHead>
                                     <TableHead>Peso Consumido</TableHead>
-                                    <TableHead>Cajas</TableHead>
+                                    {showBoxes && <TableHead>Cajas</TableHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {consumptions.map((consumption) => (
                                     <TableRow key={consumption.id}>
                                         <TableCell className="font-medium">
-                                            {consumption.productionOutput?.product?.name || 'Sin nombre'}
+                                            {getProductName(consumption.productionOutput)}
                                         </TableCell>
                                         <TableCell>
-                                            {formatWeight(consumption.consumedWeightKg || consumption.consumed_weight_kg)}
+                                            {formatWeight(getConsumedWeight(consumption))}
                                         </TableCell>
-                                        <TableCell>
-                                            {consumption.consumedBoxes || consumption.consumed_boxes || 0}
-                                        </TableCell>
+                                        {showBoxes && <TableCell>{getConsumedBoxes(consumption)}</TableCell>}
                                     </TableRow>
                                 ))}
                             </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </div>
+                            </Table>
+                        </ScrollArea>
             )}
         </>
     )
@@ -916,14 +920,27 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         }}>
             <DialogContent className="max-w-5xl max-h-[90vh]">
                 <DialogHeader>
-                    <DialogTitle>Gestionar Consumos del Proceso Padre</DialogTitle>
+                    <DialogTitle>Gestionar consumos de proceso anterior</DialogTitle>
                     <DialogDescription>
-                        Agrega, edita o elimina múltiples consumos de outputs del proceso padre de forma rápida
+                        Agrega, edita o elimina múltiples consumos de productos del proceso anterior de forma rápida
                     </DialogDescription>
                 </DialogHeader>
                 
                 <div className="space-y-4">
-                    <div className="flex justify-end items-center">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="show-boxes-consumptions-dialog"
+                                checked={showBoxes}
+                                onCheckedChange={handleToggleBoxes}
+                            />
+                            <label
+                                htmlFor="show-boxes-consumptions-dialog"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                                Mostrar Cajas
+                            </label>
+                        </div>
                         <Button
                             onClick={addNewConsumptionRow}
                             variant="outline"
@@ -938,9 +955,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[300px]">Output del Padre</TableHead>
-                                    <TableHead className="w-[140px]">Peso Consumido (kg)</TableHead>
-                                    <TableHead className="w-[120px]">Cajas</TableHead>
+                                    <TableHead className="w-[300px]">Producto</TableHead>
+                                    <TableHead className="w-[140px]">Peso (kg)</TableHead>
+                                    {showBoxes && <TableHead className="w-[120px]">Cajas</TableHead>}
                                     <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -1116,19 +1133,21 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="align-top">
-                                                    <div className="py-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max={adjustedAvailableBoxes}
-                                                            value={row.consumed_boxes}
-                                                            onChange={(e) => updateConsumptionRow(row.id, 'consumed_boxes', e.target.value)}
-                                                            placeholder="0"
-                                                            className="h-9 w-full"
-                                                        />
-                                                    </div>
-                                                </TableCell>
+                                                {showBoxes && (
+                                                    <TableCell className="align-top">
+                                                        <div className="py-1">
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                max={adjustedAvailableBoxes}
+                                                                value={row.consumed_boxes}
+                                                                onChange={(e) => updateConsumptionRow(row.id, 'consumed_boxes', e.target.value)}
+                                                                placeholder="0"
+                                                                className="h-9 w-full"
+                                                            />
+                                                        </div>
+                                                    </TableCell>
+                                                )}
                                                 <TableCell className="align-top">
                                                     <div className="py-1 flex items-start">
                                                         <Button
@@ -1211,9 +1230,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>{cardTitle || 'Consumos del Proceso Padre'}</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <ArrowDown className="h-5 w-5 text-primary" />
+                                    {cardTitle || 'Consumos de proceso anterior'}
+                                </CardTitle>
                                 <CardDescription>
-                                    {cardDescription || 'Outputs consumidos del proceso padre en este proceso hijo'}
+                                    {cardDescription || 'Productos consumidos del proceso anterior'}
                                 </CardDescription>
                             </div>
                             {headerButton}

@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { getProduction, getProductionProcessTree, getProductionTotals, getProductionReconciliation } from '@/services/productionService'
+import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle } from 'lucide-react'
+import Loader from '@/components/Utilities/Loader'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, CheckCircle2 } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 
 const ProductionView = ({ productionId }) => {
@@ -56,29 +57,11 @@ const ProductionView = ({ productionId }) => {
         }
     }
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A'
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
-
-    const formatWeight = (weight) => {
-        if (!weight) return '0 kg'
-        return `${parseFloat(weight).toFixed(2)} kg`
-    }
 
     if (loading) {
         return (
-            <div className="h-full w-full overflow-y-auto">
-                <div className="p-6 space-y-6">
-                    <Skeleton className="h-10 w-64" />
-                    <Skeleton className="h-96 w-full" />
-                </div>
+            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
+                <Loader />
             </div>
         )
     }
@@ -155,7 +138,10 @@ const ProductionView = ({ productionId }) => {
             {/* Información General */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Información General</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-primary" />
+                        Información General
+                    </CardTitle>
                     <CardDescription>Datos básicos del lote de producción</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -169,14 +155,14 @@ const ProductionView = ({ productionId }) => {
                                 <Calendar className="h-4 w-4" />
                                 Fecha de apertura
                             </p>
-                            <p className="text-lg">{formatDate(production.openedAt)}</p>
+                            <p className="text-lg">{formatDateLong(production.openedAt)}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 Fecha de cierre
                             </p>
-                            <p className="text-lg">{formatDate(production.closedAt) || 'No cerrado'}</p>
+                            <p className="text-lg">{formatDateLong(production.closedAt) || 'No cerrado'}</p>
                         </div>
                         {production.notes && (
                             <div className="space-y-1 md:col-span-2 lg:col-span-3">
@@ -192,7 +178,10 @@ const ProductionView = ({ productionId }) => {
             {totals && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Totales</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <Calculator className="h-5 w-5 text-primary" />
+                            Totales
+                        </CardTitle>
                         <CardDescription>Resumen de pesos y cantidades</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -247,7 +236,10 @@ const ProductionView = ({ productionId }) => {
             {reconciliation && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Conciliación</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                            Conciliación
+                        </CardTitle>
                         <CardDescription>Comparación entre producción declarada y stock real</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -313,7 +305,10 @@ const ProductionView = ({ productionId }) => {
                 <TabsContent value="diagram" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Diagrama de Producción</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <Package className="h-5 w-5 text-primary" />
+                                Diagrama de Producción
+                            </CardTitle>
                             <CardDescription>Visualización del flujo de procesos</CardDescription>
                         </CardHeader>
                         <CardContent>

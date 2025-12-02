@@ -8,6 +8,7 @@ import {
     deleteProductionInput
 } from '@/services/productionService'
 import { getPallet } from '@/services/palletService'
+import { formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,14 +17,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Edit, Layers, Weight, Info, Tag, Unlink } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Edit, Layers, Weight, Info, Tag, Unlink, ChevronRight as ChevronRightIcon, Warehouse, Eye } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -56,6 +57,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     // Estado para el diálogo de lotes
     const [lotsDialogOpen, setLotsDialogOpen] = useState(false)
     const [selectedProductLots, setSelectedProductLots] = useState(null) // {productName, lots, boxes}
+    
+    // Estado para el Dialog de detalle de palets
+    const [palletsDialogOpen, setPalletsDialogOpen] = useState(false)
 
     // Helper function to check if box is available
     const isBoxAvailable = (box) => {
@@ -290,10 +294,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     }
 
 
-    const formatWeight = (weight) => {
-        if (!weight) return '0 kg'
-        return `${parseFloat(weight).toFixed(2)} kg`
-    }
 
     // Calcular resumen agrupado por palet
     const calculateSummaryByPallet = () => {
@@ -723,9 +723,8 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-64 w-full" />
+            <div className="space-y-4 flex items-center justify-center py-12">
+                <Loader />
             </div>
         )
     }
@@ -1599,24 +1598,50 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
 
     // Botón para el header (sin Dialog wrapper)
     const headerButton = (
-        <Button
-            onClick={() => {
-                setAddDialogOpen(true)
-                loadExistingDataForEdit()
-            }}
-        >
-            {inputs.length > 0 ? (
-                <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Consumo
-                </>
-            ) : (
-                <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Consumo
-                </>
-            )}
-        </Button>
+        <div className="flex items-center gap-2">
+            {(() => {
+                const pallets = calculateSummaryByPallet()
+                const palletCount = pallets.length
+                if (palletCount === 0) return null
+                return (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button 
+                                    variant="outline" 
+                                    size="icon" 
+                                    className="h-9 w-9"
+                                    onClick={() => setPalletsDialogOpen(true)}
+                                >
+                                    <Info className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Ver detalle de {palletCount} {palletCount === 1 ? 'palet' : 'palets'}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )
+            })()}
+            <Button
+                onClick={() => {
+                    setAddDialogOpen(true)
+                    loadExistingDataForEdit()
+                }}
+            >
+                {inputs.length > 0 ? (
+                    <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Consumo
+                    </>
+                ) : (
+                    <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Consumo
+                    </>
+                )}
+            </Button>
+        </div>
     )
 
     const mainContent = (
@@ -1651,21 +1676,47 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                             setTargetWeightResults([])
                         }
                     }}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                {inputs.length > 0 ? (
-                                    <>
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Editar Consumo
-                                    </>
-                                ) : (
-                                    <>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Agregar Consumo
-                                    </>
-                                )}
-                            </Button>
-                        </DialogTrigger>
+                        <div className="flex items-center gap-2">
+                            {(() => {
+                                const pallets = calculateSummaryByPallet()
+                                const palletCount = pallets.length
+                                if (palletCount === 0) return null
+                                return (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    className="h-9 w-9"
+                                                    onClick={() => setPalletsDialogOpen(true)}
+                                                >
+                                                    <Info className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Ver detalle de {palletCount} {palletCount === 1 ? 'palet' : 'palets'}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )
+                            })()}
+                            <DialogTrigger asChild>
+                                <Button>
+                                    {inputs.length > 0 ? (
+                                        <>
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Editar Consumo
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Agregar Consumo
+                                        </>
+                                    )}
+                                </Button>
+                            </DialogTrigger>
+                        </div>
                         {dialog.props.children}
                     </Dialog>
                 </div>
@@ -1674,15 +1725,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             {/* Sección: Inputs desde Stock */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h4 className="text-base font-semibold flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            Inputs desde Stock
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                            Materia prima consumida desde el stock en este proceso
-                        </p>
-                    </div>
+                    
                     {!renderInCard && (
                         <Dialog open={addDialogOpen} onOpenChange={(open) => {
                             setAddDialogOpen(open)
@@ -1731,161 +1774,35 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                     </div>
                 ) : (
                 <div className="space-y-4">
-                    {/* Totales generales */}
-                    <div className="border rounded-lg overflow-hidden">
-                        {/* Sección de totales principales */}
-                        <div className="bg-muted/30 p-5 border-b">
-                            <div className="grid grid-cols-4 gap-6 text-center">
-                                <div className="flex flex-col items-center justify-center">
-                                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Palets</p>
-                                    <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalPallets}</p>
-                                </div>
-                                <div className="flex flex-col items-center justify-center">
-                                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Cajas</p>
-                                    <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalBoxes}</p>
-                                </div>
-                                <div className="flex flex-col items-center justify-center">
-                                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Productos</p>
-                                    <p className="text-2xl font-bold text-foreground">{calculateTotalSummary().totalProducts}</p>
-                                </div>
-                                <div className="flex flex-col items-center justify-center">
-                                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Peso Total</p>
-                                    <p className="text-2xl font-bold text-foreground">{formatWeight(calculateTotalSummary().totalWeight)}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Desglose por producto */}
-                        {calculateProductsBreakdown().length > 0 && (
-                            <div className="bg-background p-4">
-                                <p className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
-                                    <Layers className="h-3.5 w-3.5" />
-                                    Desglose por Artículo
-                                </p>
-                                <div className="space-y-1.5">
+                    {/* Desglose por producto */}
+                    {calculateProductsBreakdown().length > 0 && (
+                        <ScrollArea className="h-64">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Artículo</TableHead>
+                                        <TableHead>Cajas</TableHead>
+                                        <TableHead>Peso Total</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {calculateProductsBreakdown().map((product, idx) => (
-                                        <div key={idx} className="py-2 px-3 bg-muted/30 rounded border hover:bg-muted/50 transition-colors">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <Badge variant="secondary" className="text-xs font-medium shrink-0">
-                                                        {product.name}
-                                                    </Badge>
-                                                    <span className="text-muted-foreground text-xs whitespace-nowrap">
-                                                        {product.boxesCount} {product.boxesCount === 1 ? 'caja' : 'cajas'}
-                                                    </span>
-                                                </div>
-                                                <span className="text-sm font-semibold text-foreground shrink-0 ml-3 whitespace-nowrap">
-                                                    {formatWeight(product.totalWeight)}
-                                                </span>
-                                            </div>
-                                            {/* Lotes */}
-                                            {product.lots && product.lots.length > 0 && (
-                                                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                                    <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                        {product.lots.slice(0, 3).map((lot, lotIdx) => (
-                                                            <Badge key={lotIdx} variant="outline" className="text-xs font-normal py-0.5 px-1.5">
-                                                                {lot}
-                                                            </Badge>
-                                                        ))}
-                                                        {product.lots.length > 3 && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-5 text-xs px-1.5 py-0"
-                                                                onClick={() => {
-                                                                    setSelectedProductLots({
-                                                                        productName: product.name,
-                                                                        lots: product.lots,
-                                                                        boxes: product.boxes || []
-                                                                    })
-                                                                    setLotsDialogOpen(true)
-                                                                }}
-                                                            >
-                                                                +{product.lots.length - 3} más
-                                                            </Button>
-                                                        )}
-                                                        {product.lots.length <= 3 && product.lots.length > 1 && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-5 text-xs px-1.5 py-0"
-                                                                onClick={() => {
-                                                                    setSelectedProductLots({
-                                                                        productName: product.name,
-                                                                        lots: product.lots,
-                                                                        boxes: product.boxes || []
-                                                                    })
-                                                                    setLotsDialogOpen(true)
-                                                                }}
-                                                            >
-                                                                <Info className="h-3 w-3" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                        <TableRow key={idx}>
+                                            <TableCell className="font-medium">
+                                                {product.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {product.boxesCount}
+                                            </TableCell>
+                                            <TableCell>
+                                                {formatWeight(product.totalWeight)}
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Resumen por palet */}
-                    <div className="pt-2 pb-0">
-                        {!hideTitle && (
-                            <p className="text-sm font-medium text-muted-foreground mb-2">Detalle por Palet</p>
-                        )}
-                        {(() => {
-                            const pallets = calculateSummaryByPallet()
-                            const palletCount = pallets.length
-
-                            // Calcular altura dinámica: mínimo 1 card, máximo 2 cards
-                            // Si hay 1 pallet: altura mínima equivalente a ~140px (1 card)
-                            // Si hay 2+ pallets: altura máxima de ~280px (2 cards) con scroll
-                            const scrollHeight = palletCount === 1 ? 'h-[106px]' : 'h-[218px]'
-
-                            return (
-                                <ScrollArea className={scrollHeight}>
-                                    <div className="pr-4">
-                                        {pallets.map((pallet, idx) => (
-                                            <div key={pallet.palletId} className={`border rounded-lg ${idx < pallets.length - 1 ? 'mb-2' : ''}`}>
-                                                <div className="flex items-center justify-between p-3 bg-muted/50 border-b">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium">Palet #{pallet.palletId}</span>
-                                                        <Badge variant="outline" className="text-xs">
-                                                            {pallet.boxesCount} {pallet.boxesCount === 1 ? 'caja' : 'cajas'}
-                                                        </Badge>
-                                                    </div>
-                                                    <span className="text-sm font-semibold">{formatWeight(pallet.totalWeight)}</span>
-                                                </div>
-
-                                                {/* Desglose por producto en el palet */}
-                                                {pallet.productsBreakdown && pallet.productsBreakdown.length > 0 && (
-                                                    <div className="p-3 space-y-1.5">
-                                                        {pallet.productsBreakdown.map((product, idx) => (
-                                                            <div key={idx} className="flex items-center justify-between text-xs py-1 border-b last:border-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge variant="secondary" className="text-xs">
-                                                                        {product.name}
-                                                                    </Badge>
-                                                                    <span className="text-muted-foreground">
-                                                                        {product.boxesCount} {product.boxesCount === 1 ? 'caja' : 'cajas'}
-                                                                    </span>
-                                                                </div>
-                                                                <span className="font-medium">{formatWeight(product.totalWeight)}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            )
-                        })()}
-                    </div>
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                    )}
                 </div>
                 )}
             </div>
@@ -1960,17 +1877,101 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         </Dialog>
     )
 
+    // Dialog de palets (disponible en ambos renders)
+    const palletsDialog = (() => {
+        const pallets = calculateSummaryByPallet()
+        const palletCount = pallets.length
+        if (palletCount === 0) return null
+        return (
+            <Dialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0">
+                    <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
+                        <DialogTitle>Detalle de Palets</DialogTitle>
+                        <DialogDescription>
+                            {palletCount} {palletCount === 1 ? 'palet' : 'palets'} utilizados en este proceso
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <ScrollArea className="h-[calc(85vh-180px)] px-6 py-4">
+                        <div className="space-y-4 pr-4">
+                            {pallets.map((pallet, idx) => (
+                                <Card key={pallet.palletId}>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-base">Palet #{pallet.palletId}</CardTitle>
+                                            <div className="text-sm text-muted-foreground">
+                                                {pallet.boxesCount} {pallet.boxesCount === 1 ? 'caja' : 'cajas'} • {formatWeight(pallet.totalWeight)}
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {pallet.productsBreakdown && pallet.productsBreakdown.length > 0 ? (
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Producto</TableHead>
+                                                        <TableHead>Cajas</TableHead>
+                                                        <TableHead>Peso</TableHead>
+                                                        <TableHead>Lotes</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {pallet.productsBreakdown.map((product, productIdx) => (
+                                                        <TableRow key={productIdx}>
+                                                            <TableCell className="font-medium">
+                                                                {product.name}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {product.boxesCount}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {formatWeight(product.totalWeight)}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {product.lots && product.lots.length > 0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {product.lots.map((lot, lotIdx) => (
+                                                                            <span key={lotIdx} className="text-xs text-muted-foreground">
+                                                                                {lot}{lotIdx < product.lots.length - 1 ? ',' : ''}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-xs text-muted-foreground">-</span>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No hay productos registrados</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
+        )
+    })()
+
     // Si renderInCard es true, envolver en Card con botón en header
     if (renderInCard) {
         return (
             <>
                 {dialog}
                 {lotsDialog}
+                {palletsDialog}
                 <Card className="h-fit">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle>{cardTitle || 'Consumo de Materia prima desde stock'}</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Package className="h-5 w-5 text-primary" />
+                                    {cardTitle || 'Consumo de Materia prima desde stock'}
+                                </CardTitle>
                                 <CardDescription>
                                     {cardDescription || 'Materia prima consumida desde el stock en este proceso'}
                                 </CardDescription>
@@ -1990,6 +1991,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     return (
         <>
             {lotsDialog}
+            {palletsDialog}
             {mainContent}
         </>
     )
