@@ -1,8 +1,8 @@
 import ProductionRecordClient from "./ProductionRecordClient";
 
 export default async function ProductionRecordPage({ params }) {
-    const productionId = params.id;
-    const recordId = params.recordId;
+    const { id, recordId } = await params;
+    const productionId = id;
 
     return (
         <ProductionRecordClient 

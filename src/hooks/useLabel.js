@@ -61,7 +61,7 @@ export function useLabel({ boxes = [], open }) {
     const [fields, setFields] = useState([]);
     const [labelsOptions, setLabelsOptions] = useState([]);
 
-    console.log('fields', fields);
+    // console.log('fields', fields);
 
     useEffect(() => {
 
@@ -107,20 +107,20 @@ export function useLabel({ boxes = [], open }) {
                 };
 
                 const filledFieldsArray = boxes.map((box, index) => {
-                    console.log(`🧊 Procesando box[${index}]`, box);
+                    // console.log(`🧊 Procesando box[${index}]`, box);
 
                     const fieldObject = Object.fromEntries(
                         Object.keys(updatedFields).map((key) => {
                             const value = getValueByPath(box, key);
-                            console.log(`🔍 Buscando "${key}" en box[${index}] →`, value);
+                            // console.log(`🔍 Buscando "${key}" en box[${index}] →`, value);
                             return [key, value ?? ''];
                         })
                     );
 
-                    console.log(`📦 Resultado para box[${index}] →`, fieldObject);
+                    // console.log(`📦 Resultado para box[${index}] →`, fieldObject);
                     return fieldObject;
                 });
-                console.log('📝 Campos rellenados:', filledFieldsArray);
+                // console.log('📝 Campos rellenados:', filledFieldsArray);
 
                 setFields(filledFieldsArray);
             })

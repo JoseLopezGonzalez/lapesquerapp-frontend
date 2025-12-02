@@ -29,7 +29,7 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
             toast.error('Por favor, completa todos los campos manuales antes de imprimir.', getToastTheme());
             return;
         }
-        console.log('Imprimiendo etiquetas con los siguientes valores:', values);
+        // console.log('Imprimiendo etiquetas con los siguientes valores:', values);
         toast.success(`Imprimiendo ${values.length} etiquetas...`, getToastTheme());
         onPrint();
     }
@@ -98,7 +98,7 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
 
                         {/* Imprimir */}
                         <div id="print-area-id" className="hidden print:block">
-                            {console.log('Valores a imprimir:', values)}
+                            {/* {console.log('Valores a imprimir:', values)} */}
                             {values.map((valuesElements, i) => (
                                 <div key={i} className="page ">
                                     <LabelRender

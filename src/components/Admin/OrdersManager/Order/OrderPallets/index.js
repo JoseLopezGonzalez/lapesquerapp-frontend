@@ -95,7 +95,7 @@ const OrderPallets = () => {
         setConfirmPalletId(null);
     };
 
-    console.log('pallets ahiiiiii', pallets);
+    // console.log('pallets ahiiiiii', pallets);
     return (
         <div className='h-full pb-2'>
             <Card className='h-full flex flex-col bg-transparent'>

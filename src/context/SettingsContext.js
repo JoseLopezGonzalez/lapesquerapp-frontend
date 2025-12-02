@@ -13,7 +13,7 @@ export function SettingsProvider({ children }) {
   useEffect(() => {
     getSettings()
       .then((data) => {
-        console.log("[SettingsProvider] Settings recibidos:", data);
+        // console.log("[SettingsProvider] Settings recibidos:", data);
         setSettings(data);
       })
       .catch((err) => {

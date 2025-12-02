@@ -5,12 +5,26 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { isAuthError } from "./configs/authConfig";
 
 export async function middleware(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
+  
+  // Ignorar archivos estáticos y recursos
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/apple-touch-icon') ||
+    pathname.startsWith('/og-image') ||
+    pathname.startsWith('/site.webmanifest') ||
+    pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/)
+  ) {
+    return NextResponse.next();
+  }
+  
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   // Si no hay token, redirigir al login
   if (!token) {
-    console.log("🔐 [Middleware] No hay token, redirigiendo al login desde:", pathname);
+    // console.log("🔐 [Middleware] No hay token, redirigiendo al login desde:", pathname);
     const loginUrl = new URL("/", req.url);
     loginUrl.searchParams.set("from", pathname); // Guardar la página actual para redirigir después del login
     return NextResponse.redirect(loginUrl);
@@ -19,7 +33,7 @@ export async function middleware(req) {
   // Verificar si el token está expirado
   const tokenExpiration = token?.exp * 1000; // Convertir de segundos a milisegundos
   if (Date.now() > tokenExpiration) {
-    console.log("🔐 [Middleware] Token expirado, redirigiendo al login desde:", pathname);
+    // console.log("🔐 [Middleware] Token expirado, redirigiendo al login desde:", pathname);
     const loginUrl = new URL("/", req.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
@@ -35,7 +49,7 @@ export async function middleware(req) {
     });
 
     if (!verifyResponse.ok) {
-      console.log("🔐 [Middleware] Token inválido o sesión cancelada, redirigiendo al login desde:", pathname);
+      // console.log("🔐 [Middleware] Token inválido o sesión cancelada, redirigiendo al login desde:", pathname);
       const loginUrl = new URL("/", req.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
@@ -45,7 +59,7 @@ export async function middleware(req) {
     
     // Si es un error de autenticación, redirigir al login
     if (isAuthError(error)) {
-      console.log("🔐 [Middleware] Error de autenticación confirmado, redirigiendo al login desde:", pathname);
+      // console.log("🔐 [Middleware] Error de autenticación confirmado, redirigiendo al login desde:", pathname);
       const loginUrl = new URL("/", req.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
@@ -66,20 +80,20 @@ export async function middleware(req) {
   const matchingRoute = matchingRoutes.sort((a, b) => b.length - a.length)[0];
   const rolesAllowed = matchingRoute ? roleConfig[matchingRoute] : [];
 
-  console.log("🔐 [Middleware] Ruta coincidente:", matchingRoute);
-  console.log("🔐 [Middleware] Roles Permitidos:", rolesAllowed);
+  // console.log("🔐 [Middleware] Ruta coincidente:", matchingRoute);
+  // console.log("🔐 [Middleware] Roles Permitidos:", rolesAllowed);
 
   // Obtener los roles del usuario y asegurarse de que sean un array
   const userRoles = Array.isArray(token.role) ? token.role : [token.role];
 
-  console.log("🔐 [Middleware] Roles del Usuario:", userRoles);
+  // console.log("🔐 [Middleware] Roles del Usuario:", userRoles);
 
   // Verificar si al menos uno de los roles del usuario está permitido
   const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
 
   // Excepción especial: si es store_operator intentando acceder a /admin, redirigir a su almacén
   if (!hasAccess && userRoles.includes("store_operator") && pathname.startsWith("/admin")) {
-    console.log("🔐 [Middleware] Store_operator intentando acceder a admin, redirigiendo a su almacén");
+    // console.log("🔐 [Middleware] Store_operator intentando acceder a admin, redirigiendo a su almacén");
     if (token.assignedStoreId) {
       const warehouseUrl = new URL(`/warehouse/${token.assignedStoreId}`, req.url);
       return NextResponse.redirect(warehouseUrl);
@@ -90,17 +104,21 @@ export async function middleware(req) {
   }
 
   if (!rolesAllowed.length || !hasAccess) {
-    console.log("🔐 [Middleware] Acceso denegado para los roles:", userRoles, "en ruta:", pathname);
+    // console.log("🔐 [Middleware] Acceso denegado para los roles:", userRoles, "en ruta:", pathname);
     const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);
   }
 
 
   // Si todo está bien, continuar con la solicitud
-  console.log("🔐 [Middleware] Acceso permitido para usuario con roles:", userRoles, "en ruta:", pathname);
+  // console.log("🔐 [Middleware] Acceso permitido para usuario con roles:", userRoles, "en ruta:", pathname);
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/production/:path*", "/warehouse/:path*"],
+  matcher: [
+    '/admin/:path*',
+    '/production/:path*',
+    '/warehouse/:path*',
+  ],
 };

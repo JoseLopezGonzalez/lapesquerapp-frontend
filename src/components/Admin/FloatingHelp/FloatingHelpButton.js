@@ -27,7 +27,7 @@ export default function FloatingHelpButton() {
             description: "Habla con nuestro equipo de soporte",
             icon: MessageSquare,
             action: () => {
-                console.log("Opening support contact...")
+                // console.log("Opening support contact...")
                 setIsOpen(false)
             },
         },
@@ -47,7 +47,7 @@ export default function FloatingHelpButton() {
             description: "Informa de un error o incidencia",
             icon: AlertTriangle,
             action: () => {
-                console.log("Opening issue report form...")
+                // console.log("Opening issue report form...")
                 setIsOpen(false)
             },
             variant: "urgent",

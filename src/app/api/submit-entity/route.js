@@ -6,7 +6,7 @@ export async function POST(req) {
     try {
         // Leer el body de la solicitud
         const body = await req.json();
-        console.log("📥 Datos recibidos en la API Route:", body);
+        // console.log("📥 Datos recibidos en la API Route:", body);
 
         // Validar que 'endpoint' y 'data' están presentes
         if (!body.endpoint || !body.data) {
@@ -19,8 +19,8 @@ export async function POST(req) {
         const authorization = req.headers.get('authorization');
 
         // Hacer la solicitud al backend (Laravel)
-        console.log(`🌐 Enviando datos a: ${API_URL_V2}${body.endpoint}`);
-        console.log("📦 Datos enviados:", body.data);
+        // console.log(`🌐 Enviando datos a: ${API_URL_V2}${body.endpoint}`);
+        // console.log("📦 Datos enviados:", body.data);
 
         const apiResponse = await fetchWithTenant(`${API_URL_V2}${body.endpoint}`, {
             method: 'POST',
@@ -33,13 +33,13 @@ export async function POST(req) {
             body: JSON.stringify(body.data),
         });
 
-        console.log("🔄 Esperando respuesta del backend...");
+        // console.log("🔄 Esperando respuesta del backend...");
 
         const contentType = apiResponse.headers.get('content-type');
 
         if (contentType && contentType.includes('application/json')) {
             const responseData = await apiResponse.json();
-            console.log("📤 Respuesta del backend (JSON):", responseData);
+            // console.log("📤 Respuesta del backend (JSON):", responseData);
 
             if (!apiResponse.ok) {
                 console.error('❌ Error al enviar al backend:', responseData);

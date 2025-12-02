@@ -11,6 +11,10 @@ export const getTotalInventoryByProducts = async () => {
     return await fetchWithTenant(url)
         .then(response => response.json())
         .then(data => data.data)
-        .catch(error => console.log(error))
-        .finally(() => console.log('Finalizado'));
+        .catch(error => {
+            // console.log(error);
+            throw error;
+        })
+        .finally(() => {
+        });
 }

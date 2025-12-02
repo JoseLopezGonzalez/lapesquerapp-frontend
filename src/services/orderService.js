@@ -38,7 +38,6 @@ export function getOrder(orderId, token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getOrder finalizado');
         });
 }
 
@@ -80,7 +79,6 @@ export function updateOrder(orderId, orderData, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -118,7 +116,6 @@ export function getActiveOrders(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getActiveOrders finalizado');
         });
 }
 
@@ -158,7 +155,6 @@ export async function updateOrderPlannedProductDetail(detailId, detailData, toke
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -188,7 +184,6 @@ export async function deleteOrderPlannedProductDetail(detailId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -219,7 +214,6 @@ export async function createOrderPlannedProductDetail(detailData, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -251,7 +245,6 @@ export async function setOrderStatus(orderId, status, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -284,7 +277,6 @@ export async function createOrderIncident(orderId, description, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -317,7 +309,6 @@ export async function updateOrderIncident(orderId, resolutionType, resolutionNot
             throw error;
         })
         .finally(() => {
-            console.log('resolveOrderIncident finalizado');
         });
 }
 
@@ -346,7 +337,6 @@ export async function destroyOrderIncident(orderId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('destroyOrderIncident finalizado');
         });
 }
 
@@ -376,7 +366,6 @@ export function getActiveOrdersOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getActiveOrders finalizado');
         });
 }
 
@@ -414,7 +403,6 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
             throw error;
         })
         .finally(() => {
-            console.log('getOrderRanking finalizado');
         });
 }
 
@@ -444,7 +432,6 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
             throw error;
         })
         .finally(() => {
-            console.log('getSalesBySalesperson finalizado');
         });
 }
 
@@ -478,7 +465,6 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
             throw error
         })
         .finally(() => {
-            console.log('getTotalQuantity finalizado')
         })
 }
 
@@ -511,7 +497,6 @@ export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
             throw error
         })
         .finally(() => {
-            console.log('getTotalAmount finalizado')
         })
 }
 
@@ -587,7 +572,6 @@ export async function getTransportChartData({ token, from, to }) {
             throw error;
         })
         .finally(() => {
-            console.log('getTransportChartData finalizado');
         });
 }
 

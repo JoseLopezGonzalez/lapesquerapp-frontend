@@ -34,6 +34,5 @@ export function getTaxOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getTaxOptions finalizado');
         });
 }

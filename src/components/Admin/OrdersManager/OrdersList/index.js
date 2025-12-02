@@ -70,7 +70,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
             toast.success('Exportación exitosa', { id: toastId });
 
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             toast.error('Error al exportar', { id: toastId });
         }
     };

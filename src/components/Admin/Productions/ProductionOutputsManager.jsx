@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput } from '@/services/productionService'
+import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -78,7 +78,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                 label: product.name || `Producto #${product.id}`
             }))
             setProducts(formattedProducts)
-            console.log('Productos cargados:', formattedProducts.length, formattedProducts)
+            // console.log('Productos cargados:', formattedProducts.length, formattedProducts)
         } catch (err) {
             console.error('Error loading products:', err)
         }
@@ -154,7 +154,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             product_id: output.product?.id?.toString() || '',
             lot_id: output.lot_id || '',
             boxes: output.boxes?.toString() || '',
-            weight_kg: output.weight_kg?.toString() || ''
+            weight_kg: (output.weightKg || output.weight_kg || 0).toString()
         })
         setEditDialogOpen(true)
     }
@@ -181,13 +181,17 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         }
         
         // Inicializar con las salidas existentes
-        setEditableOutputs(outputs.map(output => ({
-            id: output.id,
-            product_id: output.product?.id?.toString() || '',
-            boxes: output.boxes?.toString() || '',
-            weight_kg: output.weight_kg?.toString() || '',
-            isNew: false
-        })))
+        setEditableOutputs(outputs.map(output => {
+            // Manejar tanto camelCase como snake_case
+            const weight = output.weightKg || output.weight_kg || 0
+            return {
+                id: output.id,
+                product_id: output.product?.id?.toString() || '',
+                boxes: output.boxes?.toString() || '',
+                weight_kg: weight.toString(),
+                isNew: false
+            }
+        }))
         setNewRows([])
         setManageDialogOpen(true)
     }
@@ -227,66 +231,40 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             setSaving(true)
             const token = session.user.accessToken
 
-            // Crear nuevas salidas
-            for (const row of newRows) {
-                if (row.product_id && row.boxes && row.weight_kg) {
-                    await createProductionOutput({
-                        production_record_id: parseInt(productionRecordId),
-                        product_id: parseInt(row.product_id),
-                        lot_id: null,
-                        boxes: parseInt(row.boxes) || 0,
-                        weight_kg: parseFloat(row.weight_kg) || 0
-                    }, token)
+            // Preparar el array de outputs para sincronización
+            // Incluir tanto las salidas existentes (con ID) como las nuevas (sin ID)
+            const allOutputs = [
+                ...editableOutputs.filter(row => row.product_id && row.boxes && row.weight_kg),
+                ...newRows.filter(row => row.product_id && row.boxes && row.weight_kg)
+            ].map(row => {
+                const output = {
+                    product_id: parseInt(row.product_id),
+                    lot_id: null, // Por ahora no se usa lot_id en el dialog masivo
+                    boxes: parseInt(row.boxes) || 0,
+                    weight_kg: parseFloat(row.weight_kg) || 0
                 }
-            }
-
-            // Actualizar salidas existentes
-            for (const row of editableOutputs) {
-                if (row.product_id && row.boxes && row.weight_kg) {
-                    await updateProductionOutput(row.id, {
-                        product_id: parseInt(row.product_id),
-                        lot_id: null,
-                        boxes: parseInt(row.boxes) || 0,
-                        weight_kg: parseFloat(row.weight_kg) || 0
-                    }, token)
+                
+                // Si tiene ID (es una salida existente), incluir el ID para actualizar
+                if (row.id && !row.id.toString().startsWith('new-')) {
+                    output.id = row.id
                 }
-            }
-
-            // Eliminar salidas que fueron removidas
-            const existingIds = editableOutputs.map(r => r.id)
-            const deletedIds = outputs
-                .filter(output => !existingIds.includes(output.id))
-                .map(output => output.id)
-
-            for (const id of deletedIds) {
-                await deleteProductionOutput(id, token)
-            }
-
-            // Construir el nuevo array de outputs basado en los datos editados
-            const productMap = new Map()
-            products.forEach(p => {
-                if (p.value) {
-                    productMap.set(p.value, { id: parseInt(p.value), name: p.label })
-                }
+                
+                return output
             })
 
-            // Construir outputs actualizados desde editableOutputs
-            const updatedOutputs = editableOutputs
-                .filter(row => row.product_id && row.boxes && row.weight_kg)
-                .map(row => {
-                    const product = productMap.get(row.product_id)
-                    return {
-                        id: row.id,
-                        product: product || { id: parseInt(row.product_id), name: 'Producto' },
-                        lot_id: null,
-                        boxes: parseInt(row.boxes) || 0,
-                        weight_kg: parseFloat(row.weight_kg) || 0
-                    }
-                })
+            // Usar el endpoint de sincronización que maneja crear, actualizar y eliminar en una sola petición
+            const response = await syncProductionOutputs(productionRecordId, {
+                outputs: allOutputs
+            }, token)
 
-            // Si no hay filas, significa que se eliminaron todas las salidas
-            // Actualizar el estado local directamente sin recargar
-            setOutputs(updatedOutputs)
+            // Actualizar el estado con los outputs sincronizados del servidor
+            if (response.data && response.data.outputs) {
+                setOutputs(response.data.outputs)
+            } else {
+                // Si no vienen en la respuesta, recargar desde el servidor
+                const outputsResponse = await getProductionOutputs(token, { production_record_id: productionRecordId })
+                setOutputs(outputsResponse.data || [])
+            }
 
             // Cerrar el dialog
             setManageDialogOpen(false)
@@ -295,16 +273,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             setEditableOutputs([])
             setNewRows([])
             
-            // Recargar datos en segundo plano sin afectar la UI
-            // Esto asegura que tenemos los datos completos del servidor
-            setTimeout(async () => {
-                try {
-                    const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
-                    setOutputs(response.data || [])
-                } catch (err) {
-                    console.error('Error refreshing outputs in background:', err)
-                }
-            }, 100)
+            // Notificar al componente padre si es necesario
+            if (onRefresh) onRefresh()
             
         } catch (err) {
             console.error('Error saving outputs:', err)
@@ -594,8 +564,9 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                 </TableHeader>
                                 <TableBody>
                                     {outputs.map((output) => {
+                                        const weight = output.weightKg || output.weight_kg || 0
                                         const avgWeight = output.boxes > 0 
-                                            ? (output.weight_kg / output.boxes).toFixed(2)
+                                            ? (weight / output.boxes).toFixed(2)
                                             : '0.00'
                                         return (
                                             <TableRow key={output.id}>
@@ -603,7 +574,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                     {output.product?.name || 'N/A'}
                                                 </TableCell>
                                                 <TableCell>{output.boxes || 0}</TableCell>
-                                                <TableCell>{formatWeight(output.weight_kg)}</TableCell>
+                                                <TableCell>{formatWeight(weight)}</TableCell>
                                                 <TableCell>{formatWeight(avgWeight)}</TableCell>
                                             </TableRow>
                                         )

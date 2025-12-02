@@ -17,7 +17,7 @@ export default function AuthErrorInterceptor() {
         
         // Si es un error de autenticación, manejar la redirección
         if (isAuthStatusCode(response.status)) {
-          console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado, redirigiendo al login');
+          // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado, redirigiendo al login');
           
           // Mostrar notificación al usuario
           toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
@@ -37,7 +37,7 @@ export default function AuthErrorInterceptor() {
       } catch (error) {
         // Si el error contiene información de autenticación
         if (isAuthError(error)) {
-          console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado en fetch, redirigiendo al login');
+          // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado en fetch, redirigiendo al login');
           
           // Mostrar notificación al usuario
           toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
@@ -60,7 +60,7 @@ export default function AuthErrorInterceptor() {
       const error = event.error || event.reason;
       
       if (isAuthError(error)) {
-        console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado globalmente');
+        // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado globalmente');
         
         // Mostrar notificación al usuario
         toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());

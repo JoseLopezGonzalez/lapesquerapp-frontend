@@ -38,7 +38,7 @@ export function TransportRadarChart() {
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
-    console.log(data)
+    // console.log(data)
 
     const accessToken = session?.user?.accessToken
 

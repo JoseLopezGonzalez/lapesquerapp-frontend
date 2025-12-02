@@ -36,7 +36,6 @@ export function getPaymentTermsOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getPaymentTermsOptions finalizado');
         });
 }
 

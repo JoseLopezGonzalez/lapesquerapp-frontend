@@ -163,7 +163,7 @@ const ProductionRecordImagesManager = ({
                             {/* Botón para agregar más */}
                             <button
                                 onClick={() => setIsAddDialogOpen(true)}
-                                className="aspect-square rounded-md border-2 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
+                                className="aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
                             >
                                 <Plus className="h-6 w-6 text-muted-foreground" />
                             </button>
@@ -212,7 +212,7 @@ const ProductionRecordImagesManager = ({
                             {/* Botón para agregar más */}
                             <button
                                 onClick={() => setIsAddDialogOpen(true)}
-                                className="aspect-square rounded-md border-2 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
+                                className="aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
                             >
                                 <Plus className="h-6 w-6 text-muted-foreground" />
                             </button>
@@ -293,7 +293,7 @@ const ProductionRecordImagesManager = ({
                             {/* Botón para agregar más */}
                             <button
                                 onClick={() => setIsAddDialogOpen(true)}
-                                className="aspect-square rounded-md border-2 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
+                                className="aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
                             >
                                 <Plus className="h-6 w-6 text-muted-foreground" />
                             </button>
@@ -357,7 +357,7 @@ const ProductionRecordImagesManager = ({
                             {images.length < 6 && (
                                 <button
                                     onClick={() => setIsAddDialogOpen(true)}
-                                    className="aspect-square rounded-md border-2 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
+                                    className="aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
                                 >
                                     <Plus className="h-6 w-6 text-muted-foreground" />
                                 </button>
@@ -370,7 +370,7 @@ const ProductionRecordImagesManager = ({
                         <div className="mt-2">
                             <button
                                 onClick={() => setIsAddDialogOpen(true)}
-                                className="w-full aspect-square rounded-md border-2 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
+                                className="w-full aspect-square rounded-md border-1 border-dashed border-input bg-background hover:bg-accent/5 hover:border-primary transition-colors flex items-center justify-center"
                             >
                                 <Plus className="h-6 w-6 text-muted-foreground" />
                             </button>
@@ -392,7 +392,7 @@ const ProductionRecordImagesManager = ({
                         {/* Botón para agregar imágenes */}
                         <button
                             onClick={() => setIsAddDialogOpen(true)}
-                            className="aspect-square rounded-md border-2 border-dashed border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80 transition-colors flex items-center justify-center"
+                            className="aspect-square rounded-md border-1 border-dashed border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary/80 transition-colors flex items-center justify-center"
                         >
                             <Plus className="h-6 w-6 text-primary" />
                         </button>

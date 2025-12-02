@@ -51,8 +51,8 @@ export function AppSidebar() {
 
     const { settings, loading } = useSettings();
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
-    console.log('[Sidebar] settings:', settings);
-    console.log('[Sidebar] companyName:', companyName);
+    // console.log('[Sidebar] settings:', settings);
+    // console.log('[Sidebar] companyName:', companyName);
 
     const handleLogout = async () => {
         try {

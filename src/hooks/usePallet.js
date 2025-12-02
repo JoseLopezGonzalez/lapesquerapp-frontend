@@ -150,7 +150,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         if (pallet) {
             setTemporalPallet({ ...pallet })
             setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
-            console.log('Pallet loaded:', pallet);
+            // console.log('Pallet loaded:', pallet);
         }
     }, [pallet]);
 
@@ -636,7 +636,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     };
 
     const resetAllChanges = () => {
-        console.log("resetAllChanges: pallet =", pallet);
+        // console.log("resetAllChanges: pallet =", pallet);
         setTemporalPallet({ ...pallet });
         setBoxCreationData(initialboxCreationData);
         toast.success('Cambios desechos', getToastTheme());
@@ -653,12 +653,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const onSavingChanges = async () => {
         if (!temporalPallet) return;
 
-        console.log('Saving changes for pallet:', temporalPallet);
+        // console.log('Saving changes for pallet:', temporalPallet);
 
         if (temporalPallet.id === null) {
             createPallet(temporalPallet, token)
                 .then((data) => {
-                    console.log('Pallet created successfully:', data);
+                    // console.log('Pallet created successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
                     toast.success('Palet creado correctamente', getToastTheme());
@@ -672,7 +672,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         } else {
             updatePallet(temporalPallet.id, temporalPallet, token)
                 .then((data) => {
-                    console.log('Pallet updated successfully:', data);
+                    // console.log('Pallet updated successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
                     toast.success('Palet actualizado correctamente', getToastTheme());

@@ -396,7 +396,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
             newStore.totalNetWeight = totalNetWeight;
 
-            console.log('Updated Store:', newStore);
+            // console.log('Updated Store:', newStore);
 
             if (onUpdateCurrentStoreTotalNetWeight) onUpdateCurrentStoreTotalNetWeight(prevStore.id, newStore.totalNetWeight);
             return newStore;
@@ -417,8 +417,8 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
         const palletTotalNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
 
-        console.log('storeId', storeId);
-        console.log('palletTotalNetWeight', palletTotalNetWeight);
+        // console.log('storeId', storeId);
+        // console.log('palletTotalNetWeight', palletTotalNetWeight);
 
         if (onAddNetWeightToStore) {
             onAddNetWeightToStore(storeId, palletTotalNetWeight);

@@ -33,7 +33,6 @@ export async function getStore(id, token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getStores finalizado');
         });
 }
 
@@ -64,7 +63,6 @@ export async function getStores(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getStores finalizado');
         });
 }
 
@@ -94,7 +92,6 @@ export function getStoreOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getStoreOptions finalizado');
         });
 }
 
@@ -129,7 +126,6 @@ export async function getTotalStockStats(token) {
             throw error;
         })
         .finally(() => {
-            console.log('getTotalStock finalizado');
         });
 }
 
@@ -162,7 +158,6 @@ export async function getStockBySpeciesStats(token) {
             throw error;
         })
         .finally(() => {
-            console.log('getStockBySpecies finalizado');
         });
 }
 
@@ -195,7 +190,6 @@ export async function getStockByProducts(token) {
             throw error;
         })
         .finally(() => {
-            console.log('getStockByProducts finalizado');
         });
 }
 

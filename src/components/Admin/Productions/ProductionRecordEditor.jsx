@@ -88,11 +88,11 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 
                 // Debug: verificar si el proceso existe
                 if (processId && !matchingProcess) {
-                    console.warn('Process ID not found in available processes:', {
-                        processId,
-                        processIdType: typeof processId,
-                        availableProcesses: processes.map(p => ({ value: p.value?.toString(), valueType: typeof p.value, label: p.label }))
-                    })
+                    // console.warn('Process ID not found in available processes:', {
+                    //     processId,
+                    //     processIdType: typeof processId,
+                    //     availableProcesses: processes.map(p => ({ value: p.value?.toString(), valueType: typeof p.value, label: p.label }))
+                    // })
                 }
                 
                 setFormData({

@@ -1,6 +1,6 @@
 export function mapEntityRows(rawRows, headers, handleDelete, config) {
-    console.log('rawRows', rawRows);
-    console.log('headers', headers);
+    // console.log('rawRows', rawRows);
+    // console.log('headers', headers);
     return rawRows.map((row) => {
         const rowData = headers.reduce((acc, header) => {
             let value;

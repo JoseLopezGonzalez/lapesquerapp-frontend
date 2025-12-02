@@ -46,7 +46,7 @@ const handler = NextAuth({
             body: JSON.stringify(credentials),
           });
 
-          console.log('Response from login:', res);
+          // console.log('Response from login:', res);
 
           const data = await res.json();
 
@@ -89,7 +89,7 @@ const handler = NextAuth({
       const tokenIsExpired = false; // Implementa lógica de validación aquí si es necesario
 
       if (tokenIsExpired) {
-        console.log('Token expirado');
+        // console.log('Token expirado');
         return null;
       }
 
@@ -106,7 +106,7 @@ const handler = NextAuth({
   },
   events: {
     async signOut(message) {
-      console.log('Usuario deslogueado:', message);
+      // console.log('Usuario deslogueado:', message);
     },
   },
   pages: {

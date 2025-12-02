@@ -38,20 +38,14 @@ export function getProductFamilyOptions(token) {
             return response.json();
         })
         .then((data) => {
-            console.log('Datos originales del backend (familias):', data);
-            console.log('Número de elementos originales:', data.length);
-            
             // Eliminar duplicados antes de devolver
             const uniqueData = removeDuplicateOptions(data);
-            console.log('Familias de productos cargadas:', uniqueData.length, 'elementos únicos');
-            console.log('Elementos únicos:', uniqueData);
             return uniqueData;
         })
         .catch((error) => {
             throw error;
         })
         .finally(() => {
-            console.log('getProductFamilyOptions finalizado');
         });
 }
 

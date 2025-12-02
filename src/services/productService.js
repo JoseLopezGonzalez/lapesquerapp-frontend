@@ -34,6 +34,5 @@ export function getProductOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getProductOptions finalizado');
         });
 }

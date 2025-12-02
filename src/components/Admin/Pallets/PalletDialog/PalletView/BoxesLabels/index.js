@@ -37,7 +37,7 @@ const BoxesLabels = ({ pallet, setBoxPrinted }) => {
     const [productFilter, setProductFilter] = useState('');
     const [lotFilter, setLotFilter] = useState('');
 
-    console.log(pallet)
+    // console.log(pallet)
 
     const productNames = useMemo(() => {
         const set = new Set();
@@ -207,7 +207,7 @@ const BoxesLabels = ({ pallet, setBoxPrinted }) => {
     };
 
 
-    console.log('newGroupedBoxes', newGroupedBoxes);
+    // console.log('newGroupedBoxes', newGroupedBoxes);
 
 
 

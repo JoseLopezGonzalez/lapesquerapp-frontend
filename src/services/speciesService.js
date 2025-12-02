@@ -31,7 +31,6 @@ export function getSpeciesOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getSpeciesOptions finalizado');
         });
 }
 

@@ -153,7 +153,7 @@ const OrderDocuments = () => {
             })
             .catch((error) => {
                 toast.error('Error al enviar documentos', { id: toastId });
-                console.log('Error al enviar documentos', error);
+                // console.log('Error al enviar documentos', error);
             })
     };
 
@@ -186,7 +186,7 @@ const OrderDocuments = () => {
             })
             .catch((error) => {
                 toast.error('Error al enviar documentos', { id: toastId });
-                console.log('Error al enviar documentos', error);
+                // console.log('Error al enviar documentos', error);
             })
 
     };
@@ -200,7 +200,7 @@ const OrderDocuments = () => {
             })
             .catch((error) => {
                 toast.error('Error al enviar documentos', { id: toastId });
-                console.log('Error al enviar documentos', error);
+                // console.log('Error al enviar documentos', error);
             })
     };
 

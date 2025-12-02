@@ -45,7 +45,7 @@ export function TotalAmountSoldCard() {
     const trendText = isUp ? "al alza" : isDown ? "a la baja" : null
     const trendColor = isUp ? "text-green-600" : isDown ? "text-red-600" : ""
 
-    console.log(data)
+    // console.log(data)
 
     return (
         <Card className="relative p-4 rounded-2xl shadow-sm border h-fit bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">

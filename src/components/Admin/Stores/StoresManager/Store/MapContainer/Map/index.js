@@ -19,13 +19,13 @@ const Map = ({ onClickPosition , isPositionEmpty  }) => {
     const viewBox = calculateViewBox();
     
     // Debug temporal para ver las dimensiones
-    console.log('Map dimensions:', {
-        map: map,
-        viewBox: viewBox,
-        fondos: map?.elementos?.fondos?.length || 0,
-        posiciones: map?.posiciones?.length || 0,
-        textos: map?.elementos?.textos?.length || 0
-    });
+    // console.log('Map dimensions:', {
+    //     map: map,
+    //     viewBox: viewBox,
+    //     fondos: map?.elementos?.fondos?.length || 0,
+    //     posiciones: map?.posiciones?.length || 0,
+    //     textos: map?.elementos?.textos?.length || 0
+    // });
 
     return (
         <>

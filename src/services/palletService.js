@@ -31,7 +31,6 @@ export function getPallet(palletId, token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getPallet finalizado');
         });
 }
 
@@ -70,7 +69,6 @@ export function updatePallet(palletId, palletData, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -103,7 +101,6 @@ export async function createPallet(palletData, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateOrder finalizado');
         });
 }
 
@@ -144,7 +141,6 @@ export async function assignPalletsToPosition(positionId, palletIds, token) {
             throw error;
         })
         .finally(() => {
-            console.log('assignPalletsToPosition finalizado');
         });
 }
 
@@ -186,7 +182,6 @@ export function movePalletToStore(palletId, storeId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('movePalletToStore finalizado');
         });
 }
 
@@ -222,7 +217,6 @@ export function removePalletPosition(palletId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('removePalletPosition finalizado');
         });
 }
 
@@ -257,7 +251,6 @@ export function deletePallet(palletId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('deletePallet finalizado');
         });
 }
 
@@ -292,6 +285,5 @@ export function unlinkPalletFromOrder(palletId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('unlinkPalletFromOrder finalizado');
         });
 }

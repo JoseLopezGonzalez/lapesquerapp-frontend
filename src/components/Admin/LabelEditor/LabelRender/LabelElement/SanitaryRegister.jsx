@@ -27,7 +27,7 @@ export default function SanitaryRegister({
   const an = approvalNumber || element.approvalNumber || legacy[1] || "12.021462/H";
   const suff = suffix || element.suffix || legacy[2] || "C.E.";
 
-  console.log(fs)
+  // console.log(fs)
 
   return (
     <div className="w-full h-full flex items-center justify-center  ">

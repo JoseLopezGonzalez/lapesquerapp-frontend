@@ -50,7 +50,7 @@ export function useStores() {
     }, []);
 
     const onAddNetWeightToStore = useCallback((storeId, netWeight) => {
-        console.log("Adding net weight to store:", storeId, netWeight);
+        // console.log("Adding net weight to store:", storeId, netWeight);
         requestAnimationFrame(() => {
             setStores((prevStores) =>
                 prevStores.map((store) =>

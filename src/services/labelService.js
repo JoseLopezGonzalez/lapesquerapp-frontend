@@ -23,7 +23,6 @@ export function getLabel(labelId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('getLabel finalizado');
         });
 }
 
@@ -55,7 +54,6 @@ export function createLabel(labelName, labelFormat, token) {
             throw error;
         })
         .finally(() => {
-            console.log('createLabel finalizado');
         });
 }
 
@@ -86,7 +84,6 @@ export function updateLabel(labelId, labelName, labelFormat, token) {
             throw error;
         })
         .finally(() => {
-            console.log('updateLabel finalizado');
         });
 }
 
@@ -113,7 +110,6 @@ export function getLabels(token) {
             throw error;
         })
         .finally(() => {
-            console.log('getLabels finalizado');
         });
 }
 
@@ -140,7 +136,6 @@ export function deleteLabel(labelId, token) {
             throw error;
         })
         .finally(() => {
-            console.log('deleteLabel finalizado');
         });
 }
 
@@ -167,7 +162,6 @@ export function getLabelsOptions(token) {
             throw error;
         })
         .finally(() => {
-            console.log('getLabelsOptions finalizado');
         });
 }
 

@@ -760,6 +760,73 @@ export function deleteProductionOutput(outputId, token) {
         });
 }
 
+/**
+ * Crea múltiples production outputs en una sola petición
+ * @param {Object} data - Datos con production_record_id y outputs array
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Outputs creados
+ */
+export function createMultipleProductionOutputs(data, token) {
+    return fetchWithTenant(`${API_URL_V2}production-outputs/multiple`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al crear las salidas');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Sincroniza todas las salidas de un proceso (crear, actualizar, eliminar)
+ * @param {string|number} productionRecordId - ID del proceso
+ * @param {Object} data - Datos con outputs array
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Proceso actualizado con salidas sincronizadas
+ */
+export function syncProductionOutputs(productionRecordId, data, token) {
+    return fetchWithTenant(`${API_URL_V2}production-records/${productionRecordId}/outputs`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al sincronizar las salidas');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
 // ==================== PRODUCTION RECORD IMAGES ====================
 
 /**
@@ -1015,6 +1082,73 @@ export function deleteProductionOutputConsumption(consumptionId, token) {
             if (!response.ok) {
                 return response.json().then((errorData) => {
                     throw new Error(errorData.message || 'Error al eliminar el consumo');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Crea múltiples consumos de outputs del padre en una sola petición
+ * @param {Object} data - Datos con production_record_id y consumptions array
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Consumos creados
+ */
+export function createMultipleProductionOutputConsumptions(data, token) {
+    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/multiple`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al crear los consumos');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
+ * Sincroniza todos los consumos de outputs del padre de un proceso (crear, actualizar, eliminar)
+ * @param {string|number} productionRecordId - ID del proceso
+ * @param {Object} data - Datos con consumptions array
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Proceso actualizado con consumos sincronizados
+ */
+export function syncProductionOutputConsumptions(productionRecordId, data, token) {
+    return fetchWithTenant(`${API_URL_V2}production-records/${productionRecordId}/parent-output-consumptions`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(data),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al sincronizar los consumos');
                 });
             }
             return response.json();

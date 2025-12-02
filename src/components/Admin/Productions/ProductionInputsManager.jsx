@@ -5,13 +5,7 @@ import { useSession } from 'next-auth/react'
 import { 
     getProductionInputs, 
     createMultipleProductionInputs, 
-    deleteProductionInput,
-    getProductionRecord,
-    getAvailableOutputs,
-    getProductionOutputConsumptions,
-    createProductionOutputConsumption,
-    updateProductionOutputConsumption,
-    deleteProductionOutputConsumption
+    deleteProductionInput
 } from '@/services/productionService'
 import { getPallet } from '@/services/palletService'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Edit, Layers, Weight, Info, Tag, Unlink, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Edit, Layers, Weight, Info, Tag, Unlink } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -63,20 +57,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     const [lotsDialogOpen, setLotsDialogOpen] = useState(false)
     const [selectedProductLots, setSelectedProductLots] = useState(null) // {productName, lots, boxes}
 
-    // Estados para consumos de outputs del padre
-    const [productionRecord, setProductionRecord] = useState(null)
-    const [parentOutputConsumptions, setParentOutputConsumptions] = useState([])
-    const [availableOutputs, setAvailableOutputs] = useState([])
-    const [addConsumptionDialogOpen, setAddConsumptionDialogOpen] = useState(false)
-    const [consumptionFormData, setConsumptionFormData] = useState({
-        production_output_id: '',
-        consumed_weight_kg: '',
-        consumed_boxes: '',
-        notes: ''
-    })
-    const [savingConsumption, setSavingConsumption] = useState(false)
-    const [loadingAvailableOutputs, setLoadingAvailableOutputs] = useState(false)
-
     // Helper function to check if box is available
     const isBoxAvailable = (box) => {
         return box.isAvailable !== false;
@@ -92,7 +72,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
             loadInputs()
-            loadProductionRecord()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
@@ -112,40 +91,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }
     }
 
-    const loadProductionRecord = async () => {
-        try {
-            const token = session.user.accessToken
-            const record = await getProductionRecord(productionRecordId, token)
-            setProductionRecord(record)
-            
-            // Cargar consumos del padre si existen
-            if (record.parentOutputConsumptions) {
-                setParentOutputConsumptions(record.parentOutputConsumptions)
-            } else {
-                setParentOutputConsumptions([])
-            }
-        } catch (err) {
-            console.error('Error loading production record:', err)
-        }
-    }
-
-    const loadAvailableOutputs = async () => {
-        if (!productionRecord?.parent_record_id) {
-            return
-        }
-
-        try {
-            setLoadingAvailableOutputs(true)
-            const token = session.user.accessToken
-            const response = await getAvailableOutputs(productionRecordId, token)
-            setAvailableOutputs(response.data || [])
-        } catch (err) {
-            console.error('Error loading available outputs:', err)
-            alert(err.message || 'Error al cargar los outputs disponibles')
-        } finally {
-            setLoadingAvailableOutputs(false)
-        }
-    }
 
     const loadExistingDataForEdit = async () => {
         if (inputs.length === 0) {
@@ -334,123 +279,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         }
     }
 
-    // Funciones para manejar consumos de outputs del padre
-    const handleOpenConsumptionDialog = async () => {
-        setAddConsumptionDialogOpen(true)
-        await loadAvailableOutputs()
-        // Si ya existe un consumo, cargar sus datos para edición
-        if (parentOutputConsumptions.length > 0) {
-            const existingConsumption = parentOutputConsumptions[0]
-            setConsumptionFormData({
-                production_output_id: existingConsumption.production_output_id?.toString() || '',
-                consumed_weight_kg: existingConsumption.consumed_weight_kg?.toString() || '',
-                consumed_boxes: existingConsumption.consumed_boxes?.toString() || '',
-                notes: existingConsumption.notes || ''
-            })
-        } else {
-            setConsumptionFormData({
-                production_output_id: '',
-                consumed_weight_kg: '',
-                consumed_boxes: '',
-                notes: ''
-            })
-        }
-    }
-
-    const handleSaveConsumption = async () => {
-        if (!consumptionFormData.production_output_id) {
-            alert('Por favor selecciona un output')
-            return
-        }
-
-        const weight = parseFloat(consumptionFormData.consumed_weight_kg)
-        if (isNaN(weight) || weight <= 0) {
-            alert('Por favor ingresa un peso válido mayor a 0')
-            return
-        }
-
-        // Validar disponibilidad
-        const selectedOutput = availableOutputs.find(
-            o => o.output.id.toString() === consumptionFormData.production_output_id
-        )
-        if (!selectedOutput) {
-            alert('Output seleccionado no encontrado')
-            return
-        }
-
-        if (weight > selectedOutput.availableWeight) {
-            alert(`Solo hay ${selectedOutput.availableWeight.toFixed(2)}kg disponible`)
-            return
-        }
-
-        const boxes = consumptionFormData.consumed_boxes 
-            ? parseInt(consumptionFormData.consumed_boxes) 
-            : undefined
-
-        if (boxes !== undefined && boxes > selectedOutput.availableBoxes) {
-            alert(`Solo hay ${selectedOutput.availableBoxes} cajas disponibles`)
-            return
-        }
-
-        try {
-            setSavingConsumption(true)
-            const token = session.user.accessToken
-
-            const consumptionData = {
-                production_record_id: parseInt(productionRecordId),
-                production_output_id: parseInt(consumptionFormData.production_output_id),
-                consumed_weight_kg: weight,
-                consumed_boxes: boxes,
-                notes: consumptionFormData.notes || undefined
-            }
-
-            // Si ya existe un consumo de este output, actualizarlo
-            const existingConsumption = parentOutputConsumptions.find(
-                c => c.production_output_id?.toString() === consumptionFormData.production_output_id
-            )
-
-            if (existingConsumption) {
-                await updateProductionOutputConsumption(existingConsumption.id, {
-                    consumed_weight_kg: weight,
-                    consumed_boxes: boxes,
-                    notes: consumptionFormData.notes || undefined
-                }, token)
-            } else {
-                await createProductionOutputConsumption(consumptionData, token)
-            }
-
-            setAddConsumptionDialogOpen(false)
-            setConsumptionFormData({
-                production_output_id: '',
-                consumed_weight_kg: '',
-                consumed_boxes: '',
-                notes: ''
-            })
-            await loadProductionRecord()
-            if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error saving consumption:', err)
-            alert(err.message || 'Error al guardar el consumo')
-        } finally {
-            setSavingConsumption(false)
-        }
-    }
-
-    const handleDeleteConsumption = async (consumptionId) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar este consumo del padre?')) {
-            return
-        }
-
-        try {
-            const token = session.user.accessToken
-            await deleteProductionOutputConsumption(consumptionId, token)
-            await loadProductionRecord()
-            if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error deleting consumption:', err)
-            alert(err.message || 'Error al eliminar el consumo')
-        }
-    }
 
     const formatWeight = (weight) => {
         if (!weight) return '0 kg'
@@ -569,13 +397,9 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
     // Calcular totales generales (incluyendo consumos del padre)
     const calculateTotalSummary = () => {
         const totalBoxes = inputs.filter(input => input.box?.id).length
-        const totalWeightFromStock = inputs.reduce((sum, input) => {
+        const totalWeight = inputs.reduce((sum, input) => {
             return sum + parseFloat(input.box?.netWeight || 0)
         }, 0)
-        const totalWeightFromParent = parentOutputConsumptions.reduce((sum, consumption) => {
-            return sum + parseFloat(consumption.consumed_weight_kg || 0)
-        }, 0)
-        const totalWeight = totalWeightFromStock + totalWeightFromParent
         
         const uniqueProducts = new Set()
         inputs.forEach(input => {
@@ -583,17 +407,10 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                 uniqueProducts.add(input.box.product.name)
             }
         })
-        parentOutputConsumptions.forEach(consumption => {
-            if (consumption.productionOutput?.product?.name) {
-                uniqueProducts.add(consumption.productionOutput.product.name)
-            }
-        })
 
         return {
             totalBoxes,
             totalWeight,
-            totalWeightFromStock,
-            totalWeightFromParent,
             totalProducts: uniqueProducts.size,
             totalPallets: calculateSummaryByPallet().length
         }
@@ -1770,180 +1587,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         </Dialog>
     )
 
-    // Diálogo para consumir outputs del padre
-    const consumptionDialog = (
-        <Dialog open={addConsumptionDialogOpen} onOpenChange={(open) => {
-            setAddConsumptionDialogOpen(open)
-            if (!open) {
-                setConsumptionFormData({
-                    production_output_id: '',
-                    consumed_weight_kg: '',
-                    consumed_boxes: '',
-                    notes: ''
-                })
-            }
-        }}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Consumir Output del Proceso Padre</DialogTitle>
-                    <DialogDescription>
-                        Selecciona un output del proceso padre para consumir en este proceso hijo
-                    </DialogDescription>
-                </DialogHeader>
-                {loadingAvailableOutputs ? (
-                    <div className="flex items-center justify-center py-8">
-                        <Loader />
-                    </div>
-                ) : availableOutputs.length === 0 ? (
-                    <div className="flex items-center justify-center py-8">
-                        <EmptyState
-                            icon={<ArrowDown className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-                            title="No hay outputs disponibles"
-                            description="El proceso padre no tiene outputs disponibles para consumir"
-                        />
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div>
-                            <Label htmlFor="production_output_id">Output del Padre</Label>
-                            <Select
-                                value={consumptionFormData.production_output_id}
-                                onValueChange={(value) => {
-                                    setConsumptionFormData(prev => ({ ...prev, production_output_id: value }))
-                                    const selectedOutput = availableOutputs.find(o => o.output.id.toString() === value)
-                                    if (selectedOutput) {
-                                        // Prellenar con el máximo disponible si no hay consumo existente
-                                        const existingConsumption = parentOutputConsumptions.find(
-                                            c => c.production_output_id?.toString() === value
-                                        )
-                                        if (!existingConsumption) {
-                                            setConsumptionFormData(prev => ({
-                                                ...prev,
-                                                consumed_weight_kg: selectedOutput.availableWeight.toFixed(2),
-                                                consumed_boxes: selectedOutput.availableBoxes.toString()
-                                            }))
-                                        }
-                                    }
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un output" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {availableOutputs.map((available) => (
-                                        <SelectItem key={available.output.id} value={available.output.id.toString()}>
-                                            {available.output.product?.name || 'Sin nombre'} - 
-                                            Disponible: {available.availableWeight.toFixed(2)}kg / {available.totalWeight.toFixed(2)}kg
-                                            {available.hasExistingConsumption && ' (Ya consumido)'}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {consumptionFormData.production_output_id && (() => {
-                                const selectedOutput = availableOutputs.find(
-                                    o => o.output.id.toString() === consumptionFormData.production_output_id
-                                )
-                                if (!selectedOutput) return null
-                                return (
-                                    <div className="mt-2 p-3 bg-muted/30 rounded-lg space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">Total:</span>
-                                            <span className="font-semibold">{selectedOutput.totalWeight.toFixed(2)} kg</span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">Consumido:</span>
-                                            <span className="font-semibold">{selectedOutput.consumedWeight.toFixed(2)} kg</span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">Disponible:</span>
-                                            <span className="font-semibold text-primary">{selectedOutput.availableWeight.toFixed(2)} kg</span>
-                                        </div>
-                                        <div className="w-full bg-secondary rounded-full h-2 mt-2">
-                                            <div
-                                                className="bg-primary h-2 rounded-full transition-all"
-                                                style={{ width: `${(selectedOutput.consumedWeight / selectedOutput.totalWeight) * 100}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                )
-                            })()}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="consumed_weight_kg">Peso Consumido (kg) *</Label>
-                                <Input
-                                    id="consumed_weight_kg"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    max={consumptionFormData.production_output_id ? availableOutputs.find(
-                                        o => o.output.id.toString() === consumptionFormData.production_output_id
-                                    )?.availableWeight || 0 : undefined}
-                                    value={consumptionFormData.consumed_weight_kg}
-                                    onChange={(e) => setConsumptionFormData(prev => ({ ...prev, consumed_weight_kg: e.target.value }))}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="consumed_boxes">Cajas Consumidas</Label>
-                                <Input
-                                    id="consumed_boxes"
-                                    type="number"
-                                    min="0"
-                                    max={consumptionFormData.production_output_id ? availableOutputs.find(
-                                        o => o.output.id.toString() === consumptionFormData.production_output_id
-                                    )?.availableBoxes || 0 : undefined}
-                                    value={consumptionFormData.consumed_boxes}
-                                    onChange={(e) => setConsumptionFormData(prev => ({ ...prev, consumed_boxes: e.target.value }))}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <Label htmlFor="consumption_notes">Notas (opcional)</Label>
-                            <Textarea
-                                id="consumption_notes"
-                                value={consumptionFormData.notes}
-                                onChange={(e) => setConsumptionFormData(prev => ({ ...prev, notes: e.target.value }))}
-                                placeholder="Notas sobre este consumo..."
-                                rows={3}
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => setAddConsumptionDialogOpen(false)}
-                                disabled={savingConsumption}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                onClick={handleSaveConsumption}
-                                disabled={savingConsumption || !consumptionFormData.production_output_id || !consumptionFormData.consumed_weight_kg}
-                            >
-                                {savingConsumption ? (
-                                    <>
-                                        <Loader className="mr-2" />
-                                        Guardando...
-                                    </>
-                                ) : parentOutputConsumptions.find(
-                                    c => c.production_output_id?.toString() === consumptionFormData.production_output_id
-                                ) ? (
-                                    'Actualizar Consumo'
-                                ) : (
-                                    'Crear Consumo'
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    )
-
     // Botón para el header (sin Dialog wrapper)
     const headerButton = (
         <Button
@@ -2237,7 +1880,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                 )}
 
             {/* Totales Generales */}
-            {(inputs.length > 0 || parentOutputConsumptions.length > 0) && (
+            {inputs.length > 0 && (
                 <div className="mt-6 border rounded-lg overflow-hidden">
                     <div className="bg-muted/30 p-5 border-b">
                         <h4 className="text-sm font-semibold mb-4 uppercase tracking-wide">Totales Generales</h4>
@@ -2259,18 +1902,6 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                 <p className="text-2xl font-bold text-foreground">{formatWeight(calculateTotalSummary().totalWeight)}</p>
                             </div>
                         </div>
-                        {(calculateTotalSummary().totalWeightFromStock > 0 || calculateTotalSummary().totalWeightFromParent > 0) && (
-                            <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-4 text-center">
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-1">Desde Stock</p>
-                                    <p className="text-lg font-semibold">{formatWeight(calculateTotalSummary().totalWeightFromStock)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-1">Desde Padre</p>
-                                    <p className="text-lg font-semibold">{formatWeight(calculateTotalSummary().totalWeightFromParent)}</p>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

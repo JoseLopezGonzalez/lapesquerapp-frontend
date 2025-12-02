@@ -36,7 +36,6 @@ export function getCustomersOptions(token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getCustomers finalizado');
         });
 }
 
@@ -67,7 +66,6 @@ export async function getCustomer(id, token) {
         })
         .finally(() => {
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
-            console.log('getCustomer finalizado');
         });
 }
 

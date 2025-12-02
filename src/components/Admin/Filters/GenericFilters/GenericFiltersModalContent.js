@@ -32,7 +32,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                             value={filter.value}
                             placeholder={filter.placeholder}
                             onChange={(value) => onFilterChange('search', filter.name, value)}
-                            onKeyDown={() => console.log('Buscar')} /* IMPLEMENTAR */
+                            onKeyDown={() => {}} /* IMPLEMENTAR */
                         />
                     ))}
                 </div>

@@ -101,7 +101,7 @@ const OrderLabels = () => {
     }, [pallets, palletIdFilter, lotFilter, productFilter]);
 
     const handleSelectAllGrouped = () => {
-        console.log('Grouped', groupedBoxes)
+        // console.log('Grouped', groupedBoxes)
         setSelectedGroupedLines(groupedBoxes)
     };
 
@@ -130,7 +130,7 @@ const OrderLabels = () => {
     };
 
     const handleSelectAllIndividual = () => {
-        console.log('Individual', filteredBoxes);
+        // console.log('Individual', filteredBoxes);
         setSelectedIndividualLines(filteredBoxes);
     };
 
@@ -159,7 +159,7 @@ const OrderLabels = () => {
             alert('Por favor, selecciona al menos una línea agrupada para imprimir.');
             return;
         }
-        console.log('Imprimiendo etiquetas agrupadas:', selectedGroupedLines);
+        // console.log('Imprimiendo etiquetas agrupadas:', selectedGroupedLines);
         /* Buscar los boxIds de cada grupo seleccionado en pallets */
         /* Extraer boxIds de cada linea y unificarlo */
         const boxIds = selectedGroupedLines.flatMap(group => group.boxIds);
@@ -177,7 +177,7 @@ const OrderLabels = () => {
             };
         }).filter(box => box !== null); // Filtrar los nulls
 
-        console.log('Formatted lines for grouped labels:', formattedLines);
+        // console.log('Formatted lines for grouped labels:', formattedLines);
 
         setLabelPrintDialogBoxes(formattedLines);
         setIsOpenLabelPrintDialog(true);
@@ -188,7 +188,7 @@ const OrderLabels = () => {
             alert('Por favor, selecciona al menos una línea individual para imprimir.');
             return;
         }
-        console.log('Imprimiendo etiquetas individuales:', selectedIndividualLines);
+        // console.log('Imprimiendo etiquetas individuales:', selectedIndividualLines);
         const formattedLines = selectedIndividualLines.map(box => ({
             ...box,
             product: box.article,

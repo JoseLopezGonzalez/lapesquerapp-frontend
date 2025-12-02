@@ -261,7 +261,7 @@ export function useOrder(orderId, onChange) {
             toast.success('Exportación exitosa', { id: toastId });
 
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             toast.error('Error al exportar', { id: toastId });
         }
     };

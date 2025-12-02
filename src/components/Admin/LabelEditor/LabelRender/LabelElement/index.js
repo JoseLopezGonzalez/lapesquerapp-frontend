@@ -56,7 +56,7 @@ export default function LabelElement({ element, values = {} }) {
 
         case "barcode": {
             const type = element.barcodeType || "ean13"
-            console.log("Barcode type:", type)
+            // console.log("Barcode type:", type)
             const format = formatMap[type]
             const rawValue = replacePlaceholders(element.barcodeContent)
             const serialized = serializeBarcode(rawValue, type)

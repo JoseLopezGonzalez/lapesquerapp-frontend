@@ -51,7 +51,7 @@ export const StoreContent = () => {
     const storeId = store?.id;
 
     const handleOnClickUnallocatedPosition = () => {
-        console.log("Unallocated positions clicked");
+        // console.log("Unallocated positions clicked");
         openUnallocatedPositionSlideover();
     }
 
@@ -83,7 +83,7 @@ export const StoreContent = () => {
                 {/* Map */}
                 <Card className=' relative flex-1 flex items-center justify-center w-full h-full overflow-auto'>
                     <MapContainer>
-                        <Map onClickPosition={() => console.log()} isPositionEmpty={() => console.log()} />
+                        <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
                     </MapContainer>
                     <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
                         <Button variant="secondary"

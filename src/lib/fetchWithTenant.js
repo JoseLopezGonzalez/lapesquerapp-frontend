@@ -28,7 +28,7 @@ export async function fetchWithTenant(url, options = {}) {
       ? parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'brisamar'
       : parts[0];
 
-    console.log('🌐 Tenant detectado (cliente):', tenant);
+    // console.log('🌐 Tenant detectado (cliente):', tenant);
   }
 
   // --- Headers personalizados ---
