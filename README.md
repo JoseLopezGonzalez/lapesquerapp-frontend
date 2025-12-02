@@ -28,10 +28,39 @@ src/
 ├── context/            # Contextos de React para pedidos y almacenes
 ├── hooks/              # Hooks personalizados
 ├── services/           # Llamadas a la API Laravel
-└── docs/               # Documentación de componentes y configuraciones
+└── docs/               # Documentación completa del proyecto
 ```
 
-Consulta `notes.md` para un diagrama más detallado de carpetas y componentes.
+---
+
+## 📚 Documentación
+
+### Documentación Principal
+
+La documentación completa del proyecto está disponible en [`docs/`](./docs/README.md).
+
+**Incluye**:
+- ✅ Arquitectura y estructura del proyecto
+- ✅ Componentes UI y Admin
+- ✅ Hooks personalizados y Context API
+- ✅ Servicios API v2
+- ✅ Formularios y validaciones
+- ✅ Flujos funcionales completos
+- ✅ Autenticación y autorización
+- ✅ Estilos y design system
+- ✅ Utilidades y helpers
+- ✅ Exportaciones e integraciones
+- ✅ Módulo de producción (en construcción)
+- ✅ Observaciones críticas y mejoras recomendadas
+
+**Comienza aquí**: [`docs/README.md`](./docs/README.md)
+
+### Documentación Complementaria
+
+- **Configuración de Entidades**: [`docs/configs/entitiesConfig.md`](./docs/configs/entitiesConfig.md)
+- **Ejemplos de Configuración**: [`docs/examples/entity-config-examples.md`](./docs/examples/entity-config-examples.md)
+- **Uso de Settings**: [`docs/USO_SETTINGS.md`](./docs/USO_SETTINGS.md)
+- **Componentes de Filtros**: [`docs/components/Admin/Filters/GenericFilters/Types/`](./docs/components/Admin/Filters/GenericFilters/Types/)
 
 ---
 
@@ -58,5 +87,10 @@ La aplicación se abrirá en `http://localhost:3000`.
 
 ## 📝 Contribución
 
-Se agradecen issues y PRs para mejorar el proyecto. Revisa la documentación en `docs/` antes de añadir nuevos componentes o configuraciones.
+Se agradecen issues y PRs para mejorar el proyecto. 
+
+**Antes de contribuir**:
+- Revisa la [documentación completa](./docs/README.md)
+- Consulta las [observaciones críticas](./docs/15-OBSERVACIONES-CRITICAS.md) para entender mejoras pendientes
+- Revisa la documentación en `docs/` antes de añadir nuevos componentes o configuraciones
 
