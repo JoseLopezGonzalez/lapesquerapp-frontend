@@ -5,7 +5,7 @@ import React from "react";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2 } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         boxCreationData,
         boxCreationDataChange,
         loading,
+        saving,
         temporalPallet,
         error,
         temporalProductsSummary,
@@ -1237,10 +1238,19 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                             </Tabs>
                         </div>
                         <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">
-                            <Button variant="outline" onClick={handleOnClickReset}>
+                            <Button variant="outline" onClick={handleOnClickReset} disabled={saving}>
                                 Deshacer
                             </Button>
-                            <Button onClick={handleOnClickSaveChanges}>Guardar</Button>
+                            <Button onClick={handleOnClickSaveChanges} disabled={saving}>
+                                {saving ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    'Guardar'
+                                )}
+                            </Button>
                         </div>
                     </div>
                 )}

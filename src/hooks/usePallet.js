@@ -70,6 +70,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const [pallet, setPallet] = useState(null);
     const [temporalPallet, setTemporalPallet] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [reload, setReload] = useState(false);
     const { data: session } = useSession();
@@ -653,6 +654,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const onSavingChanges = async () => {
         if (!temporalPallet) return;
 
+        setSaving(true);
+
         // console.log('Saving changes for pallet:', temporalPallet);
 
         if (temporalPallet.id === null) {
@@ -666,6 +669,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 .catch((err) => {
                     console.error('Error al crear el palet:', err);
                     toast.error(err.message || 'Error al crear el palet', getToastTheme());
+                })
+                .finally(() => {
+                    setSaving(false);
                 });
 
 
@@ -680,6 +686,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 .catch((err) => {
                     console.error('Error al actualizar el palet:', err);
                     toast.error(err.message || 'Error al actualizar el palet', getToastTheme());
+                })
+                .finally(() => {
+                    setSaving(false);
                 });
         }
 
@@ -709,6 +718,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         pallet,
         reloadPallet,
         loading,
+        saving,
         temporalPallet,
         temporalProductsSummary,
         temporalTotalProducts,

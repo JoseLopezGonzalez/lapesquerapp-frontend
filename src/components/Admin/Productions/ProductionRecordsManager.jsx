@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { getProductionRecords, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
-import { formatDateLong } from '@/helpers/production/formatters'
+import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,8 @@ import { Plus, Trash2, CheckCircle, Clock, ChevronRight, Package, Scale } from '
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useRouter } from 'next/navigation'
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { formatInteger } from '@/helpers/formats/numbers/formatNumbers'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const { data: session } = useSession()
@@ -18,26 +20,60 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const [records, setRecords] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [paginationMeta, setPaginationMeta] = useState(null)
+    const prevProductionIdRef = useRef(null)
 
+    // Resetear página cuando cambia la producción
     useEffect(() => {
-        if (session?.user?.accessToken && productionId) {
-            loadRecords()
+        if (productionId !== prevProductionIdRef.current) {
+            setCurrentPage(1)
+            prevProductionIdRef.current = productionId
+        }
+    }, [productionId])
+
+    // Cargar records cuando cambian las dependencias
+    useEffect(() => {
+        if (session?.user?.accessToken && productionId && currentPage > 0) {
+            loadRecords(currentPage)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionId])
+    }, [session?.user?.accessToken, productionId, currentPage])
 
-    const loadRecords = async () => {
+    const loadRecords = async (page = 1) => {
         try {
             setLoading(true)
             setError(null)
             const token = session.user.accessToken
-            const response = await getProductionRecords(token, { production_id: productionId })
+            const response = await getProductionRecords(token, { 
+                production_id: productionId,
+                page: page,
+                per_page: 15
+            })
             setRecords(response.data || [])
+            
+            // Guardar información de paginación
+            if (response.meta) {
+                setPaginationMeta({
+                    currentPage: response.meta.current_page,
+                    totalPages: response.meta.last_page,
+                    totalItems: response.meta.total,
+                    perPage: response.meta.per_page,
+                    from: response.meta.from,
+                    to: response.meta.to
+                })
+            }
         } catch (err) {
             console.error('Error loading records:', err)
             setError(err.message || 'Error al cargar los procesos')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && paginationMeta && newPage <= paginationMeta.totalPages) {
+            setCurrentPage(newPage)
         }
     }
 
@@ -53,7 +89,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         try {
             const token = session.user.accessToken
             await deleteProductionRecord(recordId, token)
-            loadRecords()
+            loadRecords(currentPage)
             if (onRefresh) onRefresh()
         } catch (err) {
             console.error('Error deleting record:', err)
@@ -65,7 +101,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         try {
             const token = session.user.accessToken
             await finishProductionRecord(recordId, token)
-            loadRecords()
+            loadRecords(currentPage)
             if (onRefresh) onRefresh()
         } catch (err) {
             console.error('Error finishing record:', err)
@@ -75,17 +111,17 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
 
 
     const getRootRecords = () => {
-        return records.filter(r => !r.parent_record_id)
+        return records.filter(r => !r.parentRecordId)
     }
 
     const getChildRecords = (parentId) => {
-        return records.filter(r => r.parent_record_id === parentId)
+        return records.filter(r => r.parentRecordId === parentId)
     }
 
     const renderRecordRow = (record, level = 0) => {
         const children = getChildRecords(record.id)
-        const isCompleted = record.finished_at !== null
-        const isRoot = !record.parent_record_id
+        const isCompleted = record.isCompleted || record.finishedAt !== null
+        const isRoot = record.isRoot || !record.parentRecordId
 
         return (
             <React.Fragment key={record.id}>
@@ -103,28 +139,34 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                         {record.process?.name || 'Sin tipo'}
                     </TableCell>
                     <TableCell>
-                        {formatDateLong(record.started_at)}
+                        {record.startedAt ? formatDateLong(record.startedAt) : (
+                            <span className="text-muted-foreground">N/A</span>
+                        )}
                     </TableCell>
                     <TableCell>
-                        {record.finished_at ? formatDateLong(record.finished_at) : (
+                        {record.finishedAt ? formatDateLong(record.finishedAt) : (
                             <span className="text-muted-foreground">Pendiente</span>
                         )}
                     </TableCell>
                     <TableCell>
-                        <div className="flex items-center gap-2">
-                            {record.inputs_count !== undefined && (
-                                <div className="flex items-center gap-1 text-sm">
-                                    <Package className="h-3 w-3 text-muted-foreground" />
-                                    <span>{record.inputs_count || 0}</span>
-                                </div>
-                            )}
-                            {record.outputs_count !== undefined && (
-                                <div className="flex items-center gap-1 text-sm">
-                                    <Scale className="h-3 w-3 text-muted-foreground" />
-                                    <span>{record.outputs_count || 0}</span>
-                                </div>
-                            )}
-                        </div>
+                        {record.totalInputWeight !== undefined && record.totalInputWeight !== null ? (
+                            <div className="flex items-center gap-1 text-sm">
+                                <Scale className="h-3 w-3 text-muted-foreground" />
+                                <span>{formatWeight(record.totalInputWeight)}</span>
+                            </div>
+                        ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                        )}
+                    </TableCell>
+                    <TableCell>
+                        {record.totalOutputWeight !== undefined && record.totalOutputWeight !== null ? (
+                            <div className="flex items-center gap-1 text-sm">
+                                <Scale className="h-3 w-3 text-muted-foreground" />
+                                <span>{formatWeight(record.totalOutputWeight)}</span>
+                            </div>
+                        ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                        )}
                     </TableCell>
                     <TableCell>
                                     {isCompleted ? (
@@ -208,7 +250,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                 </Button>
             </div>
 
-            {rootRecords.length === 0 ? (
+            {rootRecords.length === 0 && !loading ? (
                 <Card>
                     <CardContent className="py-8 text-center">
                         <p className="text-muted-foreground">
@@ -217,26 +259,164 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                     </CardContent>
                 </Card>
             ) : (
-                <Card>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>ID</TableHead>
-                                    <TableHead>Tipo de Proceso</TableHead>
-                                    <TableHead>Fecha Inicio</TableHead>
-                                    <TableHead>Fecha Fin</TableHead>
-                                    <TableHead>Entradas/Salidas</TableHead>
-                                    <TableHead>Estado</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {rootRecords.map(record => renderRecordRow(record))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <>
+                    <Card>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Tipo de Proceso</TableHead>
+                                        <TableHead>Fecha Inicio</TableHead>
+                                        <TableHead>Fecha Fin</TableHead>
+                                        <TableHead>Kg Entrada</TableHead>
+                                        <TableHead>Kg Salida</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                        <TableHead className="text-right">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {rootRecords.map(record => renderRecordRow(record))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
+                    {/* Paginación y Resumen */}
+                    {paginationMeta && paginationMeta.totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            {/* Resumen de resultados */}
+                            <div className="text-sm text-muted-foreground">
+                                {loading ? (
+                                    <span>Cargando...</span>
+                                ) : (
+                                    <span>
+                                        Mostrando <span className="font-semibold text-foreground">
+                                            {paginationMeta.from || 0}
+                                        </span> - <span className="font-semibold text-foreground">
+                                            {paginationMeta.to || 0}
+                                        </span> de <span className="font-semibold text-foreground">
+                                            {formatInteger(paginationMeta.totalItems)}
+                                        </span> resultados
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Controles de paginación */}
+                            <Pagination className="w-auto">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                handlePageChange(currentPage - 1)
+                                            }}
+                                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                                        />
+                                    </PaginationItem>
+
+                                    {/* Primera página si está lejos de la actual */}
+                                    {currentPage > 3 && (
+                                        <>
+                                            <PaginationItem>
+                                                <PaginationLink
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        handlePageChange(1)
+                                                    }}
+                                                >
+                                                    1
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        </>
+                                    )}
+
+                                    {/* Páginas visibles */}
+                                    {(() => {
+                                        const maxPagesToShow = 5
+                                        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
+                                        let endPage = Math.min(paginationMeta.totalPages, startPage + maxPagesToShow - 1)
+                                        
+                                        if (endPage - startPage < maxPagesToShow - 1) {
+                                            startPage = Math.max(1, endPage - maxPagesToShow + 1)
+                                        }
+
+                                        const pages = []
+                                        for (let i = startPage; i <= endPage; i++) {
+                                            pages.push(i)
+                                        }
+
+                                        return pages.map((page) => (
+                                            <PaginationItem key={page}>
+                                                <PaginationLink
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        handlePageChange(page)
+                                                    }}
+                                                    isActive={page === currentPage}
+                                                >
+                                                    {page}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ))
+                                    })()}
+
+                                    {/* Última página si está lejos de la actual */}
+                                    {currentPage < paginationMeta.totalPages - 2 && (
+                                        <>
+                                            <PaginationItem>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationLink
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        handlePageChange(paginationMeta.totalPages)
+                                                    }}
+                                                >
+                                                    {paginationMeta.totalPages}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        </>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                handlePageChange(currentPage + 1)
+                                            }}
+                                            className={currentPage === paginationMeta.totalPages ? 'pointer-events-none opacity-50' : ''}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
+
+                    {/* Resumen cuando hay solo una página o pocos resultados */}
+                    {paginationMeta && paginationMeta.totalPages <= 1 && (
+                        <div className="text-sm text-muted-foreground pt-2">
+                            {loading ? (
+                                <span>Cargando...</span>
+                            ) : (
+                                <span>
+                                    <span className="font-semibold text-foreground">
+                                        {formatInteger(paginationMeta.totalItems)}
+                                    </span> resultado{paginationMeta.totalItems !== 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     )

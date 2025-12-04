@@ -46,7 +46,13 @@ export const formatDate = (dateString, options = {}) => {
     }
     
     try {
-        return new Date(dateString).toLocaleDateString('es-ES', defaultOptions)
+        const date = new Date(dateString)
+        // Verificar que la fecha es válida
+        if (isNaN(date.getTime())) {
+            return 'N/A'
+        }
+        // Usar toLocaleString para incluir hora y fecha
+        return date.toLocaleString('es-ES', defaultOptions)
     } catch (error) {
         return 'N/A'
     }
