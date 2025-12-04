@@ -27,6 +27,8 @@ export const barcos = [
   { barco: "PESCAITOGABRIEL Y", armador: "Manuel Jesus Yaque Camacho", cifArmador: "29489841T", codA3erp: "988285", codBrisapp: '164' },
 /* NUEVO SANMARTIN PORRE	 */
   { barco: "NUEVO SANMARTIN PORRE", armador: "JAIRO ARAUJO GARCIA", cifArmador: "29490608P", codA3erp: "988317", codBrisapp: '192' },
+  { barco: "NUEVO SANMARTIN PORR", armador: "JAIRO ARAUJO GARCIA", cifArmador: "29490608P", codA3erp: "988317", codBrisapp: '192' },
+
 ];
 
 export const armadores = [

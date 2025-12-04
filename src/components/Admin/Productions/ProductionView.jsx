@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import Loader from '@/components/Utilities/Loader'
 import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
+import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
 const ProductionView = ({ productionId }) => {
     const { data: session } = useSession()
@@ -22,6 +23,7 @@ const ProductionView = ({ productionId }) => {
     const [totals, setTotals] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [viewMode, setViewMode] = useState('simple')
 
     useEffect(() => {
         if (session?.user?.accessToken && productionId) {
@@ -308,17 +310,26 @@ const ProductionView = ({ productionId }) => {
                 <TabsContent value="diagram" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-primary" />
-                                Diagrama de Producción
+                            <CardTitle className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Package className="h-5 w-5 text-primary" />
+                                    Diagrama de Producción
+                                </div>
+                                <ViewModeSelector
+                                    viewMode={viewMode}
+                                    onViewModeChange={setViewMode}
+                                />
                             </CardTitle>
                             <CardDescription>Visualización del flujo de procesos</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">
-                                El diagrama se generará dinámicamente desde los procesos registrados.
-                            </p>
-                            {/* Aquí se implementará el diagrama visual */}
+                        <CardContent className="p-0">
+                            <ProductionDiagram
+                                processTree={processTree}
+                                productionId={productionId}
+                                loading={loading}
+                                viewMode={viewMode}
+                                onViewModeChange={setViewMode}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>
