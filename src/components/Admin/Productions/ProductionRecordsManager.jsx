@@ -7,12 +7,13 @@ import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, ChevronRight, Package, Scale } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, Package, Check, ArrowRight } from 'lucide-react'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
-import { formatInteger } from '@/helpers/formats/numbers/formatNumbers'
+import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     const { data: session } = useSession()
@@ -150,19 +151,36 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                     </TableCell>
                     <TableCell>
                         {record.totalInputWeight !== undefined && record.totalInputWeight !== null ? (
-                            <div className="flex items-center gap-1 text-sm">
-                                <Scale className="h-3 w-3 text-muted-foreground" />
-                                <span>{formatWeight(record.totalInputWeight)}</span>
-                            </div>
+                            <span className="text-sm">{formatWeight(record.totalInputWeight)}</span>
                         ) : (
                             <span className="text-muted-foreground text-sm">-</span>
                         )}
                     </TableCell>
                     <TableCell>
                         {record.totalOutputWeight !== undefined && record.totalOutputWeight !== null ? (
-                            <div className="flex items-center gap-1 text-sm">
-                                <Scale className="h-3 w-3 text-muted-foreground" />
-                                <span>{formatWeight(record.totalOutputWeight)}</span>
+                            <span className="text-sm">{formatWeight(record.totalOutputWeight)}</span>
+                        ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                        )}
+                    </TableCell>
+                    <TableCell>
+                        {record.waste !== undefined && record.waste !== null && record.waste > 0 ? (
+                            <div className="text-sm">
+                                <div className="font-medium text-destructive">
+                                    -{formatDecimalWeight(record.waste)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    -{formatDecimal(record.wastePercentage || 0)}%
+                                </div>
+                            </div>
+                        ) : record.yield !== undefined && record.yield !== null && record.yield > 0 ? (
+                            <div className="text-sm">
+                                <div className="font-medium text-green-600">
+                                    +{formatDecimalWeight(record.yield)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    +{formatDecimal(record.yieldPercentage || 0)}%
+                                </div>
                             </div>
                         ) : (
                             <span className="text-muted-foreground text-sm">-</span>
@@ -182,30 +200,57 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                     )}
                     </TableCell>
                     <TableCell>
-                        <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                size="icon"
-                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
-                                >
-                                <ChevronRight className="h-4 w-4" />
-                                </Button>
+                        <div className="flex items-center justify-end gap-2">
                                 {!isCompleted && (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleFinishRecord(record.id)}
-                                    >
-                                        Finalizar
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    onClick={() => handleFinishRecord(record.id)}
+                                                >
+                                                    <Check className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Finalizar proceso</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 )}
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteRecord(record.id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
+                                            >
+                                                <ArrowRight className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ver detalles del proceso</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleDeleteRecord(record.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Eliminar proceso</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
                     </TableCell>
                 </TableRow>
@@ -269,8 +314,9 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                         <TableHead>Tipo de Proceso</TableHead>
                                         <TableHead>Fecha Inicio</TableHead>
                                         <TableHead>Fecha Fin</TableHead>
-                                        <TableHead>Kg Entrada</TableHead>
-                                        <TableHead>Kg Salida</TableHead>
+                                        <TableHead>Entrada</TableHead>
+                                        <TableHead>Salida</TableHead>
+                                        <TableHead>Merma / Rendimiento</TableHead>
                                         <TableHead>Estado</TableHead>
                                         <TableHead className="text-right">Acciones</TableHead>
                                     </TableRow>

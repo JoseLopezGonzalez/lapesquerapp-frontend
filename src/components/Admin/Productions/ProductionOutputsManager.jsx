@@ -358,8 +358,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             // Preparar el array de outputs para sincronización
             // Incluir tanto las salidas existentes (con ID) como las nuevas (sin ID)
             const allOutputs = [
-                ...editableOutputs.filter(row => row.product_id && row.boxes && row.weight_kg),
-                ...newRows.filter(row => row.product_id && row.boxes && row.weight_kg)
+                ...editableOutputs.filter(row => row.product_id && row.weight_kg),
+                ...newRows.filter(row => row.product_id && row.weight_kg)
             ].map(row => {
                 const output = {
                     product_id: parseInt(row.product_id),
@@ -474,7 +474,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="boxes">Cantidad de Cajas *</Label>
+                        <Label htmlFor="boxes">Cantidad de Cajas</Label>
                         <Input
                             id="boxes"
                             type="number"
@@ -482,7 +482,6 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             placeholder="0"
                             value={formData.boxes}
                             onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                            required
                         />
                     </div>
                     <div className="space-y-2">
@@ -510,7 +509,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                     >
                         Cancelar
                     </Button>
-                    <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
+                    <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
                         Crear Salida
                     </Button>
                 </div>
@@ -583,7 +582,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit_boxes">Cantidad de Cajas *</Label>
+                            <Label htmlFor="edit_boxes">Cantidad de Cajas</Label>
                             <Input
                                 id="edit_boxes"
                                 type="number"
@@ -591,7 +590,6 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                 placeholder="0"
                                 value={formData.boxes}
                                 onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                                required
                             />
                         </div>
                         <div className="space-y-2">
@@ -620,7 +618,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={!formData.product_id || !formData.boxes || !formData.weight_kg}>
+                        <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
                             Guardar Cambios
                         </Button>
                     </div>
@@ -845,7 +843,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                                                     value={row.boxes}
                                                     onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
                                                     placeholder="0"
-                                                    className={`h-9 ${!row.boxes || parseFloat(row.boxes) <= 0 ? 'border-destructive' : ''}`}
+                                                    className="h-9"
                                                 />
                                             </TableCell>
                                             )}
@@ -909,7 +907,7 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             onClick={handleSaveAll}
                             disabled={saving || getAllRows().some(row => 
                                 (row.product_id || row.boxes || row.weight_kg) && 
-                                (!row.product_id || !row.boxes || parseFloat(row.boxes) <= 0 || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
+                                (!row.product_id || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
                             )}
                         >
                             {saving ? (

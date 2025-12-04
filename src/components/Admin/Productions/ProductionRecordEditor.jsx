@@ -8,6 +8,7 @@ import { formatDecimal, formatDecimalWeight, formatInteger } from '@/helpers/for
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -37,7 +38,8 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const [formData, setFormData] = useState({
         process_id: 'none',
         parent_record_id: 'none',
-        notes: ''
+        notes: '',
+        started_at: ''
     })
 
     // Inicializar formulario cuando se carga el record
@@ -54,10 +56,38 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 ? matchingProcess.value.toString() 
                 : (processId ? processId.toString() : 'none')
             
+            // Convertir started_at de ISO a formato datetime-local
+            let startedAtFormatted = ''
+            if (record.startedAt) {
+                const date = new Date(record.startedAt)
+                // Formato: YYYY-MM-DDTHH:mm
+                const year = date.getFullYear()
+                const month = String(date.getMonth() + 1).padStart(2, '0')
+                const day = String(date.getDate()).padStart(2, '0')
+                const hours = String(date.getHours()).padStart(2, '0')
+                const minutes = String(date.getMinutes()).padStart(2, '0')
+                startedAtFormatted = `${year}-${month}-${day}T${hours}:${minutes}`
+            }
+            
+            // Convertir finished_at de ISO a formato datetime-local
+            let finishedAtFormatted = ''
+            if (record.finishedAt) {
+                const date = new Date(record.finishedAt)
+                // Formato: YYYY-MM-DDTHH:mm
+                const year = date.getFullYear()
+                const month = String(date.getMonth() + 1).padStart(2, '0')
+                const day = String(date.getDate()).padStart(2, '0')
+                const hours = String(date.getHours()).padStart(2, '0')
+                const minutes = String(date.getMinutes()).padStart(2, '0')
+                finishedAtFormatted = `${year}-${month}-${day}T${hours}:${minutes}`
+            }
+            
             setFormData({
                 process_id: finalProcessId,
                 parent_record_id: record.parentRecordId ? record.parentRecordId.toString() : 'none',
-                notes: record.notes || ''
+                notes: record.notes || '',
+                started_at: startedAtFormatted,
+                finished_at: finishedAtFormatted
             })
         }
     }, [record, processes, isEditMode])
@@ -244,6 +274,46 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                                             </SelectContent>
                                         </Select>
                                     </div>
+
+                                    {/* Fechas de Inicio y Finalización */}
+                                    {isEditMode ? (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
+                                                <Input
+                                                    id="started_at"
+                                                    type="datetime-local"
+                                                    value={formData.started_at}
+                                                    onChange={(e) => setFormData({ ...formData, started_at: e.target.value })}
+                                                    disabled={saving}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="finished_at" className="text-sm">Fecha de Finalización</Label>
+                                                <Input
+                                                    id="finished_at"
+                                                    type="datetime-local"
+                                                    value={formData.finished_at || ''}
+                                                    onChange={(e) => setFormData({ ...formData, finished_at: e.target.value })}
+                                                    disabled={saving}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
+                                            <Input
+                                                id="started_at"
+                                                type="datetime-local"
+                                                value={formData.started_at}
+                                                onChange={(e) => setFormData({ ...formData, started_at: e.target.value })}
+                                                disabled={saving}
+                                                className="h-9"
+                                            />
+                                        </div>
+                                    )}
 
                                     <div className="space-y-1.5">
                                         <Label htmlFor="notes" className="text-sm">Notas</Label>

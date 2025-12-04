@@ -123,12 +123,30 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         setError(null)
 
         try {
+            // Convertir started_at de datetime-local a ISO si existe
+            let startedAtISO = null
+            if (formData.started_at && formData.started_at.trim() !== '') {
+                const localDate = new Date(formData.started_at)
+                // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
+                startedAtISO = localDate.toISOString()
+            }
+            
+            // Convertir finished_at de datetime-local a ISO si existe (solo en edición)
+            let finishedAtISO = null
+            if (isEditMode && formData.finished_at && formData.finished_at.trim() !== '') {
+                const localDate = new Date(formData.finished_at)
+                // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
+                finishedAtISO = localDate.toISOString()
+            }
+            
             const recordData = {
                 production_id: parseInt(productionId),
                 process_id: parseInt(formData.process_id),
                 parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' 
                     ? parseInt(formData.parent_record_id) 
                     : null,
+                started_at: startedAtISO,
+                ...(isEditMode && finishedAtISO !== null && { finished_at: finishedAtISO }),
                 notes: formData.notes || null
             }
 
