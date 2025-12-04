@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionRecords, deleteProductionRecord, finishProductionRecord } from '@/services/productionService'
+import { getProductionRecords, deleteProductionRecord } from '@/services/productionService'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, Package, Check, ArrowRight } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, Package, ArrowRight } from 'lucide-react'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -98,19 +98,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         }
     }
 
-    const handleFinishRecord = async (recordId) => {
-        try {
-            const token = session.user.accessToken
-            await finishProductionRecord(recordId, token)
-            loadRecords(currentPage)
-            if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error finishing record:', err)
-            alert(err.message || 'Error al finalizar el proceso')
-        }
-    }
-
-
     const getRootRecords = () => {
         return records.filter(r => !r.parentRecordId)
     }
@@ -200,25 +187,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                     )}
                     </TableCell>
                     <TableCell>
-                        <div className="flex items-center justify-end gap-2">
-                                {!isCompleted && (
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    onClick={() => handleFinishRecord(record.id)}
-                                                >
-                                                    <Check className="h-4 w-4" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>Finalizar proceso</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                )}
+                        <div className="flex items-center justify-center gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -318,7 +287,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                         <TableHead>Salida</TableHead>
                                         <TableHead>Merma / Rendimiento</TableHead>
                                         <TableHead>Estado</TableHead>
-                                        <TableHead className="text-right">Acciones</TableHead>
+                                        <TableHead className="text-center">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
