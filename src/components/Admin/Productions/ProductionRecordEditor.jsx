@@ -39,12 +39,13 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
         process_id: 'none',
         parent_record_id: 'none',
         notes: '',
-        started_at: ''
+        started_at: '',
+        finished_at: ''
     })
 
-    // Inicializar formulario cuando se carga el record
+    // Inicializar formulario cuando se carga el record o cuando se crea uno nuevo
     useEffect(() => {
-        if (record && isEditMode) {
+        if (record && record.id && isEditMode) {
             const processId = record.processId || record.process?.id || null
             const matchingProcess = processes.find(p => {
                 const pValue = p.value?.toString()
@@ -95,11 +96,14 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            await saveRecord(formData)
+            const response = await saveRecord(formData)
             
-            // Si es creación, actualizar la URL
-            if (!isEditMode && record?.id) {
-                window.history.pushState({}, '', `/admin/productions/${productionId}/records/${record.id}`)
+            // Si es creación, navegar a la página de edición
+            if (!recordId) {
+                const createdRecordId = response?.data?.id || response?.id || record?.id
+                if (createdRecordId) {
+                    router.push(`/admin/productions/${productionId}/records/${createdRecordId}`)
+                }
             }
         } catch (err) {
             // El error ya está manejado en el hook

@@ -4,6 +4,7 @@
 import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -51,7 +52,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
     const { title, endpoint, successMessage, errorMessage } = config.createForm;
     // Los campos pueden estar en config.fields o en config.createForm.fields
     const fields = config.createForm?.fields || config.fields || [];
-
+    const router = useRouter();
 
     const {
         register,
@@ -130,23 +131,33 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
             const response = await createEntity(`${API_URL_V2}${endpoint}`, finalData);
 
-            // You might not need to await response.json() here unless you need it for specific error details.
-            // If response.ok, you likely just care that it succeeded.
-            // const result = await response.json(); // Uncomment if needed
-
             if (response.ok) {
+                // Obtener el ID de la entidad creada desde la respuesta
+                let createdId = null;
+                try {
+                    const responseData = await response.json();
+                    createdId = responseData?.data?.id || responseData?.id || null;
+                } catch (parseError) {
+                    console.error("Error parsing response:", parseError);
+                }
+
                 toast.success(successMessage || "Entidad creada con éxito!", getToastTheme());
                 reset(); // Clear form after successful submission
-                if (typeof onSuccess === 'function') onSuccess();
-                // Redirect to the entity table page
-                // Note: Using window.location.href forces a full page reload.
-                // Consider useRouter().push() for a smoother Next.js navigation if appropriate.
-                // window.location.href = `/admin/${endpoint.split("/").pop()}`;
+                
+                // Si es una producción y tenemos el ID, redirigir a la página de producción
+                if (endpoint === "productions" && createdId) {
+                    router.push(`/admin/productions/${createdId}`);
+                } else {
+                    // Para otras entidades, solo cerrar el modal
+                    if (typeof onSuccess === 'function') onSuccess();
+                }
             } else {
                 let userErrorMessage = errorMessage || "Error al crear la entidad";
                 // Attempt to parse response for more specific error messages (e.g., validation errors)
                 try {
-                    const errorData = await response.json();
+                    // Clonar la respuesta para poder leerla
+                    const responseClone = response.clone();
+                    const errorData = await responseClone.json();
                     userErrorMessage = errorData.message || userErrorMessage;
                     // If your API returns field-specific errors, you could use them here
                     // e.g., if (errorData.errors) { /* map to form errors */ }

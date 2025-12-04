@@ -29,7 +29,8 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
 
-    const isEditMode = recordId !== null
+    // isEditMode es true si hay un recordId inicial O si hay un record con ID (después de crear)
+    const isEditMode = recordId !== null || (record?.id !== null && record?.id !== undefined)
 
     // Cargar procesos disponibles
     const loadProcesses = useCallback(async () => {
@@ -131,9 +132,10 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
                 startedAtISO = localDate.toISOString()
             }
             
-            // Convertir finished_at de datetime-local a ISO si existe (solo en edición)
+            // Convertir finished_at de datetime-local a ISO si existe
+            // Permitir finished_at tanto en creación como en edición (después de crear, se puede editar)
             let finishedAtISO = null
-            if (isEditMode && formData.finished_at && formData.finished_at.trim() !== '') {
+            if (formData.finished_at && formData.finished_at.trim() !== '') {
                 const localDate = new Date(formData.finished_at)
                 // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
                 finishedAtISO = localDate.toISOString()
@@ -146,7 +148,7 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
                     ? parseInt(formData.parent_record_id) 
                     : null,
                 started_at: startedAtISO,
-                ...(isEditMode && finishedAtISO !== null && { finished_at: finishedAtISO }),
+                ...(finishedAtISO !== null && { finished_at: finishedAtISO }),
                 notes: formData.notes || null
             }
 
