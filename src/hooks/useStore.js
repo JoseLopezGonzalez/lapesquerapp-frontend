@@ -5,6 +5,7 @@ import { getStore, getStores } from "@/services/storeService";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { getAvailableBoxes, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 
 
@@ -148,7 +149,10 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         let totalProductWeight = 0;
 
         store?.content?.pallets?.forEach((pallet) => {
-            pallet.boxes?.forEach((box) => {
+            // Solo contar cajas disponibles
+            const availableBoxes = getAvailableBoxes(pallet.boxes || []);
+            
+            availableBoxes.forEach((box) => {
                 const product = box.product;
                 const speciesName = product?.species?.name;
                 const productName = product?.name;
@@ -390,7 +394,8 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
             };
 
             const totalNetWeight = updatedPallets.reduce((total, pallet) => {
-                const palletNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+                // Usar valor del backend si está disponible, sino calcular desde cajas disponibles
+                const palletNetWeight = getAvailableNetWeight(pallet);
                 return total + palletNetWeight;
             }, 0);
 
@@ -435,7 +440,8 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
                 }
             };
             const totalNetWeight = updatedPallets.reduce((total, pallet) => {
-                const palletNetWeight = pallet.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+                // Usar valor del backend si está disponible, sino calcular desde cajas disponibles
+                const palletNetWeight = getAvailableNetWeight(pallet);
                 return total + palletNetWeight;
             }, 0);
             newStore.totalNetWeight = totalNetWeight;

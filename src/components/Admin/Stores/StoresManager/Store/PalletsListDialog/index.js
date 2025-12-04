@@ -21,6 +21,7 @@ import { PiMicrosoftExcelLogo } from "react-icons/pi";
 import { Edit, Printer } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 export function PalletsListDialog() {
     const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog } = useStoreContext();
@@ -71,8 +72,9 @@ export function PalletsListDialog() {
                 return idMatch || productsMatch || lotsMatch || observationsMatch;
             })
             .map((pallet) => {
-                const totalWeight = pallet.boxes.reduce((sum, b) => sum + (parseFloat(b.netWeight) || 0), 0);
-                const totalBoxes = pallet.boxes.length;
+                // Usar valores del backend si están disponibles, sino calcular desde cajas disponibles
+                const totalBoxes = getAvailableBoxesCount(pallet);
+                const totalWeight = getAvailableNetWeight(pallet);
                 return {
                     id: pallet.id,
                     totalWeight,
@@ -86,9 +88,9 @@ export function PalletsListDialog() {
     // Total palets en el almacén (no filtrado)
     const totalPallets = pallets.length;
 
-    // Peso neto total de todos los palets
+    // Peso neto total de todos los palets (solo cajas disponibles)
     const totalWeight = pallets.reduce((total, pallet) => {
-        return total + pallet.boxes.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0);
+        return total + getAvailableNetWeight(pallet);
     }, 0);
 
     const generateExcel = () => {

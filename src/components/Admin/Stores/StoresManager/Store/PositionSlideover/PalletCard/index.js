@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useStoreContext } from "@/context/StoreContext"
 import { useSession } from 'next-auth/react'
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
+import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability'
 
 export default function PalletCard({ pallet }) {
     const { data: session } = useSession();
@@ -38,8 +39,12 @@ export default function PalletCard({ pallet }) {
 
     /* const hasMultipleProducts = pallet.products.length > 1 */
 
+    // Solo contar cajas disponibles
+    const availableBoxes = getAvailableBoxes(pallet.boxes || []);
+    const availableBoxCount = getAvailableBoxesCount(pallet);
+    const availableNetWeight = getAvailableNetWeight(pallet);
 
-    const productsSummary = pallet.boxes.reduce((acc, box) => {
+    const productsSummary = availableBoxes.reduce((acc, box) => {
         const product = box.product
         if (!acc[product.id]) {
             acc[product.id] = {
@@ -189,11 +194,11 @@ export default function PalletCard({ pallet }) {
                 <div className="w-full grid grid-cols-2 divide-x divide-border">
                     <div className="flex items-center justify-center py-3 bg-accent/40 ">
                         <span className="text-base font-semibold">
-                            {pallet.boxes.length} {pallet.boxes.length === 1 ? "caja" : "cajas"}
+                            {availableBoxCount} {availableBoxCount === 1 ? "caja" : "cajas"}
                         </span>
                     </div>
                     <div className="flex items-center justify-center py-3 bg-accent/40">
-                        <span className="text-base font-semibold">{formatDecimalWeight(pallet.netWeight)}</span>
+                        <span className="text-base font-semibold">{formatDecimalWeight(availableNetWeight)}</span>
                     </div>
                 </div>
             </CardFooter>

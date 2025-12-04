@@ -15,6 +15,7 @@ import { getToastTheme } from "@/customs/reactHotToast"
 import { assignPalletsToPosition } from "@/services/palletService"
 import { useSession } from "next-auth/react"
 import toast from "react-hot-toast"
+import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability"
 
 const availablePallets = [
     {
@@ -252,7 +253,12 @@ function PalletList({ pallets, selectedPalletIds, togglePalletSelection }) {
                 {pallets.length > 0 ? (
                     pallets.map((pallet) => {
                         const isSelected = selectedPalletIds.includes(pallet.id)
-                        const productsSummary = pallet.boxes.reduce((acc, box) => {
+                        // Solo contar cajas disponibles
+                        const availableBoxes = getAvailableBoxes(pallet.boxes || []);
+                        const availableBoxCount = getAvailableBoxesCount(pallet);
+                        const availableNetWeight = getAvailableNetWeight(pallet);
+                        
+                        const productsSummary = availableBoxes.reduce((acc, box) => {
                             const product = box.product
                             if (!acc[product.id]) {
                                 acc[product.id] = {
@@ -320,10 +326,10 @@ function PalletList({ pallets, selectedPalletIds, togglePalletSelection }) {
                                     </div>
 
                                     <div className="mt-1.5 flex items-center text-xs text-muted-foreground">
-                                        <span>Total: {pallet.netWeight.toFixed(1)} kg</span>
+                                        <span>Total: {availableNetWeight.toFixed(1)} kg</span>
                                         <span className="mx-1.5">|</span>
                                         <span>
-                                            {pallet.numberOfBoxes} {pallet.numberOfBoxes === 1 ? "caja" : "cajas"}
+                                            {availableBoxCount} {availableBoxCount === 1 ? "caja" : "cajas"}
                                         </span>
                                     </div>
                                 </div>

@@ -5,6 +5,7 @@ import { getProductOptions } from "@/services/productService";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
@@ -15,11 +16,10 @@ import toast from "react-hot-toast";
  */
 
 const recalculatePalletStats = (pallet) => {
-    const numberOfBoxes = pallet.boxes.length;
-    const netWeight = pallet.boxes.reduce(
-        (total, box) => total + parseFloat(box.netWeight || 0),
-        0
-    );
+    // Usar valores del backend si están disponibles, sino calcular desde las cajas
+    // Esto es necesario para palets temporales o nuevos que aún no tienen estos campos
+    const numberOfBoxes = getAvailableBoxesCount(pallet);
+    const netWeight = getAvailableNetWeight(pallet);
 
     return {
         ...pallet,

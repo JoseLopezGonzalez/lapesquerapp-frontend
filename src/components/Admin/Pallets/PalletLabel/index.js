@@ -4,8 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
+import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 const PalletLabel = ({ pallet }) => {
+    // Usar valores del backend si están disponibles, sino calcular desde cajas disponibles
+    const availableBoxes = getAvailableBoxes(pallet.boxes || []);
+    const availableBoxCount = getAvailableBoxesCount(pallet);
+    const availableNetWeight = getAvailableNetWeight(pallet);
+    
     return (
         <Card className=" p-0 py-0 overflow-hidden w-full h-full flex flex-col" >
             <CardHeader className="pb-2">
@@ -20,7 +26,7 @@ const PalletLabel = ({ pallet }) => {
                         <div className="flex flex-col max-h-[18mm]  overflow-hidden w-full">
                             <p className="font-semibold text-muted-foreground mb-1">Productos:</p>
                             <ul className="list-disc list-inside space-y-0.5 w-full">
-                                {[...new Set(pallet.boxes.map((b) => b.product.name))].map((name) => (
+                                {[...new Set(availableBoxes.map((b) => b.product.name))].map((name) => (
                                     <li key={name} className="font-medium text-foreground w-full truncate">
                                         {name}
                                     </li>
@@ -30,7 +36,7 @@ const PalletLabel = ({ pallet }) => {
                         <div className="flex flex-col max-h-[26mm]  overflow-hidden w-full">
                             <p className="font-semibold text-muted-foreground mb-1">Lotes:</p>
                             <div className="flex flex-wrap gap-1">
-                                {[...new Set(pallet.boxes.map((b) => b.lot))].map((lot) => (
+                                {[...new Set(availableBoxes.map((b) => b.lot))].map((lot) => (
                                     <Badge key={lot} variant="outline" className="text-xs">
                                         {lot}
                                     </Badge>
@@ -47,11 +53,11 @@ const PalletLabel = ({ pallet }) => {
                     <Separator className="my-1" />
                     <div className="grid grid-cols-11 gap-2 text-center">
                         <div className="col-span-5">
-                            <p className="text-lg font-medium">{pallet.numberOfBoxes} cajas</p>
+                            <p className="text-lg font-medium">{availableBoxCount} cajas</p>
                         </div>
                         <Separator orientation="vertical" className="h-8" />
                         <div className="col-span-5">
-                            <p className="text-lg font-medium">{formatDecimalWeight(pallet.netWeight)}</p>
+                            <p className="text-lg font-medium">{formatDecimalWeight(availableNetWeight)}</p>
                         </div>
                     </div>
                 </div>
