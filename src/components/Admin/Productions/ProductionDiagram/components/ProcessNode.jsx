@@ -27,26 +27,48 @@ export default function ProcessNode({ data }) {
   const hasYield = totals?.yield > 0
   const isDetailed = viewMode === 'detailed'
 
-  return (
-    <div className={`bg-card border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow ${
-      isDetailed ? 'min-w-[320px] max-w-[400px]' : 'min-w-[280px] max-w-[320px]'
-    }`}>
-      {/* Handle de entrada (arriba) - solo si no es raíz */}
-      {!isRoot && (
-        <Handle
-          type="target"
-          position={Position.Top}
-          className="w-3 h-3 bg-primary border-2 border-background"
-          style={{ top: -6 }}
-        />
-      )}
+  // Colores distintivos según el tipo de nodo
+  const nodeColorClasses = isRoot
+    ? 'border-primary/30 bg-primary/5 shadow-primary/10'
+    : isFinal
+    ? 'border-green-500/30 bg-green-500/5 shadow-green-500/10'
+    : 'border-border bg-card'
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3 pb-2 border-b">
-        <h3 className="font-semibold text-sm text-foreground">{processName}</h3>
+  return (
+    <div className={`
+      relative rounded-xl overflow-hidden
+      ${isDetailed ? 'min-w-[320px] max-w-[400px]' : 'min-w-[280px] max-w-[320px]'}
+      border-2 ${nodeColorClasses}
+      shadow-lg hover:shadow-xl transition-all duration-300
+    `}>
+      {/* Efecto de card dentro de card - capa externa */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-background/30 rounded-xl pointer-events-none" />
+      
+      {/* Contenido principal con efecto de profundidad */}
+      <div className="relative bg-card/95 backdrop-blur-sm p-4 border border-border/50 rounded-lg m-1 shadow-inner">
+
+      {/* Header con indicador de tipo de nodo */}
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/50">
+        <div className="flex items-center gap-2">
+          {/* Indicador visual del tipo de nodo */}
+          {isRoot && (
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" title="Nodo raíz" />
+          )}
+          {isFinal && (
+            <div className="w-2 h-2 rounded-full bg-green-500" title="Nodo final" />
+          )}
+          {!isRoot && !isFinal && (
+            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" title="Nodo intermedio" />
+          )}
+          <h3 className={`font-semibold text-sm ${
+            isRoot ? 'text-primary' : isFinal ? 'text-green-600' : 'text-foreground'
+          }`}>
+            {processName}
+          </h3>
+        </div>
         <Badge
           variant={isCompleted ? 'default' : 'outline'}
-          className={isCompleted ? 'bg-green-500 hover:bg-green-600' : ''}
+          className={isCompleted ? 'bg-green-500 hover:bg-green-600 border-green-600' : 'border-border'}
           title={isCompleted ? 'Completado' : 'En progreso'}
         >
           {isCompleted ? (
@@ -158,22 +180,35 @@ export default function ProcessNode({ data }) {
         )}
       </div>
 
-      {/* Botón de navegación */}
-      {onNavigate && (
-        <div className="mt-3 pt-3 border-t flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              onNavigate()
-            }}
-            className="gap-2"
-          >
-            Ver detalles
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {/* Botón de navegación */}
+        {onNavigate && (
+          <div className="mt-3 pt-3 border-t border-border/50 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onNavigate()
+              }}
+              className="gap-2"
+            >
+              Ver detalles
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Handle de entrada (arriba) - solo si no es raíz */}
+      {!isRoot && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className={`w-3 h-3 border-2 border-background ${
+            isFinal ? 'bg-green-500' : 'bg-primary'
+          }`}
+          style={{ top: -6 }}
+        />
       )}
 
       {/* Handle de salida (abajo) - solo si no es final */}
@@ -181,7 +216,9 @@ export default function ProcessNode({ data }) {
         <Handle
           type="source"
           position={Position.Bottom}
-          className="w-3 h-3 bg-primary border-2 border-background"
+          className={`w-3 h-3 border-2 border-background ${
+            isRoot ? 'bg-primary' : 'bg-primary'
+          }`}
           style={{ bottom: -6 }}
         />
       )}

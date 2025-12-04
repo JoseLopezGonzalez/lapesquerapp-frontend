@@ -191,12 +191,12 @@ const ProductionView = ({ productionId }) => {
                                         <p className={`text-sm font-semibold ${production.closedAt ? '' : 'text-muted-foreground'}`}>
                                             {formatDateLong(production.closedAt) || 'No cerrado'}
                                         </p>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                        </div>
+                        </div>
 
                             {/* Notas */}
-                            {production.notes && (
+                        {production.notes && (
                                 <div className="pt-2 border-t">
                                     <div className="flex items-start gap-3">
                                         <div className="rounded-lg bg-muted p-2 flex-shrink-0">
@@ -207,10 +207,10 @@ const ProductionView = ({ productionId }) => {
                                             <p className="text-sm leading-relaxed">{production.notes}</p>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
             </Card>
 
             {/* Totales */}
@@ -229,20 +229,20 @@ const ProductionView = ({ productionId }) => {
                                     <div className="flex items-center gap-1.5">
                                         <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" />
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Entrada</p>
-                                    </div>
-                                    <div>
+                            </div>
+                                <div>
                                         <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalInputWeight)}</p>
                                         <p className="text-xs text-muted-foreground mt-0.5">{totals.totalInputBoxes || 0} cajas</p>
                                     </div>
-                                </div>
+                            </div>
 
                                 {/* Salida */}
                                 <div className="space-y-1.5 px-3 border-r">
                                     <div className="flex items-center gap-1.5">
                                         <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
                                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Salida</p>
-                                    </div>
-                                    <div>
+                            </div>
+                                <div>
                                         <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalOutputWeight)}</p>
                                         <p className="text-xs text-muted-foreground mt-0.5">{totals.totalOutputBoxes || 0} cajas</p>
                                     </div>
@@ -288,7 +288,7 @@ const ProductionView = ({ productionId }) => {
                                         </div>
                                     </div>
                                 )}
-                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             )}
@@ -312,8 +312,8 @@ const ProductionView = ({ productionId }) => {
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-2">
-                                    <Package className="h-5 w-5 text-primary" />
-                                    Diagrama de Producción
+                                <Package className="h-5 w-5 text-primary" />
+                                Diagrama de Producción
                                 </div>
                                 <ViewModeSelector
                                     viewMode={viewMode}

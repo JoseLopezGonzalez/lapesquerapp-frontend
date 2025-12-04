@@ -191,13 +191,13 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
-                                            >
+                                <Button
+                                    variant="outline"
+                                size="icon"
+                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
+                                >
                                                 <ArrowRight className="h-4 w-4" />
-                                            </Button>
+                                </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Ver detalles del proceso</p>
@@ -207,13 +207,13 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                onClick={() => handleDeleteRecord(record.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteRecord(record.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Eliminar proceso</p>

@@ -5038,7 +5038,9 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '1305',
     barco: "LA CABRIOLA",
+    codBrisapp: '12',
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
   },
@@ -5184,6 +5186,15 @@ export const barcosVentaDirecta = [
     }
   },
   {
+    /* LA CABRIOLA */
+    cod: '1305',
+    barco: "LA CABRIOLA",
+    armador: {
+      nombre: 'Pesquera Los Guachi, S.L.',
+      codA3erp: '691012',
+    }
+  },
+  {
     cod: '325',
     barco: "JOSE PRIN",
     armador: {
@@ -5280,22 +5291,9 @@ export const barcosVentaDirecta = [
       codA3erp: '988299',
     }
   },
-  {
-    cod: '14',
-    barco: "RIO NABAO",
-    armador: {
-      nombre: 'Expo-Vent de Pesca, S.L.',
-      codA3erp: '988292',
-    }
-  },
-  {
-    cod: '128',
-    barco: "PAYMOGO",
-    armador: {
-      nombre: 'Expo-Vent de Pesca, S.L.',
-      codA3erp: '988292',
-    }
-  },
+  
+
+  
 ];
 
 export const serviciosLonjaDeIsla = [
