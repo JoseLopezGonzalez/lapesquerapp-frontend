@@ -1,17 +1,20 @@
 /**
  * Utilidades de formateo para módulo de producción
  */
+import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 
 /**
  * Formatea un peso en kg con 2 decimales
  * @param {number|string|null|undefined} weight - Peso a formatear
- * @returns {string} - Peso formateado (ej: "12.50 kg")
+ * @returns {string} - Peso formateado (ej: "12,50 kg")
+ * @deprecated Usar formatDecimalWeight de @/helpers/formats/numbers/formatNumbers en su lugar
  */
 export const formatWeight = (weight) => {
     if (weight === null || weight === undefined || weight === '') return '0 kg'
     const num = parseFloat(weight)
     if (isNaN(num)) return '0 kg'
-    return `${num.toFixed(2)} kg`
+    // Usar formatDecimalWeight para consistencia
+    return formatDecimalWeight(num)
 }
 
 /**
@@ -147,6 +150,6 @@ export const calculateAverageWeight = (totalWeight, boxes) => {
  */
 export const formatAverageWeight = (totalWeight, boxes) => {
     const avg = calculateAverageWeight(totalWeight, boxes)
-    return formatWeight(avg)
+    return formatDecimalWeight(avg)
 }
 

@@ -97,7 +97,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         processName: node.process?.name || 'Sin nombre',
         isRoot: node.isRoot || false,
         isFinal: node.isFinal || false,
-        isCompleted: node.isCompleted || (node.finishedAt !== null),
+        // isCompleted: usar el valor del API si está definido, sino verificar finishedAt
+        isCompleted: node.isCompleted !== undefined 
+          ? node.isCompleted === true 
+          : (node.finishedAt !== null && node.finishedAt !== undefined && node.finishedAt !== ''),
         totals: node.totals || {
           inputWeight: node.totalInputWeight || 0,
           outputWeight: node.totalOutputWeight || 0,
@@ -137,12 +140,13 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
             type: 'smoothstep',
             animated: !isCompleted,
             style: {
-              stroke: isCompleted ? '#a1a1aa' : '#3b82f6', // gray-400 o blue-500
-              strokeWidth: 2
+              stroke: isCompleted ? '#a1a1aa' : '#9ca3af', // gray-400 para completados, gray-400 para pendientes
+              strokeWidth: 2,
+              strokeDasharray: isCompleted ? '0' : '5,5' // dashed para pendientes, sólida para completados
             },
             markerEnd: {
               type: 'arrowclosed',
-              color: isCompleted ? '#a1a1aa' : '#3b82f6'
+              color: isCompleted ? '#a1a1aa' : '#9ca3af'
             }
           });
         }

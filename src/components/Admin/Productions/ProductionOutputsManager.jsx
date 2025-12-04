@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
+import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -813,8 +814,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
                             <TableBody>
                                 {getAllRows().map((row) => {
                                     const avgWeight = row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg
-                                        ? (parseFloat(row.weight_kg) / parseFloat(row.boxes)).toFixed(2)
-                                        : '0.00'
+                                        ? formatDecimal(parseFloat(row.weight_kg) / parseFloat(row.boxes))
+                                        : '0,00'
                                     
                                     const isValid = row.product_id && row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg && parseFloat(row.weight_kg) > 0
                                     

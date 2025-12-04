@@ -4,7 +4,7 @@ import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Clock, TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
+import { TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
 import { formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
@@ -44,40 +44,26 @@ export default function ProcessNode({ data }) {
       {/* Efecto de card dentro de card - capa externa */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/50 to-background/30 rounded-xl pointer-events-none" />
       
+      {/* Header con indicador de estado - en el card externo */}
+      <div className="relative flex items-center gap-2 px-4 pt-3 pb-2 border-b border-border/30">
+        {/* Indicador visual del estado de completado */}
+        <div 
+          className={`w-2 h-2 rounded-full ${
+            isCompleted 
+              ? 'bg-green-500' 
+              : 'bg-yellow-500 animate-pulse'
+          }`} 
+          title={isCompleted ? 'Proceso completado' : 'Proceso en progreso'} 
+        />
+        <h3 className={`font-semibold text-sm ${
+          isRoot ? 'text-primary' : isFinal ? 'text-green-600' : 'text-foreground'
+        }`}>
+          {processName}
+        </h3>
+      </div>
+      
       {/* Contenido principal con efecto de profundidad */}
       <div className="relative bg-card/95 backdrop-blur-sm p-4 border border-border/50 rounded-lg m-1 shadow-inner">
-
-      {/* Header con indicador de tipo de nodo */}
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          {/* Indicador visual del tipo de nodo */}
-          {isRoot && (
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" title="Nodo raíz" />
-          )}
-          {isFinal && (
-            <div className="w-2 h-2 rounded-full bg-green-500" title="Nodo final" />
-          )}
-          {!isRoot && !isFinal && (
-            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" title="Nodo intermedio" />
-          )}
-          <h3 className={`font-semibold text-sm ${
-            isRoot ? 'text-primary' : isFinal ? 'text-green-600' : 'text-foreground'
-          }`}>
-            {processName}
-          </h3>
-        </div>
-        <Badge
-          variant={isCompleted ? 'default' : 'outline'}
-          className={isCompleted ? 'bg-green-500 hover:bg-green-600 border-green-600' : 'border-border'}
-          title={isCompleted ? 'Completado' : 'En progreso'}
-        >
-          {isCompleted ? (
-            <CheckCircle className="h-3 w-3" />
-          ) : (
-            <Clock className="h-3 w-3" />
-          )}
-        </Badge>
-      </div>
 
       {/* Métricas */}
       <div className="space-y-2 text-xs">
@@ -99,25 +85,35 @@ export default function ProcessNode({ data }) {
 
         {/* Merma o Rendimiento */}
         {(hasWaste || hasYield) && (
-          <div className={`pt-2 border-t flex items-center justify-between ${
+          <div className={`pt-2 border-t border-border/50 ${
             hasWaste ? 'text-destructive' : 'text-green-600'
           }`}>
-            <div className="flex items-center gap-1">
-              {hasWaste ? (
-                <TrendingDown className="h-3 w-3" />
-              ) : (
-                <TrendingUp className="h-3 w-3" />
-              )}
-              <span className="text-xs font-medium">
-                {hasWaste ? 'Merma' : 'Rendimiento'}:
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                {hasWaste ? (
+                  <TrendingDown className="h-3 w-3" />
+                ) : (
+                  <TrendingUp className="h-3 w-3" />
+                )}
+                <span className="text-xs font-medium">
+                  {hasWaste ? 'Merma' : 'Rendimiento'}:
+                </span>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-sm">
+                  {hasWaste
+                    ? `-${formatDecimal(totals.wastePercentage || 0)}%`
+                    : `+${formatDecimal(totals.yieldPercentage || 0)}%`
+                  }
+                </div>
+                <div className="text-xs font-medium">
+                  {hasWaste
+                    ? `-${formatDecimalWeight(totals.waste)}`
+                    : `+${formatDecimalWeight(totals.yield)}`
+                  }
+                </div>
+              </div>
             </div>
-            <span className="font-bold text-sm">
-              {hasWaste
-                ? `-${formatDecimalWeight(totals.waste)} (-${formatDecimal(totals.wastePercentage || 0)}%)`
-                : `+${formatDecimalWeight(totals.yield)} (+${formatDecimal(totals.yieldPercentage || 0)}%)`
-              }
-            </span>
           </div>
         )}
 
@@ -144,21 +140,29 @@ export default function ProcessNode({ data }) {
 
         {/* Productos de salida (solo en modo detallado) */}
         {isDetailed && outputProducts.length > 0 && (
-          <div className="pt-2 border-t">
-            <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+          <div className="pt-2 border-t border-border/50">
+            <div className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
               Productos Salida
             </div>
-            <div className="space-y-1.5 max-h-32 overflow-y-auto">
-              {outputProducts.map((product, idx) => (
-                <div key={idx} className="text-xs flex justify-between items-start gap-2 bg-muted/30 rounded px-2 py-1">
-                  <span className="text-foreground font-medium truncate flex-1">{product.name}</span>
-                  <span className="text-muted-foreground text-right whitespace-nowrap">
-                    {formatWeight(product.weight)}
-                    <br />
-                    <span className="text-[10px]">({product.boxes} cajas)</span>
-                  </span>
-                </div>
-              ))}
+            <div className="w-full">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left py-1 px-1 text-[10px] font-medium text-muted-foreground">Producto</th>
+                    <th className="text-right py-1 px-1 text-[10px] font-medium text-muted-foreground">Cajas</th>
+                    <th className="text-right py-1 px-1 text-[10px] font-medium text-muted-foreground">Peso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outputProducts.map((product, idx) => (
+                    <tr key={idx} className="border-b border-border/20 last:border-b-0">
+                      <td className="py-0.5 px-1 text-foreground font-medium truncate max-w-[120px]">{product.name}</td>
+                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{product.boxes}</td>
+                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{formatWeight(product.weight)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -199,27 +203,27 @@ export default function ProcessNode({ data }) {
         )}
       </div>
 
-      {/* Handle de entrada (arriba) - solo si no es raíz */}
+      {/* Handle de entrada (izquierda) - solo si no es raíz */}
       {!isRoot && (
         <Handle
           type="target"
-          position={Position.Top}
+          position={Position.Left}
           className={`w-3 h-3 border-2 border-background ${
             isFinal ? 'bg-green-500' : 'bg-primary'
           }`}
-          style={{ top: -6 }}
+          style={{ left: -6 }}
         />
       )}
 
-      {/* Handle de salida (abajo) - solo si no es final */}
+      {/* Handle de salida (derecha) - solo si no es final */}
       {!isFinal && (
         <Handle
           type="source"
-          position={Position.Bottom}
+          position={Position.Right}
           className={`w-3 h-3 border-2 border-background ${
             isRoot ? 'bg-primary' : 'bg-primary'
           }`}
-          style={{ bottom: -6 }}
+          style={{ right: -6 }}
         />
       )}
     </div>

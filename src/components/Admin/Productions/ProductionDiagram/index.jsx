@@ -17,7 +17,7 @@ import { transformProcessTreeToFlow, getLayoutedElements, getManualLayout } from
 import ProcessNode from './components/ProcessNode'
 import Loader from '@/components/Utilities/Loader'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import { Package, Eye, EyeOff, Calculator, Lock } from 'lucide-react'
+import { Package, Eye, EyeOff, Calculator } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const nodeTypes = {
@@ -123,14 +123,6 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
           className="bg-background"
         >
           <Controls className="bg-background border rounded-md shadow-sm" />
-          <MiniMap
-            className="bg-background border rounded-md shadow-sm"
-            nodeColor={(node) => {
-              if (node.data?.isCompleted) return 'hsl(142, 71%, 45%)' // green-500
-              return 'hsl(var(--muted))'
-            }}
-            maskColor="rgba(0, 0, 0, 0.1)"
-          />
           <Background
             variant="dots"
             gap={16}
@@ -225,7 +217,6 @@ export function ViewModeSelector({ viewMode, onViewModeChange }) {
           >
             <Icon className={cn('h-3.5 w-3.5', isActive && 'text-primary')} />
             <span className="text-xs">{mode.label}</span>
-            {isDisabled && <Lock className="h-3 w-3" />}
           </button>
         )
       })}

@@ -9,6 +9,7 @@ import {
 } from '@/services/productionService'
 import { getPallet } from '@/services/palletService'
 import { formatWeight } from '@/helpers/production/formatters'
+import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -1428,7 +1429,7 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
                                                                                     Peso: {formatWeight(box.netWeight)}
                                                                                 </span>
                                                                                 <Badge variant="secondary" className="text-xs">
-                                                                                    Diferencia: {result.difference.toFixed(3)} kg
+                                                                                    Diferencia: {formatDecimal(result.difference)} kg
                                                                                 </Badge>
                                                                             </div>
                                                                         </div>
