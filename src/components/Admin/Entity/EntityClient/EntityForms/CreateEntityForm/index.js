@@ -28,6 +28,9 @@ import { getToastTheme } from "@/customs/reactHotToast"; // Make sure this impor
 
 
 function prepareValidations(fields) {
+    if (!fields || !Array.isArray(fields)) {
+        return [];
+    }
     return fields.map((field) => {
         const newField = { ...field };
 
@@ -46,7 +49,8 @@ function prepareValidations(fields) {
 
 export default function CreateEntityForm({ config, onSuccess, onCancel }) {
     const { title, endpoint, successMessage, errorMessage } = config.createForm;
-    const fields = config.fields;
+    // Los campos pueden estar en config.fields o en config.createForm.fields
+    const fields = config.createForm?.fields || config.fields || [];
 
 
     const {
@@ -61,6 +65,9 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
     // Cargar dinámicamente los options de los campos con endpoint
     const loadAutocompleteOptions = useCallback(async () => {
+        if (!fields || !Array.isArray(fields)) {
+            return;
+        }
         const result = {};
         await Promise.all(
             fields.map(async (field) => {
@@ -94,7 +101,34 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 }
             });
 
-            const response = await createEntity(`${API_URL_V2}${endpoint}`, processedData);
+            // Convertir camelCase a snake_case para campos específicos si es necesario
+            // Laravel normalmente hace esto automáticamente, pero por si acaso
+            const snakeCaseMap = {
+                'speciesId': 'species_id',
+                'captureZoneId': 'capture_zone_id',
+            };
+            
+            const finalData = {};
+            
+            // Primero, procesar todos los campos que NO están en el mapeo
+            Object.keys(processedData).forEach(key => {
+                if (!snakeCaseMap[key]) {
+                    finalData[key] = processedData[key];
+                }
+            });
+            
+            // Luego, procesar los campos que SÍ están en el mapeo
+            Object.keys(snakeCaseMap).forEach(camelKey => {
+                const snakeKey = snakeCaseMap[camelKey];
+                const value = processedData[camelKey];
+                
+                // Incluir el campo solo si tiene un valor válido
+                if (value !== null && value !== undefined && value !== '') {
+                    finalData[snakeKey] = value;
+                }
+            });
+
+            const response = await createEntity(`${API_URL_V2}${endpoint}`, finalData);
 
             // You might not need to await response.json() here unless you need it for specific error details.
             // If response.ok, you likely just care that it succeeded.
@@ -191,11 +225,14 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                         name={field.name}
                         control={control}
                         rules={field.validation}
+                        defaultValue={field.defaultValue || ""}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Combobox
                                 options={loadedOptions[field.name] || []}
-                                value={value}
-                                onChange={onChange}
+                                value={value || ""}
+                                onChange={(newValue) => {
+                                    onChange(newValue || "");
+                                }}
                                 onBlur={onBlur}
                                 placeholder={field.placeholder}
                             />

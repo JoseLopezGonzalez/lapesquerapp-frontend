@@ -3471,7 +3471,7 @@ export const configs = {
     },
     createForm: {
       title: "Nueva Producción",
-      endpoint: "v2/productions",
+      endpoint: "productions",
       method: "POST",
       successMessage: "Producción creada con éxito",
       errorMessage: "Error al crear la producción",
@@ -3511,6 +3511,23 @@ export const configs = {
           }
         },
         {
+          name: "captureZoneId",
+          path: "captureZone.id",
+          label: "Zona de captura",
+          type: "Autocomplete",
+          placeholder: "Selecciona la zona de captura",
+          endpoint: "capture-zones/options",
+          validation: {
+            required: "La zona de captura es obligatoria",
+          },
+          cols: {
+            sm: 6,
+            md: 4,
+            lg: 3,
+            xl: 3,
+          }
+        },
+        {
           name: "notes",
           label: "Notas",
           type: "textarea",
@@ -3527,7 +3544,7 @@ export const configs = {
     },
     editForm: {
       title: "Editar Producción",
-      endpoint: "v2/productions",
+      endpoint: "productions",
       method: "PUT",
       successMessage: "Producción actualizada con éxito",
       errorMessage: "Error al actualizar la producción",

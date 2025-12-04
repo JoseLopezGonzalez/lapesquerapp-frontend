@@ -119,21 +119,29 @@ export default function ProcessNode({ data }) {
 
         {/* Productos de entrada (solo en modo detallado) */}
         {isDetailed && inputProducts.length > 0 && (
-          <div className="pt-2 border-t">
-            <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+          <div className="pt-2 border-t border-border/50">
+            <div className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
               Productos Entrada
             </div>
-            <div className="space-y-1.5 max-h-32 overflow-y-auto">
-              {inputProducts.map((product, idx) => (
-                <div key={idx} className="text-xs flex justify-between items-start gap-2 bg-muted/30 rounded px-2 py-1">
-                  <span className="text-foreground font-medium truncate flex-1">{product.name}</span>
-                  <span className="text-muted-foreground text-right whitespace-nowrap">
-                    {formatWeight(product.weight)}
-                    <br />
-                    <span className="text-[10px]">({product.boxes} cajas)</span>
-                  </span>
-                </div>
-              ))}
+            <div className="w-full">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left py-1 px-1 text-[10px] font-medium text-muted-foreground">Producto</th>
+                    <th className="text-right py-1 px-1 text-[10px] font-medium text-muted-foreground">Cajas</th>
+                    <th className="text-right py-1 px-1 text-[10px] font-medium text-muted-foreground">Peso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inputProducts.map((product, idx) => (
+                    <tr key={idx} className="border-b border-border/20 last:border-b-0">
+                      <td className="py-0.5 px-1 text-foreground font-medium truncate max-w-[120px]">{product.name}</td>
+                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{product.boxes}</td>
+                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{formatWeight(product.weight)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
