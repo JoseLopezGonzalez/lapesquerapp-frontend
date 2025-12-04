@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Loader from '@/components/Utilities/Loader'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, ShoppingCart, Warehouse } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
@@ -42,10 +42,18 @@ const ProductionView = ({ productionId }) => {
             // Cargar datos en paralelo
             const [productionData, treeData, totalsData] = await Promise.all([
                 getProduction(productionId, token),
-                getProductionProcessTree(productionId, token).catch(() => null),
+                getProductionProcessTree(productionId, token).catch((err) => {
+                    console.error('Error al cargar processTree:', err)
+                    // Si es un error 500, probablemente es un problema del backend con los nodos de venta/stock
+                    if (err.message && err.message.includes('500')) {
+                        console.error('Error 500 del backend - posible problema con formato de fechas en nodos de venta/stock')
+                    }
+                    return null
+                }),
                 getProductionTotals(productionId, token).catch(() => null)
             ])
 
+            console.log('ProductionView - processTree cargado:', treeData)
             setProduction(productionData)
             setProcessTree(treeData)
             setTotals(totalsData)
@@ -291,6 +299,83 @@ const ProductionView = ({ productionId }) => {
                         </div>
                     </CardContent>
                 </Card>
+            )}
+
+            {/* Totales de Venta y Stock */}
+            {totals && ((totals.totalSalesWeight > 0 || totals.totalSalesBoxes > 0) || (totals.totalStockWeight > 0 || totals.totalStockBoxes > 0)) && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Totales de Venta */}
+                    {(totals.totalSalesWeight > 0 || totals.totalSalesBoxes > 0) && (
+                        <Card className="h-auto border-green-500/30">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <ShoppingCart className="h-4 w-4 text-green-600" />
+                                    Totales de Venta
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-muted-foreground">Peso total:</span>
+                                        <span className="text-base font-bold text-green-600">
+                                            {formatWeight(totals.totalSalesWeight || 0)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-muted-foreground">Cajas:</span>
+                                        <span className="text-base font-semibold">
+                                            {totals.totalSalesBoxes || 0}
+                                        </span>
+                                    </div>
+                                    {totals.totalSalesPallets > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-muted-foreground">Palets:</span>
+                                            <span className="text-base font-semibold">
+                                                {totals.totalSalesPallets || 0}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Totales de Stock */}
+                    {(totals.totalStockWeight > 0 || totals.totalStockBoxes > 0) && (
+                        <Card className="h-auto border-blue-500/30">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Warehouse className="h-4 w-4 text-blue-600" />
+                                    Totales de Stock
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-muted-foreground">Peso total:</span>
+                                        <span className="text-base font-bold text-blue-600">
+                                            {formatWeight(totals.totalStockWeight || 0)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-muted-foreground">Cajas:</span>
+                                        <span className="text-base font-semibold">
+                                            {totals.totalStockBoxes || 0}
+                                        </span>
+                                    </div>
+                                    {totals.totalStockPallets > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-muted-foreground">Palets:</span>
+                                            <span className="text-base font-semibold">
+                                                {totals.totalStockPallets || 0}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             )}
             </div>
 

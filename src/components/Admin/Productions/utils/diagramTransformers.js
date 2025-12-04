@@ -57,11 +57,48 @@ function extractOutputProducts(outputs) {
       } else {
         productsMap[productName].boxes += (output.boxes || 0);
       }
-      productsMap[productName].weight += parseFloat(output.weight || 0);
+      // Usar weightKg en lugar de weight
+      const weight = parseFloat(output.weightKg || output.weight || 0);
+      productsMap[productName].weight += weight;
     }
   });
   
   return Object.values(productsMap);
+}
+
+/**
+ * Identifica el tipo de nodo (PROCESS, SALES, STOCK)
+ */
+function getNodeType(node) {
+  if (node.type === 'sales') {
+    return 'SALES';
+  }
+  if (node.type === 'stock') {
+    return 'STOCK';
+  }
+  // Si no tiene type o es null/undefined, es un nodo de proceso
+  return 'PROCESS';
+}
+
+/**
+ * Verifica si un nodo es de proceso
+ */
+function isProcessNode(node) {
+  return getNodeType(node) === 'PROCESS';
+}
+
+/**
+ * Verifica si un nodo es de venta
+ */
+function isSalesNode(node) {
+  return getNodeType(node) === 'SALES';
+}
+
+/**
+ * Verifica si un nodo es de stock
+ */
+function isStockNode(node) {
+  return getNodeType(node) === 'STOCK';
 }
 
 /**
@@ -71,7 +108,18 @@ function extractOutputProducts(outputs) {
  * @param {string} viewMode - Modo de visualización ('simple', 'detailed', 'accounting')
  */
 export function transformProcessTreeToFlow(processTree, includeDetails = false, viewMode = 'simple') {
-  if (!processTree || !processTree.processNodes || processTree.processNodes.length === 0) {
+  if (!processTree) {
+    console.warn('transformProcessTreeToFlow: processTree es null o undefined')
+    return { nodes: [], edges: [] };
+  }
+
+  if (!processTree.processNodes) {
+    console.warn('transformProcessTreeToFlow: processTree.processNodes es null o undefined', processTree)
+    return { nodes: [], edges: [] };
+  }
+
+  if (!Array.isArray(processTree.processNodes) || processTree.processNodes.length === 0) {
+    console.warn('transformProcessTreeToFlow: processTree.processNodes está vacío o no es un array', processTree.processNodes)
     return { nodes: [], edges: [] };
   }
 
@@ -81,68 +129,162 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
 
   // Crear nodos y edges recursivamente
   function createNodesAndEdges(node, parentId = null) {
-    const nodeId = node.id.toString();
+    if (!node) {
+      console.warn('createNodesAndEdges: node es null o undefined');
+      return;
+    }
+
+    if (node.id === undefined || node.id === null) {
+      console.warn('createNodesAndEdges: node.id es undefined o null', node);
+      return;
+    }
+
+    const nodeType = getNodeType(node);
+    const nodeId = String(node.id);
     
-    // Extraer información de productos si está en modo detallado
-    const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
-    const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
+    let flowNode;
     
-    // Crear nodo
-    const flowNode = {
-      id: nodeId,
-      type: 'processNode',
-      position: { x: 0, y: 0 }, // Se calculará después
-      data: {
-        recordId: node.id,
-        processName: node.process?.name || 'Sin nombre',
-        isRoot: node.isRoot || false,
-        isFinal: node.isFinal || false,
-        // isCompleted: usar el valor del API si está definido, sino verificar finishedAt
-        isCompleted: node.isCompleted !== undefined 
-          ? node.isCompleted === true 
-          : (node.finishedAt !== null && node.finishedAt !== undefined && node.finishedAt !== ''),
-        totals: node.totals || {
-          inputWeight: node.totalInputWeight || 0,
-          outputWeight: node.totalOutputWeight || 0,
-          inputBoxes: node.totalInputBoxes || 0,
-          outputBoxes: node.totalOutputBoxes || 0,
-          waste: node.waste || 0,
-          wastePercentage: node.wastePercentage || 0,
-          yield: node.yield || 0,
-          yieldPercentage: node.yieldPercentage || 0
-        },
-        startedAt: node.startedAt,
-        finishedAt: node.finishedAt,
-        notes: node.notes,
-        // Información detallada de productos (solo en modo detallado o accounting)
-        inputProducts: includeDetails ? inputProducts : [],
-        outputProducts: includeDetails ? outputProducts : [],
-        viewMode: viewMode // Pasar el modo completo para futuras implementaciones
-      }
-    };
+    // Crear nodo según su tipo
+    if (isProcessNode(node)) {
+      // Nodo de proceso (existente)
+      const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
+      const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
+      
+      // Verificar si el nodo tiene hijos de venta/stock (para mostrar handle de salida en nodos finales)
+      const hasSalesOrStockChildren = node.children && Array.isArray(node.children) && node.children.some(child => {
+        const childType = getNodeType(child);
+        const isSalesOrStock = childType === 'SALES' || childType === 'STOCK';
+        if (isSalesOrStock && node.isFinal) {
+          console.log(`🔗 Nodo final ${nodeId} tiene hijo de venta/stock: ${childType}`);
+        }
+        return isSalesOrStock;
+      });
+      
+      flowNode = {
+        id: nodeId,
+        type: 'processNode',
+        position: { x: 0, y: 0 }, // Se calculará después
+        data: {
+          recordId: node.id,
+          processName: node.process?.name || 'Sin nombre',
+          isRoot: node.isRoot || false,
+          isFinal: node.isFinal || false,
+          hasSalesOrStockChildren: hasSalesOrStockChildren || false, // Para mostrar handle de salida
+          // isCompleted: usar el valor del API si está definido, sino verificar finishedAt
+          isCompleted: node.isCompleted !== undefined 
+            ? node.isCompleted === true 
+            : (node.finishedAt !== null && node.finishedAt !== undefined && node.finishedAt !== ''),
+          totals: node.totals ? {
+            // Si viene node.totals, parsear valores que pueden ser strings
+            inputWeight: parseFloat(node.totals.inputWeight || node.totalInputWeight || 0),
+            outputWeight: parseFloat(node.totals.outputWeight || node.totalOutputWeight || 0),
+            inputBoxes: parseInt(node.totals.inputBoxes || node.totalInputBoxes || 0, 10),
+            outputBoxes: parseInt(node.totals.outputBoxes || node.totalOutputBoxes || 0, 10),
+            waste: parseFloat(node.totals.waste || node.waste || 0),
+            wastePercentage: parseFloat(node.totals.wastePercentage || node.wastePercentage || 0),
+            yield: parseFloat(node.totals.yield || node.yield || 0),
+            yieldPercentage: parseFloat(node.totals.yieldPercentage || node.yieldPercentage || 0)
+          } : {
+            // Si no viene node.totals, usar valores directos
+            inputWeight: parseFloat(node.totalInputWeight || 0),
+            outputWeight: parseFloat(node.totalOutputWeight || 0),
+            inputBoxes: parseInt(node.totalInputBoxes || 0, 10),
+            outputBoxes: parseInt(node.totalOutputBoxes || 0, 10),
+            waste: parseFloat(node.waste || 0),
+            wastePercentage: parseFloat(node.wastePercentage || 0),
+            yield: parseFloat(node.yield || 0),
+            yieldPercentage: parseFloat(node.yieldPercentage || 0)
+          },
+          startedAt: node.startedAt,
+          finishedAt: node.finishedAt,
+          notes: node.notes,
+          // Información detallada de productos (solo en modo detallado o accounting)
+          inputProducts: includeDetails ? inputProducts : [],
+          outputProducts: includeDetails ? outputProducts : [],
+          viewMode: viewMode
+        }
+      };
+    } else if (isSalesNode(node)) {
+      // Nodo de venta (v2 - array de orders)
+      // Determinar el parentRecordId: usar el que viene en el nodo, o el parentId recibido
+      const salesParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      
+      flowNode = {
+        id: nodeId,
+        type: 'salesNode',
+        position: { x: 0, y: 0 }, // Se calculará después
+        data: {
+          product: node.product || {},
+          orders: node.orders || [], // v2: Array de pedidos
+          totalBoxes: node.totalBoxes || 0,
+          totalNetWeight: node.totalNetWeight || 0,
+          summary: node.summary || {},
+          parentRecordId: salesParentRecordId, // Guardar para conexión
+          viewMode: viewMode
+        }
+      };
+      
+      console.log(`📦 Nodo de venta creado: ${nodeId}, parentRecordId guardado: ${salesParentRecordId}, parentId recibido: ${parentId}, node.parentRecordId: ${node.parentRecordId}`);
+    } else if (isStockNode(node)) {
+      // Nodo de stock (v2 - array de stores)
+      const stockParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      
+      flowNode = {
+        id: nodeId,
+        type: 'stockNode',
+        position: { x: 0, y: 0 }, // Se calculará después
+        data: {
+          product: node.product || {},
+          stores: node.stores || [], // v2: Array de almacenes
+          totalBoxes: node.totalBoxes || 0,
+          totalNetWeight: node.totalNetWeight || 0,
+          summary: node.summary || {},
+          parentRecordId: stockParentRecordId, // Guardar para conexión
+          viewMode: viewMode
+        }
+      };
+      
+      console.log(`📦 Nodo de stock creado: ${nodeId}, parentRecordId guardado: ${stockParentRecordId}, parentId recibido: ${parentId}, node.parentRecordId: ${node.parentRecordId}`);
+    } else {
+      // Tipo de nodo desconocido, saltarlo
+      console.warn(`Tipo de nodo desconocido:`, node);
+      return;
+    }
     
     nodes.push(flowNode);
     nodeMap.set(nodeId, { node, flowNode });
     
-    // Crear edge si tiene padre y el padre existe
-    if (parentId) {
-      // Verificar que el nodo padre existe
-      const parentExists = nodes.some(n => n.id === parentId);
+    // Para nodos de venta/stock, determinar el parentId correcto
+    // Si viene como child en la recursión, usar parentId. Si no, usar parentRecordId
+    let effectiveParentId = parentId;
+    
+    // Si no hay parentId (no viene de recursión) pero hay parentRecordId, usarlo
+    if (!effectiveParentId && node.parentRecordId) {
+      effectiveParentId = String(node.parentRecordId);
+    }
+    
+    // Para nodos de venta/stock que están en children, crear el edge después de procesar todos los nodos
+    // Para nodos de proceso, crear el edge inmediatamente si el padre existe
+    if (effectiveParentId && isProcessNode(node)) {
+      // Para nodos de proceso, crear edge inmediatamente si el padre existe
+      const parentExists = nodes.some(n => n.id === effectiveParentId);
       if (parentExists) {
-        const edgeId = `e${parentId}-${nodeId}`;
-        // Verificar que no exista ya el edge
+        const edgeId = `e${effectiveParentId}-${nodeId}`;
         if (!edges.find(e => e.id === edgeId)) {
-          const isCompleted = flowNode.data.isCompleted;
+          const isCompleted = node.isCompleted !== undefined 
+            ? node.isCompleted === true 
+            : (node.finishedAt !== null && node.finishedAt !== undefined && node.finishedAt !== '');
+          
           edges.push({
             id: edgeId,
-            source: parentId,
+            source: effectiveParentId,
             target: nodeId,
             type: 'smoothstep',
-            animated: !isCompleted,
+            animated: false,
             style: {
-              stroke: isCompleted ? '#a1a1aa' : '#9ca3af', // gray-400 para completados, gray-400 para pendientes
+              stroke: isCompleted ? '#a1a1aa' : '#9ca3af',
               strokeWidth: 2,
-              strokeDasharray: isCompleted ? '0' : '5,5' // dashed para pendientes, sólida para completados
+              strokeDasharray: isCompleted ? '0' : '5,5'
             },
             markerEnd: {
               type: 'arrowclosed',
@@ -150,27 +292,98 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
             }
           });
         }
-      } else {
-        console.warn(`Nodo padre ${parentId} no encontrado para crear edge hacia ${nodeId}`);
       }
     }
+    // Para nodos de venta/stock, el edge se creará en el segundo paso después de crear todos los nodos
     
-    // Procesar hijos recursivamente y crear sus edges
+    // Procesar hijos recursivamente
     if (node.children && Array.isArray(node.children) && node.children.length > 0) {
       node.children.forEach(child => {
-        createNodesAndEdges(child, nodeId);
+        // Pasar el nodeId del nodo actual como parentId para sus hijos
+        const childParentId = isProcessNode(node) ? nodeId : effectiveParentId;
+        createNodesAndEdges(child, childParentId);
       });
     }
   }
 
   // Crear todos los nodos y edges desde los nodos raíz
-  if (Array.isArray(processTree.processNodes)) {
-    processTree.processNodes.forEach(rootNode => {
-      createNodesAndEdges(rootNode);
-    });
-  }
+  try {
+    if (Array.isArray(processTree.processNodes)) {
+      processTree.processNodes.forEach(rootNode => {
+        try {
+          createNodesAndEdges(rootNode);
+        } catch (error) {
+          console.error('Error al procesar nodo raíz:', rootNode, error);
+        }
+      });
+    }
 
-  return { nodes, edges };
+    // Segundo paso: crear/verificar edges para TODOS los nodos de venta/stock
+    // Esto asegura que los nodos padre ya existan y las conexiones se crean correctamente
+    nodes.forEach(flowNode => {
+      if (flowNode.type === 'salesNode' || flowNode.type === 'stockNode') {
+        // Obtener parentRecordId del data o intentar inferirlo
+        let parentRecordId = flowNode.data.parentRecordId;
+        
+        // Si no hay parentRecordId en data, no podemos crear el edge
+        if (!parentRecordId) {
+          console.warn(`⚠️ Nodo ${flowNode.id} (${flowNode.type}) no tiene parentRecordId`);
+          return;
+        }
+        
+        const parentId = String(parentRecordId);
+        const edgeId = `e${parentId}-${flowNode.id}`;
+        
+        // Verificar si el edge ya existe
+        const edgeExists = edges.find(e => e.id === edgeId);
+        
+        if (!edgeExists) {
+          const parentExists = nodes.some(n => n.id === parentId);
+          
+          if (parentExists) {
+            const isSales = flowNode.type === 'salesNode';
+            const isStock = flowNode.type === 'stockNode';
+            
+            // Determinar color según el tipo de nodo
+            let edgeColor = '#a1a1aa';
+            if (isSales) {
+              edgeColor = '#22c55e'; // Verde para venta
+            } else if (isStock) {
+              edgeColor = '#3b82f6'; // Azul para stock
+            }
+            
+            edges.push({
+              id: edgeId,
+              source: parentId,
+              target: flowNode.id,
+              type: 'smoothstep',
+              animated: false,
+              style: {
+                stroke: edgeColor,
+                strokeWidth: 2.5,
+                strokeDasharray: '8,4'
+              },
+              markerEnd: {
+                type: 'arrowclosed',
+                color: edgeColor
+              }
+            });
+            console.log(`✅ Edge creado en segundo paso: ${edgeId} (${parentId} -> ${flowNode.id})`);
+          } else {
+            console.warn(`⚠️ Nodo padre ${parentId} no encontrado para nodo ${flowNode.id} (${flowNode.type}). Nodos disponibles:`, nodes.map(n => `${n.id} (${n.type})`));
+          }
+        } else {
+          console.log(`ℹ️ Edge ya existe: ${edgeId}`);
+        }
+      }
+    });
+
+    console.log(`transformProcessTreeToFlow: Creados ${nodes.length} nodos y ${edges.length} edges`)
+    return { nodes, edges };
+  } catch (error) {
+    console.error('Error en transformProcessTreeToFlow:', error);
+    return { nodes: [], edges: [] };
+  }
 }
 
 /**
@@ -190,12 +403,24 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
     edgesep: 50        // Separación entre edges paralelos
   });
 
-  // Añadir nodos al grafo (tamaño variable según modo)
+  // Añadir nodos al grafo (tamaño variable según modo y tipo)
   nodes.forEach((node) => {
     const isDetailed = node.data?.viewMode === 'detailed';
+    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
+    
+    // Tamaños base
+    let width = isDetailed ? 400 : 300;
+    let height = isDetailed ? 300 : 200;
+    
+    // Los nodos de venta/stock son compactos
+    if (isSalesOrStock) {
+      width = isDetailed ? 350 : 320;
+      height = isDetailed ? 250 : 220;
+    }
+    
     dagreGraph.setNode(node.id, {
-      width: isDetailed ? 400 : 300,
-      height: isDetailed ? 300 : 200
+      width,
+      height
     });
   });
 
@@ -211,8 +436,17 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
-    const nodeWidth = isDetailed ? 400 : 300;
-    const nodeHeight = isDetailed ? 300 : 200;
+    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
+    
+    let nodeWidth = isDetailed ? 400 : 300;
+    let nodeHeight = isDetailed ? 300 : 200;
+    
+    // Los nodos de venta/stock son compactos
+    if (isSalesOrStock) {
+      nodeWidth = isDetailed ? 350 : 320;
+      nodeHeight = isDetailed ? 250 : 220;
+    }
+    
     return {
       ...node,
       position: {
@@ -249,9 +483,18 @@ export function getManualLayout(nodes, edges) {
     const nodesInLevel = levels[level];
     const indexInLevel = nodesInLevel.findIndex(n => n.id === node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
+    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
     
-    const x = level * (isDetailed ? 450 : 350); // Separación horizontal (más espacio si es detallado)
-    const y = indexInLevel * (isDetailed ? 320 : 220); // Separación vertical (más espacio si es detallado)
+    // Separación horizontal
+    const horizontalSpacing = isDetailed ? 450 : 350;
+    
+    // Separación vertical (un poco más para venta/stock si tienen muchos items)
+    const verticalSpacing = isSalesOrStock
+      ? (isDetailed ? 280 : 250)
+      : (isDetailed ? 320 : 220);
+    
+    const x = level * horizontalSpacing;
+    const y = indexInLevel * verticalSpacing;
     
     return {
       ...node,

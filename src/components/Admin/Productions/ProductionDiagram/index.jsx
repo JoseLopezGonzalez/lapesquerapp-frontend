@@ -15,18 +15,31 @@ import {
 import '@xyflow/react/dist/style.css'
 import { transformProcessTreeToFlow, getLayoutedElements, getManualLayout } from '../utils/diagramTransformers'
 import ProcessNode from './components/ProcessNode'
+import SalesNode from './components/SalesNode'
+import StockNode from './components/StockNode'
 import Loader from '@/components/Utilities/Loader'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import { Package, Eye, EyeOff, Calculator } from 'lucide-react'
+import { Package, Eye, EyeOff, Calculator, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const nodeTypes = {
-  processNode: ProcessNode
+  processNode: ProcessNode,
+  salesNode: SalesNode,
+  stockNode: StockNode
 }
 
 function FlowContent({ processTree, productionId, loading, viewMode, onViewModeChange, viewModes }) {
   const router = useRouter()
   const { fitView } = useReactFlow()
+
+  // Debug: Log del processTree recibido
+  useEffect(() => {
+    if (processTree) {
+      console.log('ProductionDiagram - processTree recibido:', processTree)
+      console.log('ProductionDiagram - processNodes:', processTree.processNodes)
+      console.log('ProductionDiagram - processNodes length:', processTree.processNodes?.length)
+    }
+  }, [processTree])
 
   // Función para navegar a un record (definida antes de usarse en useMemo)
   const navigateToRecord = useCallback((recordId) => {
@@ -38,20 +51,28 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
     if (!processTree || !processTree.processNodes) {
       return { nodes: [], edges: [] }
     }
-    // Por ahora solo 'detailed' incluye información extra, 'accounting' se implementará después
-    const includeDetails = viewMode === 'detailed' || viewMode === 'accounting'
-    const result = transformProcessTreeToFlow(processTree, includeDetails, viewMode)
-    
-    // Agregar función de navegación a cada nodo
-    result.nodes = result.nodes.map(node => ({
-      ...node,
-      data: {
-        ...node.data,
-        onNavigate: () => navigateToRecord(node.data.recordId)
-      }
-    }))
-    
-    return result
+    try {
+      // Por ahora solo 'detailed' incluye información extra, 'accounting' se implementará después
+      const includeDetails = viewMode === 'detailed' || viewMode === 'accounting'
+      const result = transformProcessTreeToFlow(processTree, includeDetails, viewMode)
+      
+      // Agregar función de navegación a cada nodo (solo para nodos de proceso)
+      result.nodes = result.nodes.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          // Solo agregar onNavigate si es un nodo de proceso con recordId
+          onNavigate: node.type === 'processNode' && node.data.recordId
+            ? () => navigateToRecord(node.data.recordId)
+            : undefined
+        }
+      }))
+      
+      return result
+    } catch (error) {
+      console.error('Error al transformar el árbol de procesos:', error)
+      return { nodes: [], edges: [] }
+    }
   }, [processTree, viewMode, navigateToRecord])
 
   // Aplicar layout automático
@@ -93,13 +114,43 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
     )
   }
 
-  if (!processTree || !processTree.processNodes || processTree.processNodes.length === 0) {
+  // Verificar si hay datos y si se crearon nodos después de la transformación
+  const hasProcessTreeData = processTree && processTree.processNodes && processTree.processNodes.length > 0
+  const hasTransformedNodes = nodes.length > 0 || initialNodes.length > 0
+
+  // Si processTree es null, probablemente hubo un error al cargar los datos
+  if (processTree === null) {
+    return (
+      <div className="h-[600px] flex items-center justify-center">
+        <EmptyState
+          icon={<AlertCircle className="h-12 w-12 text-destructive" />}
+          title="Error al cargar el diagrama"
+          description="No se pudo cargar el árbol de procesos. Esto puede deberse a un error en el servidor. Por favor, verifica la consola para más detalles o contacta al administrador."
+        />
+      </div>
+    )
+  }
+
+  if (!hasProcessTreeData) {
     return (
       <div className="h-[600px] flex items-center justify-center">
         <EmptyState
           icon={<Package className="h-12 w-12 text-muted-foreground" />}
           title="No hay procesos registrados"
           description="Crea procesos de producción para visualizar el diagrama"
+        />
+      </div>
+    )
+  }
+
+  // Si hay datos en el árbol pero no se crearon nodos, puede haber un error en la transformación
+  if (hasProcessTreeData && !hasTransformedNodes) {
+    return (
+      <div className="h-[600px] flex items-center justify-center">
+        <EmptyState
+          icon={<Package className="h-12 w-12 text-muted-foreground" />}
+          title="Error al procesar el diagrama"
+          description="Hay procesos registrados pero no se pudieron visualizar. Por favor, recarga la página."
         />
       </div>
     )

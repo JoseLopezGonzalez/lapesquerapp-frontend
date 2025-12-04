@@ -20,12 +20,18 @@ export default function ProcessNode({ data }) {
     inputProducts = [],
     outputProducts = [],
     viewMode = 'simple',
-    onNavigate
+    onNavigate,
+    hasSalesOrStockChildren = false
   } = data
 
   const hasWaste = totals?.waste > 0
   const hasYield = totals?.yield > 0
   const isDetailed = viewMode === 'detailed'
+  
+  // Debug: verificar si el nodo final tiene hijos de venta/stock
+  if (isFinal) {
+    console.log(`Nodo final "${processName}" (${data.recordId}): hasSalesOrStockChildren=${hasSalesOrStockChildren}`);
+  }
 
   // Colores distintivos según el tipo de nodo
   const nodeColorClasses = isRoot
@@ -79,7 +85,10 @@ export default function ProcessNode({ data }) {
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Salida:</span>
           <span className="font-medium text-foreground">
-            {formatWeight(totals?.outputWeight || 0)} ({totals?.outputBoxes || 0} cajas)
+            {formatWeight(totals?.outputWeight || 0)}
+            {(totals?.outputBoxes && totals.outputBoxes > 0) && (
+              <> ({totals.outputBoxes} cajas)</>
+            )}
           </span>
         </div>
 
@@ -223,13 +232,15 @@ export default function ProcessNode({ data }) {
         />
       )}
 
-      {/* Handle de salida (derecha) - solo si no es final */}
-      {!isFinal && (
+      {/* Handle de salida (derecha) - si no es final, o si es final pero tiene hijos de venta/stock */}
+      {(!isFinal || hasSalesOrStockChildren) && (
         <Handle
           type="source"
           position={Position.Right}
           className={`w-3 h-3 border-2 border-background ${
-            isRoot ? 'bg-primary' : 'bg-primary'
+            isFinal && hasSalesOrStockChildren 
+              ? 'bg-green-500' 
+              : (isRoot ? 'bg-primary' : 'bg-primary')
           }`}
           style={{ right: -6 }}
         />
