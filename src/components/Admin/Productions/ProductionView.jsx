@@ -3,14 +3,15 @@
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { getProduction, getProductionProcessTree, getProductionTotals, getProductionReconciliation } from '@/services/productionService'
+import { getProduction, getProductionProcessTree, getProductionTotals } from '@/services/productionService'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
+import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Loader from '@/components/Utilities/Loader'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 
 const ProductionView = ({ productionId }) => {
@@ -19,7 +20,6 @@ const ProductionView = ({ productionId }) => {
     const [production, setProduction] = useState(null)
     const [processTree, setProcessTree] = useState(null)
     const [totals, setTotals] = useState(null)
-    const [reconciliation, setReconciliation] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -38,17 +38,15 @@ const ProductionView = ({ productionId }) => {
             const token = session.user.accessToken
 
             // Cargar datos en paralelo
-            const [productionData, treeData, totalsData, reconciliationData] = await Promise.all([
+            const [productionData, treeData, totalsData] = await Promise.all([
                 getProduction(productionId, token),
                 getProductionProcessTree(productionId, token).catch(() => null),
-                getProductionTotals(productionId, token).catch(() => null),
-                getProductionReconciliation(productionId, token).catch(() => null)
+                getProductionTotals(productionId, token).catch(() => null)
             ])
 
             setProduction(productionData)
             setProcessTree(treeData)
             setTotals(totalsData)
-            setReconciliation(reconciliationData)
         } catch (err) {
             console.error('Error loading production data:', err)
             setError(err.message || 'Error al cargar los datos de la producción')
@@ -136,7 +134,7 @@ const ProductionView = ({ productionId }) => {
             </div>
 
             {/* Cards en fila para pantallas grandes */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
             {/* Información General */}
             <Card>
                     <CardHeader className="pb-3">
@@ -146,38 +144,76 @@ const ProductionView = ({ productionId }) => {
                         </CardTitle>
                 </CardHeader>
                     <CardContent className="pt-0">
-                        <div className="space-y-2 text-sm">
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Especie:</span>
-                                <span className="font-medium">{production.species?.name || 'No especificada'}</span>
-                        </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    Apertura:
-                                </span>
-                                <span className="font-medium">{formatDateLong(production.openedAt)}</span>
-                        </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    Cierre:
-                                </span>
-                                <span className="font-medium">{formatDateLong(production.closedAt) || 'No cerrado'}</span>
-                        </div>
-                        {production.notes && (
-                                <div className="pt-2 border-t">
-                                    <p className="text-xs text-muted-foreground mb-1">Notas:</p>
-                                    <p className="text-sm">{production.notes}</p>
+                        <div className="space-y-4">
+                            {/* Especie */}
+                            <div className="flex items-start gap-3">
+                                <div className="rounded-lg bg-muted p-2 flex-shrink-0">
+                                    <Fish className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-1">Especie</p>
+                                    <p className="text-sm font-semibold">{production.species?.name || 'No especificada'}</p>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                </CardContent>
+
+                            {/* Zona de Captura */}
+                            {production.captureZone && (
+                                <div className="flex items-start gap-3">
+                                    <div className="rounded-lg bg-muted p-2 flex-shrink-0">
+                                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-muted-foreground mb-1">Zona de Captura</p>
+                                        <p className="text-sm font-semibold">{production.captureZone?.name || 'No especificada'}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fechas */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                                <div className="flex items-start gap-3">
+                                    <div className="rounded-lg bg-muted p-2 flex-shrink-0">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-muted-foreground mb-1">Apertura</p>
+                                        <p className="text-sm font-semibold">{formatDateLong(production.openedAt)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="rounded-lg bg-muted p-2 flex-shrink-0">
+                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-muted-foreground mb-1">Cierre</p>
+                                        <p className={`text-sm font-semibold ${production.closedAt ? '' : 'text-muted-foreground'}`}>
+                                            {formatDateLong(production.closedAt) || 'No cerrado'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notas */}
+                            {production.notes && (
+                                <div className="pt-2 border-t">
+                                    <div className="flex items-start gap-3">
+                                        <div className="rounded-lg bg-muted p-2 flex-shrink-0">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-muted-foreground mb-1.5">Notas</p>
+                                            <p className="text-sm leading-relaxed">{production.notes}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
             </Card>
 
             {/* Totales */}
             {totals && (
-                <Card>
+                <Card className="h-auto">
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Calculator className="h-4 w-4 text-primary" />
@@ -185,107 +221,72 @@ const ProductionView = ({ productionId }) => {
                             </CardTitle>
                     </CardHeader>
                         <CardContent className="pt-0">
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                                        <Package className="h-3 w-3" />
-                                    Cajas entrada
-                                </p>
-                                    <p className="text-lg font-bold">{totals.totalInputBoxes || 0}</p>
-                            </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                                        <Scale className="h-3 w-3" />
-                                    Peso entrada
-                                </p>
-                                    <p className="text-lg font-bold">{formatWeight(totals.totalInputWeight)}</p>
-                            </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                                        <Package className="h-3 w-3" />
-                                    Cajas salida
-                                </p>
-                                    <p className="text-lg font-bold">{totals.totalOutputBoxes || 0}</p>
-                            </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                                        <Scale className="h-3 w-3" />
-                                    Peso salida
-                                </p>
-                                    <p className="text-lg font-bold">{formatWeight(totals.totalOutputWeight)}</p>
-                            </div>
-                        </div>
-                        {totals.totalWaste !== undefined && (
-                                <div className="mt-3 pt-3 border-t">
-                                <div className="flex items-center justify-between">
-                                        <span className="text-xs text-muted-foreground">Merma:</span>
-                                    <div className="text-right">
-                                            <p className="text-base font-bold">{formatWeight(totals.totalWaste)}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                            {totals.wastePercentage?.toFixed(2) || 0}%
-                                        </p>
+                            <div className="grid grid-cols-3 gap-0">
+                                {/* Entrada */}
+                                <div className="space-y-1.5 pr-3 border-r">
+                                    <div className="flex items-center gap-1.5">
+                                        <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" />
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Entrada</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalInputWeight)}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">{totals.totalInputBoxes || 0} cajas</p>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
 
-            {/* Conciliación */}
-            {reconciliation && (
-                <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary" />
-                                Conciliación
-                            </CardTitle>
-                    </CardHeader>
-                        <CardContent className="pt-0">
-                            <div className="space-y-3 text-sm">
-                                <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-2">Declarado</p>
-                                    <div className="space-y-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-muted-foreground">Cajas:</span>
-                                            <span className="font-semibold">{reconciliation.declaredBoxes || 0}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-muted-foreground">Peso:</span>
-                                            <span className="font-semibold">{formatWeight(reconciliation.declaredWeight)}</span>
-                                        </div>
+                                {/* Salida */}
+                                <div className="space-y-1.5 px-3 border-r">
+                                    <div className="flex items-center gap-1.5">
+                                        <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Salida</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalOutputWeight)}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">{totals.totalOutputBoxes || 0} cajas</p>
                                     </div>
                                 </div>
-                                <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-2">Stock Real</p>
-                                    <div className="space-y-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-muted-foreground">Cajas:</span>
-                                            <span className="font-semibold">{reconciliation.stockBoxes || 0}</span>
+
+                                {/* Merma o Rendimiento */}
+                                {(production.waste !== undefined && production.waste > 0) || (production.yield !== undefined && production.yield > 0) ? (
+                                    <div className="space-y-1.5 pl-3">
+                                        <div className="flex items-center gap-1.5">
+                                            {production.waste > 0 ? (
+                                                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                                            ) : (
+                                                <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                                            )}
+                                            <p className={`text-xs font-semibold uppercase tracking-wide ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}>
+                                                {production.waste > 0 ? 'Merma' : 'Rendimiento'}
+                                            </p>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-muted-foreground">Peso:</span>
-                                            <span className="font-semibold">{formatWeight(reconciliation.stockWeight)}</span>
+                                        <div>
+                                            <p className={`text-lg font-bold leading-tight ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}>
+                                                {production.waste > 0 
+                                                    ? `-${formatDecimalWeight(production.waste)}`
+                                                    : `+${formatDecimalWeight(production.yield)}`
+                                                }
+                                            </p>
+                                            <p className={`text-xs mt-0.5 ${production.waste > 0 ? 'text-destructive/80' : 'text-green-600/80'}`}>
+                                                {production.waste > 0 
+                                                    ? `-${formatDecimal(production.wastePercentage || 0)}%`
+                                                    : `+${formatDecimal(production.yieldPercentage || 0)}%`
+                                                }
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="pt-2 border-t">
-                                <Badge
-                                    variant={reconciliation.status === 'green' ? 'default' : reconciliation.status === 'yellow' ? 'outline' : 'destructive'}
-                                    className={
-                                        reconciliation.status === 'green' ? 'bg-green-500' :
-                                        reconciliation.status === 'yellow' ? 'bg-yellow-500' :
-                                        'bg-red-500'
-                                    }
-                                >
-                                        {
-                                        reconciliation.status === 'green' ? 'Conciliado' :
-                                        reconciliation.status === 'yellow' ? 'Diferencia leve' :
-                                        'Diferencia importante'
-                                    }
-                                </Badge>
+                                ) : (
+                                    <div className="space-y-1.5 pl-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Rendimiento</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold leading-tight text-muted-foreground">-</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">-</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
                     </CardContent>
                 </Card>
             )}
