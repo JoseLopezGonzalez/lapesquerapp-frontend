@@ -1,5 +1,12 @@
 # Exportaciones e Integraciones
 
+## 📚 Documentación Relacionada
+
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que implementan exportaciones
+- **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Helpers utilizados en exportaciones
+
+---
+
 ## 📋 Introducción
 
 La aplicación implementa múltiples sistemas de exportación e integración con sistemas externos. Las exportaciones incluyen documentos PDF, archivos Excel, y formatos específicos para sistemas ERP como A3ERP y Facilcom.
@@ -640,7 +647,7 @@ try {
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Integración Facilcom No Implementada
 - **Archivo**: Múltiples archivos de ExportModal

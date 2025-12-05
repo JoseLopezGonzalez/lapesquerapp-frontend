@@ -1,5 +1,14 @@
 # Flujos Funcionales Completos
 
+## 📚 Documentación Relacionada
+
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes mencionados en los flujos
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks utilizados en los flujos
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API utilizados
+- **[08-FORMULARIOS.md](./08-FORMULARIOS.md)** - Formularios en los flujos
+
+---
+
 ## 📋 Introducción
 
 Este documento describe los flujos funcionales completos de la aplicación, desde la interacción del usuario hasta la comunicación con la API v2. Para cada flujo se detallan: componentes implicados, hooks, servicios, contexto global, y archivos participantes.
@@ -940,7 +949,7 @@ Flujo para crear una nueva producción. **Nota**: El módulo de producción est�
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Flujo de Crear Pedido sin Validación de Productos
 - **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`

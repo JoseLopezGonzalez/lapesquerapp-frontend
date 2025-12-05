@@ -1,5 +1,12 @@
 # Componentes UI - ShadCN y Componentes Personalizados
 
+## 📚 Documentación Relacionada
+
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes del módulo Admin
+- **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)** - Sistema de diseño y estilos
+
+---
+
 ## 📦 Componentes Base (ShadCN UI)
 
 Los componentes base están ubicados en `/src/components/ui/` y están basados en **ShadCN UI** (que a su vez usa **Radix UI** como primitivos accesibles).
@@ -616,7 +623,7 @@ Componentes primitivos accesibles:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. DatePicker con Ajuste Manual de Zona Horaria
 - **Archivo**: `/src/components/ui/datePicker.jsx`

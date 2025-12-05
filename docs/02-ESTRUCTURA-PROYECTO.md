@@ -1,5 +1,12 @@
 # Estructura del Proyecto - Directorios y Organización
 
+## 📚 Documentación Relacionada
+
+- **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general del proyecto
+- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura Next.js App Router
+
+---
+
 ## 📁 Estructura General
 
 ```
@@ -575,7 +582,7 @@ Cada módulo principal sigue esta estructura:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Duplicación de Funciones de Clases
 - **Archivo**: `/src/helpers/styles/classNames.js` y `/src/lib/utils.js`

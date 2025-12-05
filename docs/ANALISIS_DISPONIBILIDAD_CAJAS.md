@@ -1,6 +1,14 @@
 # Análisis de Disponibilidad de Cajas en Palets
 
-## Resumen Ejecutivo
+## 📚 Documentación Relacionada
+
+- **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)** - Estado del módulo de producción
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hook `usePallet`
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes de producción y almacenes
+
+---
+
+## 📋 Resumen Ejecutivo
 
 Con la implementación de la nueva lógica de disponibilidad de cajas por consumos de materia prima en producciones, se ha identificado que múltiples componentes de la aplicación están mostrando datos erróneos al contar **todas las cajas** en lugar de solo las **cajas disponibles** (`box.isAvailable !== false`).
 

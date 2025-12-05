@@ -1,24 +1,24 @@
 # BrisApp – Panel de Administración
 
-BrisApp es la interfaz web desarrollada en **Next.js** para gestionar la plataforma pesquera BlueApp/PesquerApp. Actúa como cliente para la API Laravel y proporciona todas las herramientas necesarias para la administración diaria.
+BrisApp es la interfaz web desarrollada en **Next.js 15** para gestionar la plataforma pesquera BlueApp/PesquerApp. Actúa como cliente para la API Laravel y proporciona todas las herramientas necesarias para la administración diaria de operaciones pesqueras.
 
 ---
 
-## ✨ Características principales
+## ✨ Características Principales
 
-- **Next.js 15** con App Router y componentes de servidor/cliente.
-- **Autenticación** mediante [NextAuth](https://next-auth.js.org/) conectada a la API.
-- **Panel de administración** con múltiples módulos (almacenes, pedidos, productos, clientes, transportes…).
-- **Gestor de pedidos** y control de producción con pallets y cajas.
-- **Editor de etiquetas** y generación de códigos de barras/QR.
-- **Extracción de datos de lonjas** usando Azure Document AI.
-- **Gráficos y analíticas** de ventas y stock.
-- Componentes basados en [NextUI](https://nextui.org/) y [shadcn/ui](https://ui.shadcn.com/) + Tailwind CSS.
-- Hooks y contextos personalizados (`useOrder`, `useStore`, etc.).
+- **Next.js 15** con App Router y componentes de servidor/cliente
+- **Autenticación** mediante [NextAuth](https://next-auth.js.org/) conectada a la API
+- **Panel de administración** con múltiples módulos (almacenes, pedidos, productos, clientes, transportes…)
+- **Gestor de pedidos** y control de producción con pallets y cajas
+- **Editor de etiquetas** y generación de códigos de barras/QR
+- **Extracción de datos de lonjas** usando Azure Document AI
+- **Gráficos y analíticas** de ventas y stock
+- Componentes basados en [NextUI](https://nextui.org/) y [shadcn/ui](https://ui.shadcn.com/) + Tailwind CSS
+- Hooks y contextos personalizados (`useOrder`, `useStore`, etc.)
 
 ---
 
-## 📂 Estructura básica
+## 📂 Estructura Básica
 
 ```
 src/
@@ -37,7 +37,7 @@ src/
 
 ### Documentación Principal
 
-La documentación completa del proyecto está disponible en [`docs/`](./docs/README.md).
+La documentación completa del proyecto está disponible en [`docs/README.md`](./docs/README.md).
 
 **Incluye**:
 - ✅ Arquitectura y estructura del proyecto
@@ -62,35 +62,71 @@ La documentación completa del proyecto está disponible en [`docs/`](./docs/REA
 - **Uso de Settings**: [`docs/USO_SETTINGS.md`](./docs/USO_SETTINGS.md)
 - **Componentes de Filtros**: [`docs/components/Admin/Filters/GenericFilters/Types/`](./docs/components/Admin/Filters/GenericFilters/Types/)
 
+### Documentación Técnica Adicional
+
+- **Análisis de Disponibilidad de Cajas**: [`docs/ANALISIS_DISPONIBILIDAD_CAJAS.md`](./docs/ANALISIS_DISPONIBILIDAD_CAJAS.md)
+- **Implementación del Diagrama de Producción**: [`docs/PRODUCTION_DIAGRAM_IMPLEMENTATION.md`](./docs/PRODUCTION_DIAGRAM_IMPLEMENTATION.md)
+- **Fix Backend Capture Zone**: [`docs/BACKEND_FIX_CAPTURE_ZONE_ID.md`](./docs/BACKEND_FIX_CAPTURE_ZONE_ID.md)
+
 ---
 
-## 🚀 Puesta en marcha
+## 🚀 Puesta en Marcha
 
-1. Clona el repositorio y entra en la carpeta
+### Requisitos Previos
+
+- Node.js 18+ 
+- npm o yarn
+- Variables de entorno configuradas (ver `.env.example` si existe)
+
+### Instalación
+
+1. Clona el repositorio y entra en la carpeta:
    ```bash
    git clone <repo-url>
    cd brisapp-nextjs
    ```
-2. Instala las dependencias
+
+2. Instala las dependencias:
    ```bash
    npm install
    ```
-3. Copia tu archivo de variables de entorno (`NEXTAUTH_SECRET`, endpoints de API, etc.).
-4. Inicia el entorno de desarrollo
+
+3. Configura las variables de entorno:
+   - Copia tu archivo de variables de entorno
+   - Configura `NEXTAUTH_SECRET`, endpoints de API, etc.
+
+4. Inicia el entorno de desarrollo:
    ```bash
    npm run dev
    ```
 
 La aplicación se abrirá en `http://localhost:3000`.
 
+### Scripts Disponibles
+
+```bash
+npm run dev      # Desarrollo (localhost:3000)
+npm run build    # Build de producción
+npm run start    # Iniciar servidor de producción
+npm run lint     # Linter
+```
+
 ---
 
 ## 📝 Contribución
 
-Se agradecen issues y PRs para mejorar el proyecto. 
+Se agradecen issues y PRs para mejorar el proyecto.
 
 **Antes de contribuir**:
 - Revisa la [documentación completa](./docs/README.md)
 - Consulta las [observaciones críticas](./docs/15-OBSERVACIONES-CRITICAS.md) para entender mejoras pendientes
 - Revisa la documentación en `docs/` antes de añadir nuevos componentes o configuraciones
+
+---
+
+## ⚠️ Notas Importantes
+
+- **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
+- **Producción en construcción**: El módulo de producción está en desarrollo activo
+- **Documentación basada en código real**: Solo se documenta lo que existe
 

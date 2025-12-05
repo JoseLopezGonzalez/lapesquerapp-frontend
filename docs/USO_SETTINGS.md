@@ -2,6 +2,11 @@
 
 Este documento explica cómo acceder, actualizar y reaccionar a los cambios de configuración (settings) globales obtenidos del backend en cualquier parte del proyecto.
 
+## 📚 Documentación Relacionada
+
+- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Documentación completa del SettingsContext
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios de settings
+
 ---
 
 ## 1. Acceso a Settings en Componentes React
@@ -33,8 +38,10 @@ async function hacerAlgo() {
 }
 ```
 
-- El helper cachea los settings para evitar llamadas repetidas.
-- Si necesitas forzar la recarga, pasa `true` como segundo argumento: `getSettingValue('clave', true)`.
+**Notas importantes:**
+
+- El helper cachea los settings para evitar llamadas repetidas
+- Si necesitas forzar la recarga, pasa `true` como segundo argumento: `getSettingValue('clave', true)`
 
 ---
 
@@ -56,8 +63,8 @@ async function guardarSettings(nuevosSettings) {
 
 Esto asegura que:
 
-- Todos los componentes React que usan `useSettings` se actualizan automáticamente.
-- El helper `getSettingValue` invalidará su caché y obtendrá los valores frescos en la próxima llamada.
+- Todos los componentes React que usan `useSettings` se actualizan automáticamente
+- El helper `getSettingValue` invalidará su caché y obtendrá los valores frescos en la próxima llamada
 
 ---
 
@@ -79,15 +86,15 @@ export default function RootLayout({ children }) {
 
 ---
 
-## 5. Advertencias y Buenas Prácticas
+## 5. ⚠️ Advertencias y Buenas Prácticas
 
-- **No modifiques los settings directamente**: Usa siempre el flujo `updateSettings` + `setSettings`.
-- **No asumas que los settings están disponibles inmediatamente**: Comprueba siempre el estado `loading`.
-- **Si usas el helper fuera de React**, recuerda que el caché solo se actualiza tras llamar a `setSettings` en el Context.
+- **No modifiques los settings directamente**: Usa siempre el flujo `updateSettings` + `setSettings`
+- **No asumas que los settings están disponibles inmediatamente**: Comprueba siempre el estado `loading`
+- **Si usas el helper fuera de React**: Recuerda que el caché solo se actualiza tras llamar a `setSettings` en el Context
 
 ---
 
-## 6. Referencias
+## 6. 📁 Referencias de Archivos
 
 - `src/context/SettingsContext.js`
 - `src/helpers/getSettingValue.js`

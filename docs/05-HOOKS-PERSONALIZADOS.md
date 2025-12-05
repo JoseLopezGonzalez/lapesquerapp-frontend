@@ -1,5 +1,13 @@
 # Hooks Personalizados - Lógica de Negocio Reutilizable
 
+## 📚 Documentación Relacionada
+
+- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Contextos que complementan los hooks
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios utilizados por los hooks
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan estos hooks
+
+---
+
 ## 📋 Introducción
 
 Los hooks personalizados están ubicados en `/src/hooks/` y encapsulan lógica de negocio reutilizable. Siguen las convenciones de React Hooks (prefijo `use`) y permiten compartir estado y lógica entre componentes.
@@ -949,7 +957,7 @@ const updateData = async (data) => {
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Hooks Demasiado Grandes
 - **Archivo**: `usePallet.js`, `useOrder.js`, `useStore.js`, `useLabelEditor.js`

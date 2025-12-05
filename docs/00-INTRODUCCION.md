@@ -8,9 +8,9 @@
 
 Esta documentación tiene como objetivo:
 
-1. **Facilitar el entendimiento** del frontend para cualquier programador humano que necesite modificar o extender el código.
-2. **Proporcionar contexto técnico fiable** para IAs que trabajen con este código.
-3. **Documentar el estado real** del código, incluyendo fallos, elementos incompletos, errores conceptuales e inconsistencias presentes.
+1. **Facilitar el entendimiento** del frontend para cualquier programador humano que necesite modificar o extender el código
+2. **Proporcionar contexto técnico fiable** para IAs que trabajen con este código
+3. **Documentar el estado real** del código, incluyendo fallos, elementos incompletos, errores conceptuales e inconsistencias presentes
 
 ---
 
@@ -18,10 +18,11 @@ Esta documentación tiene como objetivo:
 
 **Toda la documentación se basa exclusivamente en la interacción con la API v2**, que es la versión activa del backend.
 
-- **API v2** (`/api/v2/`): Versión activa y en uso. Todos los servicios documentados utilizan esta versión.
-- **API v1** (`/api/v1/`): Versión obsoleta, solo existe como capa de compatibilidad. No se documentará su uso en el frontend.
+- **API v2** (`/api/v2/`): Versión activa y en uso. Todos los servicios documentados utilizan esta versión
+- **API v1** (`/api/v1/`): Versión obsoleta, solo existe como capa de compatibilidad. No se documentará su uso en el frontend
 
 **Archivo de configuración**: `/src/configs/config.js`
+
 ```javascript
 export const API_URL_V2 = `${API_URL}v2/`;  // Versión activa
 export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
@@ -247,16 +248,19 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 ## 📝 Convenciones de Código
 
 ### Componentes
+
 - **Client Components**: La mayoría de componentes usan `"use client"` debido a interactividad
 - **Server Components**: Se usan cuando es posible (páginas estáticas, layouts)
-- Nomenclatura: PascalCase para componentes
+- **Nomenclatura**: PascalCase para componentes
 
 ### Archivos
-- Extensiones: `.js`, `.jsx` (no TypeScript)
-- Estructura: Un componente por archivo generalmente
+
+- **Extensiones**: `.js`, `.jsx` (no TypeScript)
+- **Estructura**: Un componente por archivo generalmente
 
 ### Imports
-- Path aliases configurados en `jsconfig.json`:
+
+- **Path aliases** configurados en `jsconfig.json`:
   - `@/components` → `/src/components`
   - `@/lib` → `/src/lib`
   - `@/hooks` → `/src/hooks`
@@ -264,9 +268,10 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
   - `@/configs` → `/src/configs`
 
 ### Estado Global
+
 - **Context API** para estado compartido (no Zustand)
-- Contextos principales: `OrderContext`, `StoreContext`, `SettingsContext`
-- Hooks personalizados para lógica de negocio
+- **Contextos principales**: `OrderContext`, `StoreContext`, `SettingsContext`
+- **Hooks personalizados** para lógica de negocio
 
 ---
 
@@ -324,14 +329,14 @@ npm run lint     # Linter
 
 ---
 
-## 📚 Próximos Pasos
+## 📚 Documentación Relacionada
 
-Esta documentación se genera por partes. El siguiente archivo será:
-- **01-ARQUITECTURA.md** - Arquitectura detallada de Next.js App Router, layouts, y organización de módulos
+- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura detallada de Next.js App Router, layouts, y organización de módulos
+- **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura detallada de directorios y organización del código
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. React 19 Release Candidate
 - **Archivo**: `package.json`

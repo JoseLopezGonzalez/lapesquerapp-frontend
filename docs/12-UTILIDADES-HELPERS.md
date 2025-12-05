@@ -1,5 +1,12 @@
 # Utilidades y Helpers
 
+## 📚 Documentación Relacionada
+
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios que utilizan `fetchWithTenant`
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan helpers
+
+---
+
 ## 📋 Introducción
 
 Las utilidades y helpers están organizados en `/src/helpers/` y `/src/lib/`. Proporcionan funciones reutilizables para formateo, transformación de datos, manejo de fechas, números, textos, y operaciones específicas del dominio.
@@ -750,7 +757,7 @@ import { cn } from "@/lib/utils";
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Código Comentado en barcodes.js
 - **Archivo**: `/src/lib/barcodes.js`

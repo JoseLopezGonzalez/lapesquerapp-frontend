@@ -1,5 +1,14 @@
 # Producción - En Construcción
 
+## 📚 Documentación Relacionada
+
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes de producción
+- **[PRODUCTION_DIAGRAM_IMPLEMENTATION.md](./PRODUCTION_DIAGRAM_IMPLEMENTATION.md)** - Implementación del diagrama de producción
+- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Análisis de disponibilidad de cajas
+- **[BACKEND_FIX_CAPTURE_ZONE_ID.md](./BACKEND_FIX_CAPTURE_ZONE_ID.md)** - Fix del campo `capture_zone_id`
+
+---
+
 ## 📋 Introducción
 
 El módulo de **Producciones** está actualmente **en construcción** y desarrollo activo. Este módulo gestiona el ciclo completo de producción de productos pesqueros, desde la recepción de materia prima hasta la generación de productos finales, pasando por múltiples procesos intermedios.
@@ -583,7 +592,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. ProductionRecordImagesManager Usa Datos Mock
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordImagesManager.jsx`

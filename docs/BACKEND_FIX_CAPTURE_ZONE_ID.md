@@ -1,6 +1,10 @@
 # Fix: Campo `capture_zone_id` no se incluye en creación de producciones
 
-## Problema
+## 📋 Resumen
+
+Al crear una producción desde el frontend, el campo `capture_zone_id` se envía correctamente en el request, pero Laravel no lo incluye en el SQL INSERT, causando un error de base de datos.
+
+## 🔴 Problema
 
 Al crear una producción desde el frontend, el campo `capture_zone_id` se envía correctamente en el request, pero Laravel no lo incluye en el SQL INSERT, causando el error:
 
@@ -8,9 +12,10 @@ Al crear una producción desde el frontend, el campo `capture_zone_id` se envía
 SQLSTATE[HY000]: General error: 1364 Field 'capture_zone_id' doesn't have a default value
 ```
 
-## Evidencia
+## 📊 Evidencia
 
-**Request enviado desde frontend:**
+### Request enviado desde frontend
+
 ```json
 {
   "lot": "2111250CC01003",
@@ -20,7 +25,8 @@ SQLSTATE[HY000]: General error: 1364 Field 'capture_zone_id' doesn't have a defa
 }
 ```
 
-**SQL INSERT ejecutado (incorrecto):**
+### SQL INSERT ejecutado (incorrecto)
+
 ```sql
 insert into `productions` (`lot`, `species_id`, `notes`, `updated_at`, `created_at`) 
 values (2111250CC01003, 1, Rizar, 2025-12-04 20:38:35, 2025-12-04 20:38:35)
@@ -28,7 +34,7 @@ values (2111250CC01003, 1, Rizar, 2025-12-04 20:38:35, 2025-12-04 20:38:35)
 
 **Nota:** `capture_zone_id` está ausente del INSERT a pesar de estar en el request.
 
-## Solución
+## ✅ Solución
 
 Agregar `capture_zone_id` al array `$fillable` del modelo `Production`:
 
@@ -42,11 +48,11 @@ protected $fillable = [
 ];
 ```
 
-## Endpoint afectado
+## 🔗 Endpoint Afectado
 
 - `POST /api/v2/productions`
 
-## Verificación
+## ✔️ Verificación
 
 Después del fix, el SQL INSERT debería incluir `capture_zone_id`:
 
@@ -54,4 +60,9 @@ Después del fix, el SQL INSERT debería incluir `capture_zone_id`:
 insert into `productions` (`lot`, `species_id`, `capture_zone_id`, `notes`, `updated_at`, `created_at`) 
 values (2111250CC01003, 1, 1, Rizar, 2025-12-04 20:38:35, 2025-12-04 20:38:35)
 ```
+
+## 📚 Documentación Relacionada
+
+- **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)** - Estado del módulo de producción
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Documentación de servicios API v2
 

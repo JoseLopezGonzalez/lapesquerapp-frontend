@@ -1,5 +1,13 @@
 # Context API - Gestión de Estado Global
 
+## 📚 Documentación Relacionada
+
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks que complementan los contextos
+- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura y uso de providers
+- **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía práctica de uso de Settings
+
+---
+
 ## 📋 Introducción
 
 La aplicación utiliza **Context API de React** para gestionar estado global compartido entre componentes. A diferencia de otras aplicaciones que usan Zustand o Redux, esta aplicación se basa exclusivamente en Context API.
@@ -623,7 +631,7 @@ Según búsqueda en el código:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Comentario Incorrecto en StoreContext
 - **Archivo**: `/src/context/StoreContext.js`

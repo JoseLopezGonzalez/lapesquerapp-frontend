@@ -1,5 +1,13 @@
 # Componentes Admin - Módulos y Funcionalidad
 
+## 📚 Documentación Relacionada
+
+- **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes base ShadCN UI
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks utilizados por los componentes
+- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API utilizados
+
+---
+
 ## 📋 Introducción
 
 Los componentes del módulo Admin están ubicados en `/src/components/Admin/` y representan la funcionalidad principal de la aplicación. Están organizados por módulos de negocio (Orders, Stores, Productions, etc.) y componentes compartidos (Layout, Filters, Forms).
@@ -811,7 +819,7 @@ Componentes skeleton para mejor UX:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Archivo Duplicado en Dashboard
 - **Archivo**: `/src/components/Admin/Dashboard/index copy.js`

@@ -1,5 +1,13 @@
 # Servicios API v2 - Comunicación con el Backend
 
+## 📚 Documentación Relacionada
+
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks que utilizan estos servicios
+- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Contextos que utilizan estos servicios
+- **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Función `fetchWithTenant`
+
+---
+
 ## 📋 Introducción
 
 Todos los servicios que interactúan con la API v2 del backend están ubicados en `/src/services/`. Estos servicios utilizan la función `fetchWithTenant` para manejar automáticamente el multi-tenant y la autenticación.
@@ -682,7 +690,7 @@ Según análisis del código:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Uso de API v1 en orderService
 - **Archivo**: `/src/services/orderService.js`

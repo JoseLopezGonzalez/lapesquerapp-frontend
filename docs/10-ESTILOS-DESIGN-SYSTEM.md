@@ -1,5 +1,12 @@
 # Estilos y Design System
 
+## 📚 Documentación Relacionada
+
+- **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes ShadCN UI
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan el sistema de diseño
+
+---
+
 ## 📋 Introducción
 
 La aplicación utiliza **Tailwind CSS 3.x** como framework de estilos principal, **ShadCN UI** como biblioteca de componentes, y **NextUI** para algunos componentes adicionales. El sistema de diseño está basado en variables CSS (design tokens) para facilitar la personalización y el soporte de dark mode.
@@ -670,7 +677,7 @@ const buttonVariants = cva(
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Código CSS Comentado
 - **Archivo**: `/src/app/globals.css`

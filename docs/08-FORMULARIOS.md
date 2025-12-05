@@ -1,5 +1,13 @@
 # Formularios - React Hook Form y Validaciones
 
+## 📚 Documentación Relacionada
+
+- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan formularios
+- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks de configuración de formularios
+- **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)** - Flujos que incluyen formularios
+
+---
+
 ## 📋 Introducción
 
 La aplicación utiliza **React Hook Form 7.54.2** para la gestión de formularios. Aunque en los requisitos se menciona React Hook Form + Zod, **no se encontraron schemas de Zod** en el código. Las validaciones se realizan directamente con las reglas de React Hook Form.
@@ -840,7 +848,7 @@ Renderizado:
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Falta de Zod
 - **Archivo**: Todo el proyecto

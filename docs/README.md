@@ -8,9 +8,20 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
 
 ---
 
+## ⚠️ Notas Importantes
+
+1. **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
+2. **Producción en construcción**: El módulo de producción está en desarrollo activo
+3. **Documentación basada en código real**: Solo se documenta lo que existe
+4. **Observaciones críticas**: Documentadas sin modificar el código
+
+---
+
 ## 📚 Estructura de Documentación
 
 ### Documentos Principales
+
+#### Fundamentos
 
 1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)**
    - Visión general del proyecto
@@ -32,6 +43,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
    - Path aliases y convenciones
    - Flujo de dependencias
 
+#### Componentes y UI
+
 4. **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)**
    - Componentes base ShadCN UI
    - Componentes personalizados
@@ -44,6 +57,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
    - Sistema de entidades genérico
    - Layout y navegación
 
+#### Estado y Lógica
+
 6. **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)**
    - Documentación de todos los hooks
    - Parámetros y retornos
@@ -55,6 +70,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
    - Estado inicial y acciones
    - Patrones de consumo
    - Gestión de estado global
+
+#### Servicios y Datos
 
 8. **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)**
    - Documentación completa de servicios
@@ -70,6 +87,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
    - Validaciones y reglas
    - Ejemplos reales
 
+#### Flujos y Funcionalidades
+
 10. **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)**
     - Flujos funcionales documentados
     - Crear/editar pedidos
@@ -77,6 +96,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
     - Sistema de etiquetas
     - Exportaciones e integraciones
     - Procesos completos paso a paso
+
+#### Estilos y Autenticación
 
 11. **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)**
     - Configuración Tailwind CSS
@@ -91,6 +112,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
     - Roles y permisos
     - Middleware de autenticación
     - Flujos de login/logout
+
+#### Utilidades e Integraciones
 
 13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)**
     - Funciones auxiliares
@@ -107,6 +130,8 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
     - Azure Document AI
     - Envío de documentos por email
 
+#### Estado del Proyecto
+
 15. **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)**
     - Estado actual del módulo
     - Funcionalidades implementadas
@@ -121,6 +146,19 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
     - Lógica incompleta
     - Problemas de rendimiento
     - Inconsistencias arquitectónicas
+
+### Documentación Técnica Adicional
+
+- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Análisis técnico de disponibilidad de cajas en palets
+- **[PRODUCTION_DIAGRAM_IMPLEMENTATION.md](./PRODUCTION_DIAGRAM_IMPLEMENTATION.md)** - Implementación del diagrama de producción con React Flow
+- **[BACKEND_FIX_CAPTURE_ZONE_ID.md](./BACKEND_FIX_CAPTURE_ZONE_ID.md)** - Fix del campo `capture_zone_id` en producciones
+
+### Documentación Complementaria
+
+- **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía práctica rápida de uso de settings globales
+- **[configs/entitiesConfig.md](./configs/entitiesConfig.md)** - Guía detallada de configuración de entidades
+- **[examples/entity-config-examples.md](./examples/entity-config-examples.md)** - Ejemplos prácticos de configuración
+- **[components/Admin/Filters/GenericFilters/Types/](./components/Admin/Filters/GenericFilters/Types/)** - Documentación técnica de componentes de filtros
 
 ---
 
@@ -146,18 +184,9 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
 
 ---
 
-## ⚠️ Notas Importantes
-
-1. **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
-2. **Producción en construcción**: El módulo de producción está en desarrollo activo
-3. **Documentación basada en código real**: Solo se documenta lo que existe
-4. **Observaciones críticas**: Documentadas sin modificar el código
-
----
-
 ## 📊 Estadísticas
 
-- **Total de archivos documentados**: 15 documentos principales
+- **Total de archivos documentados**: 16 documentos principales
 - **Componentes documentados**: 100+ componentes
 - **Hooks documentados**: 13 hooks personalizados
 - **Servicios API v2**: 12+ servicios principales
@@ -169,16 +198,9 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
 ## 🔗 Enlaces Rápidos
 
 - [Introducción](./00-INTRODUCCION.md) - Comienza aquí
+- [Arquitectura](./01-ARQUITECTURA.md) - Estructura del proyecto
 - [Observaciones Críticas](./15-OBSERVACIONES-CRITICAS.md) - Todos los problemas identificados
-
-### Documentación Complementaria (Referencia Rápida)
-
-La siguiente documentación está **integrada** en los documentos principales pero se mantiene como referencia rápida:
-
-- [Configuración de Entidades](./configs/entitiesConfig.md) - Guía detallada de configuración (también en [04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md))
-- [Ejemplos de Configuración](./examples/entity-config-examples.md) - Ejemplos prácticos (también en [04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md))
-- [Uso de Settings](./USO_SETTINGS.md) - Guía práctica rápida (también en [06-CONTEXT-API.md](./06-CONTEXT-API.md))
-- [Componentes de Filtros](./components/Admin/Filters/GenericFilters/Types/) - Documentación técnica de componentes (también en [04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md))
+- [Producción en Construcción](./14-PRODUCCION-EN-CONSTRUCCION.md) - Estado del módulo de producción
 
 ---
 

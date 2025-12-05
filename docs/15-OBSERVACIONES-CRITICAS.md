@@ -1,5 +1,13 @@
 # Observaciones Críticas - Compilación Completa
 
+## 📚 Documentación Relacionada
+
+- **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general del proyecto
+- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura del proyecto
+- Cada documento numerado incluye su propia sección de observaciones críticas
+
+---
+
 ## 📋 Introducción
 
 Este documento compila **todas las observaciones críticas** identificadas en la documentación del frontend. Estas observaciones documentan problemas, inconsistencias, código muerto, y áreas de mejora **sin modificar el código existente**.

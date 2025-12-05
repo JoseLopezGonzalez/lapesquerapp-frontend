@@ -1,5 +1,12 @@
 # Autenticación y Autorización
 
+## 📚 Documentación Relacionada
+
+- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Middleware y protección de rutas
+- **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura de archivos de autenticación
+
+---
+
 ## 📋 Introducción
 
 La aplicación utiliza **NextAuth.js 4.24.11** para la gestión de autenticación y sesiones. El sistema implementa protección de rutas basada en roles mediante middleware de Next.js y componentes de protección adicionales.
@@ -641,7 +648,7 @@ const verifyResponse = await fetchWithTenant(
 
 ---
 
-## Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Rate Limiting en Memoria
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
