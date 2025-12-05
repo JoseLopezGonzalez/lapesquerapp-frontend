@@ -20,7 +20,34 @@ export async function middleware(req) {
     return NextResponse.next();
   }
   
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  // En Next.js 16, req.cookies es un ReadonlyRequestCookies con métodos get() y getAll()
+  // Crear un wrapper compatible con getToken
+  let token;
+  try {
+    // Crear un objeto request que getToken pueda usar
+    const requestForToken = {
+      url: req.url,
+      headers: req.headers,
+      cookies: {
+        get: (name) => {
+          const cookie = req.cookies.get(name);
+          return cookie ? { name: cookie.name, value: cookie.value } : undefined;
+        },
+        getAll: () => {
+          return req.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
+        },
+      },
+    };
+    
+    token = await getToken({ 
+      req: requestForToken,
+      secret: process.env.NEXTAUTH_SECRET 
+    });
+  } catch (error) {
+    console.error("🔐 [Middleware] Error al obtener token:", error);
+    // Continuar sin token para que redirija al login
+    token = null;
+  }
 
   // Si no hay token, redirigir al login
   if (!token) {
