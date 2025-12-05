@@ -1,0 +1,113 @@
+/**
+ * Utilidades de formateo de fechas para el módulo de producción
+ * Convierte entre formato ISO (backend) y datetime-local (inputs HTML)
+ */
+
+/**
+ * Convierte una fecha ISO a formato datetime-local para inputs HTML
+ * @param {string|Date|null|undefined} isoDate - Fecha en formato ISO
+ * @returns {string} - Fecha en formato YYYY-MM-DDTHH:mm o cadena vacía
+ */
+export const isoToDateTimeLocal = (isoDate) => {
+    if (!isoDate) return ''
+    
+    try {
+        const date = new Date(isoDate)
+        
+        // Verificar que la fecha es válida
+        if (isNaN(date.getTime())) {
+            return ''
+        }
+        
+        // Formato: YYYY-MM-DDTHH:mm
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`
+    } catch (error) {
+        console.error('Error converting ISO to datetime-local:', error)
+        return ''
+    }
+}
+
+/**
+ * Convierte una fecha datetime-local a formato ISO
+ * @param {string|null|undefined} datetimeLocal - Fecha en formato YYYY-MM-DDTHH:mm
+ * @returns {string|null} - Fecha en formato ISO o null
+ */
+export const datetimeLocalToIso = (datetimeLocal) => {
+    if (!datetimeLocal || datetimeLocal.trim() === '') {
+        return null
+    }
+    
+    try {
+        const localDate = new Date(datetimeLocal)
+        
+        // Verificar que la fecha es válida
+        if (isNaN(localDate.getTime())) {
+            return null
+        }
+        
+        // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
+        return localDate.toISOString()
+    } catch (error) {
+        console.error('Error converting datetime-local to ISO:', error)
+        return null
+    }
+}
+
+/**
+ * Convierte múltiples campos de fecha de ISO a datetime-local
+ * @param {object} record - Objeto con fechas en formato ISO
+ * @param {string[]} fields - Array de nombres de campos a convertir
+ * @returns {object} - Objeto con fechas convertidas a datetime-local
+ */
+export const convertRecordDatesToLocal = (record, fields = ['startedAt', 'finishedAt']) => {
+    if (!record) return {}
+    
+    const converted = { ...record }
+    
+    fields.forEach(field => {
+        const snakeCaseField = field.replace(/([A-Z])/g, '_$1').toLowerCase()
+        const value = record[field] || record[snakeCaseField]
+        
+        if (value) {
+            converted[field] = isoToDateTimeLocal(value)
+            converted[snakeCaseField] = isoToDateTimeLocal(value)
+        }
+    })
+    
+    return converted
+}
+
+/**
+ * Convierte múltiples campos de fecha de datetime-local a ISO
+ * @param {object} formData - Objeto con fechas en formato datetime-local
+ * @param {string[]} fields - Array de nombres de campos a convertir
+ * @returns {object} - Objeto con fechas convertidas a ISO
+ */
+export const convertFormDatesToIso = (formData, fields = ['started_at', 'finished_at']) => {
+    if (!formData) return {}
+    
+    const converted = {}
+    
+    fields.forEach(field => {
+        const value = formData[field]
+        if (value && value.trim() !== '') {
+            const isoValue = datetimeLocalToIso(value)
+            if (isoValue) {
+                // Mantener ambos formatos para compatibilidad
+                converted[field] = value
+                converted[field.replace('_at', 'At')] = isoValue
+            }
+        } else {
+            converted[field] = null
+        }
+    })
+    
+    return converted
+}
+

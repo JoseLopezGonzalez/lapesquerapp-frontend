@@ -9,6 +9,7 @@ import {
 } from '@/services/productionService'
 import { fetchWithTenant } from '@/lib/fetchWithTenant'
 import { API_URL_V2 } from '@/configs/config'
+import { datetimeLocalToIso } from '@/helpers/production/dateFormatters'
 
 /**
  * Hook personalizado para gestionar production records
@@ -124,22 +125,9 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         setError(null)
 
         try {
-            // Convertir started_at de datetime-local a ISO si existe
-            let startedAtISO = null
-            if (formData.started_at && formData.started_at.trim() !== '') {
-                const localDate = new Date(formData.started_at)
-                // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
-                startedAtISO = localDate.toISOString()
-            }
-            
-            // Convertir finished_at de datetime-local a ISO si existe
-            // Permitir finished_at tanto en creación como en edición (después de crear, se puede editar)
-            let finishedAtISO = null
-            if (formData.finished_at && formData.finished_at.trim() !== '') {
-                const localDate = new Date(formData.finished_at)
-                // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
-                finishedAtISO = localDate.toISOString()
-            }
+            // Convertir fechas de datetime-local a ISO usando utilidades
+            const startedAtISO = datetimeLocalToIso(formData.started_at)
+            const finishedAtISO = datetimeLocalToIso(formData.finished_at)
             
             const recordData = {
                 production_id: parseInt(productionId),
