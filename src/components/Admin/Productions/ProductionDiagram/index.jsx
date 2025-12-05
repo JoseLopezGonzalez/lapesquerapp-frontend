@@ -61,8 +61,8 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
             if (child.type === 'reprocessed') {
               console.log(`🔄 Backend envía nodo de REPROCESADO: id=${child.id}, parentRecordId=${child.parentRecordId}`);
             }
-            if (child.type === 'missing') {
-              console.log(`📦 Backend envía nodo de RESTANTES: id=${child.id}, parentRecordId=${child.parentRecordId}`);
+            if (child.type === 'balance') {
+              console.log(`📦 Backend envía nodo de BALANCE: id=${child.id}, parentRecordId=${child.parentRecordId}`);
             }
             // Recursivo para contar en hijos
             const recursiveCount = countSalesStockNodes(child);

@@ -67,7 +67,7 @@ function extractOutputProducts(outputs) {
 }
 
 /**
- * Identifica el tipo de nodo (PROCESS, SALES, STOCK, REPROCESSED, REMAINING)
+ * Identifica el tipo de nodo (PROCESS, SALES, STOCK, REPROCESSED, BALANCE)
  */
 function getNodeType(node) {
   if (node.type === 'sales') {
@@ -79,8 +79,8 @@ function getNodeType(node) {
   if (node.type === 'reprocessed') {
     return 'REPROCESSED';
   }
-  if (node.type === 'missing') {
-    return 'REMAINING'; // El backend usa 'missing' pero lo llamamos 'restantes' en el frontend
+  if (node.type === 'balance') {
+    return 'BALANCE'; // Nodo de balance (faltantes y sobras)
   }
   // Si no tiene type o es null/undefined, es un nodo de proceso
   return 'PROCESS';
@@ -115,10 +115,10 @@ function isReprocessedNode(node) {
 }
 
 /**
- * Verifica si un nodo es de restantes
+ * Verifica si un nodo es de balance
  */
-function isRemainingNode(node) {
-  return getNodeType(node) === 'REMAINING';
+function isBalanceNode(node) {
+  return getNodeType(node) === 'BALANCE';
 }
 
 /**
@@ -170,10 +170,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
       const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
       
-      // Verificar si el nodo tiene hijos de venta/stock/reprocessed/restantes (para mostrar handle de salida en nodos finales)
+      // Verificar si el nodo tiene hijos de venta/stock/reprocessed/balance (para mostrar handle de salida en nodos finales)
       const hasSalesOrStockChildren = node.children && Array.isArray(node.children) && node.children.some(child => {
         const childType = getNodeType(child);
-        const isSpecialNode = childType === 'SALES' || childType === 'STOCK' || childType === 'REPROCESSED' || childType === 'REMAINING';
+        const isSpecialNode = childType === 'SALES' || childType === 'STOCK' || childType === 'REPROCESSED' || childType === 'BALANCE';
         if (isSpecialNode && node.isFinal) {
           console.log(`🔗 Nodo final ${nodeId} tiene hijo especial: ${childType}`);
         }
@@ -282,23 +282,23 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       };
       
       console.log(`🔄 Nodo de reprocesado creado: ${nodeId}, parentRecordId guardado: ${reprocessedParentRecordId}, processes: ${(node.processes || []).length}`);
-    } else if (isRemainingNode(node)) {
-      // Nodo de restantes
-      const remainingParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+    } else if (isBalanceNode(node)) {
+      // Nodo de balance (faltantes y sobras)
+      const balanceParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
       
       flowNode = {
         id: nodeId,
         type: 'restantesNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          products: node.products || [], // Array de productos con información de restantes
+          products: node.products || [], // Array de productos con información de balance
           summary: node.summary || {},
-          parentRecordId: remainingParentRecordId, // Guardar para conexión
+          parentRecordId: balanceParentRecordId, // Guardar para conexión
           viewMode: viewMode
         }
       };
       
-      console.log(`📦 Nodo de restantes creado: ${nodeId}, parentRecordId guardado: ${remainingParentRecordId}, products: ${(node.products || []).length}`);
+      console.log(`📦 Nodo de balance creado: ${nodeId}, parentRecordId guardado: ${balanceParentRecordId}, products: ${(node.products || []).length}`);
     } else {
       // Tipo de nodo desconocido, saltarlo
       console.warn(`Tipo de nodo desconocido:`, node);
@@ -357,8 +357,8 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         const salesChildren = node.children.filter(child => getNodeType(child) === 'SALES');
         const stockChildren = node.children.filter(child => getNodeType(child) === 'STOCK');
         const reprocessedChildren = node.children.filter(child => getNodeType(child) === 'REPROCESSED');
-        const remainingChildren = node.children.filter(child => getNodeType(child) === 'REMAINING');
-        console.log(`🔍 Nodo final ${nodeId} tiene ${salesChildren.length} venta(s), ${stockChildren.length} stock(s), ${reprocessedChildren.length} reprocesado(s), ${remainingChildren.length} restante(s)`);
+        const balanceChildren = node.children.filter(child => getNodeType(child) === 'BALANCE');
+        console.log(`🔍 Nodo final ${nodeId} tiene ${salesChildren.length} venta(s), ${stockChildren.length} stock(s), ${reprocessedChildren.length} reprocesado(s), ${balanceChildren.length} balance(s)`);
         
         if (salesChildren.length > 1) {
           console.warn(`⚠️ PROBLEMA: El nodo final ${nodeId} tiene ${salesChildren.length} nodos de VENTA. Debería haber solo 1.`);
@@ -390,7 +390,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       });
     }
 
-    // Segundo paso: crear/verificar edges para TODOS los nodos especiales (venta/stock/reprocessed/restantes)
+    // Segundo paso: crear/verificar edges para TODOS los nodos especiales (venta/stock/reprocessed/balance)
     // Esto asegura que los nodos padre ya existan y las conexiones se crean correctamente
     nodes.forEach(flowNode => {
       if (flowNode.type === 'salesNode' || flowNode.type === 'stockNode' || flowNode.type === 'reprocessedNode' || flowNode.type === 'restantesNode') {
@@ -416,7 +416,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
             const isSales = flowNode.type === 'salesNode';
             const isStock = flowNode.type === 'stockNode';
             const isReprocessed = flowNode.type === 'reprocessedNode';
-            const isRemaining = flowNode.type === 'restantesNode';
+            const isBalance = flowNode.type === 'restantesNode';
             
             // Determinar color según el tipo de nodo
             let edgeColor = '#a1a1aa';
@@ -426,8 +426,8 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
               edgeColor = '#3b82f6'; // Azul para stock
             } else if (isReprocessed) {
               edgeColor = '#f97316'; // Naranja para reprocesado
-            } else if (isRemaining) {
-              edgeColor = '#ef4444'; // Rojo para restantes (alerta)
+            } else if (isBalance) {
+              edgeColor = '#ef4444'; // Rojo para balance (alerta)
             }
             
             edges.push({
@@ -460,10 +460,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
     const salesNodesCount = nodes.filter(n => n.type === 'salesNode').length;
     const stockNodesCount = nodes.filter(n => n.type === 'stockNode').length;
     const reprocessedNodesCount = nodes.filter(n => n.type === 'reprocessedNode').length;
-    const remainingNodesCount = nodes.filter(n => n.type === 'restantesNode').length;
+    const balanceNodesCount = nodes.filter(n => n.type === 'restantesNode').length;
     const processNodesCount = nodes.filter(n => n.type === 'processNode').length;
     
-    console.log(`transformProcessTreeToFlow: Creados ${nodes.length} nodos totales (${processNodesCount} procesos, ${salesNodesCount} venta(s), ${stockNodesCount} stock(s), ${reprocessedNodesCount} reprocesado(s), ${remainingNodesCount} restante(s)) y ${edges.length} edges`);
+    console.log(`transformProcessTreeToFlow: Creados ${nodes.length} nodos totales (${processNodesCount} procesos, ${salesNodesCount} venta(s), ${stockNodesCount} stock(s), ${reprocessedNodesCount} reprocesado(s), ${balanceNodesCount} balance(s)) y ${edges.length} edges`);
     
     if (salesNodesCount > 1) {
       console.warn(`⚠️ ATENCIÓN: Se crearon ${salesNodesCount} nodos de VENTA. Debería haber solo 1 por nodo final.`);

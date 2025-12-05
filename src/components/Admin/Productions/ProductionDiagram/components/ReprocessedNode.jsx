@@ -3,7 +3,8 @@
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { formatWeight } from '@/helpers/production/formatters'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 
 export default function ReprocessedNode({ data }) {
   const {
@@ -68,15 +69,35 @@ export default function ReprocessedNode({ data }) {
           <div className="border-t border-border/30 pt-2 text-xs space-y-1">
             {processes.map((processData, index) => {
               const process = processData.process || {}
+              const productionRecord = processData.productionRecord || {}
+              const production = processData.production || productionRecord.production || {}
+              const productionId = production?.id || productionRecord.productionId
+              const lot = production?.lot || (productionId ? `Prod-${productionId}` : null)
+              
               return (
-                <div key={process.id || index} className="flex justify-between items-center py-1">
-                  <span className="font-medium text-foreground truncate flex-1">
-                    {process.name || 'Sin nombre'}
-                  </span>
-                  <div className="text-muted-foreground ml-2 text-right">
-                    <div>{processData.totalBoxes || 0} cajas</div>
-                    <div className="text-[10px]">{formatWeight(processData.totalNetWeight || 0)}</div>
+                <div key={process.id || index} className="space-y-1 py-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-foreground truncate flex-1">
+                      {process.name || 'Sin nombre'}
+                    </span>
+                    <div className="text-muted-foreground ml-2 text-right">
+                      <div>{processData.totalBoxes || 0} cajas</div>
+                      <div className="text-[10px]">{formatWeight(processData.totalNetWeight || 0)}</div>
+                    </div>
                   </div>
+                  {productionId && lot && (
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span>Lote:</span>
+                      <Link 
+                        href={`/admin/productions/${productionId}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-orange-600 hover:text-orange-700 hover:underline flex items-center gap-0.5"
+                      >
+                        {lot}
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -85,62 +106,79 @@ export default function ReprocessedNode({ data }) {
 
         {/* Vista Detallada: Tabla completa con productos */}
         {isDetailed && processes.length > 0 && (
-          <div className="max-h-[350px] overflow-y-auto border-t border-border/30 pt-2">
-            <table className="w-full text-[10px] border-collapse">
-              <thead>
-                <tr className="border-b border-border/30">
-                  <th className="text-left py-1 px-1 font-medium text-muted-foreground">Proceso</th>
-                  <th className="text-left py-1 px-1 font-medium text-muted-foreground">Producto</th>
-                  <th className="text-right py-1 px-1 font-medium text-muted-foreground">Cajas</th>
-                  <th className="text-right py-1 px-1 font-medium text-muted-foreground">Peso</th>
-                </tr>
-              </thead>
-              <tbody>
-                {processes.flatMap((processData, processIndex) => {
-                  const process = processData.process || {}
-                  const processProducts = processData.products || []
-                  const processId = process.id || processIndex
+          <div className="max-h-[350px] overflow-y-auto border-t border-border/30 pt-2 space-y-3">
+            {processes.map((processData, processIndex) => {
+              const process = processData.process || {}
+              const processProducts = processData.products || []
+              const processId = process.id || processIndex
+              const productionRecord = processData.productionRecord || {}
+              const production = processData.production || productionRecord.production || {}
+              const productionId = production?.id || productionRecord.productionId
+              const lot = production?.lot || (productionId ? `Prod-${productionId}` : null)
+              
+              return (
+                <div key={processId} className="space-y-1.5">
+                  {/* Encabezado del proceso */}
+                  <div className="flex items-center justify-between gap-2 px-1 py-1 bg-muted/30 rounded border-b border-border/20">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="font-semibold text-xs text-foreground truncate">
+                        {process.name || 'Sin nombre'}
+                      </span>
+                      {productionId && lot && (
+                        <>
+                          <span className="text-muted-foreground text-[9px]">•</span>
+                          <Link 
+                            href={`/admin/productions/${productionId}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-orange-600 hover:text-orange-700 hover:underline flex items-center gap-0.5 text-[9px] whitespace-nowrap"
+                          >
+                            {lot}
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                    {processProducts.length === 0 && (
+                      <div className="text-right text-[9px] text-muted-foreground">
+                        <div>{processData.totalBoxes || 0} cajas</div>
+                        <div>{formatWeight(processData.totalNetWeight || 0)}</div>
+                      </div>
+                    )}
+                  </div>
                   
-                  // Si no hay productos, mostrar solo la fila del proceso
-                  if (processProducts.length === 0) {
-                    return (
-                      <tr key={processId} className="bg-muted/30 border-b border-border/20">
-                        <td className="py-1 px-1 font-medium text-foreground">
-                          <span className="truncate">{process.name || 'Sin nombre'}</span>
-                        </td>
-                        <td className="py-1 px-1"></td>
-                        <td className="py-1 px-1 text-right font-medium">{processData.totalBoxes || 0}</td>
-                        <td className="py-1 px-1 text-right">{formatWeight(processData.totalNetWeight || 0)}</td>
-                      </tr>
-                    )
-                  }
-                  
-                  // Mostrar cada producto en su propia fila
-                  return processProducts.map((productData, productIdx) => {
-                    const product = productData.product || {}
-                    const isFirstProduct = productIdx === 0
-                    
-                    return (
-                      <tr 
-                        key={`${processId}-${product.id || productIdx}`}
-                        className={`border-b border-border/10 ${isFirstProduct ? 'bg-muted/20' : 'bg-muted/5'}`}
-                      >
-                        <td className="py-1 px-1 font-medium text-foreground">
-                          {isFirstProduct && (
-                            <span className="truncate">{process.name || 'Sin nombre'}</span>
-                          )}
-                        </td>
-                        <td className="py-1 px-1 text-foreground truncate max-w-[140px]">
-                          <span className="truncate">{product.name || 'Sin nombre'}</span>
-                        </td>
-                        <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
-                        <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
-                      </tr>
-                    )
-                  })
-                })}
-              </tbody>
-            </table>
+                  {/* Tabla de productos */}
+                  {processProducts.length > 0 && (
+                    <table className="w-full text-[10px] border-collapse">
+                      <thead>
+                        <tr className="border-b border-border/30">
+                          <th className="text-left py-1 px-1 font-medium text-muted-foreground">Producto</th>
+                          <th className="text-right py-1 px-1 font-medium text-muted-foreground">Cajas</th>
+                          <th className="text-right py-1 px-1 font-medium text-muted-foreground">Peso</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {processProducts.map((productData, productIdx) => {
+                          const product = productData.product || {}
+                          
+                          return (
+                            <tr 
+                              key={`${processId}-${product.id || productIdx}`}
+                              className="border-b border-border/10 bg-muted/5"
+                            >
+                              <td className="py-1 px-1 text-foreground truncate max-w-[200px]">
+                                <span className="truncate">{product.name || 'Sin nombre'}</span>
+                              </td>
+                              <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
+                              <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 
