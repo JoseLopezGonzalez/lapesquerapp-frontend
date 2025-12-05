@@ -46,7 +46,7 @@ export default function ProcessNode({ data }) {
   const nodeColorClasses = isRoot
     ? 'border-primary/30 bg-primary/5 shadow-primary/10'
     : isFinal
-    ? 'border-green-500/30 bg-green-500/5 shadow-green-500/10'
+    ? 'border-purple-500/30 bg-purple-500/5 shadow-purple-500/10'
     : 'border-border bg-card'
 
   return (
@@ -71,7 +71,7 @@ export default function ProcessNode({ data }) {
           title={isCompleted ? 'Proceso completado' : 'Proceso en progreso'} 
         />
         <h3 className={`font-semibold text-sm ${
-          isRoot ? 'text-primary' : isFinal ? 'text-green-600' : 'text-foreground'
+          isRoot ? 'text-primary' : isFinal ? 'text-purple-600' : 'text-foreground'
         }`}>
           {processName}
         </h3>
@@ -234,7 +234,7 @@ export default function ProcessNode({ data }) {
           type="target"
           position={Position.Left}
           className={`w-3 h-3 border-2 border-background ${
-            isFinal ? 'bg-green-500' : 'bg-primary'
+            isFinal ? 'bg-purple-500' : 'bg-primary'
           }`}
           style={{ left: -6 }}
         />
@@ -247,7 +247,7 @@ export default function ProcessNode({ data }) {
           position={Position.Right}
           className={`w-3 h-3 border-2 border-background ${
             isFinal && hasSalesOrStockChildren 
-              ? 'bg-green-500' 
+              ? 'bg-purple-500' 
               : (isRoot ? 'bg-primary' : 'bg-primary')
           }`}
           style={{ right: -6 }}

@@ -3,6 +3,8 @@
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { formatWeight } from '@/helpers/production/formatters'
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 
 export default function SalesNode({ data }) {
   const {
@@ -66,11 +68,23 @@ export default function SalesNode({ data }) {
           <div className="border-t border-border/30 pt-2 text-xs space-y-1">
             {orders.map((orderData, index) => {
               const order = orderData.order || {}
+              const orderId = order.id
               return (
                 <div key={order.id || index} className="flex justify-between items-center py-1">
-                  <span className="font-medium text-foreground truncate flex-1">
-                    {order.formattedId || `#${order.id}`}
-                  </span>
+                  {orderId ? (
+                    <Link
+                      href={`/admin/orders/${orderId}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="font-medium text-green-600 hover:text-green-700 hover:underline flex items-center gap-1 truncate flex-1"
+                    >
+                      {order.formattedId || `#${order.id}`}
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-foreground truncate flex-1">
+                      {order.formattedId || `#${order.id}`}
+                    </span>
+                  )}
                   <div className="text-muted-foreground ml-2 text-right">
                     <div>{orderData.totalBoxes || 0} cajas</div>
                     <div className="text-[10px]">{formatWeight(orderData.totalNetWeight || 0)}</div>
@@ -104,7 +118,20 @@ export default function SalesNode({ data }) {
                   if (orderProducts.length === 0) {
                     return (
                       <tr key={orderId} className="bg-muted/30 border-b border-border/20">
-                        <td className="py-1 px-1 font-medium text-foreground">{order.formattedId || `#${order.id}`}</td>
+                        <td className="py-1 px-1 font-medium">
+                          {order.id ? (
+                            <Link
+                              href={`/admin/orders/${order.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-green-600 hover:text-green-700 hover:underline flex items-center gap-1"
+                            >
+                              {order.formattedId || `#${order.id}`}
+                              <ExternalLink className="h-2.5 w-2.5" />
+                            </Link>
+                          ) : (
+                            <span className="text-foreground">{order.formattedId || `#${order.id}`}</span>
+                          )}
+                        </td>
                         <td className="py-1 px-1 text-muted-foreground truncate max-w-[140px]">-</td>
                         <td className="py-1 px-1 text-right font-medium">{orderData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right">{formatWeight(orderData.totalNetWeight || 0)}</td>
@@ -124,9 +151,20 @@ export default function SalesNode({ data }) {
                         key={`${orderId}-${product.id || productIdx}`}
                         className={`border-b border-border/10 ${isFirstProduct ? 'bg-muted/20' : 'bg-muted/5'}`}
                       >
-                        <td className="py-1 px-1 font-medium text-foreground">
+                        <td className="py-1 px-1 font-medium">
                           {isFirstProduct && (
-                            <span className="truncate">{order.formattedId || `#${order.id}`}</span>
+                            order.id ? (
+                              <Link
+                                href={`/admin/orders/${order.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-green-600 hover:text-green-700 hover:underline flex items-center gap-1 truncate"
+                              >
+                                {order.formattedId || `#${order.id}`}
+                                <ExternalLink className="h-2.5 w-2.5 flex-shrink-0" />
+                              </Link>
+                            ) : (
+                              <span className="text-foreground truncate">{order.formattedId || `#${order.id}`}</span>
+                            )
                           )}
                         </td>
                         <td className="py-1 px-1 text-foreground truncate max-w-[140px]">

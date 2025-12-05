@@ -334,7 +334,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
             source: effectiveParentId,
             target: nodeId,
             type: 'smoothstep',
-            animated: false,
+            animated: !isCompleted, // Animar si el proceso no está completado
             style: {
               stroke: isCompleted ? '#a1a1aa' : '#9ca3af',
               strokeWidth: 2,
@@ -418,6 +418,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
             const isReprocessed = flowNode.type === 'reprocessedNode';
             const isBalance = flowNode.type === 'restantesNode';
             
+            // Verificar si el nodo padre es final
+            const parentNode = nodes.find(n => n.id === parentId);
+            const isParentFinal = parentNode?.data?.isFinal || false;
+            
             // Determinar color según el tipo de nodo
             let edgeColor = '#a1a1aa';
             if (isSales) {
@@ -439,7 +443,8 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
               style: {
                 stroke: edgeColor,
                 strokeWidth: 2.5,
-                strokeDasharray: '8,4'
+                // Si el padre es final, línea sólida (sin dash)
+                strokeDasharray: isParentFinal ? '0' : '8,4'
               },
               markerEnd: {
                 type: 'arrowclosed',
