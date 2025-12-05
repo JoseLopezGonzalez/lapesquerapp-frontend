@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
@@ -461,11 +461,30 @@ const ProductionView = ({ productionId }) => {
                                                                                     </TableRow>
                                                                                 </TableHeader>
                                                                                 <TableBody>
-                                                                                    {production.reconciliation.products.map((item, index) => (
+                                                                                    {production.reconciliation.products.map((item, index) => {
+                                                                                        // Detectar si es un producto no producido pero que existe en la app
+                                                                                        // Opción 1: Por produced.weight === 0 y contabilizado > 0 (incluye reprocesado)
+                                                                                        const hasNoProduction = (item.produced?.weight || 0) === 0;
+                                                                                        const hasContabilized = ((item.inSales?.weight || 0) > 0 || 
+                                                                                                                 (item.inStock?.weight || 0) > 0 || 
+                                                                                                                 (item.reprocessed?.weight || 0) > 0);
+                                                                                        // Opción 2: Por status === 'error' y balance.percentage === -100
+                                                                                        const isErrorWithNegativeBalance = item.status === 'error' && 
+                                                                                                                           (item.balance?.percentage || 0) === -100;
+                                                                                        // Opción 3: Por el mensaje
+                                                                                        const hasNotProducedMessage = item.message?.includes('no registrado como producido');
+                                                                                        // Detectar productos no producidos: cualquier combinación que indique que existe en sistema pero no fue producido
+                                                                                        const isNotProduced = hasNotProducedMessage || 
+                                                                                                             isErrorWithNegativeBalance || 
+                                                                                                             (hasNoProduction && hasContabilized);
+                                                                                        
+                                                                                        return (
                                                                                         <TableRow
                                                                                             key={item.product?.id || index}
                                                                                             className={`${
-                                                                                                item.status === 'error'
+                                                                                                isNotProduced
+                                                                                                    ? 'bg-amber-50 dark:bg-amber-950/20 border-l-4 border-l-amber-500'
+                                                                                                    : item.status === 'error'
                                                                                                     ? 'bg-destructive/5'
                                                                                                     : item.status === 'warning'
                                                                                                     ? 'bg-yellow-500/5'
@@ -473,43 +492,73 @@ const ProductionView = ({ productionId }) => {
                                                                                             }`}
                                                                                         >
                                                                                             <TableCell className="font-medium py-3">
-                                                                                                <div>
-                                                                                                    <p className="text-sm font-semibold">{item.product?.name || 'Sin nombre'}</p>
-                                                                                                    {item.message && (
-                                                                                                        <p className={`text-xs mt-1 leading-tight ${
-                                                                                                            item.status === 'error'
-                                                                                                                ? 'text-destructive'
-                                                                                                                : item.status === 'warning'
-                                                                                                                ? 'text-yellow-700'
-                                                                                                                : 'text-green-700'
-                                                                                                        }`}>
-                                                                                                            {item.message}
-                                                                                                        </p>
+                                                                                                <div className="flex items-start gap-2">
+                                                                                                    {isNotProduced && (
+                                                                                                        <AlertOctagon className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+                                                                                                    )}
+                                                                                                    <div className="flex-1 min-w-0">
+                                                                                                        <p className="text-sm font-semibold">{item.product?.name || 'Sin nombre'}</p>
+                                                                                                        {isNotProduced ? (
+                                                                                                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                                                                                <Badge variant="outline" className="text-xs px-2 py-0.5 whitespace-nowrap bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700">
+                                                                                                                    No producido
+                                                                                                                </Badge>
+                                                                                                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                                                                                    Existe en sistema
+                                                                                                                </span>
+                                                                                                            </div>
+                                                                                                        ) : item.message && item.status !== 'ok' && (
+                                                                                                            <p className={`text-xs mt-1 leading-tight ${
+                                                                                                                item.status === 'error'
+                                                                                                                    ? 'text-destructive'
+                                                                                                                    : item.status === 'warning'
+                                                                                                                    ? 'text-yellow-700'
+                                                                                                                    : 'text-green-700'
+                                                                                                            }`}>
+                                                                                                                {item.message}
+                                                                                                            </p>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </TableCell>
+                                                                                            <TableCell className="text-right py-3">
+                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
+                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.produced?.weight || 0)}</p>
+                                                                                                    {(item.produced?.boxes || 0) > 0 ? (
+                                                                                                        <p className="text-xs text-muted-foreground">{item.produced.boxes} cajas</p>
+                                                                                                    ) : (
+                                                                                                        <p className="text-xs text-transparent">0</p>
                                                                                                     )}
                                                                                                 </div>
                                                                                             </TableCell>
                                                                                             <TableCell className="text-right py-3">
-                                                                                                <div>
-                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.produced?.weight || 0)}</p>
-                                                                                                    <p className="text-xs text-muted-foreground">{item.produced?.boxes || 0} c.</p>
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div>
+                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
                                                                                                     <p className="text-sm font-semibold">{formatWeight(item.inSales?.weight || 0)}</p>
-                                                                                                    <p className="text-xs text-muted-foreground">{item.inSales?.boxes || 0} c.</p>
+                                                                                                    {(item.inSales?.boxes || 0) > 0 ? (
+                                                                                                        <p className="text-xs text-muted-foreground">{item.inSales.boxes} cajas</p>
+                                                                                                    ) : (
+                                                                                                        <p className="text-xs text-transparent">0</p>
+                                                                                                    )}
                                                                                                 </div>
                                                                                             </TableCell>
                                                                                             <TableCell className="text-right py-3">
-                                                                                                <div>
+                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
                                                                                                     <p className="text-sm font-semibold">{formatWeight(item.inStock?.weight || 0)}</p>
-                                                                                                    <p className="text-xs text-muted-foreground">{item.inStock?.boxes || 0} c.</p>
+                                                                                                    {(item.inStock?.boxes || 0) > 0 ? (
+                                                                                                        <p className="text-xs text-muted-foreground">{item.inStock.boxes} cajas</p>
+                                                                                                    ) : (
+                                                                                                        <p className="text-xs text-transparent">0</p>
+                                                                                                    )}
                                                                                                 </div>
                                                                                             </TableCell>
                                                                                             <TableCell className="text-right py-3">
-                                                                                                <div>
+                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
                                                                                                     <p className="text-sm font-semibold">{formatWeight(item.reprocessed?.weight || 0)}</p>
-                                                                                                    <p className="text-xs text-muted-foreground">{item.reprocessed?.boxes || 0} c.</p>
+                                                                                                    {(item.reprocessed?.boxes || 0) > 0 ? (
+                                                                                                        <p className="text-xs text-muted-foreground">{item.reprocessed.boxes} cajas</p>
+                                                                                                    ) : (
+                                                                                                        <p className="text-xs text-transparent">0</p>
+                                                                                                    )}
                                                                                                 </div>
                                                                                             </TableCell>
                                                                                             <TableCell className="text-right py-3">
@@ -559,7 +608,8 @@ const ProductionView = ({ productionId }) => {
                                                                                                 </Badge>
                                                                                             </TableCell>
                                                                                         </TableRow>
-                                                                                    ))}
+                                                                                    );
+                                                                                    })}
                                                                                 </TableBody>
                                                                             </Table>
                                                                         </div>
