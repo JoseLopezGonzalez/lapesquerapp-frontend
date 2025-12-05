@@ -193,6 +193,38 @@ export async function getStockByProducts(token) {
         });
 }
 
+/**
+ * Obtener palets registrados (almacén fantasma).
+ * Retorna todos los palets en estado registered (state_id = 1) con formato similar a StoreDetailsResource.
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Object>} - Objeto con formato de almacén fantasma
+ */
+export async function getRegisteredPallets(token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/registered`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Error al obtener los palets registrados');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            return data.data;
+        })
+        .catch(error => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}
+
 
 
 

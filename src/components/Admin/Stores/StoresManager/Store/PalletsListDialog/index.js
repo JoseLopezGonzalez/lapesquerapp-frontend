@@ -30,6 +30,9 @@ export function PalletsListDialog() {
     const [searchText, setSearchText] = useState("");
 
     const storeName = store?.name ?? "";
+    
+    // Asegurar que pallets siempre sea un array
+    const safePallets = pallets || [];
 
     const currentSpecies = speciesSummary.find((s) => s.name === selectedSpecies);
 
@@ -40,9 +43,9 @@ export function PalletsListDialog() {
     }, [speciesSummary]);
 
     useEffect(() => {
-        if (!selectedSpecies || !pallets) return;
+        if (!selectedSpecies || !safePallets.length) return;
 
-        const speciesPallets = pallets.filter((pallet) =>
+        const speciesPallets = safePallets.filter((pallet) =>
             pallet.boxes.some((box) => box?.product?.species?.name === selectedSpecies)
         );
 
@@ -83,19 +86,19 @@ export function PalletsListDialog() {
             });
 
         setFilteredPallets(filtered);
-    }, [selectedSpecies, searchText, pallets]);
+    }, [selectedSpecies, searchText, safePallets]);
 
     // Total palets en el almacén (no filtrado)
-    const totalPallets = pallets.length;
+    const totalPallets = safePallets.length;
 
     // Peso neto total de todos los palets (solo cajas disponibles)
-    const totalWeight = pallets.reduce((total, pallet) => {
+    const totalWeight = safePallets.reduce((total, pallet) => {
         return total + getAvailableNetWeight(pallet);
     }, 0);
 
     const generateExcel = () => {
         const data = filteredPallets.map((p) => {
-            const fullPallet = pallets.find(pa => pa.id === p.id);
+            const fullPallet = safePallets.find(pa => pa.id === p.id);
             const productNames = Array.from(new Set(fullPallet?.boxes?.map(b => b.product?.name))).join(", ");
             const lots = fullPallet?.lots?.join(", ") ?? "";
             const observations = fullPallet?.observations ?? "";
@@ -229,7 +232,7 @@ export function PalletsListDialog() {
                             </thead>
                             <tbody>
                                 {filteredPallets.map((pallet) => {
-                                    const fullPallet = pallets.find(p => p.id === pallet.id);
+                                    const fullPallet = safePallets.find(p => p.id === pallet.id);
                                     if (!fullPallet) return null;
 
                                     const productNames = Array.from(

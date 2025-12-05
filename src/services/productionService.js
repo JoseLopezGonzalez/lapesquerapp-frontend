@@ -1,5 +1,14 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
+import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from "@/lib/api/apiHelpers";
 import { API_URL_V2 } from "@/configs/config";
+import {
+    normalizeProductionRecord,
+    normalizeProductionRecordsResponse,
+    normalizeProductionRecordResponse,
+    normalizeProduction,
+    normalizeProductionInput,
+    normalizeProductionOutput,
+    normalizeProductionOutputConsumption,
+} from "@/helpers/production/normalizers";
 
 /**
  * Obtiene todas las producciones
@@ -8,31 +17,7 @@ import { API_URL_V2 } from "@/configs/config";
  * @returns {Promise<Object>} - Lista de producciones
  */
 export function getProductions(token, params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}productions${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las producciones');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiGet(`${API_URL_V2}productions`, token, params)
 }
 
 /**
@@ -42,28 +27,12 @@ export function getProductions(token, params = {}) {
  * @returns {Promise<Object>} - Datos de la producción
  */
 export function getProduction(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}`, token, {}, {
+        transform: (data) => {
+            const production = data.data || data;
+            return normalizeProduction(production);
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener la producción');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -73,30 +42,7 @@ export function getProduction(productionId, token) {
  * @returns {Promise<Object>} - Producción creada
  */
 export function createProduction(productionData, token) {
-    return fetchWithTenant(`${API_URL_V2}productions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(productionData),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear la producción');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiPost(`${API_URL_V2}productions`, token, productionData)
 }
 
 /**
@@ -107,30 +53,7 @@ export function createProduction(productionData, token) {
  * @returns {Promise<Object>} - Producción actualizada
  */
 export function updateProduction(productionId, productionData, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(productionData),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar la producción');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiPut(`${API_URL_V2}productions/${productionId}`, token, productionData)
 }
 
 /**
@@ -140,29 +63,7 @@ export function updateProduction(productionId, productionData, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProduction(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar la producción');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}productions/${productionId}`, token)
 }
 
 /**
@@ -172,28 +73,9 @@ export function deleteProduction(productionId, token) {
  * @returns {Promise<Object>} - Diagrama calculado
  */
 export function getProductionDiagram(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/diagram`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}/diagram`, token, {}, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el diagrama');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -203,28 +85,9 @@ export function getProductionDiagram(productionId, token) {
  * @returns {Promise<Object>} - Árbol de procesos
  */
 export function getProductionProcessTree(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/process-tree`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}/process-tree`, token, {}, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el árbol de procesos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -234,28 +97,9 @@ export function getProductionProcessTree(productionId, token) {
  * @returns {Promise<Object>} - Totales globales
  */
 export function getProductionTotals(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/totals`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}/totals`, token, {}, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los totales');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -265,28 +109,9 @@ export function getProductionTotals(productionId, token) {
  * @returns {Promise<Object>} - Datos de conciliación
  */
 export function getProductionReconciliation(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/reconciliation`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}/reconciliation`, token, {}, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener la conciliación');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -296,28 +121,9 @@ export function getProductionReconciliation(productionId, token) {
  * @returns {Promise<Object>} - Lista de productos disponibles con cajas y pesos
  */
 export function getAvailableProductsForOutputs(productionId, token) {
-    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/available-products-for-outputs`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}productions/${productionId}/available-products-for-outputs`, token, {}, {
+        transform: (data) => data.data || data || []
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los productos disponibles');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data || data || [];
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 // ==================== PRODUCTION RECORDS ====================
@@ -329,31 +135,9 @@ export function getAvailableProductsForOutputs(productionId, token) {
  * @returns {Promise<Object>} - Lista de production records
  */
 export function getProductionRecords(token, params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}production-records${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-records`, token, params, {
+        transform: normalizeProductionRecordsResponse
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los procesos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -368,31 +152,9 @@ export function getProductionRecordsOptions(token, productionId, excludeId = nul
     if (excludeId) {
         params.exclude_id = excludeId
     }
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}production-records/options${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-records/options`, token, params, {
+        transform: (data) => data.data || data || []
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las opciones de records');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data || data || [];
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -402,28 +164,9 @@ export function getProductionRecordsOptions(token, productionId, excludeId = nul
  * @returns {Promise<Object>} - Datos del record
  */
 export function getProductionRecord(recordId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-records/${recordId}`, token, {}, {
+        transform: normalizeProductionRecordResponse
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el proceso');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 
@@ -434,30 +177,15 @@ export function getProductionRecord(recordId, token) {
  * @returns {Promise<Object>} - Record creado
  */
 export function createProductionRecord(recordData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(recordData),
+    return apiPost(`${API_URL_V2}production-records`, token, recordData, {
+        transform: (data) => {
+            const record = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionRecord(record)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear el proceso');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -468,30 +196,15 @@ export function createProductionRecord(recordData, token) {
  * @returns {Promise<Object>} - Record actualizado
  */
 export function updateProductionRecord(recordId, recordData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(recordData),
+    return apiPut(`${API_URL_V2}production-records/${recordId}`, token, recordData, {
+        transform: (data) => {
+            const record = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionRecord(record)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el proceso');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -501,29 +214,7 @@ export function updateProductionRecord(recordId, recordData, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionRecord(recordId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar el proceso');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}production-records/${recordId}`, token)
 }
 
 /**
@@ -533,29 +224,15 @@ export function deleteProductionRecord(recordId, token) {
  * @returns {Promise<Object>} - Record finalizado
  */
 export function finishProductionRecord(recordId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/finish`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiPost(`${API_URL_V2}production-records/${recordId}/finish`, token, {}, {
+        transform: (data) => {
+            const record = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionRecord(record)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al finalizar el proceso');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 // ==================== PRODUCTION INPUTS ====================
@@ -567,31 +244,15 @@ export function finishProductionRecord(recordId, token) {
  * @returns {Promise<Object>} - Lista de inputs
  */
 export function getProductionInputs(token, params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}production-inputs${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-inputs`, token, params, {
+        transform: (data) => {
+            const inputs = data.data || data || [];
+            return {
+                ...data,
+                data: Array.isArray(inputs) ? inputs.map(normalizeProductionInput) : []
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las entradas');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -601,30 +262,15 @@ export function getProductionInputs(token, params = {}) {
  * @returns {Promise<Object>} - Input creado
  */
 export function createProductionInput(inputData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-inputs`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(inputData),
+    return apiPost(`${API_URL_V2}production-inputs`, token, inputData, {
+        transform: (data) => {
+            const input = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionInput(input)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear la entrada');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -635,33 +281,18 @@ export function createProductionInput(inputData, token) {
  * @returns {Promise<Object>} - Inputs creados
  */
 export function createMultipleProductionInputs(productionRecordId, boxIds, token) {
-    return fetchWithTenant(`${API_URL_V2}production-inputs/multiple`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify({
-            production_record_id: productionRecordId,
-            box_ids: boxIds
-        }),
+    return apiPost(`${API_URL_V2}production-inputs/multiple`, token, {
+        production_record_id: productionRecordId,
+        box_ids: boxIds
+    }, {
+        transform: (data) => {
+            const inputs = data.data || data || [];
+            return {
+                ...data,
+                data: Array.isArray(inputs) ? inputs.map(normalizeProductionInput) : []
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear las entradas');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -671,29 +302,7 @@ export function createMultipleProductionInputs(productionRecordId, boxIds, token
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionInput(inputId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-inputs/${inputId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar la entrada');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}production-inputs/${inputId}`, token)
 }
 
 // ==================== PRODUCTION OUTPUTS ====================
@@ -705,31 +314,15 @@ export function deleteProductionInput(inputId, token) {
  * @returns {Promise<Object>} - Lista de outputs
  */
 export function getProductionOutputs(token, params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}production-outputs${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-outputs`, token, params, {
+        transform: (data) => {
+            const outputs = data.data || data || [];
+            return {
+                ...data,
+                data: Array.isArray(outputs) ? outputs.map(normalizeProductionOutput) : []
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las salidas');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -739,30 +332,15 @@ export function getProductionOutputs(token, params = {}) {
  * @returns {Promise<Object>} - Output creado
  */
 export function createProductionOutput(outputData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-outputs`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(outputData),
+    return apiPost(`${API_URL_V2}production-outputs`, token, outputData, {
+        transform: (data) => {
+            const output = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionOutput(output)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear la salida');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -773,30 +351,15 @@ export function createProductionOutput(outputData, token) {
  * @returns {Promise<Object>} - Output actualizado
  */
 export function updateProductionOutput(outputId, outputData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-outputs/${outputId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(outputData),
+    return apiPut(`${API_URL_V2}production-outputs/${outputId}`, token, outputData, {
+        transform: (data) => {
+            const output = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionOutput(output)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar la salida');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -806,29 +369,7 @@ export function updateProductionOutput(outputId, outputData, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionOutput(outputId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-outputs/${outputId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar la salida');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}production-outputs/${outputId}`, token)
 }
 
 /**
@@ -838,30 +379,18 @@ export function deleteProductionOutput(outputId, token) {
  * @returns {Promise<Object>} - Outputs creados
  */
 export function createMultipleProductionOutputs(data, token) {
-    return fetchWithTenant(`${API_URL_V2}production-outputs/multiple`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(data),
+    return apiPost(`${API_URL_V2}production-outputs/multiple`, token, data, {
+        transform: (response) => {
+            const outputs = response.data?.outputs || response.outputs || [];
+            return {
+                ...response,
+                data: {
+                    ...response.data,
+                    outputs: Array.isArray(outputs) ? outputs.map(normalizeProductionOutput) : []
+                }
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear las salidas');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -872,30 +401,15 @@ export function createMultipleProductionOutputs(data, token) {
  * @returns {Promise<Object>} - Proceso actualizado con salidas sincronizadas
  */
 export function syncProductionOutputs(productionRecordId, data, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${productionRecordId}/outputs`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(data),
+    return apiPut(`${API_URL_V2}production-records/${productionRecordId}/outputs`, token, data, {
+        transform: (response) => {
+            const record = response.data || response;
+            return {
+                ...response,
+                data: normalizeProductionRecord(record)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al sincronizar las salidas');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 // ==================== PRODUCTION RECORD IMAGES ====================
@@ -907,28 +421,9 @@ export function syncProductionOutputs(productionRecordId, data, token) {
  * @returns {Promise<Object>} - Lista de imágenes
  */
 export function getProductionRecordImages(recordId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-records/${recordId}/images`, token, {}, {
+        transform: (data) => data.data || data || []
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las imágenes');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data || data || [];
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -941,29 +436,10 @@ export function getProductionRecordImages(recordId, token) {
 export function uploadProductionRecordImage(recordId, imageFile, token) {
     const formData = new FormData();
     formData.append('image', imageFile);
-
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: formData,
+    
+    return apiPostFormData(`${API_URL_V2}production-records/${recordId}/images`, token, formData, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al subir la imagen');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data || data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -974,29 +450,7 @@ export function uploadProductionRecordImage(recordId, imageFile, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionRecordImage(recordId, imageId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${recordId}/images/${imageId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar la imagen');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}production-records/${recordId}/images/${imageId}`, token)
 }
 
 // ==================== PRODUCTION OUTPUT CONSUMPTIONS ====================
@@ -1008,31 +462,15 @@ export function deleteProductionRecordImage(recordId, imageId, token) {
  * @returns {Promise<Object>} - Lista de consumos
  */
 export function getProductionOutputConsumptions(token, params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_URL_V2}production-output-consumptions${queryParams ? `?${queryParams}` : ''}`;
-    
-    return fetchWithTenant(url, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-output-consumptions`, token, params, {
+        transform: (data) => {
+            const consumptions = data.data || data || [];
+            return {
+                ...data,
+                data: Array.isArray(consumptions) ? consumptions.map(normalizeProductionOutputConsumption) : []
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los consumos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -1042,28 +480,9 @@ export function getProductionOutputConsumptions(token, params = {}) {
  * @returns {Promise<Object>} - Lista de outputs disponibles
  */
 export function getAvailableOutputs(productionRecordId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/available-outputs/${productionRecordId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
+    return apiGet(`${API_URL_V2}production-output-consumptions/available-outputs/${productionRecordId}`, token, {}, {
+        transform: (data) => data.data || data
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los outputs disponibles');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -1073,30 +492,15 @@ export function getAvailableOutputs(productionRecordId, token) {
  * @returns {Promise<Object>} - Consumo creado
  */
 export function createProductionOutputConsumption(consumptionData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-output-consumptions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(consumptionData),
+    return apiPost(`${API_URL_V2}production-output-consumptions`, token, consumptionData, {
+        transform: (data) => {
+            const consumption = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionOutputConsumption(consumption)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear el consumo');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -1107,30 +511,15 @@ export function createProductionOutputConsumption(consumptionData, token) {
  * @returns {Promise<Object>} - Consumo actualizado
  */
 export function updateProductionOutputConsumption(consumptionId, consumptionData, token) {
-    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/${consumptionId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(consumptionData),
+    return apiPut(`${API_URL_V2}production-output-consumptions/${consumptionId}`, token, consumptionData, {
+        transform: (data) => {
+            const consumption = data.data || data;
+            return {
+                ...data,
+                data: normalizeProductionOutputConsumption(consumption)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el consumo');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -1140,29 +529,7 @@ export function updateProductionOutputConsumption(consumptionId, consumptionData
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionOutputConsumption(consumptionId, token) {
-    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/${consumptionId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar el consumo');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    return apiDelete(`${API_URL_V2}production-output-consumptions/${consumptionId}`, token)
 }
 
 /**
@@ -1172,30 +539,15 @@ export function deleteProductionOutputConsumption(consumptionId, token) {
  * @returns {Promise<Object>} - Consumos creados
  */
 export function createMultipleProductionOutputConsumptions(data, token) {
-    return fetchWithTenant(`${API_URL_V2}production-output-consumptions/multiple`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(data),
+    return apiPost(`${API_URL_V2}production-output-consumptions/multiple`, token, data, {
+        transform: (response) => {
+            const consumptions = response.data || response || [];
+            return {
+                ...response,
+                data: Array.isArray(consumptions) ? consumptions.map(normalizeProductionOutputConsumption) : []
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear los consumos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 
 /**
@@ -1206,29 +558,14 @@ export function createMultipleProductionOutputConsumptions(data, token) {
  * @returns {Promise<Object>} - Proceso actualizado con consumos sincronizados
  */
 export function syncProductionOutputConsumptions(productionRecordId, data, token) {
-    return fetchWithTenant(`${API_URL_V2}production-records/${productionRecordId}/parent-output-consumptions`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
-        },
-        body: JSON.stringify(data),
+    return apiPut(`${API_URL_V2}production-records/${productionRecordId}/parent-output-consumptions`, token, data, {
+        transform: (response) => {
+            const record = response.data || response;
+            return {
+                ...response,
+                data: normalizeProductionRecord(record)
+            };
+        }
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al sincronizar los consumos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
-        });
 }
 

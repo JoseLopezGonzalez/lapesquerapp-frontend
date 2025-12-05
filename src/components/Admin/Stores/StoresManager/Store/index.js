@@ -13,6 +13,8 @@ import AddElementToPosition from './AddElementToPositionDialog';
 import { useState } from 'react';
 import UnallocatedPositionSlideover from './UnallocatedPositionSlideover';
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
+import PalletKanbanView from './PalletKanbanView';
+import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 
 import {
     DropdownMenu,
@@ -33,7 +35,7 @@ import MovePalletToStoreDialog from './MovePalletToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 
 
-export const StoreContent = () => {
+export const StoreContent = ({ passedStoreId }) => {
 
     const { loading, error, isOpenAddElementToPositionDialog,
         isOpenPalletDialog,
@@ -48,7 +50,12 @@ export const StoreContent = () => {
         closePalletDialog        
     } = useStoreContext();
 
-    const storeId = store?.id;
+    const storeId = store?.id || passedStoreId;
+    // Detectar almacén fantasma por ID o por nombre (verificar tanto el storeId del contexto como el pasado como prop)
+    const isGhostStore = storeId === REGISTERED_PALLETS_STORE_ID || 
+                         store?.id === REGISTERED_PALLETS_STORE_ID ||
+                         passedStoreId === REGISTERED_PALLETS_STORE_ID ||
+                         store?.name === "En espera";
 
     const handleOnClickUnallocatedPosition = () => {
         // console.log("Unallocated positions clicked");
@@ -65,6 +72,30 @@ export const StoreContent = () => {
                 <Loader />
             </div>
         )
+    }
+
+    // Si es el almacén fantasma, mostrar vista kanban (sin mapa ni botones)
+    if (isGhostStore) {
+        return (
+            <>
+                <div className='flex items-center justify-center w-full h-full gap-4'>
+                    {/* Vista Kanban para almacén fantasma - Solo ScrollArea con cards */}
+                    <Card className='relative flex-1 flex items-center justify-center w-full h-full overflow-hidden'>
+                        <PalletKanbanView />
+                    </Card>
+
+                    {/* Filtros a la derecha */}
+                    <div className='max-w-[350px] w-full h-full overflow-hidden'>
+                        <Filters />
+                    </div>
+                </div>
+
+                {/* Diálogos necesarios */}
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} />
+                <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
+                <MovePalletToStoreDialog />
+            </>
+        );
     }
 
     const isUnallocatedPositionRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
@@ -175,7 +206,7 @@ export const StoreContent = () => {
 
 
 export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading }) => {
-
+    // Pasar el storeId al contexto para que StoreContent pueda usarlo
     return (
         <StoreProvider
             storeId={storeId}
@@ -183,7 +214,7 @@ export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWei
             onAddNetWeightToStore={onAddNetWeightToStore}
             setIsStoreLoading={setIsStoreLoading}
         >
-            <StoreContent />
+            <StoreContent passedStoreId={storeId} />
         </StoreProvider>
 
     )

@@ -1,7 +1,8 @@
 import { UNLOCATED_POSITION_ID } from "@/configs/config";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { removePalletPosition } from "@/services/palletService";
-import { getStore, getStores } from "@/services/storeService";
+import { getStore, getStores, getRegisteredPallets } from "@/services/storeService";
+import { REGISTERED_PALLETS_STORE_ID } from "@/hooks/useStores";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -138,7 +139,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
             value: pallet.id,
             label: pallet.id
         }
-    });
+    }) || [];
 
     /* quantity per Especie Summary */
     const [speciesSummary, setSpeciesSummary] = useState([]);
@@ -256,6 +257,13 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
 
 
+    // Calcular unlocatedPallets antes de usarlo
+    const unlocatedPallets = useMemo(() => {
+        return store?.content?.pallets
+            ?.filter(pallet => !pallet.position)
+            ?.sort((a, b) => a.id - b.id) ?? [];
+    }, [store?.content?.pallets]);
+
     const isPositionRelevant = (positionId) => {
         return filteredPositionsMap.has(positionId) && filteredPositionsMap.get(positionId).length > 0;
     };
@@ -286,7 +294,13 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         setLoading(true);
         setIsStoreLoading(true);
         if (!token) return;
-        getStore(storeId, token)
+        
+        // Si es el almacén fantasma, usar getRegisteredPallets, sino usar getStore
+        const fetchStore = storeId === REGISTERED_PALLETS_STORE_ID 
+            ? getRegisteredPallets(token)
+            : getStore(storeId, token);
+        
+        fetchStore
             .then((data) => {
                 setStore(data);
             })
@@ -334,13 +348,9 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
-    /* const unlocatedPallets = store?.content?.pallets?.filter(pallet => !pallet.position); */
-    const unlocatedPallets = store?.content?.pallets
-        ?.filter(pallet => !pallet.position)
-        ?.sort((a, b) => a.id - b.id);
 
 
-    const pallets = store?.content?.pallets;
+    const pallets = store?.content?.pallets || [];
 
     const openPalletDialog = (palletId) => {
         const pallet = pallets?.find(p => p.id === palletId);

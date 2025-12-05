@@ -35,7 +35,7 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
         >
           <div className="w-full  truncate text-start">
             {value
-              ? options.find((option) => option.value === value)?.label
+              ? (options || []).find((option) => option.value === value)?.label
               : placeholder}
           </div>
 
@@ -57,7 +57,7 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
           >
             <CommandEmpty>{notFoundMessage}</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {(options || []).map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}

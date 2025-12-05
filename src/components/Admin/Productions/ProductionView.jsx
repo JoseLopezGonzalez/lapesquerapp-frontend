@@ -11,8 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
@@ -25,6 +27,7 @@ const ProductionView = ({ productionId }) => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [viewMode, setViewMode] = useState('simple')
+    const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
 
     useEffect(() => {
         if (session?.user?.accessToken && productionId) {
@@ -145,17 +148,17 @@ const ProductionView = ({ productionId }) => {
             </div>
 
             {/* Cards en fila para pantallas grandes */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
             {/* Información General */}
-            <Card>
+            <Card className={`flex flex-col ${production.reconciliation ? "lg:row-span-2" : ""} h-full`}>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Info className="h-4 w-4 text-primary" />
                             Información General
                         </CardTitle>
                 </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="space-y-4">
+                    <CardContent className="pt-0 flex-1 flex flex-col">
+                        <div className="space-y-4 flex-1">
                             {/* Especie */}
                             <div className="flex items-start gap-3">
                                 <div className="rounded-lg bg-muted p-2 flex-shrink-0">
@@ -302,238 +305,340 @@ const ProductionView = ({ productionId }) => {
                 </Card>
             )}
 
-            </div>
-
             {/* Conciliación General */}
             {production.reconciliation && (
-                <Card className={`border-2 ${
-                    production.reconciliation.summary?.overallStatus === 'error' 
-                        ? 'border-destructive' 
-                        : production.reconciliation.summary?.overallStatus === 'warning'
-                        ? 'border-yellow-500'
-                        : 'border-green-500'
-                }`}>
-                    <CardHeader className="pb-2 pt-4">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm flex items-center gap-2">
-                                {production.reconciliation.summary?.overallStatus === 'error' ? (
-                                    <XCircle className="h-4 w-4 text-destructive" />
-                                ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
-                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                ) : (
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                )}
-                                Conciliación General
-                            </CardTitle>
-                            <Badge 
-                                variant={
-                                    production.reconciliation.summary?.overallStatus === 'error' 
-                                        ? 'destructive' 
-                                        : production.reconciliation.summary?.overallStatus === 'warning'
-                                        ? 'secondary'
-                                        : 'default'
-                                }
-                                className={`text-xs ${
-                                    production.reconciliation.summary?.overallStatus === 'error' 
-                                        ? 'bg-destructive' 
-                                        : production.reconciliation.summary?.overallStatus === 'warning'
-                                        ? 'bg-yellow-500'
-                                        : 'bg-green-500'
-                                }`}
-                            >
-                                {production.reconciliation.summary?.overallStatus === 'error' 
-                                    ? 'Error' 
-                                    : production.reconciliation.summary?.overallStatus === 'warning'
-                                    ? 'Advertencia'
-                                    : 'OK'
-                                }
-                            </Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        {/* Resumen compacto */}
-                        {production.reconciliation.summary && (
-                            <div className="mb-3 px-3 py-2 rounded-md bg-muted/50">
-                                <div className="grid grid-cols-2 md:grid-cols-7 gap-x-4 gap-y-1 text-xs">
-                                    <div>
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">Productos</p>
-                                        <p className="font-semibold text-xs">
-                                            {production.reconciliation.summary.totalProducts || 0}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">Producido</p>
-                                        <p className="font-semibold text-xs">
-                                            {formatWeight(production.reconciliation.summary.totalProducedWeight || 0)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">Registrado</p>
-                                        <p className="font-semibold text-xs">
-                                            {formatWeight(production.reconciliation.summary.totalContabilizedWeight || 0)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">Balance</p>
-                                        <p className={`font-semibold text-xs ${
-                                            (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
-                                                ? 'text-destructive'
-                                                : 'text-green-600'
-                                        }`}>
-                                            {formatWeight(Math.abs(production.reconciliation.summary.totalBalanceWeight || 0))}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">✓ Correctos</p>
-                                        <p className="font-semibold text-xs text-green-600">
-                                            {production.reconciliation.summary.productsOk || 0}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">⚠ Advertencias</p>
-                                        <p className="font-semibold text-xs text-yellow-600">
-                                            {production.reconciliation.summary.productsWarning || 0}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-muted-foreground text-[10px] mb-0.5">✗ Errores</p>
-                                        <p className="font-semibold text-xs text-destructive">
-                                            {production.reconciliation.summary.productsError || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                    <Card className={`h-auto border-2 ${
+                        production.reconciliation.summary?.overallStatus === 'error' 
+                            ? 'border-destructive bg-destructive/5' 
+                            : production.reconciliation.summary?.overallStatus === 'warning'
+                            ? 'border-yellow-500 bg-yellow-500/5'
+                            : 'border-green-500 bg-green-500/5'
+                    }`}>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    {production.reconciliation.summary?.overallStatus === 'error' ? (
+                                        <XCircle className="h-4 w-4 text-destructive" />
+                                    ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
+                                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                                    ) : (
+                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                    )}
+                                    Conciliación
+                                </CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <Badge 
+                                        variant={
+                                            production.reconciliation.summary?.overallStatus === 'error' 
+                                                ? 'destructive' 
+                                                : production.reconciliation.summary?.overallStatus === 'warning'
+                                                ? 'secondary'
+                                                : 'default'
+                                        }
+                                        className={`text-xs ${
+                                            production.reconciliation.summary?.overallStatus === 'error' 
+                                                ? 'bg-destructive' 
+                                                : production.reconciliation.summary?.overallStatus === 'warning'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-green-500'
+                                        }`}
+                                    >
+                                        {production.reconciliation.summary?.overallStatus === 'error' 
+                                            ? 'Error' 
+                                            : production.reconciliation.summary?.overallStatus === 'warning'
+                                            ? 'Adv'
+                                            : 'OK'
+                                        }
+                                    </Badge>
+                                    {production.reconciliation.products && production.reconciliation.products.length > 0 && (
+                                        <Dialog open={reconciliationDialogOpen} onOpenChange={setReconciliationDialogOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="h-7 text-xs">
+                                                    <Eye className="h-3 w-3 mr-1" />
+                                                    Detalle
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-6xl max-h-[90vh]">
+                                                <DialogHeader>
+                                                    <DialogTitle className="flex items-center gap-2">
+                                                        {production.reconciliation.summary?.overallStatus === 'error' ? (
+                                                            <XCircle className="h-5 w-5 text-destructive" />
+                                                        ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
+                                                            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                                        ) : (
+                                                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                                        )}
+                                                        Detalle de Conciliación General
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Detalle completo de la conciliación de productos
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <ScrollArea className="max-h-[calc(90vh-120px)]">
+                                                    <div className="space-y-4 pr-4">
+                                                        {/* Resumen en el dialog */}
+                                                        {production.reconciliation.summary && (
+                                                            <div className="px-3 py-3 rounded-md bg-muted/50 border">
+                                                                <div className="grid grid-cols-2 md:grid-cols-7 gap-x-4 gap-y-2 text-sm">
+                                                                    <div>
+                                                                        <p className="text-muted-foreground text-xs mb-1">Productos</p>
+                                                                        <p className="font-semibold text-sm">
+                                                                            {production.reconciliation.summary.totalProducts || 0}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-muted-foreground text-xs mb-1">Producido</p>
+                                                                        <p className="font-semibold text-sm">
+                                                                            {formatWeight(production.reconciliation.summary.totalProducedWeight || 0)}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-muted-foreground text-xs mb-1">Registrado</p>
+                                                                        <p className="font-semibold text-sm">
+                                                                            {formatWeight(production.reconciliation.summary.totalContabilizedWeight || 0)}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-muted-foreground text-xs mb-1">Balance</p>
+                                                                        <p className={`font-semibold text-sm ${
+                                                                            (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
+                                                                                ? 'text-destructive'
+                                                                                : 'text-green-600'
+                                                                        }`}>
+                                                                            {formatWeight(Math.abs(production.reconciliation.summary.totalBalanceWeight || 0))}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className="text-muted-foreground text-xs mb-1">✓ Correctos</p>
+                                                                        <p className="font-semibold text-sm text-green-600">
+                                                                            {production.reconciliation.summary.productsOk || 0}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className="text-muted-foreground text-xs mb-1">⚠ Advertencias</p>
+                                                                        <p className="font-semibold text-sm text-yellow-600">
+                                                                            {production.reconciliation.summary.productsWarning || 0}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className="text-muted-foreground text-xs mb-1">✗ Errores</p>
+                                                                        <p className="font-semibold text-sm text-destructive">
+                                                                            {production.reconciliation.summary.productsError || 0}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
 
-                        {/* Tabla de productos */}
-                        {/* 
-                          Formato de productos:
-                          - Productos producidos: produced.weight > 0, status: 'ok'/'warning'/'error'
-                          - Productos NO producidos: produced.weight === 0 pero existe en venta/stock/reprocesado,
-                            balance.percentage === -100, status: 'error'
-                          Ver documentación: docs/FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md
-                        */}
-                        {production.reconciliation.products && production.reconciliation.products.length > 0 && (
-                            <div className="rounded-md border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="h-8 w-[180px] text-xs">Producto</TableHead>
-                                            <TableHead className="h-8 text-right text-xs">Producido</TableHead>
-                                            <TableHead className="h-8 text-right text-xs">En Venta</TableHead>
-                                            <TableHead className="h-8 text-right text-xs">En Stock</TableHead>
-                                            <TableHead className="h-8 text-right text-xs">Reprocesado</TableHead>
-                                            <TableHead className="h-8 text-right text-xs">Balance</TableHead>
-                                            <TableHead className="h-8 w-[80px] text-center text-xs">Estado</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {production.reconciliation.products.map((item, index) => (
-                                            <TableRow
-                                                key={item.product?.id || index}
-                                                className={`${
-                                                    item.status === 'error'
-                                                        ? 'bg-destructive/5'
-                                                        : item.status === 'warning'
-                                                        ? 'bg-yellow-500/5'
-                                                        : ''
-                                                }`}
-                                            >
-                                                <TableCell className="font-medium py-2">
-                                                    <div>
-                                                        <p className="text-xs font-semibold">{item.product?.name || 'Sin nombre'}</p>
-                                                        {item.message && (
-                                                            <p className={`text-[10px] mt-0.5 leading-tight ${
-                                                                item.status === 'error'
-                                                                    ? 'text-destructive'
-                                                                    : item.status === 'warning'
-                                                                    ? 'text-yellow-700'
-                                                                    : 'text-green-700'
-                                                            }`}>
-                                                                {item.message}
-                                                            </p>
+                                                        {/* Tabla de productos */}
+                                                        {/* 
+                                                          Formato de productos:
+                                                          - Productos producidos: produced.weight > 0, status: 'ok'/'warning'/'error'
+                                                          - Productos NO producidos: produced.weight === 0 pero existe en venta/stock/reprocesado,
+                                                            balance.percentage === -100, status: 'error'
+                                                          Ver documentación: docs/FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md
+                                                        */}
+                                                        {production.reconciliation.products && production.reconciliation.products.length > 0 && (
+                                                            <div className="rounded-md border">
+                                                                <Table>
+                                                                    <TableHeader>
+                                                                        <TableRow>
+                                                                            <TableHead className="h-10 w-[200px] text-sm">Producto</TableHead>
+                                                                            <TableHead className="h-10 text-right text-sm">Producido</TableHead>
+                                                                            <TableHead className="h-10 text-right text-sm">En Venta</TableHead>
+                                                                            <TableHead className="h-10 text-right text-sm">En Stock</TableHead>
+                                                                            <TableHead className="h-10 text-right text-sm">Reprocesado</TableHead>
+                                                                            <TableHead className="h-10 text-right text-sm">Balance</TableHead>
+                                                                            <TableHead className="h-10 w-[100px] text-center text-sm">Estado</TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                        {production.reconciliation.products.map((item, index) => (
+                                                                            <TableRow
+                                                                                key={item.product?.id || index}
+                                                                                className={`${
+                                                                                    item.status === 'error'
+                                                                                        ? 'bg-destructive/5'
+                                                                                        : item.status === 'warning'
+                                                                                        ? 'bg-yellow-500/5'
+                                                                                        : ''
+                                                                                }`}
+                                                                            >
+                                                                                <TableCell className="font-medium py-3">
+                                                                                    <div>
+                                                                                        <p className="text-sm font-semibold">{item.product?.name || 'Sin nombre'}</p>
+                                                                                        {item.message && (
+                                                                                            <p className={`text-xs mt-1 leading-tight ${
+                                                                                                item.status === 'error'
+                                                                                                    ? 'text-destructive'
+                                                                                                    : item.status === 'warning'
+                                                                                                    ? 'text-yellow-700'
+                                                                                                    : 'text-green-700'
+                                                                                            }`}>
+                                                                                                {item.message}
+                                                                                            </p>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-right py-3">
+                                                                                    <div>
+                                                                                        <p className="text-sm font-semibold">{formatWeight(item.produced?.weight || 0)}</p>
+                                                                                        <p className="text-xs text-muted-foreground">{item.produced?.boxes || 0} c.</p>
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-right py-3">
+                                                                                    <div>
+                                                                                        <p className="text-sm font-semibold">{formatWeight(item.inSales?.weight || 0)}</p>
+                                                                                        <p className="text-xs text-muted-foreground">{item.inSales?.boxes || 0} c.</p>
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-right py-3">
+                                                                                    <div>
+                                                                                        <p className="text-sm font-semibold">{formatWeight(item.inStock?.weight || 0)}</p>
+                                                                                        <p className="text-xs text-muted-foreground">{item.inStock?.boxes || 0} c.</p>
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-right py-3">
+                                                                                    <div>
+                                                                                        <p className="text-sm font-semibold">{formatWeight(item.reprocessed?.weight || 0)}</p>
+                                                                                        <p className="text-xs text-muted-foreground">{item.reprocessed?.boxes || 0} c.</p>
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-right py-3">
+                                                                                    <div>
+                                                                                        <p className={`text-sm font-semibold ${
+                                                                                            (item.balance?.weight || 0) < 0
+                                                                                                ? 'text-destructive'
+                                                                                                : (item.balance?.weight || 0) > 0
+                                                                                                ? 'text-yellow-600'
+                                                                                                : 'text-green-600'
+                                                                                        }`}>
+                                                                                            {formatWeight(Math.abs(item.balance?.weight || 0))}
+                                                                                        </p>
+                                                                                        <p className={`text-xs ${
+                                                                                            (item.balance?.weight || 0) < 0
+                                                                                                ? 'text-destructive'
+                                                                                                : (item.balance?.weight || 0) > 0
+                                                                                                ? 'text-yellow-600'
+                                                                                                : 'text-green-600'
+                                                                                        }`}>
+                                                                                            {formatDecimal(Math.abs(item.balance?.percentage || 0))}%
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </TableCell>
+                                                                                <TableCell className="text-center py-3">
+                                                                                    <Badge
+                                                                                        variant={
+                                                                                            item.status === 'error'
+                                                                                                ? 'destructive'
+                                                                                                : item.status === 'warning'
+                                                                                                ? 'secondary'
+                                                                                                : 'default'
+                                                                                        }
+                                                                                        className={`text-xs px-2 py-0.5 ${
+                                                                                            item.status === 'error'
+                                                                                                ? 'bg-destructive'
+                                                                                                : item.status === 'warning'
+                                                                                                ? 'bg-yellow-500'
+                                                                                                : 'bg-green-500'
+                                                                                        }`}
+                                                                                    >
+                                                                                        {item.status === 'error'
+                                                                                            ? 'Error'
+                                                                                            : item.status === 'warning'
+                                                                                            ? 'Adv'
+                                                                                            : 'OK'}
+                                                                                    </Badge>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        ))}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </div>
                                                         )}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell className="text-right py-2">
-                                                    <div>
-                                                        <p className="text-xs font-semibold">{formatWeight(item.produced?.weight || 0)}</p>
-                                                        <p className="text-[10px] text-muted-foreground">{item.produced?.boxes || 0} c.</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right py-2">
-                                                    <div>
-                                                        <p className="text-xs font-semibold">{formatWeight(item.inSales?.weight || 0)}</p>
-                                                        <p className="text-[10px] text-muted-foreground">{item.inSales?.boxes || 0} c.</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right py-2">
-                                                    <div>
-                                                        <p className="text-xs font-semibold">{formatWeight(item.inStock?.weight || 0)}</p>
-                                                        <p className="text-[10px] text-muted-foreground">{item.inStock?.boxes || 0} c.</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right py-2">
-                                                    <div>
-                                                        <p className="text-xs font-semibold">{formatWeight(item.reprocessed?.weight || 0)}</p>
-                                                        <p className="text-[10px] text-muted-foreground">{item.reprocessed?.boxes || 0} c.</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right py-2">
-                                                    <div>
-                                                        <p className={`text-xs font-semibold ${
-                                                            (item.balance?.weight || 0) < 0
-                                                                ? 'text-destructive'
-                                                                : (item.balance?.weight || 0) > 0
-                                                                ? 'text-yellow-600'
-                                                                : 'text-green-600'
-                                                        }`}>
-                                                            {formatWeight(Math.abs(item.balance?.weight || 0))}
-                                                        </p>
-                                                        <p className={`text-[10px] ${
-                                                            (item.balance?.weight || 0) < 0
-                                                                ? 'text-destructive'
-                                                                : (item.balance?.weight || 0) > 0
-                                                                ? 'text-yellow-600'
-                                                                : 'text-green-600'
-                                                        }`}>
-                                                            {formatDecimal(Math.abs(item.balance?.percentage || 0))}%
-                                                        </p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center py-2">
-                                                    <Badge
-                                                        variant={
-                                                            item.status === 'error'
-                                                                ? 'destructive'
-                                                                : item.status === 'warning'
-                                                                ? 'secondary'
-                                                                : 'default'
-                                                        }
-                                                        className={`text-[10px] px-1.5 py-0 ${
-                                                            item.status === 'error'
-                                                                ? 'bg-destructive'
-                                                                : item.status === 'warning'
-                                                                ? 'bg-yellow-500'
-                                                                : 'bg-green-500'
-                                                        }`}
-                                                    >
-                                                        {item.status === 'error'
-                                                            ? 'Error'
-                                                            : item.status === 'warning'
-                                                            ? 'Adv'
-                                                            : 'OK'}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                                </ScrollArea>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            {/* Resumen compacto - datos globales */}
+                            {production.reconciliation.summary && (
+                                <div className="grid grid-cols-3 gap-0">
+                                    {/* Producido vs Registrado */}
+                                    <div className="space-y-1.5 pr-3 border-r">
+                                        <div className="flex items-center gap-1.5">
+                                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Producido</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold leading-tight">{formatWeight(production.reconciliation.summary.totalProducedWeight || 0)}</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{production.reconciliation.summary.totalProducts || 0} productos</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Registrado */}
+                                    <div className="space-y-1.5 px-3 border-r">
+                                        <div className="flex items-center gap-1.5">
+                                            <Scale className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Registrado</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold leading-tight">{formatWeight(production.reconciliation.summary.totalContabilizedWeight || 0)}</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">{production.reconciliation.summary.totalProducts || 0} productos</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Balance y Estado */}
+                                    <div className="space-y-1.5 pl-3">
+                                        <div className="flex items-center gap-1.5">
+                                            {(production.reconciliation.summary.totalBalanceWeight || 0) !== 0 ? (
+                                                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                                            ) : (
+                                                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                                            )}
+                                            <p className={`text-xs font-semibold uppercase tracking-wide ${
+                                                (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
+                                                    ? 'text-destructive'
+                                                    : 'text-green-600'
+                                            }`}>
+                                                Balance
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className={`text-lg font-bold leading-tight ${
+                                                (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
+                                                    ? 'text-destructive'
+                                                    : 'text-green-600'
+                                            }`}>
+                                                {formatWeight(Math.abs(production.reconciliation.summary.totalBalanceWeight || 0))}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-0.5 text-xs">
+                                                <div className="flex items-center gap-1 text-green-600">
+                                                    <CheckCircle2 className="h-3 w-3" />
+                                                    <span>{production.reconciliation.summary.productsOk || 0}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-yellow-600">
+                                                    <AlertTriangle className="h-3 w-3" />
+                                                    <span>{production.reconciliation.summary.productsWarning || 0}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-destructive">
+                                                    <XCircle className="h-3 w-3" />
+                                                    <span>{production.reconciliation.summary.productsError || 0}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
             )}
+
+            </div>
 
             {/* Tabs para Procesos y más */}
             <Tabs defaultValue="processes" className="w-full">

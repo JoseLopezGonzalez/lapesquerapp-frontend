@@ -1377,8 +1377,10 @@ export const configs = {
               label: "Estado del Palet",
               type: "pairSelectBoxes",
               options: [
+                { name: "registered", label: "Registrado", value: false },
                 { name: "stored", label: "Almacenado", value: false },
                 { name: "shipped", label: "Enviado", value: false },
+                { name: "processed", label: "Procesado", value: false },
               ],
             },
             {
@@ -1487,8 +1489,10 @@ export const configs = {
               label: "Estado",
               type: "pairSelectBoxes",
               options: [
+                { name: "registered", label: "Registrado", value: false },
                 { name: "stored", label: "Almacenado", value: false },
-                { name: "shipped", label: "Enviado", value: false }
+                { name: "shipped", label: "Enviado", value: false },
+                { name: "processed", label: "Procesado", value: false }
               ]
             },
             /* orderState */
@@ -1614,8 +1618,10 @@ export const configs = {
           name: "state", label: "Estado", type: "badge", path: "state.name",
           options:
           {
-            almacenado: { label: "Almacenado", color: "warning", outline: true },
-            enviado: { label: "Enviado", color: "success", outline: true },
+            registered: { label: "Registrado", color: "secondary", outline: true },
+            stored: { label: "Almacenado", color: "warning", outline: true },
+            shipped: { label: "Enviado", color: "success", outline: true },
+            processed: { label: "Procesado", color: "destructive", outline: true },
             default: { label: "Desconocido", color: "secondary", outline: true },
           }
         },
@@ -1651,13 +1657,13 @@ export const configs = {
         method: 'POST'
       }, */
       {
-        title: 'Cambiar estado a Enviado',
+        title: 'Cambiar estado a Registrado',
         endpoint: 'pallets/update-state',
-        confirmation: '¿Deseas marcar estos pallets como enviados?',
+        confirmation: '¿Deseas marcar estos pallets como registrados?',
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { state_id: 3 } // Estado "shipped"
+        body: { state_id: 1 } // Estado "registered"
       },
       {
         title: 'Cambiar estado a Almacenado',
@@ -1667,8 +1673,25 @@ export const configs = {
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
         body: { state_id: 2 } // Estado "stored"
+      },
+      {
+        title: 'Cambiar estado a Enviado',
+        endpoint: 'pallets/update-state',
+        confirmation: '¿Deseas marcar estos pallets como enviados?',
+        successMessage: 'Palets actualizados correctamente.',
+        errorMessage: 'Hubo un error al actualizar los palets.',
+        method: 'POST',
+        body: { state_id: 3 } // Estado "shipped"
+      },
+      {
+        title: 'Cambiar estado a Procesado',
+        endpoint: 'pallets/update-state',
+        confirmation: '¿Deseas marcar estos pallets como procesados?',
+        successMessage: 'Palets actualizados correctamente.',
+        errorMessage: 'Hubo un error al actualizar los palets.',
+        method: 'POST',
+        body: { state_id: 4 } // Estado "processed"
       }
-      // Puedes añadir más
     ],
   },
   /* customers */

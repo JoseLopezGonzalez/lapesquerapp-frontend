@@ -552,68 +552,13 @@ Aplicado a rutas `/warehouse/*`:
 
 ---
 
-## ⚠️ Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas
 
-### 1. Mezcla Inconsistente de Server/Client Components
-- **Archivo**: Múltiples páginas
-- **Problema**: Algunas páginas son Server Components que solo renderizan Client Components sin aprovechar beneficios de Server Components (fetch de datos, etc.)
-- **Impacto**: Oportunidad perdida de optimización
-- **Recomendación**: Considerar mover fetch de datos iniciales a Server Components cuando sea posible
+Para una lista completa de observaciones críticas, consulta **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)**.
 
-### 2. Middleware con Fetch al Backend
-- **Archivo**: `/src/middleware.js`
-- **Línea**: 44-56
-- **Problema**: El middleware hace un fetch al backend en cada request para validar token
-- **Impacto**: Latencia adicional en cada request, posible cuello de botella
-- **Recomendación**: Considerar validación local del token o caché de validación
-
-### 3. Duplicación de Lógica de Protección
-- **Archivo**: `/src/middleware.js` y `/src/components/AdminRouteProtection/index.js`
-- **Problema**: Lógica de redirección de `store_operator` duplicada en middleware y componente
-- **Impacto**: Mantenimiento más complejo, posible inconsistencia
-- **Recomendación**: Centralizar lógica de redirección en un solo lugar
-
-### 4. Falta de Error Boundaries
-- **Archivo**: No encontrado
-- **Problema**: No hay Error Boundaries implementados para capturar errores de renderizado
-- **Impacto**: Errores no manejados pueden romper toda la aplicación
-- **Recomendación**: Implementar Error Boundaries en layouts principales
-
-### 5. Uso de `use()` en Next.js 15
-- **Archivo**: `/src/app/warehouse/[storeId]/page.js`
-- **Línea**: 20
-- **Problema**: Uso de `use()` para unwrap params, pero también se usa `await params` en otros lugares
-- **Impacto**: Inconsistencia en el manejo de params
-- **Recomendación**: Estandarizar en `await params` (recomendado por Next.js 15)
-
-### 6. Archivo Duplicado en Entity
-- **Archivo**: `/src/app/admin/[entity]/[id]/EditEntityClient copy.js`
-- **Problema**: Archivo con "copy" en el nombre, probablemente duplicado accidental
-- **Impacto**: Confusión sobre cuál archivo usar
-- **Recomendación**: Eliminar archivo duplicado o renombrarlo si tiene propósito diferente
-
-### 7. Falta de Loading States Consistentes
-- **Archivo**: Múltiples páginas
-- **Problema**: Algunas páginas tienen `loading.js`, otras no
-- **Impacto**: Experiencia de usuario inconsistente
-- **Recomendación**: Implementar `loading.js` en todas las rutas que hagan fetch de datos
-
-### 8. Configuración de Roles Limitada
-- **Archivo**: `/src/configs/roleConfig.js`
-- **Línea**: 1-9
-- **Problema**: Solo 4 rutas configuradas, muchas rutas admin no tienen configuración específica
-- **Impacto**: Rutas sin configuración específica pueden tener comportamiento inesperado
-- **Recomendación**: Documentar comportamiento por defecto o añadir todas las rutas
-
-### 9. ClientLayout como Wrapper Necesario
-- **Archivo**: `/src/app/ClientLayout.js`
-- **Problema**: Necesario porque NextAuth requiere Client Component, pero añade una capa extra
-- **Impacto**: Estructura de componentes más profunda
-- **Recomendación**: Considerar si NextAuth puede integrarse de otra forma en el futuro
-
-### 10. Falta de Suspense Boundaries
-- **Archivo**: Múltiples componentes
-- **Problema**: No se usan Suspense boundaries para loading states asíncronos
-- **Impacto**: No se aprovecha completamente el streaming de Next.js
-- **Recomendación**: Implementar Suspense en componentes que hagan fetch de datos
+**Principales observaciones arquitectónicas:**
+- Mezcla inconsistente de Server/Client Components (oportunidad de optimización)
+- Middleware hace fetch al backend en cada request (posible impacto en rendimiento)
+- Falta de Error Boundaries para capturar errores de renderizado
+- Falta de Suspense boundaries para loading states asíncronos
 

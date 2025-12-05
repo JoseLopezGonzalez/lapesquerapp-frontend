@@ -50,7 +50,7 @@ function generateUniqueIntId() {
 const emptyPallet = {
     id: null,
     observations: '',
-    state: { id: 2, name: 'Almacenado' }, // opcional
+    state: { id: 1, name: 'Registrado' }, // Estado inicial: registrado pero no almacenado
     productsNames: [],
     boxes: [],
     lots: [],

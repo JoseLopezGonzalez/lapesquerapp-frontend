@@ -17,6 +17,7 @@ import Loader from "@/components/Utilities/Loader";
 import { useStores } from "@/hooks/useStores";
 import { ScrollShadow } from "@nextui-org/react";
 import { useState } from "react";
+import React from "react";
 import StoreCard from "./StoresManager/StoreCard";
 import SkeletonStoreCard from "./StoresManager/StoreCard/SkeletonStoreCard";
 import { Store } from "./StoresManager/Store";
@@ -36,6 +37,16 @@ export default function StoresManager() {
   const store = null;
 
   /* const [selectedStoreId, setSelectedStoreId] = useState(store); */
+
+  // Debug: Log stores cuando cambian
+  React.useEffect(() => {
+    if (stores && stores.length > 0) {
+      console.log('StoresManager - Rendering stores:', stores.length);
+      console.log('First store (should be ghost):', stores[0]);
+      const ghostStore = stores.find(s => s.id === 'registered');
+      console.log('Ghost store found:', ghostStore);
+    }
+  }, [stores]);
 
   const handleOnSelectStore = (id) => {
     if (loadingStore) return;
@@ -73,9 +84,26 @@ export default function StoresManager() {
               }}
               hideScrollBar
               orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 py-2">
-              {stores.map((store) => (
-                <StoreCard key={store.id} store={store} disabled={isStoreLoading} isSelected={selectedStoreId} onClick={() => handleOnSelectStore(store.id)} block={loadingStore} />
-              ))}
+              {stores && stores.length > 0 ? stores.map((store) => {
+                // Debug log para cada store
+                if (store.id === 'registered') {
+                  console.log('Rendering ghost store:', store);
+                }
+                return (
+                  <StoreCard 
+                    key={store.id || `store-${store.name}`} 
+                    store={store} 
+                    disabled={isStoreLoading} 
+                    isSelected={selectedStoreId} 
+                    onClick={() => handleOnSelectStore(store.id)} 
+                    block={loadingStore} 
+                  />
+                );
+              }) : (
+                <div className="text-center text-muted-foreground p-4">
+                  No hay almacenes disponibles
+                </div>
+              )}
             </ScrollShadow>
 
             {/* Content Box */}

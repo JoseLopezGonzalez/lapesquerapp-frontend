@@ -1,10 +1,10 @@
 'use client'
 
-import React, { createContext, useContext, useCallback, useMemo } from 'react'
+import React, { createContext, useContext, useCallback, useMemo, useRef } from 'react'
 import { useProductionRecord } from '@/hooks/useProductionRecord'
 import { getProductionRecord } from '@/services/productionService'
 import { useSession } from 'next-auth/react'
-import { getRecordField } from '@/helpers/production/recordHelpers'
+import { normalizeProductionRecord } from '@/helpers/production/normalizers'
 import { updateRecordWithCalculatedTotals } from '@/helpers/production/calculateTotals'
 
 // Creamos el contexto
@@ -20,6 +20,9 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
     // Usar el hook existente para gestionar el record
     const recordData = useProductionRecord(productionId, recordId, onRefresh)
 
+    // Referencia para guardar estado anterior (para rollback)
+    const previousStateRef = useRef(null)
+
     // Función para actualizar el record completo (después de cambios)
     const updateRecord = useCallback(async () => {
         const token = session?.user?.accessToken
@@ -27,7 +30,12 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
         if (!token || !currentRecordId) return
 
         try {
+            // Guardar estado anterior para rollback
+            previousStateRef.current = recordData.record
+            
             const updatedRecord = await getProductionRecord(currentRecordId, token)
+            // El record ya viene normalizado desde el servicio
+            
             if (recordData.setRecord) {
                 recordData.setRecord(updatedRecord)
             } else {
@@ -37,105 +45,156 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
             return updatedRecord
         } catch (err) {
             console.error('Error updating record:', err)
+            // Rollback en caso de error
+            if (previousStateRef.current && recordData.setRecord) {
+                recordData.setRecord(previousStateRef.current)
+            }
             throw err
         }
     }, [session?.user?.accessToken, recordId, recordData])
 
-    // Funciones helper para obtener datos del record
+    // Funciones helper para obtener datos del record (ahora normalizados)
+    // El record ya viene normalizado desde el servicio, así que accedemos directamente
     const recordInputs = useMemo(() => {
         if (!recordData.record) return []
-        return getRecordField(recordData.record, 'inputs') || []
+        return recordData.record.inputs || []
     }, [recordData.record])
 
     const recordOutputs = useMemo(() => {
         if (!recordData.record) return []
-        return getRecordField(recordData.record, 'outputs') || []
+        return recordData.record.outputs || []
     }, [recordData.record])
 
     const recordConsumptions = useMemo(() => {
         if (!recordData.record) return []
-        return getRecordField(recordData.record, 'parentOutputConsumptions') || []
+        return recordData.record.parentOutputConsumptions || []
     }, [recordData.record])
 
     const hasParent = useMemo(() => {
-        return !!(getRecordField(recordData.record, 'parentRecordId'))
+        if (!recordData.record) return false
+        return !!(recordData.record.parentRecordId)
     }, [recordData.record])
 
-    // Función para actualizar inputs (actualización optimista con cálculo local de totales)
+    // Función para actualizar inputs (actualización optimista con cálculo local de totales y rollback)
     const updateInputs = useCallback(async (newInputs, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
 
         if (recordData.setRecord && recordData.record) {
-            // Actualización optimista inmediata con cálculo local de totales
-            recordData.setRecord(prev => {
-                const updatedRecord = {
-                    ...prev,
-                    inputs: newInputs
+            // Guardar estado anterior para rollback
+            const previousRecord = recordData.record
+            previousStateRef.current = previousRecord
+            
+            try {
+                // Actualización optimista inmediata con cálculo local de totales
+                recordData.setRecord(prev => {
+                    const updatedRecord = {
+                        ...prev,
+                        inputs: newInputs
+                    }
+                    // Calcular totales localmente basándose en los nuevos inputs y outputs actuales
+                    return updateRecordWithCalculatedTotals(updatedRecord, newInputs, prev.outputs || [])
+                })
+                
+                // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
+                if (shouldRefresh) {
+                    // Recargar en segundo plano sin bloquear la UI
+                    updateRecord().catch(err => {
+                        console.warn('Error refreshing record after inputs update:', err)
+                        // Rollback en caso de error
+                        if (previousStateRef.current && recordData.setRecord) {
+                            recordData.setRecord(previousStateRef.current)
+                        }
+                    })
                 }
-                // Calcular totales localmente basándose en los nuevos inputs y outputs actuales
-                return updateRecordWithCalculatedTotals(updatedRecord, newInputs, prev.outputs || [])
-            })
-        }
-        
-        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
-        if (shouldRefresh) {
-            // Recargar en segundo plano sin bloquear la UI
-            updateRecord().catch(err => {
-                console.warn('Error refreshing record after inputs update:', err)
-                // No romper la UI si falla la recarga
-            })
+            } catch (err) {
+                // Rollback en caso de error
+                if (previousStateRef.current && recordData.setRecord) {
+                    recordData.setRecord(previousStateRef.current)
+                }
+                throw err
+            }
         }
     }, [recordData, recordId, updateRecord])
 
-    // Función para actualizar outputs (actualización optimista con cálculo local de totales)
+    // Función para actualizar outputs (actualización optimista con cálculo local de totales y rollback)
     const updateOutputs = useCallback(async (newOutputs, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
 
         if (recordData.setRecord && recordData.record) {
-            // Actualización optimista inmediata con cálculo local de totales
-            recordData.setRecord(prev => {
-                const updatedRecord = {
-                    ...prev,
-                    outputs: newOutputs
+            // Guardar estado anterior para rollback
+            const previousRecord = recordData.record
+            previousStateRef.current = previousRecord
+            
+            try {
+                // Actualización optimista inmediata con cálculo local de totales
+                recordData.setRecord(prev => {
+                    const updatedRecord = {
+                        ...prev,
+                        outputs: newOutputs
+                    }
+                    // Calcular totales localmente basándose en los inputs actuales y los nuevos outputs
+                    return updateRecordWithCalculatedTotals(updatedRecord, prev.inputs || [], newOutputs)
+                })
+                
+                // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
+                if (shouldRefresh) {
+                    // Recargar en segundo plano sin bloquear la UI
+                    updateRecord().catch(err => {
+                        console.warn('Error refreshing record after outputs update:', err)
+                        // Rollback en caso de error
+                        if (previousStateRef.current && recordData.setRecord) {
+                            recordData.setRecord(previousStateRef.current)
+                        }
+                    })
                 }
-                // Calcular totales localmente basándose en los inputs actuales y los nuevos outputs
-                return updateRecordWithCalculatedTotals(updatedRecord, prev.inputs || [], newOutputs)
-            })
-        }
-        
-        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
-        if (shouldRefresh) {
-            // Recargar en segundo plano sin bloquear la UI
-            updateRecord().catch(err => {
-                console.warn('Error refreshing record after outputs update:', err)
-                // No romper la UI si falla la recarga
-            })
+            } catch (err) {
+                // Rollback en caso de error
+                if (previousStateRef.current && recordData.setRecord) {
+                    recordData.setRecord(previousStateRef.current)
+                }
+                throw err
+            }
         }
     }, [recordData, recordId, updateRecord])
 
-    // Función para actualizar consumptions (actualización optimista)
+    // Función para actualizar consumptions (actualización optimista con rollback)
     // Nota: Los consumptions no afectan los totales del record actual, solo se actualizan
     const updateConsumptions = useCallback(async (newConsumptions, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
 
         if (recordData.setRecord && recordData.record) {
-            // Actualización optimista inmediata
-            recordData.setRecord(prev => ({
-                ...prev,
-                parentOutputConsumptions: newConsumptions
-            }))
-        }
-        
-        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
-        if (shouldRefresh) {
-            // Recargar en segundo plano sin bloquear la UI
-            updateRecord().catch(err => {
-                console.warn('Error refreshing record after consumptions update:', err)
-                // No romper la UI si falla la recarga
-            })
+            // Guardar estado anterior para rollback
+            const previousRecord = recordData.record
+            previousStateRef.current = previousRecord
+            
+            try {
+                // Actualización optimista inmediata
+                recordData.setRecord(prev => ({
+                    ...prev,
+                    parentOutputConsumptions: newConsumptions
+                }))
+                
+                // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
+                if (shouldRefresh) {
+                    // Recargar en segundo plano sin bloquear la UI
+                    updateRecord().catch(err => {
+                        console.warn('Error refreshing record after consumptions update:', err)
+                        // Rollback en caso de error
+                        if (previousStateRef.current && recordData.setRecord) {
+                            recordData.setRecord(previousStateRef.current)
+                        }
+                    })
+                }
+            } catch (err) {
+                // Rollback en caso de error
+                if (previousStateRef.current && recordData.setRecord) {
+                    recordData.setRecord(previousStateRef.current)
+                }
+                throw err
+            }
         }
     }, [recordData, recordId, updateRecord])
 

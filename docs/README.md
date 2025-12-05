@@ -1,164 +1,69 @@
 # Documentación - Brisapp Next.js
 
-## 📋 Índice General
+## 📋 Visión General
 
-Esta documentación cubre **exclusivamente** la interacción con la **API v2**, que es la versión activa del backend. La API v1 está obsoleta y solo existe como capa de compatibilidad.
-
-Esta es la documentación principal del proyecto, cubriendo toda la arquitectura, componentes, servicios, hooks, formularios, flujos funcionales y más del frontend de Brisapp.
+Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 para gestión de operaciones pesqueras. Esta documentación cubre exclusivamente la **API v2** (versión activa).
 
 ---
 
 ## ⚠️ Notas Importantes
 
-1. **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
-2. **Producción en construcción**: El módulo de producción está en desarrollo activo
-3. **Documentación basada en código real**: Solo se documenta lo que existe
-4. **Observaciones críticas**: Documentadas sin modificar el código
+- **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
+- **Producción en construcción**: El módulo de producción está en desarrollo activo
+- **Documentación basada en código real**: Solo se documenta lo que existe
 
 ---
 
-## 📚 Estructura de Documentación
+## 📚 Documentación Principal
 
-### Documentos Principales
+### Fundamentos
 
-#### Fundamentos
+1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general, stack tecnológico, convenciones
+2. **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura Next.js App Router, rutas, layouts
+3. **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura de directorios y organización
 
-1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)**
-   - Visión general del proyecto
-   - Stack tecnológico completo
-   - Convenciones de código
-   - Estructura de carpetas
-   - Módulos principales
+### Componentes y UI
 
-2. **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)**
-   - Arquitectura Next.js App Router
-   - Estructura de rutas y layouts
-   - Client vs Server Components
-   - Middleware y protección de rutas
-   - Multi-tenant architecture
+4. **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes base ShadCN UI y personalizados
+5. **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes del módulo Admin
 
-3. **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)**
-   - Descripción detallada de directorios
-   - Organización de código
-   - Path aliases y convenciones
-   - Flujo de dependencias
+### Estado y Lógica
 
-#### Componentes y UI
+6. **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks personalizados
+7. **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Context API (Order, Store, Settings)
 
-4. **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)**
-   - Componentes base ShadCN UI
-   - Componentes personalizados
-   - Props y uso de cada componente
-   - Dependencias externas
+### Servicios y Datos
 
-5. **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)**
-   - Componentes del módulo Admin
-   - Dashboard, Orders, Stores, Productions
-   - Sistema de entidades genérico
-   - Layout y navegación
+8. **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API v2 y endpoints
+9. **[08-FORMULARIOS.md](./08-FORMULARIOS.md)** - Sistema React Hook Form
 
-#### Estado y Lógica
+### Flujos y Funcionalidades
 
-6. **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)**
-   - Documentación de todos los hooks
-   - Parámetros y retornos
-   - Casos de uso y ejemplos
-   - Hooks de configuración
+10. **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)** - Flujos funcionales documentados
+11. **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)** - Tailwind CSS y design system
+12. **[11-AUTENTICACION-AUTORIZACION.md](./11-AUTENTICACION-AUTORIZACION.md)** - NextAuth y protección de rutas
+13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Funciones auxiliares y helpers
+14. **[13-EXPORTACIONES-INTEGRACIONES.md](./13-EXPORTACIONES-INTEGRACIONES.md)** - Exportaciones e integraciones
 
-7. **[06-CONTEXT-API.md](./06-CONTEXT-API.md)**
-   - OrderContext, StoreContext, SettingsContext
-   - Estado inicial y acciones
-   - Patrones de consumo
-   - Gestión de estado global
+### Estado del Proyecto
 
-#### Servicios y Datos
+15. **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)** - Módulo de producción (en desarrollo)
+16. **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** - Problemas identificados y mejoras
 
-8. **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)**
-   - Documentación completa de servicios
-   - Endpoints API v2
-   - Parámetros y respuestas
-   - Manejo de errores
-   - Ejemplos de uso
+---
 
-9. **[08-FORMULARIOS.md](./08-FORMULARIOS.md)**
-   - Sistema React Hook Form
-   - Configuración de formularios
-   - Componentes de input personalizados
-   - Validaciones y reglas
-   - Ejemplos reales
+## 📖 Documentación Técnica
 
-#### Flujos y Funcionalidades
+### Específica de Módulos
 
-10. **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)**
-    - Flujos funcionales documentados
-    - Crear/editar pedidos
-    - Gestión de almacenes
-    - Sistema de etiquetas
-    - Exportaciones e integraciones
-    - Procesos completos paso a paso
+- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Disponibilidad de cajas en palets
+- **[FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md](./FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md)** - Formato de respuesta API
 
-#### Estilos y Autenticación
+### Guías Rápidas
 
-11. **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)**
-    - Configuración Tailwind CSS
-    - Design tokens y variables
-    - Componentes ShadCN
-    - Responsive design
-    - Animaciones y temas
-
-12. **[11-AUTENTICACION-AUTORIZACION.md](./11-AUTENTICACION-AUTORIZACION.md)**
-    - NextAuth configuración
-    - Protección de rutas
-    - Roles y permisos
-    - Middleware de autenticación
-    - Flujos de login/logout
-
-#### Utilidades e Integraciones
-
-13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)**
-    - Funciones auxiliares
-    - Helpers de formato
-    - Utilidades de librería
-    - Transformación de datos
-    - GS1-128 parsing
-
-14. **[13-EXPORTACIONES-INTEGRACIONES.md](./13-EXPORTACIONES-INTEGRACIONES.md)**
-    - Exportación a Excel (XLSX)
-    - Integración con A3ERP
-    - Integración con Facilcom
-    - Generación de PDFs
-    - Azure Document AI
-    - Envío de documentos por email
-
-#### Estado del Proyecto
-
-15. **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)**
-    - Estado actual del módulo
-    - Funcionalidades implementadas
-    - Funcionalidades pendientes
-    - Servicios API v2
-    - Limitaciones conocidas
-
-16. **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)**
-    - Compilación de todas las observaciones
-    - Componentes duplicados
-    - Código muerto
-    - Lógica incompleta
-    - Problemas de rendimiento
-    - Inconsistencias arquitectónicas
-
-### Documentación Técnica Adicional
-
-- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Análisis técnico de disponibilidad de cajas en palets
-- **[PRODUCTION_DIAGRAM_IMPLEMENTATION.md](./PRODUCTION_DIAGRAM_IMPLEMENTATION.md)** - Implementación del diagrama de producción con React Flow
-- **[BACKEND_FIX_CAPTURE_ZONE_ID.md](./BACKEND_FIX_CAPTURE_ZONE_ID.md)** - Fix del campo `capture_zone_id` en producciones
-
-### Documentación Complementaria
-
-- **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía práctica rápida de uso de settings globales
-- **[configs/entitiesConfig.md](./configs/entitiesConfig.md)** - Guía detallada de configuración de entidades
-- **[examples/entity-config-examples.md](./examples/entity-config-examples.md)** - Ejemplos prácticos de configuración
-- **[components/Admin/Filters/GenericFilters/Types/](./components/Admin/Filters/GenericFilters/Types/)** - Documentación técnica de componentes de filtros
+- **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía de uso de settings globales
+- **[configs/entitiesConfig.md](./configs/entitiesConfig.md)** - Configuración de entidades
+- **[examples/entity-config-examples.md](./examples/entity-config-examples.md)** - Ejemplos de configuración
 
 ---
 
@@ -166,32 +71,13 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
 
 ### Para Desarrolladores Nuevos
 
-1. Comienza con **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** para entender el proyecto
-2. Revisa **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** para la estructura general
-3. Consulta **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** para navegar el código
-4. Usa los demás documentos como referencia según necesites
-
-### Para IAs y Herramientas de Código
-
-- Todos los documentos están estructurados con referencias exactas a archivos y líneas
-- Cada sección incluye ejemplos de código real
-- Las observaciones críticas están documentadas sin modificar el código
+1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Comienza aquí
+2. **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Estructura general
+3. **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Navegación del código
 
 ### Para Revisión de Código
 
-- Consulta **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** para ver todos los problemas identificados
-- Cada documento incluye su propia sección de observaciones críticas
-
----
-
-## 📊 Estadísticas
-
-- **Total de archivos documentados**: 16 documentos principales
-- **Componentes documentados**: 100+ componentes
-- **Hooks documentados**: 13 hooks personalizados
-- **Servicios API v2**: 12+ servicios principales
-- **Flujos completos**: 8 flujos funcionales
-- **Observaciones críticas**: 200+ observaciones identificadas
+- **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** - Problemas identificados
 
 ---
 
@@ -199,18 +85,6 @@ Esta es la documentación principal del proyecto, cubriendo toda la arquitectura
 
 - [Introducción](./00-INTRODUCCION.md) - Comienza aquí
 - [Arquitectura](./01-ARQUITECTURA.md) - Estructura del proyecto
-- [Observaciones Críticas](./15-OBSERVACIONES-CRITICAS.md) - Todos los problemas identificados
-- [Producción en Construcción](./14-PRODUCCION-EN-CONSTRUCCION.md) - Estado del módulo de producción
-
----
-
-## 📝 Mantenimiento
-
-Esta documentación debe actualizarse cuando:
-- Se añaden nuevas funcionalidades
-- Se modifican componentes críticos
-- Se cambian patrones arquitectónicos
-- Se identifican nuevos problemas
-
-**Última actualización**: Generada automáticamente basada en el código actual del repositorio.
+- [Observaciones Críticas](./15-OBSERVACIONES-CRITICAS.md) - Problemas identificados
+- [Producción](./14-PRODUCCION-EN-CONSTRUCCION.md) - Módulo en desarrollo
 

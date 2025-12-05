@@ -336,68 +336,13 @@ npm run lint     # Linter
 
 ---
 
-## ⚠️ Observaciones Críticas y Mejoras Recomendadas
+## ⚠️ Observaciones Críticas
 
-### 1. React 19 Release Candidate
-- **Archivo**: `package.json`
-- **Línea**: 46-47
-- **Problema**: Se está usando React 19 RC (`19.0.0-rc-66855b96-20241106`), que es una versión inestable
-- **Impacto**: Posibles breaking changes cuando se actualice a la versión estable
-- **Recomendación**: Monitorear actualizaciones y planificar migración a versión estable
+Para una lista completa de observaciones críticas, consulta **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)**.
 
-### 2. Falta de TypeScript
-- **Archivo**: Todo el proyecto
-- **Problema**: El proyecto usa JavaScript puro, no TypeScript
-- **Impacto**: Menor seguridad de tipos, más errores en tiempo de ejecución
-- **Recomendación**: Considerar migración gradual a TypeScript para mejor mantenibilidad
-
-### 3. Configuración de Next.js Vacía
-- **Archivo**: `next.config.mjs`
-- **Línea**: 1-4
-- **Problema**: Configuración completamente vacía, sin optimizaciones ni configuraciones específicas
-- **Impacto**: Posibles problemas de rendimiento o funcionalidad no optimizada
-- **Recomendación**: Revisar si se necesitan configuraciones específicas (imágenes, redirects, headers, etc.)
-
-### 4. Mezcla de Librerías de Iconos
-- **Archivo**: Múltiples componentes
-- **Problema**: Se usan tres librerías de iconos diferentes: Lucide, Heroicons, React Icons
-- **Impacto**: Bundle size aumentado, inconsistencia visual potencial
-- **Recomendación**: Estandarizar en una sola librería (preferiblemente Lucide, que es la configurada en ShadCN)
-
-### 5. Falta de Validación con Zod
-- **Archivo**: Formularios en general
-- **Problema**: Aunque se menciona React Hook Form + Zod en los requisitos, no se encontraron schemas de Zod en el proyecto
-- **Impacto**: Validación de formularios puede ser inconsistente
-- **Recomendación**: Implementar schemas Zod para validación de formularios o documentar el sistema de validación actual
-
-### 6. Context API en lugar de Zustand
-- **Archivo**: `/src/context/`
-- **Problema**: Se menciona Zustand/Context en los requisitos, pero solo se usa Context API
-- **Impacto**: Ninguno crítico, pero puede haber confusión
-- **Recomendación**: Documentar claramente que se usa Context API, no Zustand, o considerar migración si se necesita mejor rendimiento
-
-### 7. Archivo de Hook Duplicado
-- **Archivo**: `/src/hooks/usePrintElement copy.js`
-- **Problema**: Existe un archivo con "copy" en el nombre, probablemente duplicado accidental
-- **Impacto**: Confusión sobre cuál archivo usar
-- **Recomendación**: Eliminar el archivo duplicado o renombrarlo si tiene propósito diferente
-
-### 8. Módulo de Producción en Construcción
-- **Archivo**: `/src/components/Admin/Productions/`
-- **Problema**: Módulo marcado como "en construcción" pero tiene componentes grandes (ProductionOutputConsumptionsManager.jsx con 1241 líneas)
-- **Impacto**: Código puede estar incompleto o tener funcionalidades parciales
-- **Recomendación**: Documentar claramente qué funcionalidades están completas y cuáles pendientes
-
-### 9. Falta de Documentación de Variables de Entorno
-- **Archivo**: No existe `.env.example`
-- **Problema**: No está claro qué variables de entorno se necesitan
-- **Impacto**: Dificulta el setup del proyecto para nuevos desarrolladores
-- **Recomendación**: Crear `.env.example` con todas las variables necesarias
-
-### 10. Middleware Complejo
-- **Archivo**: `/src/middleware.js`
-- **Línea**: 1-125
-- **Problema**: Middleware con mucha lógica, incluyendo validación de token con fetch al backend
-- **Impacto**: Posible impacto en rendimiento, lógica compleja de mantener
-- **Recomendación**: Considerar extraer lógica a funciones auxiliares o servicios separados
+**Principales observaciones:**
+- React 19 Release Candidate en uso (monitorear actualizaciones)
+- Proyecto usa JavaScript puro (no TypeScript)
+- Módulo de producción en desarrollo activo
+- Mezcla de librerías de iconos (Lucide, Heroicons, React Icons)
 

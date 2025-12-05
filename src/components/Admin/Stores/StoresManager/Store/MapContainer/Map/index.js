@@ -18,6 +18,18 @@ const Map = ({ onClickPosition , isPositionEmpty  }) => {
 
     const viewBox = calculateViewBox();
     
+    // Si no hay mapa (almacén fantasma), mostrar un mensaje
+    if (!map) {
+        return (
+            <div className="flex items-center justify-center h-full w-full">
+                <div className="text-center text-muted-foreground">
+                    <p className="text-lg font-medium">Almacén Fantasma</p>
+                    <p className="text-sm mt-2">Este almacén no tiene mapa de posiciones</p>
+                </div>
+            </div>
+        );
+    }
+    
     // Debug temporal para ver las dimensiones
     // console.log('Map dimensions:', {
     //     map: map,
@@ -37,14 +49,14 @@ const Map = ({ onClickPosition , isPositionEmpty  }) => {
                 </defs>
 
                 {/* Fondos */}
-                {map.elementos.fondos.map((fondo, index) => {
+                {map?.elementos?.fondos?.map((fondo, index) => {
                     return (
                         <rect key={index} id="rect-contenedor" className="fill-neutral-100 dark:fill-neutral-800" x={fondo.x} y={fondo.y} width={fondo.width} height={fondo.height} rx="14" ry="14" />
                     )
                 })}
 
                 {/* Textos */}
-                {map.elementos.textos.map((texto, index) => {
+                {map?.elementos?.textos?.map((texto, index) => {
                     return (
                         <text key={index} className="fill-neutral-500 dark:fill-white group-hover:fill-sky-600" fill="#575756"
                             fontFamily="Arial-BoldMT, Arial" fontSize="60px">
@@ -54,7 +66,7 @@ const Map = ({ onClickPosition , isPositionEmpty  }) => {
                 })}
 
                 {/* Posiciones */}
-                {map.posiciones.map((posicion, index) => {
+                {map?.posiciones?.map((posicion, index) => {
                     const formatedPosition = {
                         position: posicion,
                         id: posicion.id,
