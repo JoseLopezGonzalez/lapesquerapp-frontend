@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { 
     getProductionInputs, 
@@ -85,25 +85,65 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         )
     }
 
-    // Inicializar con datos del contexto o props
-    useEffect(() => {
+    // Flags para prevenir cargas múltiples
+    const hasInitializedRef = useRef(false)
+    const previousInputsIdsRef = useRef(null)
+
+    // Crear una clave única basada en los IDs de los inputs para comparación profunda
+    const inputsKey = useMemo(() => {
         const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-        if (currentInputs && Array.isArray(currentInputs)) {
-            setInputs(currentInputs)
-            setLoading(false)
-        }
+        if (!currentInputs || currentInputs.length === 0) return null
+        // Crear una clave única basada en los IDs de los inputs (ordenados para consistencia)
+        return currentInputs
+            .map(input => input.id || input.boxId || JSON.stringify(input))
+            .sort()
+            .join(',')
     }, [contextInputs, initialInputsProp])
 
+    // Efecto 1: Carga inicial (solo una vez)
     useEffect(() => {
-        // Solo cargar desde API si no tenemos datos iniciales ni del contexto
-        if (session?.user?.accessToken && productionRecordId) {
-            const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-            if (!currentInputs || currentInputs.length === 0) {
-                loadInputs()
-            }
+        if (hasInitializedRef.current) return
+        if (!session?.user?.accessToken || !productionRecordId) return
+
+        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
+
+        if (currentInputs && Array.isArray(currentInputs) && currentInputs.length > 0) {
+            // Tenemos datos iniciales del contexto o props
+            setInputs(currentInputs)
+            setLoading(false)
+            hasInitializedRef.current = true
+            // Guardar IDs para comparación futura
+            previousInputsIdsRef.current = inputsKey
+            return
         }
+
+        // No hay datos iniciales, cargar desde API (solo una vez)
+        loadInputs().finally(() => {
+            hasInitializedRef.current = true
+        })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId, contextInputs])
+    }, [session?.user?.accessToken, productionRecordId])
+
+    // Efecto 2: Sincronizar con contexto (solo cuando realmente cambian los datos)
+    useEffect(() => {
+        if (!hasInitializedRef.current) return // No sincronizar hasta que haya inicializado
+
+        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
+
+        if (!currentInputs || !Array.isArray(currentInputs) || currentInputs.length === 0) {
+            // Si los datos se vuelven vacíos, actualizar
+            if (inputs.length > 0) {
+                setInputs([])
+            }
+            return
+        }
+
+        // Solo actualizar si realmente cambió el contenido (comparación profunda)
+        if (inputsKey !== previousInputsIdsRef.current) {
+            setInputs(currentInputs)
+            previousInputsIdsRef.current = inputsKey
+        }
+    }, [inputsKey, contextInputs, initialInputsProp, inputs.length])
 
     const loadInputsOnly = async () => {
         try {

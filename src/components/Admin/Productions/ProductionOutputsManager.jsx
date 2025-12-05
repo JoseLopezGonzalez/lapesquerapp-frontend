@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
@@ -72,28 +72,71 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         return true
     })
 
-    // Actualizar outputs cuando cambian los datos del contexto o props
-    useEffect(() => {
+    // Flags para prevenir cargas múltiples
+    const hasInitializedRef = useRef(false)
+    const previousOutputsIdsRef = useRef(null)
+
+    // Crear una clave única basada en los IDs de los outputs para comparación profunda
+    const outputsKey = useMemo(() => {
         const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
-        if (currentOutputs && Array.isArray(currentOutputs)) {
+        if (!currentOutputs || currentOutputs.length === 0) return null
+        // Crear una clave única basada en los IDs de los outputs (ordenados para consistencia)
+        return currentOutputs
+            .map(output => output.id || JSON.stringify(output))
+            .sort()
+            .join(',')
+    }, [contextOutputs, initialOutputsProp])
+
+    // Efecto 1: Carga inicial (solo una vez)
+    useEffect(() => {
+        if (hasInitializedRef.current) return
+        if (!session?.user?.accessToken || !productionRecordId) return
+
+        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
+
+        if (currentOutputs && Array.isArray(currentOutputs) && currentOutputs.length > 0) {
+            // Tenemos datos iniciales del contexto o props
+            setOutputs(currentOutputs)
+            setLoading(false)
+            hasInitializedRef.current = true
+            // Guardar IDs para comparación futura
+            previousOutputsIdsRef.current = outputsKey
+            // Cargar productos (necesarios para el componente)
+            loadProducts()
+            return
+        }
+
+        // No hay datos iniciales, cargar desde API (solo una vez)
+        loadOutputs().finally(() => {
+            hasInitializedRef.current = true
+        })
+        loadProducts()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionRecordId])
+
+    // Efecto 2: Sincronizar con contexto (solo cuando realmente cambian los datos)
+    useEffect(() => {
+        if (!hasInitializedRef.current) return // No sincronizar hasta que haya inicializado
+
+        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
+
+        if (!currentOutputs || !Array.isArray(currentOutputs) || currentOutputs.length === 0) {
+            // Si los datos se vuelven vacíos, actualizar
+            if (outputs.length > 0) {
+                setOutputs([])
+            }
+            return
+        }
+
+        // Solo actualizar si realmente cambió el contenido (comparación profunda)
+        if (outputsKey !== previousOutputsIdsRef.current) {
             setOutputs(currentOutputs)
             if (currentOutputs.length > 0) {
                 setLoading(false)
             }
+            previousOutputsIdsRef.current = outputsKey
         }
-    }, [contextOutputs, initialOutputsProp])
-
-    useEffect(() => {
-        // Solo cargar si no tenemos datos iniciales ni del contexto
-        if (session?.user?.accessToken && productionRecordId) {
-            const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
-            if (!currentOutputs || currentOutputs.length === 0) {
-                loadOutputs()
-            }
-            loadProducts()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId, contextOutputs])
+    }, [outputsKey, contextOutputs, initialOutputsProp, outputs.length])
 
     const handleToggleBoxes = (checked) => {
         setShowBoxes(checked)

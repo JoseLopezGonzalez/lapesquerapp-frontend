@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import {
     getProductionRecord,
@@ -82,41 +82,103 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
         return true
     })
 
-    // Inicializar con datos del contexto o props
-    useEffect(() => {
+    // Flags para prevenir cargas múltiples
+    const hasInitializedRef = useRef(false)
+    const previousConsumptionsIdsRef = useRef(null)
+    const previousHasParentRef = useRef(hasParent)
+
+    // Crear una clave única basada en los IDs de los consumptions para comparación profunda
+    const consumptionsKey = useMemo(() => {
+        if (!hasParent) return 'no-parent'
         const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
-        if (currentConsumptions && Array.isArray(currentConsumptions)) {
-            setConsumptions(currentConsumptions)
-        }
+        if (!currentConsumptions || currentConsumptions.length === 0) return 'empty'
+        // Crear una clave única basada en los IDs de los consumptions (ordenados para consistencia)
+        return currentConsumptions
+            .map(consumption => consumption.id || JSON.stringify(consumption))
+            .sort()
+            .join(',')
+    }, [contextConsumptions, initialConsumptionsProp, hasParent])
+
+    // Efecto 1: Carga inicial (solo una vez)
+    useEffect(() => {
+        if (hasInitializedRef.current) return
+        if (!session?.user?.accessToken || !productionRecordId) return
+
         // Si no tiene padre, no hay consumptions
         if (!hasParent) {
             setConsumptions([])
             setLoading(false)
+            hasInitializedRef.current = true
+            previousHasParentRef.current = hasParent
+            loadProducts()
+            return
         }
-    }, [contextConsumptions, initialConsumptionsProp, hasParent])
 
+        const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
+
+        if (currentConsumptions && Array.isArray(currentConsumptions) && currentConsumptions.length > 0) {
+            // Tenemos datos iniciales del contexto o props
+            setConsumptions(currentConsumptions)
+            setLoading(false)
+            hasInitializedRef.current = true
+            previousConsumptionsIdsRef.current = consumptionsKey
+            previousHasParentRef.current = hasParent
+            loadProducts()
+            return
+        }
+
+        // No hay datos iniciales, cargar desde API (solo una vez)
+        loadData().finally(() => {
+            hasInitializedRef.current = true
+            previousHasParentRef.current = hasParent
+        })
+        loadProducts()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user?.accessToken, productionRecordId])
+
+    // Efecto 2: Sincronizar con contexto y cambios en hasParent (solo cuando realmente cambian los datos)
     useEffect(() => {
-        if (session?.user?.accessToken && productionRecordId) {
-            // Si no tiene padre, no hay consumptions
+        if (!hasInitializedRef.current) return // No sincronizar hasta que haya inicializado
+
+        // Si cambió hasParent, reinicializar
+        if (hasParent !== previousHasParentRef.current) {
             if (!hasParent) {
                 setConsumptions([])
                 setLoading(false)
             } else {
+                // Si ahora tiene padre pero antes no, cargar datos
                 const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
                 if (currentConsumptions && currentConsumptions.length > 0) {
-                    // Ya tenemos datos del contexto o props, no cargar
                     setConsumptions(currentConsumptions)
                     setLoading(false)
                 } else {
-                    // Cargar desde API solo si no tenemos datos iniciales
                     loadData()
                 }
             }
-            // Siempre cargar productos (se puede cachear después)
-            loadProducts()
+            previousHasParentRef.current = hasParent
+            previousConsumptionsIdsRef.current = consumptionsKey
+            return
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId, hasParent, contextConsumptions])
+
+        if (!hasParent) return // No hay nada que sincronizar si no tiene padre
+
+        const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
+
+        if (!currentConsumptions || !Array.isArray(currentConsumptions)) {
+            // Si los datos se vuelven inválidos, actualizar
+            if (consumptions.length > 0) {
+                setConsumptions([])
+            }
+            return
+        }
+
+        // Solo actualizar si realmente cambió el contenido (comparación profunda)
+        if (consumptionsKey !== previousConsumptionsIdsRef.current) {
+            setConsumptions(currentConsumptions)
+            setLoading(false)
+            previousConsumptionsIdsRef.current = consumptionsKey
+        }
+    }, [consumptionsKey, contextConsumptions, initialConsumptionsProp, hasParent, consumptions.length])
 
     const handleToggleBoxes = (checked) => {
         setShowBoxes(checked)
