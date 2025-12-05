@@ -134,11 +134,11 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             const updatedConsumptions = consumptionsResponse.data || []
             setConsumptions(updatedConsumptions)
             
-            // Actualizar el contexto para sincronizar con otros componentes
+            // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
             if (updateConsumptions) {
-                await updateConsumptions(updatedConsumptions, true) // Actualizar contexto y refrescar record completo
+                await updateConsumptions(updatedConsumptions, false) // Actualización optimista, sin recargar completo
             } else if (updateRecord) {
-                await updateRecord() // Refrescar record completo si no hay updateConsumptions
+                await updateRecord()
             }
             
             return updatedConsumptions
@@ -152,9 +152,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                     const updatedConsumptions = record.parentOutputConsumptions
                     setConsumptions(updatedConsumptions)
                     
-                    // Actualizar el contexto
+                    // Actualizar el contexto con actualización optimista
                     if (updateConsumptions) {
-                        await updateConsumptions(updatedConsumptions, true)
+                        await updateConsumptions(updatedConsumptions, false)
                     }
                     
                     return updatedConsumptions
@@ -691,9 +691,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                 
                 // Actualizar el contexto para sincronizar con otros componentes
                 if (updateConsumptions) {
-                    await updateConsumptions(updatedConsumptions, true) // Actualizar contexto y refrescar record completo
+                    await updateConsumptions(updatedConsumptions, false) // Actualización optimista, sin recargar completo
                 } else if (updateRecord) {
-                    await updateRecord() // Refrescar record completo si no hay updateConsumptions
+                    await updateRecord()
                 }
             } else {
                 // Si no vienen en la respuesta, recargar consumos y actualizar contexto

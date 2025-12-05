@@ -5,6 +5,7 @@ import { useProductionRecord } from '@/hooks/useProductionRecord'
 import { getProductionRecord } from '@/services/productionService'
 import { useSession } from 'next-auth/react'
 import { getRecordField } from '@/helpers/production/recordHelpers'
+import { updateRecordWithCalculatedTotals } from '@/helpers/production/calculateTotals'
 
 // Creamos el contexto
 const ProductionRecordContext = createContext()
@@ -60,45 +61,62 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
         return !!(getRecordField(recordData.record, 'parentRecordId'))
     }, [recordData.record])
 
-    // Función para actualizar inputs (actualización optimista)
+    // Función para actualizar inputs (actualización optimista con cálculo local de totales)
     const updateInputs = useCallback(async (newInputs, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
 
         if (recordData.setRecord && recordData.record) {
-            // Actualización optimista inmediata
-            recordData.setRecord(prev => ({
-                ...prev,
-                inputs: newInputs
-            }))
+            // Actualización optimista inmediata con cálculo local de totales
+            recordData.setRecord(prev => {
+                const updatedRecord = {
+                    ...prev,
+                    inputs: newInputs
+                }
+                // Calcular totales localmente basándose en los nuevos inputs y outputs actuales
+                return updateRecordWithCalculatedTotals(updatedRecord, newInputs, prev.outputs || [])
+            })
         }
         
-        // Si se solicita, recargar el record completo del servidor
+        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
         if (shouldRefresh) {
-            await updateRecord()
+            // Recargar en segundo plano sin bloquear la UI
+            updateRecord().catch(err => {
+                console.warn('Error refreshing record after inputs update:', err)
+                // No romper la UI si falla la recarga
+            })
         }
     }, [recordData, recordId, updateRecord])
 
-    // Función para actualizar outputs (actualización optimista)
+    // Función para actualizar outputs (actualización optimista con cálculo local de totales)
     const updateOutputs = useCallback(async (newOutputs, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
 
         if (recordData.setRecord && recordData.record) {
-            // Actualización optimista inmediata
-            recordData.setRecord(prev => ({
-                ...prev,
-                outputs: newOutputs
-            }))
+            // Actualización optimista inmediata con cálculo local de totales
+            recordData.setRecord(prev => {
+                const updatedRecord = {
+                    ...prev,
+                    outputs: newOutputs
+                }
+                // Calcular totales localmente basándose en los inputs actuales y los nuevos outputs
+                return updateRecordWithCalculatedTotals(updatedRecord, prev.inputs || [], newOutputs)
+            })
         }
         
-        // Si se solicita, recargar el record completo del servidor
+        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
         if (shouldRefresh) {
-            await updateRecord()
+            // Recargar en segundo plano sin bloquear la UI
+            updateRecord().catch(err => {
+                console.warn('Error refreshing record after outputs update:', err)
+                // No romper la UI si falla la recarga
+            })
         }
     }, [recordData, recordId, updateRecord])
 
     // Función para actualizar consumptions (actualización optimista)
+    // Nota: Los consumptions no afectan los totales del record actual, solo se actualizan
     const updateConsumptions = useCallback(async (newConsumptions, shouldRefresh = false) => {
         const currentRecordId = recordId || recordData.record?.id
         if (!currentRecordId) return
@@ -111,9 +129,13 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
             }))
         }
         
-        // Si se solicita, recargar el record completo del servidor
+        // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
         if (shouldRefresh) {
-            await updateRecord()
+            // Recargar en segundo plano sin bloquear la UI
+            updateRecord().catch(err => {
+                console.warn('Error refreshing record after consumptions update:', err)
+                // No romper la UI si falla la recarga
+            })
         }
     }, [recordData, recordId, updateRecord])
 

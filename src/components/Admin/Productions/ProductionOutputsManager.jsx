@@ -99,13 +99,15 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             const token = session.user.accessToken
             const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
             const updatedOutputs = response.data || []
+            
+            // Actualizar estado local inmediatamente
             setOutputs(updatedOutputs)
             
-            // Actualizar el contexto para sincronizar con otros componentes
+            // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
             if (updateOutputs) {
-                await updateOutputs(updatedOutputs, true) // Actualizar contexto y refrescar record completo
+                await updateOutputs(updatedOutputs, false) // Actualización optimista, sin recargar completo
             } else if (updateRecord) {
-                await updateRecord() // Refrescar record completo si no hay updateOutputs
+                await updateRecord()
             }
             
             return updatedOutputs
@@ -437,11 +439,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 const updatedOutputs = response.data.outputs
                 setOutputs(updatedOutputs)
                 
-                // Actualizar el contexto para sincronizar con otros componentes
+                // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
                 if (updateOutputs) {
-                    await updateOutputs(updatedOutputs, true) // Actualizar contexto y refrescar record completo
+                    await updateOutputs(updatedOutputs, false) // Actualización optimista, sin recargar completo
                 } else if (updateRecord) {
-                    await updateRecord() // Refrescar record completo si no hay updateOutputs
+                    await updateRecord()
                 }
             } else {
                 // Si no vienen en la respuesta, recargar outputs y actualizar contexto

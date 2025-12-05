@@ -293,16 +293,20 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             setWeightSearchResults([])
             setTargetWeightResults([])
             
-            // Recargar inputs del servidor
+            // Recargar inputs del servidor para tener los datos actualizados con relaciones completas
             const response = await getProductionInputs(token, { production_record_id: productionRecordId })
             const updatedInputs = response.data || []
+            
+            // Actualizar estado local inmediatamente para mejor UX
             setInputs(updatedInputs)
             
-            // Actualizar el contexto para sincronizar con otros componentes (totales, etc.)
+            // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
+            // El contexto calculará los totales localmente, eliminando la necesidad de recargar todo
             if (updateInputs) {
-                await updateInputs(updatedInputs, true) // Actualizar contexto y refrescar record completo
+                await updateInputs(updatedInputs, false) // Actualización optimista, sin recargar completo
             } else if (updateRecord) {
-                await updateRecord() // Refrescar record completo si no hay updateInputs
+                // Solo si no hay updateInputs, recargar completo (fallback)
+                await updateRecord()
             } else if (onRefresh) {
                 onRefresh() // Fallback a onRefresh si no hay contexto
             }
@@ -323,18 +327,20 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             const token = session.user.accessToken
             await deleteProductionInput(inputId, token)
             
-            // Recargar inputs del servidor
+            // Recargar inputs del servidor para tener los datos actualizados
             const response = await getProductionInputs(token, { production_record_id: productionRecordId })
             const updatedInputs = response.data || []
+            
+            // Actualizar estado local inmediatamente
             setInputs(updatedInputs)
             
-            // Actualizar el contexto para sincronizar con otros componentes
+            // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
             if (updateInputs) {
-                await updateInputs(updatedInputs, true) // Actualizar contexto y refrescar record completo
+                await updateInputs(updatedInputs, false) // Actualización optimista, sin recargar completo
             } else if (updateRecord) {
-                await updateRecord() // Refrescar record completo si no hay updateInputs
+                await updateRecord()
             } else if (onRefresh) {
-                onRefresh() // Fallback a onRefresh si no hay contexto
+                onRefresh()
             }
         } catch (err) {
             console.error('Error deleting input:', err)

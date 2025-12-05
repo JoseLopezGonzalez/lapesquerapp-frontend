@@ -4,22 +4,16 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Package, Scale, Calculator, TrendingDown, TrendingUp } from 'lucide-react'
 import { formatDecimalWeight, formatDecimal, formatInteger } from '@/helpers/formats/numbers/formatNumbers'
-import { useProductionRecordContext } from '@/context/ProductionRecordContext'
+import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 
 /**
  * Tarjeta de resumen del proceso con estadísticas
  * Usa el contexto para obtener el record automáticamente
  */
 export const ProcessSummaryCard = ({ record: recordProp = null }) => {
-    // Intentar obtener del contexto, si no está disponible usar la prop
-    let record = recordProp
-    try {
-        const context = useProductionRecordContext()
-        record = context.record || recordProp
-    } catch (err) {
-        // Contexto no disponible, usar prop
-        record = recordProp
-    }
+    // Obtener del contexto (opcional)
+    const context = useProductionRecordContextOptional()
+    const record = context?.record || recordProp
     if (!record || (record.totalInputWeight === undefined && record.totalOutputWeight === undefined)) {
         return null
     }
