@@ -13,6 +13,7 @@ import { ProcessSummaryCard } from './ProductionRecordEditor/components/ProcessS
 import { RecordContentSections } from './ProductionRecordEditor/components/RecordContentSections'
 import { useRecordFormData } from './ProductionRecordEditor/hooks/useRecordFormData'
 import { useRecordFormSubmission } from './ProductionRecordEditor/hooks/useRecordFormSubmission'
+import { getProcessName, getRecordField } from '@/helpers/production/recordHelpers'
 
 const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     const router = useRouter()
@@ -76,8 +77,12 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
     }
 
     const currentRecordId = record?.id || recordId
-    const isCompleted = record?.finishedAt !== null
-    const isRoot = !record?.parentRecordId && (!formData.parent_record_id || formData.parent_record_id === 'none')
+    // Usar helpers para manejar ambos formatos
+    const finishedAt = getRecordField(record, 'finishedAt')
+    const parentRecordId = getRecordField(record, 'parentRecordId')
+    const processName = getProcessName(record)
+    const isCompleted = finishedAt !== null && finishedAt !== undefined
+    const isRoot = !parentRecordId && (!formData.parent_record_id || formData.parent_record_id === 'none')
 
     return (
         <div className="h-full w-full overflow-y-auto">
@@ -87,7 +92,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     productionId={productionId}
                     isEditMode={isEditMode}
                     recordId={recordId}
-                    processName={record?.process?.name}
+                    processName={processName}
                     productionLot={production?.lot}
                     isRoot={isRoot}
                     isCompleted={isCompleted}
