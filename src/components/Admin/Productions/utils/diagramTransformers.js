@@ -67,7 +67,7 @@ function extractOutputProducts(outputs) {
 }
 
 /**
- * Identifica el tipo de nodo (PROCESS, SALES, STOCK)
+ * Identifica el tipo de nodo (PROCESS, SALES, STOCK, REPROCESSED, REMAINING)
  */
 function getNodeType(node) {
   if (node.type === 'sales') {
@@ -75,6 +75,12 @@ function getNodeType(node) {
   }
   if (node.type === 'stock') {
     return 'STOCK';
+  }
+  if (node.type === 'reprocessed') {
+    return 'REPROCESSED';
+  }
+  if (node.type === 'missing') {
+    return 'REMAINING'; // El backend usa 'missing' pero lo llamamos 'restantes' en el frontend
   }
   // Si no tiene type o es null/undefined, es un nodo de proceso
   return 'PROCESS';
@@ -99,6 +105,20 @@ function isSalesNode(node) {
  */
 function isStockNode(node) {
   return getNodeType(node) === 'STOCK';
+}
+
+/**
+ * Verifica si un nodo es de reprocesado
+ */
+function isReprocessedNode(node) {
+  return getNodeType(node) === 'REPROCESSED';
+}
+
+/**
+ * Verifica si un nodo es de restantes
+ */
+function isRemainingNode(node) {
+  return getNodeType(node) === 'REMAINING';
 }
 
 /**
@@ -150,14 +170,14 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
       const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
       
-      // Verificar si el nodo tiene hijos de venta/stock (para mostrar handle de salida en nodos finales)
+      // Verificar si el nodo tiene hijos de venta/stock/reprocessed/restantes (para mostrar handle de salida en nodos finales)
       const hasSalesOrStockChildren = node.children && Array.isArray(node.children) && node.children.some(child => {
         const childType = getNodeType(child);
-        const isSalesOrStock = childType === 'SALES' || childType === 'STOCK';
-        if (isSalesOrStock && node.isFinal) {
-          console.log(`🔗 Nodo final ${nodeId} tiene hijo de venta/stock: ${childType}`);
+        const isSpecialNode = childType === 'SALES' || childType === 'STOCK' || childType === 'REPROCESSED' || childType === 'REMAINING';
+        if (isSpecialNode && node.isFinal) {
+          console.log(`🔗 Nodo final ${nodeId} tiene hijo especial: ${childType}`);
         }
-        return isSalesOrStock;
+        return isSpecialNode;
       });
       
       flowNode = {
@@ -205,7 +225,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         }
       };
     } else if (isSalesNode(node)) {
-      // Nodo de venta (v2 - array de orders)
+      // Nodo de venta (v3 - agrupa múltiples productos del nodo final)
       // Determinar el parentRecordId: usar el que viene en el nodo, o el parentId recibido
       const salesParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
       
@@ -214,8 +234,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         type: 'salesNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          product: node.product || {},
-          orders: node.orders || [], // v2: Array de pedidos
+          orders: node.orders || [], // v3: Array de pedidos, cada pedido tiene array de productos
           totalBoxes: node.totalBoxes || 0,
           totalNetWeight: node.totalNetWeight || 0,
           summary: node.summary || {},
@@ -224,9 +243,9 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         }
       };
       
-      console.log(`📦 Nodo de venta creado: ${nodeId}, parentRecordId guardado: ${salesParentRecordId}, parentId recibido: ${parentId}, node.parentRecordId: ${node.parentRecordId}`);
+      console.log(`📦 Nodo de venta creado: ${nodeId}, parentRecordId guardado: ${salesParentRecordId}, orders: ${(node.orders || []).length}`);
     } else if (isStockNode(node)) {
-      // Nodo de stock (v2 - array de stores)
+      // Nodo de stock (v3 - agrupa múltiples productos del nodo final)
       const stockParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
       
       flowNode = {
@@ -234,8 +253,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         type: 'stockNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          product: node.product || {},
-          stores: node.stores || [], // v2: Array de almacenes
+          stores: node.stores || [], // v3: Array de almacenes, cada almacén tiene array de productos
           totalBoxes: node.totalBoxes || 0,
           totalNetWeight: node.totalNetWeight || 0,
           summary: node.summary || {},
@@ -244,7 +262,43 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
         }
       };
       
-      console.log(`📦 Nodo de stock creado: ${nodeId}, parentRecordId guardado: ${stockParentRecordId}, parentId recibido: ${parentId}, node.parentRecordId: ${node.parentRecordId}`);
+      console.log(`📦 Nodo de stock creado: ${nodeId}, parentRecordId guardado: ${stockParentRecordId}, stores: ${(node.stores || []).length}`);
+    } else if (isReprocessedNode(node)) {
+      // Nodo de reprocesado
+      const reprocessedParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      
+      flowNode = {
+        id: nodeId,
+        type: 'reprocessedNode',
+        position: { x: 0, y: 0 }, // Se calculará después
+        data: {
+          processes: node.processes || [], // Array de procesos de reprocesado
+          totalBoxes: node.totalBoxes || 0,
+          totalNetWeight: node.totalNetWeight || 0,
+          summary: node.summary || {},
+          parentRecordId: reprocessedParentRecordId, // Guardar para conexión
+          viewMode: viewMode
+        }
+      };
+      
+      console.log(`🔄 Nodo de reprocesado creado: ${nodeId}, parentRecordId guardado: ${reprocessedParentRecordId}, processes: ${(node.processes || []).length}`);
+    } else if (isRemainingNode(node)) {
+      // Nodo de restantes
+      const remainingParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      
+      flowNode = {
+        id: nodeId,
+        type: 'restantesNode',
+        position: { x: 0, y: 0 }, // Se calculará después
+        data: {
+          products: node.products || [], // Array de productos con información de restantes
+          summary: node.summary || {},
+          parentRecordId: remainingParentRecordId, // Guardar para conexión
+          viewMode: viewMode
+        }
+      };
+      
+      console.log(`📦 Nodo de restantes creado: ${nodeId}, parentRecordId guardado: ${remainingParentRecordId}, products: ${(node.products || []).length}`);
     } else {
       // Tipo de nodo desconocido, saltarlo
       console.warn(`Tipo de nodo desconocido:`, node);
@@ -298,6 +352,24 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
     
     // Procesar hijos recursivamente
     if (node.children && Array.isArray(node.children) && node.children.length > 0) {
+      // Diagnóstico: para nodos finales, contar cuántos hijos especiales hay
+      if (node.isFinal) {
+        const salesChildren = node.children.filter(child => getNodeType(child) === 'SALES');
+        const stockChildren = node.children.filter(child => getNodeType(child) === 'STOCK');
+        const reprocessedChildren = node.children.filter(child => getNodeType(child) === 'REPROCESSED');
+        const remainingChildren = node.children.filter(child => getNodeType(child) === 'REMAINING');
+        console.log(`🔍 Nodo final ${nodeId} tiene ${salesChildren.length} venta(s), ${stockChildren.length} stock(s), ${reprocessedChildren.length} reprocesado(s), ${remainingChildren.length} restante(s)`);
+        
+        if (salesChildren.length > 1) {
+          console.warn(`⚠️ PROBLEMA: El nodo final ${nodeId} tiene ${salesChildren.length} nodos de VENTA. Debería haber solo 1.`);
+          console.warn('Nodos de venta encontrados:', salesChildren.map(c => ({ id: c.id, parentRecordId: c.parentRecordId })));
+        }
+        if (stockChildren.length > 1) {
+          console.warn(`⚠️ PROBLEMA: El nodo final ${nodeId} tiene ${stockChildren.length} nodos de STOCK. Debería haber solo 1.`);
+          console.warn('Nodos de stock encontrados:', stockChildren.map(c => ({ id: c.id, parentRecordId: c.parentRecordId })));
+        }
+      }
+      
       node.children.forEach(child => {
         // Pasar el nodeId del nodo actual como parentId para sus hijos
         const childParentId = isProcessNode(node) ? nodeId : effectiveParentId;
@@ -318,10 +390,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       });
     }
 
-    // Segundo paso: crear/verificar edges para TODOS los nodos de venta/stock
+    // Segundo paso: crear/verificar edges para TODOS los nodos especiales (venta/stock/reprocessed/restantes)
     // Esto asegura que los nodos padre ya existan y las conexiones se crean correctamente
     nodes.forEach(flowNode => {
-      if (flowNode.type === 'salesNode' || flowNode.type === 'stockNode') {
+      if (flowNode.type === 'salesNode' || flowNode.type === 'stockNode' || flowNode.type === 'reprocessedNode' || flowNode.type === 'restantesNode') {
         // Obtener parentRecordId del data o intentar inferirlo
         let parentRecordId = flowNode.data.parentRecordId;
         
@@ -343,6 +415,8 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
           if (parentExists) {
             const isSales = flowNode.type === 'salesNode';
             const isStock = flowNode.type === 'stockNode';
+            const isReprocessed = flowNode.type === 'reprocessedNode';
+            const isRemaining = flowNode.type === 'restantesNode';
             
             // Determinar color según el tipo de nodo
             let edgeColor = '#a1a1aa';
@@ -350,6 +424,10 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
               edgeColor = '#22c55e'; // Verde para venta
             } else if (isStock) {
               edgeColor = '#3b82f6'; // Azul para stock
+            } else if (isReprocessed) {
+              edgeColor = '#f97316'; // Naranja para reprocesado
+            } else if (isRemaining) {
+              edgeColor = '#ef4444'; // Rojo para restantes (alerta)
             }
             
             edges.push({
@@ -378,7 +456,26 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       }
     });
 
-    console.log(`transformProcessTreeToFlow: Creados ${nodes.length} nodos y ${edges.length} edges`)
+    // Diagnóstico final: contar nodos creados
+    const salesNodesCount = nodes.filter(n => n.type === 'salesNode').length;
+    const stockNodesCount = nodes.filter(n => n.type === 'stockNode').length;
+    const reprocessedNodesCount = nodes.filter(n => n.type === 'reprocessedNode').length;
+    const remainingNodesCount = nodes.filter(n => n.type === 'restantesNode').length;
+    const processNodesCount = nodes.filter(n => n.type === 'processNode').length;
+    
+    console.log(`transformProcessTreeToFlow: Creados ${nodes.length} nodos totales (${processNodesCount} procesos, ${salesNodesCount} venta(s), ${stockNodesCount} stock(s), ${reprocessedNodesCount} reprocesado(s), ${remainingNodesCount} restante(s)) y ${edges.length} edges`);
+    
+    if (salesNodesCount > 1) {
+      console.warn(`⚠️ ATENCIÓN: Se crearon ${salesNodesCount} nodos de VENTA. Debería haber solo 1 por nodo final.`);
+      const salesNodes = nodes.filter(n => n.type === 'salesNode');
+      console.warn('IDs de nodos de venta:', salesNodes.map(n => ({ id: n.id, parentRecordId: n.data.parentRecordId })));
+    }
+    if (stockNodesCount > 1) {
+      console.warn(`⚠️ ATENCIÓN: Se crearon ${stockNodesCount} nodos de STOCK. Debería haber solo 1 por nodo final.`);
+      const stockNodes = nodes.filter(n => n.type === 'stockNode');
+      console.warn('IDs de nodos de stock:', stockNodes.map(n => ({ id: n.id, parentRecordId: n.data.parentRecordId })));
+    }
+    
     return { nodes, edges };
   } catch (error) {
     console.error('Error en transformProcessTreeToFlow:', error);
@@ -406,16 +503,16 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
   // Añadir nodos al grafo (tamaño variable según modo y tipo)
   nodes.forEach((node) => {
     const isDetailed = node.data?.viewMode === 'detailed';
-    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
+    const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
     // Tamaños base
     let width = isDetailed ? 400 : 300;
     let height = isDetailed ? 300 : 200;
     
-    // Los nodos de venta/stock son compactos
-    if (isSalesOrStock) {
-      width = isDetailed ? 350 : 320;
-      height = isDetailed ? 250 : 220;
+    // Los nodos especiales: más pequeños en vista simple, más grandes en detallada
+    if (isSpecialNode) {
+      width = isDetailed ? 450 : 320;
+      height = isDetailed ? 400 : 250;
     }
     
     dagreGraph.setNode(node.id, {
@@ -436,15 +533,15 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
-    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
+    const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
     let nodeWidth = isDetailed ? 400 : 300;
     let nodeHeight = isDetailed ? 300 : 200;
     
-    // Los nodos de venta/stock son compactos
-    if (isSalesOrStock) {
-      nodeWidth = isDetailed ? 350 : 320;
-      nodeHeight = isDetailed ? 250 : 220;
+    // Los nodos especiales: más pequeños en vista simple, más grandes en detallada
+    if (isSpecialNode) {
+      nodeWidth = isDetailed ? 450 : 320;
+      nodeHeight = isDetailed ? 400 : 250;
     }
     
     return {
@@ -483,14 +580,14 @@ export function getManualLayout(nodes, edges) {
     const nodesInLevel = levels[level];
     const indexInLevel = nodesInLevel.findIndex(n => n.id === node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
-    const isSalesOrStock = node.type === 'salesNode' || node.type === 'stockNode';
+    const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
     // Separación horizontal
     const horizontalSpacing = isDetailed ? 450 : 350;
     
-    // Separación vertical (un poco más para venta/stock si tienen muchos items)
-    const verticalSpacing = isSalesOrStock
-      ? (isDetailed ? 280 : 250)
+    // Separación vertical (más espacio para nodos especiales que pueden tener muchos items)
+    const verticalSpacing = isSpecialNode
+      ? (isDetailed ? 450 : 420)
       : (isDetailed ? 320 : 220);
     
     const x = level * horizontalSpacing;

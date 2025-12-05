@@ -17,6 +17,8 @@ import { transformProcessTreeToFlow, getLayoutedElements, getManualLayout } from
 import ProcessNode from './components/ProcessNode'
 import SalesNode from './components/SalesNode'
 import StockNode from './components/StockNode'
+import ReprocessedNode from './components/ReprocessedNode'
+import RestantesNode from './components/RestantesNode'
 import Loader from '@/components/Utilities/Loader'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import { Package, Eye, EyeOff, Calculator, AlertCircle } from 'lucide-react'
@@ -25,7 +27,9 @@ import { cn } from '@/lib/utils'
 const nodeTypes = {
   processNode: ProcessNode,
   salesNode: SalesNode,
-  stockNode: StockNode
+  stockNode: StockNode,
+  reprocessedNode: ReprocessedNode,
+  restantesNode: RestantesNode
 }
 
 function FlowContent({ processTree, productionId, loading, viewMode, onViewModeChange, viewModes }) {
@@ -38,6 +42,44 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
       console.log('ProductionDiagram - processTree recibido:', processTree)
       console.log('ProductionDiagram - processNodes:', processTree.processNodes)
       console.log('ProductionDiagram - processNodes length:', processTree.processNodes?.length)
+      
+      // Diagnóstico: contar nodos de venta/stock en los datos del backend
+      const countSalesStockNodes = (node) => {
+        let salesCount = 0;
+        let stockCount = 0;
+        
+        if (node.children && Array.isArray(node.children)) {
+          node.children.forEach(child => {
+            if (child.type === 'sales') {
+              salesCount++;
+              console.log(`📦 Backend envía nodo de VENTA: id=${child.id}, parentRecordId=${child.parentRecordId}`);
+            }
+            if (child.type === 'stock') {
+              stockCount++;
+              console.log(`📦 Backend envía nodo de STOCK: id=${child.id}, parentRecordId=${child.parentRecordId}`);
+            }
+            if (child.type === 'reprocessed') {
+              console.log(`🔄 Backend envía nodo de REPROCESADO: id=${child.id}, parentRecordId=${child.parentRecordId}`);
+            }
+            if (child.type === 'missing') {
+              console.log(`📦 Backend envía nodo de RESTANTES: id=${child.id}, parentRecordId=${child.parentRecordId}`);
+            }
+            // Recursivo para contar en hijos
+            const recursiveCount = countSalesStockNodes(child);
+            salesCount += recursiveCount.sales;
+            stockCount += recursiveCount.stock;
+          });
+        }
+        
+        return { sales: salesCount, stock: stockCount };
+      };
+      
+      processTree.processNodes?.forEach(rootNode => {
+        const counts = countSalesStockNodes(rootNode);
+        if (counts.sales > 0 || counts.stock > 0) {
+          console.log(`🔍 Diagnóstico: Nodo raíz tiene ${counts.sales} nodo(s) de VENTA y ${counts.stock} nodo(s) de STOCK en sus hijos`);
+        }
+      });
     }
   }, [processTree])
 

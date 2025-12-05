@@ -28,6 +28,15 @@ export default function ProcessNode({ data }) {
   const hasYield = totals?.yield > 0
   const isDetailed = viewMode === 'detailed'
   
+  // Construir texto de entrada y salida sin renderizar 0s
+  const inputText = totals?.inputWeight && totals.inputWeight > 0
+    ? `${formatWeight(totals.inputWeight)}${(totals?.inputBoxes && Number(totals.inputBoxes) > 0) ? ` (${totals.inputBoxes} cajas)` : ''}`
+    : '-'
+  
+  const outputText = totals?.outputWeight && totals.outputWeight > 0
+    ? `${formatWeight(totals.outputWeight)}${(totals?.outputBoxes && Number(totals.outputBoxes) > 0) ? ` (${totals.outputBoxes} cajas)` : ''}`
+    : '-'
+  
   // Debug: verificar si el nodo final tiene hijos de venta/stock
   if (isFinal) {
     console.log(`Nodo final "${processName}" (${data.recordId}): hasSalesOrStockChildren=${hasSalesOrStockChildren}`);
@@ -77,7 +86,7 @@ export default function ProcessNode({ data }) {
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Entrada:</span>
           <span className="font-medium text-foreground">
-            {formatWeight(totals?.inputWeight || 0)} ({totals?.inputBoxes || 0} cajas)
+            {inputText}
           </span>
         </div>
 
@@ -85,10 +94,7 @@ export default function ProcessNode({ data }) {
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Salida:</span>
           <span className="font-medium text-foreground">
-            {formatWeight(totals?.outputWeight || 0)}
-            {(totals?.outputBoxes && totals.outputBoxes > 0) && (
-              <> ({totals.outputBoxes} cajas)</>
-            )}
+            {outputText}
           </span>
         </div>
 
@@ -174,7 +180,9 @@ export default function ProcessNode({ data }) {
                   {outputProducts.map((product, idx) => (
                     <tr key={idx} className="border-b border-border/20 last:border-b-0">
                       <td className="py-0.5 px-1 text-foreground font-medium truncate max-w-[120px]">{product.name}</td>
-                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{product.boxes}</td>
+                      <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">
+                        {product.boxes && product.boxes > 0 ? product.boxes : '-'}
+                      </td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{formatWeight(product.weight)}</td>
                     </tr>
                   ))}
