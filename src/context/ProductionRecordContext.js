@@ -163,3 +163,11 @@ export function useProductionRecordContext() {
     }
     return context
 }
+
+/**
+ * Hook opcional para consumir el contexto de Production Record
+ * Retorna null si el contexto no está disponible (útil para componentes que pueden funcionar sin contexto)
+ */
+export function useProductionRecordContextOptional() {
+    return useContext(ProductionRecordContext)
+}

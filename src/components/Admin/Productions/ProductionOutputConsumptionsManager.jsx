@@ -36,18 +36,13 @@ import { Textarea } from '@/components/ui/textarea'
 import Loader from '@/components/Utilities/Loader'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useProductionRecordContext } from '@/context/ProductionRecordContext'
+import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 
 const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsumptions: initialConsumptionsProp = [], hasParent: hasParentProp = false, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
     
-    // Intentar obtener del contexto, si no está disponible usar props
-    let contextData = null
-    try {
-        contextData = useProductionRecordContext()
-    } catch (err) {
-        // Contexto no disponible, usar props
-    }
+    // Obtener del contexto (opcional), si no está disponible usar props
+    const contextData = useProductionRecordContextOptional()
 
     // Usar datos del contexto si está disponible, sino usar props
     const contextConsumptions = contextData?.recordConsumptions || []

@@ -21,18 +21,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useProductionRecordContext } from '@/context/ProductionRecordContext'
+import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 
 const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialOutputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
     
-    // Intentar obtener del contexto, si no está disponible usar props
-    let contextData = null
-    try {
-        contextData = useProductionRecordContext()
-    } catch (err) {
-        // Contexto no disponible, usar props
-    }
+    // Obtener del contexto (opcional), si no está disponible usar props
+    const contextData = useProductionRecordContextOptional()
 
     // Usar datos del contexto si está disponible, sino usar props
     const contextOutputs = contextData?.recordOutputs || []
