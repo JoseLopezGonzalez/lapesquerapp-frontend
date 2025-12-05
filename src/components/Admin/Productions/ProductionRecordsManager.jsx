@@ -228,14 +228,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
         )
     }
 
-    if (loading) {
-        return (
-            <div className="space-y-4 flex items-center justify-center py-12">
-                <Loader />
-            </div>
-        )
-    }
-
     if (error) {
         return (
             <Card className="border-destructive">
@@ -291,7 +283,17 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {rootRecords.map(record => renderRecordRow(record))}
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={9} className="h-32">
+                                                <div className="flex items-center justify-center w-full h-full">
+                                                    <Loader />
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        rootRecords.map(record => renderRecordRow(record))
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>
