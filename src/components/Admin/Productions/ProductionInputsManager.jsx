@@ -26,11 +26,27 @@ import Loader from '@/components/Utilities/Loader'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useProductionRecordContext } from '@/context/ProductionRecordContext'
 
-const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
+const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
-    const [inputs, setInputs] = useState([])
-    const [loading, setLoading] = useState(true)
+    
+    // Intentar obtener del contexto, si no está disponible usar props
+    let contextData = null
+    try {
+        contextData = useProductionRecordContext()
+    } catch (err) {
+        // Contexto no disponible, usar props
+    }
+
+    // Usar datos del contexto si está disponible, sino usar props
+    const contextInputs = contextData?.recordInputs || []
+    const initialInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
+    const updateInputs = contextData?.updateInputs
+    const updateRecord = contextData?.updateRecord
+
+    const [inputs, setInputs] = useState(initialInputs)
+    const [loading, setLoading] = useState(initialInputs.length === 0)
     const [error, setError] = useState(null)
     const [addDialogOpen, setAddDialogOpen] = useState(false)
 
@@ -74,12 +90,25 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         )
     }
 
+    // Inicializar con datos del contexto o props
     useEffect(() => {
+        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
+        if (currentInputs && Array.isArray(currentInputs)) {
+            setInputs(currentInputs)
+            setLoading(false)
+        }
+    }, [contextInputs, initialInputsProp])
+
+    useEffect(() => {
+        // Solo cargar desde API si no tenemos datos iniciales ni del contexto
         if (session?.user?.accessToken && productionRecordId) {
-            loadInputs()
+            const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
+            if (!currentInputs || currentInputs.length === 0) {
+                loadInputs()
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
+    }, [session?.user?.accessToken, productionRecordId, contextInputs])
 
     const loadInputsOnly = async () => {
         try {
@@ -268,8 +297,20 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
             setWeightSearch('')
             setWeightSearchResults([])
             setTargetWeightResults([])
-            // Solo recargar inputs, no todo el componente
-            await loadInputsOnly()
+            
+            // Recargar inputs del servidor
+            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
+            const updatedInputs = response.data || []
+            setInputs(updatedInputs)
+            
+            // Actualizar el contexto para sincronizar con otros componentes (totales, etc.)
+            if (updateInputs) {
+                await updateInputs(updatedInputs, true) // Actualizar contexto y refrescar record completo
+            } else if (updateRecord) {
+                await updateRecord() // Refrescar record completo si no hay updateInputs
+            } else if (onRefresh) {
+                onRefresh() // Fallback a onRefresh si no hay contexto
+            }
         } catch (err) {
             console.error('Error adding/editing inputs:', err)
             alert(err.message || 'Error al guardar las entradas')
@@ -286,8 +327,20 @@ const ProductionInputsManager = ({ productionRecordId, onRefresh, hideTitle = fa
         try {
             const token = session.user.accessToken
             await deleteProductionInput(inputId, token)
-            // Solo recargar inputs, no todo el componente
-            await loadInputsOnly()
+            
+            // Recargar inputs del servidor
+            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
+            const updatedInputs = response.data || []
+            setInputs(updatedInputs)
+            
+            // Actualizar el contexto para sincronizar con otros componentes
+            if (updateInputs) {
+                await updateInputs(updatedInputs, true) // Actualizar contexto y refrescar record completo
+            } else if (updateRecord) {
+                await updateRecord() // Refrescar record completo si no hay updateInputs
+            } else if (onRefresh) {
+                onRefresh() // Fallback a onRefresh si no hay contexto
+            }
         } catch (err) {
             console.error('Error deleting input:', err)
             alert(err.message || 'Error al eliminar la entrada')

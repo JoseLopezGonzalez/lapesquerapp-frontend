@@ -21,12 +21,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useProductionRecordContext } from '@/context/ProductionRecordContext'
 
-const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
+const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialOutputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
-    const [outputs, setOutputs] = useState([])
+    
+    // Intentar obtener del contexto, si no está disponible usar props
+    let contextData = null
+    try {
+        contextData = useProductionRecordContext()
+    } catch (err) {
+        // Contexto no disponible, usar props
+    }
+
+    // Usar datos del contexto si está disponible, sino usar props
+    const contextOutputs = contextData?.recordOutputs || []
+    const initialOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
+    const updateOutputs = contextData?.updateOutputs
+    const updateRecord = contextData?.updateRecord
+
+    const [outputs, setOutputs] = useState(initialOutputs)
     const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(initialOutputs.length === 0)
     const [error, setError] = useState(null)
     const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -53,13 +69,28 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         return true
     })
 
+    // Actualizar outputs cuando cambian los datos del contexto o props
     useEffect(() => {
+        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
+        if (currentOutputs && Array.isArray(currentOutputs)) {
+            setOutputs(currentOutputs)
+            if (currentOutputs.length > 0) {
+                setLoading(false)
+            }
+        }
+    }, [contextOutputs, initialOutputsProp])
+
+    useEffect(() => {
+        // Solo cargar si no tenemos datos iniciales ni del contexto
         if (session?.user?.accessToken && productionRecordId) {
-            loadOutputs()
+            const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
+            if (!currentOutputs || currentOutputs.length === 0) {
+                loadOutputs()
+            }
             loadProducts()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
+    }, [session?.user?.accessToken, productionRecordId, contextOutputs])
 
     const handleToggleBoxes = (checked) => {
         setShowBoxes(checked)
@@ -72,9 +103,20 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         try {
             const token = session.user.accessToken
             const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
-            setOutputs(response.data || [])
+            const updatedOutputs = response.data || []
+            setOutputs(updatedOutputs)
+            
+            // Actualizar el contexto para sincronizar con otros componentes
+            if (updateOutputs) {
+                await updateOutputs(updatedOutputs, true) // Actualizar contexto y refrescar record completo
+            } else if (updateRecord) {
+                await updateRecord() // Refrescar record completo si no hay updateOutputs
+            }
+            
+            return updatedOutputs
         } catch (err) {
             console.warn('Error loading outputs:', err)
+            return []
         }
     }
 
@@ -128,10 +170,12 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             }
 
             await createProductionOutput(outputData, token)
+            
+            // Recargar outputs y actualizar contexto
+            await loadOutputsOnly()
+            
             setAddDialogOpen(false)
             resetForm()
-            // Solo recargar outputs, no todo el componente
-            await loadOutputsOnly()
         } catch (err) {
             console.error('Error creating output:', err)
             alert(err.message || 'Error al crear la salida')
@@ -152,11 +196,13 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             }
 
             await updateProductionOutput(editingOutput.id, outputData, token)
+            
+            // Recargar outputs y actualizar contexto
+            await loadOutputsOnly()
+            
             setEditDialogOpen(false)
             setEditingOutput(null)
             resetForm()
-            // Solo recargar outputs, no todo el componente
-            await loadOutputsOnly()
         } catch (err) {
             console.error('Error updating output:', err)
             alert(err.message || 'Error al actualizar la salida')
@@ -171,7 +217,8 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
         try {
             const token = session.user.accessToken
             await deleteProductionOutput(outputId, token)
-            // Solo recargar outputs, no todo el componente
+            
+            // Recargar outputs y actualizar contexto
             await loadOutputsOnly()
         } catch (err) {
             console.error('Error deleting output:', err)
@@ -392,12 +439,18 @@ const ProductionOutputsManager = ({ productionRecordId, onRefresh, hideTitle = f
             
             // Actualizar el estado con los outputs sincronizados del servidor
             if (response.data && response.data.outputs) {
-                setOutputs(response.data.outputs)
+                const updatedOutputs = response.data.outputs
+                setOutputs(updatedOutputs)
+                
+                // Actualizar el contexto para sincronizar con otros componentes
+                if (updateOutputs) {
+                    await updateOutputs(updatedOutputs, true) // Actualizar contexto y refrescar record completo
+                } else if (updateRecord) {
+                    await updateRecord() // Refrescar record completo si no hay updateOutputs
+                }
             } else {
-                // Si no vienen en la respuesta, recargar solo outputs en segundo plano
-                loadOutputsOnly().catch(err => {
-                    console.warn('Error al recargar outputs:', err)
-                })
+                // Si no vienen en la respuesta, recargar outputs y actualizar contexto
+                await loadOutputsOnly()
             }
             
         } catch (err) {

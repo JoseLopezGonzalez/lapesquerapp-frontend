@@ -36,14 +36,31 @@ import { Textarea } from '@/components/ui/textarea'
 import Loader from '@/components/Utilities/Loader'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useProductionRecordContext } from '@/context/ProductionRecordContext'
 
-const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
+const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsumptions: initialConsumptionsProp = [], hasParent: hasParentProp = false, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
-    const [productionRecord, setProductionRecord] = useState(null)
-    const [consumptions, setConsumptions] = useState([])
+    
+    // Intentar obtener del contexto, si no está disponible usar props
+    let contextData = null
+    try {
+        contextData = useProductionRecordContext()
+    } catch (err) {
+        // Contexto no disponible, usar props
+    }
+
+    // Usar datos del contexto si está disponible, sino usar props
+    const contextConsumptions = contextData?.recordConsumptions || []
+    const contextHasParent = contextData?.hasParent ?? hasParentProp
+    const initialConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
+    const hasParent = contextHasParent
+    const updateConsumptions = contextData?.updateConsumptions
+    const updateRecord = contextData?.updateRecord
+
+    const [consumptions, setConsumptions] = useState(initialConsumptions)
     const [availableOutputs, setAvailableOutputs] = useState([])
     const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(!hasParent || initialConsumptions.length === 0 ? false : true)
     const [error, setError] = useState(null)
     const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [savingConsumption, setSavingConsumption] = useState(false)
@@ -70,13 +87,41 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
         return true
     })
 
+    // Inicializar con datos del contexto o props
+    useEffect(() => {
+        const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
+        if (currentConsumptions && Array.isArray(currentConsumptions)) {
+            setConsumptions(currentConsumptions)
+        }
+        // Si no tiene padre, no hay consumptions
+        if (!hasParent) {
+            setConsumptions([])
+            setLoading(false)
+        }
+    }, [contextConsumptions, initialConsumptionsProp, hasParent])
+
     useEffect(() => {
         if (session?.user?.accessToken && productionRecordId) {
-            loadData()
+            // Si no tiene padre, no hay consumptions
+            if (!hasParent) {
+                setConsumptions([])
+                setLoading(false)
+            } else {
+                const currentConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
+                if (currentConsumptions && currentConsumptions.length > 0) {
+                    // Ya tenemos datos del contexto o props, no cargar
+                    setConsumptions(currentConsumptions)
+                    setLoading(false)
+                } else {
+                    // Cargar desde API solo si no tenemos datos iniciales
+                    loadData()
+                }
+            }
+            // Siempre cargar productos (se puede cachear después)
             loadProducts()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
+    }, [session?.user?.accessToken, productionRecordId, hasParent, contextConsumptions])
 
     const handleToggleBoxes = (checked) => {
         setShowBoxes(checked)
@@ -91,7 +136,17 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             const consumptionsResponse = await getProductionOutputConsumptions(token, {
                 production_record_id: productionRecordId
             })
-            setConsumptions(consumptionsResponse.data || [])
+            const updatedConsumptions = consumptionsResponse.data || []
+            setConsumptions(updatedConsumptions)
+            
+            // Actualizar el contexto para sincronizar con otros componentes
+            if (updateConsumptions) {
+                await updateConsumptions(updatedConsumptions, true) // Actualizar contexto y refrescar record completo
+            } else if (updateRecord) {
+                await updateRecord() // Refrescar record completo si no hay updateConsumptions
+            }
+            
+            return updatedConsumptions
         } catch (consumptionErr) {
             console.warn('Error loading consumptions:', consumptionErr)
             // Si falla, intentar recargar desde el record
@@ -99,11 +154,20 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                 const token = session.user.accessToken
                 const record = await getProductionRecord(productionRecordId, token)
                 if (record.parentOutputConsumptions) {
-                    setConsumptions(record.parentOutputConsumptions)
+                    const updatedConsumptions = record.parentOutputConsumptions
+                    setConsumptions(updatedConsumptions)
+                    
+                    // Actualizar el contexto
+                    if (updateConsumptions) {
+                        await updateConsumptions(updatedConsumptions, true)
+                    }
+                    
+                    return updatedConsumptions
                 }
             } catch (err) {
                 // Si también falla, dejar la lista vacía
                 setConsumptions([])
+                return []
             }
         }
     }
@@ -114,30 +178,28 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             setError(null)
             const token = session.user.accessToken
             
-            // Cargar production record para verificar si tiene padre
-            const record = await getProductionRecord(productionRecordId, token)
-            setProductionRecord(record)
+            // Si ya tenemos consumptions iniciales, usarlos
+            if (initialConsumptions.length > 0) {
+                setConsumptions(initialConsumptions)
+                setLoading(false)
+                return
+            }
 
-            // Cargar consumos si el proceso tiene padre
-            const hasParent = record.parent_record_id || record.parentRecordId
-            if (hasParent) {
-                // Los consumos vienen en el record
-                if (record.parentOutputConsumptions) {
-                    setConsumptions(record.parentOutputConsumptions)
-                } else {
-                    // Si no vienen en el record, cargarlos directamente
-                    try {
-                        const consumptionsResponse = await getProductionOutputConsumptions(token, {
-                            production_record_id: productionRecordId
-                        })
-                        setConsumptions(consumptionsResponse.data || [])
-                    } catch (consumptionErr) {
-                        // Si falla, simplemente dejar la lista vacía
-                        console.warn('Error loading consumptions:', consumptionErr)
-                        setConsumptions([])
-                    }
-                }
-            } else {
+            // Si no tiene padre, no hay consumptions
+            if (!hasParent) {
+                setConsumptions([])
+                setLoading(false)
+                return
+            }
+
+            // Cargar consumptions directamente (el record ya fue cargado en el hook principal)
+            try {
+                const consumptionsResponse = await getProductionOutputConsumptions(token, {
+                    production_record_id: productionRecordId
+                })
+                setConsumptions(consumptionsResponse.data || [])
+            } catch (consumptionErr) {
+                console.warn('Error loading consumptions:', consumptionErr)
                 setConsumptions([])
             }
         } catch (err) {
@@ -167,7 +229,6 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
     }
 
     const loadAvailableOutputs = async () => {
-        const hasParent = productionRecord?.parent_record_id || productionRecord?.parentRecordId
         if (!hasParent) {
             alert('Este proceso no tiene un proceso padre. Selecciona un proceso padre en el formulario primero.')
             return
@@ -391,7 +452,6 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
     }
 
     const handleAddAllFromParent = async () => {
-        const hasParent = productionRecord?.parent_record_id || productionRecord?.parentRecordId
         if (!hasParent) {
             alert('Este proceso no tiene un proceso padre. Selecciona un proceso padre en el formulario primero.')
             return
@@ -612,11 +672,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
                     // Cerrar el diálogo
                     setManageDialogOpen(false)
                     
-                    // Actualizar solo los consumos en segundo plano sin bloquear
-                    // No llamar a onRefresh para evitar recargar todo
-                    loadConsumptionsOnly().catch(err => {
-                        console.warn('Error al recargar consumos:', err)
-                    })
+                    // Actualizar consumos y contexto
+                    await loadConsumptionsOnly()
                     return
                 } catch (fallbackError) {
                     // Si el fallback también falla, lanzar el error
@@ -634,14 +691,18 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             
             // Actualizar el estado con los consumos sincronizados del servidor
             if (response.data && response.data.parentOutputConsumptions) {
-                setConsumptions(response.data.parentOutputConsumptions)
-                // No llamar a onRefresh para evitar recargar todo
+                const updatedConsumptions = response.data.parentOutputConsumptions
+                setConsumptions(updatedConsumptions)
+                
+                // Actualizar el contexto para sincronizar con otros componentes
+                if (updateConsumptions) {
+                    await updateConsumptions(updatedConsumptions, true) // Actualizar contexto y refrescar record completo
+                } else if (updateRecord) {
+                    await updateRecord() // Refrescar record completo si no hay updateConsumptions
+                }
             } else {
-                // Si no vienen en la respuesta, recargar solo consumos en segundo plano
-                // No llamar a onRefresh para evitar recargar todo
-                loadConsumptionsOnly().catch(err => {
-                    console.warn('Error al recargar consumos:', err)
-                })
+                // Si no vienen en la respuesta, recargar consumos y actualizar contexto
+                await loadConsumptionsOnly()
             }
             
         } catch (err) {
@@ -656,9 +717,6 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, onRefresh, hi
             setSavingAll(false)
         }
     }
-
-    // Verificar si tiene padre
-    const hasParent = productionRecord?.parent_record_id || productionRecord?.parentRecordId
 
     if (loading) {
         return (

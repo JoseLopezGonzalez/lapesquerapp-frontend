@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { useProductionRecord } from '@/hooks/useProductionRecord'
+import { ProductionRecordProvider, useProductionRecordContext } from '@/context/ProductionRecordContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Loader from '@/components/Utilities/Loader'
@@ -15,7 +15,7 @@ import { useRecordFormData } from './ProductionRecordEditor/hooks/useRecordFormD
 import { useRecordFormSubmission } from './ProductionRecordEditor/hooks/useRecordFormSubmission'
 import { getProcessName, getRecordField } from '@/helpers/production/recordHelpers'
 
-const ProductionRecordEditor = ({ productionId, recordId = null }) => {
+const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
     const router = useRouter()
     
     const {
@@ -29,7 +29,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
         isEditMode,
         saveRecord,
         refresh
-    } = useProductionRecord(productionId, recordId)
+    } = useProductionRecordContext()
 
     const {
         formData,
@@ -125,7 +125,7 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                     {/* Resumen del Proceso */}
                     {currentRecordId && record && (
                         <div className="break-inside-avoid mb-6 max-w-full w-full">
-                            <ProcessSummaryCard record={record} />
+                            <ProcessSummaryCard />
                         </div>
                     )}
 
@@ -137,6 +137,14 @@ const ProductionRecordEditor = ({ productionId, recordId = null }) => {
                 </div>
             </div>
         </div>
+    )
+}
+
+const ProductionRecordEditor = ({ productionId, recordId = null }) => {
+    return (
+        <ProductionRecordProvider productionId={productionId} recordId={recordId}>
+            <ProductionRecordEditorContent productionId={productionId} recordId={recordId} />
+        </ProductionRecordProvider>
     )
 }
 

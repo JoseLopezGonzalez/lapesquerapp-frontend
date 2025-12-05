@@ -4,7 +4,7 @@ import {
     getProductionRecord,
     createProductionRecord,
     updateProductionRecord,
-    getProductionRecords,
+    getProductionRecordsOptions,
     getProduction
 } from '@/services/productionService'
 import { fetchWithTenant } from '@/lib/fetchWithTenant'
@@ -57,18 +57,20 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         }
     }, [token])
 
-    // Cargar records existentes
+    // Cargar records existentes en formato minimal (para select de proceso padre)
     const loadExistingRecords = useCallback(async () => {
         if (!token || !productionId) return
         
         try {
-            const response = await getProductionRecords(token, { production_id: productionId })
-            setExistingRecords(response.data || [])
+            // Usar recordId del parámetro o del record cargado
+            const currentRecordId = recordId || (record?.id ? record.id : null)
+            const records = await getProductionRecordsOptions(token, productionId, currentRecordId)
+            setExistingRecords(records || [])
         } catch (err) {
             console.warn('Error loading existing records:', err)
             setExistingRecords([])
         }
-    }, [token, productionId])
+    }, [token, productionId, recordId, record?.id])
 
     // Cargar datos iniciales
     const loadInitialData = useCallback(async () => {
@@ -86,21 +88,29 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
                 console.warn('Error loading production data:', err)
             }
 
-            // Cargar procesos y records en paralelo
-            await Promise.all([
-                loadProcesses(),
-                loadExistingRecords()
-            ])
-
-            // Si es modo edición, cargar el record
+            // Si es modo edición, cargar el record y datos relacionados en paralelo
             if (isEditMode && recordId) {
                 try {
-                    const recordData = await getProductionRecord(recordId, token)
+                    // Cargar record, procesos y existing records en paralelo para optimizar
+                    const [recordData] = await Promise.all([
+                        getProductionRecord(recordId, token),
+                        loadProcesses() // Cargar procesos en paralelo
+                    ])
                     setRecord(recordData)
+                    
+                    // Cargar existing records después de tener el record (para excluir el ID correcto)
+                    // El endpoint ya excluye el record actual, así que solo necesita productionId
+                    await loadExistingRecords()
                 } catch (err) {
                     console.error('Error loading record:', err)
                     setError(err.message || 'Error al cargar el proceso')
                 }
+            } else {
+                // Si es modo creación, cargar procesos y existing records en paralelo
+                await Promise.all([
+                    loadProcesses(),
+                    loadExistingRecords()
+                ])
             }
         } catch (err) {
             console.error('Error loading data:', err)
@@ -187,6 +197,11 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         }
     }, [token, productionId, recordId, loadInitialData])
 
+    // Función para actualizar el record directamente (para contexto)
+    const setRecordDirect = useCallback((newRecord) => {
+        setRecord(newRecord)
+    }, [])
+
     return {
         // Datos
         record,
@@ -203,7 +218,8 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         // Funciones
         saveRecord,
         refresh,
-        loadInitialData
+        loadInitialData,
+        setRecord: setRecordDirect // Exponer setRecord para el contexto
     }
 }
 

@@ -326,6 +326,45 @@ export function getProductionRecords(token, params = {}) {
 }
 
 /**
+ * Obtiene los production records en formato minimal para selects (opciones)
+ * @param {string} token - Token de autenticación
+ * @param {number} productionId - ID de la producción
+ * @param {number|null} excludeId - ID del record a excluir (opcional)
+ * @returns {Promise<Array>} - Lista de records en formato minimal
+ */
+export function getProductionRecordsOptions(token, productionId, excludeId = null) {
+    const params = { production_id: productionId }
+    if (excludeId) {
+        params.exclude_id = excludeId
+    }
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `${API_URL_V2}production-records/options${queryParams ? `?${queryParams}` : ''}`;
+    
+    return fetchWithTenant(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener las opciones de records');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data || data || [];
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
  * Obtiene un production record por ID
  * @param {string|number} recordId - ID del record
  * @param {string} token - Token de autenticación
@@ -355,6 +394,7 @@ export function getProductionRecord(recordId, token) {
             throw error;
         });
 }
+
 
 /**
  * Crea un nuevo production record

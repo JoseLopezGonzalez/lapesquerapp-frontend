@@ -6,6 +6,7 @@ import ProductionInputsManager from '../../ProductionInputsManager'
 import ProductionOutputsManager from '../../ProductionOutputsManager'
 import ProductionOutputConsumptionsManager from '../../ProductionOutputConsumptionsManager'
 import ProductionRecordImagesManager from '../../ProductionRecordImagesManager'
+import { useProductionRecordContext } from '@/context/ProductionRecordContext'
 
 /**
  * Secciones de contenido del record (inputs, outputs, consumos, imágenes)
@@ -14,6 +15,18 @@ export const RecordContentSections = ({
     recordId,
     onRefresh
 }) => {
+    // Obtener datos del contexto
+    const {
+        record,
+        recordInputs,
+        recordOutputs,
+        recordConsumptions,
+        hasParent,
+        updateRecord
+    } = useProductionRecordContext()
+
+    // Usar updateRecord como onRefresh si está disponible
+    const handleRefresh = onRefresh || (() => updateRecord?.())
     if (!recordId) {
         return (
             <Card>
@@ -44,7 +57,8 @@ export const RecordContentSections = ({
             <div className="break-inside-avoid mb-6 max-w-full w-full">
                 <ProductionInputsManager
                     productionRecordId={recordId}
-                    onRefresh={onRefresh}
+                    initialInputs={recordInputs}
+                    onRefresh={handleRefresh}
                     hideTitle={true}
                     renderInCard={true}
                     cardTitle="Consumo de materia prima desde stock"
@@ -56,7 +70,9 @@ export const RecordContentSections = ({
             <div className="break-inside-avoid mb-6 max-w-full w-full">
                 <ProductionOutputConsumptionsManager
                     productionRecordId={recordId}
-                    onRefresh={onRefresh}
+                    initialConsumptions={recordConsumptions}
+                    hasParent={hasParent}
+                    onRefresh={handleRefresh}
                     hideTitle={true}
                     renderInCard={true}
                     cardTitle="Consumos de proceso anterior"
@@ -68,7 +84,8 @@ export const RecordContentSections = ({
             <div className="break-inside-avoid mb-6 max-w-full w-full">
                 <ProductionOutputsManager
                     productionRecordId={recordId}
-                    onRefresh={onRefresh}
+                    initialOutputs={recordOutputs}
+                    onRefresh={handleRefresh}
                     hideTitle={true}
                     renderInCard={true}
                     cardTitle="Productos resultantes"
