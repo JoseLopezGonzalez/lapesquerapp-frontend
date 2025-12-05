@@ -1,13 +1,26 @@
 import { isAuthError, isAuthStatusCode } from '@/configs/authConfig';
 
-export async function fetchWithTenant(url, options = {}) {
+export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
   let tenant = 'brisamar'; // Valor por defecto si no se detecta ninguno
 
   if (typeof window === 'undefined') {
     // ---- SERVIDOR ----
-    const { headers } = await import('next/headers');
-    const headersList = headers();
-    const host = headersList.get('host');
+    let host;
+    
+    // Si se pasan headers desde el middleware, usarlos directamente
+    if (reqHeaders) {
+      host = reqHeaders.get('host');
+    } else {
+      // En otros contextos del servidor, usar headers() de next/headers
+      try {
+        const { headers } = await import('next/headers');
+        const headersList = await headers(); // En Next.js 16, headers() devuelve una Promise
+        host = headersList.get('host');
+      } catch (error) {
+        // Si falla (por ejemplo, en middleware), intentar obtener del URL
+        console.warn('⚠️ No se pudo obtener headers, usando valor por defecto');
+      }
+    }
 
     if (host) {
       const parts = host.split('.');

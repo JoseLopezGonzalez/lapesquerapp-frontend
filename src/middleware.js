@@ -68,12 +68,16 @@ export async function middleware(req) {
 
   // Validar token con el backend para detectar revocación/cancelación
   try {
-    const verifyResponse = await fetchWithTenant(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token.accessToken}`,
+    const verifyResponse = await fetchWithTenant(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, 
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token.accessToken}`,
+        },
       },
-    });
+      req.headers // Pasar headers del middleware para evitar usar headers() de next/headers
+    );
 
     if (!verifyResponse.ok) {
       // console.log("🔐 [Middleware] Token inválido o sesión cancelada, redirigiendo al login desde:", pathname);
