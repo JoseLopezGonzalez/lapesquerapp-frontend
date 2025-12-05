@@ -6,15 +6,18 @@ export function mapEntityRows(rawRows, headers, handleDelete, config) {
             let value;
             if (header.path) {
                 value = header.path.split('.').reduce((acc2, key) => acc2?.[key], row);
-                // Para badges, si no hay valor, usar undefined en lugar de 'N/A'
-                if (header.type === 'badge' && (value === undefined || value === null)) {
+                // Para badges y dates, si no hay valor, usar undefined en lugar de 'N/A'
+                if ((header.type === 'badge' || header.type === 'date' || header.type === 'dateHour') && (value === undefined || value === null)) {
                     value = undefined;
                 } else if (value === undefined || value === null) {
                     value = 'N/A';
                 }
             } else {
                 value = row[header.name];
-                if (value === undefined || value === null) {
+                // Para badges y dates, si no hay valor, usar undefined en lugar de 'N/A'
+                if ((header.type === 'badge' || header.type === 'date' || header.type === 'dateHour') && (value === undefined || value === null)) {
+                    value = undefined;
+                } else if (value === undefined || value === null) {
                     value = 'N/A';
                 }
             }

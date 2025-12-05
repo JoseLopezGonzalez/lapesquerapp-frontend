@@ -12,9 +12,9 @@ export function renderByType(header, value, safeValue, cellCtx, onEdit, cellClas
         case "button":
             return renderButtons(safeValue, cellCtx, onEdit, cellClass);
         case "date":
-            return safeValue === "-" ? "-" : formatDate(safeValue);
+            return safeValue === "-" || safeValue === null || safeValue === undefined || safeValue === "" ? "-" : formatDate(safeValue);
         case "dateHour":
-            return safeValue === "-" ? "-" : formatDateHour(safeValue);
+            return safeValue === "-" || safeValue === null || safeValue === undefined || safeValue === "" ? "-" : formatDateHour(safeValue);
         case "currency":
             return safeValue === "-" ? "-" : formatDecimalCurrency(safeValue);
         case "weight":
