@@ -406,6 +406,13 @@ const ProductionView = ({ productionId }) => {
                         )}
 
                         {/* Tabla de productos */}
+                        {/* 
+                          Formato de productos:
+                          - Productos producidos: produced.weight > 0, status: 'ok'/'warning'/'error'
+                          - Productos NO producidos: produced.weight === 0 pero existe en venta/stock/reprocesado,
+                            balance.percentage === -100, status: 'error'
+                          Ver documentación: docs/FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md
+                        */}
                         {production.reconciliation.products && production.reconciliation.products.length > 0 && (
                             <div className="rounded-md border">
                                 <Table>

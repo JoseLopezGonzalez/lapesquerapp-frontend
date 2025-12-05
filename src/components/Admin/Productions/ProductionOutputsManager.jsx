@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions } from '@/services/productionService'
+import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles, Zap } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -22,6 +22,7 @@ import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+import { getRecordField } from '@/helpers/production/recordHelpers'
 
 const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialOutputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const { data: session } = useSession()
@@ -54,6 +55,13 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const [newRows, setNewRows] = useState([])
     const [saving, setSaving] = useState(false)
     const [copyingFromConsumption, setCopyingFromConsumption] = useState(false)
+    
+    // Estado para el diálogo de productos disponibles
+    const [availableProductsDialogOpen, setAvailableProductsDialogOpen] = useState(false)
+    const [availableProducts, setAvailableProducts] = useState([])
+    const [loadingAvailableProducts, setLoadingAvailableProducts] = useState(false)
+    const [selectedProducts, setSelectedProducts] = useState(new Set())
+    const [wasManageDialogOpen, setWasManageDialogOpen] = useState(false)
     
     // Estado para mostrar/ocultar cajas (con localStorage)
     const [showBoxes, setShowBoxes] = useState(() => {
@@ -462,6 +470,145 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         return [...editableOutputs, ...newRows]
     }
 
+    // Función para obtener el productionId del record
+    const getProductionId = () => {
+        if (contextData?.record) {
+            return getRecordField(contextData.record, 'productionId')
+        }
+        return null
+    }
+
+    // Función para cargar productos disponibles
+    const loadAvailableProducts = async () => {
+        try {
+            setLoadingAvailableProducts(true)
+            const token = session.user.accessToken
+            const productionId = getProductionId()
+            
+            if (!productionId) {
+                alert('No se pudo obtener el ID de la producción')
+                return
+            }
+
+            const products = await getAvailableProductsForOutputs(productionId, token)
+            setAvailableProducts(products || [])
+        } catch (err) {
+            console.error('Error loading available products:', err)
+            alert(err.message || 'Error al cargar los productos disponibles')
+        } finally {
+            setLoadingAvailableProducts(false)
+        }
+    }
+
+    // Función para abrir el diálogo de productos disponibles
+    const handleOpenAvailableProductsDialog = async () => {
+        // Guardar si el diálogo de gestión múltiple estaba abierto
+        setWasManageDialogOpen(manageDialogOpen)
+        // Cerrar el diálogo de gestión múltiple temporalmente
+        setManageDialogOpen(false)
+        setAvailableProductsDialogOpen(true)
+        setSelectedProducts(new Set())
+        await loadAvailableProducts()
+    }
+
+    // Función para alternar selección de producto
+    const toggleProductSelection = (productId) => {
+        setSelectedProducts(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(productId)) {
+                newSet.delete(productId)
+            } else {
+                newSet.add(productId)
+            }
+            return newSet
+        })
+    }
+
+    // Función para agregar productos seleccionados a las salidas
+    const handleAddSelectedProducts = async () => {
+        if (selectedProducts.size === 0) {
+            alert('Por favor selecciona al menos un producto')
+            return
+        }
+
+        try {
+            const productsToAdd = availableProducts.filter(p => selectedProducts.has(p.product.id))
+            
+            // Si el diálogo de gestión múltiple estaba abierto, agregar como nuevas filas
+            if (wasManageDialogOpen) {
+                // Obtener IDs de productos que ya están en la lista
+                const existingProductIds = new Set()
+                getAllRows().forEach(row => {
+                    if (row.product_id) {
+                        existingProductIds.add(row.product_id.toString())
+                    }
+                })
+                
+                // Filtrar productos que no están ya en la lista
+                const newProductsToAdd = productsToAdd.filter(product => 
+                    !existingProductIds.has(product.product.id.toString())
+                )
+                
+                if (newProductsToAdd.length === 0) {
+                    alert('Todos los productos seleccionados ya están en la lista.')
+                    setAvailableProductsDialogOpen(false)
+                    setSelectedProducts(new Set())
+                    setWasManageDialogOpen(false)
+                    return
+                }
+                
+                // Agregar como nuevas filas
+                const newRowsToAdd = newProductsToAdd.map((product, index) => ({
+                    id: `new-${Date.now()}-${index}-${product.product.id}`,
+                    product_id: product.product.id.toString(),
+                    boxes: (product.totalBoxes || 0).toString(),
+                    weight_kg: (product.totalWeight || 0).toString(),
+                    isNew: true
+                }))
+                
+                setNewRows([...newRows, ...newRowsToAdd])
+                
+                // Cerrar el diálogo de productos disponibles
+                setAvailableProductsDialogOpen(false)
+                setSelectedProducts(new Set())
+                setWasManageDialogOpen(false)
+                
+                // Reabrir el diálogo de gestión múltiple
+                setManageDialogOpen(true)
+            } else {
+                // Si no está en el diálogo de gestión múltiple, crear las salidas directamente
+                const token = session.user.accessToken
+                
+                // Crear las salidas para cada producto seleccionado
+                const createPromises = productsToAdd.map(product => {
+                    const outputData = {
+                        production_record_id: parseInt(productionRecordId),
+                        product_id: product.product.id,
+                        lot_id: null,
+                        boxes: product.totalBoxes || 0,
+                        weight_kg: product.totalWeight || 0
+                    }
+                    return createProductionOutput(outputData, token)
+                })
+
+                await Promise.all(createPromises)
+                
+                // Recargar outputs y actualizar contexto
+                await loadOutputsOnly()
+                
+                // Cerrar el diálogo y resetear
+                setAvailableProductsDialogOpen(false)
+                setSelectedProducts(new Set())
+                setWasManageDialogOpen(false)
+                setAddDialogOpen(false)
+                resetForm()
+            }
+        } catch (err) {
+            console.error('Error adding selected products:', err)
+            alert(err.message || 'Error al agregar los productos seleccionados')
+        }
+    }
+
 
     if (loading) {
         return (
@@ -491,80 +638,80 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateOutput} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="product_id">Producto *</Label>
-                    <Select
-                        value={formData.product_id}
-                        onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un producto" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {products
-                                .filter(product => product?.id != null)
-                                .map(product => (
-                                    <SelectItem key={product.id} value={product.id.toString()}>
-                                        {product.name}
-                                    </SelectItem>
-                                ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="lot_id">Lote</Label>
-                    <Input
-                        id="lot_id"
-                        placeholder="Ej. LOT-2025-001"
-                        value={formData.lot_id}
-                        onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                        Lote del producto producido (opcional)
-                    </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="boxes">Cantidad de Cajas</Label>
-                        <Input
-                            id="boxes"
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={formData.boxes}
-                            onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                        />
+                        <Label htmlFor="product_id">Producto *</Label>
+                        <Select
+                            value={formData.product_id}
+                            onValueChange={(value) => setFormData({ ...formData, product_id: value })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un producto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {products
+                                    .filter(product => product?.id != null)
+                                    .map(product => (
+                                        <SelectItem key={product.id} value={product.id.toString()}>
+                                            {product.name}
+                                        </SelectItem>
+                                    ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="weight_kg">Peso Total (kg) *</Label>
+                        <Label htmlFor="lot_id">Lote</Label>
                         <Input
-                            id="weight_kg"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="0.00"
-                            value={formData.weight_kg}
-                            onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                            required
+                            id="lot_id"
+                            placeholder="Ej. LOT-2025-001"
+                            value={formData.lot_id}
+                            onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
                         />
+                        <p className="text-xs text-muted-foreground">
+                            Lote del producto producido (opcional)
+                        </p>
                     </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            setAddDialogOpen(false)
-                            resetForm()
-                        }}
-                    >
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
-                        Crear Salida
-                    </Button>
-                </div>
-            </form>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="boxes">Cantidad de Cajas</Label>
+                            <Input
+                                id="boxes"
+                                type="number"
+                                min="0"
+                                placeholder="0"
+                                value={formData.boxes}
+                                onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="weight_kg">Peso Total (kg) *</Label>
+                            <Input
+                                id="weight_kg"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                value={formData.weight_kg}
+                                onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setAddDialogOpen(false)
+                                resetForm()
+                            }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
+                            Crear Salida
+                        </Button>
+                    </div>
+                </form>
         </DialogContent>
     )
 
@@ -586,6 +733,125 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </Dialog>
     )
 
+    // Diálogo de productos disponibles
+    const availableProductsDialog = (
+        <Dialog open={availableProductsDialogOpen} onOpenChange={(open) => {
+            setAvailableProductsDialogOpen(open)
+            if (!open) {
+                setSelectedProducts(new Set())
+                // Si se cierra sin agregar y el diálogo de gestión estaba abierto, reabrirlo
+                if (wasManageDialogOpen && !selectedProducts.size) {
+                    setManageDialogOpen(true)
+                }
+                setWasManageDialogOpen(false)
+            }
+        }}>
+            <DialogContent className="max-w-4xl max-h-[90vh]">
+                <DialogHeader>
+                    <DialogTitle>Productos Disponibles para Salidas</DialogTitle>
+                    <DialogDescription>
+                        Selecciona los productos que deseas agregar automáticamente. Estos productos tienen cajas y pesos registrados en ventas, stock y reprocesados.
+                    </DialogDescription>
+                </DialogHeader>
+                
+                {loadingAvailableProducts ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : availableProducts.length === 0 ? (
+                    <div className="py-12 text-center">
+                        <p className="text-muted-foreground">
+                            No hay productos disponibles para agregar como salidas.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <ScrollArea className="h-[500px] border rounded-md">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[50px]">
+                                            <Checkbox
+                                                checked={selectedProducts.size === availableProducts.length && availableProducts.length > 0}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setSelectedProducts(new Set(availableProducts.map(p => p.product.id)))
+                                                    } else {
+                                                        setSelectedProducts(new Set())
+                                                    }
+                                                }}
+                                            />
+                                        </TableHead>
+                                        <TableHead>Producto</TableHead>
+                                        <TableHead className="text-right">Cajas Totales</TableHead>
+                                        <TableHead className="text-right">Peso Total (kg)</TableHead>
+                                        <TableHead>Fuentes</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {availableProducts.map((item) => {
+                                        const isSelected = selectedProducts.has(item.product.id)
+                                        return (
+                                            <TableRow 
+                                                key={item.product.id}
+                                                className={isSelected ? 'bg-muted/50' : ''}
+                                            >
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        onCheckedChange={() => toggleProductSelection(item.product.id)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {item.product.name}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {item.totalBoxes || 0}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {formatWeight(item.totalWeight || 0)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                                                        {item.sources?.sales && (item.sources.sales.boxes > 0 || item.sources.sales.weight > 0) && (
+                                                            <span>Ventas: {item.sources.sales.boxes} cajas, {formatWeight(item.sources.sales.weight)}</span>
+                                                        )}
+                                                        {item.sources?.stock && (item.sources.stock.boxes > 0 || item.sources.stock.weight > 0) && (
+                                                            <span>Stock: {item.sources.stock.boxes} cajas, {formatWeight(item.sources.stock.weight)}</span>
+                                                        )}
+                                                        {item.sources?.reprocessed && (item.sources.reprocessed.boxes > 0 || item.sources.reprocessed.weight > 0) && (
+                                                            <span>Reprocesados: {item.sources.reprocessed.boxes} cajas, {formatWeight(item.sources.reprocessed.weight)}</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                        
+                        <div className="flex justify-end gap-2 pt-2 border-t">
+                            <Button
+                                variant="outline"
+                                onClick={() => setAvailableProductsDialogOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleAddSelectedProducts}
+                                disabled={selectedProducts.size === 0}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar {selectedProducts.size > 0 ? `${selectedProducts.size} ` : ''}Producto{selectedProducts.size !== 1 ? 's' : ''}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    )
+
     const editDialog = (
         <Dialog open={editDialogOpen} onOpenChange={(open) => {
             setEditDialogOpen(open)
@@ -602,59 +868,59 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleEditOutput} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_product_id">Producto *</Label>
-                        <Select
-                            value={formData.product_id}
-                            onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un producto" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {products
-                                    .filter(product => product?.id != null)
-                                    .map(product => (
-                                        <SelectItem key={product.id} value={product.id.toString()}>
-                                            {product.name}
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="edit_lot_id">Lote</Label>
-                        <Input
-                            id="edit_lot_id"
-                            placeholder="Ej. LOT-2025-001"
-                            value={formData.lot_id}
-                            onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit_boxes">Cantidad de Cajas</Label>
-                            <Input
-                                id="edit_boxes"
-                                type="number"
-                                min="0"
-                                placeholder="0"
-                                value={formData.boxes}
-                                onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                            />
+                            <Label htmlFor="edit_product_id">Producto *</Label>
+                            <Select
+                                value={formData.product_id}
+                                onValueChange={(value) => setFormData({ ...formData, product_id: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un producto" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {products
+                                        .filter(product => product?.id != null)
+                                        .map(product => (
+                                            <SelectItem key={product.id} value={product.id.toString()}>
+                                                {product.name}
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit_weight_kg">Peso Total (kg) *</Label>
+                            <Label htmlFor="edit_lot_id">Lote</Label>
                             <Input
-                                id="edit_weight_kg"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                value={formData.weight_kg}
-                                onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                                required
+                                id="edit_lot_id"
+                                placeholder="Ej. LOT-2025-001"
+                                value={formData.lot_id}
+                                onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
                             />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_boxes">Cantidad de Cajas</Label>
+                                <Input
+                                    id="edit_boxes"
+                                    type="number"
+                                    min="0"
+                                    placeholder="0"
+                                    value={formData.boxes}
+                                    onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit_weight_kg">Peso Total (kg) *</Label>
+                                <Input
+                                    id="edit_weight_kg"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="0.00"
+                                    value={formData.weight_kg}
+                                    onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                                    required
+                                />
                         </div>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -810,6 +1076,25 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             </label>
                         </div>
                         <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={handleOpenAvailableProductsDialog}
+                                            variant="default"
+                                            size="sm"
+                                        >
+                                            <Zap className="h-4 w-4 mr-2" />
+                                            Agregar desde productos disponibles
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                            Agrega automáticamente productos con cajas y pesos registrados en ventas, stock y reprocesados.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -983,6 +1268,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 {manageDialog}
                 {addDialog}
                 {editDialog}
+                {availableProductsDialog}
                 <Card className="h-fit">
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -1012,6 +1298,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             {manageDialog}
             {addButton}
             {editDialog}
+            {availableProductsDialog}
             {mainContent}
         </div>
     )

@@ -289,6 +289,37 @@ export function getProductionReconciliation(productionId, token) {
         });
 }
 
+/**
+ * Obtiene los productos disponibles para salidas de una producción
+ * @param {string|number} productionId - ID de la producción
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Lista de productos disponibles con cajas y pesos
+ */
+export function getAvailableProductsForOutputs(productionId, token) {
+    return fetchWithTenant(`${API_URL_V2}productions/${productionId}/available-products-for-outputs`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener los productos disponibles');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data || data || [];
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
 // ==================== PRODUCTION RECORDS ====================
 
 /**
