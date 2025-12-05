@@ -24,7 +24,7 @@ export default function PalletKanbanView() {
                 <div className="flex items-center justify-center h-full min-h-[400px]">
                     <div className="text-center text-muted-foreground">
                         <p className="text-lg">No hay palets registrados</p>
-                        <p className="text-sm mt-2">Los palets en estado "registered" aparecerán aquí</p>
+                        <p className="text-sm mt-2">Los palets en estado &quot;registered&quot; aparecerán aquí</p>
                     </div>
                 </div>
             ) : (
