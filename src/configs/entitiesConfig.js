@@ -1663,7 +1663,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { state_id: 1 } // Estado "registered"
+        body: { status: 1 } // Estado "registered"
       },
       {
         title: 'Cambiar estado a Almacenado',
@@ -1672,7 +1672,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { state_id: 2 } // Estado "stored"
+        body: { status: 2 } // Estado "stored"
       },
       {
         title: 'Cambiar estado a Enviado',
@@ -1681,7 +1681,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { state_id: 3 } // Estado "shipped"
+        body: { status: 3 } // Estado "shipped"
       },
       {
         title: 'Cambiar estado a Procesado',
@@ -1690,7 +1690,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { state_id: 4 } // Estado "processed"
+        body: { status: 4 } // Estado "processed"
       }
     ],
   },
