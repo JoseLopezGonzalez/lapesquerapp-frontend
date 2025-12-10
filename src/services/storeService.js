@@ -216,9 +216,18 @@ export async function getRegisteredPallets(token) {
             return response.json();
         })
         .then(data => {
-            return data.data;
+            // La respuesta puede venir como {data: {...}} o directamente como el objeto
+            // Si tiene la propiedad data, usarla; sino, usar el objeto completo
+            const result = data?.data || data;
+            console.log('getRegisteredPallets - Raw response:', data);
+            console.log('getRegisteredPallets - Extracted result:', result);
+            console.log('getRegisteredPallets - result.content:', result?.content);
+            console.log('getRegisteredPallets - result.content?.pallets:', result?.content?.pallets);
+            console.log('getRegisteredPallets - result.content?.pallets?.length:', result?.content?.pallets?.length);
+            return result;
         })
         .catch(error => {
+            console.error('getRegisteredPallets - Error:', error);
             throw error;
         })
         .finally(() => {

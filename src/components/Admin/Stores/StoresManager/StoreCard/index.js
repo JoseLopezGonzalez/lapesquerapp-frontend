@@ -50,12 +50,18 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
                 <Sparkles className='mr-1 h-4 w-4' /> 
                 {store?.content?.pallets?.length || 0} palets en espera
               </span>
-              {/* Barra de progreso (mismo estilo pero siempre llena) */}
+              {/* Barra de progreso: completa y parpadeando si hay palets, vacía si no hay */}
               <span className="mt-2 flex items-center text-sm pr-2">
                 <div className="w-full bg-foreground-300 rounded-full h-2.5 ">
                   <div
-                    className="bg-slate-400 dark:bg-slate-500 h-2.5 rounded-full"
-                    style={{ width: '100%' }}
+                    className={`h-2.5 rounded-full ${
+                      (store?.content?.pallets?.length || 0) > 0
+                        ? 'bg-slate-400 dark:bg-slate-500 animate-pulse'
+                        : 'bg-transparent'
+                    }`}
+                    style={{ 
+                      width: (store?.content?.pallets?.length || 0) > 0 ? '100%' : '0%' 
+                    }}
                   >
                   </div>
                 </div>

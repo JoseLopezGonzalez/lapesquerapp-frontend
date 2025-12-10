@@ -16,7 +16,8 @@ export default function PalletKanbanView() {
     }
 
     // Obtener todos los palets del almacén fantasma
-    const allPallets = pallets || store?.content?.pallets || [];
+    // Para el almacén fantasma, siempre mostrar todos los palets sin filtrar
+    const allPallets = store?.content?.pallets || [];
 
     return (
         <ScrollArea className="w-full h-full p-4">
@@ -28,9 +29,11 @@ export default function PalletKanbanView() {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="columns-1 sm:columns-1 md:columns-2 lg:columns-3 xl:columns-4 2xl:columns-5 gap-4 space-y-4">
                     {allPallets.map((pallet) => (
-                        <PalletCard key={pallet.id} pallet={pallet} />
+                        <div key={pallet.id} className="break-inside-avoid mb-4">
+                            <PalletCard pallet={pallet} />
+                        </div>
                     ))}
                 </div>
             )}

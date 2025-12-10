@@ -8,12 +8,19 @@ import { useSession } from 'next-auth/react';
 import { CircleDot, Edit, MapPinHouse, MapPinX, Plus, Trash2 } from 'lucide-react';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
+import { UNLOCATED_POSITION_ID } from '@/configs/config';
 
 const PositionPopover = ({ position }) => {
     const { name, id } = position;
     const { data: session } = useSession();
 
-    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition, openMovePalletToStoreDialog } = useStoreContext();
+    const { getPositionPallets, openPositionSlideover, openPalletDialog, isPalletRelevant, openAddElementToPosition, removePalletFromPosition, openMovePalletToStoreDialog, store } = useStoreContext();
+    
+    // Detectar si estamos en el almacén fantasma o si es la posición "sin ubicar"
+    const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
+    const isUnlocatedPosition = id === UNLOCATED_POSITION_ID;
+    const shouldHideRemoveOption = isGhostStore || isUnlocatedPosition;
 
     const pallets = getPositionPallets(id);
 
@@ -134,25 +141,27 @@ const PositionPopover = ({ position }) => {
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
-                                            {/* Button deletePalletFromPosition Tooltip */}
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-7 w-7 text-destructive hover:text-destructive"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleOnClickRemovePalletFromPosition(pallet.id);
-                                                        }}
-                                                    >
-                                                        <MapPinX className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Quitar de esta posición</p>
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            {/* Button deletePalletFromPosition Tooltip - Solo visible si NO es almacén fantasma y NO es posición sin ubicar */}
+                                            {!shouldHideRemoveOption && (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-destructive hover:text-destructive"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOnClickRemovePalletFromPosition(pallet.id);
+                                                            }}
+                                                        >
+                                                            <MapPinX className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Quitar de esta posición</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
 
                                         </div>
                                     </div>

@@ -223,32 +223,45 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
     useEffect(() => {
         const map = new Map();
 
+        // Si no hay filtros activos, mostrar todos los palets
+        const hasProductFilters = filters.products.length > 0;
+        const hasPalletFilters = filters.pallets.length > 0;
+        const hasActiveFilters = hasProductFilters || hasPalletFilters;
+
         store?.content?.pallets?.forEach(pallet => {
+            // Determinar si el palet coincide con los filtros
+            let matchesFilters = true;
+            
+            if (hasActiveFilters) {
+                const matchProduct = hasProductFilters 
+                    ? pallet.boxes?.some(box => filters.products.includes(box.product?.id))
+                    : true;
+                const matchPallet = hasPalletFilters
+                    ? filters.pallets.includes(pallet.id)
+                    : true;
+                
+                matchesFilters = matchProduct && matchPallet;
+            }
+
+            if (!matchesFilters) {
+                return; // Saltar este palet si no coincide con los filtros
+            }
+
             // Pallets SIN posición (unlocated)
             if (!pallet.position) {
-                const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.product?.id));
-                const matchPallet = filters.pallets.includes(pallet.id);
-
-                if (matchProduct || matchPallet) {
-                    // Usamos la clave especial "unlocated"
-                    if (!map.has(UNLOCATED_POSITION_ID)) {
-                        map.set(UNLOCATED_POSITION_ID, []);
-                    }
-                    map.get(UNLOCATED_POSITION_ID).push(pallet);
+                // Usamos la clave especial "unlocated"
+                if (!map.has(UNLOCATED_POSITION_ID)) {
+                    map.set(UNLOCATED_POSITION_ID, []);
                 }
+                map.get(UNLOCATED_POSITION_ID).push(pallet);
                 return;
             }
 
             // Pallets CON posición
-            const matchProduct = pallet.boxes?.some(box => filters.products.includes(box.product?.id));
-            const matchPallet = filters.pallets.includes(pallet.id);
-
-            if (matchProduct || matchPallet) {
-                if (!map.has(pallet.position)) {
-                    map.set(pallet.position, []);
-                }
-                map.get(pallet.position).push(pallet);
+            if (!map.has(pallet.position)) {
+                map.set(pallet.position, []);
             }
+            map.get(pallet.position).push(pallet);
         });
 
         setFilteredPositionsMap(map);
@@ -265,6 +278,15 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
     }, [store?.content?.pallets]);
 
     const isPositionRelevant = (positionId) => {
+        // Solo es relevante si hay filtros activos Y la posición tiene palets que coinciden
+        const hasProductFilters = filters.products.length > 0;
+        const hasPalletFilters = filters.pallets.length > 0;
+        const hasActiveFilters = hasProductFilters || hasPalletFilters;
+        
+        if (!hasActiveFilters) {
+            return false; // Sin filtros = sin color verde
+        }
+        
         return filteredPositionsMap.has(positionId) && filteredPositionsMap.get(positionId).length > 0;
     };
 
@@ -276,7 +298,16 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
     };
 
     const isPalletRelevant = (palletId) => {
-        // Recorre cada posición (incluida la de sin ubicar)
+        // Solo es relevante si hay filtros activos Y el palet coincide con los filtros
+        const hasProductFilters = filters.products.length > 0;
+        const hasPalletFilters = filters.pallets.length > 0;
+        const hasActiveFilters = hasProductFilters || hasPalletFilters;
+        
+        if (!hasActiveFilters) {
+            return false; // Sin filtros = sin color verde
+        }
+        
+        // Recorre cada posición (incluida la de sin ubicar) para ver si el palet está en los filtrados
         for (const pallets of filteredPositionsMap.values()) {
             if (pallets.some(pallet => pallet.id === palletId)) {
                 return true;
@@ -302,7 +333,46 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         
         fetchStore
             .then((data) => {
-                setStore(data);
+                console.log('useStore - Raw data from API:', data);
+                console.log('useStore - data type:', typeof data);
+                console.log('useStore - data is null?', data === null);
+                console.log('useStore - data is undefined?', data === undefined);
+                
+                if (!data) {
+                    console.error('useStore - ERROR: Data is null or undefined!');
+                    setError(new Error('No se pudieron obtener los datos del almacén'));
+                    return;
+                }
+                
+                console.log('useStore - data.content:', data?.content);
+                console.log('useStore - data.content?.pallets:', data?.content?.pallets);
+                console.log('useStore - data.content?.pallets?.length:', data?.content?.pallets?.length);
+                
+                // Si es el almacén fantasma, asegurar que tenga el ID correcto
+                if (storeId === REGISTERED_PALLETS_STORE_ID) {
+                    // Si data no tiene content, usar el data completo pero asegurar el ID
+                    const ghostStoreData = {
+                        ...data,
+                        id: REGISTERED_PALLETS_STORE_ID,
+                        // Preservar el content original si existe, sino crear uno vacío
+                        content: data?.content || {
+                            pallets: [],
+                            boxes: [],
+                            bigBoxes: []
+                        }
+                    };
+                    console.log('useStore - Setting ghost store data:', ghostStoreData);
+                    console.log('useStore - Ghost store content:', ghostStoreData.content);
+                    console.log('useStore - Ghost store pallets:', ghostStoreData.content?.pallets);
+                    console.log('useStore - Ghost store pallets length:', ghostStoreData.content?.pallets?.length);
+                    setStore(ghostStoreData);
+                } else {
+                    setStore(data);
+                }
+            })
+            .catch((error) => {
+                console.error('useStore - Error fetching store:', error);
+                console.error('useStore - Error details:', error.message, error.stack);
             })
             .catch((error) => {
                 console.error('Error al obtener los almacenes', error);

@@ -18,11 +18,17 @@ import { useStoreContext } from "@/context/StoreContext"
 import { useSession } from 'next-auth/react'
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability'
+import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores'
 
 export default function PalletCard({ pallet }) {
     const { data: session } = useSession();
 
-    const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition, store } = useStoreContext();
+    
+    // Detectar si estamos en el almacén fantasma o si el palet está sin ubicar
+    const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
+    const isUnlocated = !pallet.position;
+    const shouldHideRemoveOption = isGhostStore || isUnlocated;
 
     const handleOnCLickEdit = () => {
         openPalletDialog(pallet.id)
@@ -136,14 +142,19 @@ export default function PalletCard({ pallet }) {
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={handleOnClickRemovePalletFromPosition}
-                            className="text-destructive focus:text-destructive cursor-pointer"
-                        >
-                            <MapPinX className="h-4 w-4 mr-2" />
-                            Quitar de esta posición
-                        </DropdownMenuItem>
+                        {/* Solo mostrar "Quitar de esta posición" si NO es almacén fantasma y NO está sin ubicar */}
+                        {!shouldHideRemoveOption && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={handleOnClickRemovePalletFromPosition}
+                                    className="text-destructive focus:text-destructive cursor-pointer"
+                                >
+                                    <MapPinX className="h-4 w-4 mr-2" />
+                                    Quitar de esta posición
+                                </DropdownMenuItem>
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </CardHeader>
