@@ -65,7 +65,7 @@ const emptyPallet = {
 
 
 
-export function usePallet({ id, onChange, initialStoreId = null, initialOrderId = null }) {
+export function usePallet({ id, onChange, initialStoreId = null, initialOrderId = null, skipBackendSave = false, initialPallet = null }) {
 
     const [pallet, setPallet] = useState(null);
     const [temporalPallet, setTemporalPallet] = useState(null);
@@ -94,11 +94,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         
         // NUEVO: si no hay id => crear palet temporal nuevo
         if (id === 'new' || id === null) {
-            setPallet({
+            // If initialPallet is provided, use it; otherwise create empty pallet
+            const palletToSet = initialPallet || {
                 ...emptyPallet,
                 store: initialStoreId ? { id: initialStoreId } : null, // Asignar store si se proporciona
                 orderId: initialOrderId || null, // Asignar orderId si se proporciona
-            });
+            };
+            setPallet(palletToSet);
             setLoading(false);
         } else {
             getPallet(id, token)
@@ -653,6 +655,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const onSavingChanges = async () => {
         if (!temporalPallet) return;
+
+        // If skipBackendSave is true, just call onChange with temporalPallet without saving to backend
+        if (skipBackendSave) {
+            onChange(temporalPallet);
+            return;
+        }
 
         setSaving(true);
 

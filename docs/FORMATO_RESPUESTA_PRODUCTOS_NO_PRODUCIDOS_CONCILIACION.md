@@ -275,12 +275,39 @@ El mensaje muestra el **total contabilizado** (20 + 15 + 5 = 40kg).
 ## 🔗 Referencias
 
 - Endpoint: `GET /api/v2/productions/{id}/reconciliation`
-- Componente Frontend: `src/components/Admin/Productions/ProductionView.jsx`
-- Servicio: `src/services/productionService.js` - `getProductionReconciliation()`
+- Componente Frontend: `src/components/Admin/Productions/ProductionView.jsx` (líneas 464-479)
+- Servicio: `src/services/productionService.js` - `getProductionReconciliation()` (línea 111)
+
+**Implementación en Frontend**:
+
+El componente `ProductionView.jsx` implementa la detección de productos no producidos usando las tres opciones mencionadas:
+
+```javascript
+// Opción 1: Por produced.weight === 0 y contabilizado > 0
+const hasNoProduction = (item.produced?.weight || 0) === 0;
+const hasContabilized = ((item.inSales?.weight || 0) > 0 || 
+                         (item.inStock?.weight || 0) > 0 || 
+                         (item.reprocessed?.weight || 0) > 0);
+
+// Opción 2: Por status === 'error' y balance.percentage === -100
+const isErrorWithNegativeBalance = item.status === 'error' && 
+                                   (item.balance?.percentage || 0) === -100;
+
+// Opción 3: Por el mensaje
+const hasNotProducedMessage = item.message?.includes('no registrado como producido');
+
+// Detección final
+const isNotProduced = hasNotProducedMessage || 
+                     isErrorWithNegativeBalance || 
+                     (hasNoProduction && hasContabilized);
+```
+
+**Estado**: ✅ Documentación actualizada y verificada con el código
 
 ---
 
 **Autor**: Documentación de formato  
 **Fecha**: 2025-01-XX  
-**Versión**: 1.0
+**Última actualización**: 2025-01-XX
+**Versión**: 1.1
 

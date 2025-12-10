@@ -37,7 +37,7 @@ import SummaryPieChart from "./SummaryPieChart";
 import BoxesLabels from "./BoxesLabels";
 
 
-export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false }) {
+export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null }) {
 
     const {
         productsOptions,
@@ -60,7 +60,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         onSavingChanges,
         onClose,
         setBoxPrinted,
-    } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId });
+    } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
 
 
     const orderIdBlocked = initialOrderId !== null;
@@ -109,7 +109,12 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     };
 
     const handleOnClickSaveChanges = () => {
-        onSavingChanges();
+        // If onSaveTemporal is provided, use it instead of onSavingChanges
+        if (onSaveTemporal && temporalPallet) {
+            onSaveTemporal(temporalPallet);
+        } else {
+            onSavingChanges();
+        }
     };
 
     /* const handleOnClickClose = () => {

@@ -1,8 +1,9 @@
 export const configs = {
   'raw-material-receptions': {
-    hideCreateButton: true,
-    hideEditButton: true,
+    hideCreateButton: false,
+    hideEditButton: false,
     hideViewButton: true,
+    editRedirect: "/admin/raw-material-receptions/:id/edit",
     title: "Recepciones de materia prima",
     description: "Crea, edita, genera reportes y más.",
     emptyState: {
@@ -13,6 +14,7 @@ export const configs = {
     endpoint: "raw-material-receptions",
     viewRoute: "/admin/raw-material-receptions/:id",
     deleteEndpoint: "raw-material-receptions/:id",
+    createRedirect: "/admin/raw-material-receptions/create",
     filtersGroup: {
       search: {
         name: "search",

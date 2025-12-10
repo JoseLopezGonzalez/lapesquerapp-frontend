@@ -1,15 +1,15 @@
 'use client'
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 /* import DatePicker from '@/components/Shadcn/Dates/DatePicker'; */
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Edit, Save } from 'lucide-react';
+import { Edit, Save, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
@@ -22,22 +22,37 @@ import { format } from "date-fns"
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
     const { formGroups, defaultValues, loading } = useOrderFormConfig({ orderData: order });
+    const [open, setOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
 
-    const { register, handleSubmit, watch, reset, control, formState: { errors } } = useForm({
+    const { register, handleSubmit, reset, control, formState: { errors } } = useForm({
         defaultValues,
         mode: 'onChange',
     });
 
+    const handleFormSubmit = handleSubmit(
+        (data) => {
+            onSubmit(data);
+        },
+        (formErrors) => {
+            toast.error('Por favor, corrige los errores en el formulario', getToastTheme());
+        }
+    );
+
     useEffect(() => {
-        reset(defaultValues);
-    }, [defaultValues]);
+        if (defaultValues && !loading) {
+            reset(defaultValues);
+        }
+    }, [defaultValues, loading, reset]);
 
     const onCloseSheet = () => {
         reset(defaultValues);
+        setOpen(false);
     };
 
 
     const onSubmit = async (data) => {
+        setSaving(true);
         const toastId = toast.loading('Actualizando pedido...', getToastTheme());
 
         // Convertir fechas a string YYYY-MM-DD si son Date
@@ -47,16 +62,17 @@ const OrderEditSheet = () => {
             loadDate: data.loadDate instanceof Date ? format(data.loadDate, 'yyyy-MM-dd') : data.loadDate,
         };
 
-        updateOrderData(payload)
-            .then((updatedData) => {
-                toast.success('Pedido actualizado correctamente', { id: toastId });
-            })
-            .catch((error) => {
-                console.error('Error al actualizar el pedido:', error);
-                toast.error('Error al actualizar el pedido', { id: toastId });
-            });
-
-
+        try {
+            await updateOrderData(payload);
+            toast.success('Pedido actualizado correctamente', { id: toastId });
+            // Cerrar el Sheet solo después de que se complete exitosamente el guardado
+            setOpen(false);
+            reset(defaultValues);
+        } catch (error) {
+            toast.error('Error al actualizar el pedido', { id: toastId });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const renderField = (field) => {
@@ -176,7 +192,7 @@ const OrderEditSheet = () => {
     };
 
     return (
-        <Sheet >
+        <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button variant="outline" className=''>
                     <Edit className="h-4 w-4 mr-2" />
@@ -188,7 +204,7 @@ const OrderEditSheet = () => {
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
                 {loading ? <div>Cargando...</div> :
-                    <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col w-full">
+                    <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
                         <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
                             {formGroups.map((group) => (
                                 <div key={group.group} className=" w-full">
@@ -213,19 +229,30 @@ const OrderEditSheet = () => {
                             ))}
                         </div>
                         <div className="flex justify-end gap-4 pt-4">
-                            <SheetTrigger asChild>
+                            <SheetClose asChild>
                                 <Button
                                     onClick={onCloseSheet}
-                                    variant="outline" type="button">
+                                    variant="outline" 
+                                    type="button"
+                                    disabled={saving}>
                                     Cancelar
                                 </Button>
-                            </SheetTrigger>
-                            <SheetTrigger asChild>
-                                <Button type="submit">
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Guardar cambios
-                                </Button>
-                            </SheetTrigger>
+                            </SheetClose>
+                            <Button 
+                                type="submit"
+                                disabled={saving}>
+                                {saving ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4 mr-2" />
+                                        Guardar cambios
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </form>
                 }

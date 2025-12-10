@@ -322,8 +322,12 @@ export default function EntityClient({ config }) {
     };
     // Handler para abrir modal de edición
     const handleOpenEdit = (id) => {
-        // console.log('id', id);
-        setModal({ open: true, mode: 'edit', editId: id });
+        if (config.editRedirect) {
+            const editUrl = config.editRedirect.replace(':id', id);
+            window.open(editUrl, '_blank');
+        } else {
+            setModal({ open: true, mode: 'edit', editId: id });
+        }
     };
 
     // Handler para navegar a la vista de detalles
