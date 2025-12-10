@@ -326,7 +326,7 @@ export default function EntityClient({ config }) {
             const editUrl = config.editRedirect.replace(':id', id);
             window.open(editUrl, '_blank');
         } else {
-            setModal({ open: true, mode: 'edit', editId: id });
+        setModal({ open: true, mode: 'edit', editId: id });
         }
     };
 

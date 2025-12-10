@@ -24,7 +24,7 @@ import { format } from "date-fns";
 import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useRouter } from 'next/navigation';
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import ReceptionPalletDialog from '@/components/Admin/RawMaterialReceptions/ReceptionPalletDialog';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 
@@ -317,7 +317,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                 {/* Mode Selection Tabs */}
                 <div className="w-full">
                     <Tabs value={mode} onValueChange={setMode} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="w-fit">
                             <TabsTrigger value="automatic">
                                 <List className="h-4 w-4 mr-2" />
                                 Por Líneas
@@ -671,12 +671,12 @@ const CreateReceptionForm = ({ onSuccess }) => {
                 </div>
             </form>
 
-            {/* ReceptionPalletDialog for creating/editing palets */}
-            <ReceptionPalletDialog
+            {/* PalletDialog for creating/editing palets */}
+            <PalletDialog
                 palletId={selectedPalletId}
                 isOpen={isPalletDialogOpen}
                 initialPallet={editingPalletIndex !== null ? temporalPallets[editingPalletIndex]?.pallet : null}
-                onSave={(pallet) => {
+                onSaveTemporal={(pallet) => {
                     // When pallet is saved, add it to temporal pallets list with metadata
                     if (editingPalletIndex !== null) {
                         // Update existing pallet
@@ -704,6 +704,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                     setEditingPalletIndex(null);
                     setPalletMetadata({ price: '', lot: '', observations: '' });
                 }}
+                onChange={() => {}} // We handle saving manually via onSaveTemporal
                 onCloseDialog={() => {
                     setIsPalletDialogOpen(false);
                     setSelectedPalletId(null);

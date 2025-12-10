@@ -235,8 +235,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </TabsList>
 
                                 <TabsContent value="edicion" className="mt-0 ">
-                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-180px)]">
-                                        <div className="space-y-6 overflow-y-auto pr-2 col-span-2 ">
+                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">
+                                        <div className="space-y-6 overflow-y-auto pr-2 pb-2 col-span-2 max-h-[calc(90vh-200px)]">
                                             <Card className="border-2 border-muted bg-foreground-50 w-full">
                                                 <CardHeader className="pb-4  w-full">
                                                     <CardTitle className="flex items-center justify-between gap-2 text-lg w-full">
@@ -730,7 +730,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                         {/* Tab: Todas las cajas */}
                                                         <TabsContent value="todas" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
                                                             <div className="border rounded-lg overflow-hidden h-full flex flex-col">
-                                                                <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                <div className="overflow-y-auto flex-1 max-h-[calc(90vh-300px)]">
                                                                     <Table>
                                                                         <TableHeader className="sticky top-0 bg-background z-10">
                                                                             <TableRow>
@@ -824,7 +824,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                         <TabsContent value="disponibles" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
                                                             {available.length > 0 ? (
                                                                 <div className="border rounded-lg overflow-hidden h-full flex flex-col">
-                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-300px)]"> 
                                                                         <Table>
                                                                             <TableHeader className="sticky top-0 bg-background z-10">
                                                                                 <TableRow>
@@ -858,7 +858,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                         <TabsContent value="produccion" className="flex-1 min-h-0 mt-4 data-[state=inactive]:hidden">
                                                             {inProduction.length > 0 ? (
                                                                 <div className="border rounded-lg overflow-hidden h-full flex flex-col">
-                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-260px)]">
+                                                                    <div className="overflow-y-auto flex-1 max-h-[calc(90vh-300px)]">
                                                                         <Table>
                                                                             <TableHeader className="sticky top-0 bg-background z-10">
                                                                                 <TableRow>
@@ -941,7 +941,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </TabsContent>
 
                                 <TabsContent value="resumen" className="mt-0">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-180px)] overflow-y-auto px-2">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-200px)] overflow-y-auto px-2">
 
                                         <div className="flex flex-col gap-6">
                                             <Card>
@@ -1092,7 +1092,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </TabsContent>
 
                                 <TabsContent value="eliminar" className="mt-0 ">
-                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-180px)]">
+                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">
                                         {/* Columna izquierda: opciones de eliminación */}
                                         <div className="space-y-6 overflow-y-auto pr-2 col-span-2 ">
                                             <Card className="border-2 border-muted bg-foreground-50 w-full">
@@ -1242,7 +1242,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
                             </Tabs>
                         </div>
-                        <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">
+                        <div className="flex justify-end gap-3 pt-4 pb-6 border-t mt-4 mb-4">
                             <Button variant="outline" onClick={handleOnClickReset} disabled={saving}>
                                 Deshacer
                             </Button>
