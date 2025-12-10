@@ -27,6 +27,8 @@ import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/fo
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 
 const TARE_OPTIONS = [
     { value: '1', label: '1kg' },
@@ -43,12 +45,14 @@ const CreateReceptionForm = ({ onSuccess }) => {
     const router = useRouter();
 
     const [mode, setMode] = useState('automatic'); // 'automatic' or 'manual'
-    // Store pallets with metadata: { pallet: temporalPallet, price: string, lot: string, observations: string }
+    // Store pallets with metadata: { pallet: temporalPallet, price: string, observations: string }
     const [temporalPallets, setTemporalPallets] = useState([]); // Lista de palets temporales para modo manual
     const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
     const [selectedPalletId, setSelectedPalletId] = useState(null);
     const [editingPalletIndex, setEditingPalletIndex] = useState(null); // Índice del palet que se está editando
-    const [palletMetadata, setPalletMetadata] = useState({ price: '', lot: '', observations: '' }); // Metadata for the current pallet being edited
+    const [palletMetadata, setPalletMetadata] = useState({ price: '', observations: '' }); // Metadata for the current pallet being edited
+    const [isModeChangeDialogOpen, setIsModeChangeDialogOpen] = useState(false);
+    const [pendingMode, setPendingMode] = useState(null); // Nuevo modo pendiente de confirmación
 
     const {
         register,
@@ -95,6 +99,71 @@ const CreateReceptionForm = ({ onSuccess }) => {
             setValue(`details.${index}.netWeight`, netWeight.toFixed(2));
         });
     }, [watchedDetails, setValue]);
+
+    // Verificar si hay datos en el modo actual
+    const hasDataInCurrentMode = () => {
+        if (mode === 'automatic') {
+            // Verificar si hay detalles con datos ingresados
+            const details = watch('details') || [];
+            // Si hay más de una línea, hay datos
+            if (details.length > 1) {
+                return true;
+            }
+            // Si hay una línea con cualquier dato ingresado (producto, peso bruto, precio, lote)
+            return details.some(detail => 
+                detail.product || 
+                (detail.grossWeight && parseFloat(detail.grossWeight) > 0) ||
+                (detail.price && parseFloat(detail.price) > 0) ||
+                (detail.lot && detail.lot.trim() !== '')
+            );
+        } else {
+            // Verificar si hay palets temporales
+            return temporalPallets && temporalPallets.length > 0;
+        }
+    };
+
+    // Manejar el intento de cambio de modo
+    const handleModeChange = (newMode) => {
+        // Si no hay datos, cambiar directamente
+        if (!hasDataInCurrentMode()) {
+            setMode(newMode);
+            return;
+        }
+
+        // Si hay datos, mostrar diálogo de confirmación
+        setPendingMode(newMode);
+        setIsModeChangeDialogOpen(true);
+    };
+
+    // Confirmar cambio de modo y limpiar datos
+    const handleConfirmModeChange = () => {
+        if (mode === 'automatic') {
+            // Limpiar detalles del modo automático
+            setValue('details', [{
+                product: null,
+                grossWeight: '',
+                boxes: 1,
+                tare: '3',
+                netWeight: '',
+                price: '',
+                lot: '',
+            }]);
+        } else {
+            // Limpiar palets temporales del modo manual
+            setTemporalPallets([]);
+        }
+
+        // Cambiar al nuevo modo
+        setMode(pendingMode);
+        setIsModeChangeDialogOpen(false);
+        setPendingMode(null);
+    };
+
+    // Cancelar cambio de modo
+    const handleCancelModeChange = () => {
+        setIsModeChangeDialogOpen(false);
+        setPendingMode(null);
+    };
 
     const handleCreate = async (data) => {
         try {
@@ -165,20 +234,11 @@ const CreateReceptionForm = ({ onSuccess }) => {
                             return null; // Skip pallets without product
                         }
 
-                        // Use lot from metadata, or extract common lot from boxes
-                        let lot = item.lot;
-                        if (!lot) {
-                            const lots = pallet.boxes.map(box => box.lot).filter(Boolean);
-                            const uniqueLots = [...new Set(lots)];
-                            lot = uniqueLots.length === 1 ? uniqueLots[0] : undefined;
-                        }
-                        
                         return {
                             product: {
                                 id: productId,
                             },
                             price: item.price ? parseFloat(item.price) : undefined,
-                            lot: lot || undefined,
                             observations: item.observations || pallet.observations || undefined,
                             boxes: pallet.boxes
                                 .filter(box => box.product && box.netWeight) // Must have product and netWeight
@@ -316,7 +376,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
 
                 {/* Mode Selection Tabs */}
                 <div className="w-full">
-                    <Tabs value={mode} onValueChange={setMode} className="w-full">
+                    <Tabs value={mode} onValueChange={handleModeChange} className="w-full">
                         <TabsList className="w-fit">
                             <TabsTrigger value="automatic">
                                 <List className="h-4 w-4 mr-2" />
@@ -564,7 +624,6 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                     <TableHead>#</TableHead>
                                                     <TableHead>Productos</TableHead>
                                                     <TableHead>Precio (€/kg)</TableHead>
-                                                    <TableHead>Lote</TableHead>
                                                     <TableHead>Cajas</TableHead>
                                                     <TableHead>Peso Neto</TableHead>
                                                     <TableHead className="w-[150px]">Acciones</TableHead>
@@ -610,20 +669,6 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                                     className="w-24"
                                                                 />
                                                             </TableCell>
-                                                            <TableCell>
-                                                                <Input
-                                                                    value={item.lot || ''}
-                                                                    onChange={(e) => {
-                                                                        setTemporalPallets(prev => {
-                                                                            const updated = [...prev];
-                                                                            updated[index] = { ...updated[index], lot: e.target.value };
-                                                                            return updated;
-                                                                        });
-                                                                    }}
-                                                                    placeholder="Lote"
-                                                                    className="w-32"
-                                                                />
-                                                            </TableCell>
                                                             <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
                                                             <TableCell>
                                                                 {formatDecimalWeight(pallet.netWeight || 0)}
@@ -639,7 +684,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                                             // For editing, we pass the pallet data to initialize
                                                                             setSelectedPalletId('new'); // Use 'new' since we're editing a temporal pallet
                                                                             setEditingPalletIndex(index);
-                                                                            setPalletMetadata({ price: item.price || '', lot: item.lot || '', observations: item.observations || '' });
+                                                                            setPalletMetadata({ price: item.price || '', observations: item.observations || '' });
                                                                             setIsPalletDialogOpen(true);
                                                                         }}
                                                                     >
@@ -685,7 +730,6 @@ const CreateReceptionForm = ({ onSuccess }) => {
                             updated[editingPalletIndex] = {
                                 pallet: pallet,
                                 price: palletMetadata.price || '',
-                                lot: palletMetadata.lot || '',
                                 observations: palletMetadata.observations || pallet.observations || '',
                             };
                             return updated;
@@ -695,14 +739,13 @@ const CreateReceptionForm = ({ onSuccess }) => {
                         setTemporalPallets(prev => [...prev, {
                             pallet: pallet,
                             price: '',
-                            lot: '',
                             observations: pallet.observations || '',
                         }]);
                     }
                     setIsPalletDialogOpen(false);
                     setSelectedPalletId(null);
                     setEditingPalletIndex(null);
-                    setPalletMetadata({ price: '', lot: '', observations: '' });
+                    setPalletMetadata({ price: '', observations: '' });
                 }}
                 onChange={() => {}} // We handle saving manually via onSaveTemporal
                 onCloseDialog={() => {
@@ -711,6 +754,40 @@ const CreateReceptionForm = ({ onSuccess }) => {
                     setEditingPalletIndex(null);
                 }}
             />
+
+            {/* Dialog de confirmación para cambio de modo */}
+            <Dialog open={isModeChangeDialogOpen} onOpenChange={setIsModeChangeDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-orange-600" />
+                            Cambiar modo de recepción
+                        </DialogTitle>
+                        <DialogDescription>
+                            {mode === 'automatic' 
+                                ? 'Ya has agregado líneas de producto en el modo "Por Líneas". Si cambias a "Por Palets", se perderán todos los datos ingresados.'
+                                : 'Ya has agregado palets en el modo "Por Palets". Si cambias a "Por Líneas", se perderán todos los palets ingresados.'
+                            }
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            ¿Estás seguro de que deseas cambiar de modo? Esta acción eliminará todos los datos del modo actual y no se puede deshacer.
+                        </p>
+                    </div>
+                    <DialogFooter className="flex gap-2">
+                        <Button variant="outline" onClick={handleCancelModeChange}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleConfirmModeChange}
+                        >
+                            Cambiar y eliminar datos
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
