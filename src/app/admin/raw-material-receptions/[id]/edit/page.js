@@ -10,7 +10,7 @@ export default function EditReceptionPage() {
   const receptionId = params.id;
 
   const handleOnUpdate = (reception) => {
-    router.push(`/admin/raw-material-receptions/${reception.id}`);
+    router.push(`/admin/raw-material-receptions/${reception.id}/edit`);
   };
 
   return (

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,7 +22,13 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns";
 import { getRawMaterialReception, updateRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useRouter } from 'next/navigation';
-import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
+import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/Utilities/EmptyState';
+import { getPallet } from '@/services/palletService';
 
 const TARE_OPTIONS = [
     { value: '1', label: '1kg' },
@@ -39,6 +45,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const router = useRouter();
 
     const [loading, setLoading] = useState(true);
+    const [creationMode, setCreationMode] = useState(null); // 'lines', 'pallets', or null (old receptions)
+    const [canEdit, setCanEdit] = useState(true);
+    const [cannotEditReason, setCannotEditReason] = useState(null);
+    // Estados para modo 'pallets'
+    const [temporalPallets, setTemporalPallets] = useState([]);
+    const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
+    const [selectedPalletId, setSelectedPalletId] = useState(null);
+    const [editingPalletIndex, setEditingPalletIndex] = useState(null);
+    const [palletMetadata, setPalletMetadata] = useState({ price: '', observations: '' });
+    const [isPalletLabelDialogOpen, setIsPalletLabelDialogOpen] = useState(false);
+    const [selectedPalletForLabel, setSelectedPalletForLabel] = useState(null);
 
     const {
         register,
@@ -85,6 +102,65 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             try {
                 setLoading(true);
                 const reception = await getRawMaterialReception(receptionId, session.user.accessToken);
+                
+                // Detectar el modo de creación y si se puede editar
+                const mode = reception.creationMode || null;
+                setCreationMode(mode);
+                setCanEdit(reception.canEdit !== false); // Default a true si no viene
+                setCannotEditReason(reception.cannotEditReason || null);
+                
+                // Si no se puede editar, no cargar datos
+                if (!reception.canEdit) {
+                    console.log('Recepción no se puede editar:', reception.cannotEditReason);
+                    return;
+                }
+                
+                // Si es modo 'pallets', cargar los palets para edición
+                if (mode === 'pallets') {
+                    console.log('Recepción creada por palets - cargando palets para edición');
+                    
+                    // Convertir palets del backend al formato temporal del frontend
+                    if (reception.pallets && reception.pallets.length > 0) {
+                        const convertedPallets = reception.pallets.map(pallet => {
+                            // Convertir boxes del palet al formato esperado por PalletDialog
+                            const boxes = (pallet.boxes || []).map(box => ({
+                                id: box.id,
+                                product: box.product ? {
+                                    id: box.product.id,
+                                    name: box.product.name || box.product.alias || '',
+                                } : null,
+                                lot: box.lot || '',
+                                grossWeight: box.grossWeight ? parseFloat(box.grossWeight).toString() : '',
+                                netWeight: box.netWeight ? parseFloat(box.netWeight).toString() : '',
+                                gs1128: box.gs1128 || undefined,
+                            }));
+                            
+                            return {
+                                pallet: {
+                                    id: pallet.id,
+                                    boxes: boxes,
+                                    numberOfBoxes: boxes.length,
+                                    netWeight: boxes.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
+                                    observations: pallet.observations || '',
+                                },
+                                // El precio viene en costPerKg del palet, no en price
+                                price: pallet.costPerKg ? parseFloat(pallet.costPerKg).toString() : '',
+                                observations: pallet.observations || '',
+                            };
+                        });
+                        
+                        setTemporalPallets(convertedPallets);
+                    }
+                    
+                    // Cargar datos básicos del formulario
+                    reset({
+                        supplier: reception.supplier?.id ? reception.supplier.id.toString() : null,
+                        date: reception.date ? new Date(reception.date) : new Date(),
+                        notes: reception.notes || '',
+                    });
+                    
+                    return;
+                }
                 
                 // Map details from backend structure to form structure
                 // Backend details only have: id, product, netWeight, alias
@@ -191,35 +267,101 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 return;
             }
 
-            // Validate details
-            if (!data.details || data.details.length === 0) {
-                toast.error('Debe agregar al menos una línea de producto', getToastTheme());
-                return;
-            }
+            let payload;
 
-            // Prepare payload according to API documentation (Mode Automático)
-            const payload = {
-                supplier: {
-                    id: data.supplier,
-                },
-                date: format(data.date, 'yyyy-MM-dd'),
-                notes: data.notes || '',
-                details: data.details
-                    .filter(detail => detail.product && detail.netWeight && parseFloat(detail.netWeight) > 0)
-                    .map(detail => ({
-                        product: {
-                            id: parseInt(detail.product),
-                        },
-                        netWeight: parseFloat(detail.netWeight),
-                        price: detail.price ? parseFloat(detail.price) : undefined,
-                        lot: detail.lot || undefined,
-                        boxes: detail.boxes ? parseInt(detail.boxes) : undefined,
-                    })),
-            };
+            if (creationMode === 'pallets') {
+                // Validate pallets
+                if (!temporalPallets || temporalPallets.length === 0) {
+                    toast.error('Debe agregar al menos un palet', getToastTheme());
+                    return;
+                }
 
-            if (payload.details.length === 0) {
-                toast.error('Debe completar al menos una línea válida con producto y peso neto', getToastTheme());
-                return;
+                // Convert temporal pallets to API format (include IDs for editing)
+                const convertedPallets = temporalPallets
+                    .filter(item => item.pallet && item.pallet.boxes && item.pallet.boxes.length > 0)
+                    .map(item => {
+                        const pallet = item.pallet;
+                        const firstBox = pallet.boxes?.[0];
+                        const productId = firstBox?.product?.id;
+                        
+                        if (!productId) {
+                            return null;
+                        }
+
+                        // Preparar el objeto del palet con ID si existe
+                        const palletPayload = {
+                            // Incluir ID del palet si existe (para editar en lugar de crear)
+                            ...(pallet.id && { id: pallet.id }),
+                            product: {
+                                id: productId,
+                            },
+                            price: item.price ? parseFloat(item.price) : undefined,
+                            observations: item.observations || pallet.observations || undefined,
+                            boxes: pallet.boxes
+                                .filter(box => box.product && box.netWeight)
+                                .map(box => {
+                                    // Preparar el objeto de la caja con ID si existe
+                                    const boxPayload = {
+                                        // Incluir ID de la caja si existe (para editar en lugar de crear)
+                                        ...(box.id && { id: box.id }),
+                                        gs1128: box.gs1128 || undefined,
+                                        grossWeight: box.grossWeight ? parseFloat(box.grossWeight) : undefined,
+                                        netWeight: box.netWeight ? parseFloat(box.netWeight) : undefined,
+                                    };
+                                    return boxPayload;
+                                })
+                                .filter(box => box.netWeight),
+                        };
+                        
+                        return palletPayload;
+                    })
+                    .filter(pallet => pallet !== null && pallet.boxes && pallet.boxes.length > 0);
+
+                if (convertedPallets.length === 0) {
+                    toast.error('Debe completar al menos un palet válido con producto y cajas', getToastTheme());
+                    return;
+                }
+
+                // Prepare payload for Mode Manual (pallets)
+                payload = {
+                    supplier: {
+                        id: data.supplier,
+                    },
+                    date: format(data.date, 'yyyy-MM-dd'),
+                    notes: data.notes || '',
+                    pallets: convertedPallets,
+                };
+            } else {
+                // Validate details
+                if (!data.details || data.details.length === 0) {
+                    toast.error('Debe agregar al menos una línea de producto', getToastTheme());
+                    return;
+                }
+
+                // Prepare payload according to API documentation (Mode Automático)
+                payload = {
+                    supplier: {
+                        id: data.supplier,
+                    },
+                    date: format(data.date, 'yyyy-MM-dd'),
+                    notes: data.notes || '',
+                    details: data.details
+                        .filter(detail => detail.product && detail.netWeight && parseFloat(detail.netWeight) > 0)
+                        .map(detail => ({
+                            product: {
+                                id: parseInt(detail.product),
+                            },
+                            netWeight: parseFloat(detail.netWeight),
+                            price: detail.price ? parseFloat(detail.price) : undefined,
+                            lot: detail.lot || undefined,
+                            boxes: detail.boxes ? parseInt(detail.boxes) : undefined,
+                        })),
+                };
+
+                if (payload.details.length === 0) {
+                    toast.error('Debe completar al menos una línea válida con producto y peso neto', getToastTheme());
+                    return;
+                }
             }
 
             const updatedReception = await updateRawMaterialReception(receptionId, payload);
@@ -229,7 +371,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             if (onSuccess) {
                 onSuccess(updatedReception);
             } else {
-                router.push(`/admin/raw-material-receptions/${updatedReception.id}`);
+                // Redirigir a la misma página de edición para recargar los datos actualizados
+                router.push(`/admin/raw-material-receptions/${receptionId}/edit`);
             }
         } catch (error) {
             console.error('Error al actualizar recepción:', error);
@@ -245,6 +388,24 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         );
     }
 
+    // Si no se puede editar, mostrar mensaje
+    if (!canEdit) {
+        return (
+            <div className="w-full h-full p-6">
+                <div className="flex justify-between items-start mb-6">
+                    <h1 className="text-2xl font-semibold mb-4">Editar recepción de materia prima</h1>
+                </div>
+                <Alert variant="destructive" className="mt-4">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>No se puede editar esta recepción</AlertTitle>
+                    <AlertDescription>
+                        {cannotEditReason || 'Esta recepción no se puede editar debido a restricciones del sistema.'}
+                    </AlertDescription>
+                </Alert>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-full p-6">
             {/* Header */}
@@ -255,8 +416,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     onClick={handleSubmit(handleUpdate)}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Guardando
+                        </>
+                    ) : (
+                        <>
+                            Guardar cambios
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                    )}
                 </Button>
             </div>
 
@@ -324,7 +494,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     </div>
                 </div>
 
-                {/* Details Table */}
+                {/* Details Table (solo para modo lines) */}
+                {creationMode !== 'pallets' && (
                 <div className="w-full">
                     <h3 className="text-sm font-medium text-muted-foreground">Líneas de Producto</h3>
                     <Separator className="my-2" />
@@ -518,7 +689,230 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         </Button>
                     </div>
                 </div>
+                )}
+
+                {/* Pallets Section (solo para modo pallets) */}
+                {creationMode === 'pallets' && (
+                <div className="w-full">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-sm font-medium text-muted-foreground">Palets de la Recepción</h3>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setSelectedPalletId('new');
+                                setEditingPalletIndex(null);
+                                setIsPalletDialogOpen(true);
+                            }}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Agregar Palet
+                        </Button>
+                    </div>
+                    <Separator className="my-2" />
+
+                    {temporalPallets.length === 0 ? (
+                        <Card>
+                            <CardContent className="py-8">
+                                <EmptyState
+                                    title="No hay palets agregados"
+                                    description="Haz clic en 'Agregar Palet' para crear el primer palet de esta recepción"
+                                />
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="space-y-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>#</TableHead>
+                                        <TableHead>Productos</TableHead>
+                                        <TableHead>Precio (€/kg)</TableHead>
+                                        <TableHead>Cajas</TableHead>
+                                        <TableHead>Peso Neto</TableHead>
+                                        <TableHead className="w-[150px]">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {temporalPallets.map((item, index) => {
+                                        const pallet = item.pallet;
+                                        const productsNames = pallet.boxes
+                                            ?.map(box => box.product?.name)
+                                            .filter(Boolean) || [];
+                                        const uniqueProducts = [...new Set(productsNames)];
+
+                                        return (
+                                            <TableRow key={index}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <div className="space-y-1">
+                                                        {uniqueProducts.length > 0 ? (
+                                                            uniqueProducts.map((product, idx) => (
+                                                                <div key={idx} className="text-sm">{product}</div>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-muted-foreground text-sm">Sin productos</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={item.price || ''}
+                                                        onChange={(e) => {
+                                                            setTemporalPallets(prev => {
+                                                                const updated = [...prev];
+                                                                updated[index] = { ...updated[index], price: e.target.value };
+                                                                return updated;
+                                                            });
+                                                        }}
+                                                        placeholder="0.00"
+                                                        className="w-24"
+                                                    />
+                                                </TableCell>
+                                                <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
+                                                <TableCell>
+                                                    {formatDecimalWeight(pallet.netWeight || 0)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => {
+                                                                setSelectedPalletId('new');
+                                                                setEditingPalletIndex(index);
+                                                                setPalletMetadata({ price: item.price || '', observations: item.observations || '' });
+                                                                setIsPalletDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        {pallet.id && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        if (!session?.user?.accessToken) {
+                                                                            toast.error('No hay sesión autenticada', getToastTheme());
+                                                                            return;
+                                                                        }
+                                                                        const fullPallet = await getPallet(pallet.id, session.user.accessToken);
+                                                                        setSelectedPalletForLabel(fullPallet);
+                                                                        setIsPalletLabelDialogOpen(true);
+                                                                    } catch (error) {
+                                                                        console.error('Error al cargar palet para etiqueta:', error);
+                                                                        toast.error(error.message || 'Error al cargar el palet', getToastTheme());
+                                                                    }
+                                                                }}
+                                                                title="Ver etiqueta del palet"
+                                                            >
+                                                                <Printer className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-destructive hover:text-destructive"
+                                                            onClick={() => {
+                                                                setTemporalPallets(prev => prev.filter((_, i) => i !== index));
+                                                            }}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </div>
+                )}
             </form>
+
+            {/* PalletDialog for creating/editing palets */}
+            {creationMode === 'pallets' && (
+            <PalletDialog
+                palletId={selectedPalletId}
+                isOpen={isPalletDialogOpen}
+                initialPallet={editingPalletIndex !== null ? temporalPallets[editingPalletIndex]?.pallet : null}
+                onSaveTemporal={(pallet) => {
+                    if (editingPalletIndex !== null) {
+                        setTemporalPallets(prev => {
+                            const updated = [...prev];
+                            const existingPallet = updated[editingPalletIndex].pallet;
+                            
+                            // Preservar el ID del palet original si el nuevo no lo tiene
+                            const palletWithId = pallet.id 
+                                ? pallet 
+                                : (existingPallet?.id ? { ...pallet, id: existingPallet.id } : pallet);
+                            
+                            // Preservar IDs de cajas: si el palet devuelto ya tiene IDs, usarlos
+                            // Si no, intentar preservarlos del original (el PalletDialog debería preservarlos)
+                            const boxesWithIds = palletWithId.boxes?.map((box) => {
+                                // Si la caja ya tiene ID, usarlo (PalletDialog lo preservó)
+                                if (box.id) {
+                                    return box;
+                                }
+                                // Si no tiene ID, es una caja nueva, dejarla sin ID
+                                return box;
+                            }) || [];
+                            
+                            updated[editingPalletIndex] = {
+                                pallet: {
+                                    ...palletWithId,
+                                    boxes: boxesWithIds,
+                                    numberOfBoxes: boxesWithIds.length,
+                                    netWeight: boxesWithIds.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
+                                },
+                                price: palletMetadata.price || '',
+                                observations: palletMetadata.observations || pallet.observations || '',
+                            };
+                            return updated;
+                        });
+                    } else {
+                        setTemporalPallets(prev => [...prev, {
+                            pallet: pallet,
+                            price: '',
+                            observations: pallet.observations || '',
+                        }]);
+                    }
+                    setIsPalletDialogOpen(false);
+                    setSelectedPalletId(null);
+                    setEditingPalletIndex(null);
+                    setPalletMetadata({ price: '', observations: '' });
+                }}
+                onChange={() => {}}
+                onCloseDialog={() => {
+                    setIsPalletDialogOpen(false);
+                    setSelectedPalletId(null);
+                    setEditingPalletIndex(null);
+                }}
+            />
+            )}
+
+            {/* PalletLabelDialog para ver/imprimir etiquetas de palets */}
+            {creationMode === 'pallets' && (
+                <PalletLabelDialog
+                    isOpen={isPalletLabelDialogOpen}
+                    onClose={() => {
+                        setIsPalletLabelDialogOpen(false);
+                        setSelectedPalletForLabel(null);
+                    }}
+                    pallet={selectedPalletForLabel}
+                />
+            )}
         </div>
     );
 };

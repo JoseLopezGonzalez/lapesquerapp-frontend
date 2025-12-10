@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight, Package, List, Edit } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Package, List, Edit, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -166,6 +166,9 @@ const CreateReceptionForm = ({ onSuccess }) => {
     };
 
     const handleCreate = async (data) => {
+        console.log('handleCreate called with data:', data);
+        console.log('Current mode:', mode);
+        console.log('Temporal pallets:', temporalPallets);
         try {
             // Validate supplier
             if (!data.supplier) {
@@ -278,7 +281,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
             if (onSuccess) {
                 onSuccess(createdReception);
             } else {
-                router.push(`/admin/raw-material-receptions/${createdReception.id}`);
+                router.push(`/admin/raw-material-receptions/${createdReception.id}/edit`);
             }
         } catch (error) {
             console.error('Error al crear recepción:', error);
@@ -302,11 +305,44 @@ const CreateReceptionForm = ({ onSuccess }) => {
                 <h1 className="text-2xl font-semibold mb-4">Recepción de materia prima</h1>
                 <Button
                     type="button"
-                    onClick={handleSubmit(handleCreate)}
+                    onClick={() => {
+                        console.log('Button clicked');
+                        console.log('Form errors:', errors);
+                        console.log('Current mode:', mode);
+                        // Solo validar campos del modo activo
+                        handleSubmit(handleCreate, (errors) => {
+                            console.log('Validation errors:', errors);
+                            if (errors && Object.keys(errors).length > 0) {
+                                // Si estamos en modo manual, ignorar errores de details
+                                if (mode === 'manual' && errors.details) {
+                                    delete errors.details;
+                                }
+                                
+                                // Si aún hay errores relevantes, mostrarlos
+                                if (Object.keys(errors).length > 0) {
+                                    console.log('Relevant errors:', errors);
+                                    toast.error('Por favor, complete todos los campos requeridos', getToastTheme());
+                                } else {
+                                    // Si solo había errores en details (modo no activo), ejecutar handleCreate directamente
+                                    console.log('No relevant errors, calling handleCreate directly');
+                                    handleCreate(watch());
+                                }
+                            }
+                        })();
+                    }}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Guardando...' : 'Aceptar'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Guardando
+                        </>
+                    ) : (
+                        <>
+                            Aceptar
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                    )}
                 </Button>
             </div>
 
@@ -415,7 +451,9 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                 <Controller
                                                     name={`details.${index}.product`}
                                                     control={control}
-                                                    rules={{ required: 'El producto es obligatorio' }}
+                                                    rules={{ 
+                                                        required: mode === 'automatic' ? 'El producto es obligatorio' : false
+                                                    }}
                                                     render={({ field: { onChange, value } }) => (
                                                         <Combobox
                                                             options={productOptions}
@@ -440,9 +478,9 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                     step="0.01"
                                                     min="0"
                                                     {...register(`details.${index}.grossWeight`, {
-                                                        required: 'El peso bruto es obligatorio',
+                                                        required: mode === 'automatic' ? 'El peso bruto es obligatorio' : false,
                                                         valueAsNumber: true,
-                                                        min: { value: 0.01, message: 'El peso debe ser mayor que 0' }
+                                                        min: mode === 'automatic' ? { value: 0.01, message: 'El peso debe ser mayor que 0' } : undefined
                                                     })}
                                                     placeholder="0.00"
                                                     className="w-32"
@@ -473,9 +511,9 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                         type="number"
                                                         min="1"
                                                         {...register(`details.${index}.boxes`, {
-                                                            required: 'Las cajas son obligatorias',
+                                                            required: mode === 'automatic' ? 'Las cajas son obligatorias' : false,
                                                             valueAsNumber: true,
-                                                            min: { value: 1, message: 'Mínimo 1 caja' }
+                                                            min: mode === 'automatic' ? { value: 1, message: 'Mínimo 1 caja' } : undefined
                                                         })}
                                                         className="w-16 text-center"
                                                     />
