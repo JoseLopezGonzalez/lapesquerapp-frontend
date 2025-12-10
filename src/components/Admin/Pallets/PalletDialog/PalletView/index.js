@@ -265,6 +265,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Package className="h-4 w-4" /> Codigos GS1
                                                             </TabsTrigger>
                                                         </TabsList>
+                                                        {/* IGNORAR */}
 
                                                         <TabsContent value="lector" className="space-y-3">
                                                             <div className="space-y-2">
