@@ -26,6 +26,7 @@ import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/fo
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
+import AllPalletsLabelDialog from '@/components/Admin/RawMaterialReceptions/AllPalletsLabelDialog';
 import ReceptionSummaryDialog from '@/components/Admin/RawMaterialReceptions/ReceptionSummaryDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -59,6 +60,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [selectedPalletForLabel, setSelectedPalletForLabel] = useState(null);
     const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
     const [receptionPrices, setReceptionPrices] = useState([]);
+    const [isAllPalletsLabelDialogOpen, setIsAllPalletsLabelDialogOpen] = useState(false);
     // Store original box IDs from backend to distinguish between real and temporary IDs
     const [originalBoxIds, setOriginalBoxIds] = useState(new Set());
     
@@ -745,6 +747,18 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 <FileText className="h-4 w-4 mr-2" />
                                 Ver Resumen
                             </Button>
+                            {temporalPallets.length > 0 && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setIsAllPalletsLabelDialogOpen(true);
+                                    }}
+                                >
+                                    <Printer className="h-4 w-4 mr-2" />
+                                    Imprimir Todas las Etiquetas
+                                </Button>
+                            )}
                             <Button
                                 type="button"
                                 variant="outline"
@@ -1085,6 +1099,15 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             return updated;
                         });
                     }}
+                />
+            )}
+
+            {/* AllPalletsLabelDialog para imprimir todas las etiquetas juntas */}
+            {creationMode === 'pallets' && (
+                <AllPalletsLabelDialog
+                    isOpen={isAllPalletsLabelDialogOpen}
+                    onClose={() => setIsAllPalletsLabelDialogOpen(false)}
+                    pallets={temporalPallets}
                 />
             )}
         </div>
