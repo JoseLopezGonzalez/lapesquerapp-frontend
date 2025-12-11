@@ -59,6 +59,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [selectedPalletForLabel, setSelectedPalletForLabel] = useState(null);
     const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
     const [receptionPrices, setReceptionPrices] = useState([]);
+    // Store original box IDs from backend to distinguish between real and temporary IDs
+    const [originalBoxIds, setOriginalBoxIds] = useState(new Set());
     
     // Ref para evitar recargas innecesarias cuando se hace focus en la pestaña
     const hasLoadedRef = useRef(false);
@@ -143,6 +145,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         } else {
                             setReceptionPrices([]);
                         }
+                        
+                        // Collect all original box IDs from backend
+                        const boxIdsSet = new Set();
+                        reception.pallets.forEach(pallet => {
+                            (pallet.boxes || []).forEach(box => {
+                                if (box.id) {
+                                    boxIdsSet.add(box.id);
+                                }
+                            });
+                        });
+                        setOriginalBoxIds(boxIdsSet);
                         
                         const convertedPallets = reception.pallets.map(pallet => {
                             // Convertir boxes del palet al formato esperado por PalletDialog
@@ -349,17 +362,31 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const prices = Array.from(globalPriceMap.values());
 
                 // Build pallets WITHOUT prices (prices are now in root), including IDs for editing
+                // IMPORTANT: Only include box.id if it's a real backend ID, otherwise set to null for new boxes
                 const convertedPallets = validPallets.map(({ item, pallet, validBoxes }) => {
-                    const boxes = validBoxes.map(box => ({
-                        ...(box.id && { id: box.id }), // Include box ID if exists (for editing)
-                        product: {
-                            id: box.product.id,
-                        },
-                        lot: box.lot || undefined,
-                        gs1128: box.gs1128 || undefined,
-                        grossWeight: box.grossWeight ? parseFloat(box.grossWeight) : undefined,
-                        netWeight: box.netWeight ? parseFloat(box.netWeight) : undefined,
-                    }));
+                    const boxes = validBoxes.map(box => {
+                        const boxData = {
+                            product: {
+                                id: box.product.id,
+                            },
+                            lot: box.lot || undefined,
+                            gs1128: box.gs1128 || undefined,
+                            grossWeight: box.grossWeight ? parseFloat(box.grossWeight) : undefined,
+                            netWeight: box.netWeight ? parseFloat(box.netWeight) : undefined,
+                        };
+                        
+                        // Only include ID if it's a real backend ID (from originalBoxIds Set)
+                        // If box.id exists but is NOT in originalBoxIds, it's a temporary ID from frontend
+                        // In that case, set id to null (backend will create new box)
+                        if (box.id && originalBoxIds.has(box.id)) {
+                            boxData.id = box.id;
+                        } else {
+                            // New box - explicitly set id to null
+                            boxData.id = null;
+                        }
+                        
+                        return boxData;
+                    });
 
                     return {
                         ...(pallet.id && { id: pallet.id }), // Include pallet ID if exists (for editing)

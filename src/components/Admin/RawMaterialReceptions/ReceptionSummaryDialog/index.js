@@ -99,6 +99,26 @@ export default function ReceptionSummaryDialog({
         return summary.sort((a, b) => a.productName.localeCompare(b.productName));
     }, [pallets, pricesMap, groupByProduct]);
 
+    // Calculate totals for products table
+    const productsTotals = useMemo(() => {
+        const totalBoxes = productLotSummary.reduce((sum, item) => sum + item.boxesCount, 0);
+        const totalWeight = productLotSummary.reduce((sum, item) => sum + item.totalNetWeight, 0);
+        return { totalBoxes, totalWeight };
+    }, [productLotSummary]);
+
+    // Calculate totals for pallets table
+    const palletsTotals = useMemo(() => {
+        const totalBoxes = pallets.reduce((sum, item) => {
+            const pallet = item.pallet;
+            return sum + (pallet.numberOfBoxes || pallet.boxes?.length || 0);
+        }, 0);
+        const totalWeight = pallets.reduce((sum, item) => {
+            const pallet = item.pallet;
+            return sum + (pallet.netWeight || 0);
+        }, 0);
+        return { totalBoxes, totalWeight };
+    }, [pallets]);
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -226,6 +246,16 @@ export default function ReceptionSummaryDialog({
                                             </TableRow>
                                         ))
                                     )}
+                                    {productLotSummary.length > 0 && (
+                                        <TableRow className="bg-muted/50 font-semibold">
+                                            <TableCell className="font-semibold">TOTALES</TableCell>
+                                            {!groupByProduct && <TableCell></TableCell>}
+                                            {groupByProduct && <TableCell></TableCell>}
+                                            <TableCell className="text-right font-semibold">{productsTotals.totalBoxes}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimalWeight(productsTotals.totalWeight)}</TableCell>
+                                            <TableCell className="text-right"></TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
@@ -319,6 +349,16 @@ export default function ReceptionSummaryDialog({
                                                 </TableRow>
                                             );
                                         })
+                                    )}
+                                    {pallets.length > 0 && (
+                                        <TableRow className="bg-muted/50 font-semibold">
+                                            <TableCell className="font-semibold">TOTALES</TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell className="text-right font-semibold">{palletsTotals.totalBoxes}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimalWeight(palletsTotals.totalWeight)}</TableCell>
+                                        </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
