@@ -12,6 +12,7 @@ import { PiShrimp } from "react-icons/pi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -222,9 +223,35 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                     <div className="w-full h-full ">
                         {!wrappedInDialog && (
                             <div className="flex items-center justify-between mb-4">
-                                <h1 className="text-lg font-medium">
-                                    {palletId && palletId !== 'new' ? `Editar Palet #${palletId}` : "Nuevo Palet"}
-                                </h1>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h1 className="text-lg font-medium">
+                                        {palletId && palletId !== 'new' ? `Editar Palet #${palletId}` : "Nuevo Palet"}
+                                    </h1>
+                                    {belongsToReception && receptionId && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Link
+                                                        href={`/admin/raw-material-receptions/${receptionId}/edit`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer flex items-center gap-1.5"
+                                                        >
+                                                            <Package className="h-3 w-3" />
+                                                            <span>Recepción #{receptionId}</span>
+                                                            <ExternalLink className="h-3 w-3" />
+                                                        </Badge>
+                                                    </Link>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Ver recepción #{receptionId}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {isReadOnly && (
@@ -511,6 +538,43 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         className="text-right"
                                                                         disabled={isReadOnly}
                                                                     />
+                                                                </div>
+                                                                <div className="space-y-2 col-span-3">
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <Checkbox
+                                                                            id="show-pallet-weight"
+                                                                            checked={boxCreationData.showPalletWeight}
+                                                                            onCheckedChange={(checked) => {
+                                                                                boxCreationDataChange("showPalletWeight", checked);
+                                                                                if (!checked) {
+                                                                                    boxCreationDataChange("palletWeight", "");
+                                                                                }
+                                                                            }}
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor="show-pallet-weight"
+                                                                            className="text-sm font-normal cursor-pointer"
+                                                                        >
+                                                                            Descontar peso del palet (soporte de madera)
+                                                                        </Label>
+                                                                    </div>
+                                                                    {boxCreationData.showPalletWeight && (
+                                                                        <div className="space-y-2">
+                                                                            <Label>Peso del Palet (kg)</Label>
+                                                                            <Input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                placeholder="0.00"
+                                                                                value={boxCreationData.palletWeight}
+                                                                                onChange={(e) => {
+                                                                                    boxCreationDataChange("palletWeight", e.target.value);
+                                                                                }}
+                                                                                className="text-right"
+                                                                                disabled={isReadOnly}
+                                                                            />
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <div className="col-span-3 grid grid-cols-2 gap-x-2">
                                                                     <Button

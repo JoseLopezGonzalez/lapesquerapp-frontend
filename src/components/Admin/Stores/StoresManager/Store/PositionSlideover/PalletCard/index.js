@@ -1,8 +1,10 @@
 "use client"
 import React, { useRef } from 'react'
 import { useState } from "react"
-import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX, MapPinHouse } from "lucide-react"
+import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX, MapPinHouse, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import {
@@ -82,6 +84,30 @@ export default function PalletCard({ pallet }) {
                     <h3 className="font-medium text-xl text-foreground">
                         Palet #{pallet.id}
                     </h3>
+                    {pallet.receptionId && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        href={`/admin/raw-material-receptions/${pallet.receptionId}/edit`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Badge
+                                            variant="outline"
+                                            className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer text-xs mt-0.5 flex items-center gap-1.5"
+                                        >
+                                            <Package className="h-3 w-3" />
+                                            <span>Recepción #{pallet.receptionId}</span>
+                                            <ExternalLink className="h-3 w-3" />
+                                        </Badge>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Ver recepción #{pallet.receptionId}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                     {pallet.orderId && (
                         <Badge
                             variant="outline"

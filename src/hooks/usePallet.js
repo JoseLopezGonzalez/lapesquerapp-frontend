@@ -35,6 +35,8 @@ const initialboxCreationData = {
     weights: "", // para masiva
     totalWeight: "", // para promedio
     numberOfBoxes: "", // para promedio
+    palletWeight: "", // peso del palet/soporte de madera para descontar en promedio
+    showPalletWeight: false, // mostrar/ocultar campo de peso del palet
     scannedCode: "", // para lector
     deleteScannedCode: "",//para lector eliminar
     gs1codes: "", // <- NUEVO
@@ -370,7 +372,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const onAddNewBox = ({ method }) => {
         if (!temporalPallet) return;
-        const { productId, lot, netWeight, weights, totalWeight, numberOfBoxes, scannedCode } = boxCreationData;
+        const { productId, lot, netWeight, weights, totalWeight, numberOfBoxes, palletWeight, scannedCode } = boxCreationData;
 
         if (method === 'manual') {
             if (!productId || !lot || !netWeight) {
@@ -390,7 +392,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 toast.error('Por favor, completa todos los campos requeridos', getToastTheme());
                 return;
             }
-            const averageNetWeight = parseFloat(totalWeight / numberOfBoxes).toFixed(3);
+            // Descontar el peso del palet si está definido (puede ser vacío o 0)
+            const palletWeightValue = palletWeight ? parseFloat(palletWeight) : 0;
+            const netTotalWeight = parseFloat(totalWeight) - palletWeightValue;
+            const averageNetWeight = parseFloat(netTotalWeight / numberOfBoxes).toFixed(3);
             for (let i = 0; i < numberOfBoxes; i++) {
                 const product = getProductById(productId);
                 const newBox = {
