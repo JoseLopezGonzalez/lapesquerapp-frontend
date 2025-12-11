@@ -84,19 +84,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         name: 'details',
     });
 
-    // Watch all detail fields to calculate net weight
+    // Watch all detail fields (no calculation needed, netWeight is directly editable)
     const watchedDetails = watch('details');
-
-    // Calculate net weight for each line
-    useEffect(() => {
-        watchedDetails?.forEach((detail, index) => {
-            const grossWeight = parseFloat(detail.grossWeight) || 0;
-            const boxes = parseInt(detail.boxes) || 1;
-            const tare = parseFloat(detail.tare) || 0;
-            const netWeight = Math.max(0, grossWeight - (tare * boxes));
-            setValue(`details.${index}.netWeight`, netWeight.toFixed(2));
-        });
-    }, [watchedDetails, setValue]);
 
     // Load reception data
     useEffect(() => {
@@ -200,27 +189,31 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 }
                 
                 // Map details from backend structure to form structure
-                // Backend details only have: id, product, netWeight, alias
-                // We need to calculate/estimate grossWeight, boxes, tare, price, lot
+                // Backend details only have: id, product, netWeight, price, lot
+                // We only need: product, netWeight, boxes, price, lot (no tare, no grossWeight)
                 const mapDetails = (details) => {
                     if (!details || details.length === 0) return [];
                     
                     return details.map(detail => {
                         // Default values
                         let boxes = 1;
-                        let grossWeight = '';
-                        let tare = '3';
                         let price = '';
                         let lot = '';
                         
-                        // Get price only from detail.price field
+                        // Get price from detail.price field
                         if (detail.price !== null && detail.price !== undefined) {
                             price = parseFloat(detail.price).toString();
                         }
                         
-                        // Try to get data from pallets if available
+                        // Get lot from detail.lot field
+                        if (detail.lot) {
+                            lot = detail.lot;
+                        }
+                        
+                        // Try to get boxes count from pallets if available (to infer number of boxes)
+                        // But this is just for display - boxes count might not be accurate
                         if (reception.pallets && reception.pallets.length > 0) {
-                            const pallet = reception.pallets[0]; // Assuming single palet for editing
+                            const pallet = reception.pallets[0];
                             if (pallet.boxes && pallet.boxes.length > 0) {
                                 // Find boxes for this product
                                 const productBoxes = pallet.boxes.filter(box => 
@@ -228,44 +221,18 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 );
                                 if (productBoxes.length > 0) {
                                     boxes = productBoxes.length;
-                                    // Sum gross weights from boxes
-                                    const totalGross = productBoxes.reduce((sum, box) => 
-                                        sum + (parseFloat(box.grossWeight) || 0), 0
-                                    );
-                                    grossWeight = totalGross.toFixed(2);
-                                    // Try to infer tare from first box
-                                    if (productBoxes[0].tare) {
-                                        const tareValue = productBoxes[0].tare;
-                                        // Handle both string "3kg" and number 3
-                                        if (typeof tareValue === 'string') {
-                                            tare = tareValue.replace('kg', '').trim();
-                                        } else {
-                                            tare = tareValue.toString();
-                                        }
-                                    }
-                                    // Try to get lot from first box
-                                    if (productBoxes[0].lot) {
+                                    // Try to get lot from first box if not in detail
+                                    if (!lot && productBoxes[0].lot) {
                                         lot = productBoxes[0].lot;
                                     }
                                 }
                             }
                         }
                         
-                        // If we don't have grossWeight from pallets, estimate it from netWeight
-                        // Formula: grossWeight = netWeight + (tare * boxes)
-                        // We assume 1 box by default and tare of 3kg
-                        if (!grossWeight && detail.netWeight) {
-                            const netW = parseFloat(detail.netWeight) || 0;
-                            const t = parseFloat(tare) || 3;
-                            grossWeight = (netW + (t * boxes)).toFixed(2);
-                        }
-                        
                         return {
                             product: detail.product?.id ? detail.product.id.toString() : null,
-                            grossWeight: grossWeight || '',
-                            boxes: boxes,
-                            tare: tare,
                             netWeight: detail.netWeight || '',
+                            boxes: boxes,
                             price: price,
                             lot: lot,
                         };
@@ -577,10 +544,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Artículo</TableHead>
-                                        <TableHead>Peso Bruto</TableHead>
+                                        <TableHead>Peso Neto (kg)</TableHead>
                                         <TableHead>Cajas</TableHead>
-                                        <TableHead>Tara</TableHead>
-                                        <TableHead>Peso Neto</TableHead>
                                         <TableHead>Precio (€/kg)</TableHead>
                                         <TableHead>Lote</TableHead>
                                         <TableHead className="w-[50px]"></TableHead>
@@ -617,17 +582,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                     type="number"
                                                     step="0.01"
                                                     min="0"
-                                                    {...register(`details.${index}.grossWeight`, {
-                                                        required: 'El peso bruto es obligatorio',
+                                                    {...register(`details.${index}.netWeight`, {
+                                                        required: 'El peso neto es obligatorio',
                                                         valueAsNumber: true,
                                                         min: { value: 0.01, message: 'El peso debe ser mayor que 0' }
                                                     })}
                                                     placeholder="0.00"
                                                     className="w-32"
                                                 />
-                                                {errors.details?.[index]?.grossWeight && (
+                                                {errors.details?.[index]?.netWeight && (
                                                     <p className="text-destructive text-xs mt-1">
-                                                        {errors.details[index].grossWeight.message}
+                                                        {errors.details[index].netWeight.message}
                                                     </p>
                                                 )}
                                             </TableCell>
@@ -677,38 +642,6 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Controller
-                                                    name={`details.${index}.tare`}
-                                                    control={control}
-                                                    render={({ field: { onChange, value } }) => (
-                                                        <Select value={value} onValueChange={onChange}>
-                                                            <SelectTrigger className="w-24">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {TARE_OPTIONS.map((option) => (
-                                                                    <SelectItem key={option.value} value={option.value}>
-                                                                        {option.label}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    )}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    readOnly
-                                                    className="w-32 bg-muted"
-                                                    placeholder="0,00"
-                                                    value={
-                                                        watchedDetails?.[index]?.netWeight 
-                                                            ? formatDecimal(parseFloat(watchedDetails[index].netWeight) || 0) 
-                                                            : '0,00'
-                                                    }
-                                                />
-                                            </TableCell>
-                                            <TableCell>
                                                 <Input
                                                     type="number"
                                                     step="0.01"
@@ -722,7 +655,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                 <Input
                                                     {...register(`details.${index}.lot`)}
                                                     placeholder="Lote (opcional)"
-                                                    className="w-32"
+                                                    className="w-48"
                                                 />
                                             </TableCell>
                                             <TableCell>
@@ -747,10 +680,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             variant="outline"
                             onClick={() => append({
                                 product: null,
-                                grossWeight: '',
-                                boxes: 1,
-                                tare: '3',
                                 netWeight: '',
+                                boxes: 1,
                                 price: '',
                                 lot: '',
                             })}
