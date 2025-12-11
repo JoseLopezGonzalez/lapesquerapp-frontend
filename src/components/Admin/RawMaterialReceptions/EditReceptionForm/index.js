@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,6 +26,7 @@ import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/fo
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
+import ReceptionSummaryDialog from '@/components/Admin/RawMaterialReceptions/ReceptionSummaryDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { getPallet } from '@/services/palletService';
@@ -56,6 +57,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [palletMetadata, setPalletMetadata] = useState({ prices: {}, observations: '' });
     const [isPalletLabelDialogOpen, setIsPalletLabelDialogOpen] = useState(false);
     const [selectedPalletForLabel, setSelectedPalletForLabel] = useState(null);
+    const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+    const [receptionPrices, setReceptionPrices] = useState([]);
     
     // Ref para evitar recargas innecesarias cuando se hace focus en la pestaña
     const hasLoadedRef = useRef(false);
@@ -127,6 +130,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         // Convert prices array to object { [productId-lot]: price } for easy lookup
                         const globalPricesObj = {};
                         if (reception.prices && Array.isArray(reception.prices)) {
+                            // Store original prices array for summary dialog
+                            setReceptionPrices(reception.prices);
+                            
                             reception.prices.forEach(priceEntry => {
                                 // Backend only includes prices with values (excludes null)
                                 if (priceEntry.product?.id && priceEntry.lot && priceEntry.price !== null && priceEntry.price !== undefined) {
@@ -134,6 +140,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                     globalPricesObj[key] = parseFloat(priceEntry.price).toString();
                                 }
                             });
+                        } else {
+                            setReceptionPrices([]);
                         }
                         
                         const convertedPallets = reception.pallets.map(pallet => {
@@ -699,18 +707,30 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 <div className="w-full">
                     <div className="flex justify-between items-center mb-2">
                         <h3 className="text-sm font-medium text-muted-foreground">Palets de la Recepción</h3>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                setSelectedPalletId('new');
-                                setEditingPalletIndex(null);
-                                setIsPalletDialogOpen(true);
-                            }}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar Palet
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setIsSummaryDialogOpen(true);
+                                }}
+                            >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver Resumen
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setSelectedPalletId('new');
+                                    setEditingPalletIndex(null);
+                                    setIsPalletDialogOpen(true);
+                                }}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Agregar Palet
+                            </Button>
+                        </div>
                     </div>
                     <Separator className="my-2" />
 
@@ -764,7 +784,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
                                     return (
                                         <TableRow key={index}>
-                                            <TableCell className="font-medium">{index + 1}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {pallet.id ? `#${pallet.id}` : `Nuevo ${index + 1}`}
+                                            </TableCell>
                                             <TableCell className="max-w-[200px]">
                                                 <div className="text-sm">
                                                     {item.observations || (
@@ -980,6 +1002,62 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         setSelectedPalletForLabel(null);
                     }}
                     pallet={selectedPalletForLabel}
+                />
+            )}
+
+            {/* ReceptionSummaryDialog para ver resumen de productos y palets */}
+            {creationMode === 'pallets' && (
+                <ReceptionSummaryDialog
+                    isOpen={isSummaryDialogOpen}
+                    onClose={() => setIsSummaryDialogOpen(false)}
+                    pallets={temporalPallets}
+                    prices={(() => {
+                        // Build prices array from temporalPallets (similar to handleUpdate)
+                        const globalPriceMap = new Map();
+                        temporalPallets.forEach((item) => {
+                            const pallet = item.pallet;
+                            const pricesObj = item.prices || {};
+                            (pallet?.boxes || []).forEach(box => {
+                                const lotIdentifier = box.lot || '';
+                                if (box.product?.id && lotIdentifier !== undefined) {
+                                    const key = `${box.product.id}-${lotIdentifier}`;
+                                    const priceKey = `${box.product.id}-${lotIdentifier}`;
+                                    const priceValue = pricesObj[priceKey];
+                                    globalPriceMap.set(key, {
+                                        product: { id: box.product.id },
+                                        lot: lotIdentifier,
+                                        price: priceValue ? parseFloat(priceValue) : undefined,
+                                    });
+                                }
+                            });
+                        });
+                        return Array.from(globalPriceMap.values());
+                    })()}
+                    onPriceChange={(productId, lot, price) => {
+                        // Sincronizar precio en todos los pallets que tengan esta combinación producto+lote
+                        const priceKey = `${productId}-${lot || ''}`;
+                        setTemporalPallets(prev => {
+                            const updated = prev.map(item => {
+                                // Verificar si este pallet tiene cajas con la misma combinación producto+lote
+                                const hasMatchingCombination = item.pallet?.boxes?.some(box => {
+                                    const boxKey = `${box.product?.id}-${box.lot || ''}`;
+                                    return boxKey === priceKey;
+                                });
+                                
+                                if (hasMatchingCombination) {
+                                    return {
+                                        ...item,
+                                        prices: {
+                                            ...(item.prices || {}),
+                                            [priceKey]: price
+                                        }
+                                    };
+                                }
+                                return item;
+                            });
+                            return updated;
+                        });
+                    }}
                 />
             )}
         </div>
