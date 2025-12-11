@@ -417,3 +417,22 @@
   background-clip: padding-box;
 }
 
+/* Estilos para react-masonry-css */
+.masonry-grid {
+  display: flex;
+  width: auto;
+  margin-left: -1rem; /* Espacio negativo para compensar el padding de las columnas */
+}
+
+.masonry-grid_column {
+  padding-left: 1rem; /* Espacio entre columnas */
+  background-clip: padding-box;
+  min-width: 320px; /* Ancho mínimo para que los cards no sean demasiado estrechos */
+}
+
+/* Asegurar que los elementos dentro de las columnas no se rompan */
+.masonry-grid_column > div {
+  display: block;
+  margin-bottom: 1rem;
+}
+

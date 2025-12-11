@@ -254,19 +254,31 @@ const CreateReceptionForm = ({ onSuccess }) => {
                 }
 
                 // Extract ALL unique product+lot combinations from ALL pallets
+                // Important: Always take the price from the last pallet processed to ensure we get the latest value
                 const globalPriceMap = new Map();
                 validPallets.forEach(({ item, validBoxes }) => {
                     const pricesObj = item.prices || {};
                     validBoxes.forEach(box => {
                         if (box.product?.id && box.lot) {
-                            const key = `${box.product.id}-${box.lot}`;
-                            if (!globalPriceMap.has(key)) {
-                                const priceKey = `${box.product.id}-${box.lot}`;
-                                const priceValue = pricesObj[priceKey];
+                            const lot = box.lot || ''; // Use empty string for consistency
+                            const key = `${box.product.id}-${lot}`;
+                            const priceKey = `${box.product.id}-${lot}`;
+                            const priceValue = pricesObj[priceKey];
+                            
+                            // Always update (or set) the price - this ensures we get the latest value
+                            // Since prices are synchronized, all pallets should have the same price for the same combination
+                            if (priceValue !== undefined && priceValue !== null && priceValue !== '') {
                                 globalPriceMap.set(key, {
                                     product: { id: box.product.id },
-                                    lot: box.lot,
-                                    price: priceValue ? parseFloat(priceValue) : undefined,
+                                    lot: lot || undefined, // Use undefined for empty string (backend expects undefined, not empty string)
+                                    price: parseFloat(priceValue),
+                                });
+                            } else if (!globalPriceMap.has(key)) {
+                                // Only set undefined price if we haven't seen this combination before
+                                globalPriceMap.set(key, {
+                                    product: { id: box.product.id },
+                                    lot: lot || undefined,
+                                    price: undefined,
                                 });
                             }
                         }
@@ -706,12 +718,14 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                 const productLotMap = new Map();
                                                 (pallet.boxes || []).forEach(box => {
                                                     if (box.product?.id) {
-                                                        const key = `${box.product.id}-${box.lot || ''}`;
+                                                        // Use empty string for undefined/null lots to maintain consistency
+                                                        const lot = box.lot || '';
+                                                        const key = `${box.product.id}-${lot}`;
                                                         if (!productLotMap.has(key)) {
                                                             productLotMap.set(key, {
                                                                 productId: box.product.id,
                                                                 productName: box.product.name || box.product.alias || 'Producto sin nombre',
-                                                                lot: box.lot || '(sin lote)',
+                                                                lot: lot, // Use empty string, not '(sin lote)'
                                                                 boxesCount: 0,
                                                                 totalNetWeight: 0,
                                                             });
