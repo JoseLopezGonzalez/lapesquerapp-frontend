@@ -45,12 +45,12 @@ const CreateReceptionForm = ({ onSuccess }) => {
     const router = useRouter();
 
     const [mode, setMode] = useState('automatic'); // 'automatic' or 'manual'
-    // Store pallets with metadata: { pallet: temporalPallet, price: string, observations: string }
+    // Store pallets with metadata: { pallet: temporalPallet, prices: { [productId-lot]: price }, observations: string }
     const [temporalPallets, setTemporalPallets] = useState([]); // Lista de palets temporales para modo manual
     const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
     const [selectedPalletId, setSelectedPalletId] = useState(null);
     const [editingPalletIndex, setEditingPalletIndex] = useState(null); // Índice del palet que se está editando
-    const [palletMetadata, setPalletMetadata] = useState({ price: '', observations: '' }); // Metadata for the current pallet being edited
+    const [palletMetadata, setPalletMetadata] = useState({ prices: {}, observations: '' }); // Metadata for the current pallet being edited
     const [isModeChangeDialogOpen, setIsModeChangeDialogOpen] = useState(false);
     const [pendingMode, setPendingMode] = useState(null); // Nuevo modo pendiente de confirmación
 
@@ -223,53 +223,85 @@ const CreateReceptionForm = ({ onSuccess }) => {
                 }
 
                 // Convert temporal pallets to API format
-                // The API expects: { product: { id }, price, lot, observations, boxes: [{ gs1128, grossWeight, netWeight }] }
-                // temporalPallets is an array of { pallet: temporalPallet, price: string, lot: string, observations: string }
-                const convertedPallets = temporalPallets
+                // NEW STRUCTURE: boxes have product.id and lot, prices are in ROOT (not in each pallet)
+                // temporalPallets is an array of { pallet: temporalPallet, prices: object, observations: string }
+                
+                // First, collect all valid pallets with their boxes
+                const validPallets = temporalPallets
                     .filter(item => item.pallet && item.pallet.boxes && item.pallet.boxes.length > 0)
                     .map(item => {
                         const pallet = item.pallet;
-                        // Get product from first box (all boxes in a pallet should have the same product in reception context)
-                        const firstBox = pallet.boxes?.[0];
-                        const productId = firstBox?.product?.id;
                         
-                        if (!productId) {
-                            return null; // Skip pallets without product
+                        // Filter boxes that have product and netWeight
+                        const validBoxes = pallet.boxes
+                            .filter(box => box.product?.id && box.netWeight);
+                        
+                        if (validBoxes.length === 0) {
+                            return null;
                         }
 
                         return {
-                            product: {
-                                id: productId,
-                            },
-                            price: item.price ? parseFloat(item.price) : undefined,
-                            observations: item.observations || pallet.observations || undefined,
-                            boxes: pallet.boxes
-                                .filter(box => box.product && box.netWeight) // Must have product and netWeight
-                                .map(box => {
-                                    // Extract box data - boxes from PalletDialog have: product, lot, netWeight, gs1128 (optional)
-                                    return {
-                                        gs1128: box.gs1128 || undefined,
-                                        grossWeight: box.grossWeight ? parseFloat(box.grossWeight) : undefined,
-                                        netWeight: box.netWeight ? parseFloat(box.netWeight) : undefined,
-                                    };
-                                })
-                                .filter(box => box.netWeight), // Must have netWeight
+                            item: item,
+                            pallet: pallet,
+                            validBoxes: validBoxes,
                         };
                     })
-                    .filter(pallet => pallet !== null && pallet.boxes && pallet.boxes.length > 0);
+                    .filter(p => p !== null);
 
-                if (convertedPallets.length === 0) {
+                if (validPallets.length === 0) {
                     toast.error('Debe completar al menos un palet válido con producto y cajas', getToastTheme());
                     return;
                 }
 
-                // Prepare payload for Mode Manual
+                // Extract ALL unique product+lot combinations from ALL pallets
+                const globalPriceMap = new Map();
+                validPallets.forEach(({ item, validBoxes }) => {
+                    const pricesObj = item.prices || {};
+                    validBoxes.forEach(box => {
+                        if (box.product?.id && box.lot) {
+                            const key = `${box.product.id}-${box.lot}`;
+                            if (!globalPriceMap.has(key)) {
+                                const priceKey = `${box.product.id}-${box.lot}`;
+                                const priceValue = pricesObj[priceKey];
+                                globalPriceMap.set(key, {
+                                    product: { id: box.product.id },
+                                    lot: box.lot,
+                                    price: priceValue ? parseFloat(priceValue) : undefined,
+                                });
+                            }
+                        }
+                    });
+                });
+
+                // Build prices array in ROOT (unique combinations from all pallets)
+                const prices = Array.from(globalPriceMap.values());
+
+                // Build pallets WITHOUT prices (prices are now in root)
+                const convertedPallets = validPallets.map(({ item, pallet, validBoxes }) => {
+                    const boxes = validBoxes.map(box => ({
+                        product: {
+                            id: box.product.id,
+                        },
+                        lot: box.lot || undefined,
+                        gs1128: box.gs1128 || undefined,
+                        grossWeight: box.grossWeight ? parseFloat(box.grossWeight) : undefined,
+                        netWeight: box.netWeight ? parseFloat(box.netWeight) : undefined,
+                    }));
+
+                    return {
+                        observations: item.observations || pallet.observations || undefined,
+                        boxes: boxes,
+                    };
+                });
+
+                // Prepare payload for Mode Manual - prices in ROOT
                 payload = {
                     supplier: {
                         id: data.supplier,
                     },
                     date: format(data.date, 'yyyy-MM-dd'),
                     notes: data.notes || '',
+                    prices: prices, // ← In ROOT, shared by all pallets
                     pallets: convertedPallets,
                 };
             }
@@ -655,98 +687,162 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                         </CardContent>
                                     </Card>
                                 ) : (
-                                    <div className="space-y-4">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>#</TableHead>
-                                                    <TableHead>Productos</TableHead>
-                                                    <TableHead>Precio (€/kg)</TableHead>
-                                                    <TableHead>Cajas</TableHead>
-                                                    <TableHead>Peso Neto</TableHead>
-                                                    <TableHead className="w-[150px]">Acciones</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {temporalPallets.map((item, index) => {
-                                                    const pallet = item.pallet;
-                                                    // Extract product names from boxes
-                                                    const productsNames = pallet.boxes
-                                                        ?.map(box => box.product?.name)
-                                                        .filter(Boolean) || [];
-                                                    const uniqueProducts = [...new Set(productsNames)];
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>#</TableHead>
+                                                <TableHead>Observaciones</TableHead>
+                                                <TableHead>Cajas</TableHead>
+                                                <TableHead>Peso Neto</TableHead>
+                                                <TableHead>Producto - Lote / Precio (€/kg)</TableHead>
+                                                <TableHead className="w-[120px]">Acciones</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {temporalPallets.map((item, index) => {
+                                                const pallet = item.pallet;
+                                                
+                                                // Get unique product+lot combinations from boxes
+                                                const productLotMap = new Map();
+                                                (pallet.boxes || []).forEach(box => {
+                                                    if (box.product?.id) {
+                                                        const key = `${box.product.id}-${box.lot || ''}`;
+                                                        if (!productLotMap.has(key)) {
+                                                            productLotMap.set(key, {
+                                                                productId: box.product.id,
+                                                                productName: box.product.name || box.product.alias || 'Producto sin nombre',
+                                                                lot: box.lot || '(sin lote)',
+                                                                boxesCount: 0,
+                                                                totalNetWeight: 0,
+                                                            });
+                                                        }
+                                                        const entry = productLotMap.get(key);
+                                                        entry.boxesCount += 1;
+                                                        entry.totalNetWeight += parseFloat(box.netWeight || 0);
+                                                    }
+                                                });
+                                                
+                                                const productLotCombinations = Array.from(productLotMap.values());
+                                                const prices = item.prices || {};
 
-                                                    return (
-                                                        <TableRow key={index}>
-                                                            <TableCell>{index + 1}</TableCell>
-                                                            <TableCell>
-                                                                <div className="space-y-1">
-                                                                    {uniqueProducts.length > 0 ? (
-                                                                        uniqueProducts.map((product, idx) => (
-                                                                            <div key={idx} className="text-sm">{product}</div>
-                                                                        ))
-                                                                    ) : (
-                                                                        <span className="text-muted-foreground text-sm">Sin productos</span>
-                                                                    )}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    min="0"
-                                                                    value={item.price || ''}
-                                                                    onChange={(e) => {
-                                                                        setTemporalPallets(prev => {
-                                                                            const updated = [...prev];
-                                                                            updated[index] = { ...updated[index], price: e.target.value };
-                                                                            return updated;
-                                                                        });
+                                                return (
+                                                    <TableRow key={index}>
+                                                        <TableCell className="font-medium">{index + 1}</TableCell>
+                                                        <TableCell className="max-w-[200px]">
+                                                            <div className="text-sm">
+                                                                {item.observations || (
+                                                                    <span className="text-muted-foreground italic">Sin observaciones</span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
+                                                        <TableCell>{formatDecimalWeight(pallet.netWeight || 0)}</TableCell>
+                                                        <TableCell>
+                                                            <div className="space-y-2">
+                                                                {productLotCombinations.length === 0 ? (
+                                                                    <span className="text-sm text-muted-foreground">No hay productos</span>
+                                                                ) : (
+                                                                    productLotCombinations.map((combo, comboIdx) => {
+                                                                        const priceKey = `${combo.productId}-${combo.lot}`;
+                                                                        const currentPrice = prices[priceKey] || '';
+                                                                        
+                                                                        return (
+                                                                            <div key={comboIdx} className="flex items-center gap-3 py-1 border-b last:border-0">
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <span className="font-medium text-sm">{combo.productName}</span>
+                                                                                        <span className="text-xs text-muted-foreground font-mono">({combo.lot})</span>
+                                                                                        <span className="text-xs text-muted-foreground">
+                                                                                            {combo.boxesCount} cajas · {formatDecimalWeight(combo.totalNetWeight)}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <Input
+                                                                                    type="number"
+                                                                                    step="0.01"
+                                                                                    min="0"
+                                                                                    value={currentPrice}
+                                                                                    onChange={(e) => {
+                                                                                        const newPrice = e.target.value;
+                                                                                        setTemporalPallets(prev => {
+                                                                                            const updated = [...prev];
+                                                                                            
+                                                                                            // Actualizar precio en el pallet actual
+                                                                                            if (!updated[index].prices) {
+                                                                                                updated[index].prices = {};
+                                                                                            }
+                                                                                            updated[index].prices = {
+                                                                                                ...updated[index].prices,
+                                                                                                [priceKey]: newPrice
+                                                                                            };
+                                                                                            
+                                                                                            // Sincronizar precio en todos los otros pallets que tengan la misma combinación producto+lote
+                                                                                            updated.forEach((palletItem, palletIdx) => {
+                                                                                                if (palletIdx === index) return; // Ya actualizado arriba
+                                                                                                
+                                                                                                // Verificar si este pallet tiene cajas con la misma combinación producto+lote
+                                                                                                const hasMatchingCombination = palletItem.pallet?.boxes?.some(box => {
+                                                                                                    const boxKey = `${box.product?.id}-${box.lot || ''}`;
+                                                                                                    return boxKey === priceKey;
+                                                                                                });
+                                                                                                
+                                                                                                if (hasMatchingCombination) {
+                                                                                                    if (!palletItem.prices) {
+                                                                                                        updated[palletIdx].prices = {};
+                                                                                                    }
+                                                                                                    updated[palletIdx].prices = {
+                                                                                                        ...updated[palletIdx].prices,
+                                                                                                        [priceKey]: newPrice
+                                                                                                    };
+                                                                                                }
+                                                                                            });
+                                                                                            
+                                                                                            return updated;
+                                                                                        });
+                                                                                    }}
+                                                                                    placeholder="0.00"
+                                                                                    className="w-28 h-8"
+                                                                                />
+                                                                            </div>
+                                                                        );
+                                                                    })
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                    onClick={() => {
+                                                                        setSelectedPalletId('new');
+                                                                        setEditingPalletIndex(index);
+                                                                        setPalletMetadata({ prices: item.prices || {}, observations: item.observations || '' });
+                                                                        setIsPalletDialogOpen(true);
                                                                     }}
-                                                                    placeholder="0.00"
-                                                                    className="w-24"
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
-                                                            <TableCell>
-                                                                {formatDecimalWeight(pallet.netWeight || 0)}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex items-center gap-1">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8"
-                                                                        onClick={() => {
-                                                                            // For editing, we pass the pallet data to initialize
-                                                                            setSelectedPalletId('new'); // Use 'new' since we're editing a temporal pallet
-                                                                            setEditingPalletIndex(index);
-                                                                            setPalletMetadata({ price: item.price || '', observations: item.observations || '' });
-                                                                            setIsPalletDialogOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-destructive hover:text-destructive"
-                                                                        onClick={() => {
-                                                                            setTemporalPallets(prev => prev.filter((_, i) => i !== index));
-                                                                        }}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                                                    onClick={() => {
+                                                                        setTemporalPallets(prev => prev.filter((_, i) => i !== index));
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
                                 )}
                             </div>
                         </TabsContent>
@@ -767,7 +863,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                             const updated = [...prev];
                             updated[editingPalletIndex] = {
                                 pallet: pallet,
-                                price: palletMetadata.price || '',
+                                prices: palletMetadata.prices || {},
                                 observations: palletMetadata.observations || pallet.observations || '',
                             };
                             return updated;
@@ -776,14 +872,14 @@ const CreateReceptionForm = ({ onSuccess }) => {
                         // Add new pallet with metadata
                         setTemporalPallets(prev => [...prev, {
                             pallet: pallet,
-                            price: '',
+                            prices: {},
                             observations: pallet.observations || '',
                         }]);
                     }
                     setIsPalletDialogOpen(false);
                     setSelectedPalletId(null);
                     setEditingPalletIndex(null);
-                    setPalletMetadata({ price: '', observations: '' });
+                    setPalletMetadata({ prices: {}, observations: '' });
                 }}
                 onChange={() => {}} // We handle saving manually via onSaveTemporal
                 onCloseDialog={() => {

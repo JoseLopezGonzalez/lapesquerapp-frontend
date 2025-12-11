@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import React from "react";
+import Link from "next/link";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2 } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { Combobox } from "@/components/Shadcn/Combobox";
 import Loader from "@/components/Utilities/Loader";
@@ -65,6 +67,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const orderIdBlocked = initialOrderId !== null;
 
+    // Check if pallet belongs to a reception
+    const receptionId = temporalPallet?.receptionId;
+    const belongsToReception = receptionId !== null && receptionId !== undefined;
+    const isReadOnly = belongsToReception;
 
     const { onPrint } = usePrintElement({ id: 'print-area-id', width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height });
 
@@ -85,30 +91,37 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     };
 
     const handleOnChangeBoxLot = (boxId, lot) => {
+        if (isReadOnly) return;
         editPallet.box.edit.lot(boxId, lot);
     };
 
     const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
+        if (isReadOnly) return;
         editPallet.box.edit.netWeight(boxId, netWeight);
     };
 
     const handleOnClickDuplicateBox = (boxId) => {
+        if (isReadOnly) return;
         editPallet.box.duplicate(boxId);
     };
 
     const handleOnClickDeleteBox = (boxId) => {
+        if (isReadOnly) return;
         editPallet.box.delete(boxId);
     };
 
     const handleOnClickDeleteAllBoxes = () => {
+        if (isReadOnly) return;
         deleteAllBoxes();
     };
 
     const handleOnClickReset = () => {
+        if (isReadOnly) return;
         resetAllChanges();
     };
 
     const handleOnClickSaveChanges = () => {
+        if (isReadOnly) return;
         // If onSaveTemporal is provided, use it instead of onSavingChanges
         if (onSaveTemporal && temporalPallet) {
             onSaveTemporal(temporalPallet);
@@ -214,6 +227,23 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </h1>
                             </div>
                         )}
+                        {isReadOnly && (
+                            <Alert className="mb-4 border-orange-200 bg-orange-50">
+                                <AlertCircle className="h-4 w-4 text-orange-600" />
+                                <AlertDescription className="flex items-center gap-2">
+                                    <span className="text-orange-800">Este palet pertenece a una recepción y no puede ser editado.</span>
+                                    {receptionId && (
+                                        <Link 
+                                            href={`/admin/raw-material-receptions/${receptionId}/edit`}
+                                            className="text-orange-700 hover:text-orange-900 underline flex items-center gap-1 text-sm font-medium"
+                                        >
+                                            Ver recepción #{receptionId}
+                                            <ExternalLink className="h-3 w-3" />
+                                        </Link>
+                                    )}
+                                </AlertDescription>
+                            </Alert>
+                        )}
                         <div className="flex justify-center w-full">
                             <Tabs defaultValue="edicion" className="w-full">
                                 <TabsList className="mx-auto mb-4">
@@ -229,7 +259,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> Etiquetas Cajas
                                     </TabsTrigger>
-                                    <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300">
+                                    <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300" disabled={isReadOnly}>
                                         <Trash2 className="h-4 w-4" /> Eliminar
                                     </TabsTrigger>
                                 </TabsList>
@@ -277,7 +307,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     }}
                                                                     type="text"
                                                                     autoFocus
-                                                                    id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono" />
+                                                                    id="codigo-escaneado" placeholder="Escanea aquí..." className="font-mono"
+                                                                    disabled={isReadOnly}
+                                                                />
                                                                 <p className="text-xs text-muted-foreground">
                                                                     La caja se agregará automáticamente al detectar un código válido
                                                                 </p>
@@ -291,16 +323,18 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     onChange={(e) => boxCreationDataChange("gs1codes", e.target.value)}
                                                                     placeholder="Ingresa los códigos GS1-128, uno por línea"
                                                                     className="min-h-[100px]"
+                                                                    disabled={isReadOnly}
                                                                 />
                                                                 <div className="col-span-2 grid grid-cols-2 gap-x-2">
                                                                     <Button
                                                                         variant="outline"
                                                                         onClick={() => boxCreationDataChange("gs1codes", "")}
+                                                                        disabled={isReadOnly}
                                                                     >
                                                                         <RotateCcw className="h-4 w-4" /> Resetear
                                                                     </Button>
 
-                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: "gs1" })}>
+                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: "gs1" })} disabled={isReadOnly}>
                                                                         <Upload className="h-4 w-4" /> Agregar Cajas en Lote
                                                                     </Button>
                                                                 </div>
@@ -320,6 +354,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(value) => {
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
@@ -331,6 +366,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(e) => {
                                                                             boxCreationDataChange("lot", e.target.value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
@@ -344,6 +380,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("netWeight", e.target.value);
                                                                         }}
                                                                         className="text-right"
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="col-span-2 grid grid-cols-2 gap-x-2">
@@ -353,10 +390,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onClick={() => {
                                                                             onResetBoxCreationData();
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     >
                                                                         <RotateCcw className="h-4 w-4" /> Resetear
                                                                     </Button>
-                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'manual' })}>
+                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'manual' })} disabled={isReadOnly}>
                                                                         <Plus className="h-4 w-4" /> Agregar Caja
                                                                     </Button>
                                                                 </div>
@@ -376,6 +414,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(value) => {
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
@@ -387,6 +426,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(e) => {
                                                                             boxCreationDataChange("lot", e.target.value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <Textarea
@@ -397,6 +437,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         boxCreationDataChange("weights", weights);
                                                                     }}
                                                                     className="min-h-[100px]"
+                                                                    disabled={isReadOnly}
                                                                 />
                                                                 <div className="col-span-2 grid grid-cols-2 gap-x-2">
                                                                     <Button
@@ -405,10 +446,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onClick={() => {
                                                                             onResetBoxCreationData();
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     >
                                                                         <RotateCcw className="h-4 w-4" /> Resetear
                                                                     </Button>
-                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'bulk' })}>
+                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'bulk' })} disabled={isReadOnly}>
                                                                         <Upload className="h-4 w-4" /> Agregar Cajas en Lote
                                                                     </Button>
                                                                 </div>
@@ -428,6 +470,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(value) => {
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2 ">
@@ -439,6 +482,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onChange={(e) => {
                                                                             boxCreationDataChange("lot", e.target.value);
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2 ">
@@ -452,6 +496,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("totalWeight", e.target.value);
                                                                         }}
                                                                         className="text-right"
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2 ">
@@ -464,6 +509,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("numberOfBoxes", e.target.value);
                                                                         }}
                                                                         className="text-right"
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </div>
                                                                 <div className="col-span-3 grid grid-cols-2 gap-x-2">
@@ -473,10 +519,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         onClick={() => {
                                                                             onResetBoxCreationData();
                                                                         }}
+                                                                        disabled={isReadOnly}
                                                                     >
                                                                         <RotateCcw className="h-4 w-4" /> Resetear
                                                                     </Button>
-                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'average' })}>
+                                                                    <Button className="w-full" onClick={() => onAddNewBox({ method: 'average' })} disabled={isReadOnly}>
                                                                         <Plus className="h-4 w-4" /> Generar Cajas
                                                                     </Button>
                                                                 </div>
@@ -524,7 +571,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     )}
                                                             </SelectContent>
                                                         </Select>
-                                                        {temporalPallet.orderId && !orderIdBlocked && (
+                                                        {temporalPallet.orderId && !orderIdBlocked && !isReadOnly && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => editPallet.orderId(null)}
@@ -590,8 +637,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 const renderBoxRow = (box, isEditable = true) => {
                                                     const isSelected = box.id === selectedBox;
                                                     const boxAvailable = isBoxAvailable(box);
+                                                    const canEditBox = isEditable && !isReadOnly;
                                                     
-                                                    if (isSelected && isEditable) {
+                                                    if (isSelected && canEditBox) {
                                                         return (
                                                             <TableRow key={box.id} onClick={() => handleOnClickBoxRow(box.id)} className="hover:bg-muted">
                                                                 <TableCell>{box.product.name}</TableCell>
@@ -603,6 +651,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         }}
                                                                         onClick={(e) => e.stopPropagation()}
                                                                         className="w-full"
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell>{box.gs1128}</TableCell>
@@ -615,10 +664,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
                                                                         }}
                                                                         className="w-full "
+                                                                        disabled={isReadOnly}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    {isEditable && (
+                                                                    {canEditBox && (
                                                                         <div className="flex gap-1">
                                                                             <Button
                                                                                 variant="ghost"
@@ -628,6 +678,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     e.stopPropagation();
                                                                                     handleOnClickDuplicateBox(box.id)
                                                                                 }}
+                                                                                disabled={isReadOnly}
                                                                             >
                                                                                 <Copy className="h-4 w-4" />
                                                                             </Button>
@@ -639,6 +690,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     e.stopPropagation();
                                                                                     handleOnClickDeleteBox(box.id);
                                                                                 }}
+                                                                                disabled={isReadOnly}
                                                                             >
                                                                                 <Trash2 className="h-4 w-4" />
                                                                             </Button>
@@ -1105,22 +1157,23 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 <CardContent>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="codigo-escaneado">Código escaneado</Label>
-                                                        <Input
-                                                            value={boxCreationData.deleteScannedCode}
-                                                            onChange={(e) => {
-                                                                boxCreationDataChange("deleteScannedCode", e.target.value);
-                                                            }}
-                                                            type="text"
-                                                            id="codigo-escaneado"
-                                                            placeholder="Escanea aquí..."
-                                                            className="font-mono"
-                                                        />
+                                                                <Input
+                                                                    value={boxCreationData.deleteScannedCode}
+                                                                    onChange={(e) => {
+                                                                        boxCreationDataChange("deleteScannedCode", e.target.value);
+                                                                    }}
+                                                                    type="text"
+                                                                    id="codigo-escaneado"
+                                                                    placeholder="Escanea aquí..."
+                                                                    className="font-mono"
+                                                                    disabled={isReadOnly}
+                                                                />
                                                         <p className="text-xs text-muted-foreground">
                                                             La caja se eliminará automáticamente al detectar un código válido
                                                         </p>
                                                     </div>
                                                     <div className="mt-4">
-                                                        <Button variant='destructive' className="w-full" onClick={() => handleOnClickDeleteAllBoxes()}>
+                                                        <Button variant='destructive' className="w-full" onClick={() => handleOnClickDeleteAllBoxes()} disabled={isReadOnly}>
                                                             <Trash2 className="h-4 w-4 " /> Eliminar todas las cajas
                                                         </Button>
                                                     </div>
@@ -1210,8 +1263,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                         e.stopPropagation();
                                                                                         handleOnClickDuplicateBox(box.id)
                                                                                     }}
-                                                                                    disabled={!boxAvailable}
-                                                                                    title={!boxAvailable ? "No se puede duplicar una caja en producción" : "Duplicar caja"}
+                                                                                    disabled={!boxAvailable || isReadOnly}
+                                                                                    title={isReadOnly ? "Este pallet pertenece a una recepción y no puede ser editado" : (!boxAvailable ? "No se puede duplicar una caja en producción" : "Duplicar caja")}
                                                                                 >
                                                                                     <Copy className="h-4 w-4" />
                                                                                 </Button>
@@ -1223,8 +1276,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                         e.stopPropagation();
                                                                                         handleOnClickDeleteBox(box.id);
                                                                                     }}
-                                                                                    disabled={!boxAvailable}
-                                                                                    title={!boxAvailable ? "No se puede eliminar una caja en producción" : "Eliminar caja"}
+                                                                                    disabled={!boxAvailable || isReadOnly}
+                                                                                    title={isReadOnly ? "Este pallet pertenece a una recepción y no puede ser editado" : (!boxAvailable ? "No se puede eliminar una caja en producción" : "Eliminar caja")}
                                                                                 >
                                                                                     <Trash2 className="h-4 w-4" />
                                                                                 </Button>
@@ -1243,11 +1296,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
                             </Tabs>
                         </div>
-                        <div className="flex justify-end gap-3 pt-4 pb-6 border-t mt-4 mb-4">
-                            <Button variant="outline" onClick={handleOnClickReset} disabled={saving}>
+                                                        <div className="flex justify-end gap-3 pt-4 pb-6 border-t mt-4 mb-4">
+                            <Button variant="outline" onClick={handleOnClickReset} disabled={saving || isReadOnly}>
                                 Deshacer
                             </Button>
-                            <Button onClick={handleOnClickSaveChanges} disabled={saving}>
+                            <Button onClick={handleOnClickSaveChanges} disabled={saving || isReadOnly}>
                                 {saving ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

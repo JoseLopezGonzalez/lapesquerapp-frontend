@@ -8,7 +8,7 @@ export default function CreateReceptionPage() {
   const router = useRouter();
 
   const handleOnCreate = (reception) => {
-    router.push(`/admin/raw-material-receptions/${reception.id}`);
+    router.push(`/admin/raw-material-receptions/${reception.id}/edit`);
   };
 
   return (

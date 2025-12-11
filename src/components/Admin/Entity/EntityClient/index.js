@@ -101,8 +101,10 @@ export default function EntityClient({ config }) {
         const deleteUrl = config.deleteEndpoint.replace(':id', id);
 
         try {
-            await deleteEntity(`${API_URL_V2}${deleteUrl}`);
-            toast.success('Elemento eliminado con éxito.');
+            const result = await deleteEntity(`${API_URL_V2}${deleteUrl}`);
+            // El backend puede retornar { "message": "..." } en la respuesta exitosa
+            const successMessage = result.data?.message || 'Elemento eliminado con éxito.';
+            toast.success(successMessage);
             setData((prevData) => ({
                 ...prevData,
                 rows: prevData.rows.filter((item) => item.id !== id),
@@ -110,8 +112,17 @@ export default function EntityClient({ config }) {
             setSelectedRows((prevSelected) => prevSelected.filter((rowId) => rowId !== id));
         } catch (error) {
             let errorMessage = 'Hubo un error al intentar eliminar el elemento.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para eliminar este elemento.';
+            if (error instanceof Response) {
+                try {
+                    const errorData = await error.json();
+                    // El backend puede retornar { "error": "..." } o { "message": "...", "error": "..." }
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                } catch (jsonError) {
+                    // Si no se puede parsear el JSON, usar el mensaje por defecto según el status
+                    if (error.status === 403) {
+                        errorMessage = 'No tienes permiso para eliminar este elemento.';
+                    }
+                }
             } else if (error instanceof Error) {
                 errorMessage = error.message;
             }
@@ -181,8 +192,10 @@ export default function EntityClient({ config }) {
             : config.deleteEndpoint;
 
         try {
-            await deleteEntity(`${API_URL_V2}${deleteUrl}`, { ids: selectedRows });
-            toast.success('Elementos eliminados con éxito.');
+            const result = await deleteEntity(`${API_URL_V2}${deleteUrl}`, { ids: selectedRows });
+            // El backend puede retornar { "message": "..." } en la respuesta exitosa
+            const successMessage = result.data?.message || 'Elementos eliminados con éxito.';
+            toast.success(successMessage);
             // Filter out deleted rows and reset selectedRows state after successful deletion
             setData((prevData) => ({
                 ...prevData,
@@ -191,8 +204,19 @@ export default function EntityClient({ config }) {
             setSelectedRows([]);
         } catch (error) {
             let errorMessage = 'Hubo un error al intentar eliminar los elementos.';
-            if (error instanceof Response && error.status === 403) {
-                errorMessage = 'No tienes permiso para eliminar estos elementos.';
+            if (error instanceof Response) {
+                try {
+                    const errorData = await error.json();
+                    // El backend puede retornar { "error": "..." } o { "message": "...", "error": "..." }
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                } catch (jsonError) {
+                    // Si no se puede parsear el JSON, usar el mensaje por defecto según el status
+                    if (error.status === 403) {
+                        errorMessage = 'No tienes permiso para eliminar estos elementos.';
+                    } else if (error.status === 400) {
+                        errorMessage = 'No se han proporcionado IDs válidos.';
+                    }
+                }
             } else if (error instanceof Error) {
                 errorMessage = error.message;
             }

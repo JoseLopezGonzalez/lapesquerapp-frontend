@@ -239,7 +239,10 @@ export function deletePallet(palletId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar el palet');
+                    // Para errores 403, el backend retorna { "error": "..." }
+                    // Para otros errores, puede retornar { "message": "...", "error": "..." }
+                    const errorMessage = errorData.error || errorData.message || 'Error al eliminar el palet';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();

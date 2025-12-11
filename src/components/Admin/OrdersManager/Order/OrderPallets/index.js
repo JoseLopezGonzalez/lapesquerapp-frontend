@@ -163,37 +163,66 @@ const OrderPallets = () => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                    onClick={() => handleOpenEditPallet(pallet.id)}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="h-8 w-8 "
-                                                            onClick={() => handleUnlinkPallet(pallet.id)}
-                                                        >
-                                                            <Unlink className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Desvincular palet de pedido</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    className="h-8 w-8 "
-                                                    onClick={() => handleDeletePallet(pallet.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                {(() => {
+                                                    const receptionId = pallet?.receptionId;
+                                                    const belongsToReception = receptionId !== null && receptionId !== undefined;
+                                                    return (
+                                                        <>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <div>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8"
+                                                                            onClick={() => handleOpenEditPallet(pallet.id)}
+                                                                            disabled={!!belongsToReception}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                {belongsToReception && (
+                                                                    <TooltipContent>
+                                                                        <p>Este pallet pertenece a una recepción y no puede ser editado</p>
+                                                                    </TooltipContent>
+                                                                )}
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 "
+                                                                        onClick={() => handleUnlinkPallet(pallet.id)}
+                                                                        disabled={!!belongsToReception}
+                                                                    >
+                                                                        <Unlink className="h-4 w-4" />
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{belongsToReception ? "No se puede desvincular un pallet que pertenece a una recepción" : "Desvincular palet de pedido"}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="destructive"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 "
+                                                                        onClick={() => handleDeletePallet(pallet.id)}
+                                                                        disabled={!!belongsToReception}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{belongsToReception ? "No se puede eliminar un pallet que pertenece a una recepción" : "Eliminar pallet"}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                         </TableCell>
                                     </TableRow>

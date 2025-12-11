@@ -102,24 +102,31 @@ const PositionPopover = ({ position }) => {
                                             <span>{formatDecimalWeight(pallet.netWeight)}</span>
                                         </div>
                                         <div className="flex items-center ">
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-7 w-7 "
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleOnClickEditPallet(pallet.id);
-                                                        }}
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Editar palet</p>
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            {(() => {
+                                                const receptionId = pallet?.receptionId;
+                                                const belongsToReception = receptionId !== null && receptionId !== undefined;
+                                                return (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7 "
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOnClickEditPallet(pallet.id);
+                                                                }}
+                                                                disabled={!!belongsToReception}
+                                                            >
+                                                                <Edit className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{belongsToReception ? "Este pallet pertenece a una recepción y no puede ser editado" : "Editar palet"}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                );
+                                            })()}
                                             {/* Button  Reubicar Tooltip - Solo visible para usuarios que no son store_operator */}
                                             {!isStoreOperator && (
                                                 <Tooltip>

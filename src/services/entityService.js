@@ -36,7 +36,9 @@ export const deleteEntity = async (url, body = null) => {
     if (!response.ok) {
         throw response;
     }
-    return response;
+    // Retornar tanto la respuesta como el JSON parseado para acceder al mensaje
+    const data = await response.json();
+    return { response, data };
 };
 
 export const performAction = async (url, method, body) => {

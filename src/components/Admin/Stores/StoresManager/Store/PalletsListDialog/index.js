@@ -19,6 +19,7 @@ import { useStoreContext } from "@/context/StoreContext";
 import { formatDecimalWeight, formatDecimal } from "@/helpers/formats/numbers/formatNumbers";
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
 import { Edit, Printer } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
@@ -258,9 +259,31 @@ export function PalletsListDialog() {
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <div className="flex justify-end gap-1">
-                                                    <Button variant="outline" size="icon" onClick={() => openPalletDialog(pallet.id)}>
-                                                        <Edit className="h-4 w-4 " />
-                                                    </Button>
+                                                    {(() => {
+                                                        const receptionId = pallet?.receptionId;
+                                                        const belongsToReception = receptionId !== null && receptionId !== undefined;
+                                                        return (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <div>
+                                                                        <Button 
+                                                                            variant="outline" 
+                                                                            size="icon" 
+                                                                            onClick={() => openPalletDialog(pallet.id)}
+                                                                            disabled={!!belongsToReception}
+                                                                        >
+                                                                            <Edit className="h-4 w-4 " />
+                                                                        </Button>
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                {belongsToReception && (
+                                                                    <TooltipContent>
+                                                                        <p>Este pallet pertenece a una recepción y no puede ser editado</p>
+                                                                    </TooltipContent>
+                                                                )}
+                                                            </Tooltip>
+                                                        );
+                                                    })()}
                                                     <Button variant="" size="icon" onClick={() => openPalletLabelDialog(pallet.id)}>
                                                         <Printer className="h-4 w-4 " />
                                                     </Button>

@@ -135,13 +135,21 @@ export default function PalletCard({ pallet }) {
                                 Reubicar
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                            className='cursor-pointer'
-                            onClick={handleOnCLickEdit}
-                        >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                        </DropdownMenuItem>
+                        {(() => {
+                            const receptionId = pallet?.receptionId;
+                            const belongsToReception = receptionId !== null && receptionId !== undefined;
+                            return (
+                                <DropdownMenuItem
+                                    className={belongsToReception ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                                    onClick={belongsToReception ? undefined : handleOnCLickEdit}
+                                    disabled={!!belongsToReception}
+                                    title={belongsToReception ? "Este pallet pertenece a una recepción y no puede ser editado" : undefined}
+                                >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                </DropdownMenuItem>
+                            );
+                        })()}
                         {/* Solo mostrar "Quitar de esta posición" si NO es almacén fantasma y NO está sin ubicar */}
                         {!shouldHideRemoveOption && (
                             <>
