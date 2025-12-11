@@ -539,40 +539,81 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         disabled={isReadOnly}
                                                                     />
                                                                 </div>
-                                                                <div className="space-y-2 col-span-3">
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <Checkbox
-                                                                            id="show-pallet-weight"
-                                                                            checked={boxCreationData.showPalletWeight}
-                                                                            onCheckedChange={(checked) => {
-                                                                                boxCreationDataChange("showPalletWeight", checked);
-                                                                                if (!checked) {
-                                                                                    boxCreationDataChange("palletWeight", "");
-                                                                                }
-                                                                            }}
-                                                                            disabled={isReadOnly}
-                                                                        />
-                                                                        <Label
-                                                                            htmlFor="show-pallet-weight"
-                                                                            className="text-sm font-normal cursor-pointer"
-                                                                        >
-                                                                            Descontar peso del palet (soporte de madera)
-                                                                        </Label>
-                                                                    </div>
-                                                                    {boxCreationData.showPalletWeight && (
-                                                                        <div className="space-y-2">
-                                                                            <Label>Peso del Palet (kg)</Label>
-                                                                            <Input
-                                                                                type="number"
-                                                                                step="0.01"
-                                                                                placeholder="0.00"
-                                                                                value={boxCreationData.palletWeight}
-                                                                                onChange={(e) => {
-                                                                                    boxCreationDataChange("palletWeight", e.target.value);
+                                                                <div className="space-y-3 col-span-3">
+                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <Checkbox
+                                                                                id="show-pallet-weight"
+                                                                                checked={boxCreationData.showPalletWeight}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    boxCreationDataChange("showPalletWeight", checked);
+                                                                                    if (!checked) {
+                                                                                        boxCreationDataChange("palletWeight", "");
+                                                                                    }
                                                                                 }}
-                                                                                className="text-right"
                                                                                 disabled={isReadOnly}
                                                                             />
+                                                                            <Label
+                                                                                htmlFor="show-pallet-weight"
+                                                                                className="text-sm font-normal cursor-pointer"
+                                                                            >
+                                                                                Descontar peso del palet
+                                                                            </Label>
+                                                                        </div>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <Checkbox
+                                                                                id="show-box-tare"
+                                                                                checked={boxCreationData.showBoxTare}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    boxCreationDataChange("showBoxTare", checked);
+                                                                                    if (!checked) {
+                                                                                        boxCreationDataChange("boxTare", "");
+                                                                                    }
+                                                                                }}
+                                                                                disabled={isReadOnly}
+                                                                            />
+                                                                            <Label
+                                                                                htmlFor="show-box-tare"
+                                                                                className="text-sm font-normal cursor-pointer"
+                                                                            >
+                                                                                Descontar tara de cajas
+                                                                            </Label>
+                                                                        </div>
+                                                                    </div>
+                                                                    {(boxCreationData.showPalletWeight || boxCreationData.showBoxTare) && (
+                                                                        <div className="grid grid-cols-2 gap-4">
+                                                                            {boxCreationData.showPalletWeight && (
+                                                                                <div className="space-y-2">
+                                                                                    <Label>Peso del Palet (kg)</Label>
+                                                                                    <Input
+                                                                                        type="number"
+                                                                                        step="0.01"
+                                                                                        placeholder="0.00"
+                                                                                        value={boxCreationData.palletWeight}
+                                                                                        onChange={(e) => {
+                                                                                            boxCreationDataChange("palletWeight", e.target.value);
+                                                                                        }}
+                                                                                        className="text-right"
+                                                                                        disabled={isReadOnly}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
+                                                                            {boxCreationData.showBoxTare && (
+                                                                                <div className="space-y-2">
+                                                                                    <Label>Tara por Caja (kg)</Label>
+                                                                                    <Input
+                                                                                        type="number"
+                                                                                        step="0.01"
+                                                                                        placeholder="0.00"
+                                                                                        value={boxCreationData.boxTare}
+                                                                                        onChange={(e) => {
+                                                                                            boxCreationDataChange("boxTare", e.target.value);
+                                                                                        }}
+                                                                                        className="text-right"
+                                                                                        disabled={isReadOnly}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                 </div>
