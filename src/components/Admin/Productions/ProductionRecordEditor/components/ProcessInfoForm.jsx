@@ -88,13 +88,30 @@ export const ProcessInfoForm = ({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
-                                {existingRecords
-                                    .filter(record => record?.id != null && record.id !== currentRecordId)
-                                    .map(record => (
-                                        <SelectItem key={record.id} value={record.id.toString()}>
-                                            Proceso #{record.id} {record.process?.name ? `- ${record.process.name}` : ''} {record.name ? `(${record.name})` : ''}
-                                        </SelectItem>
-                                    ))}
+                                {existingRecords && existingRecords.length > 0 ? (
+                                    existingRecords
+                                        .filter(record => {
+                                            // La API retorna 'value' en lugar de 'id'
+                                            const recordId = record?.value ?? record?.id
+                                            // Comparar como strings para evitar problemas de tipo
+                                            return recordId != null && String(recordId) !== String(currentRecordId)
+                                        })
+                                        .map(record => {
+                                            // La API retorna 'value' y 'label' directamente
+                                            const recordId = record?.value ?? record?.id
+                                            const label = record?.label || `Proceso #${recordId}`
+                                            
+                                            return (
+                                                <SelectItem key={recordId} value={String(recordId)}>
+                                                    {label}
+                                                </SelectItem>
+                                            )
+                                        })
+                                ) : (
+                                    <SelectItem value="none" disabled>
+                                        No hay procesos disponibles
+                                    </SelectItem>
+                                )}
                             </SelectContent>
                         </Select>
                     </div>

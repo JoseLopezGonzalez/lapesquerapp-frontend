@@ -288,14 +288,15 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
     const loadAvailableOutputs = async () => {
         if (!hasParent) {
             alert('Este proceso no tiene un proceso padre. Selecciona un proceso padre en el formulario primero.')
-            return
+            return []
         }
 
         try {
             setLoadingAvailableOutputs(true)
             const token = session.user.accessToken
             const response = await getAvailableOutputs(productionRecordId, token)
-            const outputs = response.data || []
+            // La respuesta puede venir como {data: [...]} o directamente como array
+            const outputs = Array.isArray(response) ? response : (response?.data || response || [])
             // El backend ahora devuelve el producto completo, pero si no viene, lo enriquecemos
             const enrichedOutputs = outputs.map(output => {
                 // Si el output ya tiene el producto con nombre, usarlo directamente
@@ -313,10 +314,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                 }
             })
             setAvailableOutputs(enrichedOutputs)
+            return enrichedOutputs
         } catch (err) {
             console.error('Error loading available outputs:', err)
             alert(err.message || 'Error al cargar los outputs disponibles')
             setAvailableOutputs([])
+            return []
         } finally {
             setLoadingAvailableOutputs(false)
         }
@@ -516,12 +519,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
 
         try {
             setAddingFromParent(true)
-            // Asegurarse de que los outputs disponibles estén cargados
-            if (availableOutputs.length === 0) {
-                await loadAvailableOutputs()
-            }
+            // Cargar los outputs disponibles (siempre cargar para tener datos frescos)
+            const loadedOutputs = await loadAvailableOutputs()
 
-            if (availableOutputs.length === 0) {
+            if (!loadedOutputs || loadedOutputs.length === 0) {
                 alert('No hay outputs disponibles del proceso padre.')
                 return
             }
@@ -544,7 +545,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             })
 
             // Filtrar outputs que no están ya añadidos y tienen disponibilidad
-            const outputsToAdd = availableOutputs.filter(output => {
+            const outputsToAdd = loadedOutputs.filter(output => {
                 const outputId = output.output?.id?.toString()
                 if (!outputId) return false
                 if (existingOutputIds.has(outputId)) return false
