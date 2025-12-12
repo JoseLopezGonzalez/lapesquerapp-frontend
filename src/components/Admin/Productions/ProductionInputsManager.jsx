@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react'
 import { 
     getProductionInputs, 
     createMultipleProductionInputs, 
-    deleteProductionInput
+    deleteProductionInput,
+    deleteMultipleProductionInputs
 } from '@/services/productionService'
 import { getPallet, searchPalletsByLot } from '@/services/palletService'
 import { formatWeight } from '@/helpers/production/formatters'
@@ -385,10 +386,10 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             const token = session.user.accessToken
             const boxIds = selectedBoxes.map(box => box.boxId)
 
-            // Si hay inputs existentes, eliminarlos todos primero
+            // Si hay inputs existentes, eliminarlos todos primero usando el endpoint batch
             if (inputs.length > 0) {
-                const deletePromises = inputs.map(input => deleteProductionInput(input.id, token))
-                await Promise.all(deletePromises)
+                const inputIds = inputs.map(input => input.id)
+                await deleteMultipleProductionInputs(inputIds, token)
             }
 
             // Crear las nuevas cajas seleccionadas
@@ -475,10 +476,10 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
 
         try {
             const token = session.user.accessToken
+            const inputIds = inputs.map(input => input.id)
             
-            // Eliminar todos los inputs en paralelo
-            const deletePromises = inputs.map(input => deleteProductionInput(input.id, token))
-            await Promise.all(deletePromises)
+            // Eliminar todos los inputs usando el endpoint batch
+            await deleteMultipleProductionInputs(inputIds, token)
             
             // Recargar inputs del servidor para tener los datos actualizados
             const response = await getProductionInputs(token, { production_record_id: productionRecordId })

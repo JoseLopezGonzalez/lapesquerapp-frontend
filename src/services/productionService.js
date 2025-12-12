@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from "@/lib/api/apiHelpers";
+import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData, apiRequest } from "@/lib/api/apiHelpers";
 import { API_URL_V2 } from "@/configs/config";
 import {
     normalizeProductionRecord,
@@ -303,6 +303,22 @@ export function createMultipleProductionInputs(productionRecordId, boxIds, token
  */
 export function deleteProductionInput(inputId, token) {
     return apiDelete(`${API_URL_V2}production-inputs/${inputId}`, token)
+}
+
+/**
+ * Elimina múltiples production inputs
+ * @param {Array<number|string>} inputIds - Array de IDs de los inputs a eliminar
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Respuesta del servidor
+ */
+export function deleteMultipleProductionInputs(inputIds, token) {
+    return apiRequest(`${API_URL_V2}production-inputs/multiple`, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ input_ids: inputIds }),
+    })
 }
 
 // ==================== PRODUCTION OUTPUTS ====================
