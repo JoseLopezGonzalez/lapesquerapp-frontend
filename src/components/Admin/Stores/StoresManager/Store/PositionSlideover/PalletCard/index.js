@@ -166,13 +166,12 @@ export default function PalletCard({ pallet }) {
                             const belongsToReception = receptionId !== null && receptionId !== undefined;
                             return (
                                 <DropdownMenuItem
-                                    className={belongsToReception ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                                    onClick={belongsToReception ? undefined : handleOnCLickEdit}
-                                    disabled={!!belongsToReception}
-                                    title={belongsToReception ? "Este pallet pertenece a una recepción y no puede ser editado" : undefined}
+                                    className="cursor-pointer"
+                                    onClick={handleOnCLickEdit}
+                                    title={belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : undefined}
                                 >
                                     <Edit className="h-4 w-4 mr-2" />
-                                    Editar
+                                    {belongsToReception ? "Ver palet" : "Editar"}
                                 </DropdownMenuItem>
                             );
                         })()}

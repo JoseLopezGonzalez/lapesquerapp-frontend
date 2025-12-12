@@ -116,13 +116,12 @@ const PositionPopover = ({ position }) => {
                                                                     e.stopPropagation();
                                                                     handleOnClickEditPallet(pallet.id);
                                                                 }}
-                                                                disabled={!!belongsToReception}
                                                             >
                                                                 <Edit className="h-3.5 w-3.5" />
                                                             </Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>{belongsToReception ? "Este pallet pertenece a una recepción y no puede ser editado" : "Editar palet"}</p>
+                                                            <p>{belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 );

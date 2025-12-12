@@ -270,17 +270,14 @@ export function PalletsListDialog() {
                                                                             variant="outline" 
                                                                             size="icon" 
                                                                             onClick={() => openPalletDialog(pallet.id)}
-                                                                            disabled={!!belongsToReception}
                                                                         >
                                                                             <Edit className="h-4 w-4 " />
                                                                         </Button>
                                                                     </div>
                                                                 </TooltipTrigger>
-                                                                {belongsToReception && (
-                                                                    <TooltipContent>
-                                                                        <p>Este pallet pertenece a una recepción y no puede ser editado</p>
-                                                                    </TooltipContent>
-                                                                )}
+                                                                <TooltipContent>
+                                                                    <p>{belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}</p>
+                                                                </TooltipContent>
                                                             </Tooltip>
                                                         );
                                                     })()}

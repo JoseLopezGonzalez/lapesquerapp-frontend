@@ -258,7 +258,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                             <Alert className="mb-4 border-orange-200 bg-orange-50">
                                 <AlertCircle className="h-4 w-4 text-orange-600" />
                                 <AlertDescription className="flex items-center gap-2">
-                                    <span className="text-orange-800">Este palet pertenece a una recepción y no puede ser editado.</span>
+                                    <span className="text-orange-800">Este palet pertenece a una recepción. Puedes visualizar el contenido pero no editarlo.</span>
                                     {receptionId && (
                                         <Link 
                                             href={`/admin/raw-material-receptions/${receptionId}/edit`}

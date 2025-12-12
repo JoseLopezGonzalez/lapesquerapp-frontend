@@ -55,7 +55,7 @@ export default function PalletDialog({
                         <DialogTitle className="flex items-center gap-2 flex-wrap">
                             <span>
                                 {palletId && palletId !== 'new' && !palletId?.toString().startsWith('temp-') 
-                                    ? `Editar Palet #${palletId}` 
+                                    ? (belongsToReception ? `Ver Palet #${palletId}` : `Editar Palet #${palletId}`)
                                     : "Nuevo Palet"}
                             </span>
                             {belongsToReception && receptionId && (

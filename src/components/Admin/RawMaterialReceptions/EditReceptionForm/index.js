@@ -28,6 +28,7 @@ import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
 import AllPalletsLabelDialog from '@/components/Admin/RawMaterialReceptions/AllPalletsLabelDialog';
 import ReceptionSummaryDialog from '@/components/Admin/RawMaterialReceptions/ReceptionSummaryDialog';
+import ReceptionPrintDialog from '@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { getPallet } from '@/services/palletService';
@@ -61,6 +62,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
     const [receptionPrices, setReceptionPrices] = useState([]);
     const [isAllPalletsLabelDialogOpen, setIsAllPalletsLabelDialogOpen] = useState(false);
+    const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
     // Store original box IDs from backend to distinguish between real and temporary IDs
     const [originalBoxIds, setOriginalBoxIds] = useState(new Set());
     
@@ -497,23 +499,33 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         <p className="text-sm text-muted-foreground">#{receptionId}</p>
                     )}
                 </div>
-                <Button
-                    type="button"
-                    onClick={handleSubmit(handleUpdate)}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? (
-                        <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Guardando
-                        </>
-                    ) : (
-                        <>
-                            Guardar cambios
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </>
-                    )}
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsPrintDialogOpen(true)}
+                    >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Imprimir
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleSubmit(handleUpdate)}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Guardando
+                            </>
+                        ) : (
+                            <>
+                                Guardar cambios
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit(handleUpdate)} className="flex flex-col gap-8">
@@ -1120,6 +1132,34 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     pallets={temporalPallets}
                 />
             )}
+
+            {/* ReceptionPrintDialog para imprimir la recepción */}
+            <ReceptionPrintDialog
+                isOpen={isPrintDialogOpen}
+                onClose={() => setIsPrintDialogOpen(false)}
+                receptionId={receptionId}
+                supplier={(() => {
+                    const supplierId = watch('supplier');
+                    if (!supplierId) return null;
+                    const supplier = supplierOptions.find(s => s.value === supplierId || s.id === supplierId);
+                    return supplier || { name: supplierId };
+                })()}
+                date={watch('date')}
+                notes={watch('notes')}
+                details={(() => {
+                    const formDetails = watch('details') || [];
+                    return formDetails.map(detail => {
+                        const productId = detail.product;
+                        const product = productOptions.find(p => p.value === productId || p.id === productId);
+                        return {
+                            ...detail,
+                            productName: product?.label || product?.name || product?.alias || `Producto ${productId}`
+                        };
+                    });
+                })()}
+                pallets={temporalPallets}
+                creationMode={creationMode}
+            />
         </div>
     );
 };
