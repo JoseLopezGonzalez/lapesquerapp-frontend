@@ -469,7 +469,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         return (
             <div className="w-full h-full p-6">
                 <div className="flex justify-between items-start mb-6">
-                    <h1 className="text-2xl font-semibold mb-4">Editar recepción de materia prima</h1>
+                    <div>
+                        <h1 className="text-2xl font-semibold mb-4">Editar recepción de materia prima</h1>
+                        {receptionId && (
+                            <p className="text-sm text-muted-foreground">#{receptionId}</p>
+                        )}
+                    </div>
                 </div>
                 <Alert variant="destructive" className="mt-4">
                     <AlertTriangle className="h-4 w-4" />
@@ -486,7 +491,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         <div className="w-full h-full p-6">
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
-                <h1 className="text-2xl font-semibold mb-4">Editar recepción de materia prima</h1>
+                <div>
+                    <h1 className="text-2xl font-semibold mb-4">Editar recepción de materia prima</h1>
+                    {receptionId && (
+                        <p className="text-sm text-muted-foreground">#{receptionId}</p>
+                    )}
+                </div>
                 <Button
                     type="button"
                     onClick={handleSubmit(handleUpdate)}
