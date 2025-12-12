@@ -290,3 +290,37 @@ export function unlinkPalletFromOrder(palletId, token) {
         .finally(() => {
         });
 }
+
+/**
+ * Buscar palets por lote.
+ * Retorna todos los palets que tienen cajas con el lote especificado.
+ * @param {string} lot - Lote a buscar
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Object>} - Objeto con los palets encontrados y sus cajas
+ */
+export function searchPalletsByLot(lot, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/search-by-lot?lot=${encodeURIComponent(lot)}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al buscar palets por lote');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data || data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}

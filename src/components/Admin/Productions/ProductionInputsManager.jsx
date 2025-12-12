@@ -7,7 +7,7 @@ import {
     createMultipleProductionInputs, 
     deleteProductionInput
 } from '@/services/productionService'
-import { getPallet } from '@/services/palletService'
+import { getPallet, searchPalletsByLot } from '@/services/palletService'
 import { formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -219,34 +219,109 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
 
     const handleSearchPallet = async () => {
         if (!palletSearch.trim()) {
-            alert('Por favor ingresa un ID de palet')
+            alert('Por favor ingresa un ID de palet o un lote')
             return
         }
 
-        const palletId = palletSearch.trim()
-
-        // Verificar si el palet ya está cargado
-        if (loadedPallets.some(p => p.id.toString() === palletId)) {
-            alert('Este palet ya está cargado')
-            setPalletSearch('')
-            return
-        }
-
+        const searchTerm = palletSearch.trim()
+        
+        // Detectar si es búsqueda por ID (solo números) o por lote (puede contener letras)
+        const isNumericId = /^\d+$/.test(searchTerm)
+        
         try {
             setLoadingPallet(true)
             const token = session.user.accessToken
-            const pallet = await getPallet(palletId, token)
-            setLoadedPallets(prev => {
-                // Si es el primer palet, seleccionarlo automáticamente
-                if (prev.length === 0) {
-                    setSelectedPalletId(pallet.id)
+
+            if (isNumericId) {
+                // Búsqueda por ID de palet (comportamiento original)
+                const palletId = searchTerm
+
+                // Verificar si el palet ya está cargado
+                if (loadedPallets.some(p => p.id.toString() === palletId)) {
+                    alert('Este palet ya está cargado')
+                    setPalletSearch('')
+                    return
                 }
-                return [...prev, pallet]
-            })
+
+                const pallet = await getPallet(palletId, token)
+                setLoadedPallets(prev => {
+                    // Si es el primer palet, seleccionarlo automáticamente
+                    if (prev.length === 0) {
+                        setSelectedPalletId(pallet.id)
+                    }
+                    return [...prev, pallet]
+                })
+            } else {
+                // Búsqueda por lote usando el nuevo endpoint optimizado
+                const lotToSearch = searchTerm
+                
+                // Una sola llamada al endpoint optimizado
+                const searchResult = await searchPalletsByLot(lotToSearch, token)
+                const pallets = searchResult?.pallets || []
+
+                if (pallets.length === 0) {
+                    alert(`No se encontraron palets con el lote "${lotToSearch}"`)
+                    setPalletSearch('')
+                    return
+                }
+
+                // Filtrar palets que ya están cargados
+                const newPallets = pallets.filter(p => 
+                    !loadedPallets.some(loaded => loaded.id === p.id)
+                )
+
+                if (newPallets.length === 0) {
+                    alert('Todos los palets con este lote ya están cargados')
+                    setPalletSearch('')
+                    return
+                }
+
+                // Agregar los nuevos palets
+                setLoadedPallets(prev => {
+                    const updated = [...prev, ...newPallets]
+                    // Si es el primer palet, seleccionarlo automáticamente
+                    if (prev.length === 0 && updated.length > 0) {
+                        setSelectedPalletId(updated[0].id)
+                    }
+                    return updated
+                })
+
+                // Seleccionar automáticamente todas las cajas con el lote buscado
+                // El endpoint ya retorna solo las cajas disponibles con ese lote
+                const boxesToSelect = []
+                newPallets.forEach(pallet => {
+                    pallet.boxes?.forEach(box => {
+                        if (
+                            box.lot && 
+                            box.lot.toString().toLowerCase() === lotToSearch.toLowerCase() &&
+                            isBoxAvailable(box) &&
+                            !isBoxSelected(box.id, pallet.id)
+                        ) {
+                            boxesToSelect.push({
+                                boxId: box.id,
+                                palletId: pallet.id
+                            })
+                        }
+                    })
+                })
+
+                if (boxesToSelect.length > 0) {
+                    setSelectedBoxes(prev => {
+                        const newBoxes = [...prev]
+                        boxesToSelect.forEach(box => {
+                            if (!newBoxes.some(b => b.boxId === box.boxId && b.palletId === box.palletId)) {
+                                newBoxes.push(box)
+                            }
+                        })
+                        return newBoxes
+                    })
+                }
+            }
+            
             setPalletSearch('')
         } catch (err) {
-            console.error('Error loading pallet:', err)
-            alert(err.message || 'Error al cargar el palet')
+            console.error('Error searching pallet:', err)
+            alert(err.message || 'Error al buscar palets')
         } finally {
             setLoadingPallet(false)
         }
@@ -881,7 +956,7 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="pallet-search"
-                                        placeholder="Buscar por ID del palet..."
+                                        placeholder="Buscar por ID del palet o lote..."
                                         value={palletSearch}
                                         onChange={(e) => setPalletSearch(e.target.value)}
                                         onKeyDown={(e) => {

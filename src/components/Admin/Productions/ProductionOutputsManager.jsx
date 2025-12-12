@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs } from '@/services/productionService'
+import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs, getProductionInputs } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
@@ -55,6 +55,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const [newRows, setNewRows] = useState([])
     const [saving, setSaving] = useState(false)
     const [copyingFromConsumption, setCopyingFromConsumption] = useState(false)
+    
+    // Estado para el diálogo de selección de fuente
+    const [sourceSelectionDialogOpen, setSourceSelectionDialogOpen] = useState(false)
+    const [fromParentConsumption, setFromParentConsumption] = useState(false)
+    const [fromRawMaterialStock, setFromRawMaterialStock] = useState(false)
     
     // Estado para el diálogo de productos disponibles
     const [availableProductsDialogOpen, setAvailableProductsDialogOpen] = useState(false)
@@ -328,42 +333,19 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         }])
     }
 
-    const handleCopyFromParentConsumptions = async () => {
+    // Función para abrir el diálogo de selección de fuente
+    const handleOpenSourceSelectionDialog = () => {
+        setSourceSelectionDialogOpen(true)
+        setFromParentConsumption(false)
+        setFromRawMaterialStock(false)
+    }
+
+    // Función principal que copia desde las fuentes seleccionadas
+    const handleCopyFromConsumptions = async (useParent = false, useStock = false) => {
         try {
             setCopyingFromConsumption(true)
             const token = session.user.accessToken
             
-            // Obtener el record para verificar si tiene padre
-            const record = await getProductionRecord(productionRecordId, token)
-            const hasParent = record.parent_record_id || record.parentRecordId
-            
-            if (!hasParent) {
-                alert('Este proceso no tiene un proceso padre. No se pueden copiar consumos.')
-                return
-            }
-
-            // Obtener los consumos del padre
-            let consumptions = []
-            if (record.parentOutputConsumptions) {
-                consumptions = record.parentOutputConsumptions
-            } else {
-                try {
-                    const consumptionsResponse = await getProductionOutputConsumptions(token, {
-                        production_record_id: productionRecordId
-                    })
-                    consumptions = consumptionsResponse.data || []
-                } catch (err) {
-                    console.warn('Error loading consumptions:', err)
-                    alert('Error al cargar los consumos del proceso padre.')
-                    return
-                }
-            }
-
-            if (consumptions.length === 0) {
-                alert('El proceso padre no tiene consumos para copiar.')
-                return
-            }
-
             // Obtener los IDs de productos que ya están en outputs existentes o en nuevas líneas
             const existingProductIds = new Set()
             
@@ -381,49 +363,172 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 }
             })
 
-            // Filtrar consumos que no están ya añadidos
-            const consumptionsToAdd = consumptions.filter(consumption => {
-                const productId = consumption.productionOutput?.product?.id || 
-                                 consumption.productionOutput?.productId ||
-                                 consumption.production_output?.product?.id ||
-                                 consumption.production_output?.product_id
-                
-                if (!productId) return false
-                return !existingProductIds.has(productId.toString())
-            })
+            const allNewRows = []
 
-            if (consumptionsToAdd.length === 0) {
-                alert('Todos los productos de los consumos del padre ya están añadidos como salidas.')
+            // Copiar desde consumo de proceso padre
+            if (useParent) {
+                // Obtener el record para verificar si tiene padre
+                const record = await getProductionRecord(productionRecordId, token)
+                const hasParent = record.parent_record_id || record.parentRecordId
+                
+                if (!hasParent) {
+                    alert('Este proceso no tiene un proceso padre. No se pueden copiar consumos del proceso padre.')
+                } else {
+                    // Obtener los consumos del padre
+                    let consumptions = []
+                    if (record.parentOutputConsumptions) {
+                        consumptions = record.parentOutputConsumptions
+                    } else {
+                        try {
+                            const consumptionsResponse = await getProductionOutputConsumptions(token, {
+                                production_record_id: productionRecordId
+                            })
+                            consumptions = consumptionsResponse.data || []
+                        } catch (err) {
+                            console.warn('Error loading consumptions:', err)
+                            alert('Error al cargar los consumos del proceso padre.')
+                        }
+                    }
+
+                    if (consumptions.length > 0) {
+                        // Filtrar consumos que no están ya añadidos
+                        const consumptionsToAdd = consumptions.filter(consumption => {
+                            const productId = consumption.productionOutput?.product?.id || 
+                                             consumption.productionOutput?.productId ||
+                                             consumption.production_output?.product?.id ||
+                                             consumption.production_output?.product_id
+                            
+                            if (!productId) return false
+                            return !existingProductIds.has(productId.toString())
+                        })
+
+                        // Crear nuevas líneas para cada consumo
+                        const parentRows = consumptionsToAdd.map((consumption, index) => {
+                            const productId = consumption.productionOutput?.product?.id || 
+                                             consumption.productionOutput?.productId ||
+                                             consumption.production_output?.product?.id ||
+                                             consumption.production_output?.product_id
+                            
+                            const weight = getConsumedWeight(consumption)
+                            const boxes = getConsumedBoxes(consumption)
+                            
+                            // Agregar a existingProductIds para evitar duplicados con stock
+                            existingProductIds.add(productId.toString())
+                            
+                            return {
+                                id: `new-parent-${Date.now()}-${index}-${productId}`,
+                                product_id: productId?.toString() || '',
+                                boxes: boxes > 0 ? boxes.toString() : '',
+                                weight_kg: weight > 0 ? parseFloat(weight).toFixed(2) : '',
+                                isNew: true
+                            }
+                        })
+
+                        allNewRows.push(...parentRows)
+                    }
+                }
+            }
+
+            // Copiar desde materia prima en stock (inputs del record)
+            if (useStock) {
+                try {
+                    // Obtener los inputs (consumos de materia prima) del record actual
+                    const inputsResponse = await getProductionInputs(token, {
+                        production_record_id: productionRecordId
+                    })
+                    const inputs = inputsResponse.data || []
+                    
+                    if (inputs.length === 0) {
+                        alert('Este proceso no tiene consumos de materia prima desde stock registrados.')
+                    } else {
+                        // Agrupar inputs por producto
+                        const productsMap = {}
+                        
+                        inputs.forEach(input => {
+                            const product = input.box?.product || input.box?.productId
+                            if (!product) return
+                            
+                            const productId = product.id?.toString() || product.toString()
+                            if (!productId) return
+                            
+                            if (!productsMap[productId]) {
+                                productsMap[productId] = {
+                                    productId: productId,
+                                    boxes: 0,
+                                    weight: 0
+                                }
+                            }
+                            
+                            // Contar cajas (cada input es una caja)
+                            productsMap[productId].boxes += 1
+                            
+                            // Sumar peso neto
+                            const weight = parseFloat(input.box?.netWeight || 0)
+                            productsMap[productId].weight += weight
+                        })
+                        
+                        // Filtrar productos que no están ya añadidos y crear líneas
+                        const stockRows = Object.values(productsMap)
+                            .filter(product => {
+                                if (!product.productId) return false
+                                return !existingProductIds.has(product.productId)
+                            })
+                            .map((product, index) => {
+                                const productId = product.productId
+                                
+                                // Agregar a existingProductIds para evitar duplicados
+                                existingProductIds.add(productId)
+                                
+                                return {
+                                    id: `new-stock-${Date.now()}-${index}-${productId}`,
+                                    product_id: productId,
+                                    boxes: product.boxes.toString(),
+                                    weight_kg: product.weight > 0 ? parseFloat(product.weight).toFixed(2) : '',
+                                    isNew: true
+                                }
+                            })
+                        
+                        if (stockRows.length > 0) {
+                            allNewRows.push(...stockRows)
+                        } else {
+                            alert('Todos los productos de los consumos de materia prima ya están añadidos como salidas.')
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error loading raw material inputs:', err)
+                    alert('Error al cargar los consumos de materia prima desde stock.')
+                }
+            }
+
+            if (allNewRows.length === 0) {
+                if (useParent && useStock) {
+                    alert('No se encontraron productos nuevos para agregar desde las fuentes seleccionadas.')
+                } else if (useParent) {
+                    alert('Todos los productos de los consumos del padre ya están añadidos como salidas.')
+                } else if (useStock) {
+                    alert('No hay productos disponibles en stock o todos ya están añadidos como salidas.')
+                }
                 return
             }
 
-            // Crear nuevas líneas para cada consumo
-            const newRowsToAdd = consumptionsToAdd.map((consumption, index) => {
-                const productId = consumption.productionOutput?.product?.id || 
-                                 consumption.productionOutput?.productId ||
-                                 consumption.production_output?.product?.id ||
-                                 consumption.production_output?.product_id
-                
-                const weight = getConsumedWeight(consumption)
-                const boxes = getConsumedBoxes(consumption)
-                
-                return {
-                    id: `new-${Date.now()}-${index}-${productId}`,
-                    product_id: productId?.toString() || '',
-                    boxes: boxes > 0 ? boxes.toString() : '',
-                    weight_kg: weight > 0 ? weight.toString() : '',
-                    isNew: true
-                }
-            })
-
-            // Añadir las nuevas líneas
-            setNewRows([...newRows, ...newRowsToAdd])
+            // Añadir todas las nuevas líneas
+            setNewRows([...newRows, ...allNewRows])
+            setSourceSelectionDialogOpen(false)
         } catch (err) {
-            console.error('Error copying from parent consumptions:', err)
-            alert(err.message || 'Error al copiar los consumos del proceso padre')
+            console.error('Error copying from consumptions:', err)
+            alert(err.message || 'Error al copiar desde las fuentes seleccionadas')
         } finally {
             setCopyingFromConsumption(false)
         }
+    }
+
+    // Función para confirmar y ejecutar la copia desde las fuentes seleccionadas
+    const handleConfirmSourceSelection = () => {
+        if (!fromParentConsumption && !fromRawMaterialStock) {
+            alert('Por favor selecciona al menos una fuente.')
+            return
+        }
+        handleCopyFromConsumptions(fromParentConsumption, fromRawMaterialStock)
     }
 
     const removeRow = (id) => {
@@ -605,7 +710,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     id: `new-${Date.now()}-${index}-${product.product.id}`,
                     product_id: product.product.id.toString(),
                     boxes: (product.totalBoxes || 0).toString(),
-                    weight_kg: (product.totalWeight || 0).toString(),
+                    weight_kg: product.totalWeight > 0 ? parseFloat(product.totalWeight).toFixed(2) : '0.00',
                     isNew: true
                 }))
                 
@@ -773,6 +878,86 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 </Button>
             </DialogTrigger>
             {addDialogContent}
+        </Dialog>
+    )
+
+    // Diálogo de selección de fuente
+    const sourceSelectionDialog = (
+        <Dialog open={sourceSelectionDialogOpen} onOpenChange={setSourceSelectionDialogOpen}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Seleccionar Fuente de Datos</DialogTitle>
+                    <DialogDescription>
+                        Selecciona desde dónde deseas añadir automáticamente las salidas
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                    <div className="flex items-start space-x-3 p-4 border rounded-lg">
+                        <Checkbox
+                            id="from-parent-consumption"
+                            checked={fromParentConsumption}
+                            onCheckedChange={setFromParentConsumption}
+                        />
+                        <div className="flex-1 space-y-1">
+                            <label
+                                htmlFor="from-parent-consumption"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                                Consumo de proceso padre
+                            </label>
+                            <p className="text-xs text-muted-foreground">
+                                Añade productos, pesos y cajas desde los consumos del proceso padre
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-4 border rounded-lg">
+                        <Checkbox
+                            id="from-raw-material-stock"
+                            checked={fromRawMaterialStock}
+                            onCheckedChange={setFromRawMaterialStock}
+                        />
+                        <div className="flex-1 space-y-1">
+                            <label
+                                htmlFor="from-raw-material-stock"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                                Consumo de materia prima desde stock
+                            </label>
+                            <p className="text-xs text-muted-foreground">
+                                Añade productos desde los consumos de materia prima registrados en este proceso
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                    <Button
+                        variant="outline"
+                        onClick={() => setSourceSelectionDialogOpen(false)}
+                        disabled={copyingFromConsumption}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={handleConfirmSourceSelection}
+                        disabled={copyingFromConsumption || (!fromParentConsumption && !fromRawMaterialStock)}
+                    >
+                        {copyingFromConsumption ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Añadiendo...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Añadir
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </DialogContent>
         </Dialog>
     )
 
@@ -1142,7 +1327,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button
-                                            onClick={handleCopyFromParentConsumptions}
+                                            onClick={handleOpenSourceSelectionDialog}
                                             variant="default"
                                             size="sm"
                                             disabled={copyingFromConsumption}
@@ -1162,7 +1347,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-xs">
                                         <p className="text-sm">
-                                            Añade automáticamente todas las líneas de salida copiando los productos, pesos y cajas de los consumos del proceso padre. Solo se añaden los productos que no están ya en la lista.
+                                            Añade automáticamente líneas de salida desde consumo de proceso padre o materia prima en stock. Puedes seleccionar una o ambas fuentes.
                                         </p>
                                     </TooltipContent>
                                 </Tooltip>
@@ -1311,6 +1496,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 {manageDialog}
                 {addDialog}
                 {editDialog}
+                {sourceSelectionDialog}
                 {availableProductsDialog}
                 <Card className="h-fit">
                     <CardHeader>
@@ -1341,6 +1527,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             {manageDialog}
             {addButton}
             {editDialog}
+            {sourceSelectionDialog}
             {availableProductsDialog}
             {mainContent}
         </div>
