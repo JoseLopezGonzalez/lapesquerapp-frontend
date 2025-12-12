@@ -463,6 +463,44 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         }
     }
 
+    const handleDeleteAllInputs = async () => {
+        if (inputs.length === 0) {
+            return
+        }
+
+        const confirmMessage = `¿Estás seguro de que deseas eliminar todo el consumo?\n\nSe eliminarán ${inputs.length} ${inputs.length === 1 ? 'entrada' : 'entradas'} de materia prima.`
+        if (!confirm(confirmMessage)) {
+            return
+        }
+
+        try {
+            const token = session.user.accessToken
+            
+            // Eliminar todos los inputs en paralelo
+            const deletePromises = inputs.map(input => deleteProductionInput(input.id, token))
+            await Promise.all(deletePromises)
+            
+            // Recargar inputs del servidor para tener los datos actualizados
+            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
+            const updatedInputs = response.data || []
+            
+            // Actualizar estado local inmediatamente
+            setInputs(updatedInputs)
+            
+            // Actualizar el contexto con actualización optimista (sin recarga completa inmediata)
+            if (updateInputs) {
+                await updateInputs(updatedInputs, false) // Actualización optimista, sin recargar completo
+            } else if (updateRecord) {
+                await updateRecord()
+            } else if (onRefresh) {
+                onRefresh()
+            }
+        } catch (err) {
+            console.error('Error deleting all inputs:', err)
+            alert(err.message || 'Error al eliminar el consumo')
+        }
+    }
+
 
 
     // Calcular resumen agrupado por palet
@@ -1793,6 +1831,25 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                     </TooltipProvider>
                 )
             })()}
+            {inputs.length > 0 && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-9 w-9"
+                                onClick={handleDeleteAllInputs}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Eliminar todo el consumo</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
         <Button
             onClick={() => {
                 setAddDialogOpen(true)
@@ -1871,6 +1928,25 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                     </TooltipProvider>
                                 )
                             })()}
+                            {inputs.length > 0 && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                className="h-9 w-9"
+                                                onClick={handleDeleteAllInputs}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Eliminar todo el consumo</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
                         <DialogTrigger asChild>
                             <Button>
                                 {inputs.length > 0 ? (
@@ -1897,40 +1973,61 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                 <div className="flex items-center justify-between">
                     
                     {!renderInCard && (
-                        <Dialog open={addDialogOpen} onOpenChange={(open) => {
-                            setAddDialogOpen(open)
-                            if (open) {
-                                loadExistingDataForEdit()
-                            } else {
-                                setPalletSearch('')
-                                setLoadedPallets([])
-                                setSelectedBoxes([])
-                                setTargetWeight({})
-                                setSelectionMode('manual')
-                                setSelectedPalletId(null)
-                                setScannedCode('')
-                                setWeightSearch('')
-                                setWeightSearchResults([])
-                                setTargetWeightResults([])
-                            }
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button size="sm">
-                                    {inputs.length > 0 ? (
-                                        <>
-                                            <Edit className="h-4 w-4 mr-2" />
-                                            Editar
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Agregar
-                                        </>
-                                    )}
-                                </Button>
-                            </DialogTrigger>
-                            {dialog.props.children}
-                        </Dialog>
+                        <div className="flex items-center gap-2">
+                            {inputs.length > 0 && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={handleDeleteAllInputs}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Eliminar Todo
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Eliminar todo el consumo</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                            <Dialog open={addDialogOpen} onOpenChange={(open) => {
+                                setAddDialogOpen(open)
+                                if (open) {
+                                    loadExistingDataForEdit()
+                                } else {
+                                    setPalletSearch('')
+                                    setLoadedPallets([])
+                                    setSelectedBoxes([])
+                                    setTargetWeight({})
+                                    setSelectionMode('manual')
+                                    setSelectedPalletId(null)
+                                    setScannedCode('')
+                                    setWeightSearch('')
+                                    setWeightSearchResults([])
+                                    setTargetWeightResults([])
+                                }
+                            }}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm">
+                                        {inputs.length > 0 ? (
+                                            <>
+                                                <Edit className="h-4 w-4 mr-2" />
+                                                Editar
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Agregar
+                                            </>
+                                        )}
+                                    </Button>
+                                </DialogTrigger>
+                                {dialog.props.children}
+                            </Dialog>
+                        </div>
                     )}
                 </div>
 
