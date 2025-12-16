@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import { format } from "date-fns";
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { usePrintElement } from '@/hooks/usePrintElement';
 
 export default function ReceptionPrintDialog({ 
     isOpen, 
@@ -18,6 +19,12 @@ export default function ReceptionPrintDialog({
     pallets = [], // For 'pallets' mode
     creationMode = null
 }) {
+    // Usar usePrintElement igual que en el store manager
+    const { onPrint } = usePrintElement({ 
+        id: 'reception-print-content', 
+        width: 210, // A4 width in mm
+        height: 297 // A4 height in mm
+    });
     // Get supplier name from options or object
     const supplierName = useMemo(() => {
         if (!supplier) return '';
@@ -93,16 +100,20 @@ export default function ReceptionPrintDialog({
 
     // Handle print
     const handlePrint = () => {
-        window.print();
+        onPrint();
     };
 
     return (
-        <>
-            <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-full max-w-2xl print:max-w-none print:p-0 print:border-0 print:shadow-none">
-                    <div id="reception-print-content" className="p-6 print:p-8 space-y-6">
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="w-full max-w-2xl overflow-hidden flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>Imprimir Nota de Entrada</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col justify-center w-full flex-1 overflow-auto">
+                    {/* Vista previa */}
+                    <div className="p-6 space-y-6 bg-white border rounded-lg">
                         {/* Title */}
-                        <h1 className="text-3xl font-bold text-center print:text-4xl mb-6">NOTA DE ENTRADA</h1>
+                        <h1 className="text-3xl font-bold text-center mb-6">NOTA DE ENTRADA</h1>
                         
                         {/* Header Info */}
                         <div className="space-y-2 mb-6">
@@ -169,44 +180,90 @@ export default function ReceptionPrintDialog({
                             </div>
                         </div>
                     </div>
+                </div>
+                {/* Área de impresión dentro del Dialog pero oculta - igual que BoxLabelPrintDialog */}
+                <div id="reception-print-content" className="hidden print:block">
+                    <div className="p-8 space-y-6" style={{ width: '210mm', minHeight: '297mm' }}>
+                        {/* Title */}
+                        <h1 className="text-3xl font-bold text-center mb-6">NOTA DE ENTRADA</h1>
+                        
+                        {/* Header Info */}
+                        <div className="space-y-2 mb-6">
+                            <div className="flex justify-between">
+                                <span className="font-bold">Numero:</span>
+                                <span>#{receptionId}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="font-bold">Proveedor:</span>
+                                <span>{supplierName || '-'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="font-bold">Fecha:</span>
+                                <span>{formattedDate}</span>
+                            </div>
+                        </div>
 
-                    {/* Print Button - Hidden when printing */}
-                    <div className="flex justify-end gap-2 mt-4 print:hidden">
-                        <Button variant="outline" onClick={onClose}>
-                            Cerrar
-                        </Button>
-                        <Button onClick={handlePrint}>
-                            <Printer className="h-4 w-4 mr-2" />
-                            Imprimir
-                        </Button>
+                        {/* Products Table */}
+                        <div className="flex justify-between gap-8 mb-6">
+                            {/* Left: Articles */}
+                            <div className="flex-1">
+                                <div className="font-bold mb-3">Artículo</div>
+                                <div className="space-y-2">
+                                    {productsList.length === 0 ? (
+                                        <div className="text-muted-foreground">No hay productos</div>
+                                    ) : (
+                                        <>
+                                            {productsList.map((product, index) => (
+                                                <div key={index} className="text-sm">
+                                                    {product.name}
+                                                </div>
+                                            ))}
+                                            <div className="font-bold mt-3 pt-2 border-t">Total</div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Right: Quantities */}
+                            <div className="text-right">
+                                <div className="font-bold mb-3">Cantidad</div>
+                                <div className="space-y-2">
+                                    {productsList.length > 0 && (
+                                        <>
+                                            {productsList.map((product, index) => (
+                                                <div key={index} className="text-sm">
+                                                    {formatDecimalWeight(product.quantity)}
+                                                </div>
+                                            ))}
+                                            <div className="font-bold mt-3 pt-2 border-t">
+                                                {formatDecimalWeight(totalQuantity)}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div className="space-y-1 mt-6">
+                            <div className="font-bold">Notas / Lonja:</div>
+                            <div className="text-sm min-h-[40px] border-b pb-1">
+                                {notes || ''}
+                            </div>
+                        </div>
                     </div>
-                </DialogContent>
-            </Dialog>
-
-            {/* Print Styles */}
-            <style jsx global>{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    #reception-print-content,
-                    #reception-print-content * {
-                        visibility: visible;
-                    }
-                    #reception-print-content {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        background: white;
-                    }
-                    @page {
-                        margin: 20mm;
-                        size: A4;
-                    }
-                }
-            `}</style>
-        </>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={onClose}>
+                        Cerrar
+                    </Button>
+                    <Button onClick={handlePrint}>
+                        <Printer className="h-4 w-4 mr-2" />
+                        Imprimir
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }
 

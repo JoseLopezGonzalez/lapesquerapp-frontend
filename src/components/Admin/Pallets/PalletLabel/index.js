@@ -8,9 +8,31 @@ import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from
 
 const PalletLabel = ({ pallet }) => {
     // Usar valores del backend si están disponibles, sino calcular desde cajas disponibles
-    const availableBoxes = getAvailableBoxes(pallet.boxes || []);
+    // Asegurar que las cajas tengan la estructura correcta (product en lugar de article)
+    const normalizedBoxes = (pallet.boxes || []).map(box => {
+        // Si la caja tiene article pero no product, convertir article a product
+        if (box.article && !box.product) {
+            return {
+                ...box,
+                product: box.article
+            };
+        }
+        return box;
+    });
+    
+    const availableBoxes = getAvailableBoxes(normalizedBoxes);
     const availableBoxCount = getAvailableBoxesCount(pallet);
     const availableNetWeight = getAvailableNetWeight(pallet);
+    
+    // Obtener productos únicos de las cajas disponibles
+    const uniqueProducts = [...new Set(availableBoxes
+        .filter(b => b.product && b.product.name)
+        .map((b) => b.product.name))];
+    
+    // Obtener lotes únicos de las cajas disponibles
+    const uniqueLots = [...new Set(availableBoxes
+        .filter(b => b.lot)
+        .map((b) => b.lot))];
     
     return (
         <Card className=" p-0 py-0 overflow-hidden w-full h-full flex flex-col" >
@@ -25,23 +47,31 @@ const PalletLabel = ({ pallet }) => {
                     <div className="flex flex-col flex-1 gap-1 ">
                         <div className="flex flex-col max-h-[18mm]  overflow-hidden w-full">
                             <p className="font-semibold text-muted-foreground mb-1">Productos:</p>
-                            <ul className="list-disc list-inside space-y-0.5 w-full">
-                                {[...new Set(availableBoxes.map((b) => b.product.name))].map((name) => (
-                                    <li key={name} className="font-medium text-foreground w-full truncate">
-                                        {name}
-                                    </li>
-                                ))}
-                            </ul>
+                            {uniqueProducts.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-0.5 w-full">
+                                    {uniqueProducts.map((name) => (
+                                        <li key={name} className="font-medium text-foreground w-full truncate">
+                                            {name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted-foreground text-xs">Sin productos</p>
+                            )}
                         </div>
                         <div className="flex flex-col max-h-[26mm]  overflow-hidden w-full">
                             <p className="font-semibold text-muted-foreground mb-1">Lotes:</p>
-                            <div className="flex flex-wrap gap-1">
-                                {[...new Set(availableBoxes.map((b) => b.lot))].map((lot) => (
-                                    <Badge key={lot} variant="outline" className="text-xs">
-                                        {lot}
-                                    </Badge>
-                                ))}
-                            </div>
+                            {uniqueLots.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                    {uniqueLots.map((lot) => (
+                                        <Badge key={lot} variant="outline" className="text-xs">
+                                            {lot}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-muted-foreground text-xs">Sin lotes</p>
+                            )}
                         </div>
                         {pallet.observations && (
                             <div className="flex flex-col max-h-[13mm] overflow-hidden w-full ">

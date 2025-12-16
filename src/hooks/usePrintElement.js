@@ -42,6 +42,10 @@ export function usePrintElement({ id, width = 100, height = 150 }) {
           height: ${height}mm;
           overflow: hidden;
           page-break-after: always;
+          page-break-inside: avoid;
+        }
+        .page:last-child {
+          page-break-after: auto;
         }
       }
     `;
