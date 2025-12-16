@@ -281,10 +281,48 @@ export function createProductionInput(inputData, token) {
  * @returns {Promise<Object>} - Inputs creados
  */
 export function createMultipleProductionInputs(productionRecordId, boxIds, token) {
-    return apiPost(`${API_URL_V2}production-inputs/multiple`, token, {
-        production_record_id: productionRecordId,
-        box_ids: boxIds
-    }, {
+    // Validar que productionRecordId sea válido
+    if (!productionRecordId || isNaN(productionRecordId)) {
+        console.error('[createMultipleProductionInputs] productionRecordId inválido:', productionRecordId)
+        return Promise.reject(new Error('El ID del registro de producción no es válido'))
+    }
+
+    // Validar y filtrar boxIds: solo números válidos
+    console.log('[createMultipleProductionInputs] boxIds recibidos:', boxIds, 'tipo:', typeof boxIds, 'es array:', Array.isArray(boxIds))
+    
+    const validBoxIds = Array.isArray(boxIds) 
+        ? boxIds
+            .filter(id => {
+                const isValid = id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0
+                if (!isValid) {
+                    console.warn('[createMultipleProductionInputs] ID inválido filtrado:', id, 'tipo:', typeof id)
+                }
+                return isValid
+            })
+            .map(id => Number(id))
+        : []
+
+    console.log('[createMultipleProductionInputs] validBoxIds después de filtrar:', validBoxIds)
+
+    if (validBoxIds.length === 0) {
+        console.error('[createMultipleProductionInputs] No hay boxIds válidos. boxIds original:', boxIds)
+        return Promise.reject(new Error('No se han proporcionado IDs válidos de cajas'))
+    }
+
+    // El backend podría esperar strings o números. Intentamos con números primero
+    // Si falla, el error nos dirá qué espera
+    const requestBody = {
+        production_record_id: Number(productionRecordId),
+        box_ids: validBoxIds.map(id => Number(id)) // Asegurar que sean números
+    }
+
+    console.log('[createMultipleProductionInputs] Enviando request:', {
+        url: `${API_URL_V2}production-inputs/multiple`,
+        body: requestBody,
+        bodyStringified: JSON.stringify(requestBody)
+    })
+
+    return apiPost(`${API_URL_V2}production-inputs/multiple`, token, requestBody, {
         transform: (data) => {
             const inputs = data.data || data || [];
             return {
@@ -312,12 +350,34 @@ export function deleteProductionInput(inputId, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteMultipleProductionInputs(inputIds, token) {
+    // Validar y filtrar inputIds: solo números válidos
+    const validInputIds = Array.isArray(inputIds) 
+        ? inputIds
+            .filter(id => id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0)
+            .map(id => Number(id))
+        : []
+
+    if (validInputIds.length === 0) {
+        console.error('[deleteMultipleProductionInputs] No hay inputIds válidos. inputIds original:', inputIds)
+        return Promise.reject(new Error('No se han proporcionado IDs válidos de inputs'))
+    }
+
+    // El endpoint DELETE espera { "ids": [1, 2, 3] }
+    const requestBody = { ids: validInputIds }
+
+    console.log('[deleteMultipleProductionInputs] Enviando request:', {
+        url: `${API_URL_V2}production-inputs/multiple`,
+        method: 'DELETE',
+        body: requestBody,
+        bodyStringified: JSON.stringify(requestBody)
+    })
+
     return apiRequest(`${API_URL_V2}production-inputs/multiple`, {
         method: 'DELETE',
         headers: {
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ input_ids: inputIds }),
+        body: JSON.stringify(requestBody),
     })
 }
 

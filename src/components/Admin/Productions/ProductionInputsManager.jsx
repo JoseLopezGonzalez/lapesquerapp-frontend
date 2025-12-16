@@ -384,17 +384,70 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         try {
             setSavingInputs(true)
             const token = session.user.accessToken
-            const boxIds = selectedBoxes.map(box => box.boxId)
+            
+            // Validar productionRecordId
+            if (!productionRecordId || isNaN(productionRecordId)) {
+                console.error('productionRecordId inválido:', productionRecordId)
+                alert('Error: El ID del registro de producción no es válido')
+                return
+            }
+
+            // Debug: Log de selectedBoxes antes de procesar
+            console.log('selectedBoxes antes de procesar:', selectedBoxes)
+            
+            // Filtrar y validar boxIds: solo números válidos, sin undefined/null/NaN
+            const boxIds = selectedBoxes
+                .map(box => {
+                    const id = box?.boxId
+                    console.log('Procesando box:', box, 'boxId:', id, 'tipo:', typeof id)
+                    return id
+                })
+                .filter(id => {
+                    const isValid = id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0
+                    if (!isValid) {
+                        console.warn('ID inválido filtrado:', id)
+                    }
+                    return isValid
+                })
+                .map(id => Number(id))
+
+            // Debug: Log de boxIds después de procesar
+            console.log('boxIds después de procesar:', boxIds)
+            console.log('productionRecordId:', productionRecordId, 'tipo:', typeof productionRecordId)
+
+            // Validar que hay IDs válidos después del filtrado
+            if (boxIds.length === 0) {
+                console.error('No hay boxIds válidos. selectedBoxes original:', selectedBoxes)
+                alert('No se encontraron IDs válidos en las cajas seleccionadas. Por favor, selecciona cajas válidas.')
+                return
+            }
 
             // Si hay inputs existentes, eliminarlos todos primero usando el endpoint batch
             if (inputs.length > 0) {
-                const inputIds = inputs.map(input => input.id)
+                const inputIds = inputs
+                    .map(input => input.id)
+                    .filter(id => id != null && id !== undefined && !isNaN(id))
+                    .map(id => Number(id))
+                
+                if (inputIds.length > 0) {
+                    console.log('Eliminando inputs existentes:', inputIds)
                 await deleteMultipleProductionInputs(inputIds, token)
+                }
             }
 
             // Crear las nuevas cajas seleccionadas
-            if (boxIds.length > 0) {
-                await createMultipleProductionInputs(parseInt(productionRecordId), boxIds, token)
+            console.log('Creando múltiples inputs con:', {
+                production_record_id: Number(productionRecordId),
+                box_ids: boxIds
+            })
+            try {
+                await createMultipleProductionInputs(Number(productionRecordId), boxIds, token)
+            } catch (err) {
+                console.error('Error al crear múltiples inputs:', err)
+                // Mostrar el mensaje de error del backend si está disponible
+                const errorMessage = err?.data?.message || err?.message || 'Error al guardar las entradas'
+                alert(errorMessage)
+                throw err // Re-lanzar para que el catch externo lo maneje
             }
 
             setAddDialogOpen(false)
@@ -428,7 +481,15 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             }
         } catch (err) {
             console.error('Error adding/editing inputs:', err)
-            alert(err.message || 'Error al guardar las entradas')
+            console.error('Error details:', {
+                message: err.message,
+                status: err.status,
+                data: err.data,
+                stack: err.stack
+            })
+            // Mostrar el mensaje de error del backend si está disponible
+            const errorMessage = err?.data?.message || err?.data?.error || err?.message || 'Error al guardar las entradas'
+            alert(errorMessage)
         } finally {
             setSavingInputs(false)
         }
