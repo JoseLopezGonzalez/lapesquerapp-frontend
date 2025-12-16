@@ -400,13 +400,30 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const boxTareValue = boxTare ? parseFloat(boxTare) : 0;
             const totalBoxTare = boxTareValue * parseFloat(numberOfBoxes);
             const netTotalWeight = parseFloat(totalWeight) - palletWeightValue - totalBoxTare;
-            const averageNetWeight = parseFloat(netTotalWeight / numberOfBoxes).toFixed(3);
-            for (let i = 0; i < numberOfBoxes; i++) {
+            const numberOfBoxesInt = parseInt(numberOfBoxes);
+            const averageNetWeight = netTotalWeight / numberOfBoxesInt;
+            
+            // Calcular el peso para las primeras n-1 cajas (redondeado a 3 decimales)
+            const standardWeight = parseFloat(averageNetWeight.toFixed(3));
+            let accumulatedWeight = 0;
+            
+            for (let i = 0; i < numberOfBoxesInt; i++) {
                 const product = getProductById(productId);
+                let boxWeight;
+                
+                // La última caja ajusta la diferencia para que el total sea exacto
+                if (i === numberOfBoxesInt - 1) {
+                    // Calcular la diferencia exacta para la última caja
+                    boxWeight = parseFloat((netTotalWeight - accumulatedWeight).toFixed(3));
+                } else {
+                    boxWeight = standardWeight;
+                    accumulatedWeight += boxWeight;
+                }
+                
                 const newBox = {
                     product: product,
                     lot,
-                    netWeight: parseFloat(averageNetWeight),
+                    netWeight: boxWeight,
                     scannedCode
                 };
                 addBox(newBox);
