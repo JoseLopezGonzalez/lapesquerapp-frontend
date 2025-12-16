@@ -54,7 +54,8 @@ const OrderPallets = () => {
 
     const handlePalletChange = (pallet) => {
         /* si el id esta entre los ids de pallets actuales, se esta editando, si no, se esta creando */
-        const isPalletVinculated = pallets.some(pallet => pallet.id === pallet.id);
+        // CORREGIDO: Comparar el pallet recibido con los pallets existentes
+        const isPalletVinculated = pallets.some(existingPallet => existingPallet.id === pallet.id);
         if (isPalletVinculated) {
             onEditingPallet(pallet);
         } else {

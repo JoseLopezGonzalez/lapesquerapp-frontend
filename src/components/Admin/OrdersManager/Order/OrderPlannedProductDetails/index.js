@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -23,11 +23,31 @@ const OrderPlannedProductDetails = () => {
     const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
     const [editIndex, setEditIndex] = useState(null);
 
-    useEffect(() => {
-        // Combinar las líneas persistentes del contexto con las temporales locales
-        const allDetails = [...plannedProductDetails, ...temporaryDetails];
-        setDetails(allDetails);
+    // Crear Maps para búsquedas O(1) en lugar de O(n)
+    const productOptionsMap = useMemo(() => {
+        const map = new Map();
+        productOptions.forEach(option => {
+            map.set(option.value, option.label);
+        });
+        return map;
+    }, [productOptions]);
+
+    const taxOptionsMap = useMemo(() => {
+        const map = new Map();
+        taxOptions.forEach(option => {
+            map.set(option.value, option.label);
+        });
+        return map;
+    }, [taxOptions]);
+
+    // Memoizar la combinación de detalles
+    const allDetails = useMemo(() => {
+        return [...plannedProductDetails, ...temporaryDetails];
     }, [plannedProductDetails, temporaryDetails]);
+
+    useEffect(() => {
+        setDetails(allDetails);
+    }, [allDetails]);
 
     const handleOnClickAddLine = () => {
         if (editIndex !== null) return;
@@ -47,14 +67,16 @@ const OrderPlannedProductDetails = () => {
         setEditIndex(plannedProductDetails.length + temporaryDetails.length);
     };
 
-    const handleInputChange = (index, field, value) => {
+    const handleInputChange = useCallback((index, field, value) => {
         const updatedDetails = [...details];
         if (field.includes("product")) {
             updatedDetails[index].product.id = value;
-            updatedDetails[index].product.name = productOptions.find(option => option.value === value).label;
+            // Usar Map para búsqueda O(1) en lugar de find O(n)
+            updatedDetails[index].product.name = productOptionsMap.get(value) || '';
         } else if (field.includes("tax")) {
             updatedDetails[index].tax.id = Number(value);
-            updatedDetails[index].tax.rate = taxOptions.find(option => option.value === value).label;
+            // Usar Map para búsqueda O(1) en lugar de find O(n)
+            updatedDetails[index].tax.rate = taxOptionsMap.get(Number(value)) || '';
         } else {
             updatedDetails[index][field] = value == '' ? '' : Number(value);
         }
@@ -69,7 +91,7 @@ const OrderPlannedProductDetails = () => {
                 setTemporaryDetails(updatedTemporaryDetails);
             }
         }
-    };
+    }, [details, temporaryDetails, productOptionsMap, taxOptionsMap]);
 
     const handleOnClickSaveLine = async () => {
         const detail = details[editIndex];

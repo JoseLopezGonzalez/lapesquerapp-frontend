@@ -21,13 +21,7 @@ import {
 } from "@/components/ui/tooltip"
 
 
-/* Ordenar Pedidos por fecha de salida */
-
-const sortOrdersByDate = (orders) => {
-    return orders.sort((a, b) => {
-        return new Date(a.loadDate) - new Date(b.loadDate);
-    });
-}
+/* Ordenar Pedidos por fecha de salida - DEPRECATED: Ya se ordena en OrdersManager */
 
 /* convertir examples a objeto js */
 
@@ -187,8 +181,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     {orders?.length > 0 ? (
                         <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto xl:pr-2 pb-4 mb-4  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden">
 
-                            {orders.map((order, index) => (
-                                <div key={index} className='' >
+                            {orders.map((order) => (
+                                <div key={order.id} className='' >
                                     <OrderCard
                                         onClick={() => onClickOrderCard(order.id)}
                                         order={order} isOrderSelected={() => false}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
@@ -10,17 +11,26 @@ const OrderProductDetails = () => {
 
     const { order } = useOrderContext();
 
-    const totals = order.productDetails.reduce((acc, detail) => {
-        /* boxes */
-        acc.boxes += detail.boxes;
-        acc.netWeight += detail.netWeight;
-        acc.subtotal += detail.subtotal;
-        acc.total += detail.total;
-        return acc;
-    }
-        , { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
+    // Memoizar el cálculo de totales para evitar recálculos innecesarios
+    const totals = useMemo(() => {
+        if (!order?.productDetails || order.productDetails.length === 0) {
+            return { subtotal: 0, total: 0, netWeight: 0, boxes: 0, averagePrice: 0 };
+        }
 
-    totals.averagePrice = totals.subtotal / totals.netWeight;
+        const calculated = order.productDetails.reduce((acc, detail) => {
+            acc.boxes += detail.boxes;
+            acc.netWeight += detail.netWeight;
+            acc.subtotal += detail.subtotal;
+            acc.total += detail.total;
+            return acc;
+        }, { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
+
+        calculated.averagePrice = calculated.netWeight > 0 
+            ? calculated.subtotal / calculated.netWeight 
+            : 0;
+
+        return calculated;
+    }, [order?.productDetails]);
 
     return (
         <div className="h-full pb-2">
@@ -34,7 +44,7 @@ const OrderProductDetails = () => {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                    {order.productDetails.length === 0 ? (
+                    {!order?.productDetails || order.productDetails.length === 0 ? (
                         <div className="rounded-md border">
                             <Table>
                                 <TableBody>
@@ -64,8 +74,8 @@ const OrderProductDetails = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {order.productDetails.map((detail, index) => (
-                                        <TableRow key={index} className='text-nowrap'>
+                                    {order.productDetails.map((detail) => (
+                                        <TableRow key={detail.id || `${detail.product?.id}-${detail.product?.name}`} className='text-nowrap'>
                                             <TableCell>
                                                 {detail.product.name}
                                             </TableCell>

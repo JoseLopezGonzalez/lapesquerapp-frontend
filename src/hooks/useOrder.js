@@ -1,6 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { deletePallet, unlinkPalletFromOrder } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
@@ -64,16 +64,41 @@ export function useOrder(orderId, onChange) {
     const [productOptions, setProductOptions] = useState([]);
     const [taxOptions, setTaxOptions] = useState([]);
     const [activeTab, setActiveTab] = useState('details');
+    const [optionsLoaded, setOptionsLoaded] = useState(false);
 
-
-    const pallets = order?.pallets || [];
+    const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
 
     const accessToken = session?.user?.accessToken
 
+    // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading)
+    const loadOptions = useCallback(async () => {
+        if (optionsLoaded || !accessToken) return;
+        
+        try {
+            const [productsData, taxesData] = await Promise.all([
+                getProductOptions(accessToken),
+                getTaxOptions(accessToken)
+            ]);
+            
+            setProductOptions(productsData.map((product) => ({
+                value: product.id,
+                label: product.name,
+            })));
+            
+            setTaxOptions(taxesData.map((tax) => ({
+                value: tax.id,
+                label: tax.rate,
+            })));
+            
+            setOptionsLoaded(true);
+        } catch (err) {
+            setError(err);
+        }
+    }, [accessToken, optionsLoaded]);
 
     useEffect(() => {
         // Espera a que la sesión esté lista
-        if (!orderId || status === "loading") return; // Espera a que la sesión esté lista
+        if (!orderId || status === "loading") return;
         setActiveTab('details');
 
         if (!orderId) return;
@@ -86,49 +111,36 @@ export function useOrder(orderId, onChange) {
             .then((data) => {
                 setOrder(data);
                 setLoading(false);
-            }
-            )
-            .catch((err) => setError(err))
-            .finally();
-
-        getProductOptions(accessToken)
-            .then((data) => {
-                setProductOptions(data.map((product) => ({
-                    value: product.id,
-                    label: product.name,
-                }))
-                );
             })
-            .catch((err) => setError(err))
-            .finally();
-        getTaxOptions(accessToken)
-            .then((data) => {
-                setTaxOptions(data.map((tax) => ({
-                    value: tax.id,
-                    label: tax.rate,
-                }))
-                );
-            })
-            .catch((err) => setError(err))
-            .finally();
-
-
-
+            .catch((err) => {
+                setError(err);
+                setLoading(false);
+            });
     }, [orderId, status, accessToken]);
 
-    const reload = async () => {
+    // Cargar opciones cuando se cambie al tab de productos planificados
+    useEffect(() => {
+        if (activeTab === 'products' && !optionsLoaded) {
+            loadOptions();
+        }
+    }, [activeTab, optionsLoaded, loadOptions]);
+
+    const reload = useCallback(async () => {
         const token = session?.user?.accessToken;
-        getOrder(orderId, token)
-            .then((data) => {
-                setOrder(data);
-            }
-            )
-            .catch((err) => setError(err))
-            .finally();
+        if (!token) return;
+        
+        try {
+            const data = await getOrder(orderId, token);
+            setOrder(data);
+        } catch (err) {
+            setError(err);
+        }
+    }, [orderId, session?.user?.accessToken]);
 
-    }
-
-    const mergedProductDetails = mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
+    // Memoizar mergedProductDetails para evitar recálculos innecesarios
+    const mergedProductDetails = useMemo(() => {
+        return mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
+    }, [order?.plannedProductDetails, order?.productionProductDetails]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
@@ -166,7 +178,9 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         updateOrderPlannedProductDetail(id, updateData, token)
             .then((updated) => {
+                // Actualizar estado local sin recargar todo el pedido
                 setOrder(prevOrder => {
+                    if (!prevOrder) return prevOrder;
                     return {
                         ...prevOrder,
                         plannedProductDetails: prevOrder.plannedProductDetails.map((detail) => {
@@ -177,8 +191,9 @@ export function useOrder(orderId, onChange) {
                             }
                         })
                     }
-                })
-                reload();
+                });
+                // Solo recargar si es necesario para sincronizar otros datos
+                // reload();
             })
             .catch((err) => {
                 setError(err);
@@ -190,13 +205,16 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         deleteOrderPlannedProductDetail(id, token)
             .then(() => {
+                // Actualizar estado local sin recargar todo el pedido
                 setOrder(prevOrder => {
+                    if (!prevOrder) return prevOrder;
                     return {
                         ...prevOrder,
                         plannedProductDetails: prevOrder.plannedProductDetails.filter((detail) => detail.id !== id)
                     }
-                })
-                reload();
+                });
+                // Solo recargar si es necesario para sincronizar otros datos
+                // reload();
             })
             .catch((err) => {
                 setError(err);
@@ -208,13 +226,16 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         createOrderPlannedProductDetail(detailData, token)
             .then((created) => {
+                // Actualizar estado local sin recargar todo el pedido
                 setOrder(prevOrder => {
+                    if (!prevOrder) return prevOrder;
                     return {
                         ...prevOrder,
                         plannedProductDetails: [...prevOrder.plannedProductDetails, created]
                     }
-                })
-                reload();
+                });
+                // Solo recargar si es necesario para sincronizar otros datos
+                // reload();
             })
             .catch((err) => {
                 setError(err);

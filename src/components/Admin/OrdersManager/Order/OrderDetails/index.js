@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { CalendarIcon, FileText, Package, Truck, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderContext } from '@/context/OrderContext';
@@ -7,11 +7,22 @@ import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
+// Mover API key a constante fuera del componente
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
+
 const OrderDetails = () => {
     const { order } = useOrderContext();
 
-    const encodedAddress = encodeURIComponent(order.shippingAddress);
-    const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
+    // Memoizar encodedAddress para evitar recálculos innecesarios
+    const encodedAddress = useMemo(() => {
+        return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
+    }, [order?.shippingAddress]);
+
+    // Memoizar URL del mapa
+    const mapUrl = useMemo(() => {
+        if (!encodedAddress) return '';
+        return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
+    }, [encodedAddress]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
@@ -235,7 +246,7 @@ const OrderDetails = () => {
                             style={{ border: 0 }}
                             loading="lazy"
                             allowFullScreen
-                            src={`https://www.google.com/maps/embed/v1/place?key=${googleApiKey}&q=${encodedAddress}`}
+                            src={mapUrl}
                         />
                     </div>
                 </CardContent>

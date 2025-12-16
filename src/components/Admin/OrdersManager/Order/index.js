@@ -1,29 +1,86 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
 import { Loader2, MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import OrderDetails from './OrderDetails';
-import OrderPallets from './OrderPallets';
-import OrderDocuments from './OrderDocuments';
-import OrderExport from './OrderExport';
-import OrderLabels from './OrderLabels';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
-import OrderMap from './OrderMap';
-import OrderProduction from './OrderProduction';
-import OrderProductDetails from './OrderProductDetails';
-import OrderPlannedProductDetails from './OrderPlannedProductDetails';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import OrderIncident from './OrderIncident';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
-import OrderCustomerHistory from './OrderCustomerHistory';
+
+// Lazy load de componentes pesados para mejorar el rendimiento inicial
+const OrderPallets = lazy(() => import('./OrderPallets'));
+const OrderDocuments = lazy(() => import('./OrderDocuments'));
+const OrderExport = lazy(() => import('./OrderExport'));
+const OrderLabels = lazy(() => import('./OrderLabels'));
+const OrderMap = lazy(() => import('./OrderMap'));
+const OrderProduction = lazy(() => import('./OrderProduction'));
+const OrderProductDetails = lazy(() => import('./OrderProductDetails'));
+const OrderPlannedProductDetails = lazy(() => import('./OrderPlannedProductDetails'));
+const OrderIncident = lazy(() => import('./OrderIncident'));
+const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
+
+// Badge reutilizable - movido fuera del componente para evitar recreación
+const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
+  const colorVariants = {
+    green: {
+      bg: 'bg-green-200 dark:bg-green-900',
+      text: 'text-green-800 dark:text-green-300',
+      border: 'border dark:border-2 border-green-500',
+      dot: 'bg-green-500'
+    },
+    orange: {
+      bg: 'bg-orange-200 dark:bg-orange-900',
+      text: 'text-orange-800 dark:text-orange-300',
+      border: 'border dark:border-2 border-orange-500',
+      dot: 'bg-orange-500'
+    },
+    red: {
+      bg: 'bg-red-200 dark:bg-red-900',
+      text: 'text-red-800 dark:text-red-300',
+      border: 'border dark:border-2 border-red-500',
+      dot: 'bg-red-500'
+    },
+  };
+
+  const { bg, text, border, dot } = colorVariants[color] || colorVariants.green;
+
+  return (
+    <span
+      className={`inline-flex items-center ${bg} ${text} text-xs font-medium px-2.5 py-0.5 rounded-full ${border}`}
+    >
+      <span className={`w-2 h-2 me-1 ${dot} rounded-full`} />
+      {label}
+    </span>
+  );
+};
+
+// Función helper para obtener la imagen de transporte - optimizada
+const getTransportImage = (transportName) => {
+  const name = transportName.toLowerCase();
+  const transportMap = {
+    'olano': '/images/transports/trailer-olano.png',
+    'tir': '/images/transports/trailer-tir.png',
+    'tpo': '/images/transports/trailer-tpo.png',
+    'distran': '/images/transports/trailer-distran.png',
+    'narval': '/images/transports/trailer-narval.png',
+  };
+
+  for (const [key, value] of Object.entries(transportMap)) {
+    if (name.includes(key)) {
+      return value;
+    }
+  }
+  
+  return '/images/transports/trailer.png';
+};
 
 const OrderContent = ({ onLoading }) => {
 
@@ -34,8 +91,8 @@ const OrderContent = ({ onLoading }) => {
     onLoading(loading)
   }, [loading, onLoading])
 
-  // Función para cambiar el estado del pedido
-  const handleStatusChange = async (newStatus) => {
+  // Función para cambiar el estado del pedido - memoizada con useCallback
+  const handleStatusChange = useCallback(async (newStatus) => {
     const toastId = toast.loading('Actualizando estado del pedido...', getToastTheme());
     updateOrderStatus(newStatus)
       .then(() => {
@@ -44,9 +101,10 @@ const OrderContent = ({ onLoading }) => {
       .catch((error) => {
         toast.error(error.message || 'Error al actualizar el estado del pedido', { id: toastId, ...getToastTheme() });
       });
-  };
+  }, [updateOrderStatus]);
 
-  const handleTemperatureChange = async (newTemperature) => {
+  // Función para cambiar la temperatura - memoizada con useCallback
+  const handleTemperatureChange = useCallback(async (newTemperature) => {
     const toastId = toast.loading('Actualizando temperatura del pedido...', getToastTheme());
     updateTemperatureOrder(newTemperature)
       .then(() => {
@@ -55,45 +113,10 @@ const OrderContent = ({ onLoading }) => {
       .catch((error) => {
         toast.error(error.message || 'Error al actualizar la temperatura del pedido', { id: toastId, ...getToastTheme() });
       });
-  };
+  }, [updateTemperatureOrder]);
 
-  // Badge reutilizable con clases ya definidas (seguras para Tailwind)
-  const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
-    const colorVariants = {
-      green: {
-        bg: 'bg-green-200 dark:bg-green-900',
-        text: 'text-green-800 dark:text-green-300',
-        border: 'border dark:border-2 border-green-500',
-        dot: 'bg-green-500'
-      },
-      orange: {
-        bg: 'bg-orange-200 dark:bg-orange-900',
-        text: 'text-orange-800 dark:text-orange-300',
-        border: 'border dark:border-2 border-orange-500',
-        dot: 'bg-orange-500'
-      },
-      red: {
-        bg: 'bg-red-200 dark:bg-red-900',
-        text: 'text-red-800 dark:text-red-300',
-        border: 'border dark:border-2 border-red-500',
-        dot: 'bg-red-500'
-      },
-      // Puedes añadir más colores aquí
-    };
-
-    const { bg, text, border, dot } = colorVariants[color] || colorVariants.green; // Fallback a verde
-
-    return (
-      <span
-        className={`inline-flex items-center ${bg} ${text} text-xs font-medium px-2.5 py-0.5 rounded-full ${border}`}
-      >
-        <span className={`w-2 h-2 me-1 ${dot} rounded-full`} />
-        {label}
-      </span>
-    );
-  };
-
-  const renderStatusBadge = (status) => {
+  // Función para renderizar el badge de estado - memoizada
+  const renderStatusBadge = useCallback((status) => {
     const colors = {
       pending: 'orange',
       finished: 'green',
@@ -104,7 +127,6 @@ const OrderContent = ({ onLoading }) => {
       pending: 'En producción',
       finished: 'Terminado',
       incident: 'Incidencia',
-      // otros textos
     };
 
     return (
@@ -125,11 +147,16 @@ const OrderContent = ({ onLoading }) => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
-  };
+  }, [handleStatusChange]);
 
-  const handleOnClickPrint = async () => {
+  // Memoizar imagen de transporte
+  const transportImage = useMemo(() => {
+    return order?.transport?.name ? getTransportImage(order.transport.name) : '/images/transports/trailer.png';
+  }, [order?.transport?.name]);
+
+  const handleOnClickPrint = useCallback(async () => {
     exportDocument('order-sheet', 'pdf', 'Hoja de pedido')
-  }
+  }, [exportDocument])
 
   return (
     <>
@@ -142,7 +169,7 @@ const OrderContent = ({ onLoading }) => {
           <div className='h-full flex flex-col w-full'>
             <div className='flex justify-between -mt-6 lg:-mt-2'>
               <div className='space-y-1 '>
-                {renderStatusBadge(order.status)} {/* Aquí le pasas el status actual */}
+                {order && renderStatusBadge(order.status)}
 
                 {/* {order.status === 'pending' && (
                   <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 dark:border-orange-300 border-2">
@@ -221,19 +248,7 @@ const OrderContent = ({ onLoading }) => {
                     </DropdownMenu>
                   </div>
                   <div className='flex flex-col  items-end justify-center'>
-                    {order.transport.name.toLowerCase().includes('olano') ? (
-                      <img className="" src='/images/transports/trailer-olano.png' />) :
-                      order.transport.name.toLowerCase().includes('tir') ? (
-                        <img className="" src='/images/transports/trailer-tir.png' />) :
-                        order.transport.name.toLowerCase().includes('tpo') ?
-                          (<img className="" src='/images/transports/trailer-tpo.png' />) :
-                          order.transport.name.toLowerCase().includes('distran') ?
-                            (<img className="" src='/images/transports/trailer-distran.png' />)
-                            : order.transport.name.toLowerCase().includes('narval') ?
-                              (<img className="" src='/images/transports/trailer-narval.png' />)
-                              : (
-                                <img className="" src='/images/transports/trailer.png' />)
-                    }
+                    <img className="" src={transportImage} alt={`Transporte ${order.transport.name}`} />
                     <h3 className='text-2xl font-light '>{order.transport.name}</h3>
                   </div>
                 </div>
@@ -256,49 +271,70 @@ const OrderContent = ({ onLoading }) => {
                     <TabsTrigger value="customer-history">Histórico</TabsTrigger>
                   </TabsList>
                   <div className="flex-1 overflow-y-hidden w-full">
-
+                    {/* Tab Details - siempre cargado ya que es el default */}
                     <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
                       <OrderDetails />
                     </TabsContent>
 
+                    {/* Tabs con lazy loading - solo se cargan cuando están activos */}
                     <TabsContent value="products" className="space-y-4 w-full h-full ">
-                      <OrderPlannedProductDetails />
+                      <Suspense fallback={<Loader />}>
+                        <OrderPlannedProductDetails />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
-                      <OrderProductDetails />
+                      <Suspense fallback={<Loader />}>
+                        <OrderProductDetails />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="production" className="space-y-4 w-full h-full ">
-                      <OrderProduction />
+                      <Suspense fallback={<Loader />}>
+                        <OrderProduction />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="pallets" className='h-full'>
-                      <OrderPallets />
+                      <Suspense fallback={<Loader />}>
+                        <OrderPallets />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="documents" className='h-full'>
-                      <OrderDocuments />
+                      <Suspense fallback={<Loader />}>
+                        <OrderDocuments />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="export" className='h-full'>
-                      <OrderExport />
+                      <Suspense fallback={<Loader />}>
+                        <OrderExport />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="labels" className='h-full'>
-                      <OrderLabels />
+                      <Suspense fallback={<Loader />}>
+                        <OrderLabels />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="map" className='h-full'>
-                      <OrderMap />
+                      <Suspense fallback={<Loader />}>
+                        <OrderMap />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="incident" className='h-full'>
-                      <OrderIncident />
+                      <Suspense fallback={<Loader />}>
+                        <OrderIncident />
+                      </Suspense>
                     </TabsContent>
 
                     <TabsContent value="customer-history" className='h-full'>
-                      <OrderCustomerHistory />
+                      <Suspense fallback={<Loader />}>
+                        <OrderCustomerHistory />
+                      </Suspense>
                     </TabsContent>
 
                   </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import OrdersList from './OrdersList';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
@@ -36,16 +36,6 @@ export default function OrdersManager() {
     const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
     const [isOrderLoading, setIsOrderLoading] = useState(false);
 
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setLoading(false)
-        }, 6000)
-
-        return () => clearTimeout(timeout)
-    }, [])
-
-
     const [orders, setOrders] = useState([]);
     const [categories, setCategories] = useState(initialCategories);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -55,7 +45,7 @@ export default function OrdersManager() {
 
 
     const handleOnChange = () => {
-        setTimeout(() => setReload(prev => !prev), 0);
+        setReload(prev => !prev);
     }
 
     useEffect(() => {
@@ -70,23 +60,35 @@ export default function OrdersManager() {
             });
     }, [reload]);
 
-    const filterOrders = orders.filter((order) => {
-        /* Añadir a order current, true o flase si coincide con selectedOrder */
-        order.current = selectedOrder === order.id;
+    // Memoizar la categoría activa para evitar búsquedas repetidas
+    const activeCategory = useMemo(() => {
+        return categories.find((category) => category.current) || categories[0];
+    }, [categories]);
 
-        /* categoria activa */
-        const activeCategory = categories.find((category) => category.current);
+    // Optimizar filtrado y ordenamiento con useMemo
+    const sortedOrders = useMemo(() => {
+        const searchLower = searchText.toLowerCase();
+        
+        // Filtrar sin mutar los objetos originales
+        const filtered = orders
+            .filter((order) => {
+                const matchesSearch = order.customer.name.toLowerCase().includes(searchLower) ||
+                    order.id.toString().includes(searchText);
+                const matchesCategory = activeCategory.name === 'all' ||
+                    activeCategory.name === order.status;
+                return matchesSearch && matchesCategory;
+            })
+            // Añadir propiedad current sin mutar el objeto original
+            .map((order) => ({
+                ...order,
+                current: selectedOrder === order.id
+            }));
 
-        return (order.customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            order.id.toString().includes(searchText)) && (
-                activeCategory.name === 'all' ||
-                activeCategory.name === order.status
-            )
-    })
-
-    const sortOrdersByDate = filterOrders.sort((a, b) => {
-        return new Date(a.loadDate) - new Date(b.loadDate);
-    });
+        // Ordenar creando una copia del array
+        return [...filtered].sort((a, b) => {
+            return new Date(a.loadDate) - new Date(b.loadDate);
+        });
+    }, [orders, searchText, activeCategory, selectedOrder]);
 
     const handleOnClickOrderCard = (orderId) => {
         setOnCreatingNewOrder(false);
@@ -165,7 +167,7 @@ export default function OrdersManager() {
                             <OrdersList
                                 onClickAddNewOrder={handleOnClickAddNewOrder}
                                 onClickOrderCard={handleOnClickOrderCard}
-                                orders={sortOrdersByDate}
+                                orders={sortedOrders}
                                 categories={categories}
                                 onClickCategory={handleOnClickCategory}
                                 onChangeSearch={handleOnChangeSearch}
