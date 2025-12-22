@@ -82,6 +82,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const [selectedBox, setSelectedBox] = useState(null);
     const [activeTab, setActiveTab] = useState("disponibles");
+    const [bulkActionType, setBulkActionType] = useState(null); // 'lot' o 'weight'
+    const [bulkActionValue, setBulkActionValue] = useState('');
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -276,6 +278,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 <TabsList className="mx-auto mb-4">
                                     <TabsTrigger value="edicion" className="flex items-center gap-2">
                                         <Edit className="h-4 w-4" /> Edición
+                                    </TabsTrigger>
+                                    <TabsTrigger value="acciones-masivas" className="flex items-center gap-2" disabled={isReadOnly}>
+                                        <Layers className="h-4 w-4" /> Acciones Masivas
                                     </TabsTrigger>
                                     <TabsTrigger value="resumen" className="flex items-center gap-2">
                                         <Eye className="h-4 w-4" /> Resumen
@@ -1094,6 +1099,244 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     </>
                                                 );
                                             })()}
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="acciones-masivas" className="mt-0">
+                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">
+                                        <div className="space-y-6 overflow-y-auto pr-2 pb-2 col-span-2 max-h-[calc(90vh-200px)]">
+                                            <Card className="border-2 border-muted bg-foreground-50 w-full">
+                                                <CardHeader className="pb-4 w-full">
+                                                    <CardTitle className="flex items-center gap-2 text-lg w-full">
+                                                        <Layers className="h-5 w-5 text-primary" />
+                                                        Acciones Masivas
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Selecciona la acción a realizar</Label>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <Button
+                                                                variant={bulkActionType === 'lot' ? 'default' : 'outline'}
+                                                                onClick={() => {
+                                                                    setBulkActionType('lot');
+                                                                    setBulkActionValue('');
+                                                                }}
+                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                disabled={isReadOnly}
+                                                            >
+                                                                <FileText className="h-5 w-5" />
+                                                                <span>Cambiar Lote</span>
+                                                            </Button>
+                                                            <Button
+                                                                variant={bulkActionType === 'weight' ? 'default' : 'outline'}
+                                                                onClick={() => {
+                                                                    setBulkActionType('weight');
+                                                                    setBulkActionValue('');
+                                                                }}
+                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                disabled={isReadOnly}
+                                                            >
+                                                                <Weight className="h-5 w-5" />
+                                                                <span>Cambiar Peso</span>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+
+                                                    {bulkActionType && (
+                                                        <>
+                                                            <div className="space-y-2">
+                                                                <Label>
+                                                                    {bulkActionType === 'lot' ? 'Nuevo Lote' : 'Nuevo Peso Neto (kg)'}
+                                                                </Label>
+                                                                {bulkActionType === 'lot' ? (
+                                                                    <Input
+                                                                        value={bulkActionValue}
+                                                                        onChange={(e) => setBulkActionValue(e.target.value)}
+                                                                        placeholder="Ingresa el nuevo lote"
+                                                                        disabled={isReadOnly}
+                                                                    />
+                                                                ) : (
+                                                                    <Input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        value={bulkActionValue}
+                                                                        onChange={(e) => setBulkActionValue(e.target.value)}
+                                                                        placeholder="0.00"
+                                                                        disabled={isReadOnly}
+                                                                    />
+                                                                )}
+                                                            </div>
+
+                                                            <Alert className="border-blue-200 bg-blue-50">
+                                                                <AlertCircle className="h-4 w-4 text-blue-600" />
+                                                                <AlertDescription className="text-blue-800 text-sm">
+                                                                    Los cambios se aplicarán únicamente a las cajas disponibles (no en producción).
+                                                                </AlertDescription>
+                                                            </Alert>
+
+                                                            <div className="pt-2">
+                                                                <Button
+                                                                    className="w-full"
+                                                                    onClick={() => {
+                                                                        if (!bulkActionValue || bulkActionValue.trim() === '') {
+                                                                            return;
+                                                                        }
+
+                                                                        if (bulkActionType === 'lot') {
+                                                                            editPallet.box.bulkEdit.changeLot(
+                                                                                null,
+                                                                                bulkActionValue.trim()
+                                                                            );
+                                                                        } else if (bulkActionType === 'weight') {
+                                                                            editPallet.box.bulkEdit.changeNetWeight(
+                                                                                null,
+                                                                                parseFloat(bulkActionValue)
+                                                                            );
+                                                                        }
+
+                                                                        setBulkActionType(null);
+                                                                        setBulkActionValue('');
+                                                                    }}
+                                                                    disabled={!bulkActionValue || bulkActionValue.trim() === '' || isReadOnly}
+                                                                >
+                                                                    Aplicar Cambios
+                                                                </Button>
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {isReadOnly && (
+                                                        <Alert className="border-orange-200 bg-orange-50">
+                                                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                            <AlertDescription className="text-orange-800">
+                                                                Este palet pertenece a una recepción. Las acciones masivas no están disponibles.
+                                                            </AlertDescription>
+                                                        </Alert>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+
+                                            <Card className="border-2 border-muted">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                                        <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                                                        Información
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                                                    <p>
+                                                        Las acciones masivas te permiten modificar múltiples cajas del palet de una sola vez.
+                                                    </p>
+                                                    <ul className="list-disc list-inside space-y-1 ml-2">
+                                                        <li><strong>Cambiar Lote:</strong> Aplica un nuevo lote a todas las cajas disponibles</li>
+                                                        <li><strong>Cambiar Peso:</strong> Aplica un nuevo peso neto a todas las cajas disponibles</li>
+                                                        <li><strong>Importante:</strong> Los cambios solo se aplican a cajas disponibles (no en producción). Las cajas en producción no pueden ser modificadas.</li>
+                                                    </ul>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+
+                                        <div className="space-y-4 overflow-y-auto col-span-3 flex flex-col">
+                                            <div className="flex items-center justify-between flex-shrink-0">
+                                                <h3 className="text-lg font-semibold">Vista Previa de Cajas</h3>
+                                                <div className="text-sm text-muted-foreground/90 bg-foreground-50 rounded-full px-4 py-1 flex items-center">
+                                                    <span>{temporalPallet.boxes.length} cajas</span>
+                                                    <Separator orientation="vertical" className="mx-2 h-3" />
+                                                    <span>{formatDecimalWeight(temporalPallet.netWeight)}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="border rounded-lg overflow-hidden h-full flex flex-col">
+                                                <div className="overflow-y-auto flex-1 max-h-[calc(90vh-300px)]">
+                                                    <Table>
+                                                        <TableHeader className="sticky top-0 bg-background z-10">
+                                                            <TableRow>
+                                                                <TableHead className="min-w-[200px]">Artículo</TableHead>
+                                                                <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
+                                                                <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                                                <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                <TableHead className="min-w-[150px]">Estado</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {temporalPallet.boxes.length === 0 ? (
+                                                                <TableRow>
+                                                                    <TableCell colSpan={5} className="p-0">
+                                                                        <div className="py-12">
+                                                                            <EmptyState
+                                                                                icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                                                                title="No hay cajas en el palet"
+                                                                                description="Agrega cajas al palet usando la pestaña de Edición"
+                                                                            />
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ) : (
+                                                                temporalPallet.boxes.map((box) => {
+                                                                    const boxAvailable = isBoxAvailable(box);
+                                                                    const productionInfo = getBoxProductionInfo(box);
+                                                                    
+                                                                    return (
+                                                                        <TableRow 
+                                                                            key={box.id}
+                                                                            className={`cursor-default ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/50" : ""}`}
+                                                                        >
+                                                                            <TableCell>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    {box.product.name}
+                                                                                    {!boxAvailable && (
+                                                                                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                    )}
+                                                                                </div>
+                                                                            </TableCell>
+                                                                            <TableCell>{box.lot}</TableCell>
+                                                                            <TableCell>{box.gs1128}</TableCell>
+                                                                            <TableCell>{box.netWeight} kg</TableCell>
+                                                                            <TableCell>
+                                                                                {!boxAvailable && productionInfo ? (
+                                                                                    <TooltipProvider>
+                                                                                        <Tooltip>
+                                                                                            <TooltipTrigger asChild>
+                                                                                                <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 border border-orange-200 cursor-help hover:bg-orange-200 transition-colors">
+                                                                                                    <Factory className="h-3.5 w-3.5" />
+                                                                                                </div>
+                                                                                            </TooltipTrigger>
+                                                                                            <TooltipContent>
+                                                                                                <div className="space-y-1">
+                                                                                                    <p className="font-semibold">En Producción</p>
+                                                                                                    <p className="text-xs">Producción #{productionInfo.id || 'N/A'}</p>
+                                                                                                    {productionInfo.lot && (
+                                                                                                        <p className="text-xs">Lote: {productionInfo.lot}</p>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            </TooltipContent>
+                                                                                        </Tooltip>
+                                                                                    </TooltipProvider>
+                                                                                ) : (
+                                                                                    <TooltipProvider>
+                                                                                        <Tooltip>
+                                                                                            <TooltipTrigger asChild>
+                                                                                                <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 border border-green-200 cursor-help hover:bg-green-200 transition-colors">
+                                                                                                    <CheckCircle className="h-3.5 w-3.5" />
+                                                                                                </div>
+                                                                                            </TooltipTrigger>
+                                                                                            <TooltipContent>
+                                                                                                <p className="font-semibold">Disponible</p>
+                                                                                            </TooltipContent>
+                                                                                        </Tooltip>
+                                                                                    </TooltipProvider>
+                                                                                )}
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    );
+                                                                })
+                                                            )}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </TabsContent>

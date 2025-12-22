@@ -339,12 +339,90 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         }));
     };
 
+    /* Bulk edit boxes */
+    const bulkEditBoxes = {
+        /**
+         * Cambia el lote de múltiples cajas disponibles
+         * @param {Array<number>} boxIds - Array de IDs de cajas a editar. Si es null, edita todas las cajas disponibles
+         * @param {string} lot - Nuevo lote a asignar
+         */
+        changeLot: (boxIds, lot) => {
+            if (!temporalPallet) return;
+            
+            // Siempre filtrar solo cajas disponibles (no en producción)
+            const boxesToEdit = boxIds 
+                ? temporalPallet.boxes.filter(box => boxIds.includes(box.id) && box.isAvailable !== false)
+                : temporalPallet.boxes.filter(box => box.isAvailable !== false);
+
+            if (boxesToEdit.length === 0) {
+                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                return;
+            }
+
+            setTemporalPallet((prev) => (
+                recalculatePalletStats({
+                    ...prev,
+                    boxes: prev.boxes.map((box) => {
+                        const shouldEdit = boxesToEdit.some(b => b.id === box.id);
+                        if (shouldEdit) {
+                            return { ...box, lot: lot, gs1128: getGs1128(box.product.id, lot, box.netWeight) };
+                        }
+                        return box;
+                    })
+                })
+            ));
+
+            toast.success(`Lote actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+        },
+        
+        /**
+         * Cambia el peso neto de múltiples cajas disponibles
+         * @param {Array<number>} boxIds - Array de IDs de cajas a editar. Si es null, edita todas las cajas disponibles
+         * @param {number} netWeight - Nuevo peso neto a asignar
+         */
+        changeNetWeight: (boxIds, netWeight) => {
+            if (!temporalPallet) return;
+            
+            // Siempre filtrar solo cajas disponibles (no en producción)
+            const boxesToEdit = boxIds 
+                ? temporalPallet.boxes.filter(box => boxIds.includes(box.id) && box.isAvailable !== false)
+                : temporalPallet.boxes.filter(box => box.isAvailable !== false);
+
+            if (boxesToEdit.length === 0) {
+                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                return;
+            }
+
+            const parsedWeight = parseFloat(netWeight);
+            if (isNaN(parsedWeight) || parsedWeight <= 0) {
+                toast.error('El peso debe ser un número positivo', getToastTheme());
+                return;
+            }
+
+            setTemporalPallet((prev) => (
+                recalculatePalletStats({
+                    ...prev,
+                    boxes: prev.boxes.map((box) => {
+                        const shouldEdit = boxesToEdit.some(b => b.id === box.id);
+                        if (shouldEdit) {
+                            return { ...box, netWeight: parsedWeight, gs1128: getGs1128(box.product.id, box.lot, parsedWeight) };
+                        }
+                        return box;
+                    })
+                })
+            ));
+
+            toast.success(`Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+        }
+    };
+
     const editPallet = {
         box: {
             add: addBox,
             duplicate: duplicateBox,
             delete: deleteBox,
-            edit: editBox
+            edit: editBox,
+            bulkEdit: bulkEditBoxes
         },
         observations: editObservations,
         orderId: editOrderId

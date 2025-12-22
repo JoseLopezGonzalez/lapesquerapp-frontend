@@ -462,16 +462,40 @@ function ProductionPage({ productionId }) {
 
 **Componentes**:
 - `PalletDialog` - Diálogo principal para ver/editar pallet
+- `PalletView` - Vista principal del editor de pallet con todas las funcionalidades
 - `PalletLabel` - Componente de etiqueta de pallet
 - `PalletLabelDialog` - Diálogo para imprimir etiqueta
 
 **Funcionalidad**:
 - Visualización de pallet con cajas
 - Edición de cajas (añadir, eliminar, editar)
+- **Acciones masivas**: Cambiar lote o peso de múltiples cajas simultáneamente
 - Escaneo de códigos GS1-128
 - Impresión de etiquetas
 - Gestión de observaciones
 - Vinculación con pedidos
+- Filtrado de cajas: Disponibles, En Producción, Todas
+
+**Acciones Masivas**:
+El editor de pallet incluye un sistema de acciones masivas que permite:
+- **Cambiar lote masivamente**: Aplicar un nuevo lote a todas las cajas disponibles
+- **Cambiar peso masivamente**: Aplicar un nuevo peso neto a todas las cajas disponibles
+- **Restricción de seguridad**: Los cambios solo se aplican a cajas disponibles (no en producción). Las cajas en producción no pueden ser modificadas mediante acciones masivas.
+
+**Uso**:
+```javascript
+import PalletView from "@/components/Admin/Pallets/PalletDialog/PalletView";
+
+function PalletPage({ palletId }) {
+  return <PalletView palletId={palletId} />;
+}
+```
+
+**Acceso a acciones masivas**:
+- Pestaña "Acciones Masivas" en el menú principal de pestañas del editor
+- Interfaz dedicada con vista previa de todas las cajas
+- Validación automática de datos antes de aplicar cambios
+- Panel informativo con instrucciones de uso
 
 **Usa `usePallet` hook** para lógica de negocio.
 

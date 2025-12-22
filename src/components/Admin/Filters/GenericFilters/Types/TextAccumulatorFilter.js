@@ -67,14 +67,14 @@ const TextAccumulatorFilter = ({ label, name, value, placeholder, onAdd, onDelet
                         </div>
                     </div>
 
-                    <p className="text-xs text-foreground-700 mt-2 flex gap-1">
+                    <div className="text-xs text-foreground-700 mt-2 flex gap-1">
                         • Introduce el valor y pulsa
                         <Badge variant="outline" className="text-xs w-fit flex items-end gap-1 pt-0">
                             <CornerDownLeft className="h-3 w-3" />
                             <span>Enter</span>
                         </Badge>
                         para añadirlo a la lista
-                    </p>
+                    </div>
                 </div>
             </div>
         </div>

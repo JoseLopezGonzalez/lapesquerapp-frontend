@@ -369,10 +369,14 @@ usePallet({ id, onChange, initialStoreId, initialOrderId })
       add: Function,                       // Añadir caja
       duplicate: Function,                // Duplicar caja
       delete: Function,                   // Eliminar caja
-      edit: {                            // Editar caja
+      edit: {                            // Editar caja individual
         product: Function,
         lot: Function,
         netWeight: Function
+      },
+      bulkEdit: {                        // Edición masiva (solo cajas disponibles)
+        changeLot: Function,             // Cambiar lote de múltiples cajas disponibles
+        changeNetWeight: Function        // Cambiar peso de múltiples cajas disponibles
       }
     },
     observations: Function,               // Editar observaciones
@@ -425,7 +429,13 @@ usePallet({ id, onChange, initialStoreId, initialOrderId })
    - Genera resumen de productos
    - Genera datos para gráfico de pastel
 
-6. **Guardado**:
+6. **Edición masiva**:
+   - `bulkEdit.changeLot`: Cambia el lote de todas las cajas disponibles
+   - `bulkEdit.changeNetWeight`: Cambia el peso de todas las cajas disponibles
+   - **Restricción**: Solo se aplican cambios a cajas disponibles (no en producción)
+   - Las cajas en producción no pueden ser modificadas mediante acciones masivas
+
+7. **Guardado**:
    - Si `id === null`: Crea nuevo pallet
    - Si `id` existe: Actualiza pallet existente
    - Llama `onChange` con pallet actualizado
