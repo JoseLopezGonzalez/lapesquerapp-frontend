@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { AlertTriangle, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -14,14 +14,20 @@ import { EmptyState } from '@/components/Utilities/EmptyState/index';
 const OrderProduction = () => {
     const { mergedProductDetails } = useOrderContext();
 
-    const hasDiscrepancy = mergedProductDetails.some(detail => detail.status !== 'success');
+    // Memoizar el cálculo de discrepancias
+    const hasDiscrepancy = useMemo(() => {
+        return mergedProductDetails.some(detail => detail.status !== 'success');
+    }, [mergedProductDetails]);
 
-    const totals = mergedProductDetails.reduce((acc, detail) => {
-        acc.plannedQuantity += detail.plannedQuantity;
-        acc.productionQuantity += detail.productionQuantity;
-        acc.quantityDifference += detail.quantityDifference;
-        return acc;
-    }, { plannedQuantity: 0, productionQuantity: 0, quantityDifference: 0 });
+    // Memoizar el cálculo de totales
+    const totals = useMemo(() => {
+        return mergedProductDetails.reduce((acc, detail) => {
+            acc.plannedQuantity += detail.plannedQuantity;
+            acc.productionQuantity += detail.productionQuantity;
+            acc.quantityDifference += detail.quantityDifference;
+            return acc;
+        }, { plannedQuantity: 0, productionQuantity: 0, quantityDifference: 0 });
+    }, [mergedProductDetails]);
 
     return (
         <div className="h-full pb-2 ">
@@ -74,8 +80,8 @@ const OrderProduction = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {mergedProductDetails.map((detail, index) => (
-                                        <TableRow key={index} className='text-nowrap'>
+                                    {mergedProductDetails.map((detail) => (
+                                        <TableRow key={`${detail.product.id}-${detail.status}`} className='text-nowrap'>
                                             <TableCell className="font-medium">{detail.product.name}</TableCell>
                                             <TableCell>
                                                 {detail.status === 'noPlanned' ? (
