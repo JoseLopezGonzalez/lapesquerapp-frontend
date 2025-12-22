@@ -1623,7 +1623,7 @@ export const configs = {
             registered: { label: "Registrado", color: "secondary", outline: true },
             stored: { label: "Almacenado", color: "warning", outline: true },
             shipped: { label: "Enviado", color: "success", outline: true },
-            processed: { label: "Procesado", color: "destructive", outline: true },
+            processed: { label: "Procesado", color: "primary", outline: true },
             default: { label: "Desconocido", color: "secondary", outline: true },
           }
         },
