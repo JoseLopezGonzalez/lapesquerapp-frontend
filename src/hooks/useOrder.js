@@ -158,7 +158,8 @@ export function useOrder(orderId, onChange) {
         updateOrder(orderId, updateData, token)
             .then((updated) => {
                 setOrder(updated);
-                onChange();
+                // Pasar el pedido actualizado al onChange para actualizar el listado sin recargar
+                onChange(updated);
                 return updated;
             })
             .catch((err) => {

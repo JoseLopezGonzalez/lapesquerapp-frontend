@@ -44,8 +44,23 @@ export default function OrdersManager() {
     const [reload, setReload] = useState(false);
 
 
-    const handleOnChange = () => {
-        setReload(prev => !prev);
+    // Función para actualizar un pedido en el listado sin recargar desde el endpoint
+    const updateOrderInList = (updatedOrder) => {
+        setOrders(prevOrders => {
+            return prevOrders.map(order => 
+                order.id === updatedOrder.id ? updatedOrder : order
+            );
+        });
+    };
+
+    const handleOnChange = (updatedOrder = null) => {
+        // Si se pasa un pedido actualizado, actualizar el listado localmente
+        if (updatedOrder) {
+            updateOrderInList(updatedOrder);
+        } else {
+            // Si no se pasa nada, recargar desde el endpoint (comportamiento anterior)
+            setReload(prev => !prev);
+        }
     }
 
     useEffect(() => {
