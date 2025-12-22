@@ -138,11 +138,18 @@ export function useOrder(orderId, onChange) {
     }, [orderId, session?.user?.accessToken]);
 
     // Memoizar mergedProductDetails para evitar recálculos innecesarios
-    // Usar las referencias de los arrays directamente - cuando se actualizan, se crean nuevos arrays
+    // Usar una clave basada en la longitud y contenido para detectar cambios
+    const plannedDetailsKey = order?.plannedProductDetails 
+        ? `${order.plannedProductDetails.length}-${order.plannedProductDetails.map(d => d.id).join(',')}`
+        : '0';
+    const productionDetailsKey = order?.productionProductDetails
+        ? `${order.productionProductDetails.length}-${order.productionProductDetails.map(d => d.product?.id).join(',')}`
+        : '0';
+    
     const mergedProductDetails = useMemo(() => {
         if (!order) return [];
         return mergeOrderDetails(order.plannedProductDetails, order.productionProductDetails);
-    }, [order?.plannedProductDetails, order?.productionProductDetails]);
+    }, [order, plannedDetailsKey, productionDetailsKey]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
@@ -180,23 +187,29 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         updateOrderPlannedProductDetail(id, updateData, token)
             .then((updated) => {
-                // Actualizar estado local creando un nuevo objeto para forzar re-render
+                // Actualizar estado local inmediatamente para respuesta rápida
                 setOrder(prevOrder => {
                     if (!prevOrder) return prevOrder;
+                    // Crear un nuevo array completamente nuevo para forzar la actualización
                     const updatedPlannedDetails = prevOrder.plannedProductDetails.map((detail) => {
                         if (detail.id === updated.id) {
-                            return updated;
+                            // Crear un nuevo objeto para el detalle actualizado
+                            return { ...updated };
                         } else {
-                            return detail;
+                            // Crear nuevos objetos para los demás detalles también
+                            return { ...detail };
                         }
                     });
-                    // Crear un nuevo objeto order para forzar la actualización
+                    // Crear un nuevo objeto order completamente nuevo para forzar la actualización
                     return {
                         ...prevOrder,
-                        plannedProductDetails: updatedPlannedDetails
+                        plannedProductDetails: [...updatedPlannedDetails] // Spread para crear nuevo array
                     };
                 });
-                onChange?.();
+                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
+                reload().then(() => {
+                    onChange?.();
+                });
             })
             .catch((err) => {
                 setError(err);
@@ -208,15 +221,22 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         deleteOrderPlannedProductDetail(id, token)
             .then(() => {
-                // Actualizar estado local creando un nuevo objeto para forzar re-render
+                // Actualizar estado local inmediatamente para respuesta rápida
                 setOrder(prevOrder => {
                     if (!prevOrder) return prevOrder;
+                    // Crear un nuevo array completamente nuevo
+                    const filteredDetails = prevOrder.plannedProductDetails
+                        .filter((detail) => detail.id !== id)
+                        .map(detail => ({ ...detail })); // Crear nuevos objetos para cada detalle
                     return {
                         ...prevOrder,
-                        plannedProductDetails: prevOrder.plannedProductDetails.filter((detail) => detail.id !== id)
+                        plannedProductDetails: [...filteredDetails] // Spread para crear nuevo array
                     };
                 });
-                onChange?.();
+                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
+                reload().then(() => {
+                    onChange?.();
+                });
             })
             .catch((err) => {
                 setError(err);
@@ -228,15 +248,20 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         createOrderPlannedProductDetail(detailData, token)
             .then((created) => {
-                // Actualizar estado local creando un nuevo objeto para forzar re-render
+                // Actualizar estado local inmediatamente para respuesta rápida
                 setOrder(prevOrder => {
                     if (!prevOrder) return prevOrder;
+                    // Crear nuevos objetos para todos los detalles existentes
+                    const existingDetails = prevOrder.plannedProductDetails.map(detail => ({ ...detail }));
                     return {
                         ...prevOrder,
-                        plannedProductDetails: [...prevOrder.plannedProductDetails, created]
+                        plannedProductDetails: [...existingDetails, { ...created }] // Spread para crear nuevo array
                     };
                 });
-                onChange?.();
+                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
+                reload().then(() => {
+                    onChange?.();
+                });
             })
             .catch((err) => {
                 setError(err);
@@ -250,7 +275,10 @@ export function useOrder(orderId, onChange) {
         create: createPlannedProductDetail,
     }
 
-    const plannedProductDetails = order?.plannedProductDetails || [];
+    // Memoizar plannedProductDetails para asegurar que se actualice cuando cambie order
+    const plannedProductDetails = useMemo(() => {
+        return order?.plannedProductDetails ? [...order.plannedProductDetails] : [];
+    }, [order?.plannedProductDetails]);
 
 
     /* ---------------------- */
