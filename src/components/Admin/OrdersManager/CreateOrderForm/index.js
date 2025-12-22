@@ -246,7 +246,19 @@ const CreateOrderForm = ({ onCreate }) => {
                     <Loader />
                 </div>
             ) : (
-                <form onSubmit={handleSubmit(handleCreate)} className="flex flex-col gap-8">
+                <form onSubmit={handleSubmit(
+                    handleCreate,
+                    (formErrors) => {
+                        // Mostrar toast cuando hay errores de validación
+                        const errorCount = Object.keys(formErrors).length;
+                        toast.error(
+                            errorCount > 1 
+                                ? `Por favor, corrige los ${errorCount} errores en el formulario` 
+                                : 'Por favor, corrige el error en el formulario',
+                            getToastTheme()
+                        );
+                    }
+                )} className="flex flex-col gap-8">
                     {formGroups.map((group) => (
                         <div key={group.group} className="w-full">
                             <h3 className="text-sm font-medium text-muted-foreground">{group.group}</h3>
