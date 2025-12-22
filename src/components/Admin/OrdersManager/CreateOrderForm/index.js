@@ -2,7 +2,7 @@
 'use client'
 
 // Importaciones existentes (mantenerlas o refactorizar si es necesario)
-import React, { useEffect, useCallback } from 'react'; // Añadido useCallback
+import React, { useEffect, useCallback, useRef } from 'react'; // Añadido useCallback y useRef
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,11 @@ const CreateOrderForm = ({ onCreate }) => {
 
     const { defaultValues, formGroups, loading, handleGetCustomer } = useOrderCreateFormConfig(); // Asumiendo que handleGetCustomer no hace llamadas directas a fetchWithTenant aquí
 
+    // Ref para rastrear si el formulario ya fue inicializado
+    const isInitializedRef = useRef(false);
+    // Ref para rastrear el último customer seleccionado y evitar llamadas duplicadas
+    const lastCustomerIdRef = useRef(null);
+
     const {
         register,
         handleSubmit,
@@ -55,10 +60,14 @@ const CreateOrderForm = ({ onCreate }) => {
         mode: 'onChange',
     });
 
+    // Watch del customer para el efecto de carga de datos
+    const selectedCustomerId = watch('customer');
+
     // Efecto para cargar datos del cliente cuando cambia el cliente seleccionado
     useEffect(() => {
-        const selectedCustomerId = watch('customer');
-        if (!selectedCustomerId) return;
+        if (!selectedCustomerId || selectedCustomerId === lastCustomerIdRef.current) return;
+        
+        lastCustomerIdRef.current = selectedCustomerId;
 
         // Asegúrate de que 'getCustomer' en services/customerService.js obtenga el token internamente
         // o que tu hook useOrderCreateFormConfig ya lo maneje si 'handleGetCustomer' lo llama.
@@ -82,20 +91,24 @@ const CreateOrderForm = ({ onCreate }) => {
                 console.error('Error al cargar datos del cliente:', err);
                 toast.error('Error al cargar la información del cliente. Intente de nuevo.', getToastTheme());
             });
-    }, [watch('customer'), setValue, session]); // Añadido setValue y session a las dependencias
+    }, [selectedCustomerId, setValue, session]); // Usar selectedCustomerId directamente en lugar de watch('customer')
 
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'plannedProducts',
     });
 
-    // Efecto para resetear el formulario con valores por defecto
+    // Efecto para inicializar el formulario solo cuando loading cambia de true a false por primera vez
     useEffect(() => {
-        reset({
-            ...defaultValues,
-            plannedProducts: [],
-        });
-    }, [defaultValues, reset]); // Añadido reset a las dependencias
+        // Solo resetear cuando loading termine por primera vez y el formulario no haya sido inicializado
+        if (!loading && !isInitializedRef.current && defaultValues) {
+            reset({
+                ...defaultValues,
+                plannedProducts: [],
+            });
+            isInitializedRef.current = true;
+        }
+    }, [loading, defaultValues, reset]); // Solo resetear cuando loading cambia
 
     // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {
@@ -135,7 +148,13 @@ const CreateOrderForm = ({ onCreate }) => {
             const newOrderData = await createOrder(payload);
 
             toast.success('Pedido creado correctamente', { id: toastId });
-            reset(); // Resetea el formulario después de una creación exitosa
+            // Resetea el formulario después de una creación exitosa
+            reset({
+                ...defaultValues,
+                plannedProducts: [],
+            });
+            // Resetear referencias para permitir que se carguen los datos del cliente de nuevo si se selecciona
+            lastCustomerIdRef.current = null;
             onCreate(newOrderData.id); // Llama a la prop onCreate con el ID del nuevo pedido
 
         } catch (error) {
