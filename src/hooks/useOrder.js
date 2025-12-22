@@ -2,7 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
-import { deletePallet, unlinkPalletFromOrder } from '@/services/palletService';
+import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -680,6 +680,50 @@ export function useOrder(orderId, onChange) {
         }
     };
 
+    const onLinkPallets = async (palletIds) => {
+        const token = session?.user?.accessToken;
+        if (!order?.id) {
+            toast.error('No se puede vincular palets: el pedido no tiene ID');
+            return;
+        }
+
+        try {
+            // Si solo hay un palet, usar el endpoint individual
+            if (palletIds.length === 1) {
+                const result = await linkPalletToOrder(palletIds[0], order.id, token);
+                toast.success(result.message || 'Palet vinculado correctamente', getToastTheme());
+            } else {
+                // Si hay múltiples palets, usar el endpoint de múltiples vinculaciones
+                const palletsData = palletIds.map(id => ({ id, orderId: order.id }));
+                const result = await linkPalletsToOrders(palletsData, token);
+                
+                // Mostrar mensajes según los resultados
+                if (result.linked > 0) {
+                    toast.success(`${result.linked} palet(s) vinculado(s) correctamente`, getToastTheme());
+                }
+                if (result.already_linked > 0) {
+                    toast(` ${result.already_linked} palet(s) ya estaban vinculados`, {
+                        icon: 'ℹ️',
+                        ...getToastTheme()
+                    });
+                }
+                if (result.errors > 0) {
+                    const errorDetails = result.error_details || result.errors_details || [];
+                    errorDetails.forEach(error => {
+                        toast.error(`Palet ${error.pallet_id}: ${error.message}`, getToastTheme());
+                    });
+                }
+            }
+            
+            // Recargar para obtener los palets actualizados
+            await reload();
+            onChange?.();
+        } catch (error) {
+            toast.error(error.message || 'Error al vincular los palets', getToastTheme());
+            throw error;
+        }
+    };
+
 
 
     return {
@@ -706,6 +750,7 @@ export function useOrder(orderId, onChange) {
         onEditingPallet,
         onCreatingPallet,
         onDeletePallet,
-        onUnlinkPallet
+        onUnlinkPallet,
+        onLinkPallets
     };
 }

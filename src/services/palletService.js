@@ -324,3 +324,132 @@ export function searchPalletsByLot(lot, token) {
         .finally(() => {
         });
 }
+
+/**
+ * Obtiene palets disponibles para vincular a un pedido.
+ * Solo incluye palets en estado registered (1) o stored (2) sin pedido o del mismo pedido.
+ * @param {Object} params - Parámetros de búsqueda
+ * @param {number|string} params.orderId - ID del pedido (opcional). Si se proporciona, incluye palets sin pedido o del mismo pedido
+ * @param {string} params.id - Filtro por ID con coincidencias parciales (opcional)
+ * @param {number} params.perPage - Resultados por página (1-100, default: 20) (opcional)
+ * @param {number} params.page - Número de página (opcional)
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Object>} - Respuesta con data (array de palets), meta (paginación) y links
+ */
+export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage = 50, page = 1 }, token) {
+    const params = new URLSearchParams();
+    
+    if (orderId) {
+        params.append('orderId', orderId);
+    }
+    if (id) {
+        params.append('id', id);
+    }
+    if (perPage) {
+        params.append('perPage', perPage);
+    }
+    if (page) {
+        params.append('page', page);
+    }
+
+    return fetchWithTenant(`${API_URL_V2}pallets/available-for-order?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener palets disponibles');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}
+
+/**
+ * Vincula un palet a un pedido.
+ * @param {number|string} palletId - ID del palet a vincular.
+ * @param {number|string} orderId - ID del pedido.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend.
+ */
+export function linkPalletToOrder(palletId, orderId, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/${palletId}/link-order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            orderId: orderId,
+        }),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al vincular el palet al pedido');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}
+
+/**
+ * Vincula múltiples palets a pedidos.
+ * @param {Array<{id: number, orderId: number}>} pallets - Array de objetos con id del palet y orderId.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend con el estado de cada operación.
+ */
+export function linkPalletsToOrders(pallets, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/link-orders`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            pallets: pallets.map(p => ({ id: p.id, orderId: p.orderId })),
+        }),
+    })
+        .then((response) => {
+            // El endpoint puede retornar 207 (Multi-Status) si hay errores parciales
+            if (!response.ok && response.status !== 207) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al vincular los palets');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}
