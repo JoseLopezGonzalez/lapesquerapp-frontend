@@ -10,6 +10,40 @@ import { Input } from '@/components/ui/input';
 import { Package, Layers } from 'lucide-react';
 import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/formatNumbers';
 
+// Helper function to calculate line amount
+const calculateLineAmount = (item, groupByProduct, pricesMap, pallets) => {
+    if (!groupByProduct) {
+        // For non-grouped products, calculate amount directly
+        const priceKey = `${item.productId}-${item.lot || ''}`;
+        const price = pricesMap.get(priceKey);
+        if (price !== undefined && price !== null && !isNaN(price)) {
+            return item.totalNetWeight * parseFloat(price);
+        }
+    } else {
+        // For grouped products, calculate amount from all lots
+        let itemAmount = 0;
+        const lotArray = Array.from(item.lots).concat(['']); // Include empty lot
+        lotArray.forEach(lot => {
+            const priceKey = `${item.productId}-${lot || ''}`;
+            const price = pricesMap.get(priceKey);
+            if (price !== undefined && price !== null && !isNaN(price)) {
+                // Find weight for this specific lot from pallets
+                pallets.forEach((palletItem) => {
+                    const pallet = palletItem.pallet;
+                    (pallet?.boxes || []).forEach(box => {
+                        if (box.product?.id === item.productId && (box.lot || '') === (lot || '')) {
+                            const boxNetWeight = parseFloat(box.netWeight || 0);
+                            itemAmount += boxNetWeight * parseFloat(price);
+                        }
+                    });
+                });
+            }
+        });
+        return itemAmount;
+    }
+    return 0;
+};
+
 export default function ReceptionSummaryDialog({ 
     isOpen, 
     onClose, 
@@ -103,8 +137,17 @@ export default function ReceptionSummaryDialog({
     const productsTotals = useMemo(() => {
         const totalBoxes = productLotSummary.reduce((sum, item) => sum + item.boxesCount, 0);
         const totalWeight = productLotSummary.reduce((sum, item) => sum + item.totalNetWeight, 0);
-        return { totalBoxes, totalWeight };
-    }, [productLotSummary]);
+        
+        // Calculate total amount (sum of all line amounts)
+        const totalAmount = productLotSummary.reduce((sum, item) => {
+            return sum + calculateLineAmount(item, groupByProduct, pricesMap, pallets);
+        }, 0);
+        
+        // Calculate average price: total amount / total weight
+        const averagePrice = totalWeight > 0 ? totalAmount / totalWeight : 0;
+        
+        return { totalBoxes, totalWeight, totalAmount, averagePrice };
+    }, [productLotSummary, pricesMap, groupByProduct, pallets]);
 
     // Calculate totals for pallets table
     const palletsTotals = useMemo(() => {
@@ -164,87 +207,96 @@ export default function ReceptionSummaryDialog({
                                         <TableHead className="text-right">Cajas</TableHead>
                                         <TableHead className="text-right">Peso Neto</TableHead>
                                         <TableHead className="text-right">Precio (€/kg)</TableHead>
+                                        <TableHead className="text-right">Importe (€)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {productLotSummary.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={groupByProduct ? 5 : 6} className="text-center text-muted-foreground py-8">
+                                            <TableCell colSpan={groupByProduct ? 6 : 7} className="text-center text-muted-foreground py-8">
                                                 No hay productos en esta recepción
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        productLotSummary.map((item, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell className="font-medium align-top">{item.productName}</TableCell>
-                                                {!groupByProduct ? (
-                                                    <TableCell className="font-mono text-sm align-top">{item.lot || '(sin lote)'}</TableCell>
-                                                ) : (
-                                                    <TableCell className="align-top">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {item.lots.length > 0 ? (
-                                                                item.lots.map((lot, idx) => (
-                                                                    <span key={idx} className="text-xs font-mono bg-muted px-2 py-0.5 rounded">
-                                                                        {lot}
-                                                                    </span>
-                                                                ))
+                                        productLotSummary.map((item, index) => {
+                                            // Calculate amount for this line using helper function
+                                            const lineAmount = calculateLineAmount(item, groupByProduct, pricesMap, pallets);
+                                            
+                                            return (
+                                                <TableRow key={index}>
+                                                    <TableCell className="font-medium align-top">{item.productName}</TableCell>
+                                                    {!groupByProduct ? (
+                                                        <TableCell className="font-mono text-sm align-top">{item.lot || '(sin lote)'}</TableCell>
+                                                    ) : (
+                                                        <TableCell className="align-top">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {item.lots.length > 0 ? (
+                                                                    item.lots.map((lot, idx) => (
+                                                                        <span key={idx} className="text-xs font-mono bg-muted px-2 py-0.5 rounded">
+                                                                            {lot}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-xs text-muted-foreground">(sin lote)</span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    )}
+                                                    <TableCell className="text-right align-top">{item.boxesCount}</TableCell>
+                                                    <TableCell className="text-right align-top">{formatDecimalWeight(item.totalNetWeight)}</TableCell>
+                                                    <TableCell className="text-right align-top">
+                                                        <div className="flex justify-end">
+                                                            {!groupByProduct ? (
+                                                                // When not grouped, show editable input for single price
+                                                                (() => {
+                                                                    const priceKey = `${item.productId}-${item.lot || ''}`;
+                                                                    const priceFromMap = pricesMap.get(priceKey);
+                                                                    // Convert to string for input, handling both number and string
+                                                                    const displayPrice = priceFromMap !== undefined && priceFromMap !== null 
+                                                                        ? (typeof priceFromMap === 'number' ? priceFromMap.toString() : String(priceFromMap))
+                                                                        : '';
+                                                                    
+                                                                    return (
+                                                                        <Input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            min="0"
+                                                                            value={displayPrice}
+                                                                            onChange={(e) => {
+                                                                                const newPrice = e.target.value;
+                                                                                if (onPriceChange) {
+                                                                                    onPriceChange(item.productId, item.lot || '', newPrice);
+                                                                                }
+                                                                            }}
+                                                                            className="w-24 text-right"
+                                                                            placeholder="0.00"
+                                                                        />
+                                                                    );
+                                                                })()
                                                             ) : (
-                                                                <span className="text-xs text-muted-foreground">(sin lote)</span>
+                                                                // When grouped, show read-only multiple prices
+                                                                item.prices.length > 0 ? (
+                                                                    item.prices.length === 1 ? (
+                                                                        <span>{formatDecimal(item.prices[0])}</span>
+                                                                    ) : (
+                                                                        <div className="text-sm text-right">
+                                                                            {item.prices.map((price, idx) => (
+                                                                                <div key={idx}>{formatDecimal(price)}</div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )
+                                                                ) : (
+                                                                    <span className="text-muted-foreground text-sm">-</span>
+                                                                )
                                                             )}
                                                         </div>
                                                     </TableCell>
-                                                )}
-                                                <TableCell className="text-right align-top">{item.boxesCount}</TableCell>
-                                                <TableCell className="text-right align-top">{formatDecimalWeight(item.totalNetWeight)}</TableCell>
-                                                <TableCell className="text-right align-top">
-                                                    <div className="flex justify-end">
-                                                        {!groupByProduct ? (
-                                                            // When not grouped, show editable input for single price
-                                                            (() => {
-                                                                const priceKey = `${item.productId}-${item.lot || ''}`;
-                                                                const priceFromMap = pricesMap.get(priceKey);
-                                                                // Convert to string for input, handling both number and string
-                                                                const displayPrice = priceFromMap !== undefined && priceFromMap !== null 
-                                                                    ? (typeof priceFromMap === 'number' ? priceFromMap.toString() : String(priceFromMap))
-                                                                    : '';
-                                                                
-                                                                return (
-                                                                    <Input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        min="0"
-                                                                        value={displayPrice}
-                                                                        onChange={(e) => {
-                                                                            const newPrice = e.target.value;
-                                                                            if (onPriceChange) {
-                                                                                onPriceChange(item.productId, item.lot || '', newPrice);
-                                                                            }
-                                                                        }}
-                                                                        className="w-24 text-right"
-                                                                        placeholder="0.00"
-                                                                    />
-                                                                );
-                                                            })()
-                                                        ) : (
-                                                            // When grouped, show read-only multiple prices
-                                                            item.prices.length > 0 ? (
-                                                                item.prices.length === 1 ? (
-                                                                    <span>{formatDecimal(item.prices[0])}</span>
-                                                                ) : (
-                                                                    <div className="text-sm text-right">
-                                                                        {item.prices.map((price, idx) => (
-                                                                            <div key={idx}>{formatDecimal(price)}</div>
-                                                                        ))}
-                                                                    </div>
-                                                                )
-                                                            ) : (
-                                                                <span className="text-muted-foreground text-sm">-</span>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
+                                                    <TableCell className="text-right align-top font-medium">
+                                                        {lineAmount > 0 ? formatDecimal(lineAmount) : '-'}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })
                                     )}
                                     {productLotSummary.length > 0 && (
                                         <TableRow className="bg-muted/50 font-semibold">
@@ -253,7 +305,10 @@ export default function ReceptionSummaryDialog({
                                             {groupByProduct && <TableCell></TableCell>}
                                             <TableCell className="text-right font-semibold">{productsTotals.totalBoxes}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalWeight(productsTotals.totalWeight)}</TableCell>
-                                            <TableCell className="text-right"></TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                                {productsTotals.averagePrice > 0 ? formatDecimal(productsTotals.averagePrice) : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimal(productsTotals.totalAmount)}</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>

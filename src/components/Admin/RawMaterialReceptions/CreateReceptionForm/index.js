@@ -38,6 +38,18 @@ const TARE_OPTIONS = [
     { value: '5', label: '5kg' },
 ];
 
+// Helper function to normalize date to avoid timezone issues
+const normalizeDate = (date) => {
+    if (!date) {
+        const today = new Date();
+        today.setHours(12, 0, 0, 0);
+        return today;
+    }
+    const normalized = date instanceof Date ? new Date(date) : new Date(date);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
+};
+
 const CreateReceptionForm = ({ onSuccess }) => {
     const { productOptions } = useProductOptions();
     const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
@@ -64,7 +76,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
     } = useForm({
         defaultValues: {
             supplier: null,
-            date: new Date(),
+            date: normalizeDate(new Date()),
             notes: '',
             details: [
                 {
@@ -424,13 +436,26 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                 name="date"
                                 control={control}
                                 rules={{ required: 'La fecha es obligatoria' }}
-                                render={({ field: { onChange, value } }) => (
-                                    <DatePicker
-                                        date={value}
-                                        onChange={onChange}
-                                        formatStyle="short"
-                                    />
-                                )}
+                                render={({ field: { onChange, value } }) => {
+                                    // Ensure value is always a valid Date instance
+                                    const normalizedValue = value instanceof Date && !isNaN(value.getTime()) 
+                                        ? value 
+                                        : normalizeDate(value || new Date());
+                                    
+                                    // Normalize onChange to ensure date is always valid
+                                    const handleDateChange = (newDate) => {
+                                        const normalized = normalizeDate(newDate);
+                                        onChange(normalized);
+                                    };
+                                    
+                                    return (
+                                        <DatePicker
+                                            date={normalizedValue}
+                                            onChange={handleDateChange}
+                                            formatStyle="short"
+                                        />
+                                    );
+                                }}
                             />
                             {errors.date && (
                                 <p className="text-destructive text-sm">{errors.date.message}</p>
