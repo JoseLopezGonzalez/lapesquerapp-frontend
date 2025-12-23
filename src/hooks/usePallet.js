@@ -413,6 +413,69 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             ));
 
             toast.success(`Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+        },
+        
+        /**
+         * Suma o resta peso a múltiples cajas disponibles
+         * @param {Array<number>} boxIds - Array de IDs de cajas a editar. Si es null, edita todas las cajas disponibles
+         * @param {number} weightDifference - Peso a sumar o restar (positivo para sumar, negativo para restar)
+         */
+        addOrSubtractWeight: (boxIds, weightDifference) => {
+            if (!temporalPallet) return;
+            
+            // Siempre filtrar solo cajas disponibles (no en producción)
+            const boxesToEdit = boxIds 
+                ? temporalPallet.boxes.filter(box => boxIds.includes(box.id) && box.isAvailable !== false)
+                : temporalPallet.boxes.filter(box => box.isAvailable !== false);
+
+            if (boxesToEdit.length === 0) {
+                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                return;
+            }
+
+            const parsedDifference = parseFloat(weightDifference);
+            if (isNaN(parsedDifference)) {
+                toast.error('El peso debe ser un número válido', getToastTheme());
+                return;
+            }
+
+            if (parsedDifference === 0) {
+                toast.error('El peso a sumar/restar no puede ser cero', getToastTheme());
+                return;
+            }
+
+            // Contar cajas que tendrían peso <= 0 antes de actualizar
+            const boxesWithInvalidResult = boxesToEdit.filter(box => {
+                const newWeight = box.netWeight + parsedDifference;
+                return newWeight <= 0;
+            }).length;
+
+            setTemporalPallet((prev) => {
+                const newBoxes = prev.boxes.map((box) => {
+                    const shouldEdit = boxesToEdit.some(b => b.id === box.id);
+                    if (shouldEdit) {
+                        const newWeight = box.netWeight + parsedDifference;
+                        if (newWeight <= 0) {
+                            return box; // No modificar cajas que resultarían con peso <= 0
+                        }
+                        return { ...box, netWeight: newWeight, gs1128: getGs1128(box.product.id, box.lot, newWeight) };
+                    }
+                    return box;
+                });
+
+                return recalculatePalletStats({
+                    ...prev,
+                    boxes: newBoxes
+                });
+            });
+
+            const successfullyUpdated = boxesToEdit.length - boxesWithInvalidResult;
+            if (boxesWithInvalidResult > 0) {
+                toast.warning(`${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja actualizada' : 'cajas actualizadas'}. ${boxesWithInvalidResult} ${boxesWithInvalidResult === 1 ? 'caja no se pudo actualizar' : 'cajas no se pudieron actualizar'} (el peso resultante sería negativo o cero)`, getToastTheme());
+            } else {
+                const action = parsedDifference > 0 ? 'sumado' : 'restado';
+                toast.success(`${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+            }
         }
     };
 

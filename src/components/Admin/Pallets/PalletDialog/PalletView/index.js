@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -82,8 +82,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const [selectedBox, setSelectedBox] = useState(null);
     const [activeTab, setActiveTab] = useState("disponibles");
-    const [bulkActionType, setBulkActionType] = useState(null); // 'lot' o 'weight'
+    const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight' o 'weightAdd'
     const [bulkActionValue, setBulkActionValue] = useState('');
+    const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -1116,7 +1117,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 <CardContent className="space-y-4">
                                                     <div className="space-y-2">
                                                         <Label>Selecciona la acción a realizar</Label>
-                                                        <div className="grid grid-cols-2 gap-3">
+                                                        <div className="grid grid-cols-3 gap-3">
                                                             <Button
                                                                 variant={bulkActionType === 'lot' ? 'default' : 'outline'}
                                                                 onClick={() => {
@@ -1141,14 +1142,58 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Weight className="h-5 w-5" />
                                                                 <span>Cambiar Peso</span>
                                                             </Button>
+                                                            <Button
+                                                                variant={bulkActionType === 'weightAdd' ? 'default' : 'outline'}
+                                                                onClick={() => {
+                                                                    setBulkActionType('weightAdd');
+                                                                    setBulkActionValue('');
+                                                                    setWeightOperation('add');
+                                                                }}
+                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                disabled={isReadOnly}
+                                                            >
+                                                                <Plus className="h-5 w-5" />
+                                                                <span>Sumar/Restar Peso</span>
+                                                            </Button>
                                                         </div>
                                                     </div>
 
                                                     {bulkActionType && (
                                                         <>
+                                                            {bulkActionType === 'weightAdd' && (
+                                                                <div className="space-y-2">
+                                                                    <Label>Operación</Label>
+                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                        <Button
+                                                                            variant={weightOperation === 'add' ? 'default' : 'outline'}
+                                                                            onClick={() => setWeightOperation('add')}
+                                                                            className="h-auto py-2 flex items-center justify-center gap-2"
+                                                                            disabled={isReadOnly}
+                                                                            type="button"
+                                                                        >
+                                                                            <Plus className="h-4 w-4" />
+                                                                            <span>Sumar</span>
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant={weightOperation === 'subtract' ? 'default' : 'outline'}
+                                                                            onClick={() => setWeightOperation('subtract')}
+                                                                            className="h-auto py-2 flex items-center justify-center gap-2"
+                                                                            disabled={isReadOnly}
+                                                                            type="button"
+                                                                        >
+                                                                            <Minus className="h-4 w-4" />
+                                                                            <span>Restar</span>
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                             <div className="space-y-2">
                                                                 <Label>
-                                                                    {bulkActionType === 'lot' ? 'Nuevo Lote' : 'Nuevo Peso Neto (kg)'}
+                                                                    {bulkActionType === 'lot' 
+                                                                        ? 'Nuevo Lote' 
+                                                                        : bulkActionType === 'weight'
+                                                                        ? 'Nuevo Peso Neto (kg)'
+                                                                        : 'Peso a ' + (weightOperation === 'add' ? 'sumar' : 'restar') + ' (kg)'}
                                                                 </Label>
                                                                 {bulkActionType === 'lot' ? (
                                                                     <Input
@@ -1194,10 +1239,18 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 null,
                                                                                 parseFloat(bulkActionValue)
                                                                             );
+                                                                        } else if (bulkActionType === 'weightAdd') {
+                                                                            const weightValue = parseFloat(bulkActionValue);
+                                                                            const weightDifference = weightOperation === 'add' ? weightValue : -weightValue;
+                                                                            editPallet.box.bulkEdit.addOrSubtractWeight(
+                                                                                null,
+                                                                                weightDifference
+                                                                            );
                                                                         }
 
                                                                         setBulkActionType(null);
                                                                         setBulkActionValue('');
+                                                                        setWeightOperation('add');
                                                                     }}
                                                                     disabled={!bulkActionValue || bulkActionValue.trim() === '' || isReadOnly}
                                                                 >
@@ -1232,6 +1285,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     <ul className="list-disc list-inside space-y-1 ml-2">
                                                         <li><strong>Cambiar Lote:</strong> Aplica un nuevo lote a todas las cajas disponibles</li>
                                                         <li><strong>Cambiar Peso:</strong> Aplica un nuevo peso neto a todas las cajas disponibles</li>
+                                                        <li><strong>Sumar/Restar Peso:</strong> Suma o resta un valor de peso a todas las cajas disponibles</li>
                                                         <li><strong>Importante:</strong> Los cambios solo se aplican a cajas disponibles (no en producción). Las cajas en producción no pueden ser modificadas.</li>
                                                     </ul>
                                                 </CardContent>
