@@ -214,7 +214,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const getGs1128 = (productId, lot, netWeight) => {
         const boxGtin = getBoxGtinById(productId);
-        const formattedNetWeight = netWeight.toFixed(2).replace('.', '').padStart(6, '0');
+        const weight = parseFloat(netWeight) || 0;
+        const formattedNetWeight = weight.toFixed(2).replace('.', '').padStart(6, '0');
         return `(01)${boxGtin}(3100)${formattedNetWeight}(10)${lot}`;
     }
 
@@ -446,7 +447,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             // Contar cajas que tendrían peso <= 0 antes de actualizar
             const boxesWithInvalidResult = boxesToEdit.filter(box => {
-                const newWeight = box.netWeight + parsedDifference;
+                const currentWeight = parseFloat(box.netWeight) || 0;
+                const newWeight = currentWeight + parsedDifference;
                 return newWeight <= 0;
             }).length;
 
@@ -454,7 +456,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 const newBoxes = prev.boxes.map((box) => {
                     const shouldEdit = boxesToEdit.some(b => b.id === box.id);
                     if (shouldEdit) {
-                        const newWeight = box.netWeight + parsedDifference;
+                        const currentWeight = parseFloat(box.netWeight) || 0;
+                        const newWeight = currentWeight + parsedDifference;
                         if (newWeight <= 0) {
                             return box; // No modificar cajas que resultarían con peso <= 0
                         }
