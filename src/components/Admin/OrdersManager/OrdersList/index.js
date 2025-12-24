@@ -73,12 +73,12 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
 
     return (
-        <div className='flex flex-col h-full pt-5   px-7'>
-            <div className='w-full flex items-center justify-between pb-3'>
+        <div className='flex flex-col h-full pt-4 sm:pt-5 px-4 sm:px-7'>
+            <div className='w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pb-3'>
                 <div className='flex flex-col gap-1'>
-                    <h2 className=' text-xl  dark:text-white font-semibold'>Pedidos Activos</h2>
+                    <h2 className='text-lg sm:text-xl dark:text-white font-semibold'>Pedidos Activos</h2>
                     {orders.length > 0 && (
-                        <p className='text-sm text-muted-foreground'>
+                        <p className='text-xs sm:text-sm text-muted-foreground'>
                             {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
                         </p>
                     )}
@@ -88,8 +88,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts}>
-                                <Download className='h-5 w-5' />
+                            <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts} className="h-9 w-9 sm:h-10 sm:w-10">
+                                <Download className='h-4 w-4 sm:h-5 sm:w-5' />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -98,8 +98,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button size="icon" variant='' onClick={onClickAddNewOrder}>
-                                <Plus className='h-5 w-5' />
+                            <Button size="icon" variant='' onClick={onClickAddNewOrder} className="h-9 w-9 sm:h-10 sm:w-10">
+                                <Plus className='h-4 w-4 sm:h-5 sm:w-5' />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -120,15 +120,22 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                         {/* input search  */}
                         <div className='relative w-full text-sm'>
-                            <Input onChange={(e) => onChangeSearch(e.target.value)} value={searchText}
-                                type="text" placeholder='Buscar por id o cliente' className='w-full py-2 px-5' />
-                            <button className='absolute right-0 top-0 h-full w-10 flex items-center justify-center'>
+                            <Input 
+                                onChange={(e) => onChangeSearch(e.target.value)} 
+                                value={searchText}
+                                type="text" 
+                                placeholder='Buscar por id o cliente' 
+                                className='w-full py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base' 
+                            />
+                            <button 
+                                className='absolute right-0 top-0 h-full w-10 sm:w-12 flex items-center justify-center'
+                                onClick={() => searchText.length > 0 && onChangeSearch('')}
+                            >
                                 {searchText.length > 0 ? (
-                                    <XMarkIcon onClick={() => onChangeSearch('')} className='h-4 w-4 text-white dark:text-white' />
-                                )
-                                    : (
-                                        <MagnifyingGlassIcon className='h-4 w-4 text-white dark:text-white' />
-                                    )}
+                                    <XMarkIcon className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground' />
+                                ) : (
+                                    <MagnifyingGlassIcon className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground' />
+                                )}
                             </button>
                         </div>
 
@@ -140,13 +147,15 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                         {/* Tab Shadcn categories */}
                         <Tabs value={activeTab} onValueChange={onClickCategory} className='mt-5'>
-                            <TabsList>
-                                {categories.map((category) =>
-                                    <TabsTrigger key={category.name} value={category.name}>{category.label}</TabsTrigger>
-                                )}
-
-                            </TabsList>
-
+                            <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+                                <TabsList className="w-max min-w-full sm:min-w-0">
+                                    {categories.map((category) =>
+                                        <TabsTrigger key={category.name} value={category.name} className="whitespace-nowrap text-xs sm:text-sm">
+                                            {category.label}
+                                        </TabsTrigger>
+                                    )}
+                                </TabsList>
+                            </div>
                         </Tabs>
                     </div>
 
@@ -169,7 +178,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Lista de orders */}
                     {orders?.length > 0 ? (
-                        <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto xl:pr-2 pb-4 mb-4  xl:flex-col gap-3 scrollbar-hide xl:scrollbar-default xl:flex hidden">
+                        <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto pr-2 pb-4 mb-4 flex flex-col gap-3 scrollbar-hide">
 
                             {orders.map((order) => (
                                 <div key={order.id} className='' >

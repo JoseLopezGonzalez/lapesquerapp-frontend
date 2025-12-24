@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake } from 'lucide-react';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Lazy load de componentes pesados para mejorar el rendimiento inicial
 const OrderPallets = lazy(() => import('./OrderPallets'));
@@ -82,8 +83,8 @@ const getTransportImage = (transportName) => {
   return '/images/transports/trailer.png';
 };
 
-const OrderContent = ({ onLoading }) => {
-
+const OrderContent = ({ onLoading, onClose }) => {
+  const isMobile = useIsMobile();
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
 
   useEffect(() => {
@@ -165,10 +166,23 @@ const OrderContent = ({ onLoading }) => {
           <Loader />
         </div>
       ) : (
-        <Card className='p-9 h-full w-full '>
-          <div className='h-full flex flex-col w-full'>
-            <div className='flex justify-between -mt-6 lg:-mt-2'>
-              <div className='space-y-1 '>
+        <Card className='p-4 sm:p-6 lg:p-9 h-full w-full relative'>
+          {/* Botones móviles - sticky bottom bar */}
+          {isMobile && onClose && (
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg">
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver
+              </Button>
+              <OrderEditSheet />
+              <Button variant="outline" onClick={handleOnClickPrint} size="icon">
+                <Printer className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          <div className='h-full flex flex-col w-full pb-16 lg:pb-0'>
+            <div className='flex flex-col sm:flex-row sm:justify-between gap-4 -mt-4 sm:-mt-6 lg:-mt-2'>
+              <div className='space-y-1 flex-1'>
                 {order && renderStatusBadge(order.status)}
 
                 {/* {order.status === 'pending' && (
@@ -186,11 +200,11 @@ const OrderContent = ({ onLoading }) => {
                     Terminado
                   </span>)
                 } */}
-                <h3 className='text-xl font-medium '>#{order.id}</h3>
+                <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
                 <div className=''>
                   <p className=''>
-                    <span className='font-light text-3xl'>{order.customer.name}</span> <br />
-                    <span className='text-lg font-medium'>Cliente Nº {order.customer.id}</span>
+                    <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
+                    <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
                   </p>
                 </div>
                 <div className=''>
@@ -226,6 +240,7 @@ const OrderContent = ({ onLoading }) => {
 
                 </div>
               </div>
+              {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
               <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
                 <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
                   <div className="flex gap-2">
@@ -247,29 +262,39 @@ const OrderContent = ({ onLoading }) => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className='flex flex-col  items-end justify-center'>
-                    <img className="" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <h3 className='text-2xl font-light '>{order.transport.name}</h3>
+                  <div className='flex flex-col items-end justify-center'>
+                    <img className="max-w-[120px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                    <h3 className='text-xl sm:text-2xl font-light'>{order.transport.name}</h3>
                   </div>
                 </div>
               </div>
+              
+              {/* Imagen de transporte en móvil (opcional, más compacta) */}
+              {isMobile && (
+                <div className='flex flex-col items-start sm:items-end justify-center mt-2 sm:mt-0'>
+                  <img className="max-w-[100px] sm:max-w-[120px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                  <h3 className='text-lg sm:text-xl font-light'>{order.transport.name}</h3>
+                </div>
+              )}
             </div>
             <div className='flex-1 w-full overflow-y-hidden '>
-              <div className="container mx-auto py-3 space-y-8 h-full w-full">
+              <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
-                  <TabsList className='w-fit'>
-                    <TabsTrigger value="details">Detalles</TabsTrigger>
-                    <TabsTrigger value="products">Previsión</TabsTrigger>
-                    <TabsTrigger value="productDetails">Detalle productos</TabsTrigger>
-                    <TabsTrigger value="production">Producción</TabsTrigger>
-                    <TabsTrigger value="labels">Etiquetas</TabsTrigger>
-                    <TabsTrigger value="pallets">Palets</TabsTrigger>
-                    <TabsTrigger value="documents">Envio de Documentos</TabsTrigger>
-                    <TabsTrigger value="export">Exportar</TabsTrigger>
-                    <TabsTrigger value="map">Mapa</TabsTrigger>
-                    <TabsTrigger value="incident">Incidencia</TabsTrigger>
-                    <TabsTrigger value="customer-history">Histórico</TabsTrigger>
-                  </TabsList>
+                  <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0 mb-4">
+                    <TabsList className='w-max min-w-full sm:min-w-0'>
+                      <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
+                      <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
+                      <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
+                      <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
+                      <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
+                      <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
+                      <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
+                      <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
+                      <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
+                      <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
+                      <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
+                    </TabsList>
+                  </div>
                   <div className="flex-1 overflow-y-hidden w-full">
                     {/* Tab Details - siempre cargado ya que es el default */}
                     <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
@@ -349,17 +374,18 @@ const OrderContent = ({ onLoading }) => {
 }
 
 
-const Order = ({ orderId, onChange, onLoading }) => {
+const Order = ({ orderId, onChange, onLoading, onClose }) => {
 
 
   return (
     <OrderProvider orderId={orderId} onChange={onChange} >
-      <OrderContent onLoading={onLoading} />
+      <OrderContent onLoading={onLoading} onClose={onClose} />
     </OrderProvider>
   )
 }
 
 export default Order
+
 
 
 

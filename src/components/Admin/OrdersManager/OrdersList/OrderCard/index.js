@@ -13,7 +13,7 @@ const OrderCard = ({ order, onClick, disabled }) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = loadDateObj && tomorrow.toDateString() === loadDateObj.toDateString();
 
-    const baseClass = "relative flex  rounded-xl p-5 border-l-4"
+    const baseClass = "relative flex rounded-xl p-4 sm:p-5 border-l-4"
 
     let statusClass = ''
 
@@ -72,32 +72,34 @@ const OrderCard = ({ order, onClick, disabled }) => {
             onClick={() => !disabled && onClick()}
         >
             {isToday && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full  text-muted-foreground">
-                    {isToday && 'Hoy'}
+                <span className="absolute top-3 sm:top-4 right-3 sm:right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full text-muted-foreground z-10">
+                    Hoy
                 </span>)}
 
             {isTomorrow && (
-                <span className="absolute top-5 right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full  text-muted-foreground">
-                    {isTomorrow && 'Mañana'}
+                <span className="absolute top-3 sm:top-4 right-3 sm:right-4 text-xs animate-pulse bg-foreground-200 px-2 py-0.5 rounded-full text-muted-foreground z-10">
+                    Mañana
                 </span>)}
 
-            < div className='grow  xl:w-48 space-y-1'>
+            <div className='grow w-full max-w-xs xl:max-w-none space-y-1 sm:space-y-2'>
                 <StatusBadge
                     color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                     label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
                 />
-                <h3 className='text-xl font-medium'>#{orderId}</h3>
+                <h3 className='text-lg sm:text-xl font-medium'>#{orderId}</h3>
                 <div>
-                    <p className='font-medium text-lg whitespace-nowrap xl:whitespace-normal'>{order.customer.name}</p>
+                    <p className='font-medium text-base sm:text-lg truncate xl:whitespace-normal' title={order.customer.name}>
+                        {order.customer.name}
+                    </p>
                 </div>
                 <div className=''>
-                    <p className='text-xs font-light '>Fecha de Carga:</p>
-                    <p className='font-medium text-lg '>
+                    <p className='text-xs font-light'>Fecha de Carga:</p>
+                    <p className='font-medium text-base sm:text-lg'>
                         {loadDate}
                     </p>
                 </div>
 
-            </div >
+            </div>
         </div>
     )
 }
