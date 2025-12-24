@@ -83,9 +83,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         </p>
                     )}
                 </div>
-                <div className='flex items-center gap-2'>
-
-
+                {/* Botones de acción - ocultos en móvil, se muestran en bottom bar del componente principal */}
+                <div className='hidden sm:flex items-center gap-2'>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts} className="h-9 w-9 sm:h-10 sm:w-10">

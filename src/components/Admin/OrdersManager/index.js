@@ -6,7 +6,7 @@ import OrdersList from './OrdersList';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
 import { getActiveOrders } from '@/services/orderService';
-import { Loader2, Package, PlusCircle, Menu, ArrowLeft } from 'lucide-react';
+import { Loader2, Package, PlusCircle, Menu, ArrowLeft, Plus, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
@@ -16,6 +16,8 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { fetchWithTenant } from "@lib/fetchWithTenant";
+import { API_URL_V2 } from '@/configs/config';
 
 
 const initialCategories = [
@@ -303,12 +305,12 @@ export default function OrdersManager() {
             ) : isMobile ? (
                 /* Vista móvil con Sheets */
                 <div className="h-full relative">
-                    {/* Botón flotante para abrir lista en móvil - solo visible cuando no hay detalle abierto */}
+                    {/* Botón flotante para abrir lista en móvil - posicionado a la derecha para no solaparse con el menú general */}
                     {(!selectedOrder && !onCreatingNewOrder) && (
-                        <div className="fixed top-4 left-4 z-50 lg:hidden">
+                        <div className="fixed top-16 right-4 z-40 lg:hidden">
                             <Sheet open={mobileListOpen} onOpenChange={setMobileListOpen}>
                                 <SheetTrigger asChild>
-                                    <Button size="icon" variant="outline" className="bg-background shadow-lg">
+                                    <Button size="icon" variant="outline" className="bg-background shadow-lg h-10 w-10">
                                         <Menu className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
@@ -316,6 +318,55 @@ export default function OrdersManager() {
                                     <OrdersListContent />
                                 </SheetContent>
                             </Sheet>
+                        </div>
+                    )}
+                    
+                    {/* Barra inferior con botones de acción en móvil - solo visible cuando no hay detalle abierto */}
+                    {(!selectedOrder && !onCreatingNewOrder) && (
+                        <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden flex gap-2">
+                            <Button 
+                                variant="outline" 
+                                onClick={handleOnClickAddNewOrder} 
+                                className="flex-1 bg-background shadow-lg"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nuevo Pedido
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                onClick={async () => {
+                                    if (!token) {
+                                        toast.error('No hay sesión autenticada', getToastTheme());
+                                        return;
+                                    }
+                                    const toastId = toast.loading(`Exportando `, getToastTheme());
+                                    try {
+                                        const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
+                                            method: 'GET',
+                                            headers: {
+                                                'Authorization': `Bearer ${token}`,
+                                                'User-Agent': navigator.userAgent,
+                                            }
+                                        });
+                                        if (!response.ok) throw new Error('Error al exportar');
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `Reporte_pedidos_activos.xlsx`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        window.URL.revokeObjectURL(url);
+                                        toast.success('Exportación exitosa', { id: toastId });
+                                    } catch (error) {
+                                        toast.error('Error al exportar', { id: toastId });
+                                    }
+                                }}
+                                className="bg-background shadow-lg"
+                            >
+                                <Download className="h-4 w-4" />
+                            </Button>
                         </div>
                     )}
 
