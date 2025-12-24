@@ -295,54 +295,6 @@ export default function OrdersManager() {
                                 </div>
                             )}
                             
-                            {/* Barra inferior con botones de acción en móvil - solo visible cuando se muestra la lista */}
-                            {!selectedOrder && !onCreatingNewOrder && (
-                                <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden flex gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        onClick={handleOnClickAddNewOrder} 
-                                        className="flex-1 bg-background shadow-lg"
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Nuevo Pedido
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        onClick={async () => {
-                                            if (!token) {
-                                                toast.error('No hay sesión autenticada', getToastTheme());
-                                                return;
-                                            }
-                                            const toastId = toast.loading(`Exportando `, getToastTheme());
-                                            try {
-                                                const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
-                                                    method: 'GET',
-                                                    headers: {
-                                                        'Authorization': `Bearer ${token}`,
-                                                        'User-Agent': navigator.userAgent,
-                                                    }
-                                                });
-                                                if (!response.ok) throw new Error('Error al exportar');
-                                                const blob = await response.blob();
-                                                const url = window.URL.createObjectURL(blob);
-                                                const a = document.createElement('a');
-                                                a.href = url;
-                                                a.download = `Reporte_pedidos_activos.xlsx`;
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                document.body.removeChild(a);
-                                                window.URL.revokeObjectURL(url);
-                                                toast.success('Exportación exitosa', { id: toastId });
-                                            } catch (error) {
-                                                toast.error('Error al exportar', { id: toastId });
-                                            }
-                                        }}
-                                        className="bg-background shadow-lg"
-                                    >
-                                        <Download className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            )}
                         </div>
                     ) : (
                         /* Vista desktop - layout side-by-side */

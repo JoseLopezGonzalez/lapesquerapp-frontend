@@ -280,8 +280,8 @@ const OrderContent = ({ onLoading, onClose }) => {
             <div className='flex-1 w-full overflow-y-hidden '>
               <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
-                  <div className="mb-4">
-                    <TabsList className='w-fit sm:w-max min-w-0 sm:min-w-0'>
+                  <div className="mb-4 flex justify-start">
+                    <TabsList className='w-fit inline-flex'>
                       <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
                       <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
                       <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
