@@ -120,10 +120,11 @@ export function useOrder(orderId, onChange) {
 
     // Cargar opciones cuando se cambie al tab de productos planificados
     useEffect(() => {
-        if (activeTab === 'products' && !optionsLoaded) {
+        if (activeTab === 'products' && !optionsLoaded && accessToken) {
             loadOptions();
         }
-    }, [activeTab, optionsLoaded, loadOptions]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, optionsLoaded, accessToken]);
 
     const reload = useCallback(async () => {
         const token = session?.user?.accessToken;

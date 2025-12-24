@@ -27,15 +27,25 @@ export function useOrderFormOptions() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const isMountedRef = useRef(true);
+    const hasLoadedRef = useRef(false);
 
     useEffect(() => {
         isMountedRef.current = true;
         const token = session?.user?.accessToken;
 
+        // Si ya se cargaron las opciones, no volver a cargar
+        if (hasLoadedRef.current && token) {
+            return;
+        }
+
         if (!token) {
             setLoading(false);
             return;
         }
+
+        // Marcar que se está cargando
+        hasLoadedRef.current = false;
+        setLoading(true);
 
         // Cargar todas las opciones en paralelo
         Promise.all([
@@ -68,6 +78,7 @@ export function useOrderFormOptions() {
                 });
                 setLoading(false);
                 setError(null);
+                hasLoadedRef.current = true;
             })
             .catch((err) => {
                 console.error('Error loading form options:', err);

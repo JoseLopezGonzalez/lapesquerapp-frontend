@@ -1,6 +1,6 @@
 // /src/hooks/useOrderFormConfig.js
 import { useOrderFormOptions } from './useOrderFormOptions';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 const initialDefaultValues = {
     entryDate: null, // Cambiado de '' a objeto Date
@@ -259,67 +259,72 @@ export function useOrderFormConfig({ orderData }) {
     }, [orderData]);
 
     // Actualizar formGroups cuando se carguen las opciones
-    useEffect(() => {
-        if (optionsLoading) return;
+    // Usar useMemo para evitar recrear formGroups innecesariamente
+    const formGroupsWithOptions = useMemo(() => {
+        if (optionsLoading) return initialFormGroups;
 
-        setFormGroups((prev) => {
-            return prev.map((group) => {
-                if (group.group === 'Información Comercial') {
-                    return {
-                        ...group,
-                        fields: group.fields.map((field) => {
-                            if (field.name === 'salesperson') {
-                                return {
-                                    ...field,
-                                    options: options.salespeople.map((sp) => ({
-                                        value: `${sp.id}`,
-                                        label: `${sp.name}`,
-                                    })),
-                                };
-                            }
-                            if (field.name === 'payment') {
-                                return {
-                                    ...field,
-                                    options: options.paymentTerms.map((pt) => ({
-                                        value: `${pt.id}`,
-                                        label: `${pt.name}`,
-                                    })),
-                                };
-                            }
-                            if (field.name === 'incoterm') {
-                                return {
-                                    ...field,
-                                    options: options.incoterms.map((inc) => ({
-                                        value: `${inc.id}`,
-                                        label: `${inc.name}`,
-                                    })),
-                                };
-                            }
-                            return field;
-                        }),
-                    };
-                }
-                if (group.group === 'Transporte') {
-                    return {
-                        ...group,
-                        fields: group.fields.map((field) => {
-                            if (field.name === 'transport') {
-                                return {
-                                    ...field,
-                                    options: options.transports.map((tr) => ({
-                                        value: `${tr.id}`,
-                                        label: `${tr.name}`,
-                                    })),
-                                };
-                            }
-                            return field;
-                        }),
-                    };
-                }
-                return group;
-            });
+        return initialFormGroups.map((group) => {
+            if (group.group === 'Información Comercial') {
+                return {
+                    ...group,
+                    fields: group.fields.map((field) => {
+                        if (field.name === 'salesperson') {
+                            return {
+                                ...field,
+                                options: options.salespeople.map((sp) => ({
+                                    value: `${sp.id}`,
+                                    label: `${sp.name}`,
+                                })),
+                            };
+                        }
+                        if (field.name === 'payment') {
+                            return {
+                                ...field,
+                                options: options.paymentTerms.map((pt) => ({
+                                    value: `${pt.id}`,
+                                    label: `${pt.name}`,
+                                })),
+                            };
+                        }
+                        if (field.name === 'incoterm') {
+                            return {
+                                ...field,
+                                options: options.incoterms.map((inc) => ({
+                                    value: `${inc.id}`,
+                                    label: `${inc.name}`,
+                                })),
+                            };
+                        }
+                        return field;
+                    }),
+                };
+            }
+            if (group.group === 'Transporte') {
+                return {
+                    ...group,
+                    fields: group.fields.map((field) => {
+                        if (field.name === 'transport') {
+                            return {
+                                ...field,
+                                options: options.transports.map((tr) => ({
+                                    value: `${tr.id}`,
+                                    label: `${tr.name}`,
+                                })),
+                            };
+                        }
+                        return field;
+                    }),
+                };
+            }
+            return group;
         });
-    }, [options, optionsLoading]);
+    }, [options.salespeople, options.paymentTerms, options.incoterms, options.transports, optionsLoading]);
+
+    useEffect(() => {
+        if (!optionsLoading) {
+            setFormGroups(formGroupsWithOptions);
+        }
+    }, [formGroupsWithOptions, optionsLoading]);
 
     const loading = optionsLoading;
     const loadingProgress = { current: optionsLoading ? 0 : 4, total: 4 };

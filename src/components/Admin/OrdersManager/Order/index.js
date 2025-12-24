@@ -89,7 +89,7 @@ const OrderContent = ({ onLoading, onClose }) => {
 
   useEffect(() => {
     if (!onLoading) return;
-    onLoading(loading)
+    onLoading(loading);
   }, [loading, onLoading])
 
   // Función para cambiar el estado del pedido - memoizada con useCallback

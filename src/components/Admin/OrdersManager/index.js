@@ -250,6 +250,11 @@ export default function OrdersManager() {
         />
     );
 
+    // Memoizar la función onLoading para evitar re-renders infinitos
+    const handleOrderLoading = useCallback((value) => {
+        setIsOrderLoading(value);
+    }, []);
+
     // Componente de detalle (reutilizable para desktop y mobile)
     const OrderDetailContent = () => {
         if (selectedOrder) {
@@ -258,7 +263,7 @@ export default function OrdersManager() {
                     <Order 
                         orderId={selectedOrder} 
                         onChange={handleOnChange} 
-                        onLoading={(value) => setIsOrderLoading(value)}
+                        onLoading={handleOrderLoading}
                         onClose={isMobile ? handleCloseDetail : undefined}
                     />
                 </div>
