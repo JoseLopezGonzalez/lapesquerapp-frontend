@@ -12,6 +12,14 @@ Esta carpeta contiene análisis técnicos, auditorías de código, propuestas de
   - Propuestas de mejoras priorizadas
   - Estado de implementación: 8/12 tareas completadas
 
+- **[ANALISIS_OrdersManager.md](./ANALISIS_OrdersManager.md)** - Análisis completo del gestor de pedidos (Orders Manager)
+  - Auditoría técnica y estructural
+  - Análisis de rendimiento
+  - Propuestas de mejoras priorizadas
+  - **Bug crítico corregido**: Token agregado a `getActiveOrders()`
+  - Vinculación con editor de pedidos documentada
+  - Estado de implementación: 8/12 tareas completadas
+
 ### Optimizaciones Implementadas
 
 - **[OPTIMIZACION_ORDER_COMPONENT.md](./OPTIMIZACION_ORDER_COMPONENT.md)** - Optimizaciones del componente Order

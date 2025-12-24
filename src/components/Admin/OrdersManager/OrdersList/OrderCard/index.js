@@ -1,16 +1,17 @@
+import { formatDate } from '@/helpers/formats/dates/formatDates';
 
 const OrderCard = ({ order, onClick, disabled }) => {
 
     const orderId = order.id.toString().padStart(5, '0');
-    const loadDate = order.loadDate.split('-').reverse().join('/'); //convertir fecha a dd/mm/yyyy
+    const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 
     const today = new Date();
-    const loadDateObj = new Date(order.loadDate);
-    const isToday = today.toDateString() === loadDateObj.toDateString();
+    const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+    const isToday = loadDateObj && today.toDateString() === loadDateObj.toDateString();
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const isTomorrow = tomorrow.toDateString() === loadDateObj.toDateString();
+    const isTomorrow = loadDateObj && tomorrow.toDateString() === loadDateObj.toDateString();
 
     const baseClass = "relative flex  rounded-xl p-5 border-l-4"
 

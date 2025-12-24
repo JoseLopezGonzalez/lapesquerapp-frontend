@@ -91,7 +91,7 @@ export function updateOrder(orderId, orderData, token) {
  * @throws {Error} Throws an error if the request fails or the response contains an error message.
  */
 export function getActiveOrders(token) {
-    return fetchWithTenant(`${API_URL_V1}orders?active=true`, {
+    return fetchWithTenant(`${API_URL_V2}orders/active`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

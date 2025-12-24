@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import { useSession } from 'next-auth/react';
 import OrdersList from './OrdersList';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
@@ -10,6 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
+import toast from 'react-hot-toast';
+import { getToastTheme } from '@/customs/reactHotToast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 
 const initialCategories = [
@@ -32,6 +36,8 @@ const initialCategories = [
 ]
 
 export default function OrdersManager() {
+    const { data: session } = useSession();
+    const token = session?.user?.accessToken;
 
     const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
     const [isOrderLoading, setIsOrderLoading] = useState(false);
@@ -41,54 +47,76 @@ export default function OrdersManager() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [loading, setLoading] = useState(true);
-    const [reload, setReload] = useState(false);
+    const [error, setError] = useState(null);
+    const [reloadCounter, setReloadCounter] = useState(0);
 
+    // Debouncing de búsqueda para mejorar rendimiento
+    const debouncedSearchText = useDebounce(searchText, 300);
 
     // Función para actualizar un pedido en el listado sin recargar desde el endpoint
-    const updateOrderInList = (updatedOrder) => {
+    const updateOrderInList = useCallback((updatedOrder) => {
         setOrders(prevOrders => {
             return prevOrders.map(order => 
                 order.id === updatedOrder.id ? updatedOrder : order
             );
         });
-    };
+    }, []);
 
-    const handleOnChange = (updatedOrder = null) => {
+    // Función explícita para recargar pedidos
+    const reloadOrders = useCallback(() => {
+        setReloadCounter(prev => prev + 1);
+    }, []);
+
+    const handleOnChange = useCallback((updatedOrder = null) => {
         // Si se pasa un pedido actualizado, actualizar el listado localmente
         if (updatedOrder) {
             updateOrderInList(updatedOrder);
         } else {
-            // Si no se pasa nada, recargar desde el endpoint (comportamiento anterior)
-            setReload(prev => !prev);
+            // Si no se pasa nada, recargar desde el endpoint
+            reloadOrders();
         }
-    }
+    }, [updateOrderInList, reloadOrders]);
 
+    // Cargar pedidos activos
     useEffect(() => {
-        getActiveOrders()
+        if (!token) {
+            setLoading(false);
+            setError('No hay sesión autenticada');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        getActiveOrders(token)
             .then((data) => {
-                setOrders(data);
+                setOrders(data || []);
                 setLoading(false);
+                setError(null);
             })
             .catch((error) => {
+                const errorMessage = error?.message || 'Error al obtener los pedidos activos';
                 console.error('Error al obtener los pedidos activos', error);
+                setError(errorMessage);
+                toast.error(errorMessage, getToastTheme());
                 setLoading(false);
             });
-    }, [reload]);
+    }, [reloadCounter, token]);
 
     // Memoizar la categoría activa para evitar búsquedas repetidas
     const activeCategory = useMemo(() => {
         return categories.find((category) => category.current) || categories[0];
     }, [categories]);
 
-    // Optimizar filtrado y ordenamiento con useMemo
+    // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
     const sortedOrders = useMemo(() => {
-        const searchLower = searchText.toLowerCase();
+        const searchLower = debouncedSearchText.toLowerCase();
         
         // Filtrar sin mutar los objetos originales
         const filtered = orders
             .filter((order) => {
-                const matchesSearch = order.customer.name.toLowerCase().includes(searchLower) ||
-                    order.id.toString().includes(searchText);
+                const matchesSearch = order.customer?.name?.toLowerCase().includes(searchLower) ||
+                    order.id.toString().includes(debouncedSearchText);
                 const matchesCategory = activeCategory.name === 'all' ||
                     activeCategory.name === order.status;
                 return matchesSearch && matchesCategory;
@@ -103,7 +131,7 @@ export default function OrdersManager() {
         return [...filtered].sort((a, b) => {
             return new Date(a.loadDate) - new Date(b.loadDate);
         });
-    }, [orders, searchText, activeCategory, selectedOrder]);
+    }, [orders, debouncedSearchText, activeCategory, selectedOrder]);
 
     const handleOnClickOrderCard = (orderId) => {
         setOnCreatingNewOrder(false);
@@ -158,11 +186,11 @@ export default function OrdersManager() {
         setOnCreatingNewOrder(true);
     }
 
-    const handleOnCreatedOrder = (id) => {
-        handleOnChange();
+    const handleOnCreatedOrder = useCallback((id) => {
+        reloadOrders();
         setOnCreatingNewOrder(false);
         setSelectedOrder(id);
-    }
+    }, [reloadOrders]);
 
 
 
@@ -188,6 +216,8 @@ export default function OrdersManager() {
                                 onChangeSearch={handleOnChangeSearch}
                                 searchText={searchText}
                                 disabled={isOrderLoading}
+                                error={error}
+                                onRetry={reloadOrders}
                             />
                         </div>
                         <div className='grow  lg:pl-0 p-2'>
