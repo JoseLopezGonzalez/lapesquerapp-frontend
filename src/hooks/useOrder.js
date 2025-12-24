@@ -1,6 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
@@ -65,10 +65,12 @@ export function useOrder(orderId, onChange) {
     const [taxOptions, setTaxOptions] = useState([]);
     const [activeTab, setActiveTab] = useState('details');
     const [optionsLoaded, setOptionsLoaded] = useState(false);
+    const previousOrderIdRef = useRef(null);
 
     const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
 
-    const accessToken = session?.user?.accessToken
+    // Memoizar accessToken para evitar cambios de referencia innecesarios
+    const accessToken = useMemo(() => session?.user?.accessToken, [session?.user?.accessToken]);
 
     // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading)
     const loadOptions = useCallback(async () => {
@@ -99,12 +101,15 @@ export function useOrder(orderId, onChange) {
     useEffect(() => {
         // Espera a que la sesión esté lista
         if (!orderId || status === "loading") return;
-        setActiveTab('details');
-
-        if (!orderId) return;
 
         // Si no hay token, no hacer nada
         if (!accessToken) return;
+
+        // Solo resetear tab si cambió el orderId
+        if (previousOrderIdRef.current !== orderId) {
+            setActiveTab('details');
+            previousOrderIdRef.current = orderId;
+        }
 
         setLoading(true);
         getOrder(orderId, accessToken)
@@ -123,8 +128,7 @@ export function useOrder(orderId, onChange) {
         if (activeTab === 'products' && !optionsLoaded && accessToken) {
             loadOptions();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, optionsLoaded, accessToken]);
+    }, [activeTab, optionsLoaded, accessToken, loadOptions]);
 
     const reload = useCallback(async () => {
         const token = session?.user?.accessToken;
