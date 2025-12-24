@@ -91,7 +91,15 @@ export function updateOrder(orderId, orderData, token) {
  * @throws {Error} Throws an error if the request fails or the response contains an error message.
  */
 export function getActiveOrders(token) {
-    return fetchWithTenant(`${API_URL_V2}orders/active`, {
+    if (!token) {
+        console.error('getActiveOrders: No se proporcionó token');
+        return Promise.reject(new Error('No se proporcionó token de autenticación'));
+    }
+
+    const url = `${API_URL_V2}orders/active`;
+    console.log('getActiveOrders: Realizando petición a:', url);
+
+    return fetchWithTenant(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -100,21 +108,46 @@ export function getActiveOrders(token) {
         },
     })
         .then((response) => {
+            console.log('getActiveOrders: Respuesta recibida, status:', response.status, response.statusText);
             if (!response.ok) {
                 return response.json().then((errorData) => {
+                    console.error('getActiveOrders: Error en respuesta:', errorData);
                     throw new Error(errorData.message || 'Error al obtener los pedidos activos');
                 });
             }
             return response.json();
         })
         .then((data) => {
-            return data.data;
+            console.log('getActiveOrders: Datos parseados:', data);
+            // Manejar diferentes estructuras de respuesta
+            // Si la respuesta es directamente un array, devolverlo
+            if (Array.isArray(data)) {
+                console.log('getActiveOrders: Respuesta es array directo, longitud:', data.length);
+                return data;
+            }
+            // Si la respuesta tiene la estructura { data: [...] }, devolver data.data
+            if (data && data.data !== undefined) {
+                // Si data.data es un array, devolverlo
+                if (Array.isArray(data.data)) {
+                    console.log('getActiveOrders: Respuesta tiene data.data (array), longitud:', data.data.length);
+                    return data.data;
+                }
+                // Si data.data es null o undefined, devolver array vacío
+                console.warn('getActiveOrders: data.data no es un array:', data.data);
+                return [];
+            }
+            // Si la respuesta tiene otra estructura, intentar devolver data directamente
+            // o un array vacío si no hay datos
+            console.warn('getActiveOrders: Estructura de respuesta inesperada:', data);
+            return [];
         })
         .catch((error) => {
+            console.error('getActiveOrders: Error capturado:', error);
             // Aquí puedes agregar lógica adicional de logging o manejo global del error
             throw error;
         })
         .finally(() => {
+            console.log('getActiveOrders: Finalizando petición');
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
         });
 }

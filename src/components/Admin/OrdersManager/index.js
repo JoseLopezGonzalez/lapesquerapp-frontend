@@ -97,16 +97,20 @@ export default function OrdersManager() {
 
         getActiveOrders(token)
             .then((data) => {
-                setOrders(data || []);
+                // Asegurar que data sea un array
+                const ordersArray = Array.isArray(data) ? data : [];
+                setOrders(ordersArray);
                 setLoading(false);
                 setError(null);
             })
             .catch((error) => {
                 const errorMessage = error?.message || 'Error al obtener los pedidos activos';
-                console.error('Error al obtener los pedidos activos', error);
+                console.error('Error al obtener los pedidos activos:', error);
                 setError(errorMessage);
                 toast.error(errorMessage, getToastTheme());
                 setLoading(false);
+                // Asegurar que orders sea un array vacío en caso de error
+                setOrders([]);
             });
     }, [reloadCounter, token]);
 
