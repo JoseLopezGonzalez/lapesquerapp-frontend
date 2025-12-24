@@ -212,14 +212,14 @@ export default function OrdersManager() {
         }
     }
     
-    const handleCloseDetail = () => {
+    const handleCloseDetail = useCallback(() => {
         setSelectedOrder(null);
         setOnCreatingNewOrder(false);
         if (isMobile) {
             setMobileDetailOpen(false);
             setMobileListOpen(true);
         }
-    }
+    }, [isMobile]);
 
     const handleOnCreatedOrder = useCallback((id) => {
         reloadOrders();
@@ -255,8 +255,8 @@ export default function OrdersManager() {
         setIsOrderLoading(value);
     }, []);
 
-    // Componente de detalle (reutilizable para desktop y mobile)
-    const OrderDetailContent = () => {
+    // Memoizar el contenido del detalle para evitar re-renders innecesarios
+    const OrderDetailContent = useMemo(() => {
         if (selectedOrder) {
             return (
                 <div className='h-full overflow-hidden'>
@@ -291,7 +291,7 @@ export default function OrdersManager() {
                 />
             </Card>
         );
-    };
+    }, [selectedOrder, onCreatingNewOrder, handleOnChange, handleOrderLoading, isMobile, handleCloseDetail, handleOnCreatedOrder, handleOnClickAddNewOrder]);
 
     return (
         <>
@@ -337,7 +337,7 @@ export default function OrdersManager() {
                             }}
                         >
                             <SheetContent side="right" className="w-[100vw] sm:w-[90vw] md:w-[600px] p-0 overflow-y-auto">
-                                <OrderDetailContent />
+                                {OrderDetailContent}
                             </SheetContent>
                         </Sheet>
                     )}
@@ -367,7 +367,7 @@ export default function OrdersManager() {
                             <OrdersListContent />
                         </div>
                         <div className='grow lg:pl-0 p-2'>
-                            <OrderDetailContent />
+                            {OrderDetailContent}
                         </div>
                     </div>
                 </div>
