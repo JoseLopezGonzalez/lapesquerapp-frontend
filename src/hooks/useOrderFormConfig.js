@@ -1,10 +1,6 @@
 // /src/hooks/useOrderFormConfig.js
-import { getIncotermsOptions } from '@/services/incotermService';
-import { getPaymentTermsOptions } from '@/services/paymentTernService';
-import { getSalespeopleOptions } from '@/services/salespersonService';
-import { getTransportsOptions } from '@/services/transportService';
-import { useSession } from 'next-auth/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useOrderFormOptions } from './useOrderFormOptions';
+import { useEffect, useState } from 'react';
 
 const initialDefaultValues = {
     entryDate: null, // Cambiado de '' a objeto Date
@@ -222,21 +218,32 @@ const initialFormGroups = [
 ]
 
 export function useOrderFormConfig({ orderData }) {
-    const { data: session, status } = useSession();
     const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
     const [formGroups, setFormGroups] = useState(initialFormGroups);
-    const [loading, setLoading] = useState(true);
+    const { options, loading: optionsLoading } = useOrderFormOptions();
 
+    // Función helper para convertir fechas de forma segura
+    const parseDate = (dateValue) => {
+        if (!dateValue) return null;
+        if (dateValue instanceof Date) return dateValue;
+        if (typeof dateValue === 'string') {
+            const parsed = new Date(dateValue);
+            return isNaN(parsed.getTime()) ? null : parsed;
+        }
+        return null;
+    };
+
+    // Actualizar defaultValues cuando cambie orderData
     useEffect(() => {
         if (orderData) {
             setDefaultValues({
-                entryDate: orderData.entryDate ? (typeof orderData.entryDate === 'string' ? new Date(orderData.entryDate) : orderData.entryDate) : null,
-                loadDate: orderData.loadDate ? (typeof orderData.loadDate === 'string' ? new Date(orderData.loadDate) : orderData.loadDate) : null,
-                salesperson: `${orderData.salesperson.id}` || '',
-                payment: `${orderData.paymentTerm.id}` || '',
-                incoterm: `${orderData.incoterm.id}` || '',
+                entryDate: parseDate(orderData.entryDate),
+                loadDate: parseDate(orderData.loadDate),
+                salesperson: `${orderData.salesperson?.id || ''}`,
+                payment: `${orderData.paymentTerm?.id || ''}`,
+                incoterm: `${orderData.incoterm?.id || ''}`,
                 buyerReference: orderData.buyerReference || '',
-                transport: `${orderData.transport?.id}` || '',
+                transport: `${orderData.transport?.id || ''}`,
                 truckPlate: orderData.truckPlate || '',
                 trailerPlate: orderData.trailerPlate || '',
                 transportationNotes: orderData.transportationNotes || '',
@@ -249,114 +256,78 @@ export function useOrderFormConfig({ orderData }) {
                 ccEmails: orderData.ccEmails || [],
             });
         }
-
-        const token = session?.user?.accessToken;
-        getSalespeopleOptions(token)
-            .then((data) => setFormGroups((prev) =>
-                prev.map((group) => {
-                    if (group.group === 'Información Comercial') {
-                        return {
-                            ...group,
-                            fields: group.fields.map((field) => {
-                                if (field.name === 'salesperson') {
-                                    return {
-                                        ...field,
-                                        options: data.map((sp) => ({
-                                            value: `${sp.id}`,
-                                            label: `${sp.name}`,
-                                        })),
-                                    };
-                                }
-                                return field;
-                            }),
-                        };
-                    }
-                    return group;
-                }
-                )))
-            .catch((err) => console.error(err))
-        getIncotermsOptions(token)
-            .then((data) => setFormGroups((prev) =>
-                prev.map((group) => {
-                    if (group.group === 'Información Comercial') {
-                        return {
-                            ...group,
-                            fields: group.fields.map((field) => {
-                                if (field.name === 'incoterm') {
-                                    return {
-                                        ...field,
-                                        options: data.map((inc) => ({
-                                            value: `${inc.id}`,
-                                            label: `${inc.name}`,
-                                        })),
-                                    };
-                                }
-                                return field;
-                            }),
-                        };
-                    }
-                    return group;
-                }
-                )))
-            .catch((err) => console.error(err))
-
-        getPaymentTermsOptions(token)
-            .then((data) => setFormGroups((prev) =>
-                prev.map((group) => {
-                    if (group.group === 'Información Comercial') {
-                        return {
-                            ...group,
-                            fields: group.fields.map((field) => {
-                                if (field.name === 'payment') {
-                                    return {
-                                        ...field,
-                                        options: data.map((pt) => ({
-                                            value: `${pt.id}`,
-                                            label: `${pt.name}`,
-                                        })),
-                                    };
-                                }
-                                return field;
-                            }),
-                        };
-                    }
-                    return group;
-                }
-                )))
-            .catch((err) => console.error(err))
-
-        getTransportsOptions(token)
-            .then((data) => setFormGroups((prev) =>
-                prev.map((group) => {
-                    if (group.group === 'Transporte') {
-                        return {
-                            ...group,
-                            fields: group.fields.map((field) => {
-                                if (field.name === 'transport') {
-                                    return {
-                                        ...field,
-                                        options: data.map((tr) => ({
-                                            value: `${tr.id}`,
-                                            label: `${tr.name}`,
-                                        })),
-                                    };
-                                }
-                                return field;
-                            }),
-                        };
-                    }
-                    return group;
-                }
-                )))
-            .catch((err) => console.error(err))
-
-        setLoading(false);
     }, [orderData]);
 
+    // Actualizar formGroups cuando se carguen las opciones
+    useEffect(() => {
+        if (optionsLoading) return;
+
+        setFormGroups((prev) => {
+            return prev.map((group) => {
+                if (group.group === 'Información Comercial') {
+                    return {
+                        ...group,
+                        fields: group.fields.map((field) => {
+                            if (field.name === 'salesperson') {
+                                return {
+                                    ...field,
+                                    options: options.salespeople.map((sp) => ({
+                                        value: `${sp.id}`,
+                                        label: `${sp.name}`,
+                                    })),
+                                };
+                            }
+                            if (field.name === 'payment') {
+                                return {
+                                    ...field,
+                                    options: options.paymentTerms.map((pt) => ({
+                                        value: `${pt.id}`,
+                                        label: `${pt.name}`,
+                                    })),
+                                };
+                            }
+                            if (field.name === 'incoterm') {
+                                return {
+                                    ...field,
+                                    options: options.incoterms.map((inc) => ({
+                                        value: `${inc.id}`,
+                                        label: `${inc.name}`,
+                                    })),
+                                };
+                            }
+                            return field;
+                        }),
+                    };
+                }
+                if (group.group === 'Transporte') {
+                    return {
+                        ...group,
+                        fields: group.fields.map((field) => {
+                            if (field.name === 'transport') {
+                                return {
+                                    ...field,
+                                    options: options.transports.map((tr) => ({
+                                        value: `${tr.id}`,
+                                        label: `${tr.name}`,
+                                    })),
+                                };
+                            }
+                            return field;
+                        }),
+                    };
+                }
+                return group;
+            });
+        });
+    }, [options, optionsLoading]);
+
+    const loading = optionsLoading;
+    const loadingProgress = { current: optionsLoading ? 0 : 4, total: 4 };
 
 
 
-    return { defaultValues, formGroups, loading };
+
+    return { defaultValues, formGroups, loading, loadingProgress };
 }
 
 

@@ -1,15 +1,15 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useOrderFormConfig } from '@/hooks/useOrderFormConfig';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-/* import DatePicker from '@/components/Shadcn/Dates/DatePicker'; */
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Edit, Save, Loader2 } from 'lucide-react';
+import { Edit, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
@@ -21,33 +21,55 @@ import { format } from "date-fns"
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
-    const { formGroups, defaultValues, loading } = useOrderFormConfig({ orderData: order });
+    const { formGroups, defaultValues, loading, loadingProgress } = useOrderFormConfig({ orderData: order });
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [initialValues, setInitialValues] = useState(null);
 
-    const { register, handleSubmit, reset, control, formState: { errors } } = useForm({
+    const { register, handleSubmit, reset, control, formState: { errors, isDirty, dirtyFields } } = useForm({
         defaultValues,
         mode: 'onChange',
     });
+
+    // Guardar valores iniciales cuando se abre el Sheet
+    useEffect(() => {
+        if (open && defaultValues && !loading) {
+            setInitialValues(defaultValues);
+            reset(defaultValues);
+        }
+    }, [open, defaultValues, loading, reset]);
 
     const handleFormSubmit = handleSubmit(
         (data) => {
             onSubmit(data);
         },
         (formErrors) => {
-            toast.error('Por favor, corrige los errores en el formulario', getToastTheme());
+            const errorCount = Object.keys(formErrors).length;
+            toast.error(
+                `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`,
+                getToastTheme()
+            );
         }
     );
 
-    useEffect(() => {
-        if (defaultValues && !loading) {
-            reset(defaultValues);
-        }
-    }, [defaultValues, loading, reset]);
-
     const onCloseSheet = () => {
+        if (isDirty) {
+            setShowCancelDialog(true);
+        } else {
+            handleConfirmClose();
+        }
+    };
+
+    const handleConfirmClose = () => {
         reset(defaultValues);
         setOpen(false);
+        setShowCancelDialog(false);
+        setInitialValues(null);
+    };
+
+    const handleCancelDialog = () => {
+        setShowCancelDialog(false);
     };
 
 
@@ -55,12 +77,30 @@ const OrderEditSheet = () => {
         setSaving(true);
         const toastId = toast.loading('Actualizando pedido...', getToastTheme());
 
-        // Convertir fechas a string YYYY-MM-DD si son Date
-        const payload = {
-            ...data,
-            entryDate: data.entryDate instanceof Date ? format(data.entryDate, 'yyyy-MM-dd') : data.entryDate,
-            loadDate: data.loadDate instanceof Date ? format(data.loadDate, 'yyyy-MM-dd') : data.loadDate,
-        };
+        // Construir payload solo con campos modificados (dirtyFields)
+        // Esto reduce el tamaño del payload y mejora el rendimiento
+        const payload = {};
+        
+        // Iterar solo sobre los campos que han sido modificados
+        Object.keys(dirtyFields).forEach((fieldName) => {
+            const fieldValue = data[fieldName];
+            
+            // Convertir fechas a string YYYY-MM-DD si son Date
+            if (fieldName === 'entryDate' || fieldName === 'loadDate') {
+                payload[fieldName] = fieldValue instanceof Date 
+                    ? format(fieldValue, 'yyyy-MM-dd') 
+                    : fieldValue;
+            } else {
+                payload[fieldName] = fieldValue;
+            }
+        });
+
+        // Si no hay campos modificados, no hacer nada
+        if (Object.keys(payload).length === 0) {
+            toast.info('No hay cambios para guardar', { id: toastId });
+            setSaving(false);
+            return;
+        }
 
         try {
             await updateOrderData(payload);
@@ -68,47 +108,53 @@ const OrderEditSheet = () => {
             // Cerrar el Sheet solo después de que se complete exitosamente el guardado
             setOpen(false);
             reset(defaultValues);
+            setInitialValues(null);
         } catch (error) {
-            toast.error('Error al actualizar el pedido', { id: toastId });
+            // Mostrar mensaje de error específico del backend si está disponible
+            const errorMessage = error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
+            toast.error(errorMessage, { id: toastId });
+            
+            // Si hay errores de validación por campo, mostrarlos
+            if (error?.response?.data?.errors) {
+                const fieldErrors = error.response.data.errors;
+                Object.keys(fieldErrors).forEach((field) => {
+                    const fieldError = fieldErrors[field];
+                    if (Array.isArray(fieldError) && fieldError.length > 0) {
+                        toast.error(`${field}: ${fieldError[0]}`, getToastTheme());
+                    }
+                });
+            }
         } finally {
             setSaving(false);
         }
     };
 
-    const renderField = (field) => {
+    // Memoizar renderField para evitar re-renders innecesarios
+    const renderField = useCallback((field) => {
         const commonProps = {
             id: field.name,
             placeholder: field.props?.placeholder || '',
             ...register(field.name, field.rules),
         };
 
-
         switch (field.component) {
             case 'DatePicker':
                 return (
                     <Controller
                         name={field.name}
-                        control={control} // proviene de useForm o useFormContext
+                        control={control}
                         rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
-                            // Aquí renderizas el componente, por ejemplo un Select
-                            // y usas onChange / value / onBlur para la sincronización
                             return (
-                              /*   <DatePicker
-                                    value={value}
-                                    onChange={onChange}
-                                    onBlur={onBlur}
-                                    {...field.props}
-                                /> */
                                 <DatePicker
-                                date={value}
-                                onChange={(newValue) => {
-                                    onChange(newValue);
-                                }}
-                                onBlur={onBlur}
-                                formatStyle="short"
-                                {...field.props}
-                            />
+                                    date={value}
+                                    onChange={(newValue) => {
+                                        onChange(newValue);
+                                    }}
+                                    onBlur={onBlur}
+                                    formatStyle="short"
+                                    {...field.props}
+                                />
                             )
                         }}
                     />
@@ -117,11 +163,9 @@ const OrderEditSheet = () => {
                 return (
                     <Controller
                         name={field.name}
-                        control={control} // proviene de useForm o useFormContext
+                        control={control}
                         rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
-                            // Aquí renderizas el componente, por ejemplo un Select
-                            // y usas onChange / value / onBlur para la sincronización
                             return (
                                 <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                     <SelectTrigger className="w-full overflow-hidden">
@@ -130,7 +174,6 @@ const OrderEditSheet = () => {
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {/* empty item */}
                                         {field.options.map((opt) => (
                                             <SelectItem key={opt.value} value={opt.value}>
                                                 {opt.label}
@@ -146,11 +189,9 @@ const OrderEditSheet = () => {
                 return (
                     <Controller
                         name={field.name}
-                        control={control} // proviene de useForm o useFormContext
+                        control={control}
                         rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
-                            // Aquí renderizas el componente, por ejemplo un Select
-                            // y usas onChange / value / onBlur para la sincronización
                             return (
                                 <Combobox
                                     options={field.options}
@@ -189,7 +230,7 @@ const OrderEditSheet = () => {
             default:
                 return <Input {...commonProps} />;
         }
-    };
+    }, [register, control]);
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -203,7 +244,14 @@ const OrderEditSheet = () => {
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
-                {loading ? <div>Cargando...</div> :
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center h-full py-8">
+                        <Loader2 className="h-6 w-6 animate-spin mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                            Cargando opciones... ({loadingProgress.current}/{loadingProgress.total})
+                        </p>
+                    </div>
+                ) : (
                     <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
                         <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
                             {formGroups.map((group) => (
@@ -211,19 +259,23 @@ const OrderEditSheet = () => {
                                     <h3 className="text-sm font-medium">{group.group}</h3>
                                     <Separator className="my-2" />
                                     <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
-                                        {group.fields.map((field) => (
-                                            <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
-                                                <Label htmlFor={field.name}>{field.label}</Label>
-                                                {renderField(field)}
-                                                {/* Aquí podrías renderizar errores si lo deseas */}
-                                                {/* Mensaje de error */}
-                                                {errors[field.name] && (
-                                                    <p className="text-red-500 text-sm">
-                                                        {errors[field.name].message}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {group.fields.map((field) => {
+                                            const hasError = errors[field.name];
+                                            return (
+                                                <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
+                                                    <Label htmlFor={field.name}>{field.label}</Label>
+                                                    <div className={hasError ? 'border-red-300 rounded-md' : ''}>
+                                                        {renderField(field)}
+                                                    </div>
+                                                    {hasError && (
+                                                        <p className="text-red-500 text-sm flex items-center gap-1">
+                                                            <AlertTriangle className="h-3 w-3" />
+                                                            {errors[field.name].message}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             ))}
@@ -240,7 +292,7 @@ const OrderEditSheet = () => {
                             </SheetClose>
                             <Button 
                                 type="submit"
-                                disabled={saving}>
+                                disabled={saving || Object.keys(errors).length > 0}>
                                 {saving ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -255,7 +307,30 @@ const OrderEditSheet = () => {
                             </Button>
                         </div>
                     </form>
-                }
+                )}
+
+                {/* Diálogo de confirmación al cancelar con cambios */}
+                <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                                Descartar cambios
+                            </DialogTitle>
+                            <DialogDescription>
+                                Tienes cambios sin guardar. ¿Estás seguro de que quieres cerrar el formulario? Se perderán todos los cambios no guardados.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex gap-2">
+                            <Button variant="outline" onClick={handleCancelDialog}>
+                                Continuar editando
+                            </Button>
+                            <Button variant="destructive" onClick={handleConfirmClose}>
+                                Descartar cambios
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </SheetContent>
         </Sheet>
     );

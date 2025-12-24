@@ -50,6 +50,13 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 
 15. **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)** - Módulo de producción (en desarrollo)
 16. **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** - Problemas identificados y mejoras
 
+### Análisis y Auditorías
+
+17. **[analisis/README.md](./analisis/README.md)** - Análisis técnicos, auditorías y optimizaciones
+   - Análisis de componentes y módulos
+   - Optimizaciones implementadas
+   - Propuestas de refactorización
+
 ---
 
 ## 📖 Documentación Técnica
