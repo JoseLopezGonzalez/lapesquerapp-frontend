@@ -212,6 +212,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         return boxGtin;
     };
 
+    // Helper function para redondear peso neto a 2 decimales
+    const roundToTwoDecimals = (weight) => {
+        const num = parseFloat(weight);
+        if (isNaN(num)) return 0;
+        return parseFloat(num.toFixed(2));
+    };
+
     const getGs1128 = (productId, lot, netWeight) => {
         const boxGtin = getBoxGtinById(productId);
         const weight = parseFloat(netWeight) || 0;
@@ -250,11 +257,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const addBox = (box) => {
         if (!temporalPallet) return;
         const uniqueId = generateUniqueIntId(); // Generar un nuevo ID único
+        // Asegurar que el peso neto tenga exactamente 2 decimales
+        const roundedNetWeight = roundToTwoDecimals(box.netWeight);
+        const boxWithRoundedWeight = { ...box, netWeight: roundedNetWeight };
         // Usar el código correcto según si es libras o kg
-        const gs1128 = box.isPounds ? 
-            getGs1128WithPounds(box.product.id, box.lot, box.originalWeightInPounds) : 
-            getGs1128(box.product.id, box.lot, box.netWeight);
-        const boxWithId = { ...box, id: uniqueId, new: true, gs1128, grossWeight: box.netWeight }; // Añadir el ID y marcar como nueva
+        const gs1128 = boxWithRoundedWeight.isPounds ? 
+            getGs1128WithPounds(boxWithRoundedWeight.product.id, boxWithRoundedWeight.lot, boxWithRoundedWeight.originalWeightInPounds) : 
+            getGs1128(boxWithRoundedWeight.product.id, boxWithRoundedWeight.lot, roundedNetWeight);
+        const boxWithId = { ...boxWithRoundedWeight, id: uniqueId, new: true, gs1128, grossWeight: roundedNetWeight }; // Añadir el ID y marcar como nueva
         setTemporalPallet((prev) => (
             recalculatePalletStats({
                 ...prev,
@@ -269,7 +279,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         const boxToDuplicate = temporalPallet.boxes.find((box) => box.id === boxId);
         if (!boxToDuplicate) return;
 
-        const newBox = { ...boxToDuplicate, id: generateUniqueIntId(), new: true }; // Generar un nuevo ID único
+        // Asegurar que el peso neto tenga exactamente 2 decimales
+        const roundedNetWeight = roundToTwoDecimals(boxToDuplicate.netWeight);
+        const newBox = { ...boxToDuplicate, id: generateUniqueIntId(), new: true, netWeight: roundedNetWeight }; // Generar un nuevo ID único
         setTemporalPallet((prev) => (
             recalculatePalletStats({
                 ...prev,
@@ -313,11 +325,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         },
         netWeight: (boxId, netWeight) => {
             if (!temporalPallet) return;
+            const roundedWeight = roundToTwoDecimals(netWeight);
             setTemporalPallet((prev) => (
                 recalculatePalletStats({
                     ...prev,
                     boxes: prev.boxes.map((box) =>
-                        box.id === boxId ? { ...box, netWeight: netWeight, gs1128: getGs1128(box.product.id, box.lot, netWeight) } : box
+                        box.id === boxId ? { ...box, netWeight: roundedWeight, gs1128: getGs1128(box.product.id, box.lot, roundedWeight) } : box
                     )
                 })));
         }
@@ -400,13 +413,15 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 return;
             }
 
+            const roundedWeight = roundToTwoDecimals(parsedWeight);
+
             setTemporalPallet((prev) => (
                 recalculatePalletStats({
                     ...prev,
                     boxes: prev.boxes.map((box) => {
                         const shouldEdit = boxesToEdit.some(b => b.id === box.id);
                         if (shouldEdit) {
-                            return { ...box, netWeight: parsedWeight, gs1128: getGs1128(box.product.id, box.lot, parsedWeight) };
+                            return { ...box, netWeight: roundedWeight, gs1128: getGs1128(box.product.id, box.lot, roundedWeight) };
                         }
                         return box;
                     })
@@ -457,7 +472,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     const shouldEdit = boxesToEdit.some(b => b.id === box.id);
                     if (shouldEdit) {
                         const currentWeight = parseFloat(box.netWeight) || 0;
-                        const newWeight = currentWeight + parsedDifference;
+                        const newWeight = roundToTwoDecimals(currentWeight + parsedDifference);
                         if (newWeight <= 0) {
                             return box; // No modificar cajas que resultarían con peso <= 0
                         }
@@ -529,7 +544,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const newBox = {
                 product: product,
                 lot,
-                netWeight: parseFloat(netWeight),
+                netWeight: roundToTwoDecimals(netWeight),
                 scannedCode
             };
             addBox(newBox);
@@ -547,8 +562,8 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const numberOfBoxesInt = parseInt(numberOfBoxes);
             const averageNetWeight = netTotalWeight / numberOfBoxesInt;
             
-            // Calcular el peso para las primeras n-1 cajas (redondeado a 3 decimales)
-            const standardWeight = parseFloat(averageNetWeight.toFixed(3));
+            // Calcular el peso para las primeras n-1 cajas (redondeado a 2 decimales)
+            const standardWeight = roundToTwoDecimals(averageNetWeight);
             let accumulatedWeight = 0;
             
             for (let i = 0; i < numberOfBoxesInt; i++) {
@@ -558,7 +573,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 // La última caja ajusta la diferencia para que el total sea exacto
                 if (i === numberOfBoxesInt - 1) {
                     // Calcular la diferencia exacta para la última caja
-                    boxWeight = parseFloat((netTotalWeight - accumulatedWeight).toFixed(3));
+                    boxWeight = roundToTwoDecimals(netTotalWeight - accumulatedWeight);
                 } else {
                     boxWeight = standardWeight;
                     accumulatedWeight += boxWeight;
@@ -625,7 +640,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 const newBox = {
                     product: product,
                     lot,
-                    netWeight: weight,
+                    netWeight: roundToTwoDecimals(weight),
                     scannedCode,
                 };
                 addBox(newBox);
@@ -658,8 +673,11 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             
             // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
             if (isPounds) {
-                netWeight = Math.round((netWeight * 0.453592) * 1000) / 1000; // Redondear a 3 decimales
+                netWeight = netWeight * 0.453592;
             }
+            
+            // Redondear a 2 decimales
+            netWeight = roundToTwoDecimals(netWeight);
 
             const product = productsOptions.find(p => p.boxGtin === gtin);
             if (!product) {
@@ -718,8 +736,11 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 
                 // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
                 if (isPounds) {
-                    netWeight = Math.round((netWeight * 0.453592) * 1000) / 1000; // Redondear a 3 decimales
+                    netWeight = netWeight * 0.453592;
                 }
+                
+                // Redondear a 2 decimales
+                netWeight = roundToTwoDecimals(netWeight);
 
                 const product = productsOptions.find(p => p.boxGtin === gtin);
 
