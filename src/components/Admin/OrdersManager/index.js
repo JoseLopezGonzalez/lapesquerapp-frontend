@@ -117,6 +117,7 @@ export default function OrdersManager() {
     }, [categories]);
 
     // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
+    // No incluimos selectedOrder en las dependencias para evitar re-renders innecesarios
     const sortedOrders = useMemo(() => {
         const searchLower = debouncedSearchText.toLowerCase();
         
@@ -128,29 +129,25 @@ export default function OrdersManager() {
                 const matchesCategory = activeCategory.name === 'all' ||
                     activeCategory.name === order.status;
                 return matchesSearch && matchesCategory;
-            })
-            // Añadir propiedad current sin mutar el objeto original
-            .map((order) => ({
-                ...order,
-                current: selectedOrder === order.id
-            }));
+            });
 
         // Ordenar creando una copia del array
         return [...filtered].sort((a, b) => {
             return new Date(a.loadDate) - new Date(b.loadDate);
         });
-    }, [orders, debouncedSearchText, activeCategory, selectedOrder]);
+    }, [orders, debouncedSearchText, activeCategory]);
 
-    const handleOnClickOrderCard = (orderId) => {
+    const handleOnClickOrderCard = useCallback((orderId) => {
         setOnCreatingNewOrder(false);
-        if (selectedOrder === orderId) {
-            setSelectedOrder(null);
-            return;
-        }
-        setSelectedOrder(orderId);
-    }
+        setSelectedOrder(prevSelectedOrder => {
+            if (prevSelectedOrder === orderId) {
+                return null;
+            }
+            return orderId;
+        });
+    }, []);
 
-    const handleOnClickCategory = (categoryName) => {
+    const handleOnClickCategory = useCallback((categoryName) => {
         setSelectedOrder(null);
         setOnCreatingNewOrder(false);
 
@@ -167,9 +164,9 @@ export default function OrdersManager() {
                 }
             }
         }))
-    }
+    }, [categories]);
 
-    const handleOnChangeSearch = (value) => {
+    const handleOnChangeSearch = useCallback((value) => {
         /* Set current true category.name all  */
         setOnCreatingNewOrder(false);
         setCategories(categories.map((cat) => {
@@ -181,9 +178,9 @@ export default function OrdersManager() {
 
         setSearchText(value);
         setSelectedOrder(null);
-    }
+    }, [categories]);
 
-    const handleOnClickAddNewOrder = () => {
+    const handleOnClickAddNewOrder = useCallback(() => {
         /* Set category current 'all' */
         setCategories(categories.map((cat) => {
             return {
@@ -195,7 +192,7 @@ export default function OrdersManager() {
         setSelectedOrder(null);
         setSearchText('');
         setOnCreatingNewOrder(true);
-    }
+    }, [categories]);
     
     const handleCloseDetail = useCallback(() => {
         setSelectedOrder(null);

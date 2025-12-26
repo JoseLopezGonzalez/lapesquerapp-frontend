@@ -739,7 +739,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                             { label: 'Producto - Lote / Precio (€/kg)', className: '' },
                                             { label: 'Acciones', className: 'w-[120px]' },
                                         ]}
-                                        threshold={20}
+                                        threshold={50}
                                         rowHeight={80}
                                         renderRow={(displayItem, index) => {
                                             const { item, pallet, productLotCombinations } = displayItem;

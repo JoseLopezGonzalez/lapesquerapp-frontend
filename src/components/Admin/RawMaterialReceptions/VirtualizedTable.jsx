@@ -53,9 +53,9 @@ export const VirtualizedTable = ({
                     )}
                     <TableBody>
                         {items.map((item, index) => (
-                            <React.Fragment key={index}>
+                            <TableRow key={index}>
                                 {renderRow(item, index)}
-                            </React.Fragment>
+                            </TableRow>
                         ))}
                     </TableBody>
                 </Table>

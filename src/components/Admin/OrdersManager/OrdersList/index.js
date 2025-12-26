@@ -1,10 +1,10 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { useState, useRef, useLayoutEffect, useEffect } from 'react'
+import { useState, memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
-import { ScrollShadow } from '@nextui-org/react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Download, Plus } from 'lucide-react';
@@ -28,79 +28,6 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
-    const scrollContainerRef = useRef(null);
-    const scrollPositionRef = useRef(0);
-    const shouldPreserveScrollRef = useRef(false);
-    const scrollElementRef = useRef(null);
-
-    // Función para encontrar el elemento de scroll
-    const findScrollElement = () => {
-        if (!scrollContainerRef.current) return null;
-        const container = scrollContainerRef.current;
-        
-        // ScrollShadow renderiza un div, el elemento con scroll puede ser el mismo contenedor
-        // o un hijo directo. Buscar recursivamente.
-        const checkElement = (el) => {
-            if (!el) return null;
-            const styles = window.getComputedStyle(el);
-            if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
-                return el;
-            }
-            // Si tiene hijos, buscar en ellos
-            for (let child of Array.from(el.children)) {
-                const result = checkElement(child);
-                if (result) return result;
-            }
-            return null;
-        };
-        
-        return checkElement(container) || container;
-    };
-
-    // Guardar la posición del scroll continuamente cuando el usuario hace scroll
-    useEffect(() => {
-        const scrollElement = findScrollElement();
-        scrollElementRef.current = scrollElement;
-
-        if (!scrollElement) return;
-
-        const handleScroll = () => {
-            // Usar scrollElementRef.current para obtener el elemento actual
-            const currentElement = scrollElementRef.current;
-            if (currentElement) {
-                scrollPositionRef.current = currentElement.scrollTop;
-            }
-        };
-
-        scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-        return () => {
-            scrollElement.removeEventListener('scroll', handleScroll);
-        };
-    }, [orders]);
-
-    // Restaurar la posición del scroll después del render cuando sea necesario
-    useLayoutEffect(() => {
-        if (!shouldPreserveScrollRef.current) {
-            // Actualizar la referencia al elemento de scroll por si cambió
-            scrollElementRef.current = findScrollElement();
-            return;
-        }
-        
-        // Buscar el elemento de scroll nuevamente por si cambió
-        const scrollElement = findScrollElement();
-        scrollElementRef.current = scrollElement;
-        
-        if (scrollElement && scrollPositionRef.current > 0) {
-            // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
-            requestAnimationFrame(() => {
-                const currentScrollElement = findScrollElement();
-                if (currentScrollElement && scrollPositionRef.current > 0) {
-                    currentScrollElement.scrollTop = scrollPositionRef.current;
-                }
-            });
-        }
-        shouldPreserveScrollRef.current = false;
-    }, [orders]);
 
     const activeTab = categories.find((category) => category.current)?.name || 'all';
 
@@ -248,25 +175,19 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Lista de orders */}
                     {orders?.length > 0 ? (
-                        <ScrollShadow 
-                            ref={scrollContainerRef}
-                            hideScrollBar 
-                            className="h-full grow overflow-y-auto pr-2 pb-4 mb-4 flex flex-col gap-3 scrollbar-hide"
-                        >
-
-                            {orders.map((order) => (
-                                <div key={order.id} className='' >
-                                    <OrderCard
-                                        onClick={() => {
-                                            shouldPreserveScrollRef.current = true;
-                                            onClickOrderCard(order.id);
-                                        }}
-                                        order={order}
-                                        disabled={disabled}
-                                    />
-                                </div>
-                            ))}
-                        </ScrollShadow>
+                        <ScrollArea className="h-full grow pr-2 pb-4 mb-4">
+                            <div className="flex flex-col gap-3">
+                                {orders.map((order) => (
+                                    <div key={order.id} className='' >
+                                        <OrderCard
+                                            onClick={() => onClickOrderCard(order.id)}
+                                            order={order}
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     ) : (
                         <div className='flex flex-col items-center justify-center gap-4 h-full w-full py-8'>
                             {!error && (
@@ -294,4 +215,6 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
     )
 }
 
-export default OrdersList
+// Memoizar el componente para evitar re-renders innecesarios
+// selectedOrder ya no se pasa como prop, por lo que cambios en selectedOrder no causan re-renders
+export default memo(OrdersList);
