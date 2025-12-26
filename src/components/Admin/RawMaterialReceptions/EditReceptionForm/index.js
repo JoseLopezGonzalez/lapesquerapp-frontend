@@ -84,6 +84,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             date: new Date(),
             notes: '',
             details: [],
+            declaredTotalAmount: null,
+            declaredTotalNetWeight: null,
         },
         mode: 'onChange',
     });
@@ -208,6 +210,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         supplier: reception.supplier?.id ? reception.supplier.id.toString() : null,
                         date: reception.date ? new Date(reception.date) : new Date(),
                         notes: reception.notes || '',
+                        declaredTotalAmount: reception.declaredTotalAmount !== null && reception.declaredTotalAmount !== undefined 
+                            ? parseFloat(reception.declaredTotalAmount).toString() 
+                            : '',
+                        declaredTotalNetWeight: reception.declaredTotalNetWeight !== null && reception.declaredTotalNetWeight !== undefined 
+                            ? parseFloat(reception.declaredTotalNetWeight).toString() 
+                            : '',
                     });
                     
                     return;
@@ -270,6 +278,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     date: reception.date ? new Date(reception.date) : new Date(),
                     notes: reception.notes || '',
                     details: mapDetails(reception.details),
+                    declaredTotalAmount: reception.declaredTotalAmount !== null && reception.declaredTotalAmount !== undefined 
+                        ? parseFloat(reception.declaredTotalAmount).toString() 
+                        : '',
+                    declaredTotalNetWeight: reception.declaredTotalNetWeight !== null && reception.declaredTotalNetWeight !== undefined 
+                        ? parseFloat(reception.declaredTotalNetWeight).toString() 
+                        : '',
                 });
             } catch (error) {
                 console.error('Error al cargar recepción:', error);
@@ -408,6 +422,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     notes: data.notes || '',
                     prices: prices, // ← In ROOT, shared by all pallets
                     pallets: convertedPallets,
+                    declaredTotalAmount: data.declaredTotalAmount && data.declaredTotalAmount.trim() !== '' 
+                        ? parseFloat(data.declaredTotalAmount) 
+                        : null,
+                    declaredTotalNetWeight: data.declaredTotalNetWeight && data.declaredTotalNetWeight.trim() !== '' 
+                        ? parseFloat(data.declaredTotalNetWeight) 
+                        : null,
                 };
             } else {
                 // Validate details
@@ -434,6 +454,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             lot: detail.lot || undefined,
                             boxes: detail.boxes ? parseInt(detail.boxes) : undefined,
                         })),
+                    declaredTotalAmount: data.declaredTotalAmount && data.declaredTotalAmount.trim() !== '' 
+                        ? parseFloat(data.declaredTotalAmount) 
+                        : null,
+                    declaredTotalNetWeight: data.declaredTotalNetWeight && data.declaredTotalNetWeight.trim() !== '' 
+                        ? parseFloat(data.declaredTotalNetWeight) 
+                        : null,
                 };
 
                 if (payload.details.length === 0) {
@@ -531,8 +557,6 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             <form onSubmit={handleSubmit(handleUpdate)} className="flex flex-col gap-8">
                 {/* Supplier and Date Section */}
                 <div className="w-full">
-                    <h3 className="text-sm font-medium text-muted-foreground">Información General</h3>
-                    <Separator className="my-2" />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="supplier">Proveedor</Label>
@@ -579,8 +603,6 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
                 {/* Observations Field */}
                 <div className="w-full">
-                    <h3 className="text-sm font-medium text-muted-foreground">Observaciones</h3>
-                    <Separator className="my-2" />
                     <div className="space-y-2">
                         <Label htmlFor="notes">Observaciones / Lonja</Label>
                         <Textarea
@@ -592,11 +614,66 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     </div>
                 </div>
 
+                {/* Declared Totals Fields */}
+                <div className="w-full">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="declaredTotalAmount">Importe Total Declarado (€)</Label>
+                            <Input
+                                id="declaredTotalAmount"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                {...register('declaredTotalAmount', {
+                                    valueAsNumber: false,
+                                    validate: (value) => {
+                                        if (value && value.trim() !== '') {
+                                            const numValue = parseFloat(value);
+                                            if (isNaN(numValue) || numValue < 0) {
+                                                return 'El importe debe ser un número mayor o igual a 0';
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                })}
+                                placeholder="0.00"
+                            />
+                            {errors.declaredTotalAmount && (
+                                <p className="text-destructive text-sm">{errors.declaredTotalAmount.message}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="declaredTotalNetWeight">Peso Neto Total Declarado (kg)</Label>
+                            <Input
+                                id="declaredTotalNetWeight"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                {...register('declaredTotalNetWeight', {
+                                    valueAsNumber: false,
+                                    validate: (value) => {
+                                        if (value && value.trim() !== '') {
+                                            const numValue = parseFloat(value);
+                                            if (isNaN(numValue) || numValue < 0) {
+                                                return 'El peso debe ser un número mayor o igual a 0';
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                })}
+                                placeholder="0.00"
+                            />
+                            {errors.declaredTotalNetWeight && (
+                                <p className="text-destructive text-sm">{errors.declaredTotalNetWeight.message}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Details Table (solo para modo lines) */}
                 {creationMode !== 'pallets' && (
                 <div className="w-full">
-                    <h3 className="text-sm font-medium text-muted-foreground">Líneas de Producto</h3>
-                    <Separator className="my-2" />
                     <div className="space-y-4">
                         <div className="overflow-x-auto">
                             <Table>
@@ -756,8 +833,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 {/* Pallets Section (solo para modo pallets) */}
                 {creationMode === 'pallets' && (
                 <div className="w-full">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">Palets de la Recepción</h3>
+                    <div className="flex justify-end items-center mb-2">
                         <div className="flex gap-2">
                             <Button
                                 type="button"
@@ -795,7 +871,6 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             </Button>
                         </div>
                     </div>
-                    <Separator className="my-2" />
 
                     {temporalPallets.length === 0 ? (
                         <Card>

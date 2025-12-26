@@ -101,7 +101,10 @@ export const configs = {
         { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
         { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
         { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true },
-        { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" }
+        { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" },
+        { name: "totalAmount", label: "Importe Total", type: "currency", path: "totalAmount", hideOnMobile: true },
+        { name: "declaredTotalAmount", label: "Importe Total Declarado", type: "currency", path: "declaredTotalAmount", hideOnMobile: true },
+        { name: "declaredTotalNetWeight", label: "Peso Neto Total Declarado", type: "weight", path: "declaredTotalNetWeight", hideOnMobile: true }
       ],
     },
 
