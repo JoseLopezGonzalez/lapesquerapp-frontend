@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, ChevronLeft, ChevronRight, CornerDownLeft } from 'lucide-react';
+import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, ChevronLeft, ChevronRight, CornerDownLeft, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { useOrderContext } from '@/context/OrderContext';
@@ -45,6 +45,14 @@ const OrderPallets = () => {
     const [isLinking, setIsLinking] = useState(false);
     const [paginationMeta, setPaginationMeta] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [clonedPallet, setClonedPallet] = useState(null);
+    const [isCloning, setIsCloning] = useState(false);
+    
+    // Función para generar IDs únicos temporales para cajas clonadas
+    const generateUniqueBoxId = (() => {
+        let nextId = Date.now();
+        return () => nextId++;
+    })();
 
     const handleOpenNewPallet = () => {
         setIsStoreSelectionOpen(true);
@@ -59,6 +67,7 @@ const OrderPallets = () => {
         setIsPalletDialogOpen(false);
         setSelectedPalletId(null);
         setSelectedStoreId(null);
+        setClonedPallet(null);
     };
 
     const handleStoreSelection = (storeId) => {
@@ -94,6 +103,48 @@ const OrderPallets = () => {
         setConfirmAction('unlink');
         setConfirmPalletId(palletId);
         setIsConfirmDialogOpen(true);
+    };
+
+    const handleClonePallet = async (palletId) => {
+        const token = session?.user?.accessToken;
+        if (!token) {
+            toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+            return;
+        }
+
+        try {
+            setIsCloning(true);
+            // Obtener el palet completo
+            const originalPallet = await getPallet(palletId, token);
+            
+            // Clonar el palet eliminando el ID y generando IDs únicos temporales para las cajas
+            const clonedPalletData = {
+                ...originalPallet,
+                id: null, // Eliminar el ID para que se cree como nuevo
+                receptionId: null, // No mantener receptionId en el clon
+                boxes: originalPallet.boxes?.map(box => ({
+                    ...box,
+                    id: generateUniqueBoxId(), // Generar ID único temporal para evitar errores de React con keys duplicadas
+                    new: true, // Marcar como nuevas
+                })) || [],
+                store: originalPallet.store ? { id: originalPallet.store.id } : null, // Mantener el almacén
+                storeId: originalPallet.storeId || originalPallet.store?.id, // Mantener el almacén
+                orderId: order?.id, // Mantener el pedido
+            };
+
+            // Establecer el palet clonado y abrir el diálogo
+            setClonedPallet(clonedPalletData);
+            setSelectedStoreId(originalPallet.storeId || originalPallet.store?.id);
+            setSelectedPalletId('new'); // Usar 'new' para indicar que es un nuevo palet
+            setIsPalletDialogOpen(true);
+            
+            toast.success('Palet clonado. Puedes editarlo antes de guardarlo.', getToastTheme());
+        } catch (error) {
+            console.error('Error al clonar el palet:', error);
+            toast.error(error.message || 'Error al clonar el palet', getToastTheme());
+        } finally {
+            setIsCloning(false);
+        }
     };
 
     const handleConfirmAction = async () => {
@@ -411,6 +462,26 @@ const OrderPallets = () => {
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8"
+                                                                        onClick={() => handleClonePallet(pallet.id)}
+                                                                        disabled={!!belongsToReception || isCloning}
+                                                                    >
+                                                                        {isCloning ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Copy className="h-4 w-4" />
+                                                                        )}
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{belongsToReception ? "No se puede clonar un pallet que pertenece a una recepción" : "Clonar palet"}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
                                                                         variant="outline"
                                                                         size="icon"
                                                                         className="h-8 w-8 "
@@ -533,6 +604,7 @@ const OrderPallets = () => {
                 initialOrderId={order?.id}
                 initialStoreId={selectedStoreId}
                 onCloseDialog={handleClosePalletDialog}
+                initialPallet={clonedPallet}
             />
 
             {/* Link Existing Pallets Dialog */}

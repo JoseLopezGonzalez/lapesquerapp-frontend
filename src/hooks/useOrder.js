@@ -71,6 +71,11 @@ export function useOrder(orderId, onChange) {
 
     // Memoizar accessToken para evitar cambios de referencia innecesarios
     const accessToken = useMemo(() => session?.user?.accessToken, [session?.user?.accessToken]);
+    
+    // Ref para rastrear el último token usado y evitar recargas innecesarias
+    const lastTokenRef = useRef(null);
+    const hasLoadedRef = useRef(false);
+    const lastOrderIdLoadedRef = useRef(null);
 
     // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading)
     const loadOptions = useCallback(async () => {
@@ -105,8 +110,22 @@ export function useOrder(orderId, onChange) {
         // Si no hay token, no hacer nada
         if (!accessToken) return;
 
+        // Evitar recargas innecesarias: solo recargar si cambió el orderId o el token realmente cambió
+        const tokenChanged = lastTokenRef.current !== accessToken;
+        const orderIdChanged = previousOrderIdRef.current !== orderId;
+        const orderIdAlreadyLoaded = lastOrderIdLoadedRef.current === orderId;
+        
+        // Si ya se cargó este orderId y no cambió el token, no recargar
+        if (orderIdAlreadyLoaded && !tokenChanged && !orderIdChanged) {
+            return;
+        }
+
+        // Actualizar referencias
+        lastTokenRef.current = accessToken;
+        lastOrderIdLoadedRef.current = orderId;
+
         // Solo resetear tab si cambió el orderId
-        if (previousOrderIdRef.current !== orderId) {
+        if (orderIdChanged) {
             setActiveTab('details');
             previousOrderIdRef.current = orderId;
         }
@@ -120,6 +139,10 @@ export function useOrder(orderId, onChange) {
             .catch((err) => {
                 setError(err);
                 setLoading(false);
+                // Si hay error, permitir reintento removiendo la referencia
+                if (lastOrderIdLoadedRef.current === orderId) {
+                    lastOrderIdLoadedRef.current = null;
+                }
             });
     }, [orderId, status, accessToken]);
 
@@ -132,13 +155,15 @@ export function useOrder(orderId, onChange) {
 
     const reload = useCallback(async () => {
         const token = session?.user?.accessToken;
-        if (!token) return;
+        if (!token) return null;
         
         try {
             const data = await getOrder(orderId, token);
             setOrder(data);
+            return data; // Devolver el order actualizado
         } catch (err) {
             setError(err);
+            return null;
         }
     }, [orderId, session?.user?.accessToken]);
 
@@ -213,8 +238,8 @@ export function useOrder(orderId, onChange) {
                     };
                 });
                 // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then(() => {
-                    onChange?.();
+                reload().then((updatedOrder) => {
+                    onChange?.(updatedOrder);
                 });
             })
             .catch((err) => {
@@ -240,8 +265,8 @@ export function useOrder(orderId, onChange) {
                     };
                 });
                 // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then(() => {
-                    onChange?.();
+                reload().then((updatedOrder) => {
+                    onChange?.(updatedOrder);
                 });
             })
             .catch((err) => {
@@ -265,8 +290,8 @@ export function useOrder(orderId, onChange) {
                     };
                 });
                 // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then(() => {
-                    onChange?.();
+                reload().then((updatedOrder) => {
+                    onChange?.(updatedOrder);
                 });
             })
             .catch((err) => {
@@ -623,8 +648,8 @@ export function useOrder(orderId, onChange) {
             };
         });
         // Recargar para obtener productionProductDetails actualizado desde el servidor
-        reload().then(() => {
-            onChange?.();
+        reload().then((updatedOrder) => {
+            onChange?.(updatedOrder);
         });
     }
 
@@ -643,8 +668,8 @@ export function useOrder(orderId, onChange) {
             };
         });
         // Recargar para obtener productionProductDetails actualizado desde el servidor
-        reload().then(() => {
-            onChange?.();
+        reload().then((updatedOrder) => {
+            onChange?.(updatedOrder);
         });
     }
 
@@ -722,8 +747,8 @@ export function useOrder(orderId, onChange) {
             }
             
             // Recargar para obtener los palets actualizados
-            await reload();
-            onChange?.();
+            const updatedOrder = await reload();
+            onChange?.(updatedOrder);
         } catch (error) {
             toast.error(error.message || 'Error al vincular los palets', getToastTheme());
             throw error;
