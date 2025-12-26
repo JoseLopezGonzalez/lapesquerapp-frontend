@@ -54,10 +54,8 @@ import {
     validateReceptionDetails, 
     validateTemporalPallets 
 } from '@/helpers/receptionValidators';
-import { VirtualizedTable } from './VirtualizedTable';
-import { useAccessibilityAnnouncer } from './AccessibilityAnnouncer';
-import { VirtualizedTable } from './VirtualizedTable';
-import { useAccessibilityAnnouncer } from './AccessibilityAnnouncer';
+import { VirtualizedTable } from '../VirtualizedTable';
+import { useAccessibilityAnnouncer } from '../AccessibilityAnnouncer';
 
 const TARE_OPTIONS = [
     { value: '1', label: '1kg' },
@@ -88,33 +86,6 @@ const CreateReceptionForm = ({ onSuccess }) => {
 
     // Accessibility announcer for screen readers
     const { announce, Announcer } = useAccessibilityAnnouncer();
-
-    // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            // Ctrl+S or Cmd+S to save
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                if (!isSubmitting) {
-                    handleSubmit(handleCreate, (errors) => {
-                        if (errors && Object.keys(errors).length > 0) {
-                            if (mode === 'manual' && errors.details) {
-                                delete errors.details;
-                            }
-                            if (Object.keys(errors).length > 0) {
-                                toast.error('Por favor, complete todos los campos requeridos', getToastTheme());
-                            } else {
-                                handleCreate(watch());
-                            }
-                        }
-                    })();
-                }
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isSubmitting, mode, handleSubmit, handleCreate, watch]);
 
     // Memoize pallets display data to avoid recalculating on every render
     const palletsDisplayData = useMemo(() => {
@@ -242,7 +213,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
         setPendingMode(null);
     };
 
-    const handleCreate = async (data) => {
+    const handleCreate = useCallback(async (data) => {
         try {
             // Validate using centralized validators
             const supplierError = validateSupplier(data.supplier);
@@ -329,8 +300,34 @@ const CreateReceptionForm = ({ onSuccess }) => {
             const errorInfo = logReceptionError(error, 'create', { mode, hasPallets: temporalPallets.length });
             toast.error(formatReceptionError(error, 'create'), getToastTheme());
         }
-    };
+    }, [mode, temporalPallets, onSuccess, router]);
 
+    // Keyboard shortcuts (moved after isSubmitting and handleCreate declarations)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Ctrl+S or Cmd+S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (!isSubmitting) {
+                    handleSubmit(handleCreate, (errors) => {
+                        if (errors && Object.keys(errors).length > 0) {
+                            if (mode === 'manual' && errors.details) {
+                                delete errors.details;
+                            }
+                            if (Object.keys(errors).length > 0) {
+                                toast.error('Por favor, complete todos los campos requeridos', getToastTheme());
+                            } else {
+                                handleCreate(watch());
+                            }
+                        }
+                    })();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isSubmitting, mode, handleSubmit, handleCreate, watch]);
 
     if (suppliersLoading) {
         return (

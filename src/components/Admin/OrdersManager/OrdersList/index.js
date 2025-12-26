@@ -1,5 +1,5 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { useState } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 
 import OrderCard from './OrderCard';
@@ -28,8 +28,79 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
+    const scrollContainerRef = useRef(null);
+    const scrollPositionRef = useRef(0);
+    const shouldPreserveScrollRef = useRef(false);
+    const scrollElementRef = useRef(null);
 
+    // Función para encontrar el elemento de scroll
+    const findScrollElement = () => {
+        if (!scrollContainerRef.current) return null;
+        const container = scrollContainerRef.current;
+        
+        // ScrollShadow renderiza un div, el elemento con scroll puede ser el mismo contenedor
+        // o un hijo directo. Buscar recursivamente.
+        const checkElement = (el) => {
+            if (!el) return null;
+            const styles = window.getComputedStyle(el);
+            if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+                return el;
+            }
+            // Si tiene hijos, buscar en ellos
+            for (let child of Array.from(el.children)) {
+                const result = checkElement(child);
+                if (result) return result;
+            }
+            return null;
+        };
+        
+        return checkElement(container) || container;
+    };
 
+    // Guardar la posición del scroll continuamente cuando el usuario hace scroll
+    useEffect(() => {
+        const scrollElement = findScrollElement();
+        scrollElementRef.current = scrollElement;
+
+        if (!scrollElement) return;
+
+        const handleScroll = () => {
+            // Usar scrollElementRef.current para obtener el elemento actual
+            const currentElement = scrollElementRef.current;
+            if (currentElement) {
+                scrollPositionRef.current = currentElement.scrollTop;
+            }
+        };
+
+        scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            scrollElement.removeEventListener('scroll', handleScroll);
+        };
+    }, [orders]);
+
+    // Restaurar la posición del scroll después del render cuando sea necesario
+    useLayoutEffect(() => {
+        if (!shouldPreserveScrollRef.current) {
+            // Actualizar la referencia al elemento de scroll por si cambió
+            scrollElementRef.current = findScrollElement();
+            return;
+        }
+        
+        // Buscar el elemento de scroll nuevamente por si cambió
+        const scrollElement = findScrollElement();
+        scrollElementRef.current = scrollElement;
+        
+        if (scrollElement && scrollPositionRef.current > 0) {
+            // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
+            requestAnimationFrame(() => {
+                const currentScrollElement = findScrollElement();
+                if (currentScrollElement && scrollPositionRef.current > 0) {
+                    currentScrollElement.scrollTop = scrollPositionRef.current;
+                }
+            });
+        }
+        shouldPreserveScrollRef.current = false;
+    }, [orders]);
 
     const activeTab = categories.find((category) => category.current)?.name || 'all';
 
@@ -177,12 +248,19 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Lista de orders */}
                     {orders?.length > 0 ? (
-                        <ScrollShadow hideScrollBar className="h-full grow overflow-y-auto pr-2 pb-4 mb-4 flex flex-col gap-3 scrollbar-hide">
+                        <ScrollShadow 
+                            ref={scrollContainerRef}
+                            hideScrollBar 
+                            className="h-full grow overflow-y-auto pr-2 pb-4 mb-4 flex flex-col gap-3 scrollbar-hide"
+                        >
 
                             {orders.map((order) => (
                                 <div key={order.id} className='' >
                                     <OrderCard
-                                        onClick={() => onClickOrderCard(order.id)}
+                                        onClick={() => {
+                                            shouldPreserveScrollRef.current = true;
+                                            onClickOrderCard(order.id);
+                                        }}
                                         order={order}
                                         disabled={disabled}
                                     />

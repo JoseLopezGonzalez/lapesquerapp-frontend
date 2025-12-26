@@ -1,7 +1,6 @@
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
 import { SettingsProvider } from "@/context/SettingsContext";
-import { OptionsProvider } from "@/context/OptionsContext";
 
 export const metadata = {
   title: {
@@ -45,9 +44,7 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body className="bg-background w-full">
         <SettingsProvider>
-          <OptionsProvider>
-            <ClientLayout>{children}</ClientLayout>
-          </OptionsProvider>
+          <ClientLayout>{children}</ClientLayout>
         </SettingsProvider>
       </body>
     </html>

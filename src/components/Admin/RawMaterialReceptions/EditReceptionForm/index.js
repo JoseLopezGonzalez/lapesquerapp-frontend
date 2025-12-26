@@ -84,8 +84,8 @@ import {
     validateReceptionDetails, 
     validateTemporalPallets 
 } from '@/helpers/receptionValidators';
-import { VirtualizedTable } from '../CreateReceptionForm/VirtualizedTable';
-import { useAccessibilityAnnouncer } from '../CreateReceptionForm/AccessibilityAnnouncer';
+import { VirtualizedTable } from '../VirtualizedTable';
+import { useAccessibilityAnnouncer } from '../AccessibilityAnnouncer';
 
 const TARE_OPTIONS = [
     { value: '1', label: '1kg' },
@@ -143,22 +143,6 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             };
         });
     }, [temporalPallets]);
-
-    // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            // Ctrl+S or Cmd+S to save
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                if (!isSubmitting && canEdit) {
-                    handleSubmit(handleUpdate)();
-                }
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isSubmitting, canEdit, handleSubmit, handleUpdate]);
 
     const {
         register,
@@ -400,7 +384,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         }
     }, [receptionId]);
 
-    const handleUpdate = async (data) => {
+    const handleUpdate = useCallback(async (data) => {
         try {
             // Validate using centralized validators
             const supplierError = validateSupplier(data.supplier);
@@ -505,7 +489,23 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             });
             toast.error(formatReceptionError(error, 'update'), getToastTheme());
         }
-    };
+    }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce]);
+
+    // Keyboard shortcuts (moved after isSubmitting and handleUpdate declarations)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Ctrl+S or Cmd+S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (!isSubmitting && canEdit) {
+                    handleSubmit(handleUpdate)();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isSubmitting, canEdit, handleSubmit, handleUpdate]);
 
     if (suppliersLoading || loading) {
         return (
