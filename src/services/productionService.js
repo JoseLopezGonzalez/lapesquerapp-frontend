@@ -169,6 +169,22 @@ export function getProductionRecord(recordId, token) {
     })
 }
 
+/**
+ * Obtiene los datos de sources disponibles para un production record
+ * Incluye stock boxes y parent outputs con toda su información
+ * @param {string|number} recordId - ID del record
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Object>} - Datos de sources disponibles
+ */
+export function getProductionRecordSourcesData(recordId, token) {
+    return apiGet(`${API_URL_V2}production-records/${recordId}/sources-data`, token, {}, {
+        transform: (data) => {
+            // La respuesta ya viene estructurada, solo retornarla
+            return data.data || data
+        }
+    })
+}
+
 
 /**
  * Crea un nuevo production record
@@ -390,9 +406,34 @@ export function deleteMultipleProductionInputs(inputIds, token) {
  * @returns {Promise<Object>} - Lista de outputs
  */
 export function getProductionOutputs(token, params = {}) {
-    return apiGet(`${API_URL_V2}production-outputs`, token, params, {
+    // Construir parámetros de query
+    const queryParams = { ...params }
+    
+    // Si se pasa with_sources, asegurarse de que se envíe como boolean true
+    if (params.with_sources === true || params.with_sources === 'true') {
+        queryParams.with_sources = true
+    }
+    
+    // Log para debug: ver qué URL se está generando
+    const queryString = new URLSearchParams(queryParams).toString()
+    console.log('🔗 URL generada para getProductionOutputs:', `${API_URL_V2}production-outputs?${queryString}`)
+    
+    return apiGet(`${API_URL_V2}production-outputs`, token, queryParams, {
         transform: (data) => {
             const outputs = data.data || data || [];
+            
+            // Debug: verificar si los sources vienen en la respuesta cruda
+            if (outputs.length > 0) {
+                console.log('🔍 Raw output from API (first item):', {
+                    id: outputs[0].id,
+                    hasSources: !!outputs[0].sources,
+                    sourcesType: Array.isArray(outputs[0].sources) ? 'array' : typeof outputs[0].sources,
+                    sourcesLength: Array.isArray(outputs[0].sources) ? outputs[0].sources.length : 'N/A',
+                    rawOutputKeys: Object.keys(outputs[0]),
+                    rawOutput: outputs[0]
+                })
+            }
+            
             return {
                 ...data,
                 data: Array.isArray(outputs) ? outputs.map(normalizeProductionOutput) : []

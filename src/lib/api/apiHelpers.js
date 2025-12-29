@@ -108,8 +108,21 @@ export const apiRequest = async (url, options = {}, config = {}) => {
  * @returns {Promise<any>} - Respuesta de la API
  */
 export const apiGet = async (url, token, params = {}, config = {}) => {
-    const queryParams = new URLSearchParams(params).toString()
-    const fullUrl = queryParams ? `${url}?${queryParams}` : url
+    // Construir URLSearchParams manualmente para manejar arrays con corchetes
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+        const value = params[key]
+        if (Array.isArray(value)) {
+            // Para arrays, añadir cada elemento con corchetes
+            value.forEach(item => {
+                queryParams.append(`${key}[]`, item)
+            })
+        } else if (value !== null && value !== undefined) {
+            queryParams.append(key, value)
+        }
+    })
+    const queryString = queryParams.toString()
+    const fullUrl = queryString ? `${url}?${queryString}` : url
 
     return apiRequest(fullUrl, {
         method: 'GET',

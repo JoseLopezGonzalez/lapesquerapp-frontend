@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs, getProductionInputs } from '@/services/productionService'
+import { getProductionOutputs, createProductionOutput, updateProductionOutput, deleteProductionOutput, syncProductionOutputs, getProductionRecord, getProductionOutputConsumptions, getAvailableProductsForOutputs, getProductionInputs, getProductionRecordSourcesData } from '@/services/productionService'
 import { getProductOptions } from '@/services/productService'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import CostDisplay from './CostDisplay'
-import CostSourceSelector from './CostSourceSelector'
 import CostBreakdownView from './CostBreakdownView'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles, Zap } from 'lucide-react'
+import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles, Zap, ChevronDown, ChevronRight } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -24,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 import { getRecordField } from '@/helpers/production/recordHelpers'
 
@@ -43,9 +43,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(initialOutputs.length === 0)
     const [error, setError] = useState(null)
-    const [addDialogOpen, setAddDialogOpen] = useState(false)
-    const [editDialogOpen, setEditDialogOpen] = useState(false)
-    const [editingOutput, setEditingOutput] = useState(null)
+    // Estados de diálogos simples eliminados - solo se usa el diálogo de gestión múltiple
     const [formData, setFormData] = useState({
         product_id: '',
         lot_id: '',
@@ -55,6 +53,10 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     })
     const [breakdownOutputId, setBreakdownOutputId] = useState(null)
     const [breakdownDialogOpen, setBreakdownDialogOpen] = useState(false)
+    const [expandedSourcesRows, setExpandedSourcesRows] = useState(new Set())
+    const [availableInputs, setAvailableInputs] = useState([])
+    const [availableConsumptions, setAvailableConsumptions] = useState([])
+    const [sourcesData, setSourcesData] = useState(null) // Datos completos de sources del backend
     // Estado para el dialog de gestión múltiple
     const [manageDialogOpen, setManageDialogOpen] = useState(false)
     const [editableOutputs, setEditableOutputs] = useState([])
@@ -159,7 +161,10 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const loadOutputsOnly = async () => {
         try {
             const token = session.user.accessToken
-            const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
+            const response = await getProductionOutputs(token, { 
+                production_record_id: productionRecordId,
+                with_sources: true // Incluir sources en la respuesta
+            })
             const updatedOutputs = response.data || []
             
             // Actualizar estado local inmediatamente
@@ -186,7 +191,10 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             }
             setError(null)
             const token = session.user.accessToken
-            const response = await getProductionOutputs(token, { production_record_id: productionRecordId })
+            const response = await getProductionOutputs(token, { 
+                production_record_id: productionRecordId,
+                with_sources: true // Incluir sources en la respuesta
+            })
             setOutputs(response.data || [])
         } catch (err) {
             console.error('Error loading outputs:', err)
@@ -260,7 +268,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             // Recargar outputs y actualizar contexto
             await loadOutputsOnly()
             
-            setAddDialogOpen(false)
             resetForm()
         } catch (err) {
             console.error('Error creating output:', err)
@@ -268,32 +275,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         }
     }
 
-    const handleEditOutput = async (e) => {
-        e.preventDefault()
-        if (!editingOutput) return
-
-        try {
-            const token = session.user.accessToken
-            const outputData = {
-                product_id: parseInt(formData.product_id),
-                lot_id: formData.lot_id || null,
-                boxes: parseInt(formData.boxes) || 0,
-                weight_kg: parseFloat(formData.weight_kg) || 0
-            }
-
-            await updateProductionOutput(editingOutput.id, outputData, token)
-            
-            // Recargar outputs y actualizar contexto
-            await loadOutputsOnly()
-            
-            setEditDialogOpen(false)
-            setEditingOutput(null)
-            resetForm()
-        } catch (err) {
-            console.error('Error updating output:', err)
-            alert(err.message || 'Error al actualizar la salida')
-        }
-    }
+    // Función handleEditOutput eliminada - la edición se hace desde el diálogo de gestión múltiple
 
     const handleDeleteOutput = async (outputId) => {
         if (!confirm('¿Estás seguro de que deseas eliminar esta salida?')) {
@@ -313,14 +295,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     }
 
     const handleEditClick = (output) => {
-        setEditingOutput(output)
-        setFormData({
-            product_id: output.product?.id?.toString() || '',
-            lot_id: output.lot_id || '',
-            boxes: output.boxes?.toString() || '',
-            weight_kg: (output.weightKg || output.weight_kg || 0).toString()
-        })
-        setEditDialogOpen(true)
+        // Abrir el diálogo de gestión múltiple con este output preseleccionado
+        openManageDialog()
+        // El output ya estará en editableOutputs cuando se abra el diálogo
     }
 
     const resetForm = () => {
@@ -341,15 +318,116 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             await loadProducts()
         }
         
-        // Inicializar con las salidas existentes
-        setEditableOutputs(outputs.map(output => {
+        // Cargar datos de sources disponibles desde el nuevo endpoint
+        try {
+            const token = session.user.accessToken
+            const sourcesDataResponse = await getProductionRecordSourcesData(productionRecordId, token)
+            setSourcesData(sourcesDataResponse)
+            
+            // Mapear los datos a los formatos que esperan los componentes existentes
+            if (sourcesDataResponse?.stockBoxes) {
+                setAvailableInputs(sourcesDataResponse.stockBoxes.map(box => ({
+                    id: box.productionInputId,
+                    box: {
+                        id: box.boxId,
+                        netWeight: box.netWeight,
+                        product: box.product,
+                        lot: box.lot,
+                        costPerKg: box.costPerKg,
+                        totalCost: box.totalCost
+                    }
+                })))
+            }
+            
+            if (sourcesDataResponse?.parentOutputs) {
+                setAvailableConsumptions(sourcesDataResponse.parentOutputs.map(output => ({
+                    id: output.productionOutputConsumptionId,
+                    productionOutputId: output.productionOutputId,
+                    consumedWeightKg: output.consumedWeightKg,
+                    consumedBoxes: output.consumedBoxes,
+                    product: output.product,
+                    lotId: output.lotId,
+                    costPerKg: output.costPerKg,
+                    totalCost: output.totalCost
+                })))
+            }
+        } catch (err) {
+            console.warn('Error loading sources data:', err)
+            // Si falla, intentar cargar con el método anterior
+            try {
+                const [inputsData, consumptionsData] = await Promise.all([
+                    getProductionInputs(session.user.accessToken, { production_record_id: productionRecordId }),
+                    getProductionOutputConsumptions(session.user.accessToken, { production_record_id: productionRecordId })
+                ])
+                setAvailableInputs(inputsData.data || [])
+                setAvailableConsumptions(consumptionsData.data || [])
+            } catch (fallbackErr) {
+                console.error('Error loading sources with fallback method:', fallbackErr)
+            }
+        }
+        
+        // Recargar outputs con sources incluidos antes de abrir el diálogo
+        let outputsWithSources = outputs
+        try {
+            const token = session.user.accessToken
+            const response = await getProductionOutputs(token, { 
+                production_record_id: productionRecordId,
+                with_sources: true // Incluir sources en la respuesta
+            })
+            outputsWithSources = response.data || outputs
+            // Actualizar el estado local con los outputs que incluyen sources
+            setOutputs(outputsWithSources)
+        } catch (err) {
+            console.warn('Error loading outputs with sources:', err)
+            // Si falla, usar los outputs que ya tenemos
+        }
+        
+        // Inicializar con las salidas existentes (ahora con sources)
+        setEditableOutputs(outputsWithSources.map(output => {
             // Manejar tanto camelCase como snake_case
             const weight = output.weightKg || output.weight_kg || 0
+            
+            // Normalizar sources - pueden venir en diferentes formatos (camelCase o snake_case)
+            let normalizedSources = []
+            if (output.sources) {
+                if (Array.isArray(output.sources) && output.sources.length > 0) {
+                    normalizedSources = output.sources.map(source => {
+                        if (!source) return null
+                        // Convertir de camelCase a snake_case para el formulario
+                        return {
+                            source_type: source.source_type || source.sourceType || null,
+                            production_input_id: source.production_input_id || source.productionInputId || null,
+                            production_output_consumption_id: source.production_output_consumption_id || source.productionOutputConsumptionId || null,
+                            contributed_weight_kg: source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null 
+                                ? source.contributed_weight_kg 
+                                : (source.contributedWeightKg !== undefined && source.contributedWeightKg !== null 
+                                    ? source.contributedWeightKg 
+                                    : null),
+                            contribution_percentage: source.contribution_percentage !== undefined && source.contribution_percentage !== null
+                                ? source.contribution_percentage
+                                : (source.contributionPercentage !== undefined && source.contributionPercentage !== null
+                                    ? source.contributionPercentage
+                                    : null),
+                        }
+                    }).filter(s => s !== null) // Filtrar nulls
+                }
+            }
+            
+            // Debug: verificar sources
+            console.log(`Output ${output.id}:`, {
+                hasSources: !!output.sources,
+                sourcesType: Array.isArray(output.sources) ? 'array' : typeof output.sources,
+                sourcesLength: Array.isArray(output.sources) ? output.sources.length : 'N/A',
+                normalizedSourcesLength: normalizedSources.length,
+                normalizedSources: normalizedSources
+            })
+            
             return {
                 id: output.id,
                 product_id: output.product?.id?.toString() || '',
                 boxes: output.boxes?.toString() || '',
                 weight_kg: weight.toString(),
+                sources: normalizedSources,
                 isNew: false
             }
         }))
@@ -363,6 +441,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             product_id: '',
             boxes: '',
             weight_kg: '',
+            sources: [],
             isNew: true
         }])
     }
@@ -596,19 +675,43 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 ...editableOutputs.filter(row => row.product_id && row.weight_kg),
                 ...newRows.filter(row => row.product_id && row.weight_kg)
             ].map(row => {
-                const output = {
-                    product_id: parseInt(row.product_id),
-                    lot_id: null, // Por ahora no se usa lot_id en el dialog masivo
-                    boxes: parseInt(row.boxes) || 0,
-                    weight_kg: parseFloat(row.weight_kg) || 0
-                }
-                
-                // Si tiene ID (es una salida existente), incluir el ID para actualizar
-                if (row.id && !row.id.toString().startsWith('new-')) {
-                    output.id = row.id
-                }
-                
-                return output
+            const output = {
+                product_id: parseInt(row.product_id),
+                lot_id: null, // Por ahora no se usa lot_id en el dialog masivo
+                boxes: parseInt(row.boxes) || 0,
+                weight_kg: parseFloat(row.weight_kg) || 0
+            }
+            
+            // Añadir sources si existen y están formateados correctamente
+            if (row.sources && Array.isArray(row.sources) && row.sources.length > 0) {
+                const formattedSources = row.sources.map(source => {
+                    const formatted = {
+                        source_type: source.source_type
+                    };
+                    
+                    if (source.source_type === 'stock_box') {
+                        formatted.production_input_id = parseInt(source.production_input_id);
+                    } else if (source.source_type === 'parent_output') {
+                        formatted.production_output_consumption_id = parseInt(source.production_output_consumption_id);
+                    }
+                    
+                    if (source.contributed_weight_kg !== null && source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== '') {
+                        formatted.contributed_weight_kg = parseFloat(source.contributed_weight_kg);
+                    } else if (source.contribution_percentage !== null && source.contribution_percentage !== undefined && source.contribution_percentage !== '') {
+                        formatted.contribution_percentage = parseFloat(source.contribution_percentage);
+                    }
+                    
+                    return formatted;
+                });
+                output.sources = formattedSources;
+            }
+            
+            // Si tiene ID (es una salida existente), incluir el ID para actualizar
+            if (row.id && !row.id.toString().startsWith('new-')) {
+                output.id = row.id
+            }
+            
+            return output
             })
 
             // Usar el endpoint de sincronización que maneja crear, actualizar y eliminar en una sola petición
@@ -811,123 +914,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         )
     }
 
-    const addDialogContent = (
-        <DialogContent className="max-w-2xl">
-            <DialogHeader>
-                <DialogTitle>Agregar Salida Lógica</DialogTitle>
-                <DialogDescription>
-                    Registra la salida de este proceso (producto producido)
-                </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateOutput} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="product_id">Producto *</Label>
-                        <Select
-                            value={formData.product_id}
-                            onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un producto" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {products
-                                    .filter(product => product?.id != null)
-                                    .map(product => (
-                                        <SelectItem key={product.id} value={product.id.toString()}>
-                                            {product.name}
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="lot_id">Lote</Label>
-                        <Input
-                            id="lot_id"
-                            placeholder="Ej. LOT-2025-001"
-                            value={formData.lot_id}
-                            onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Lote del producto producido (opcional)
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="boxes">Cantidad de Cajas</Label>
-                            <Input
-                                id="boxes"
-                                type="number"
-                                min="0"
-                                placeholder="0"
-                                value={formData.boxes}
-                                onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="weight_kg">Peso Total (kg) *</Label>
-                            <Input
-                                id="weight_kg"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                value={formData.weight_kg}
-                                onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                                required
-                            />
-                        </div>
-                    </div>
-                    {productionRecordId && (
-                        <div className="space-y-2">
-                            <Label>Fuentes de Materia Prima (Opcional)</Label>
-                            <CostSourceSelector
-                                productionRecordId={productionRecordId}
-                                totalWeightKg={parseFloat(formData.weight_kg) || 0}
-                                selectedSources={formData.sources || []}
-                                onChange={(sources) => setFormData({ ...formData, sources })}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Si no especificas fuentes, se calcularán automáticamente de forma proporcional
-                            </p>
-                        </div>
-                    )}
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                setAddDialogOpen(false)
-                                resetForm()
-                            }}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
-                            Crear Salida
-                        </Button>
-                    </div>
-                </form>
-        </DialogContent>
-    )
-
-    const addDialog = (
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-            {addDialogContent}
-        </Dialog>
-    )
-
-    const addButton = (
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-            <DialogTrigger asChild>
-                <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Salida
-                </Button>
-            </DialogTrigger>
-            {addDialogContent}
-        </Dialog>
-    )
+    // Diálogo simple eliminado - ya no se usa
 
     // Diálogo de selección de fuente
     const sourceSelectionDialog = (
@@ -1128,97 +1115,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </Dialog>
     )
 
-    const editDialog = (
-        <Dialog open={editDialogOpen} onOpenChange={(open) => {
-            setEditDialogOpen(open)
-            if (!open) {
-                setEditingOutput(null)
-                resetForm()
-            }
-        }}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Editar Salida Lógica</DialogTitle>
-                    <DialogDescription>
-                        Modifica los datos de la salida
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleEditOutput} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_product_id">Producto *</Label>
-                            <Select
-                                value={formData.product_id}
-                                onValueChange={(value) => setFormData({ ...formData, product_id: value })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un producto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {products
-                                        .filter(product => product?.id != null)
-                                        .map(product => (
-                                            <SelectItem key={product.id} value={product.id.toString()}>
-                                                {product.name}
-                                            </SelectItem>
-                                        ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit_lot_id">Lote</Label>
-                            <Input
-                                id="edit_lot_id"
-                                placeholder="Ej. LOT-2025-001"
-                                value={formData.lot_id}
-                                onChange={(e) => setFormData({ ...formData, lot_id: e.target.value })}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="edit_boxes">Cantidad de Cajas</Label>
-                                <Input
-                                    id="edit_boxes"
-                                    type="number"
-                                    min="0"
-                                    placeholder="0"
-                                    value={formData.boxes}
-                                    onChange={(e) => setFormData({ ...formData, boxes: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="edit_weight_kg">Peso Total (kg) *</Label>
-                                <Input
-                                    id="edit_weight_kg"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    placeholder="0.00"
-                                    value={formData.weight_kg}
-                                    onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                                    required
-                                />
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                setEditDialogOpen(false)
-                                setEditingOutput(null)
-                                resetForm()
-                            }}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={!formData.product_id || !formData.weight_kg}>
-                            Guardar Cambios
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
-    )
+    // Diálogo de edición eliminado - toda la edición se hace desde el diálogo de gestión múltiple
 
     const mainContent = (
         <>
@@ -1448,11 +1345,12 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[300px]">Producto</TableHead>
-                                    {showBoxes && <TableHead className="w-[120px]">Cajas</TableHead>}
-                                    <TableHead className="w-[120px]">Peso (kg)</TableHead>
-                                    {showBoxes && <TableHead className="w-[100px]">Peso Prom.</TableHead>}
-                                    <TableHead className="w-[60px]"></TableHead>
+                                <TableHead className="w-[300px]">Producto</TableHead>
+                                {showBoxes && <TableHead className="w-[120px]">Cajas</TableHead>}
+                                <TableHead className="w-[120px]">Peso (kg)</TableHead>
+                                {showBoxes && <TableHead className="w-[100px]">Peso Prom.</TableHead>}
+                                <TableHead className="w-[100px]">Fuentes</TableHead>
+                                <TableHead className="w-[60px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -1464,63 +1362,367 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                     const isValid = row.product_id && row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg && parseFloat(row.weight_kg) > 0
                                     
                                     return (
-                                        <TableRow 
-                                            key={row.id}
-                                            className={!isValid && (row.product_id || row.boxes || row.weight_kg) ? 'bg-muted/50' : ''}
-                                        >
-                                            <TableCell>
-                                                <div className={!row.product_id ? '[&_button]:border-destructive' : ''}>
-                                                    <Combobox
-                                                        options={products}
-                                                        value={row.product_id}
-                                                        onChange={(value) => updateRow(row.id, 'product_id', value)}
-                                                        placeholder="Buscar producto..."
-                                                        searchPlaceholder="Buscar producto..."
-                                                        notFoundMessage="No se encontraron productos"
+                                        <>
+                                            <TableRow 
+                                                key={row.id}
+                                                className={!isValid && (row.product_id || row.boxes || row.weight_kg) ? 'bg-muted/50' : ''}
+                                            >
+                                                <TableCell>
+                                                    <div className={!row.product_id ? '[&_button]:border-destructive' : ''}>
+                                                        <Combobox
+                                                            options={products}
+                                                            value={row.product_id}
+                                                            onChange={(value) => updateRow(row.id, 'product_id', value)}
+                                                            placeholder="Buscar producto..."
+                                                            searchPlaceholder="Buscar producto..."
+                                                            notFoundMessage="No se encontraron productos"
+                                                        />
+                                                    </div>
+                                                </TableCell>
+                                                {showBoxes && (
+                                                <TableCell>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        value={row.boxes}
+                                                        onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
+                                                        placeholder="0"
+                                                        className="h-9"
                                                     />
-                                                </div>
-                                            </TableCell>
-                                            {showBoxes && (
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    value={row.boxes}
-                                                    onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
-                                                    placeholder="0"
-                                                    className="h-9"
-                                                />
-                                            </TableCell>
-                                            )}
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    value={row.weight_kg}
-                                                    onChange={(e) => updateRow(row.id, 'weight_kg', e.target.value)}
-                                                    placeholder="0.00"
-                                                    className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
-                                                />
-                                            </TableCell>
-                                            {showBoxes && (
-                                            <TableCell>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {formatWeight(avgWeight)}
-                                                </span>
-                                            </TableCell>
-                                            )}
-                                            <TableCell>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => removeRow(row.id)}
-                                                    className="h-8 w-8"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
+                                                </TableCell>
+                                                )}
+                                                <TableCell>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.weight_kg}
+                                                        onChange={(e) => updateRow(row.id, 'weight_kg', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
+                                                    />
+                                                </TableCell>
+                                                {showBoxes && (
+                                                <TableCell>
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {formatWeight(avgWeight)}
+                                                    </span>
+                                                </TableCell>
+                                                )}
+                                                <TableCell>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            const newExpanded = new Set(expandedSourcesRows)
+                                                            if (expandedSourcesRows.has(row.id)) {
+                                                                newExpanded.delete(row.id)
+                                                            } else {
+                                                                newExpanded.add(row.id)
+                                                            }
+                                                            setExpandedSourcesRows(newExpanded)
+                                                        }}
+                                                        className="h-8 text-xs"
+                                                    >
+                                                        <span className="flex items-center gap-1">
+                                                        {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
+                                                            <>
+                                                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                                                                {row.sources.length} fuente{row.sources.length !== 1 ? 's' : ''}
+                                                            </>
+                                                        ) : (
+                                                            'Configurar'
+                                                        )}
+                                                            {expandedSourcesRows.has(row.id) ? (
+                                                                <ChevronDown className="h-4 w-4 ml-1" />
+                                                            ) : (
+                                                                <ChevronRight className="h-4 w-4 ml-1" />
+                                                            )}
+                                                        </span>
+                                                    </Button>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => removeRow(row.id)}
+                                                        className="h-8 w-8"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                            {expandedSourcesRows.has(row.id) && (
+                                                <TableRow key={`${row.id}-sources`} className="bg-gray-50/50">
+                                                <TableCell colSpan={showBoxes ? 6 : 5} className="p-4 pl-8">
+                                                    <div className="space-y-3">
+                                                        <div className="text-sm font-semibold text-gray-700">
+                                                            Fuentes de Materia Prima
+                                                        </div>
+                                                        {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
+                                                            <div className="space-y-2">
+                                                                <Table>
+                                                                    <TableHeader>
+                                                                        <TableRow>
+                                                                            <TableHead className="h-8 text-xs">Tipo</TableHead>
+                                                                            <TableHead className="h-8 text-xs">Origen</TableHead>
+                                                                            <TableHead className="h-8 text-xs">Peso (kg)</TableHead>
+                                                                            <TableHead className="h-8 text-xs">%</TableHead>
+                                                                            <TableHead className="h-8 text-xs w-[40px]"></TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                        {row.sources.map((source, sourceIndex) => {
+                                                                            // Obtener el peso disponible del source específico (origen real, incluyendo merma/rendimiento)
+                                                                            const sourceTotalWeight = (() => {
+                                                                                if (source.source_type === 'stock_box') {
+                                                                                    // Buscar el input en availableInputs o sourcesData
+                                                                                    const input = availableInputs.find(i => i.id === source.production_input_id)
+                                                                                    const stockBox = sourcesData?.stockBoxes?.find(b => b.productionInputId === source.production_input_id)
+                                                                                    // El peso disponible es el netWeight del source (ya incluye merma si aplica)
+                                                                                    return stockBox?.netWeight || input?.box?.netWeight || 0
+                                                                                } else {
+                                                                                    // Buscar el consumo en availableConsumptions o sourcesData
+                                                                                    const consumption = availableConsumptions.find(c => c.id === source.production_output_consumption_id)
+                                                                                    const parentOutput = sourcesData?.parentOutputs?.find(o => o.productionOutputConsumptionId === source.production_output_consumption_id)
+                                                                                    // El peso disponible es el consumedWeightKg del source (ya incluye merma si aplica)
+                                                                                    return parentOutput?.consumedWeightKg || consumption?.consumedWeightKg || 0
+                                                                                }
+                                                                            })()
+                                                                            
+                                                                            // Calcular cuánto se ha usado de este source en otros sources del mismo output
+                                                                            const usedInSameOutput = row.sources
+                                                                                .filter((s, idx) => idx !== sourceIndex && 
+                                                                                    ((source.source_type === 'stock_box' && s.production_input_id === source.production_input_id) ||
+                                                                                     (source.source_type === 'parent_output' && s.production_output_consumption_id === source.production_output_consumption_id)))
+                                                                                .reduce((sum, s) => sum + (parseFloat(s.contributed_weight_kg) || 0), 0)
+                                                                            
+                                                                            // Calcular el peso disponible restante (total - ya usado en otros sources del mismo output)
+                                                                            const sourceAvailableWeight = Math.max(0, sourceTotalWeight - usedInSameOutput)
+                                                                            
+                                                                            return (
+                                                                                <TableRow key={sourceIndex}>
+                                                                                    <TableCell className="py-1 px-2">
+                                                                                        <Badge variant="outline" className="text-xs">
+                                                                                            {source.source_type === 'stock_box' ? 'Stock' : 'Padre'}
+                                                                                        </Badge>
+                                                                                    </TableCell>
+                                                                                    <TableCell className="py-1 px-2 text-xs">
+                                                                                        {(() => {
+                                                                                            if (source.source_type === 'stock_box') {
+                                                                                                // Buscar el input en availableInputs o sourcesData
+                                                                                                const input = availableInputs.find(i => i.id === source.production_input_id)
+                                                                                                const stockBox = sourcesData?.stockBoxes?.find(b => b.productionInputId === source.production_input_id)
+                                                                                                const productName = stockBox?.product?.name || input?.box?.product?.name || 'N/A'
+                                                                                                const weight = stockBox?.netWeight || input?.box?.netWeight || 0
+                                                                                                return `Input #${source.production_input_id} - ${productName} (${formatWeight(weight)})`
+                                                                                            } else {
+                                                                                                // Buscar el consumo en availableConsumptions o sourcesData
+                                                                                                const consumption = availableConsumptions.find(c => c.id === source.production_output_consumption_id)
+                                                                                                const parentOutput = sourcesData?.parentOutputs?.find(o => o.productionOutputConsumptionId === source.production_output_consumption_id)
+                                                                                                const productName = parentOutput?.product?.name || consumption?.product?.name || 'N/A'
+                                                                                                const weight = parentOutput?.consumedWeightKg || consumption?.consumedWeightKg || 0
+                                                                                                return `Consumo #${source.production_output_consumption_id} - ${productName} (${formatWeight(weight)})`
+                                                                                            }
+                                                                                        })()}
+                                                                                    </TableCell>
+                                                                                    <TableCell className="py-1 px-2">
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            step="0.01"
+                                                                                            value={source.contributed_weight_kg || ''}
+                                                                                            onChange={(e) => {
+                                                                                                const updated = [...(row.sources || [])]
+                                                                                                let weight = parseFloat(e.target.value) || 0
+                                                                                                
+                                                                                                // Validar que no exceda lo disponible del source
+                                                                                                if (weight > sourceAvailableWeight) {
+                                                                                                    weight = sourceAvailableWeight
+                                                                                                    console.warn(
+                                                                                                        `El peso ${e.target.value}kg excede lo disponible del source (${sourceAvailableWeight.toFixed(2)}kg). ` +
+                                                                                                        `Ajustado automáticamente a ${weight.toFixed(2)}kg`
+                                                                                                    )
+                                                                                                }
+                                                                                                
+                                                                                                const outputWeight = parseFloat(row.weight_kg) || 0
+                                                                                                
+                                                                                                updated[sourceIndex] = {
+                                                                                                    ...updated[sourceIndex],
+                                                                                                    contributed_weight_kg: e.target.value === '' ? null : weight,
+                                                                                                    // Calcular porcentaje sobre el OUTPUT FINAL, no sobre el source (redondeado a 2 decimales)
+                                                                                                    contribution_percentage: outputWeight > 0 ? parseFloat(((weight / outputWeight) * 100).toFixed(2)) : null
+                                                                                                }
+                                                                                                updateRow(row.id, 'sources', updated)
+                                                                                            }}
+                                                                                            className="h-7 text-xs w-24"
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                    </TableCell>
+                                                                                    <TableCell className="py-1 px-2">
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            step="0.01"
+                                                                                            min="0"
+                                                                                            max="100"
+                                                                                            value={source.contribution_percentage !== null && source.contribution_percentage !== undefined 
+                                                                                                ? source.contribution_percentage 
+                                                                                                : ''}
+                                                                                            onChange={(e) => {
+                                                                                                const updated = [...(row.sources || [])]
+                                                                                                const inputValue = e.target.value
+                                                                                                
+                                                                                                // Permitir escribir libremente (sin formatear inmediatamente)
+                                                                                                if (inputValue === '') {
+                                                                                                    updated[sourceIndex] = {
+                                                                                                        ...updated[sourceIndex],
+                                                                                                        contribution_percentage: null,
+                                                                                                        contributed_weight_kg: null
+                                                                                                    }
+                                                                                                    updateRow(row.id, 'sources', updated)
+                                                                                                    return
+                                                                                                }
+                                                                                                
+                                                                                                let percentage = parseFloat(inputValue) || 0
+                                                                                                
+                                                                                                // El porcentaje se refiere al OUTPUT FINAL, no al source
+                                                                                                const outputWeight = parseFloat(row.weight_kg) || 0
+                                                                                                
+                                                                                                // Calcular el peso que resultaría de este porcentaje del OUTPUT
+                                                                                                const calculatedWeightFromOutput = outputWeight > 0 ? (percentage / 100) * outputWeight : 0
+                                                                                                
+                                                                                                // Si el peso calculado excede lo disponible del source, ajustar automáticamente
+                                                                                                let finalWeight = calculatedWeightFromOutput
+                                                                                                let finalPercentage = percentage
+                                                                                                
+                                                                                                if (calculatedWeightFromOutput > sourceAvailableWeight) {
+                                                                                                    // Ajustar al máximo disponible del source
+                                                                                                    finalWeight = sourceAvailableWeight
+                                                                                                    // Recalcular el porcentaje basado en el output final (redondeado a 2 decimales)
+                                                                                                    finalPercentage = outputWeight > 0 ? parseFloat(((sourceAvailableWeight / outputWeight) * 100).toFixed(2)) : 0
+                                                                                                    // Mostrar advertencia
+                                                                                                    console.warn(
+                                                                                                        `El porcentaje ${percentage}% del output (${calculatedWeightFromOutput.toFixed(2)}kg) excede lo disponible del source (${sourceAvailableWeight.toFixed(2)}kg). ` +
+                                                                                                        `Ajustado automáticamente a ${finalPercentage.toFixed(2)}% (${finalWeight.toFixed(2)}kg)`
+                                                                                                    )
+                                                                                                }
+                                                                                                
+                                                                                                updated[sourceIndex] = {
+                                                                                                    ...updated[sourceIndex],
+                                                                                                    contribution_percentage: finalPercentage,
+                                                                                                    // Calcular peso basado en el peso disponible del source específico (origen real, incluyendo merma/rendimiento)
+                                                                                                    contributed_weight_kg: finalWeight
+                                                                                                }
+                                                                                                updateRow(row.id, 'sources', updated)
+                                                                                            }}
+                                                                                            onBlur={(e) => {
+                                                                                                // Formatear a 2 decimales cuando pierde el foco
+                                                                                                if (e.target.value !== '' && source.contribution_percentage !== null) {
+                                                                                                    const formatted = parseFloat(source.contribution_percentage.toFixed(2))
+                                                                                                    const updated = [...(row.sources || [])]
+                                                                                                    updated[sourceIndex] = {
+                                                                                                        ...updated[sourceIndex],
+                                                                                                        contribution_percentage: formatted
+                                                                                                    }
+                                                                                                    updateRow(row.id, 'sources', updated)
+                                                                                                }
+                                                                                            }}
+                                                                                            className={`h-7 text-xs w-24 ${
+                                                                                                source.contribution_percentage && parseFloat(row.weight_kg) > 0 && sourceAvailableWeight > 0 && 
+                                                                                                ((source.contribution_percentage / 100) * parseFloat(row.weight_kg)) > sourceAvailableWeight 
+                                                                                                    ? 'border-yellow-500' 
+                                                                                                    : ''
+                                                                                            }`}
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                    </TableCell>
+                                                                                <TableCell className="py-1 px-2">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="sm"
+                                                                                        onClick={() => {
+                                                                                            const updated = row.sources.filter((_, i) => i !== sourceIndex)
+                                                                                            updateRow(row.id, 'sources', updated)
+                                                                                        }}
+                                                                                        className="h-7 w-7 p-0"
+                                                                                    >
+                                                                                        <Trash2 className="h-3 w-3" />
+                                                                                    </Button>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                            )
+                                                                        })}
+                                                                    </TableBody>
+                                                                </Table>
+                                                                {(() => {
+                                                                    const totalPercentage = row.sources.reduce((sum, s) => {
+                                                                        return sum + (parseFloat(s.contribution_percentage) || 0)
+                                                                    }, 0)
+                                                                    const isValid = Math.abs(totalPercentage - 100) < 0.01
+                                                                    return (
+                                                                        <div className={`text-xs ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                                                            Total: {formatDecimal(totalPercentage, 2)}% / 100%
+                                                                        </div>
+                                                                    )
+                                                                })()}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-xs text-gray-500 py-2">
+                                                                No hay fuentes configuradas. Se calcularán automáticamente de forma proporcional.
+                                                            </div>
+                                                        )}
+                                                        <div className="flex gap-2">
+                                                            <Select
+                                                                onValueChange={(value) => {
+                                                                    const [type, id] = value.split('-')
+                                                                    const newSource = {
+                                                                        source_type: type,
+                                                                        [type === 'stock_box' ? 'production_input_id' : 'production_output_consumption_id']: parseInt(id),
+                                                                        contributed_weight_kg: null,
+                                                                        contribution_percentage: null,
+                                                                    }
+                                                                    const updated = [...(row.sources || []), newSource]
+                                                                    updateRow(row.id, 'sources', updated)
+                                                                }}
+                                                            >
+                                                                <SelectTrigger className="h-8 text-xs w-64">
+                                                                    <SelectValue placeholder="Añadir fuente" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {availableInputs.length > 0 && (
+                                                                        <>
+                                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Materias Primas</div>
+                                                                            {availableInputs.map(input => (
+                                                                                <SelectItem key={`stock_box-${input.id}`} value={`stock_box-${input.id}`} className="text-xs">
+                                                                                    Input #{input.id} - {formatWeight(input.box?.netWeight)}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </>
+                                                                    )}
+                                                                    {availableConsumptions.length > 0 && (
+                                                                        <>
+                                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Outputs Padre</div>
+                                                                            {availableConsumptions.map(consumption => (
+                                                                                <SelectItem 
+                                                                                    key={`parent_output-${consumption.id}`} 
+                                                                                    value={`parent_output-${consumption.id}`}
+                                                                                    className="text-xs"
+                                                                                >
+                                                                                    Consumo #{consumption.id} - {formatWeight(consumption.consumedWeightKg)}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </>
+                                                                    )}
+                                                                    {availableInputs.length === 0 && availableConsumptions.length === 0 && (
+                                                                        <SelectItem value="none" disabled className="text-xs">No hay fuentes disponibles</SelectItem>
+                                                                    )}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                        </>
                                     )
                                 })}
                                 {getAllRows().length === 0 && (
@@ -1592,8 +1794,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         return (
             <>
                 {manageDialog}
-                {addDialog}
-                {editDialog}
                 {sourceSelectionDialog}
                 {availableProductsDialog}
                 {breakdownDialog}
@@ -1624,8 +1824,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     return (
         <div className="space-y-4">
             {manageDialog}
-            {addButton}
-            {editDialog}
             {sourceSelectionDialog}
             {availableProductsDialog}
             {breakdownDialog}
