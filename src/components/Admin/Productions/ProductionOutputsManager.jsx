@@ -6,6 +6,9 @@ import { getProductionOutputs, createProductionOutput, updateProductionOutput, d
 import { getProductOptions } from '@/services/productService'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
+import CostDisplay from './CostDisplay'
+import CostSourceSelector from './CostSourceSelector'
+import CostBreakdownView from './CostBreakdownView'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -47,8 +50,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         product_id: '',
         lot_id: '',
         boxes: '',
-        weight_kg: ''
+        weight_kg: '',
+        sources: []
     })
+    const [breakdownOutputId, setBreakdownOutputId] = useState(null)
+    const [breakdownDialogOpen, setBreakdownDialogOpen] = useState(false)
     // Estado para el dialog de gestión múltiple
     const [manageDialogOpen, setManageDialogOpen] = useState(false)
     const [editableOutputs, setEditableOutputs] = useState([])
@@ -214,12 +220,39 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         e.preventDefault()
         try {
             const token = session.user.accessToken
+            
+            // Formatear sources correctamente para el backend
+            const formattedSources = formData.sources && formData.sources.length > 0 
+                ? formData.sources.map(source => {
+                    const formatted = {
+                        source_type: source.source_type
+                    };
+                    
+                    // Añadir el ID correcto según el tipo
+                    if (source.source_type === 'stock_box') {
+                        formatted.production_input_id = parseInt(source.production_input_id);
+                    } else if (source.source_type === 'parent_output') {
+                        formatted.production_output_consumption_id = parseInt(source.production_output_consumption_id);
+                    }
+                    
+                    // Añadir O bien weight O bien percentage (no ambos)
+                    if (source.contributed_weight_kg !== null && source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== '') {
+                        formatted.contributed_weight_kg = parseFloat(source.contributed_weight_kg);
+                    } else if (source.contribution_percentage !== null && source.contribution_percentage !== undefined && source.contribution_percentage !== '') {
+                        formatted.contribution_percentage = parseFloat(source.contribution_percentage);
+                    }
+                    
+                    return formatted;
+                })
+                : undefined;
+            
             const outputData = {
                 production_record_id: parseInt(productionRecordId),
                 product_id: parseInt(formData.product_id),
                 lot_id: formData.lot_id || null,
                 boxes: parseInt(formData.boxes) || 0,
-                weight_kg: parseFloat(formData.weight_kg) || 0
+                weight_kg: parseFloat(formData.weight_kg) || 0,
+                sources: formattedSources
             }
 
             await createProductionOutput(outputData, token)
@@ -295,7 +328,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             product_id: '',
             lot_id: '',
             boxes: '',
-            weight_kg: ''
+            weight_kg: '',
+            sources: []
         })
     }
 
@@ -844,6 +878,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             />
                         </div>
                     </div>
+                    {productionRecordId && (
+                        <div className="space-y-2">
+                            <Label>Fuentes de Materia Prima (Opcional)</Label>
+                            <CostSourceSelector
+                                productionRecordId={productionRecordId}
+                                totalWeightKg={parseFloat(formData.weight_kg) || 0}
+                                selectedSources={formData.sources || []}
+                                onChange={(sources) => setFormData({ ...formData, sources })}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Si no especificas fuentes, se calcularán automáticamente de forma proporcional
+                            </p>
+                        </div>
+                    )}
                     <div className="flex justify-end gap-2">
                         <Button
                             type="button"
@@ -1225,6 +1273,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                         {showBoxes && <TableHead>Cajas</TableHead>}
                                         <TableHead>Peso Total</TableHead>
                                         {showBoxes && <TableHead>Peso Promedio</TableHead>}
+                                        <TableHead>Coste</TableHead>
+                                        <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -1239,6 +1289,37 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                 {showBoxes && <TableCell>{output.boxes || 0}</TableCell>}
                                                 <TableCell>{formatWeight(weight)}</TableCell>
                                                 {showBoxes && <TableCell>{avgWeight}</TableCell>}
+                                                <TableCell>
+                                                    <CostDisplay output={output} showDetails={false} size="sm" />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setBreakdownOutputId(output.id)
+                                                                setBreakdownDialogOpen(true)
+                                                            }}
+                                                        >
+                                                            Ver Desglose
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleEditClick(output)}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteOutput(output.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
                                             </TableRow>
                                         )
                                     })}
@@ -1489,6 +1570,23 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </Dialog>
     )
 
+    // Dialog de desglose de costes
+    const breakdownDialog = (
+        <Dialog open={breakdownDialogOpen} onOpenChange={setBreakdownDialogOpen}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Desglose de Costes</DialogTitle>
+                    <DialogDescription>
+                        Desglose detallado de todos los costes asociados a esta salida
+                    </DialogDescription>
+                </DialogHeader>
+                {breakdownOutputId && (
+                    <CostBreakdownView outputId={breakdownOutputId} />
+                )}
+            </DialogContent>
+        </Dialog>
+    )
+
     // Si renderInCard es true, envolver en Card con botón en header
     if (renderInCard) {
         return (
@@ -1498,6 +1596,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 {editDialog}
                 {sourceSelectionDialog}
                 {availableProductsDialog}
+                {breakdownDialog}
                 <Card className="h-fit">
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -1529,6 +1628,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             {editDialog}
             {sourceSelectionDialog}
             {availableProductsDialog}
+            {breakdownDialog}
             {mainContent}
         </div>
     )

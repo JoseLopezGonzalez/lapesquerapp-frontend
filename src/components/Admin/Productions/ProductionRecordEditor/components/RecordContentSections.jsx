@@ -6,6 +6,7 @@ import ProductionInputsManager from '../../ProductionInputsManager'
 import ProductionOutputsManager from '../../ProductionOutputsManager'
 import ProductionOutputConsumptionsManager from '../../ProductionOutputConsumptionsManager'
 import ProductionRecordImagesManager from '../../ProductionRecordImagesManager'
+import ProductionCostsManager from '../../ProductionCostsManager'
 import { useProductionRecordContext } from '@/context/ProductionRecordContext'
 
 /**
@@ -90,6 +91,14 @@ export const RecordContentSections = ({
                     renderInCard={true}
                     cardTitle="Productos resultantes"
                     cardDescription="Productos resultantes de este proceso"
+                />
+            </div>
+
+            {/* Costes del Proceso */}
+            <div className="break-inside-avoid mb-6 max-w-full w-full">
+                <ProductionCostsManager
+                    productionRecordId={recordId}
+                    productionId={null}
                 />
             </div>
         </>

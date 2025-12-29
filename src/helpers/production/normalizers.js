@@ -81,6 +81,36 @@ export const normalizeProductionInput = (input) => {
 }
 
 /**
+ * Normaliza un Production Output Source (función inline para evitar dependencias circulares)
+ * @param {object} source - Source en formato snake_case o camelCase
+ * @returns {object} - Source normalizado
+ */
+const normalizeProductionOutputSourceInline = (source) => {
+    if (!source) return null;
+    
+    return {
+        id: source.id,
+        productionOutputId: source.production_output_id || source.productionOutputId,
+        sourceType: source.source_type || source.sourceType,
+        productionInputId: source.production_input_id || source.productionInputId || null,
+        productionInput: source.production_input ? normalizeProductionInput(source.production_input) : (source.productionInput ? normalizeProductionInput(source.productionInput) : null),
+        productionOutputConsumptionId: source.production_output_consumption_id || source.productionOutputConsumptionId || null,
+        productionOutputConsumption: source.production_output_consumption 
+            ? normalizeProductionOutputConsumption(source.production_output_consumption)
+            : (source.productionOutputConsumption 
+                ? normalizeProductionOutputConsumption(source.productionOutputConsumption)
+                : null),
+        contributedWeightKg: source.contributed_weight_kg !== undefined ? source.contributed_weight_kg : (source.contributedWeightKg !== undefined ? source.contributedWeightKg : null),
+        contributedBoxes: source.contributed_boxes || source.contributedBoxes || 0,
+        contributionPercentage: source.contribution_percentage !== undefined ? source.contribution_percentage : (source.contributionPercentage !== undefined ? source.contributionPercentage : null),
+        sourceCostPerKg: source.source_cost_per_kg !== undefined ? source.source_cost_per_kg : (source.sourceCostPerKg !== undefined ? source.sourceCostPerKg : null),
+        sourceTotalCost: source.source_total_cost !== undefined ? source.source_total_cost : (source.sourceTotalCost !== undefined ? source.sourceTotalCost : null),
+        createdAt: source.created_at || source.createdAt,
+        updatedAt: source.updated_at || source.updatedAt,
+    };
+};
+
+/**
  * Normaliza un Production Output
  * @param {object} output - Output en formato snake_case o camelCase
  * @returns {object} - Output normalizado
@@ -97,6 +127,13 @@ export const normalizeProductionOutput = (output) => {
         weightKg: output.weight_kg || output.weightKg || 0,
         boxes: output.boxes || output.quantity_boxes || 0,
         notes: output.notes || null,
+        
+        // ✨ NUEVOS CAMPOS - Trazabilidad de costes
+        costPerKg: output.cost_per_kg !== undefined ? output.cost_per_kg : (output.costPerKg !== undefined ? output.costPerKg : null),
+        totalCost: output.total_cost !== undefined ? output.total_cost : (output.totalCost !== undefined ? output.totalCost : null),
+        sources: Array.isArray(output.sources) 
+            ? output.sources.map(normalizeProductionOutputSourceInline)
+            : (output.sources || []),
     }
 }
 
