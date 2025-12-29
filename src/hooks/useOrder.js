@@ -168,18 +168,10 @@ export function useOrder(orderId, onChange) {
     }, [orderId, session?.user?.accessToken]);
 
     // Memoizar mergedProductDetails para evitar recálculos innecesarios
-    // Usar una clave basada en la longitud y contenido para detectar cambios
-    const plannedDetailsKey = order?.plannedProductDetails 
-        ? `${order.plannedProductDetails.length}-${order.plannedProductDetails.map(d => d.id).join(',')}`
-        : '0';
-    const productionDetailsKey = order?.productionProductDetails
-        ? `${order.productionProductDetails.length}-${order.productionProductDetails.map(d => d.product?.id).join(',')}`
-        : '0';
-    
     const mergedProductDetails = useMemo(() => {
         if (!order) return [];
         return mergeOrderDetails(order.plannedProductDetails, order.productionProductDetails);
-    }, [order, plannedDetailsKey, productionDetailsKey]);
+    }, [order]);
 
     // Función para actualizar el pedido a través de la API
     const updateOrderData = async (updateData) => {
@@ -203,7 +195,7 @@ export function useOrder(orderId, onChange) {
         setOrderStatus(orderId, status, token)
             .then((updated) => {
                 setOrder(updated);
-                onChange();
+                onChange(updated);
                 return updated;
             })
             .catch((err) => {
@@ -218,29 +210,19 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         updateOrderPlannedProductDetail(id, updateData, token)
             .then((updated) => {
-                // Actualizar estado local inmediatamente para respuesta rápida
-                setOrder(prevOrder => {
-                    if (!prevOrder) return prevOrder;
-                    // Crear un nuevo array completamente nuevo para forzar la actualización
-                    const updatedPlannedDetails = prevOrder.plannedProductDetails.map((detail) => {
-                        if (detail.id === updated.id) {
-                            // Crear un nuevo objeto para el detalle actualizado
-                            return { ...updated };
-                        } else {
-                            // Crear nuevos objetos para los demás detalles también
-                            return { ...detail };
-                        }
-                    });
-                    // Crear un nuevo objeto order completamente nuevo para forzar la actualización
-                    return {
-                        ...prevOrder,
-                        plannedProductDetails: [...updatedPlannedDetails] // Spread para crear nuevo array
-                    };
-                });
-                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then((updatedOrder) => {
-                    onChange?.(updatedOrder);
-                });
+                // Construir el pedido actualizado manualmente
+                if (!order) return;
+                const updatedPlannedDetails = order.plannedProductDetails.map((detail) => 
+                    detail.id === updated.id ? updated : detail
+                );
+                const updatedOrder = {
+                    ...order,
+                    plannedProductDetails: updatedPlannedDetails
+                };
+                // Actualizar estado local
+                setOrder(updatedOrder);
+                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
+                onChange?.(updatedOrder);
             })
             .catch((err) => {
                 setError(err);
@@ -252,22 +234,17 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         deleteOrderPlannedProductDetail(id, token)
             .then(() => {
-                // Actualizar estado local inmediatamente para respuesta rápida
-                setOrder(prevOrder => {
-                    if (!prevOrder) return prevOrder;
-                    // Crear un nuevo array completamente nuevo
-                    const filteredDetails = prevOrder.plannedProductDetails
-                        .filter((detail) => detail.id !== id)
-                        .map(detail => ({ ...detail })); // Crear nuevos objetos para cada detalle
-                    return {
-                        ...prevOrder,
-                        plannedProductDetails: [...filteredDetails] // Spread para crear nuevo array
-                    };
-                });
-                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then((updatedOrder) => {
-                    onChange?.(updatedOrder);
-                });
+                // Construir el pedido actualizado manualmente
+                if (!order) return;
+                const filteredDetails = order.plannedProductDetails.filter((detail) => detail.id !== id);
+                const updatedOrder = {
+                    ...order,
+                    plannedProductDetails: filteredDetails
+                };
+                // Actualizar estado local
+                setOrder(updatedOrder);
+                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
+                onChange?.(updatedOrder);
             })
             .catch((err) => {
                 setError(err);
@@ -279,20 +256,16 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         createOrderPlannedProductDetail(detailData, token)
             .then((created) => {
-                // Actualizar estado local inmediatamente para respuesta rápida
-                setOrder(prevOrder => {
-                    if (!prevOrder) return prevOrder;
-                    // Crear nuevos objetos para todos los detalles existentes
-                    const existingDetails = prevOrder.plannedProductDetails.map(detail => ({ ...detail }));
-                    return {
-                        ...prevOrder,
-                        plannedProductDetails: [...existingDetails, { ...created }] // Spread para crear nuevo array
-                    };
-                });
-                // Recargar el pedido completo para obtener totales actualizados y sincronizar todas las pestañas
-                reload().then((updatedOrder) => {
-                    onChange?.(updatedOrder);
-                });
+                // Construir el pedido actualizado manualmente
+                if (!order) return;
+                const updatedOrder = {
+                    ...order,
+                    plannedProductDetails: [...order.plannedProductDetails, created]
+                };
+                // Actualizar estado local
+                setOrder(updatedOrder);
+                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
+                onChange?.(updatedOrder);
             })
             .catch((err) => {
                 setError(err);
@@ -568,7 +541,7 @@ export function useOrder(orderId, onChange) {
         updateOrder(orderId, { temperature: updatedTemperature }, token)
             .then((updated) => {
                 setOrder(updated);
-                onChange();
+                onChange(updated);
                 return updated;
             })
             .catch((err) => {
@@ -581,14 +554,15 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         createOrderIncident(order.id, description, token)
             .then((updated) => {
-                setOrder(prevOrder => {
-                    return {
-                        ...prevOrder,
-                        status: 'incident',
-                        incident: updated
-                    }
-                });
-                onChange();
+                // Construir el pedido actualizado manualmente
+                if (!order) return;
+                const updatedOrder = {
+                    ...order,
+                    status: 'incident',
+                    incident: updated
+                };
+                setOrder(updatedOrder);
+                onChange(updatedOrder);
             })
             .catch((err) => {
                 setError(err);
@@ -601,11 +575,14 @@ export function useOrder(orderId, onChange) {
 
         return updateOrderIncident(order.id, resolutionType, resolutionNotes, token)
             .then((updatedIncident) => {
-                setOrder((prev) => ({
-                    ...prev,
+                // Construir el pedido actualizado manualmente
+                if (!order) return updatedIncident;
+                const updatedOrder = {
+                    ...order,
                     incident: updatedIncident,
-                }));
-                onChange?.();
+                };
+                setOrder(updatedOrder);
+                onChange?.(updatedOrder);
                 return updatedIncident;
             })
             .catch((err) => {
@@ -620,12 +597,15 @@ export function useOrder(orderId, onChange) {
 
         return destroyOrderIncident(order.id, token)
             .then(() => {
-                setOrder((prev) => ({
-                    ...prev,
+                // Construir el pedido actualizado manualmente
+                if (!order) return;
+                const updatedOrder = {
+                    ...order,
                     status: 'finished',
                     incident: null,
-                }));
-                onChange?.();
+                };
+                setOrder(updatedOrder);
+                onChange?.(updatedOrder);
             })
             .catch((err) => {
                 setError(err);
@@ -639,18 +619,17 @@ export function useOrder(orderId, onChange) {
             toast.error('El pallet no está vinculado a este pedido');
             return;
         } 
-        // Actualizar pallets localmente primero para respuesta inmediata
-        setOrder(prevOrder => {
-            if (!prevOrder) return prevOrder;
-            return {
-                ...prevOrder,
-                pallets: prevOrder.pallets.map(pallet => pallet.id == updatedPallet.id ? updatedPallet : pallet)
-            };
-        });
-        // Recargar para obtener productionProductDetails actualizado desde el servidor
-        reload().then((updatedOrder) => {
-            onChange?.(updatedOrder);
-        });
+        // Construir el pedido actualizado manualmente
+        if (!order) return;
+        const updatedOrder = {
+            ...order,
+            pallets: order.pallets.map(pallet => pallet.id == updatedPallet.id ? updatedPallet : pallet)
+        };
+        // Actualizar estado local
+        setOrder(updatedOrder);
+        // Pasar el pedido actualizado al onChange sin recargar
+        // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
+        onChange?.(updatedOrder);
     }
 
     const onCreatingPallet = (newPallet) => {
@@ -659,32 +638,34 @@ export function useOrder(orderId, onChange) {
             toast.error('El pallet no está vinculado a este pedido');
             return;
         }
-        // Actualizar pallets localmente primero para respuesta inmediata
-        setOrder(prevOrder => {
-            if (!prevOrder) return prevOrder;
-            return {
-                ...prevOrder,
-                pallets: [...prevOrder.pallets, newPallet]
-            };
-        });
-        // Recargar para obtener productionProductDetails actualizado desde el servidor
-        reload().then((updatedOrder) => {
-            onChange?.(updatedOrder);
-        });
+        // Construir el pedido actualizado manualmente
+        if (!order) return;
+        const updatedOrder = {
+            ...order,
+            pallets: [...order.pallets, newPallet]
+        };
+        // Actualizar estado local
+        setOrder(updatedOrder);
+        // Pasar el pedido actualizado al onChange sin recargar
+        // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
+        onChange?.(updatedOrder);
     }
 
     const onDeletePallet = async (palletId) => {
         const token = session?.user?.accessToken;
         try {
             await deletePallet(palletId, token);
-            // Actualizar pallets localmente primero para respuesta inmediata
-            setOrder(prevOrder => ({
-                ...prevOrder,
-                pallets: prevOrder.pallets.filter(pallet => pallet.id !== palletId)
-            }));
-            // Recargar para obtener productionProductDetails actualizado desde el servidor
-            await reload();
-            onChange?.();
+            // Construir el pedido actualizado manualmente
+            if (!order) return;
+            const updatedOrder = {
+                ...order,
+                pallets: order.pallets.filter(pallet => pallet.id !== palletId)
+            };
+            // Actualizar estado local
+            setOrder(updatedOrder);
+            // Pasar el pedido actualizado al onChange sin recargar
+            // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
+            onChange?.(updatedOrder);
             toast.success('Palet eliminado correctamente');
         } catch (error) {
             toast.error(error.message || 'Error al eliminar el palet');
@@ -696,14 +677,17 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         try {
             await unlinkPalletFromOrder(palletId, token);
-            // Actualizar pallets localmente primero para respuesta inmediata
-            setOrder(prevOrder => ({
-                ...prevOrder,
-                pallets: prevOrder.pallets.filter(pallet => pallet.id !== palletId)
-            }));
-            // Recargar para obtener productionProductDetails actualizado desde el servidor
-            await reload();
-            onChange?.();
+            // Construir el pedido actualizado manualmente
+            if (!order) return;
+            const updatedOrder = {
+                ...order,
+                pallets: order.pallets.filter(pallet => pallet.id !== palletId)
+            };
+            // Actualizar estado local
+            setOrder(updatedOrder);
+            // Pasar el pedido actualizado al onChange sin recargar
+            // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
+            onChange?.(updatedOrder);
             toast.success('Palet desvinculado correctamente');
         } catch (error) {
             toast.error(error.message || 'Error al desvincular el palet');

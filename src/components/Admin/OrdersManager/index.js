@@ -151,7 +151,7 @@ export default function OrdersManager() {
         setSelectedOrder(null);
         setOnCreatingNewOrder(false);
 
-        setCategories(categories.map((cat) => {
+        setCategories(prevCategories => prevCategories.map((cat) => {
             if (cat.name === categoryName) {
                 return {
                     ...cat,
@@ -164,12 +164,12 @@ export default function OrdersManager() {
                 }
             }
         }))
-    }, [categories]);
+    }, []);
 
     const handleOnChangeSearch = useCallback((value) => {
         /* Set current true category.name all  */
         setOnCreatingNewOrder(false);
-        setCategories(categories.map((cat) => {
+        setCategories(prevCategories => prevCategories.map((cat) => {
             return {
                 ...cat,
                 current: cat.name === 'all',
@@ -178,21 +178,20 @@ export default function OrdersManager() {
 
         setSearchText(value);
         setSelectedOrder(null);
-    }, [categories]);
+    }, []);
 
     const handleOnClickAddNewOrder = useCallback(() => {
         /* Set category current 'all' */
-        setCategories(categories.map((cat) => {
+        setCategories(prevCategories => prevCategories.map((cat) => {
             return {
                 ...cat,
                 current: cat.name === 'all',
             }
-        }
-        ));
+        }));
         setSelectedOrder(null);
         setSearchText('');
         setOnCreatingNewOrder(true);
-    }, [categories]);
+    }, []);
     
     const handleCloseDetail = useCallback(() => {
         setSelectedOrder(null);
