@@ -10,7 +10,7 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { useSession } from 'next-auth/react';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
@@ -23,7 +23,7 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns";
 import { getRawMaterialReception, updateRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useRouter } from 'next/navigation';
-import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimal, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -171,6 +171,22 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
     // Watch all detail fields (no calculation needed, netWeight is directly editable)
     const watchedDetails = watch('details');
+
+    // Calculate totals (total kg and total amount) for lines mode
+    const linesTotals = useMemo(() => {
+        if (!watchedDetails || !Array.isArray(watchedDetails)) {
+            return { totalKg: 0, totalAmount: 0 };
+        }
+        let totalKg = 0;
+        let totalAmount = 0;
+        watchedDetails.forEach((detail) => {
+            const netWeight = parseFloat(detail.netWeight) || 0;
+            const price = parseFloat(detail.price) || 0;
+            totalKg += netWeight;
+            totalAmount += netWeight * price;
+        });
+        return { totalKg, totalAmount };
+    }, [watchedDetails]);
 
     // Load reception data
     useEffect(() => {
@@ -711,6 +727,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                         <TableHead>Peso Neto (kg)</TableHead>
                                         <TableHead>Cajas</TableHead>
                                         <TableHead>Precio (€/kg)</TableHead>
+                                        <TableHead>Importe</TableHead>
                                         <TableHead>Lote</TableHead>
                                         <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
@@ -824,6 +841,22 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                             </TableCell>
                                             <TableCell>
                                                 <Input
+                                                    readOnly
+                                                    className="w-32 bg-muted"
+                                                    placeholder="0,00 €"
+                                                    value={
+                                                        (() => {
+                                                            const netWeight = parseFloat(watchedDetails?.[index]?.netWeight) || 0;
+                                                            const price = parseFloat(watchedDetails?.[index]?.price) || 0;
+                                                            return formatDecimalCurrency(netWeight * price);
+                                                        })()
+                                                    }
+                                                    aria-label={`Importe para línea ${index + 1}`}
+                                                    aria-readonly="true"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
                                                     {...register(`details.${index}.lot`)}
                                                     placeholder="Lote (opcional)"
                                                     className="w-48"
@@ -848,6 +881,21 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                         </TableRow>
                                     ))}
                                 </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TableCell className="text-right font-semibold">
+                                            Total
+                                        </TableCell>
+                                        <TableCell className="font-semibold">
+                                            {formatDecimalWeight(linesTotals.totalKg)}
+                                        </TableCell>
+                                        <TableCell colSpan={2}></TableCell>
+                                        <TableCell className="font-semibold">
+                                            {formatDecimalCurrency(linesTotals.totalAmount)}
+                                        </TableCell>
+                                        <TableCell colSpan={2}></TableCell>
+                                    </TableRow>
+                                </TableFooter>
                             </Table>
                         </div>
 

@@ -10,7 +10,7 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Plus, Trash2, ArrowRight, Package, List, Edit, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSession } from 'next-auth/react';
 import { useProductOptions } from '@/hooks/useProductOptions';
@@ -24,7 +24,7 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns";
 import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useRouter } from 'next/navigation';
-import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimal, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -147,6 +147,22 @@ const CreateReceptionForm = ({ onSuccess }) => {
             setValue(`details.${index}.netWeight`, netWeight.toFixed(2), { shouldValidate: false });
         });
     }, [calculatedNetWeights, setValue]);
+
+    // Calculate totals (total kg and total amount) for lines mode
+    const linesTotals = useMemo(() => {
+        if (!watchedDetails || !Array.isArray(watchedDetails)) {
+            return { totalKg: 0, totalAmount: 0 };
+        }
+        let totalKg = 0;
+        let totalAmount = 0;
+        watchedDetails.forEach((detail) => {
+            const netWeight = parseFloat(detail.netWeight) || 0;
+            const price = parseFloat(detail.price) || 0;
+            totalKg += netWeight;
+            totalAmount += netWeight * price;
+        });
+        return { totalKg, totalAmount };
+    }, [watchedDetails]);
 
     // Verificar si hay datos en el modo actual
     const hasDataInCurrentMode = () => {
@@ -495,6 +511,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                         <TableHead>Tara</TableHead>
                                         <TableHead>Peso Neto</TableHead>
                                         <TableHead>Precio (€/kg)</TableHead>
+                                        <TableHead>Importe</TableHead>
                                         <TableHead>Lote</TableHead>
                                         <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
@@ -646,6 +663,22 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                             </TableCell>
                                             <TableCell>
                                                 <Input
+                                                    readOnly
+                                                    className="w-32 bg-muted"
+                                                    placeholder="0,00 €"
+                                                    value={
+                                                        (() => {
+                                                            const netWeight = parseFloat(watchedDetails?.[index]?.netWeight) || 0;
+                                                            const price = parseFloat(watchedDetails?.[index]?.price) || 0;
+                                                            return formatDecimalCurrency(netWeight * price);
+                                                        })()
+                                                    }
+                                                    aria-label={`Importe para línea ${index + 1}`}
+                                                    aria-readonly="true"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Input
                                                     {...register(`details.${index}.lot`)}
                                                     placeholder="Lote (opcional)"
                                                     className="w-32"
@@ -670,6 +703,21 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                         </TableRow>
                                     ))}
                                 </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-right font-semibold">
+                                            Total
+                                        </TableCell>
+                                        <TableCell className="font-semibold">
+                                            {formatDecimalWeight(linesTotals.totalKg)}
+                                        </TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell className="font-semibold">
+                                            {formatDecimalCurrency(linesTotals.totalAmount)}
+                                        </TableCell>
+                                        <TableCell colSpan={2}></TableCell>
+                                    </TableRow>
+                                </TableFooter>
                             </Table>
                         </div>
 
