@@ -118,17 +118,31 @@ export default function OrdersManager() {
 
     // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
     // No incluimos selectedOrder en las dependencias para evitar re-renders innecesarios
+    // isSelected se calculará en OrderCard basándose en selectedOrderId prop
     const sortedOrders = useMemo(() => {
         const searchLower = debouncedSearchText.toLowerCase();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Resetear horas para comparación de fechas
         
         // Filtrar sin mutar los objetos originales
         const filtered = orders
             .filter((order) => {
+                // Filtro de búsqueda
                 const matchesSearch = order.customer?.name?.toLowerCase().includes(searchLower) ||
                     order.id.toString().includes(debouncedSearchText);
+                
+                // Filtro de categoría
                 const matchesCategory = activeCategory.name === 'all' ||
                     activeCategory.name === order.status;
-                return matchesSearch && matchesCategory;
+                
+                // Lógica de negocio: Si el pedido está "finished" (enviado) y es más antiguo que hoy,
+                // no mostrarlo en la lista (solo mostrar finished del día actual o futuros)
+                const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+                const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+                const isOldFinishedOrder = order.status === 'finished' && loadDateOnly && loadDateOnly < today;
+                const matchesBusinessLogic = !isOldFinishedOrder;
+                
+                return matchesSearch && matchesCategory && matchesBusinessLogic;
             });
 
         // Ordenar creando una copia del array
@@ -208,7 +222,7 @@ export default function OrdersManager() {
 
 
     // Componente de lista (reutilizable para desktop y mobile)
-    const OrdersListContent = () => (
+    const OrdersListContent = useMemo(() => (
         <OrdersList
             onClickAddNewOrder={handleOnClickAddNewOrder}
             onClickOrderCard={handleOnClickOrderCard}
@@ -220,8 +234,9 @@ export default function OrdersManager() {
             disabled={isOrderLoading}
             error={error}
             onRetry={reloadOrders}
+            selectedOrderId={selectedOrder}
         />
-    );
+    ), [sortedOrders, categories, searchText, isOrderLoading, error, selectedOrder, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
 
     // Memoizar la función onLoading para evitar re-renders infinitos
     const handleOrderLoading = useCallback((value) => {
@@ -287,7 +302,7 @@ export default function OrdersManager() {
                             ) : (
                                 /* Mostrar lista cuando no hay selección */
                                 <div className='h-full'>
-                                    <OrdersListContent />
+                                    {OrdersListContent}
                                 </div>
                             )}
                             
@@ -296,7 +311,7 @@ export default function OrdersManager() {
                         /* Vista desktop - layout side-by-side */
                         <div className="flex flex-col xl:flex-row h-full">
                             <div className='w-full xl:w-auto xl:max-w-md xl:h-full xl:border-r'>
-                                <OrdersListContent />
+                                {OrdersListContent}
                             </div>
                             <div className='grow lg:pl-0 p-2'>
                                 {OrderDetailContent}

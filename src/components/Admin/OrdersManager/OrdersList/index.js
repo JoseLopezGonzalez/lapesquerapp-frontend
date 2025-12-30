@@ -1,5 +1,5 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { useState, memo } from 'react'
+import React, { useState, memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -24,12 +24,46 @@ import {
 
 
 
-const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry }) => {
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId }) => {
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
+    const scrollAreaRef = React.useRef(null);
+    const scrollPositionRef = React.useRef(0);
+    const prevSelectedOrderIdRef = React.useRef(selectedOrderId);
+    const prevOrdersLengthRef = React.useRef(orders?.length || 0);
 
     const activeTab = categories.find((category) => category.current)?.name || 'all';
+
+    // Preservar posición del scroll cuando solo cambia la selección (no cuando cambian los orders)
+    React.useEffect(() => {
+        if (scrollAreaRef.current) {
+            const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (viewport) {
+                const selectedOrderChanged = prevSelectedOrderIdRef.current !== selectedOrderId;
+                const ordersChanged = prevOrdersLengthRef.current !== (orders?.length || 0);
+                
+                // Si solo cambió la selección (no los orders), guardar posición actual
+                if (selectedOrderChanged && !ordersChanged) {
+                    scrollPositionRef.current = viewport.scrollTop;
+                    
+                    // Restaurar después del render
+                    requestAnimationFrame(() => {
+                        if (scrollAreaRef.current && scrollPositionRef.current > 0) {
+                            const restoredViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+                            if (restoredViewport) {
+                                restoredViewport.scrollTop = scrollPositionRef.current;
+                            }
+                        }
+                    });
+                }
+                
+                // Actualizar referencias
+                prevSelectedOrderIdRef.current = selectedOrderId;
+                prevOrdersLengthRef.current = orders?.length || 0;
+            }
+        }
+    }, [selectedOrderId, orders]);
 
     const exportDocument = async () => {
         const toastId = toast.loading(`Exportando `, getToastTheme());
@@ -175,7 +209,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Lista de orders */}
                     {orders?.length > 0 ? (
-                        <ScrollArea className="h-full grow pr-2 pb-4 mb-4">
+                        <ScrollArea ref={scrollAreaRef} className="h-full grow pr-2 pb-4 mb-4">
                             <div className="flex flex-col gap-3">
                                 {orders.map((order) => (
                                     <div key={order.id} className='' >
@@ -183,6 +217,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                             onClick={() => onClickOrderCard(order.id)}
                                             order={order}
                                             disabled={disabled}
+                                            isSelected={selectedOrderId === order.id}
                                         />
                                     </div>
                                 ))}
@@ -216,5 +251,20 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 }
 
 // Memoizar el componente para evitar re-renders innecesarios
-// selectedOrder ya no se pasa como prop, por lo que cambios en selectedOrder no causan re-renders
-export default memo(OrdersList);
+// Comparación personalizada para evitar re-renders cuando solo cambia selectedOrderId
+export default memo(OrdersList, (prevProps, nextProps) => {
+    // Solo re-renderizar si cambian props relevantes (no selectedOrderId solo)
+    return (
+        prevProps.orders === nextProps.orders &&
+        prevProps.categories === nextProps.categories &&
+        prevProps.searchText === nextProps.searchText &&
+        prevProps.disabled === nextProps.disabled &&
+        prevProps.error === nextProps.error &&
+        // selectedOrderId puede cambiar sin causar re-render (se maneja internamente)
+        prevProps.onClickOrderCard === nextProps.onClickOrderCard &&
+        prevProps.onClickCategory === nextProps.onClickCategory &&
+        prevProps.onChangeSearch === nextProps.onChangeSearch &&
+        prevProps.onClickAddNewOrder === nextProps.onClickAddNewOrder &&
+        prevProps.onRetry === nextProps.onRetry
+    );
+});

@@ -1,6 +1,6 @@
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 
-const OrderCard = ({ order, onClick, disabled }) => {
+const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
 
     const orderId = order.id.toString().padStart(5, '0');
     const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
@@ -17,18 +17,19 @@ const OrderCard = ({ order, onClick, disabled }) => {
 
     let statusClass = ''
 
-    if (order.current && order.status === 'finished') {
+    // Resaltar pedido seleccionado
+    if (isSelected && order.status === 'finished') {
         statusClass = 'border-green-500 bg-green-400/70 hover:bg-green-400/80'
-    } else if (order.current && order.status === 'pending') {
+    } else if (isSelected && order.status === 'pending') {
         statusClass = 'border-orange-500 bg-orange-400/90 hover:bg-orange-400'
-    } else if (order.current && order.status === 'incident') {
+    } else if (isSelected && order.status === 'incident') {
         statusClass = 'border-red-900 bg-red-500 hover:bg-red-500/80'
     } else if (order.status === 'incident') {
         statusClass = 'border-red-500 bg-foreground-50 hover:foreground-100'
     } else if (order.status === 'finished') {
         statusClass = 'border-green-500 bg-foreground-50 hover:foreground-100'
     } else {
-        statusClass = 'border-orange-500 bg-foreground-50 hover:bg-foreground-100'
+        statusClass = 'border-orange-500 bg-foreground-50 hover:foreground-100'
     }
 
     const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
