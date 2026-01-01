@@ -8,7 +8,7 @@ import React, { useState } from 'react'
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import ExportModal from './ExportModal'
 
-const ListadoComprasLonjaDeIsla = ({ document }) => {
+const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
     const [open, setOpen] = useState(false)
     const { details, tables } = document
     const { lonja, cifComprador, comprador, numeroComprador, fecha, importeTotal } = details
@@ -237,17 +237,19 @@ const ListadoComprasLonjaDeIsla = ({ document }) => {
                 </div>
             </div>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <div className="fixed bottom-8 right-9">
-                        <Button className="rounded-full" >
-                            <Download className="w-6 h-6" />
-                            Exportar
-                        </Button>
-                    </div>
-                </DialogTrigger>
-                <ExportModal document={document} />
-            </Dialog>
+            {!hideExport && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <div className="fixed bottom-8 right-9">
+                            <Button className="rounded-full" >
+                                <Download className="w-6 h-6" />
+                                Exportar
+                            </Button>
+                        </div>
+                    </DialogTrigger>
+                    <ExportModal document={document} />
+                </Dialog>
+            )}
 
         </div>
     )

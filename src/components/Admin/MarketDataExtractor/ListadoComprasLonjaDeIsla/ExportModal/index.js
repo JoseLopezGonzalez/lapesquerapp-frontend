@@ -55,7 +55,6 @@ const calculateImporteFromLinea = (linea) => {
 const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
     const [software, setSoftware] = useState("A3ERP")
-    const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
     const [errors, setErrors] = useState([])
     const [selectedLinks, setSelectedLinks] = useState([])
     const ventasVendidurias = []
@@ -231,10 +230,7 @@ const ExportModal = ({ document }) => {
     servicios.splice(1, 0, servicioExtra)
 
     const handleOnClickExport = () => {
-        if (initialAlbaranNumber === "") {
-            toast.error('Introduzca un número de albarán inicial', getToastTheme());
-            return;
-        }
+        // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
 
         if (software === "A3ERP") {
             generateExcelForA3erp();
@@ -356,12 +352,17 @@ const ExportModal = ({ document }) => {
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
-        let albaranNumber = Number(initialAlbaranNumber);
+        const CABSERIE = "LI";
+        // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
+        const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+        let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
 
         ventasDirectas.forEach(barco => {
+            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
             barco.lineas.forEach(linea => {
                 processedRows.push({
-                    CABNUMDOC: albaranNumber,
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.armador.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
@@ -372,13 +373,15 @@ const ExportModal = ({ document }) => {
                     LINTIPIVA: 'RED10',
                 });
             });
-            albaranNumber++;
+            albaranSequence++;
         });
 
         ventasVendidurias.forEach(barco => {
+            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
             isConvertibleBarco(barco.cod) && barco.lineas.forEach(linea => {
                 processedRows.push({
-                    CABNUMDOC: albaranNumber,
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.vendiduria.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
@@ -393,7 +396,8 @@ const ExportModal = ({ document }) => {
             const importeTotal = getImporteTotal(barco.lineas);
 
             processedRows.push({
-                CABNUMDOC: albaranNumber,
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: lonjaDeIsla.codA3erp,
                 CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
@@ -403,14 +407,15 @@ const ExportModal = ({ document }) => {
                 LINPRCMONEDA: importeTotal * 3.5 / 100,
                 LINTIPIVA: 'RED10',
             });
-            albaranNumber++;
+            albaranSequence++;
 
         });
 
-
+        const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
         servicios.forEach(line => {
             processedRows.push({
-                CABNUMDOC: albaranNumber,
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocServicios,
                 CABFECHA: fecha,
                 CABCODPRO: lonjaDeIsla.codA3erp,
                 CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS`,
@@ -422,7 +427,7 @@ const ExportModal = ({ document }) => {
             });
         });
 
-        albaranNumber++;
+        albaranSequence++;
 
 
         // Crear el libro y hoja
@@ -461,12 +466,6 @@ const ExportModal = ({ document }) => {
                                 <SelectItem value="Otros">Otros</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="software" className=" font-medium">
-                            Contador Inicio Albaranes
-                        </label>
-                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e) => setInitialAlbaranNumber(e.target.value)} />
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>

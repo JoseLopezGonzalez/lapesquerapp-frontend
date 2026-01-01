@@ -57,7 +57,6 @@ const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea
 const ExportModal = ({ document }) => {
     const { detalles: { numero, fecha, cifLonja, lonja } } = document
     const [software, setSoftware] = useState("A3ERP")
-    const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
     const [selectedLinks, setSelectedLinks] = useState([])
 
     const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja)
@@ -87,7 +86,10 @@ const ExportModal = ({ document }) => {
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
-        let albaranNumber = Number(initialAlbaranNumber);
+        const CABSERIE = "CF";
+        // Limpiar número de documento: eliminar todos los caracteres no numéricos
+        const numeroLimpio = String(numero).replace(/[^0-9]/g, '');
+        let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
 
         // Agrupamos líneas de subasta por armador
         const groupedByArmador = subastas.reduce((acc, line) => {
@@ -104,10 +106,13 @@ const ExportModal = ({ document }) => {
                 continue; // o lanza un toast o marca el error visualmente
             }
 
+            const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
+
             lines.forEach(barco => {
                 barco.lineas.forEach(linea => {
                     processedRows.push({
-                        CABNUMDOC: albaranNumber,
+                        CABSERIE: CABSERIE,
+                        CABNUMDOC: cabNumDoc,
                         CABFECHA: fecha,
                         CABCODPRO: armadorData.codA3erp,
                         CABREFERENCIA: `COFRA - ${fecha} - ${numero} -  ${barco.nombre}`,
@@ -120,7 +125,7 @@ const ExportModal = ({ document }) => {
                 });
             });
 
-            albaranNumber++;
+            albaranSequence++;
         }
 
         // Albarán para la lonja con los servicios
@@ -128,12 +133,15 @@ const ExportModal = ({ document }) => {
         if (!lonjaData) {
             console.error(`Falta código de conversión para la lonja ${cifLonja}`);
         } else {
+            const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
+
             servicios.forEach(line => {
                 const unidades = parseDecimalValue(line.unidades);
                 const importe = parseDecimalValue(line.importe);
                 const calculatedPrecio = unidades === 0 ? 0 : Number((importe / unidades).toFixed(4));
                 processedRows.push({
-                    CABNUMDOC: albaranNumber,
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: lonjaData.codA3erp,
                     CABREFERENCIA: `COFRA - ${fecha} - ${numero} - SERVICIOS`,
@@ -145,7 +153,7 @@ const ExportModal = ({ document }) => {
                 });
             });
 
-            albaranNumber++;
+            albaranSequence++;
         }
 
         // Crear el libro y hoja
@@ -160,11 +168,6 @@ const ExportModal = ({ document }) => {
     };
 
     const handleOnClickExport = () => {
-        if (initialAlbaranNumber === "") {
-            toast.error('Introduzca un número de albarán inicial', getToastTheme());
-            return;
-        }
-
         if (software === "A3ERP") {
             generateExcelForA3erp();
         } else if (software === "Facilcom") {
@@ -283,13 +286,13 @@ const ExportModal = ({ document }) => {
             </DialogHeader>
 
             <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 items-center gap-4">
+                <div className="grid grid-cols-1 items-center gap-4">
                     <div className='flex flex-col gap-1'>
                         <label htmlFor="software" className=" font-medium">
                             Software
                         </label>
                         <Select value={software} onValueChange={setSoftware}>
-                            <SelectTrigger id="software" className="col-span-3">
+                            <SelectTrigger id="software">
                                 <SelectValue placeholder="Seleccione software de destino" />
                             </SelectTrigger>
                             <SelectContent>
@@ -298,12 +301,6 @@ const ExportModal = ({ document }) => {
                                 <SelectItem value="Otros">Otros</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="software" className=" font-medium">
-                            Contador Inicio Albaranes
-                        </label>
-                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e) => setInitialAlbaranNumber(e.target.value)} />
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>

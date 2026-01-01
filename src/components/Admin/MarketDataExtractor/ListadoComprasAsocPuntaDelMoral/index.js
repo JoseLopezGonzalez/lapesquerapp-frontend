@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import ExportModal from './ExportModal'
 
-const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
+const ListadoComprasAsocPuntaDelMoral = ({ document, hideExport = false }) => {
     const [open, setOpen] = useState(false)
     const { details, tables } = document
     const { lonja, cifComprador, comprador, fecha, tipoSubasta, importeTotal } = details
@@ -156,17 +156,19 @@ const ListadoComprasAsocPuntaDelMoral = ({ document }) => {
                 </Card>
             </div>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <div className="fixed bottom-8 right-12">
-                        <Button className="rounded-full" >
-                            <Download className="w-6 h-6" />
-                            Exportar
-                        </Button>
-                    </div>
-                </DialogTrigger>
-                <ExportModal document={document} />
-            </Dialog>
+            {!hideExport && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <div className="fixed bottom-8 right-12">
+                            <Button className="rounded-full" >
+                                <Download className="w-6 h-6" />
+                                Exportar
+                            </Button>
+                        </div>
+                    </DialogTrigger>
+                    <ExportModal document={document} />
+                </Dialog>
+            )}
 
         </div>
     )

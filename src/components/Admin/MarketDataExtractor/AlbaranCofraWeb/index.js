@@ -8,7 +8,7 @@ import React, { useState } from 'react'
 import ExportModal from './ExportModal'
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 
-const AlbaranCofraWeb = ({ document }) => {
+const AlbaranCofraWeb = ({ document, hideExport = false }) => {
     const [open, setOpen] = useState(false)
 
     return (
@@ -255,17 +255,19 @@ const AlbaranCofraWeb = ({ document }) => {
 
 
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <div className="fixed bottom-8 right-12">
-                        <Button className="rounded-full" >
-                            <Download className="w-6 h-6" />
-                            Exportar
-                        </Button>
-                    </div>
-                </DialogTrigger>
-                <ExportModal document={document} />
-            </Dialog>
+            {!hideExport && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <div className="fixed bottom-8 right-12">
+                            <Button className="rounded-full" >
+                                <Download className="w-6 h-6" />
+                                Exportar
+                            </Button>
+                        </div>
+                    </DialogTrigger>
+                    <ExportModal document={document} />
+                </Dialog>
+            )}
 
         </div>
     )

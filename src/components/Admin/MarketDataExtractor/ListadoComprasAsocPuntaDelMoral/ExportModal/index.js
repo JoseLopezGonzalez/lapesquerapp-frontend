@@ -56,7 +56,6 @@ const calculateImporte = (weight, price) => {
 const ExportModal = ({ document }) => {
     const { details: { fecha, tipoSubasta }, tables } = document
     const [software, setSoftware] = useState("A3ERP")
-    const [initialAlbaranNumber, setInitialAlbaranNumber] = useState("")
     const [selectedLinks, setSelectedLinks] = useState([])
 
     const isVentaDirecta = tipoSubasta == 'M1 M1'
@@ -109,7 +108,10 @@ const ExportModal = ({ document }) => {
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
-        let albaranNumber = Number(initialAlbaranNumber);
+        const CABSERIE = "AS";
+        // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
+        const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+        let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
 
         // Agrupamos líneas de subasta por armador
         const groupedByBarco = subastas.reduce((acc, line) => {
@@ -128,10 +130,13 @@ const ExportModal = ({ document }) => {
                     continue; // o lanza un toast o marca el error visualmente
                 }
 
+                const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+
                 lines.forEach(l => {
                     l.lineas.forEach(linea => {
                         processedRows.push({
-                            CABNUMDOC: albaranNumber,
+                            CABSERIE: CABSERIE,
+                            CABNUMDOC: cabNumDoc,
                             CABFECHA: fecha,
                             CABCODPRO: asocArmadoresPuntaDelMoral.codA3erp,
                             CABREFERENCIA: `ASOC - ${fecha} - ${barcoData.nombre}`,
@@ -144,13 +149,15 @@ const ExportModal = ({ document }) => {
                     });
                 });
 
-                albaranNumber++;
+                albaranSequence++;
             }
         } else if (isSubasta) {
+            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
 
             document.tables.subastas.forEach(linea => {
                 processedRows.push({
-                    CABNUMDOC: albaranNumber,
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
                     CABREFERENCIA: `ASOC - ${fecha} - SUBASTA`,
@@ -162,12 +169,14 @@ const ExportModal = ({ document }) => {
                 });
             });
 
-            albaranNumber++;
+            albaranSequence++;
         }
 
+        const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
         servicios.forEach(line => {
             processedRows.push({
-                CABNUMDOC: albaranNumber,
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocServicios,
                 CABFECHA: fecha,
                 CABCODPRO: isVentaDirecta ? asocArmadoresPuntaDelMoral.codA3erp : asocArmadoresPuntaDelMoralSubasta.codA3erp,
                 CABREFERENCIA: isVentaDirecta ? `ASOC - ${fecha} - SERVICIOS` : `ASOC - ${fecha} - SERVICIOS SUBASTA`,
@@ -179,21 +188,25 @@ const ExportModal = ({ document }) => {
             });
         });
 
-        albaranNumber++;
+        albaranSequence++;
 
-        isSubasta && processedRows.push({
-            CABNUMDOC: albaranNumber,
-            CABFECHA: fecha,
-            CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
-            CABREFERENCIA: `ASOC - ${fecha} - SERVICIOS CAJAS SUBASTA`,
-            LINCODART: 1015,
-            LINDESCLIN: 'Préstamo cajas',
-            LINUNIDADES: cajasTotales,
-            LINPRCMONEDA: 5.50,
-            LINTIPIVA: 'RED10',
-        });
+        if (isSubasta) {
+            const cabNumDocCajas = `${fechaSoloNumeros}${albaranSequence}`;
+            processedRows.push({
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocCajas,
+                CABFECHA: fecha,
+                CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
+                CABREFERENCIA: `ASOC - ${fecha} - SERVICIOS CAJAS SUBASTA`,
+                LINCODART: 1015,
+                LINDESCLIN: 'Préstamo cajas',
+                LINUNIDADES: cajasTotales,
+                LINPRCMONEDA: 5.50,
+                LINTIPIVA: 'RED10',
+            });
 
-        albaranNumber++;
+            albaranSequence++;
+        }
 
         // Crear el libro y hoja
         const worksheet = XLSX.utils.json_to_sheet(processedRows);
@@ -308,10 +321,7 @@ const ExportModal = ({ document }) => {
     };
 
     const handleOnClickExport = () => {
-        if (initialAlbaranNumber === "") {
-            toast.error('Introduzca un número de albarán inicial', getToastTheme());
-            return;
-        }
+        // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
 
         if (software === "A3ERP") {
             generateExcelForA3erp();
@@ -347,12 +357,6 @@ const ExportModal = ({ document }) => {
                                 <SelectItem value="Otros">Otros</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="software" className=" font-medium">
-                            Contador Inicio Albaranes
-                        </label>
-                        <Input type="number" value={initialAlbaranNumber} placeholder='000' onChange={(e) => setInitialAlbaranNumber(e.target.value)} />
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>

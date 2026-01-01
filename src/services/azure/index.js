@@ -17,11 +17,6 @@ const documentTypes = [
         name: 'ListadoComprasLonjaDeIsla',
         modelId: process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_LONJA_DE_ISLA_MODEL_ID,
         apiVersion: '2023-07-31',
-    },
-    {
-        name: 'FacturaDocapesca',
-        modelId: process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_FACTURA_DOCAPESCA_ID,
-        apiVersion: '2023-07-31',
     }
 
 ];
@@ -125,5 +120,6 @@ export const extractDataWithAzureDocumentAi = async ({ file, documentType }) => 
 
     } catch (error) {
         console.error("Error al procesar el PDF:", error);
+        throw error; // Re-lanzar el error para que se propague
     }
 };
