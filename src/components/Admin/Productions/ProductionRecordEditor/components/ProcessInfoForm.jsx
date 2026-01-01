@@ -108,7 +108,7 @@ export const ProcessInfoForm = ({
                                             )
                                         })
                                 ) : (
-                                    <SelectItem value="none" disabled>
+                                    <SelectItem value="no-records" disabled>
                                         No hay procesos disponibles
                                     </SelectItem>
                                 )}
