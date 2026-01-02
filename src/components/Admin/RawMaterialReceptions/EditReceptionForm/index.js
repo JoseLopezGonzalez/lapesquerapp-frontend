@@ -761,19 +761,29 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    {...register(`details.${index}.netWeight`, {
+                                                <Controller
+                                                    name={`details.${index}.netWeight`}
+                                                    control={control}
+                                                    rules={{
                                                         required: 'El peso neto es obligatorio',
-                                                        valueAsNumber: true,
                                                         min: { value: 0.01, message: 'El peso debe ser mayor que 0' }
-                                                    })}
-                                                    placeholder="0.00"
-                                                    className="w-32"
-                                                    aria-label={`Peso neto para línea ${index + 1}`}
-                                                    aria-required="true"
+                                                    }}
+                                                    render={({ field: { onChange, value, ...field } }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            value={value || ''}
+                                                            onChange={(e) => {
+                                                                onChange(e.target.value);
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-32"
+                                                            aria-label={`Peso neto para línea ${index + 1}`}
+                                                            aria-required="true"
+                                                        />
+                                                    )}
                                                 />
                                                 {errors.details?.[index]?.netWeight && (
                                                     <p className="text-destructive text-xs mt-1">
@@ -829,14 +839,24 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    {...register(`details.${index}.price`)}
-                                                    placeholder="0.00"
-                                                    className="w-32"
-                                                    aria-label={`Precio por kilogramo para línea ${index + 1}`}
+                                                <Controller
+                                                    name={`details.${index}.price`}
+                                                    control={control}
+                                                    render={({ field: { onChange, value, ...field } }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            value={value || ''}
+                                                            onChange={(e) => {
+                                                                onChange(e.target.value);
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-32"
+                                                            aria-label={`Precio por kilogramo para línea ${index + 1}`}
+                                                        />
+                                                    )}
                                                 />
                                             </TableCell>
                                             <TableCell>

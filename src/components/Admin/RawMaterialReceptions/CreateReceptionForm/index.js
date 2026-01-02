@@ -649,16 +649,24 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                 />
                                             </TableCell>
                                             <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    {...register(`details.${index}.price`, {
-                                                        valueAsNumber: true,
-                                                    })}
-                                                    placeholder="0.00"
-                                                    className="w-32"
-                                                    aria-label={`Precio por kilogramo para línea ${index + 1}`}
+                                                <Controller
+                                                    name={`details.${index}.price`}
+                                                    control={control}
+                                                    render={({ field: { onChange, value, ...field } }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            value={value || ''}
+                                                            onChange={(e) => {
+                                                                onChange(e.target.value);
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-32"
+                                                            aria-label={`Precio por kilogramo para línea ${index + 1}`}
+                                                        />
+                                                    )}
                                                 />
                                             </TableCell>
                                             <TableCell>
