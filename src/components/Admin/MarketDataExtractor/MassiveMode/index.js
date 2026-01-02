@@ -81,40 +81,39 @@ export default function MassiveMode() {
 
         // Process documents one by one (could be optimized to process in parallel with a limit)
         for (const doc of documentsToProcess) {
+            setDocuments((prev) =>
+                prev.map((d) =>
+                    d.id === doc.id ? { ...d, status: 'processing' } : d
+                )
+            );
+
+            try {
+                const result = await processDocument(doc.file, doc.documentType);
+
                 setDocuments((prev) =>
                     prev.map((d) =>
-                        d.id === doc.id ? { ...d, status: 'processing' } : d
+                        d.id === doc.id
+                            ? {
+                                  ...d,
+                                  status: result.success ? 'success' : 'error',
+                                  processedData: result.success ? result.data : null,
+                                  error: result.success ? null : result.error,
+                              }
+                            : d
                     )
                 );
-
-                try {
-                    const result = await processDocument(doc.file, doc.documentType);
-
-                    setDocuments((prev) =>
-                        prev.map((d) =>
-                            d.id === doc.id
-                                ? {
-                                      ...d,
-                                      status: result.success ? 'success' : 'error',
-                                      processedData: result.success ? result.data : null,
-                                      error: result.success ? null : result.error,
-                                  }
-                                : d
-                        )
-                    );
-                } catch (error) {
-                    setDocuments((prev) =>
-                        prev.map((d) =>
-                            d.id === doc.id
-                                ? {
-                                      ...d,
-                                      status: 'error',
-                                      error: error.message || 'Error desconocido',
-                                  }
-                                : d
-                        )
-                    );
-                }
+            } catch (error) {
+                setDocuments((prev) =>
+                    prev.map((d) =>
+                        d.id === doc.id
+                            ? {
+                                  ...d,
+                                  status: 'error',
+                                  error: error.message || 'Error desconocido',
+                              }
+                            : d
+                    )
+                );
             }
         }
 
