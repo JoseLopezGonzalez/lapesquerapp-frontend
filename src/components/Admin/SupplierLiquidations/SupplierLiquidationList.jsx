@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { Loader2, Search } from "lucide-react"
+import { Loader2, Search, ChevronRight } from "lucide-react"
 import { toast } from "react-hot-toast"
 
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
@@ -16,9 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { getSuppliersWithActivity } from "@/services/supplierLiquidationService"
 import { getToastTheme } from "@/customs/reactHotToast"
 
@@ -105,63 +103,65 @@ export function SupplierLiquidationList() {
 
     return (
         <div className="h-full w-full flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 w-full">
-                <div className="p-6 space-y-6">
-                    <Card>
-                <CardHeader>
-                    <CardTitle>Liquidación de Proveedores</CardTitle>
-                    <CardDescription>
-                        Seleccione un rango de fechas para ver los proveedores con actividad
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-                        <div className="flex-1 max-w-md">
-                            <label className="text-sm font-medium mb-2 block">
-                                Rango de fechas
-                            </label>
-                            <DateRangePicker
-                                dateRange={dateRange}
-                                onChange={setDateRange}
-                            />
+            <div className="p-6 flex-shrink-0">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Liquidación de Proveedores</CardTitle>
+                        <CardDescription>
+                            Seleccione un rango de fechas para ver los proveedores con actividad
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                            <div className="flex-1 max-w-md">
+                                <label className="text-sm font-medium mb-2 block">
+                                    Rango de fechas
+                                </label>
+                                <DateRangePicker
+                                    dateRange={dateRange}
+                                    onChange={setDateRange}
+                                />
+                            </div>
+                            <Button
+                                onClick={fetchSuppliers}
+                                disabled={!dateRange.from || !dateRange.to || loading}
+                                className="w-full sm:w-auto"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Cargando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Search className="mr-2 h-4 w-4" />
+                                        Buscar
+                                    </>
+                                )}
+                            </Button>
                         </div>
-                        <Button
-                            onClick={fetchSuppliers}
-                            disabled={!dateRange.from || !dateRange.to || loading}
-                            className="w-full sm:w-auto"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Cargando...
-                                </>
-                            ) : (
-                                <>
-                                    <Search className="mr-2 h-4 w-4" />
-                                    Buscar
-                                </>
-                            )}
-                        </Button>
+
+                        {error && (
+                            <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+                                {error}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="flex-1 overflow-hidden px-6 pb-6">
+                {loading && (
+                    <div className="flex justify-center items-center h-full">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
+                )}
 
-                    {error && (
-                        <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-                            {error}
-                        </div>
-                    )}
-
-                    {loading && (
-                        <div className="space-y-2">
-                            {[...Array(5)].map((_, i) => (
-                                <Skeleton key={i} className="h-16 w-full" />
-                            ))}
-                        </div>
-                    )}
-
-                    {!loading && !error && dateRange.from && dateRange.to && (
-                        <>
-                            {suppliers.length === 0 ? (
-                                <div className="text-center py-12 text-muted-foreground">
+                {!loading && !error && dateRange.from && dateRange.to && (
+                    <>
+                        {suppliers.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground h-full flex items-center justify-center">
+                                <div>
                                     <p className="text-lg font-medium mb-2">
                                         No se encontraron proveedores con actividad
                                     </p>
@@ -170,31 +170,33 @@ export function SupplierLiquidationList() {
                                         seleccionado.
                                     </p>
                                 </div>
-                            ) : (
-                                <div className="rounded-md border overflow-x-auto">
+                            </div>
+                        ) : (
+                            <div className="rounded-md border h-full flex flex-col overflow-hidden">
+                                <div className="overflow-y-auto overflow-x-auto flex-1">
                                     <Table>
-                                        <TableHeader>
+                                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                                             <TableRow>
-                                                <TableHead>Proveedor</TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="bg-background">Proveedor</TableHead>
+                                                <TableHead className="text-right bg-background">
                                                     Recepciones
                                                 </TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="text-right bg-background">
                                                     Salidas de Cebo
                                                 </TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="text-right bg-background">
                                                     Peso Recepciones
                                                 </TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="text-right bg-background">
                                                     Peso Salidas
                                                 </TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="text-right bg-background">
                                                     Importe Recepciones
                                                 </TableHead>
-                                                <TableHead className="text-right">
+                                                <TableHead className="text-right bg-background">
                                                     Importe Salidas
                                                 </TableHead>
-                                                <TableHead className="text-center">
+                                                <TableHead className="text-center bg-background">
                                                     Acción
                                                 </TableHead>
                                             </TableRow>
@@ -239,7 +241,7 @@ export function SupplierLiquidationList() {
                                                             size="sm"
                                                             onClick={(e) => handleSupplierClick(supplier.id, e)}
                                                         >
-                                                            Ver Detalle
+                                                            <ChevronRight className="h-4 w-4" />
                                                         </Button>
                                                     </TableCell>
                                                 </TableRow>
@@ -247,21 +249,19 @@ export function SupplierLiquidationList() {
                                         </TableBody>
                                     </Table>
                                 </div>
-                            )}
-                        </>
-                    )}
+                            </div>
+                        )}
+                    </>
+                )}
 
-                    {!loading && !error && (!dateRange.from || !dateRange.to) && (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <p className="text-sm">
-                                Seleccione un rango de fechas para comenzar
-                            </p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-                </div>
-            </ScrollArea>
+                {!loading && !error && (!dateRange.from || !dateRange.to) && (
+                    <div className="text-center py-12 text-muted-foreground h-full flex items-center justify-center">
+                        <p className="text-sm">
+                            Seleccione un rango de fechas para comenzar
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

@@ -15,7 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -238,10 +237,8 @@ export function SupplierLiquidationDetail({ supplierId }) {
         return (
             <div className="h-full w-full flex flex-col overflow-hidden">
                 <ScrollArea className="flex-1 w-full">
-                    <div className="p-6 space-y-6">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-64 w-full" />
-                        <Skeleton className="h-96 w-full" />
+                    <div className="p-6 flex justify-center items-center min-h-[400px]">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 </ScrollArea>
             </div>
@@ -341,7 +338,7 @@ export function SupplierLiquidationDetail({ supplierId }) {
                     <div className="flex flex-col gap-4">
                         {/* Selector de método de pago (siempre visible) - Switch */}
                         <div className="flex items-center gap-4">
-                            <label className="text-sm font-medium whitespace-nowrap">Método de pago:</label>
+                            <label className="text-sm font-medium whitespace-nowrap">Método de pago cebo:</label>
                             <div 
                                 className="relative inline-flex h-9 w-[180px] items-center rounded-lg bg-muted p-1 cursor-pointer"
                                 onClick={() => setPaymentMethod(paymentMethod === 'cash' ? 'transfer' : 'cash')}
