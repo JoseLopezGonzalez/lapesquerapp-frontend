@@ -122,9 +122,9 @@ export function TotalAmountSoldCard() {
                                                 <span className="font-medium">{formatDecimalCurrency(data.tax)}</span>
                                             </div>
 
-                                            {data.comparisonValue && (
+                                            <Separator className="my-2 bg-foreground-300" />
+                                            {data.comparisonValue ? (
                                                 <div>
-                                                    <Separator className="my-2 bg-foreground-300" />
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="text-[11px] font-semibold text-foreground-300 uppercase tracking-wider">
                                                             Año anterior
@@ -146,6 +146,10 @@ export function TotalAmountSoldCard() {
                                                         <span>IVA</span>
                                                         <span className="font-medium">{formatDecimalCurrency(data.comparisonTax)}</span>
                                                     </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-xs text-foreground-300 italic">
+                                                    No hay datos de años anteriores
                                                 </div>
                                             )}
 
