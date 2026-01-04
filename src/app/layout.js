@@ -41,7 +41,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className="bg-background w-full">
         <SettingsProvider>
           <ClientLayout>{children}</ClientLayout>

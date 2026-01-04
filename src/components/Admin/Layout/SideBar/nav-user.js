@@ -4,7 +4,6 @@ import {
     BadgeCheck,
     Bell,
     ChevronsUpDown,
-    CreditCard,
     LogOut,
     Settings,
     Sparkles,
@@ -30,6 +29,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 import { useRouter } from "next/navigation"
 
@@ -69,7 +69,7 @@ export function NavUser({ user }) {
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
                                     <AvatarImage src={user.avatar} alt={user.name} />
-                                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                    <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">{user.name}</span>
@@ -102,6 +102,16 @@ export function NavUser({ user }) {
                             >
                                 <Settings />
                                 Configuración
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem 
+                                className="focus:bg-transparent hover:bg-transparent" 
+                                onSelect={(e) => e.preventDefault()}
+                            >
+                                <span>Tema</span>
+                                <ThemeToggle className="ml-auto" />
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />

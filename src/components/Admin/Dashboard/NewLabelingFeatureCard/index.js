@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react"
 
 export function NewLabelingFeatureCard() {
     return (
-        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border border-lime-200 h-full bg-gradient-to-t from-lime-300 to-lime-100 dark:from-gray-900 dark:to-gray-800">
+        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border border-lime-200 dark:border-neutral-700 h-full bg-gradient-to-t from-lime-300 to-lime-100 dark:from-neutral-800 dark:to-neutral-900 overflow-hidden">
             <div className="z-10">
                 <CardHeader className="p-0 pb-2">
                     <CardDescription className="text-sm  flex items-center gap-1">
@@ -25,7 +25,7 @@ export function NewLabelingFeatureCard() {
                 </CardFooter>
             </div>
 
-            <div className="absolute right-0 bottom-0 h-full translate-x-1/3">
+            <div className="absolute right-0 bottom-0 h-full translate-x-1/3 overflow-hidden">
                 <img
                     src="/images/mockup-label.png"
                     alt="Mockup Editor de Etiquetas"

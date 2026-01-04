@@ -3,16 +3,8 @@
 import * as React from "react"
 import {
     AudioWaveform,
-    BookOpen,
-    Bot,
-    Command,
     Earth,
-    Frame,
     GalleryVerticalEnd,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -33,47 +25,52 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { useSettings } from '@/context/SettingsContext';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// This is sample data.
+import { filterNavigationByRoles, isActiveRoute } from "@/utils/navigationUtils"
 
 
 export function AppSidebar() {
-
     const currentPath = usePathname();
     const { data: session } = useSession();
-    const userRoles = session?.user?.role || []; // Roles del usuario actual
-    const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
+    const userRoles = session?.user?.role || [];
+    const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
 
-
-    const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
-    const email = session?.user?.email || 'Desconocido'; // Nombre del usuario actual
+    const username = session?.user?.name || 'Desconocido';
+    const email = session?.user?.email || 'Desconocido';
 
     const { settings, loading } = useSettings();
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
-    // console.log('[Sidebar] settings:', settings);
-    // console.log('[Sidebar] companyName:', companyName);
 
-    const handleLogout = async () => {
+    const handleLogout = React.useCallback(async () => {
         try {
             await signOut({ redirect: false });
             window.location.href = '/';
             toast.success('Sesión cerrada correctamente', getToastTheme());
         } catch (err) {
-            toast.error(err.message || 'Error al cerrar sesión');
+            toast.error(err.message || 'Error al cerrar sesión', getToastTheme());
         }
-    };
+    }, []);
 
-    const data = {
+    // Filtrar navegación por roles
+    const filteredNavigationConfig = React.useMemo(() => 
+        filterNavigationByRoles(navigationConfig, roles),
+        [roles]
+    );
+
+    const filteredNavigationManagerConfig = React.useMemo(() => 
+        filterNavigationByRoles(navigationManagerConfig, roles),
+        [roles]
+    );
+
+    // Marcar rutas activas y preparar datos
+    const data = React.useMemo(() => ({
         user: {
             name: username,
             email: email,
             logout: handleLogout,
-            /* avatar: "/avatars/shadcn.jpg", */
         },
         apps: [
             {
-                name: companyName, // Siempre string
+                name: companyName,
                 logo: GalleryVerticalEnd,
                 description: "Administración",
                 current: true,
@@ -91,19 +88,17 @@ export function AppSidebar() {
                 current: false,
             },
         ],
-        navigationItems: navigationConfig.map((item) =>
-            /* Add current */
-            item.href === currentPath
+        navigationItems: filteredNavigationConfig.map((item) =>
+            isActiveRoute(item.href, currentPath)
                 ? { ...item, current: true }
                 : item
         ),
-        navigationManagersItems: navigationManagerConfig.map((item) =>
-            /* Add current */
-            item.href === currentPath
+        navigationManagersItems: filteredNavigationManagerConfig.map((item) =>
+            isActiveRoute(item.href, currentPath)
                 ? { ...item, current: true }
                 : item
         ),
-    }
+    }), [username, email, handleLogout, companyName, filteredNavigationConfig, filteredNavigationManagerConfig, currentPath]);
 
 
     return (

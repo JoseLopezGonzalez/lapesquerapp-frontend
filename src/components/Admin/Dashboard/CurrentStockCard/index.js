@@ -28,7 +28,7 @@ export function CurrentStockCard() {
     }, [status, accessToken])
 
     if (isLoading) return (
-        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
             <div className="overflow-hidden w-full">
                 <CardHeader className="p-0 pb-2">
                     <Skeleton className="w-44 h-4 " />
@@ -45,7 +45,7 @@ export function CurrentStockCard() {
     )
 
     return (
-        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-foreground-100 to-background dark:from-gray-800 dark:to-gray-900">
+        <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
             <div className="overflow-hidden w-full">
                 <CardHeader className="p-0 pb-2">
                     <CardDescription className="text-sm text-muted-foreground">

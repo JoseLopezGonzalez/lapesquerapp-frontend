@@ -1,8 +1,6 @@
-// components/dashboard/DashboardCardWrapper.jsx
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { OrderRankingChart } from "./OrderRanking";
 import { SalesBySalespersonPieChart } from "./SalesBySalespersonPieChart";
 import { TotalQuantitySoldCard } from "./TotalQuantitySoldCard";
@@ -15,39 +13,46 @@ import { CurrentStockCard } from "./CurrentStockCard";
 import { SalesChart } from "./SalesChart";
 import { ReceptionChart } from "./ReceptionChart";
 import { DispatchChart } from "./DispatchChart";
-import { TransportRadarChart } from "./TransportTadarChart";
+import { TransportRadarChart } from "./TransportRadarChart";
+import Masonry from "react-masonry-css";
 
-export default function Dashboard() {
-    const [greeting, setGreeting] = useState("Hola");
+const breakpointColumnsObj = {
+    default: 3,
+    1920: 3,
+    1536: 3,
+    1280: 2,
+    768: 1,
+    640: 1,
+};
 
-    useEffect(() => {
+const getGreeting = () => {
         const hour = new Date().getHours();
 
         if (hour >= 6 && hour < 12) {
-            setGreeting("Buenos días,");
+        return "Buenos días,";
         } else if (hour >= 12 && hour < 20) {
-            setGreeting("Buenas tardes,");
+        return "Buenas tardes,";
         } else {
-            setGreeting("Buenas noches,");
+        return "Buenas noches,";
         }
-    }, []);
+};
 
-
+export default function Dashboard() {
+    const [greeting] = useState(() => getGreeting());
 
     return (
         <div className="h-full w-full flex flex-col gap-4 px-6 py-3">
-            <ScrollArea className="w-full h-full pr-4 ">
+            <ScrollArea className="w-full h-full pr-4">
                 <div className="w-full h-full flex flex-col gap-4 pb-4">
-
                     <div className="w-full">
                         <div className="flex flex-col items-start justify-center mb-4">
-                            <p className="text-md text-gray-500">{greeting}</p>
+                            <p className="text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
                             <h1 className="text-4xl font-light">Administración</h1>
                         </div>
                     </div>
 
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
-                        <div className=" w-full overflow-hidden">
+                        <div className="w-full overflow-hidden">
                             <CurrentStockCard />
                         </div>
                         <div className="w-full h-full overflow-hidden">
@@ -60,50 +65,39 @@ export default function Dashboard() {
                             <NewLabelingFeatureCard />
                         </div>
                     </div>
-                    {/*  <Masonry
+
+                    <Masonry
                         breakpointCols={breakpointColumnsObj}
-                        className="flex gap-4"
-                        columnClassName="masonry-column "
+                        className="masonry-grid"
+                        columnClassName="masonry-grid_column"
                     >
-                        <div><OrderRankingChart /></div>
-                        <div><SalesBySalespersonPieChart /></div>
-                        <div><StockBySpeciesCard /></div>
-                        <div><StockByProductsCard /></div>
-                        <div><SalesChart /></div>
-                        <div><TransportRadarChart /></div>
-                    </Masonry> */}
-
-                    <div className="w-full columns-1 sm:columns-1 md:columns-1 lg:columns-1 lg-xl:columns-2 xl:columns-2 xl-2xl:columns-2 2xl:columns-3   3xl:columns-3 gap-4 space-y-4">
-
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <OrderRankingChart />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <SalesBySalespersonPieChart />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <StockBySpeciesCard />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <StockByProductsCard />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <SalesChart />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <ReceptionChart />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <DispatchChart />
                         </div>
-                        <div className="break-inside-avoid mb-4 max-w-full w-full">
+                        <div>
                             <TransportRadarChart />
                         </div>
-                    </div>
+                    </Masonry>
                 </div>
-
             </ScrollArea>
         </div>
-
     );
 }
