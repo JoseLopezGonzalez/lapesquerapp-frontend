@@ -201,19 +201,19 @@ export const navigationManagerConfig = [
     {
         name: 'Gestor de pedidos',
         icon: PencilSquareIcon,
-        allowedRoles: ["manager"],
+        allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/orders-manager',
     },
     {
         name: 'Extracción de datos lonja',
         icon: ScanSearch,
-        allowedRoles: ["manager"],
+        allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/market-data-extractor',
     },
     {
         name: 'Almacenes interactivos',
         icon: LandPlot,
-        allowedRoles: ["manager"],
+        allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/stores-manager',
     },
 
@@ -226,7 +226,7 @@ export const navigationManagerConfig = [
     {
         name: 'Recepciones de Materia Prima',
         icon: TbFishHook,
-        allowedRoles: ["manager"],
+        allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/raw-material-receptions',
     },
     /* {

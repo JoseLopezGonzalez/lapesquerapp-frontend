@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/collapsible"
 import {
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -21,8 +20,7 @@ import Link from "next/link"
 
 export function NavMain({items}) {
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+        <SidebarGroup className="pt-0">
             <SidebarMenu>
                 {items.map((item) => (
                     <Collapsible
@@ -67,7 +65,6 @@ export function NavMain({items}) {
                     </Collapsible>
                 ))}
             </SidebarMenu>
-
         </SidebarGroup>
     )
 }

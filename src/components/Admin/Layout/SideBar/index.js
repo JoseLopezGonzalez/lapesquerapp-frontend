@@ -17,6 +17,7 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarRail,
+    SidebarGroupLabel,
 } from "@/components/ui/sidebar"
 
 import { usePathname } from 'next/navigation';
@@ -106,11 +107,20 @@ export function AppSidebar() {
             <SidebarHeader>
                 <AppSwitcher apps={data.apps} loading={loading} />
             </SidebarHeader>
-            <SidebarContent>
-                <NavManagers items={data.navigationManagersItems} />
-                <NavMain items={data.navigationItems} />
+            <SidebarContent className="flex flex-col min-h-0">
+                <div className="flex-shrink-0">
+                    <NavManagers items={data.navigationManagersItems} />
+                </div>
+                <div className="flex flex-col flex-1 min-h-0">
+                    <div className="flex-shrink-0">
+                        <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-y-auto">
+                        <NavMain items={data.navigationItems} />
+                    </div>
+                </div>
             </SidebarContent>
-            <SidebarFooter>
+            <SidebarFooter className="mt-4">
                 <NavUser user={data.user} />
             </SidebarFooter>
             <SidebarRail />
