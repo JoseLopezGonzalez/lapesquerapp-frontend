@@ -613,59 +613,79 @@ export function useOrder(orderId, onChange) {
             });
     }
 
-    const onEditingPallet = (updatedPallet) => {
+    const onEditingPallet = async (updatedPallet) => {
         const isPalletVinculated = updatedPallet.orderId === order.id;
         if (!isPalletVinculated) {
             toast.error('El pallet no está vinculado a este pedido');
             return;
         } 
-        // Construir el pedido actualizado manualmente
+        // Actualizar estado local inmediatamente para feedback visual
         if (!order) return;
         const updatedOrder = {
             ...order,
             pallets: order.pallets.map(pallet => pallet.id == updatedPallet.id ? updatedPallet : pallet)
         };
-        // Actualizar estado local
         setOrder(updatedOrder);
-        // Pasar el pedido actualizado al onChange sin recargar
-        // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
         onChange?.(updatedOrder);
+        
+        // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
+        try {
+            const reloadedOrder = await reload();
+            if (reloadedOrder) {
+                onChange?.(reloadedOrder);
+            }
+        } catch (error) {
+            console.error('Error al recargar el pedido después de editar palet:', error);
+            // No mostrar error al usuario ya que la actualización local ya se hizo
+        }
     }
 
-    const onCreatingPallet = (newPallet) => {
+    const onCreatingPallet = async (newPallet) => {
         const isPalletVinculated = newPallet.orderId === order.id;
         if (!isPalletVinculated) {
             toast.error('El pallet no está vinculado a este pedido');
             return;
         }
-        // Construir el pedido actualizado manualmente
+        // Actualizar estado local inmediatamente para feedback visual
         if (!order) return;
         const updatedOrder = {
             ...order,
             pallets: [...order.pallets, newPallet]
         };
-        // Actualizar estado local
         setOrder(updatedOrder);
-        // Pasar el pedido actualizado al onChange sin recargar
-        // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
         onChange?.(updatedOrder);
+        
+        // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
+        try {
+            const reloadedOrder = await reload();
+            if (reloadedOrder) {
+                onChange?.(reloadedOrder);
+            }
+        } catch (error) {
+            console.error('Error al recargar el pedido después de crear palet:', error);
+            // No mostrar error al usuario ya que la actualización local ya se hizo
+        }
     }
 
     const onDeletePallet = async (palletId) => {
         const token = session?.user?.accessToken;
         try {
             await deletePallet(palletId, token);
-            // Construir el pedido actualizado manualmente
+            // Actualizar estado local inmediatamente para feedback visual
             if (!order) return;
             const updatedOrder = {
                 ...order,
                 pallets: order.pallets.filter(pallet => pallet.id !== palletId)
             };
-            // Actualizar estado local
             setOrder(updatedOrder);
-            // Pasar el pedido actualizado al onChange sin recargar
-            // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
             onChange?.(updatedOrder);
+            
+            // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
+            const reloadedOrder = await reload();
+            if (reloadedOrder) {
+                onChange?.(reloadedOrder);
+            }
+            
             toast.success('Palet eliminado correctamente');
         } catch (error) {
             toast.error(error.message || 'Error al eliminar el palet');
@@ -677,17 +697,21 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         try {
             await unlinkPalletFromOrder(palletId, token);
-            // Construir el pedido actualizado manualmente
+            // Actualizar estado local inmediatamente para feedback visual
             if (!order) return;
             const updatedOrder = {
                 ...order,
                 pallets: order.pallets.filter(pallet => pallet.id !== palletId)
             };
-            // Actualizar estado local
             setOrder(updatedOrder);
-            // Pasar el pedido actualizado al onChange sin recargar
-            // Nota: productionProductDetails puede estar desactualizado, pero se actualizará en la próxima recarga
             onChange?.(updatedOrder);
+            
+            // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
+            const reloadedOrder = await reload();
+            if (reloadedOrder) {
+                onChange?.(reloadedOrder);
+            }
+            
             toast.success('Palet desvinculado correctamente');
         } catch (error) {
             toast.error(error.message || 'Error al desvincular el palet');

@@ -82,14 +82,19 @@ const OrderPallets = () => {
         setSelectedStoreId(null);
     };
 
-    const handlePalletChange = (pallet) => {
+    const handlePalletChange = async (pallet) => {
         /* si el id esta entre los ids de pallets actuales, se esta editando, si no, se esta creando */
         // CORREGIDO: Comparar el pallet recibido con los pallets existentes
         const isPalletVinculated = pallets.some(existingPallet => existingPallet.id === pallet.id);
-        if (isPalletVinculated) {
-            onEditingPallet(pallet);
-        } else {
-            onCreatingPallet(pallet);
+        try {
+            if (isPalletVinculated) {
+                await onEditingPallet(pallet);
+            } else {
+                await onCreatingPallet(pallet);
+            }
+        } catch (error) {
+            console.error('Error al actualizar palet:', error);
+            // El error ya se maneja en las funciones onEditingPallet/onCreatingPallet
         }
     };
 
