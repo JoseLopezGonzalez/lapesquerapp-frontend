@@ -18,19 +18,24 @@ import { cn } from "@/lib/utils";
 import { useStoreContext } from "@/context/StoreContext";
 import { formatDecimalWeight, formatDecimal } from "@/helpers/formats/numbers/formatNumbers";
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
-import { Edit, Printer } from "lucide-react";
+import { Edit, Printer, MapPinHouse } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
+import { useSession } from "next-auth/react";
 
 export function PalletsListDialog() {
-    const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog } = useStoreContext();
+    const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog, openMovePalletToStoreDialog } = useStoreContext();
+    const { data: session } = useSession();
     const [selectedSpecies, setSelectedSpecies] = useState(null);
     const [filteredPallets, setFilteredPallets] = useState([]);
     const [searchText, setSearchText] = useState("");
 
     const storeName = store?.name ?? "";
+    
+    // Verificar si el usuario es store_operator (no puede reubicar pallets)
+    const isStoreOperator = session?.user?.role?.includes('store_operator');
     
     // Asegurar que pallets siempre sea un array
     const safePallets = pallets || [];
@@ -260,7 +265,7 @@ export function PalletsListDialog() {
                                             <td className="px-4 py-3 text-right">
                                                 <div className="flex justify-end gap-1">
                                                     {(() => {
-                                                        const receptionId = pallet?.receptionId;
+                                                        const receptionId = fullPallet?.receptionId;
                                                         const belongsToReception = receptionId !== null && receptionId !== undefined;
                                                         return (
                                                             <Tooltip>
@@ -281,9 +286,33 @@ export function PalletsListDialog() {
                                                             </Tooltip>
                                                         );
                                                     })()}
-                                                    <Button variant="" size="icon" onClick={() => openPalletLabelDialog(pallet.id)}>
-                                                        <Printer className="h-4 w-4 " />
-                                                    </Button>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="" size="icon" onClick={() => openPalletLabelDialog(pallet.id)}>
+                                                                <Printer className="h-4 w-4 " />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Imprimir etiqueta</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    {/* Opción Reubicar - Solo visible para usuarios que no son store_operator */}
+                                                    {!isStoreOperator && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button 
+                                                                    variant="outline" 
+                                                                    size="icon" 
+                                                                    onClick={() => openMovePalletToStoreDialog(pallet.id)}
+                                                                >
+                                                                    <MapPinHouse className="h-4 w-4 " />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Reubicar</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

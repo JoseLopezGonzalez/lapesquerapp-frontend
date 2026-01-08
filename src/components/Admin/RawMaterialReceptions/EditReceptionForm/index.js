@@ -119,6 +119,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
     // Store original box IDs from backend to distinguish between real and temporary IDs
     const [originalBoxIds, setOriginalBoxIds] = useState(new Set());
+    // Track if there are any used boxes in the reception
+    const [hasUsedBoxes, setHasUsedBoxes] = useState(false);
+    // Store original totals by product+lot for validation
+    const [originalTotals, setOriginalTotals] = useState(new Map());
     
     // Ref para evitar recargas innecesarias cuando se hace focus en la pestaña
     const hasLoadedRef = useRef(false);
@@ -215,13 +219,34 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Detectar el modo de creación y si se puede editar
                 const mode = reception.creationMode || null;
                 setCreationMode(mode);
-                setCanEdit(reception.canEdit !== false); // Default a true si no viene
-                setCannotEditReason(reception.cannotEditReason || null);
                 
-                // Si no se puede editar, no cargar datos
-                if (!reception.canEdit) {
-                    console.log('Recepción no se puede editar:', reception.cannotEditReason);
+                // Verificar si el motivo de no edición es por cajas usadas (permitir edición parcial)
+                const cannotEditReason = reception.cannotEditReason || null;
+                const isBlockedByUsedBoxes = cannotEditReason && 
+                    (cannotEditReason.toLowerCase().includes('caja') || 
+                     cannotEditReason.toLowerCase().includes('siendo usada') ||
+                     cannotEditReason.toLowerCase().includes('usada en producción'));
+                
+                // Permitir edición parcial si el bloqueo es solo por cajas usadas
+                // El backend ahora debería retornar canEdit: true, pero por compatibilidad
+                // también manejamos el caso donde canEdit es false pero es por cajas usadas
+                const canEditPartial = isBlockedByUsedBoxes && mode === 'pallets';
+                const canEditFull = reception.canEdit !== false;
+                
+                // Si podemos editar (total o parcial), permitir la carga
+                const finalCanEdit = canEditFull || canEditPartial;
+                setCanEdit(finalCanEdit);
+                setCannotEditReason(canEditPartial ? null : cannotEditReason);
+                
+                // Si no se puede editar (y no es por cajas usadas), no cargar datos
+                if (!finalCanEdit) {
+                    console.log('Recepción no se puede editar:', cannotEditReason);
                     return;
+                }
+                
+                // Log para debugging
+                if (canEditPartial && !canEditFull) {
+                    console.log('Modo edición parcial activado por cajas usadas:', cannotEditReason);
                 }
                 
                 // Si es modo 'pallets', cargar los palets para edición
@@ -248,16 +273,31 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             setReceptionPrices([]);
                         }
                         
-                        // Collect all original box IDs from backend
+                        // Collect all original box IDs from backend and check for used boxes
                         const boxIdsSet = new Set();
+                        let hasUsed = false;
+                        const totalsMap = new Map();
+                        
                         reception.pallets.forEach(pallet => {
                             (pallet.boxes || []).forEach(box => {
                                 if (box.id) {
                                     boxIdsSet.add(box.id);
                                 }
+                                // Check if box is used
+                                if (box.isAvailable === false || box.production) {
+                                    hasUsed = true;
+                                }
+                                // Calculate original totals by product+lot
+                                if (box.product?.id) {
+                                    const key = `${box.product.id}-${box.lot || ''}`;
+                                    const currentTotal = totalsMap.get(key) || 0;
+                                    totalsMap.set(key, currentTotal + (parseFloat(box.netWeight) || 0));
+                                }
                             });
                         });
                         setOriginalBoxIds(boxIdsSet);
+                        setHasUsedBoxes(hasUsed);
+                        setOriginalTotals(totalsMap);
                         
                         const convertedPallets = reception.pallets.map(pallet => {
                             // Convertir boxes del palet al formato esperado por PalletDialog
@@ -271,6 +311,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 grossWeight: box.grossWeight ? parseFloat(box.grossWeight).toString() : '',
                                 netWeight: box.netWeight ? parseFloat(box.netWeight).toString() : '',
                                 gs1128: box.gs1128 || undefined,
+                                // Preservar información de disponibilidad y producción
+                                isAvailable: box.isAvailable !== false, // Default a true si no viene
+                                production: box.production || null,
                             }));
                             
                             // Build prices object for this pallet from global prices
@@ -425,6 +468,46 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     return;
                 }
 
+                // If there are used boxes, validate totals and prevent creating new boxes
+                if (hasUsedBoxes) {
+                    // Calculate current totals by product+lot
+                    const currentTotals = new Map();
+                    temporalPallets.forEach(item => {
+                        (item.pallet?.boxes || []).forEach(box => {
+                            if (box.product?.id) {
+                                const key = `${box.product.id}-${box.lot || ''}`;
+                                const currentTotal = currentTotals.get(key) || 0;
+                                currentTotals.set(key, currentTotal + (parseFloat(box.netWeight) || 0));
+                            }
+                        });
+                    });
+
+                    // Validate that totals match (with tolerance of 0.01 kg)
+                    for (const [key, originalTotal] of originalTotals.entries()) {
+                        const currentTotal = currentTotals.get(key) || 0;
+                        const difference = Math.abs(originalTotal - currentTotal);
+                        if (difference > 0.01) {
+                            const [productId, lot] = key.split('-');
+                            const product = productOptions.find(p => p.value === productId || p.id === productId);
+                            const productName = product?.label || product?.name || `Producto ${productId}`;
+                            toast.error(
+                                `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`,
+                                getToastTheme()
+                            );
+                            return;
+                        }
+                    }
+
+                    // Check for new boxes (boxes without ID)
+                    const hasNewBoxes = temporalPallets.some(item =>
+                        (item.pallet?.boxes || []).some(box => !box.id)
+                    );
+                    if (hasNewBoxes) {
+                        toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                        return;
+                    }
+                }
+
                 // Extract global prices using utility function
                 const globalPriceMap = extractGlobalPriceMap(temporalPallets);
                 const prices = Array.from(globalPriceMap.values());
@@ -532,6 +615,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     }
 
     // Si no se puede editar, mostrar mensaje
+    // NOTA: Si el motivo es por cajas usadas, permitimos edición parcial (ya se maneja arriba)
     if (!canEdit) {
         return (
             <div className="w-full h-full p-6">
@@ -946,6 +1030,16 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 {/* Pallets Section (solo para modo pallets) */}
                 {creationMode === 'pallets' && (
                 <div className="w-full">
+                    {hasUsedBoxes && (
+                        <Alert className="mb-4 border-orange-200 bg-orange-50">
+                            <AlertTriangle className="h-4 w-4 text-orange-600" />
+                            <AlertTitle className="text-orange-800">Modo de edición parcial</AlertTitle>
+                            <AlertDescription className="text-orange-700">
+                                Esta recepción tiene cajas siendo usadas en producción. Solo puedes editar las cajas disponibles (no usadas). 
+                                Los totales por producto deben mantenerse exactamente iguales.
+                            </AlertDescription>
+                        </Alert>
+                    )}
                     <div className="flex justify-end items-center mb-2">
                         <div className="flex gap-2">
                             <Button
@@ -1163,16 +1257,29 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 ? pallet 
                                 : (existingPallet?.id ? { ...pallet, id: existingPallet.id } : pallet);
                             
-                            // Preservar IDs de cajas: si el palet devuelto ya tiene IDs, usarlos
-                            // Si no, intentar preservarlos del original (el PalletDialog debería preservarlos)
+                            // Preservar IDs de cajas y su información de disponibilidad
                             const boxesWithIds = palletWithId.boxes?.map((box) => {
-                                // Si la caja ya tiene ID, usarlo (PalletDialog lo preservó)
+                                // Si la caja ya tiene ID, buscar la caja original para preservar isAvailable y production
                                 if (box.id) {
+                                    const originalBox = existingPallet?.boxes?.find(b => b.id === box.id);
+                                    if (originalBox) {
+                                        // Preservar isAvailable y production de la caja original
+                                        return {
+                                            ...box,
+                                            isAvailable: originalBox.isAvailable !== false,
+                                            production: originalBox.production || null,
+                                        };
+                                    }
                                     return box;
                                 }
-                                // Si no tiene ID, es una caja nueva, dejarla sin ID
+                                // Si no tiene ID, es una caja nueva
+                                // Validar que no se puedan crear nuevas cajas cuando hay cajas usadas
+                                if (hasUsedBoxes) {
+                                    toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                                    return null; // Filtrar esta caja
+                                }
                                 return box;
-                            }) || [];
+                            }).filter(box => box !== null) || [];
                             
                             updated[editingPalletIndex] = {
                                 pallet: {
@@ -1187,6 +1294,11 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             return updated;
                         });
                     } else {
+                        // Validar que no se puedan crear nuevos palets con cajas nuevas cuando hay cajas usadas
+                        if (hasUsedBoxes && pallet.boxes?.some(box => !box.id)) {
+                            toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                            return;
+                        }
                         setTemporalPallets(prev => [...prev, {
                             pallet: pallet,
                             prices: {},

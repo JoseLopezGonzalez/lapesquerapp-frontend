@@ -34,6 +34,8 @@ import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 
 import { usePallet } from "@/hooks/usePallet";
 import { usePrintElement } from "@/hooks/usePrintElement";
+import toast from "react-hot-toast";
+import { getToastTheme } from "@/customs/reactHotToast";
 
 import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
@@ -96,21 +98,49 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const handleOnChangeBoxLot = (boxId, lot) => {
         if (isReadOnly) return;
+        // Check if box is available before allowing edit
+        const box = temporalPallet?.boxes?.find(b => b.id === boxId);
+        if (box && !isBoxAvailable(box)) {
+            toast.error(`No se puede modificar el lote de la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            return;
+        }
         editPallet.box.edit.lot(boxId, lot);
     };
 
     const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
         if (isReadOnly) return;
+        // Check if box is available before allowing edit
+        const box = temporalPallet?.boxes?.find(b => b.id === boxId);
+        if (box && !isBoxAvailable(box)) {
+            toast.error(`No se puede modificar el peso de la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            return;
+        }
         editPallet.box.edit.netWeight(boxId, netWeight);
     };
 
     const handleOnClickDuplicateBox = (boxId) => {
         if (isReadOnly) return;
+        // Check if box is available before allowing duplicate
+        const box = temporalPallet?.boxes?.find(b => b.id === boxId);
+        if (box && !isBoxAvailable(box)) {
+            toast.error(`No se puede duplicar la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            return;
+        }
         editPallet.box.duplicate(boxId);
     };
 
     const handleOnClickDeleteBox = (boxId) => {
         if (isReadOnly) return;
+        // Check if box is available before allowing delete
+        const box = temporalPallet?.boxes?.find(b => b.id === boxId);
+        if (box && !isBoxAvailable(box)) {
+            const productionInfo = getBoxProductionInfo(box);
+            const productionText = productionInfo 
+                ? ` (Producción #${productionInfo.id}${productionInfo.lot ? `, Lote: ${productionInfo.lot}` : ''})`
+                : '';
+            toast.error(`No se puede eliminar la caja #${boxId}: está siendo usada en producción${productionText}`, getToastTheme());
+            return;
+        }
         editPallet.box.delete(boxId);
     };
 
@@ -748,7 +778,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 const renderBoxRow = (box, isEditable = true) => {
                                                     const isSelected = box.id === selectedBox;
                                                     const boxAvailable = isBoxAvailable(box);
-                                                    const canEditBox = isEditable && !isReadOnly;
+                                                    const canEditBox = isEditable && !isReadOnly && boxAvailable;
                                                     
                                                     if (isSelected && canEditBox) {
                                                         return (
@@ -762,7 +792,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         }}
                                                                         onClick={(e) => e.stopPropagation()}
                                                                         className="w-full"
-                                                                        disabled={isReadOnly}
+                                                                        disabled={isReadOnly || !boxAvailable}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell>{box.gs1128}</TableCell>
@@ -775,7 +805,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             handleOnChangeBoxNetWeight(box.id, parseFloat(e.target.value));
                                                                         }}
                                                                         className="w-full "
-                                                                        disabled={isReadOnly}
+                                                                        disabled={isReadOnly || !boxAvailable}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell>
@@ -789,7 +819,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     e.stopPropagation();
                                                                                     handleOnClickDuplicateBox(box.id)
                                                                                 }}
-                                                                                disabled={isReadOnly}
+                                                                                disabled={isReadOnly || !boxAvailable}
                                                                             >
                                                                                 <Copy className="h-4 w-4" />
                                                                             </Button>
@@ -801,7 +831,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     e.stopPropagation();
                                                                                     handleOnClickDeleteBox(box.id);
                                                                                 }}
-                                                                                disabled={isReadOnly}
+                                                                                disabled={isReadOnly || !boxAvailable}
                                                                             >
                                                                                 <Trash2 className="h-4 w-4" />
                                                                             </Button>
@@ -815,14 +845,30 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     return (
                                                         <TableRow 
                                                             key={box.id} 
-                                                            onClick={isEditable ? () => handleOnClickBoxRow(box.id) : undefined}
-                                                            className={`${isEditable ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/30" : ""}`}
+                                                            onClick={canEditBox ? () => handleOnClickBoxRow(box.id) : undefined}
+                                                            className={`${canEditBox ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/30" : ""}`}
                                                         >
                                                             <TableCell>
                                                                 <div className="flex items-center gap-2">
                                                                     {box.product.name}
                                                                     {!boxAvailable && (
-                                                                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>
+                                                                                        {(() => {
+                                                                                            const productionInfo = getBoxProductionInfo(box);
+                                                                                            return productionInfo 
+                                                                                                ? `Caja usada en producción #${productionInfo.id}${productionInfo.lot ? ` (Lote: ${productionInfo.lot})` : ''}`
+                                                                                                : 'Caja usada en producción';
+                                                                                        })()}
+                                                                                    </p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
                                                                     )}
                                                                 </div>
                                                             </TableCell>
@@ -830,7 +876,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             <TableCell>{box.gs1128}</TableCell>
                                                             <TableCell>{box.netWeight} kg</TableCell>
                                                             <TableCell>
-                                                                {isEditable && (
+                                                                {canEditBox && (
                                                                     <div className="flex gap-1">
                                                                         <Button
                                                                             variant="ghost"
@@ -855,6 +901,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             <Trash2 className="h-4 w-4" />
                                                                         </Button>
                                                                     </div>
+                                                                )}
+                                                                {!boxAvailable && (
+                                                                    <span className="text-xs text-muted-foreground">🔒 No editable</span>
                                                                 )}
                                                             </TableCell>
                                                         </TableRow>
