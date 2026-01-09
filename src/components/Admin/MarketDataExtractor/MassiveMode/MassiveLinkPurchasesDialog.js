@@ -73,19 +73,36 @@ export default function MassiveLinkPurchasesDialog({
         }
     }, [open, documents, linkedSummaryGenerators]);
 
-    // Initialize selections when linkedSummary changes
+    // Initialize selections when linkedSummary changes and validations are complete
     useEffect(() => {
         if (allLinkedSummary.length === 0) {
             setSelectedLinks([]);
             return;
         }
 
-        // Select by default only those without error
+        // Wait for validation to complete before initializing selections
+        if (isValidating) {
+            return;
+        }
+
+        // Only initialize if we have validation results (validations are complete)
+        const validationKeysCount = Object.keys(validationResults).length;
+        if (validationKeysCount === 0 && allLinkedSummary.some(l => !l.error)) {
+            // Still waiting for validations
+            return;
+        }
+
+        // Select by default only those without error, valid, can update, AND have changes
         const initialSelection = allLinkedSummary
-            .map((linea, index) => (!linea.error ? index : null))
+            .map((linea, index) => {
+                if (linea.error) return null;
+                const validation = getValidationStatus(linea);
+                // Only select if valid, can update, AND has changes (not "sin cambios")
+                return (validation?.valid && validation?.canUpdate && validation?.hasChanges) ? index : null;
+            })
             .filter(index => index !== null);
         setSelectedLinks(initialSelection);
-    }, [allLinkedSummary.length]);
+    }, [allLinkedSummary.length, isValidating, Object.keys(validationResults).length]);
 
     // Function to handle selection/deselection of a line
     const handleToggleLink = (index) => {

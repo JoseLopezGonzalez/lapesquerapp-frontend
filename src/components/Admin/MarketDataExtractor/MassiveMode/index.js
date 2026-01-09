@@ -16,12 +16,13 @@ import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
 import MassiveLinkPurchasesDialog from "./MassiveLinkPurchasesDialog";
+import MassiveExportDialog from "./MassiveExportDialog";
 
 export default function MassiveMode() {
     const [documents, setDocuments] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
     const fileInputRef = useRef(null);
 
     const LINKED_SUMMARY_GENERATORS = {
@@ -218,30 +219,12 @@ export default function MassiveMode() {
         fileInputRef.current?.click();
     };
 
-    const handleExport = async () => {
-        setIsExporting(true);
-        try {
-            const documentsToExport = successfulDocuments
-                .filter((doc) => doc.processedData && doc.processedData.length > 0)
-                .map((doc) => ({
-                    document: doc.processedData[0],
-                    documentType: doc.documentType,
-                }));
-
-            if (documentsToExport.length === 0) {
-                toast.error('No hay documentos válidos para exportar.', getToastTheme());
-                setIsExporting(false);
-                return;
-            }
-
-            downloadMassiveExcel(documentsToExport);
-            toast.success('Excel generado correctamente', getToastTheme());
-        } catch (error) {
-            console.error('Error al exportar:', error);
-            toast.error(`Error al exportar: ${error.message}`, getToastTheme());
-        } finally {
-            setIsExporting(false);
+    const handleOpenExportDialog = () => {
+        if (successfulDocuments.length === 0) {
+            toast.error('No hay documentos válidos para exportar.', getToastTheme());
+            return;
         }
+        setIsExportDialogOpen(true);
     };
 
     const handleOpenLinkDialog = () => {
@@ -383,21 +366,11 @@ export default function MassiveMode() {
                 {hasSuccessfulDocuments && (
                     <div className="px-4 py-3 border-t flex-shrink-0 bg-card flex gap-2">
                         <Button
-                            onClick={handleExport}
-                            disabled={isExporting}
+                            onClick={handleOpenExportDialog}
                             className="flex-1"
                         >
-                            {isExporting ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Exportando...
-                                </>
-                            ) : (
-                                <>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Exportar Excel
-                                </>
-                            )}
+                            <Download className="h-4 w-4 mr-2" />
+                            Exportar Excel
                         </Button>
                         <Button
                             onClick={handleOpenLinkDialog}
@@ -417,6 +390,13 @@ export default function MassiveMode() {
                 onOpenChange={setIsLinkDialogOpen}
                 documents={successfulDocuments}
                 linkedSummaryGenerators={LINKED_SUMMARY_GENERATORS}
+            />
+
+            {/* Dialog for exporting Excel */}
+            <MassiveExportDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                documents={successfulDocuments}
             />
         </div>
     );
