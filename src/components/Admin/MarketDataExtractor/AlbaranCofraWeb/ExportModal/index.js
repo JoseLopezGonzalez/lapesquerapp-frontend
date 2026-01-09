@@ -1,4 +1,3 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useState, useEffect } from 'react'
 import { Check, X, AlertTriangle, FileSpreadsheet, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +14,8 @@ import { saveAs } from 'file-saver';
 import { formatDecimalCurrency, formatDecimalWeight, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
 import toast from 'react-hot-toast'
 import { getToastTheme } from '@/customs/reactHotToast'
-import { API_URL_V1 } from '@/configs/config'
+import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
+import { Loader2 } from "lucide-react"
 
 const parseDecimalValue = (value) => {
     if (typeof value === 'number') {
@@ -58,6 +58,8 @@ const ExportModal = ({ document }) => {
     const { detalles: { numero, fecha, cifLonja, lonja } } = document
     const [software, setSoftware] = useState("A3ERP")
     const [selectedLinks, setSelectedLinks] = useState([])
+    const [isValidating, setIsValidating] = useState(false)
+    const [validationResults, setValidationResults] = useState({})
 
     const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja)
 
@@ -196,14 +198,44 @@ const ExportModal = ({ document }) => {
         };
     });
 
-    // Inicializar las selecciones cuando cambia linkedSummary
+    // Group linkedSummary by supplier and initialize selections
+    const groupedLinkedSummary = groupLinkedSummaryBySupplier(linkedSummary);
+
+    // Inicializar las selecciones cuando cambia linkedSummary y validar
     useEffect(() => {
         // Seleccionar por defecto solo las que no tienen error
-        const initialSelection = linkedSummary
+        const initialSelection = groupedLinkedSummary
             .map((linea, index) => (!linea.error ? index : null))
             .filter(index => index !== null);
         setSelectedLinks(initialSelection);
-    }, [linkedSummary.length]);
+
+        // Validar recepciones cuando cambia linkedSummary
+        const validItems = groupedLinkedSummary.filter(item => !item.error);
+        if (validItems.length > 0) {
+            setIsValidating(true);
+            validatePurchases(groupedLinkedSummary)
+                .then((validation) => {
+                    const validationMap = {};
+                    validation.validationResults.forEach((result) => {
+                        const key = `${result.supplierId}_${result.date}`;
+                        validationMap[key] = result;
+                    });
+                    setValidationResults(validationMap);
+                })
+                .catch((error) => {
+                    console.error('Error al validar:', error);
+                })
+                .finally(() => {
+                    setIsValidating(false);
+                });
+        }
+    }, [groupedLinkedSummary.length]);
+
+    // Get validation status for a linea
+    const getValidationStatus = (linea) => {
+        const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
+        return validationResults[key] || null;
+    };
 
     // Función para manejar selección/deselección de una línea
     const handleToggleLink = (index) => {
@@ -216,10 +248,14 @@ const ExportModal = ({ document }) => {
         });
     };
 
-    // Función para seleccionar/deseleccionar todas las líneas sin error
+    // Función para seleccionar/deseleccionar todas las líneas válidas y que pueden actualizarse
     const handleToggleAll = () => {
         const validIndices = linkedSummary
-            .map((linea, index) => (!linea.error ? index : null))
+            .map((linea, index) => {
+                if (linea.error) return null;
+                const validation = getValidationStatus(linea);
+                return (validation?.valid && validation?.canUpdate) ? index : null;
+            })
             .filter(index => index !== null);
         
         if (selectedLinks.length === validIndices.length) {
@@ -232,8 +268,8 @@ const ExportModal = ({ document }) => {
     };
 
     const handleOnClickLinkPurchases = async () => {
-        // Filtrar solo las compras seleccionadas
-        const comprasSeleccionadas = linkedSummary.filter((linea, index) => 
+        // Filtrar solo las compras seleccionadas (usar groupedLinkedSummary)
+        const comprasSeleccionadas = groupedLinkedSummary.filter((linea, index) => 
             selectedLinks.includes(index) && !linea.error
         );
 
@@ -242,37 +278,32 @@ const ExportModal = ({ document }) => {
             return;
         }
 
-        let correctas = 0;
-        let errores = 0;
+        try {
+            // Use bulk endpoint for better performance
+            const result = await linkAllPurchases(comprasSeleccionadas);
 
-        await Promise.allSettled(comprasSeleccionadas.map(async (linea) => {
-            try {
-                const res = await fetchWithTenant(`${API_URL_V1}raw-material-receptions/update-declared-data`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        supplier_id: linea.supplierId,
-                        date: linea.date.split('/').reverse().join('-'),
-                        declared_total_net_weight: linea.declaredTotalNetWeight,
-                        declared_total_amount: linea.declaredTotalAmount,
-                    }),
-                });
-
-                if (!res.ok) throw new Error();
-                correctas++;
-            } catch (error) {
-                errores++;
-                console.error(`Error al actualizar compra de ${linea.barcoNombre}`, error);
-                toast.error(`Error al actualizar compra de ${linea.barcoNombre}`, getToastTheme());
+            if (result.correctas > 0) {
+                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
             }
-        }));
 
-        if (correctas > 0) {
-            toast.success(`Compras enlazadas correctamente (${correctas})`, getToastTheme());
-        }
-
-        if (errores > 0) {
-            toast.error(`${errores} compras fallaron al enlazar`, getToastTheme());
+            if (result.errores > 0) {
+                // Show detailed errors for first few failures
+                const erroresAMostrar = result.erroresDetalles.slice(0, 3);
+                erroresAMostrar.forEach((errorDetail) => {
+                    const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
+                    toast.error(`${barcoInfo}${errorDetail.error}`, {
+                        ...getToastTheme(),
+                        duration: 6000,
+                    });
+                });
+                
+                if (result.errores > 3) {
+                    toast.error(`${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`, getToastTheme());
+                }
+            }
+        } catch (error) {
+            console.error('Error al enlazar compras:', error);
+            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
         }
     };
 
@@ -339,7 +370,7 @@ const ExportModal = ({ document }) => {
 
                 <div className="space-y-4 mt-2">
 
-                    {linkedSummary.length > 0 && (
+                    {groupedLinkedSummary.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="flex justify-between items-start">
@@ -347,23 +378,38 @@ const ExportModal = ({ document }) => {
                                         <div className='flex flex-col gap-1'>
                                             <span className="text-lg">Enlaces de compra/recepción</span>
                                             <span className="text-sm text-muted-foreground">
-                                                {linkedSummary.length} Compras
+                                                {groupedLinkedSummary.length} Compras {groupedLinkedSummary.length !== linkedSummary.length ? `(${linkedSummary.length} originales agrupadas)` : ''}
                                             </span>
                                         </div>
                                     </CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>
+                                {isValidating && (
+                                    <div className="flex items-center justify-center py-4">
+                                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                        <span className="text-sm text-muted-foreground">Validando recepciones...</span>
+                                    </div>
+                                )}
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-12">
                                                 <Checkbox 
                                                     checked={
-                                                        linkedSummary.filter(l => !l.error).length > 0 &&
-                                                        selectedLinks.length === linkedSummary.filter(l => !l.error).length
+                                                        groupedLinkedSummary.filter((l, idx) => {
+                                                            if (l.error) return false;
+                                                            const validation = getValidationStatus(l);
+                                                            return validation?.valid && validation?.canUpdate;
+                                                        }).length > 0 &&
+                                                        selectedLinks.length === groupedLinkedSummary.filter((l, idx) => {
+                                                            if (l.error) return false;
+                                                            const validation = getValidationStatus(l);
+                                                            return validation?.valid && validation?.canUpdate;
+                                                        }).length
                                                     }
                                                     onCheckedChange={handleToggleAll}
+                                                    disabled={isValidating}
                                                 />
                                             </TableHead>
                                             <TableHead>Barco</TableHead>
@@ -374,48 +420,98 @@ const ExportModal = ({ document }) => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {linkedSummary.map((linea, index) => (
-                                            <TableRow key={index} className="hover:bg-muted/50">
-                                                <TableCell>
-                                                    <Checkbox 
-                                                        checked={selectedLinks.includes(index)}
-                                                        disabled={linea.error}
-                                                        onCheckedChange={() => handleToggleLink(index)}
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
-                                                <TableCell className="font-medium">{linea.date}</TableCell>
-                                                <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    {formatDecimalCurrency(linea.declaredTotalAmount)}
-                                                </TableCell>
-                                                <TableCell className={` ${linea.error ? 'text-red-500' : 'text-green-500'}`}>
-                                                    {linea.error ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <X className="h-4 w-4" />
-                                                            <span className="text-xs">No enlazable</span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2">
-                                                            <Check className="h-4 w-4" />
-                                                            <span className="text-xs">Listo</span>
-                                                        </div>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {groupedLinkedSummary.map((linea, index) => {
+                                            const validation = getValidationStatus(linea);
+                                            const isDisabled = linea.error || (validation && !validation.valid);
+                                            const isGrouped = linea.isGrouped || false;
+                                            
+                                            return (
+                                                <TableRow 
+                                                    key={index} 
+                                                    className={`hover:bg-muted/50 ${isGrouped ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : ''}`}
+                                                >
+                                                    <TableCell>
+                                                        <Checkbox 
+                                                            checked={selectedLinks.includes(index)}
+                                                            disabled={isDisabled || isValidating}
+                                                            onCheckedChange={() => handleToggleLink(index)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {isGrouped ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <span className="font-semibold text-blue-700">{linea.barcoNombre}</span>
+                                                                <span className="text-xs text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">Agrupado</span>
+                                                            </span>
+                                                        ) : (
+                                                            linea.barcoNombre
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">{linea.date}</TableCell>
+                                                    <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
+                                                    <TableCell className="text-right font-medium">
+                                                        {formatDecimalCurrency(linea.declaredTotalAmount)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {linea.error ? (
+                                                            <div className="flex items-center gap-2 text-red-500">
+                                                                <X className="h-4 w-4" />
+                                                                <span className="text-xs">No enlazable</span>
+                                                            </div>
+                                                        ) : isValidating ? (
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                                <span className="text-xs">Validando...</span>
+                                                            </div>
+                                                        ) : validation ? (
+                                                            validation.valid && validation.canUpdate ? (
+                                                                <div className="flex items-center gap-2 text-green-500">
+                                                                    <Check className="h-4 w-4" />
+                                                                    <span className="text-xs">
+                                                                        {validation.hasChanges ? 'Listo para actualizar' : 'Sin cambios'}
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-start gap-2 text-red-500">
+                                                                    <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                                                    <div className="flex flex-col gap-0.5">
+                                                                        <span className="text-xs font-medium">No se puede enlazar</span>
+                                                                        {validation.message && (
+                                                                            <span 
+                                                                                className="text-xs text-red-400 cursor-help" 
+                                                                                title={validation.tooltip || validation.message}
+                                                                            >
+                                                                                {validation.message}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                                <span className="text-xs">Pendiente</span>
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </CardContent>
                             <div className="flex justify-between items-center p-2 mb-2">
                                 <span className="text-sm text-muted-foreground">
-                                    {selectedLinks.length} de {linkedSummary.filter(l => !l.error).length} seleccionadas
+                                    {selectedLinks.length} de {groupedLinkedSummary.filter((l, idx) => {
+                                        if (l.error) return false;
+                                        const validation = getValidationStatus(l);
+                                        return validation?.valid && validation?.canUpdate;
+                                    }).length} seleccionadas
                                 </span>
                                 <Button 
                                     variant="" 
                                     className="" 
                                     onClick={() => handleOnClickLinkPurchases()}
-                                    disabled={selectedLinks.length === 0}
+                                    disabled={selectedLinks.length === 0 || isValidating}
                                 >
                                     <Link className="h-4 w-4" />
                                     Enlazar Compras ({selectedLinks.length})

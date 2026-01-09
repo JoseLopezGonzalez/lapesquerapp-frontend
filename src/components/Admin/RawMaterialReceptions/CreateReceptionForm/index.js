@@ -106,6 +106,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
         control,
         watch,
         setValue,
+        getValues,
         formState: { errors, isSubmitting },
     } = useForm({
         defaultValues: {
@@ -132,50 +133,88 @@ const CreateReceptionForm = ({ onSuccess }) => {
         name: 'details',
     });
 
-    // Watch all detail fields to calculate net weight
+    // Watch all detail fields to calculate net weight and amounts
+    // Watch the entire details array to catch all changes
     const watchedDetails = watch('details');
     
-    // Create a trigger value that changes when any price or netWeight changes
-    // This ensures the component re-renders and recalculates totals when these values change
-    const priceAndWeightTrigger = useMemo(() => {
-        if (!watchedDetails || !Array.isArray(watchedDetails)) return '';
-        // Create a string that includes all prices and netWeights
-        // This will change when any of these values change, triggering recalculation
-        return JSON.stringify(watchedDetails.map(d => ({ 
-            price: d.price || '', 
-            netWeight: d.netWeight || '' 
-        })));
-    }, [watchedDetails]);
+    // State to force recalculation when values change
+    const [recalcKey, setRecalcKey] = useState(0);
+    
+    // Helper function to trigger recalculation - declared early so it can be used in useEffect
+    const triggerRecalc = useCallback(() => {
+        // Force update by getting latest values and triggering state update
+        setRecalcKey(prev => prev + 1);
+    }, []);
+    
+    // Use watchedDetails as current details
+    const currentDetails = watchedDetails || [];
 
     // Calculate net weights using useMemo for performance (only recalculate when relevant values change)
     const calculatedNetWeights = useMemo(() => {
-        if (!watchedDetails || !Array.isArray(watchedDetails)) return [];
-        return calculateNetWeights(watchedDetails);
-    }, [watchedDetails]);
+        if (!currentDetails || !Array.isArray(currentDetails)) return [];
+        return calculateNetWeights(currentDetails);
+    }, [currentDetails, recalcKey]);
 
     // Update form values only when calculated weights change
     useEffect(() => {
-        calculatedNetWeights.forEach((netWeight, index) => {
-            setValue(`details.${index}.netWeight`, netWeight.toFixed(2), { shouldValidate: false });
-        });
-    }, [calculatedNetWeights, setValue]);
+        if (calculatedNetWeights.length > 0 && currentDetails && Array.isArray(currentDetails)) {
+            calculatedNetWeights.forEach((netWeight, index) => {
+                if (index < currentDetails.length) {
+                    const calculatedWeight = parseFloat(netWeight.toFixed(2));
+                    const currentNetWeight = parseFloat(currentDetails[index]?.netWeight) || 0;
+                    // Only update if different to avoid infinite loops
+                    if (Math.abs(currentNetWeight - calculatedWeight) > 0.001) {
+                        setValue(`details.${index}.netWeight`, calculatedWeight.toFixed(2), { 
+                            shouldValidate: false, 
+                            shouldDirty: false,
+                            shouldTouch: false
+                        });
+                        // Trigger recalculation after updating net weight
+                        setTimeout(() => triggerRecalc(), 10);
+                    }
+                }
+            });
+        }
+    }, [calculatedNetWeights, setValue, triggerRecalc]);
 
     // Calculate totals (total kg and total amount) for lines mode
-    // Include priceAndWeightTrigger in dependencies to trigger recalculation when price or netWeight changes
     const linesTotals = useMemo(() => {
-        if (!watchedDetails || !Array.isArray(watchedDetails)) {
+        if (!currentDetails || !Array.isArray(currentDetails)) {
             return { totalKg: 0, totalAmount: 0 };
         }
         let totalKg = 0;
         let totalAmount = 0;
-        watchedDetails.forEach((detail) => {
-            const netWeight = parseFloat(detail.netWeight) || 0;
-            const price = parseFloat(detail.price) || 0;
+        currentDetails.forEach((detail) => {
+            const netWeight = parseFloat(detail?.netWeight) || 0;
+            const price = parseFloat(detail?.price) || 0;
             totalKg += netWeight;
             totalAmount += netWeight * price;
         });
         return { totalKg, totalAmount };
-    }, [watchedDetails, priceAndWeightTrigger]);
+    }, [currentDetails, recalcKey]);
+    
+    // Also watch for changes in watchedDetails and trigger recalculation
+    // Create a serialized version to detect actual changes
+    const detailsSerialized = useMemo(() => {
+        if (!watchedDetails || !Array.isArray(watchedDetails)) return '';
+        return JSON.stringify(watchedDetails.map(d => ({
+            grossWeight: d?.grossWeight || '',
+            boxes: d?.boxes || 1,
+            tare: d?.tare || '3',
+            netWeight: d?.netWeight || '',
+            price: d?.price || ''
+        })));
+    }, [watchedDetails]);
+    
+    useEffect(() => {
+        if (detailsSerialized) {
+            // Small delay to ensure form state is updated
+            const timer = setTimeout(() => {
+                setRecalcKey(prev => prev + 1);
+            }, 10);
+            return () => clearTimeout(timer);
+        }
+    }, [detailsSerialized]);
 
     // Verificar si hay datos en el modo actual
     const hasDataInCurrentMode = () => {
@@ -560,19 +599,31 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    {...register(`details.${index}.grossWeight`, {
+                                                <Controller
+                                                    name={`details.${index}.grossWeight`}
+                                                    control={control}
+                                                    rules={{
                                                         required: mode === 'automatic' ? 'El peso bruto es obligatorio' : false,
-                                                        valueAsNumber: true,
                                                         min: mode === 'automatic' ? { value: 0.01, message: 'El peso debe ser mayor que 0' } : undefined
-                                                    })}
-                                                    placeholder="0.00"
-                                                    className="w-32"
-                                                    aria-label={`Peso bruto para línea ${index + 1}`}
-                                                    aria-required={mode === 'automatic'}
+                                                    }}
+                                                    render={({ field: { onChange, value, ...field } }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            value={value || ''}
+                                                            onChange={(e) => {
+                                                                onChange(e.target.value);
+                                                                // Trigger recalculation of net weight and amounts
+                                                                setTimeout(() => triggerRecalc(), 0);
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-32"
+                                                            aria-label={`Peso bruto para línea ${index + 1}`}
+                                                            aria-required={mode === 'automatic'}
+                                                        />
+                                                    )}
                                                 />
                                                 {errors.details?.[index]?.grossWeight && (
                                                     <p className="text-destructive text-xs mt-1">
@@ -590,23 +641,34 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                             const currentBoxes = parseInt(watch(`details.${index}.boxes`)) || 1;
                                                             if (currentBoxes > 1) {
                                                                 setValue(`details.${index}.boxes`, currentBoxes - 1);
+                                                                setTimeout(() => triggerRecalc(), 0);
                                                             }
                                                         }}
                                                         className="h-8 w-8 p-0"
                                                     >
                                                         -
                                                     </Button>
-                                                    <Input
-                                                        type="number"
-                                                        min="1"
-                                                        {...register(`details.${index}.boxes`, {
+                                                    <Controller
+                                                        name={`details.${index}.boxes`}
+                                                        control={control}
+                                                        rules={{
                                                             required: mode === 'automatic' ? 'Las cajas son obligatorias' : false,
-                                                            valueAsNumber: true,
                                                             min: mode === 'automatic' ? { value: 1, message: 'Mínimo 1 caja' } : undefined
-                                                        })}
-                                                        className="w-16 text-center"
-                                                        aria-label={`Número de cajas para línea ${index + 1}`}
-                                                        aria-required={mode === 'automatic'}
+                                                        }}
+                                                        render={({ field: { onChange, value, ...field } }) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="number"
+                                                                min="1"
+                                                                value={value || 1}
+                                                                onChange={(e) => {
+                                                                    onChange(e.target.value);
+                                                                }}
+                                                                className="w-16 text-center"
+                                                                aria-label={`Número de cajas para línea ${index + 1}`}
+                                                                aria-required={mode === 'automatic'}
+                                                            />
+                                                        )}
                                                     />
                                                     <Button
                                                         type="button"
@@ -615,6 +677,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                         onClick={() => {
                                                             const currentBoxes = parseInt(watch(`details.${index}.boxes`)) || 1;
                                                             setValue(`details.${index}.boxes`, currentBoxes + 1);
+                                                            setTimeout(() => triggerRecalc(), 0);
                                                         }}
                                                         className="h-8 w-8 p-0"
                                                     >
@@ -632,7 +695,10 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                     name={`details.${index}.tare`}
                                                     control={control}
                                                     render={({ field: { onChange, value } }) => (
-                                                        <Select value={value} onValueChange={onChange}>
+                                                        <Select value={value} onValueChange={(newValue) => {
+                                                            onChange(newValue);
+                                                            setTimeout(() => triggerRecalc(), 0);
+                                                        }}>
                                                             <SelectTrigger className="w-24">
                                                                 <SelectValue />
                                                             </SelectTrigger>
@@ -653,9 +719,13 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                     className="w-32 bg-muted"
                                                     placeholder="0,00"
                                                     value={
-                                                        watchedDetails?.[index]?.netWeight 
-                                                            ? formatDecimal(parseFloat(watchedDetails[index].netWeight) || 0) 
-                                                            : '0,00'
+                                                        (() => {
+                                                            const detail = currentDetails?.[index];
+                                                            const netWeight = detail?.netWeight;
+                                                            return netWeight 
+                                                                ? formatDecimal(parseFloat(netWeight) || 0) 
+                                                                : '0,00';
+                                                        })()
                                                     }
                                                     aria-label={`Peso neto calculado para línea ${index + 1}`}
                                                     aria-readonly="true"
@@ -674,6 +744,8 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                             value={value || ''}
                                                             onChange={(e) => {
                                                                 onChange(e.target.value);
+                                                                // Trigger recalculation of net weight and amounts
+                                                                setTimeout(() => triggerRecalc(), 0);
                                                             }}
                                                             placeholder="0.00"
                                                             className="w-32"
@@ -689,8 +761,9 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                     placeholder="0,00 €"
                                                     value={
                                                         (() => {
-                                                            const netWeight = parseFloat(watchedDetails?.[index]?.netWeight) || 0;
-                                                            const price = parseFloat(watchedDetails?.[index]?.price) || 0;
+                                                            const detail = currentDetails?.[index];
+                                                            const netWeight = parseFloat(detail?.netWeight) || 0;
+                                                            const price = parseFloat(detail?.price) || 0;
                                                             return formatDecimalCurrency(netWeight * price);
                                                         })()
                                                     }

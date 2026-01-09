@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -176,34 +176,60 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     // Watch all detail fields (no calculation needed, netWeight is directly editable)
     const watchedDetails = watch('details');
     
+    // State to force re-render when price or netWeight changes
+    const [recalcTrigger, setRecalcTrigger] = useState(0);
+    
+    // Watch all price and netWeight fields individually to ensure recalculation
+    // This creates subscriptions that trigger re-renders when values change
+    const watchedPricesAndWeights = useWatch({
+        control,
+        name: 'details',
+        defaultValue: watchedDetails || []
+    });
+    
+    // Force re-render when price or netWeight changes
+    useEffect(() => {
+        if (watchedPricesAndWeights && Array.isArray(watchedPricesAndWeights)) {
+            const triggerValue = watchedPricesAndWeights.map(d => 
+                `${d?.price || ''}|${d?.netWeight || ''}`
+            ).join('||');
+            // Only update if the value actually changed
+            setRecalcTrigger(prev => {
+                const newValue = prev + 1;
+                return newValue;
+            });
+        }
+    }, [JSON.stringify(watchedPricesAndWeights?.map(d => ({ price: d?.price || '', netWeight: d?.netWeight || '' })))]);
+    
     // Create a trigger value that changes when any price or netWeight changes
     // This ensures the component re-renders and recalculates totals when these values change
     const priceAndWeightTrigger = useMemo(() => {
-        if (!watchedDetails || !Array.isArray(watchedDetails)) return '';
+        if (!watchedPricesAndWeights || !Array.isArray(watchedPricesAndWeights)) return '';
         // Create a string that includes all prices and netWeights
         // This will change when any of these values change, triggering recalculation
-        return JSON.stringify(watchedDetails.map(d => ({ 
-            price: d.price || '', 
-            netWeight: d.netWeight || '' 
-        })));
-    }, [watchedDetails]);
+        return JSON.stringify(watchedPricesAndWeights.map(d => ({ 
+            price: d?.price || '', 
+            netWeight: d?.netWeight || '' 
+        }))) + recalcTrigger;
+    }, [watchedPricesAndWeights, recalcTrigger]);
 
     // Calculate totals (total kg and total amount) for lines mode
-    // Include priceAndWeightTrigger in dependencies to trigger recalculation when price or netWeight changes
+    // Use watchedPricesAndWeights to ensure recalculation when price or netWeight changes
     const linesTotals = useMemo(() => {
-        if (!watchedDetails || !Array.isArray(watchedDetails)) {
+        const detailsToUse = watchedPricesAndWeights || watchedDetails;
+        if (!detailsToUse || !Array.isArray(detailsToUse)) {
             return { totalKg: 0, totalAmount: 0 };
         }
         let totalKg = 0;
         let totalAmount = 0;
-        watchedDetails.forEach((detail) => {
-            const netWeight = parseFloat(detail.netWeight) || 0;
-            const price = parseFloat(detail.price) || 0;
+        detailsToUse.forEach((detail) => {
+            const netWeight = parseFloat(detail?.netWeight) || 0;
+            const price = parseFloat(detail?.price) || 0;
             totalKg += netWeight;
             totalAmount += netWeight * price;
         });
         return { totalKg, totalAmount };
-    }, [watchedDetails, priceAndWeightTrigger]);
+    }, [watchedPricesAndWeights, watchedDetails, priceAndWeightTrigger]);
 
     // Load reception data
     useEffect(() => {
@@ -874,6 +900,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                             value={value || ''}
                                                             onChange={(e) => {
                                                                 onChange(e.target.value);
+                                                                // Force re-render to update amounts
+                                                                setRecalcTrigger(prev => prev + 1);
                                                             }}
                                                             placeholder="0.00"
                                                             className="w-32"
@@ -948,6 +976,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                             value={value || ''}
                                                             onChange={(e) => {
                                                                 onChange(e.target.value);
+                                                                // Force re-render to update amounts
+                                                                setRecalcTrigger(prev => prev + 1);
                                                             }}
                                                             placeholder="0.00"
                                                             className="w-32"
@@ -963,8 +993,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                     placeholder="0,00 €"
                                                     value={
                                                         (() => {
-                                                            const netWeight = parseFloat(watchedDetails?.[index]?.netWeight) || 0;
-                                                            const price = parseFloat(watchedDetails?.[index]?.price) || 0;
+                                                            const detail = watchedPricesAndWeights?.[index] || watchedDetails?.[index];
+                                                            const netWeight = parseFloat(detail?.netWeight) || 0;
+                                                            const price = parseFloat(detail?.price) || 0;
                                                             return formatDecimalCurrency(netWeight * price);
                                                         })()
                                                     }

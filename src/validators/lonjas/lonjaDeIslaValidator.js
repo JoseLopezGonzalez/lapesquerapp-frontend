@@ -105,7 +105,7 @@ function validateDocument(document, index, validator) {
         validator.requireArray(document.tables.tipoVentas, 'tipoVentas', `document[${index}].tables`);
         // Validar estructura de cada fila de tipoVentas (si existe)
         document.tables.tipoVentas.forEach((row, rowIndex) => {
-            validator.requireField(row.cod, 'cod', `document[${index}].tables.tipoVentas[${rowIndex}]`);
+            // cod es opcional (no siempre está presente en los documentos)
             validator.requireField(row.descripcion, 'descripcion', `document[${index}].tables.tipoVentas[${rowIndex}]`);
             validator.requireField(row.cajas, 'cajas', `document[${index}].tables.tipoVentas[${rowIndex}]`);
             // importe es opcional (Azure no siempre lo devuelve)

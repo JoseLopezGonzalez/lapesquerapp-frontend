@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2 } from "lucide-react";
+import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { processDocument } from "../shared/DocumentProcessor";
@@ -12,16 +12,16 @@ import DocumentList from "./DocumentList";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
 import { downloadMassiveExcel } from "@/services/export/excelGenerator";
-import { linkAllPurchases } from "@/services/export/linkService";
 import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
+import MassiveLinkPurchasesDialog from "./MassiveLinkPurchasesDialog";
 
 export default function MassiveMode() {
     const [documents, setDocuments] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
-    const [isLinking, setIsLinking] = useState(false);
+    const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
     const fileInputRef = useRef(null);
 
     const LINKED_SUMMARY_GENERATORS = {
@@ -79,6 +79,9 @@ export default function MassiveMode() {
 
         setIsProcessing(true);
 
+        let successCount = 0;
+        let errorCount = 0;
+
         // Process documents one by one (could be optimized to process in parallel with a limit)
         for (const doc of documentsToProcess) {
             setDocuments((prev) =>
@@ -102,22 +105,63 @@ export default function MassiveMode() {
                             : d
                     )
                 );
+
+                // Show toast if document failed
+                if (!result.success) {
+                    errorCount++;
+                    toast.error(
+                        `Error al procesar "${doc.file.name}": ${result.error || 'Error desconocido'}`,
+                        {
+                            ...getToastTheme(),
+                            duration: 6000, // Show for 6 seconds
+                        }
+                    );
+                } else {
+                    successCount++;
+                }
             } catch (error) {
+                const errorMessage = error.message || 'Error desconocido';
                 setDocuments((prev) =>
                     prev.map((d) =>
                         d.id === doc.id
                             ? {
                                   ...d,
                                   status: 'error',
-                                  error: error.message || 'Error desconocido',
+                                  error: errorMessage,
                               }
                             : d
                     )
+                );
+                
+                // Show toast for caught errors
+                errorCount++;
+                toast.error(
+                    `Error al procesar "${doc.file.name}": ${errorMessage}`,
+                    {
+                        ...getToastTheme(),
+                        duration: 6000, // Show for 6 seconds
+                    }
                 );
             }
         }
 
         setIsProcessing(false);
+
+        // Show summary toast if there were errors
+        if (errorCount > 0) {
+            toast.error(
+                `Procesamiento completado: ${successCount} éxito, ${errorCount} error(es). Revisa los documentos con error.`,
+                {
+                    ...getToastTheme(),
+                    duration: 8000, // Show for 8 seconds
+                }
+            );
+        } else if (successCount > 0) {
+            toast.success(
+                `Todos los documentos procesados correctamente (${successCount})`,
+                getToastTheme()
+            );
+        }
     };
 
     const handleRetryDocument = async (documentId) => {
@@ -200,48 +244,25 @@ export default function MassiveMode() {
         }
     };
 
-    const handleLinkAll = async () => {
-        setIsLinking(true);
-        try {
-            // Generate linkedSummary for all documents
-            const allLinkedSummary = [];
-
-            successfulDocuments.forEach((doc) => {
-                const generator = LINKED_SUMMARY_GENERATORS[doc.documentType];
-                if (generator && doc.processedData && doc.processedData.length > 0) {
-                    const linkedSummary = generator(doc.processedData[0]);
-                    if (linkedSummary && linkedSummary.length > 0) {
-                        allLinkedSummary.push(...linkedSummary);
-                    }
+    const handleOpenLinkDialog = () => {
+        // Check if there are any purchases to link
+        const allLinkedSummary = [];
+        successfulDocuments.forEach((doc) => {
+            const generator = LINKED_SUMMARY_GENERATORS[doc.documentType];
+            if (generator && doc.processedData && doc.processedData.length > 0) {
+                const linkedSummary = generator(doc.processedData[0]);
+                if (linkedSummary && linkedSummary.length > 0) {
+                    allLinkedSummary.push(...linkedSummary);
                 }
-            });
-
-            if (allLinkedSummary.length === 0) {
-                toast.error('No hay compras para enlazar', getToastTheme());
-                setIsLinking(false);
-                return;
             }
+        });
 
-            // Link all purchases
-            const result = await linkAllPurchases(allLinkedSummary);
-
-            if (result.correctas > 0) {
-                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
-            }
-
-            if (result.errores > 0) {
-                toast.error(`${result.errores} compras fallaron al enlazar`, getToastTheme());
-            }
-
-            if (result.correctas === 0 && result.errores === 0) {
-                toast.info('No hay compras válidas para enlazar', getToastTheme());
-            }
-        } catch (error) {
-            console.error('Error al enlazar:', error);
-            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
-        } finally {
-            setIsLinking(false);
+        if (allLinkedSummary.length === 0) {
+            toast.error('No hay compras para enlazar', getToastTheme());
+            return;
         }
+
+        setIsLinkDialogOpen(true);
     };
 
     return (
@@ -291,37 +312,53 @@ export default function MassiveMode() {
                             {pendingDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
-                                    className="flex items-center gap-2 p-3 border rounded-md"
+                                    className={`flex flex-col gap-2 p-3 border rounded-md ${
+                                        doc.status === 'error' ? 'border-red-300 bg-red-50/50' : ''
+                                    }`}
                                 >
-                                    <FileText className="h-4 w-4 flex-shrink-0" />
-                                    <span className="flex-1 text-sm truncate min-w-0">{doc.file.name}</span>
-                                    <Select
-                                        value={doc.documentType || ''}
-                                        onValueChange={(value) => handleDocumentTypeChange(doc.id, value)}
-                                    >
-                                        <SelectTrigger className="w-64 flex-shrink-0">
-                                            <SelectValue placeholder="Tipo de documento" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">
-                                                Albarán - Cofradia Pescadores Santo Cristo del Mar
-                                            </SelectItem>
-                                            <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">
-                                                Listado de compras - Asoc. Armadores Punta del Moral
-                                            </SelectItem>
-                                            <SelectItem value="listadoComprasLonjaDeIsla">
-                                                Listado de compras - Lonja de Isla
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleRemoveDocument(doc.id)}
-                                        className="flex-shrink-0"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        {doc.status === 'error' ? (
+                                            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-red-500" />
+                                        ) : (
+                                            <FileText className="h-4 w-4 flex-shrink-0" />
+                                        )}
+                                        <span className="flex-1 text-sm truncate min-w-0 font-medium">
+                                            {doc.file.name}
+                                        </span>
+                                        <Select
+                                            value={doc.documentType || ''}
+                                            onValueChange={(value) => handleDocumentTypeChange(doc.id, value)}
+                                        >
+                                            <SelectTrigger className="w-64 flex-shrink-0">
+                                                <SelectValue placeholder="Tipo de documento" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">
+                                                    Albarán - Cofradia Pescadores Santo Cristo del Mar
+                                                </SelectItem>
+                                                <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">
+                                                    Listado de compras - Asoc. Armadores Punta del Moral
+                                                </SelectItem>
+                                                <SelectItem value="listadoComprasLonjaDeIsla">
+                                                    Listado de compras - Lonja de Isla
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleRemoveDocument(doc.id)}
+                                            className="flex-shrink-0"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    {doc.error && (
+                                        <div className="flex items-start gap-2 p-2 bg-red-100 border border-red-300 rounded text-sm text-red-700">
+                                            <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                            <span className="flex-1">{doc.error}</span>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -363,26 +400,24 @@ export default function MassiveMode() {
                             )}
                         </Button>
                         <Button
-                            onClick={handleLinkAll}
-                            disabled={isLinking}
+                            onClick={handleOpenLinkDialog}
                             variant="outline"
                             className="flex-1"
                         >
-                            {isLinking ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Enlazando...
-                                </>
-                            ) : (
-                                <>
-                                    <LinkIcon className="h-4 w-4 mr-2" />
-                                    Enlazar Compras
-                                </>
-                            )}
+                            <LinkIcon className="h-4 w-4 mr-2" />
+                            Enlazar Compras
                         </Button>
                     </div>
                 )}
             </Card>
+
+            {/* Dialog for linking purchases */}
+            <MassiveLinkPurchasesDialog
+                open={isLinkDialogOpen}
+                onOpenChange={setIsLinkDialogOpen}
+                documents={successfulDocuments}
+                linkedSummaryGenerators={LINKED_SUMMARY_GENERATORS}
+            />
         </div>
     );
 }
