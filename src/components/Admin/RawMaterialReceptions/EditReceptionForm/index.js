@@ -175,8 +175,21 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
     // Watch all detail fields (no calculation needed, netWeight is directly editable)
     const watchedDetails = watch('details');
+    
+    // Create a trigger value that changes when any price or netWeight changes
+    // This ensures the component re-renders and recalculates totals when these values change
+    const priceAndWeightTrigger = useMemo(() => {
+        if (!watchedDetails || !Array.isArray(watchedDetails)) return '';
+        // Create a string that includes all prices and netWeights
+        // This will change when any of these values change, triggering recalculation
+        return JSON.stringify(watchedDetails.map(d => ({ 
+            price: d.price || '', 
+            netWeight: d.netWeight || '' 
+        })));
+    }, [watchedDetails]);
 
     // Calculate totals (total kg and total amount) for lines mode
+    // Include priceAndWeightTrigger in dependencies to trigger recalculation when price or netWeight changes
     const linesTotals = useMemo(() => {
         if (!watchedDetails || !Array.isArray(watchedDetails)) {
             return { totalKg: 0, totalAmount: 0 };
@@ -190,7 +203,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             totalAmount += netWeight * price;
         });
         return { totalKg, totalAmount };
-    }, [watchedDetails]);
+    }, [watchedDetails, priceAndWeightTrigger]);
 
     // Load reception data
     useEffect(() => {
