@@ -2,7 +2,7 @@
 
 import Map from './MapContainer/Map'
 import MapContainer from './MapContainer'
-import Loader from '@/components/Utilities/Loader';
+import LoadingStoreDetails from '../LoadingStoreDetails';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
 import { LocateFixed, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -68,9 +68,7 @@ export const StoreContent = ({ passedStoreId }) => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full w-full gap-6">
-                <Loader />
-            </div>
+            <LoadingStoreDetails storeName={store?.name} />
         )
     }
 

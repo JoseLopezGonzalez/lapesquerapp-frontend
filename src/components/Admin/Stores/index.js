@@ -13,14 +13,13 @@ import SkeletonTab from './Skeleton/SkeletonTab';
 import TabItem from './Tab/TabItem'; */
 
 import { EmptyState } from "@/components/Utilities/EmptyState";
-import Loader from "@/components/Utilities/Loader";
 import { useStores } from "@/hooks/useStores";
 import { ScrollShadow } from "@nextui-org/react";
 import { useState } from "react";
 import React from "react";
 import StoreCard from "./StoresManager/StoreCard";
-import SkeletonStoreCard from "./StoresManager/StoreCard/SkeletonStoreCard";
 import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
+import LoadingStoresHeader from "./StoresManager/LoadingStoresHeader";
 import { Store } from "./StoresManager/Store";
 
 
@@ -63,18 +62,7 @@ export default function StoresManager() {
     <>
       <div className='w-full h-full  flex flex-col items-center justify-center p-2'>
         {loading ? (
-          <>
-            <div className="flex flex-col items-center justify-center h-full w-full gap-6">
-              <ScrollShadow orientation="horizontal" className="space-x-3 rounded-xl flex overflow-x-auto w-full scrollbar-none py-2">
-                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                  <SkeletonStoreCard key={i} />
-                ))}
-              </ScrollShadow>
-              <Card className='grow w-full flex items-center justify-center  '>
-                <Loader />
-              </Card>
-            </div>
-          </>
+          <LoadingStoresHeader />
         ) : (
           /* Content */
           <div className="h-full w-full gap-6 flex flex-col items-center justify-center">
@@ -119,11 +107,7 @@ export default function StoresManager() {
 
             {/* Content Box */}
             <div className='grow flex items-center justify-center w-full overflow-hidden'>
-              {loadingStore ? (
-                <div className="h-full w-full flex justify-center items-center">
-                  <Loader />
-                </div>
-              ) : !selectedStoreId ? (
+              {!selectedStoreId ? (
                 <Card className='h-full w-full flex items-center justify-center  '>
                   <EmptyState title="Selecciona un almacén" description="Selecciona un almacén para ver su información" />
                 </Card>
