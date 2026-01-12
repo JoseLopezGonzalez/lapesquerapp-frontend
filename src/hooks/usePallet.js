@@ -528,6 +528,70 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 const action = parsedDifference > 0 ? 'sumado' : 'restado';
                 toast.success(`${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
             }
+        },
+        
+        /**
+         * Cambia el producto de múltiples cajas disponibles que tengan un producto específico
+         * @param {Array<number>} boxIds - Array de IDs de cajas a editar. Si es null, edita todas las cajas disponibles con el producto especificado
+         * @param {number} oldProductId - ID del producto actual a cambiar
+         * @param {number} newProductId - ID del nuevo producto a asignar
+         */
+        changeProduct: (boxIds, oldProductId, newProductId) => {
+            if (!temporalPallet) return;
+            
+            // Validar que se proporcionen ambos IDs
+            if (!oldProductId || !newProductId) {
+                toast.error('Debe seleccionar el producto actual y el nuevo producto', getToastTheme());
+                return;
+            }
+            
+            if (oldProductId === newProductId) {
+                toast.error('El producto nuevo debe ser diferente al actual', getToastTheme());
+                return;
+            }
+            
+            // Obtener el nuevo producto
+            const newProduct = getProductById(newProductId);
+            if (!newProduct) {
+                toast.error('El producto seleccionado no existe', getToastTheme());
+                return;
+            }
+            
+            // Filtrar cajas disponibles con el producto especificado
+            const boxesToEdit = boxIds 
+                ? temporalPallet.boxes.filter(box => 
+                    boxIds.includes(box.id) && 
+                    box.isAvailable !== false && 
+                    box.product?.id === oldProductId
+                )
+                : temporalPallet.boxes.filter(box => 
+                    box.isAvailable !== false && 
+                    box.product?.id === oldProductId
+                );
+
+            if (boxesToEdit.length === 0) {
+                toast.error('No hay cajas disponibles con el producto seleccionado para editar', getToastTheme());
+                return;
+            }
+
+            setTemporalPallet((prev) => (
+                recalculatePalletStats({
+                    ...prev,
+                    boxes: prev.boxes.map((box) => {
+                        const shouldEdit = boxesToEdit.some(b => b.id === box.id);
+                        if (shouldEdit) {
+                            return { 
+                                ...box, 
+                                product: newProduct,
+                                gs1128: getGs1128(newProductId, box.lot, box.netWeight)
+                            };
+                        }
+                        return box;
+                    })
+                })
+            ));
+
+            toast.success(`Producto actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
         }
     };
 

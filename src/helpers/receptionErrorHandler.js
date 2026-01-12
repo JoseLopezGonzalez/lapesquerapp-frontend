@@ -83,7 +83,28 @@ export const analyzeReceptionError = (error, context = 'operation') => {
         };
     }
 
-    // Check for server errors
+    // PRIORIDAD: Verificar si hay userMessage antes de cualquier otra lógica
+    // Esto asegura que siempre mostremos el mensaje específico del servidor
+    const userMessage = error?.data?.userMessage || error?.response?.data?.userMessage;
+    if (userMessage) {
+        // Si hay userMessage, usarlo independientemente del código de estado
+        // Solo usar mensaje genérico de servidor si es realmente un error 500+
+        if (error?.response?.status >= 500 || error?.status >= 500) {
+            return {
+                code: RECEPTION_ERROR_CODES.SERVER_ERROR,
+                message: userMessage, // Priorizar userMessage incluso en errores 500+
+                details: error.data || error.response?.data || {},
+            };
+        }
+        // Para otros códigos (400, 403, 404, etc.), tratarlo como error de validación/negocio
+        return {
+            code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
+            message: userMessage,
+            details: error.data || error.response?.data || {},
+        };
+    }
+
+    // Check for server errors (solo si no hay userMessage)
     if (error?.response?.status >= 500 || error?.status >= 500) {
         return {
             code: RECEPTION_ERROR_CODES.SERVER_ERROR,
@@ -94,19 +115,9 @@ export const analyzeReceptionError = (error, context = 'operation') => {
 
     // Check for specific error messages
     if (error?.message) {
-        // Si el error tiene data con userMessage, priorizarlo
-        const userMessage = error?.data?.userMessage;
-        if (userMessage) {
-            return {
-                code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
-                message: userMessage,
-                details: error.data,
-            };
-        }
-        
         // Si el error.message ya contiene un mensaje útil (no es genérico), usarlo
         // Esto cubre el caso donde fetchWithTenant ya puso el userMessage en error.message
-        if (error.message && !error.message.includes('Error HTTP') && !error.message.includes('Error inesperado')) {
+        if (error.message && !error.message.includes('Error HTTP') && !error.message.includes('Error inesperado') && !error.message.includes('Ocurrió un error inesperado')) {
             // Verificar si parece un mensaje de validación
             if (error.status === 422 || error?.data?.errors) {
                 return {
@@ -115,6 +126,12 @@ export const analyzeReceptionError = (error, context = 'operation') => {
                     details: error.data || {},
                 };
             }
+            // Si no es 422 pero tiene un mensaje útil, usarlo de todas formas
+            return {
+                code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
+                message: error.message,
+                details: error.data || {},
+            };
         }
         
         // Check if it's a known validation error

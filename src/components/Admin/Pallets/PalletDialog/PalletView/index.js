@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import React from "react";
 import Link from "next/link";
 
@@ -84,9 +84,28 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const [selectedBox, setSelectedBox] = useState(null);
     const [activeTab, setActiveTab] = useState("disponibles");
-    const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight' o 'weightAdd'
+    const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight', 'weightAdd' o 'product'
     const [bulkActionValue, setBulkActionValue] = useState('');
     const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
+    const [oldProductId, setOldProductId] = useState('');
+    const [newProductId, setNewProductId] = useState('');
+
+    // Obtener productos únicos disponibles en el palet
+    const availableProductsInPallet = useMemo(() => {
+        if (!temporalPallet?.boxes) return [];
+        const productMap = new Map();
+        temporalPallet.boxes
+            .filter(box => box.isAvailable !== false && box.product?.id)
+            .forEach(box => {
+                if (!productMap.has(box.product.id)) {
+                    productMap.set(box.product.id, {
+                        value: box.product.id,
+                        label: box.product.name || box.product.alias || 'Producto sin nombre'
+                    });
+                }
+            });
+        return Array.from(productMap.values());
+    }, [temporalPallet?.boxes]);
 
     const handleOnClickBoxRow = (boxId) => {
         if (selectedBox === boxId) {
@@ -1166,7 +1185,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 <CardContent className="space-y-4">
                                                     <div className="space-y-2">
                                                         <Label>Selecciona la acción a realizar</Label>
-                                                        <div className="grid grid-cols-3 gap-3">
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                             <Button
                                                                 variant={bulkActionType === 'lot' ? 'default' : 'outline'}
                                                                 onClick={() => {
@@ -1204,6 +1223,19 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Plus className="h-5 w-5" />
                                                                 <span>Sumar/Restar Peso</span>
                                                             </Button>
+                                                            <Button
+                                                                variant={bulkActionType === 'product' ? 'default' : 'outline'}
+                                                                onClick={() => {
+                                                                    setBulkActionType('product');
+                                                                    setOldProductId('');
+                                                                    setNewProductId('');
+                                                                }}
+                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                disabled={isReadOnly}
+                                                            >
+                                                                <Package className="h-5 w-5" />
+                                                                <span>Cambiar Producto</span>
+                                                            </Button>
                                                         </div>
                                                     </div>
 
@@ -1236,32 +1268,65 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                            <div className="space-y-2">
-                                                                <Label>
-                                                                    {bulkActionType === 'lot' 
-                                                                        ? 'Nuevo Lote' 
-                                                                        : bulkActionType === 'weight'
-                                                                        ? 'Nuevo Peso Neto (kg)'
-                                                                        : 'Peso a ' + (weightOperation === 'add' ? 'sumar' : 'restar') + ' (kg)'}
-                                                                </Label>
-                                                                {bulkActionType === 'lot' ? (
-                                                                    <Input
-                                                                        value={bulkActionValue}
-                                                                        onChange={(e) => setBulkActionValue(e.target.value)}
-                                                                        placeholder="Ingresa el nuevo lote"
-                                                                        disabled={isReadOnly}
-                                                                    />
-                                                                ) : (
-                                                                    <Input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        value={bulkActionValue}
-                                                                        onChange={(e) => setBulkActionValue(e.target.value)}
-                                                                        placeholder="0.00"
-                                                                        disabled={isReadOnly}
-                                                                    />
-                                                                )}
-                                                            </div>
+                                                            {bulkActionType === 'product' ? (
+                                                                <>
+                                                                    <div className="space-y-2">
+                                                                        <Label>Producto Actual</Label>
+                                                                        <Combobox
+                                                                            options={availableProductsInPallet}
+                                                                            placeholder='Seleccionar producto actual'
+                                                                            searchPlaceholder='Buscar producto...'
+                                                                            notFoundMessage='No se encontraron productos'
+                                                                            value={oldProductId}
+                                                                            onChange={(value) => {
+                                                                                setOldProductId(value);
+                                                                            }}
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label>Nuevo Producto</Label>
+                                                                        <Combobox
+                                                                            options={productsOptions}
+                                                                            placeholder='Seleccionar nuevo producto'
+                                                                            searchPlaceholder='Buscar producto...'
+                                                                            notFoundMessage='No se encontraron productos'
+                                                                            value={newProductId}
+                                                                            onChange={(value) => {
+                                                                                setNewProductId(value);
+                                                                            }}
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <div className="space-y-2">
+                                                                    <Label>
+                                                                        {bulkActionType === 'lot' 
+                                                                            ? 'Nuevo Lote' 
+                                                                            : bulkActionType === 'weight'
+                                                                            ? 'Nuevo Peso Neto (kg)'
+                                                                            : 'Peso a ' + (weightOperation === 'add' ? 'sumar' : 'restar') + ' (kg)'}
+                                                                    </Label>
+                                                                    {bulkActionType === 'lot' ? (
+                                                                        <Input
+                                                                            value={bulkActionValue}
+                                                                            onChange={(e) => setBulkActionValue(e.target.value)}
+                                                                            placeholder="Ingresa el nuevo lote"
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    ) : (
+                                                                        <Input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            value={bulkActionValue}
+                                                                            onChange={(e) => setBulkActionValue(e.target.value)}
+                                                                            placeholder="0.00"
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
 
                                                             <Alert className="border-blue-200 bg-blue-50">
                                                                 <AlertCircle className="h-4 w-4 text-blue-600" />
@@ -1274,34 +1339,52 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Button
                                                                     className="w-full"
                                                                     onClick={() => {
-                                                                        if (!bulkActionValue || bulkActionValue.trim() === '') {
-                                                                            return;
-                                                                        }
+                                                                        if (bulkActionType === 'product') {
+                                                                            if (!oldProductId || !newProductId) {
+                                                                                return;
+                                                                            }
+                                                                            editPallet.box.bulkEdit.changeProduct(
+                                                                                null,
+                                                                                oldProductId,
+                                                                                newProductId
+                                                                            );
+                                                                        } else {
+                                                                            if (!bulkActionValue || bulkActionValue.trim() === '') {
+                                                                                return;
+                                                                            }
 
-                                                                        if (bulkActionType === 'lot') {
-                                                                            editPallet.box.bulkEdit.changeLot(
-                                                                                null,
-                                                                                bulkActionValue.trim()
-                                                                            );
-                                                                        } else if (bulkActionType === 'weight') {
-                                                                            editPallet.box.bulkEdit.changeNetWeight(
-                                                                                null,
-                                                                                parseFloat(bulkActionValue)
-                                                                            );
-                                                                        } else if (bulkActionType === 'weightAdd') {
-                                                                            const weightValue = parseFloat(bulkActionValue);
-                                                                            const weightDifference = weightOperation === 'add' ? weightValue : -weightValue;
-                                                                            editPallet.box.bulkEdit.addOrSubtractWeight(
-                                                                                null,
-                                                                                weightDifference
-                                                                            );
+                                                                            if (bulkActionType === 'lot') {
+                                                                                editPallet.box.bulkEdit.changeLot(
+                                                                                    null,
+                                                                                    bulkActionValue.trim()
+                                                                                );
+                                                                            } else if (bulkActionType === 'weight') {
+                                                                                editPallet.box.bulkEdit.changeNetWeight(
+                                                                                    null,
+                                                                                    parseFloat(bulkActionValue)
+                                                                                );
+                                                                            } else if (bulkActionType === 'weightAdd') {
+                                                                                const weightValue = parseFloat(bulkActionValue);
+                                                                                const weightDifference = weightOperation === 'add' ? weightValue : -weightValue;
+                                                                                editPallet.box.bulkEdit.addOrSubtractWeight(
+                                                                                    null,
+                                                                                    weightDifference
+                                                                                );
+                                                                            }
                                                                         }
 
                                                                         setBulkActionType(null);
                                                                         setBulkActionValue('');
+                                                                        setOldProductId('');
+                                                                        setNewProductId('');
                                                                         setWeightOperation('add');
                                                                     }}
-                                                                    disabled={!bulkActionValue || bulkActionValue.trim() === '' || isReadOnly}
+                                                                    disabled={
+                                                                        isReadOnly || 
+                                                                        (bulkActionType === 'product' 
+                                                                            ? (!oldProductId || !newProductId)
+                                                                            : (!bulkActionValue || bulkActionValue.trim() === ''))
+                                                                    }
                                                                 >
                                                                     Aplicar Cambios
                                                                 </Button>
@@ -1335,6 +1418,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                         <li><strong>Cambiar Lote:</strong> Aplica un nuevo lote a todas las cajas disponibles</li>
                                                         <li><strong>Cambiar Peso:</strong> Aplica un nuevo peso neto a todas las cajas disponibles</li>
                                                         <li><strong>Sumar/Restar Peso:</strong> Suma o resta un valor de peso a todas las cajas disponibles</li>
+                                                        <li><strong>Cambiar Producto:</strong> Cambia un producto por otro en todas las cajas disponibles que tengan ese producto</li>
                                                         <li><strong>Importante:</strong> Los cambios solo se aplican a cajas disponibles (no en producción). Las cajas en producción no pueden ser modificadas.</li>
                                                     </ul>
                                                 </CardContent>
