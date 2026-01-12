@@ -257,31 +257,34 @@ export default function ReceptionSummaryDialog({
                                                                         : '';
                                                                     
                                                                     return (
-                                                                        <Input
-                                                                            type="number"
-                                                                            step="0.01"
-                                                                            min="0"
-                                                                            value={displayPrice}
-                                                                            onChange={(e) => {
-                                                                                const newPrice = e.target.value;
-                                                                                if (onPriceChange) {
-                                                                                    onPriceChange(item.productId, item.lot || '', newPrice);
-                                                                                }
-                                                                            }}
-                                                                            className="w-24 text-right"
-                                                                            placeholder="0.00"
-                                                                        />
+                                                                        <div className="flex items-center gap-1">
+                                                                            <Input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                min="0"
+                                                                                value={displayPrice}
+                                                                                onChange={(e) => {
+                                                                                    const newPrice = e.target.value;
+                                                                                    if (onPriceChange) {
+                                                                                        onPriceChange(item.productId, item.lot || '', newPrice);
+                                                                                    }
+                                                                                }}
+                                                                                className="w-24 text-right"
+                                                                                placeholder="0.00"
+                                                                            />
+                                                                            <span className="text-sm text-muted-foreground">€/kg</span>
+                                                                        </div>
                                                                     );
                                                                 })()
                                                             ) : (
                                                                 // When grouped, show read-only multiple prices
                                                                 item.prices.length > 0 ? (
                                                                     item.prices.length === 1 ? (
-                                                                        <span>{formatDecimal(item.prices[0])}</span>
+                                                                        <span>{formatDecimal(item.prices[0])} €/kg</span>
                                                                     ) : (
                                                                         <div className="text-sm text-right">
                                                                             {item.prices.map((price, idx) => (
-                                                                                <div key={idx}>{formatDecimal(price)}</div>
+                                                                                <div key={idx}>{formatDecimal(price)} €/kg</div>
                                                                             ))}
                                                                         </div>
                                                                     )
@@ -292,7 +295,7 @@ export default function ReceptionSummaryDialog({
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right align-top font-medium">
-                                                        {lineAmount > 0 ? formatDecimal(lineAmount) : '-'}
+                                                        {lineAmount > 0 ? `${formatDecimal(lineAmount)} €` : '-'}
                                                     </TableCell>
                                                 </TableRow>
                                             );
@@ -306,9 +309,9 @@ export default function ReceptionSummaryDialog({
                                             <TableCell className="text-right font-semibold">{productsTotals.totalBoxes}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalWeight(productsTotals.totalWeight)}</TableCell>
                                             <TableCell className="text-right font-semibold">
-                                                {productsTotals.averagePrice > 0 ? formatDecimal(productsTotals.averagePrice) : '-'}
+                                                {productsTotals.averagePrice > 0 ? `${formatDecimal(productsTotals.averagePrice)} €/kg` : '-'}
                                             </TableCell>
-                                            <TableCell className="text-right font-semibold">{formatDecimal(productsTotals.totalAmount)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimal(productsTotals.totalAmount)} €</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>

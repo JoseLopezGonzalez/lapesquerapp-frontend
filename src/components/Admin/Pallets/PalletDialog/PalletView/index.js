@@ -32,7 +32,7 @@ import { EmptyState } from "@/components/Utilities/EmptyState";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 
-import { usePallet } from "@/hooks/usePallet";
+import { usePallet, saveDiscountPreferences } from "@/hooks/usePallet";
 import { usePrintElement } from "@/hooks/usePrintElement";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
@@ -175,6 +175,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const handleOnClickSaveChanges = () => {
         if (isReadOnly) return;
+        
+        // Guardar preferencias de descuento antes de guardar el palet
+        saveDiscountPreferences(boxCreationData);
+        
         // If onSaveTemporal is provided, use it instead of onSavingChanges
         if (onSaveTemporal && temporalPallet) {
             onSaveTemporal(temporalPallet);

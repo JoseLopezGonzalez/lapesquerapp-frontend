@@ -62,6 +62,18 @@ const setStoredValue = (key, value) => {
     }
 };
 
+/**
+ * Guarda las preferencias de descuento en localStorage
+ * @param {Object} boxCreationData - Datos de creación de cajas con las preferencias
+ */
+export const saveDiscountPreferences = (boxCreationData) => {
+    if (!boxCreationData) return;
+    setStoredValue(STORAGE_KEYS.showPalletWeight, boxCreationData.showPalletWeight || false);
+    setStoredValue(STORAGE_KEYS.showBoxTare, boxCreationData.showBoxTare || false);
+    setStoredValue(STORAGE_KEYS.palletWeight, boxCreationData.palletWeight || '');
+    setStoredValue(STORAGE_KEYS.boxTare, boxCreationData.boxTare || '');
+};
+
 const initialboxCreationData = {
     productId: "",
     lot: "",
@@ -662,6 +674,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 toast.error('Por favor, completa todos los campos requeridos', getToastTheme());
                 return;
             }
+            
+            // Guardar preferencias de descuento cuando se usan para crear cajas
+            saveDiscountPreferences(boxCreationData);
+            
             // Descontar el peso del palet si está definido (puede ser vacío o 0)
             const palletWeightValue = palletWeight ? parseFloat(palletWeight) : 0;
             // Descontar la tara de las cajas (tara por caja * número de cajas)
@@ -956,6 +972,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const onSavingChanges = async () => {
         if (!temporalPallet) return;
+
+        // Guardar preferencias de descuento antes de guardar el palet
+        saveDiscountPreferences(boxCreationData);
 
         // If skipBackendSave is true, just call onChange with temporalPallet without saving to backend
         if (skipBackendSave) {
