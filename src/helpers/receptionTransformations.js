@@ -199,3 +199,76 @@ export const buildProductLotSummary = (pallet) => {
     return Array.from(productLotMap.values());
 };
 
+/**
+ * Maps backend pallets to temporalPallets format, preserving metadata (prices, observations)
+ * and updating IDs from backend response
+ * @param {Array} backendPallets - Array of pallets from backend response
+ * @param {Array} currentTemporalPallets - Current temporalPallets to preserve metadata
+ * @param {Object} globalPricesObj - Global prices object from reception
+ * @returns {Array} Updated temporalPallets with backend IDs
+ */
+export const mapBackendPalletsToTemporal = (backendPallets, currentTemporalPallets = [], globalPricesObj = {}) => {
+    if (!Array.isArray(backendPallets)) return [];
+    
+    // Create a map of current temporal pallets by index for quick lookup
+    // We'll try to match by order and box content
+    const updatedTemporalPallets = [];
+    
+    backendPallets.forEach((backendPallet, index) => {
+        // Convert backend boxes to frontend format
+        const boxes = (backendPallet.boxes || []).map(box => ({
+            id: box.id,
+            product: box.product ? {
+                id: box.product.id,
+                name: box.product.name || box.product.alias || '',
+            } : null,
+            lot: box.lot || '',
+            grossWeight: box.grossWeight ? parseFloat(box.grossWeight).toString() : '',
+            netWeight: box.netWeight ? parseFloat(box.netWeight).toString() : '',
+            gs1128: box.gs1128 || undefined,
+            isAvailable: box.isAvailable !== false,
+            production: box.production || null,
+        }));
+        
+        // Try to preserve metadata from current temporal pallets
+        // Match by index first, then by pallet structure
+        let preservedMetadata = null;
+        if (currentTemporalPallets[index]) {
+            preservedMetadata = {
+                prices: currentTemporalPallets[index].prices || {},
+                observations: currentTemporalPallets[index].observations || backendPallet.observations || '',
+            };
+        } else {
+            // Build prices object for this pallet from global prices
+            const palletPricesObj = {};
+            boxes.forEach(box => {
+                if (box.product?.id && box.lot) {
+                    const key = `${box.product.id}-${box.lot}`;
+                    if (globalPricesObj[key]) {
+                        palletPricesObj[key] = globalPricesObj[key];
+                    }
+                }
+            });
+            
+            preservedMetadata = {
+                prices: palletPricesObj,
+                observations: backendPallet.observations || '',
+            };
+        }
+        
+        updatedTemporalPallets.push({
+            pallet: {
+                id: backendPallet.id, // Update with backend ID
+                boxes: boxes,
+                numberOfBoxes: boxes.length,
+                netWeight: boxes.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
+                observations: backendPallet.observations || '',
+            },
+            prices: preservedMetadata.prices,
+            observations: preservedMetadata.observations,
+        });
+    });
+    
+    return updatedTemporalPallets;
+};
+

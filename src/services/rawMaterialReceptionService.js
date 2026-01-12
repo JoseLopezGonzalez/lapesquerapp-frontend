@@ -31,15 +31,12 @@ export const createRawMaterialReception = async (receptionPayload) => {
             body: JSON.stringify(receptionPayload),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Error ${response.status}: Error al crear la recepción.`);
-        }
-
+        // Si fetchWithTenant no lanzó error, la respuesta es OK
         const data = await response.json();
         return data.data || data;
     } catch (error) {
         console.error("Error en createRawMaterialReception:", error);
+        // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
         throw error;
     }
 };
@@ -73,15 +70,12 @@ export const updateRawMaterialReception = async (receptionId, receptionPayload) 
             body: JSON.stringify(receptionPayload),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Error ${response.status}: Error al actualizar la recepción.`);
-        }
-
+        // Si fetchWithTenant no lanzó error, la respuesta es OK
         const data = await response.json();
         return data.data || data;
     } catch (error) {
         console.error("Error en updateRawMaterialReception:", error);
+        // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
         throw error;
     }
 };
@@ -106,7 +100,12 @@ export function getRawMaterialReception(receptionId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener la recepción');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = errorData.userMessage || errorData.message || 'Error al obtener la recepción';
+                    const error = new Error(errorMessage);
+                    error.status = response.status;
+                    error.data = errorData;
+                    throw error;
                 });
             }
             return response.json();

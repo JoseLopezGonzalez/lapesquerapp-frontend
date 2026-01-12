@@ -6,6 +6,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2 } from 'lucide-react';
 
 export const EntityBody = ({ 
     data, 
@@ -15,7 +16,8 @@ export const EntityBody = ({
     isSelectable = false, 
     selectedRows = [], 
     onSelectionChange,
-    onEdit 
+    onEdit,
+    isBlocked = false
 }) => {
     // Añadir columna de selección si corresponde
     const tableColumns = React.useMemo(() => {
@@ -39,6 +41,7 @@ export const EntityBody = ({
                             }
                         }}
                         aria-label="Seleccionar todas"
+                        disabled={isBlocked}
                     />
                 ),
                 cell: ({ row }) => (
@@ -53,6 +56,7 @@ export const EntityBody = ({
                             }
                         }}
                         aria-label="Seleccionar fila"
+                        disabled={isBlocked}
                     />
                 ),
                 enableSorting: false,
@@ -100,29 +104,39 @@ export const EntityBody = ({
 
     // Tabla normal
     return (
-        <Table>
-            <TableHeader className="sticky top-0 z-10 bg-foreground-50">
-                {reactTable.getHeaderGroups().map(headerGroup => (
-                    <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                            <TableHead key={header.id} className={header.column.columnDef.meta?.cellClass}>
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                            </TableHead>
-                        ))}
-                    </TableRow>
-                ))}
-            </TableHeader>
-            <TableBody>
-                {reactTable.getRowModel().rows.map(row => (
-                    <TableRow key={row.id}>
-                        {row.getVisibleCells().map(cell => (
-                            <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClass}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </TableCell>
-                        ))}
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+        <div className="relative">
+            {isBlocked && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-20 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Procesando...</p>
+                    </div>
+                </div>
+            )}
+            <Table className={isBlocked ? 'pointer-events-none opacity-50' : ''}>
+                <TableHeader className="sticky top-0 z-10 bg-foreground-50">
+                    {reactTable.getHeaderGroups().map(headerGroup => (
+                        <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map(header => (
+                                <TableHead key={header.id} className={header.column.columnDef.meta?.cellClass}>
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableHeader>
+                <TableBody>
+                    {reactTable.getRowModel().rows.map(row => (
+                        <TableRow key={row.id}>
+                            {row.getVisibleCells().map(cell => (
+                                <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClass}>
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 };

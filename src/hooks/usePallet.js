@@ -28,6 +28,40 @@ const recalculatePalletStats = (pallet) => {
     };
 };
 
+// Funciones helper para guardar/recuperar preferencias de descuento desde localStorage
+const STORAGE_KEYS = {
+    showPalletWeight: 'pallet_creation_showPalletWeight',
+    showBoxTare: 'pallet_creation_showBoxTare',
+    palletWeight: 'pallet_creation_palletWeight',
+    boxTare: 'pallet_creation_boxTare',
+};
+
+const getStoredValue = (key, defaultValue) => {
+    if (typeof window === 'undefined') return defaultValue;
+    try {
+        const stored = localStorage.getItem(key);
+        if (stored === null) return defaultValue;
+        // Para valores booleanos
+        if (defaultValue === false || defaultValue === true) {
+            return stored === 'true';
+        }
+        // Para valores string (números como string)
+        return stored;
+    } catch (error) {
+        console.error(`Error reading from localStorage for key ${key}:`, error);
+        return defaultValue;
+    }
+};
+
+const setStoredValue = (key, value) => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(key, String(value));
+    } catch (error) {
+        console.error(`Error writing to localStorage for key ${key}:`, error);
+    }
+};
+
 const initialboxCreationData = {
     productId: "",
     lot: "",
@@ -35,10 +69,10 @@ const initialboxCreationData = {
     weights: "", // para masiva
     totalWeight: "", // para promedio
     numberOfBoxes: "", // para promedio
-    palletWeight: "", // peso del palet/soporte de madera para descontar en promedio
-    showPalletWeight: false, // mostrar/ocultar campo de peso del palet
-    boxTare: "", // tara de cada caja para descontar en promedio
-    showBoxTare: false, // mostrar/ocultar campo de tara de cajas
+    palletWeight: getStoredValue(STORAGE_KEYS.palletWeight, ""), // peso del palet/soporte de madera para descontar en promedio
+    showPalletWeight: getStoredValue(STORAGE_KEYS.showPalletWeight, false), // mostrar/ocultar campo de peso del palet
+    boxTare: getStoredValue(STORAGE_KEYS.boxTare, ""), // tara de cada caja para descontar en promedio
+    showBoxTare: getStoredValue(STORAGE_KEYS.showBoxTare, false), // mostrar/ocultar campo de tara de cajas
     scannedCode: "", // para lector
     deleteScannedCode: "",//para lector eliminar
     gs1codes: "", // <- NUEVO
@@ -515,6 +549,17 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             ...prev,
             [field]: value
         }));
+        
+        // Guardar en localStorage los campos relacionados con descuentos
+        if (field === 'showPalletWeight') {
+            setStoredValue(STORAGE_KEYS.showPalletWeight, value);
+        } else if (field === 'showBoxTare') {
+            setStoredValue(STORAGE_KEYS.showBoxTare, value);
+        } else if (field === 'palletWeight') {
+            setStoredValue(STORAGE_KEYS.palletWeight, value);
+        } else if (field === 'boxTare') {
+            setStoredValue(STORAGE_KEYS.boxTare, value);
+        }
     };
 
     useEffect(() => {

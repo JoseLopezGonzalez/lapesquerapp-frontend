@@ -67,9 +67,37 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
     }
 
     try {
-      // Clonar la respuesta para poder leer el body
+      // Clonar la respuesta para poder leer el body sin consumir el original
       const responseClone = res.clone();
-      const errorJson = await responseClone.json();
+      const contentType = res.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      let errorJson = {};
+      let errorText = '';
+      
+      if (isJson) {
+        try {
+          // Intentar leer como JSON
+          errorText = await responseClone.text();
+          if (errorText && errorText.trim()) {
+            errorJson = JSON.parse(errorText);
+          } else {
+            // Si el body está vacío, usar un objeto vacío
+            errorJson = {};
+          }
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON del error:', parseError);
+          console.error('❌ Texto recibido:', errorText);
+          // Si falla el parseo, usar el texto como mensaje
+          throw new Error(errorText || `Error HTTP ${res.status}: ${res.statusText}`);
+        }
+      } else {
+        // Si no es JSON, leer como texto
+        errorText = await responseClone.text();
+        console.error('❌ Respuesta de error (no JSON):', errorText);
+        throw new Error(errorText || `Error HTTP ${res.status}: ${res.statusText}`);
+      }
+      
       console.error('❌ Error JSON recibido:', errorJson);
       
       // Verificar si el error contiene mensaje de autenticación
@@ -77,30 +105,27 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         throw new Error('No autenticado');
       }
       
-      const errorText = errorJson.message || JSON.stringify(errorJson);
-      throw new Error(errorText || 'Error inesperado en la solicitud');
+      // Priorizar userMessage sobre message para mostrar errores en formato natural
+      const finalErrorMessage = errorJson.userMessage || errorJson.message || `Error HTTP ${res.status}: ${res.statusText}`;
+      
+      // Crear un error que preserve la información completa del error
+      const error = new Error(finalErrorMessage);
+      error.status = res.status;
+      error.data = errorJson;
+      throw error;
     } catch (e) {
       // Si ya es un error de autenticación, re-lanzarlo
       if (e.message === 'No autenticado') {
         throw e;
       }
       
-      // Si no es JSON, intentar leer como texto
-      try {
-        const responseClone = res.clone();
-        const rawText = await responseClone.text();
-        console.error('❌ Respuesta no es JSON o error de parseo. Texto recibido:', rawText);
-        
-        // Verificar si el texto contiene indicadores de error de autenticación
-        if (isAuthError({ message: rawText })) {
-          throw new Error('No autenticado');
-        }
-        
-        throw new Error(`Error en la respuesta de la API: ${rawText}`);
-      } catch (textError) {
-        // Si tampoco se puede leer como texto, crear un error genérico
-        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
+      // Si el error ya tiene un mensaje útil (no es un error de parseo genérico), re-lanzarlo
+      if (e.message && !e.message.startsWith('Error HTTP')) {
+        throw e;
       }
+      
+      // Si no se pudo leer el body, crear un error genérico
+      throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
     }
   }
 

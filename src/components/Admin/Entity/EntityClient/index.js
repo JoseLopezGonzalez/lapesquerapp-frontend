@@ -94,6 +94,10 @@ export default function EntityClient({ config }) {
     const [selectedRows, setSelectedRows] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [modal, setModal] = useState({ open: false, mode: null, editId: null });
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     const handleDelete = useCallback(async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
@@ -191,6 +195,7 @@ export default function EntityClient({ config }) {
             ? config.deleteEndpoint.replace('/:id', '')
             : config.deleteEndpoint;
 
+        setIsDeleting(true);
         try {
             const result = await deleteEntity(`${API_URL_V2}${deleteUrl}`, { ids: selectedRows });
             // El backend puede retornar { "message": "..." } en la respuesta exitosa
@@ -221,6 +226,8 @@ export default function EntityClient({ config }) {
                 errorMessage = error.message;
             }
             toast.error(errorMessage);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -266,6 +273,7 @@ export default function EntityClient({ config }) {
             : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
+        setIsExporting(true);
         const toastId = toast.loading(
             (t) => (
                 <span className="flex gap-2 items-center justify-center">
@@ -293,6 +301,8 @@ export default function EntityClient({ config }) {
                         ? error.message
                         : 'Error: ocurrió algo inesperado al generar la exportación.';
             toast.error(errorMessage, { id: toastId });
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -304,6 +314,7 @@ export default function EntityClient({ config }) {
             : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
+        setIsGeneratingReport(true);
         const toastId = toast.loading(
             (t) => (
                 <span className="flex gap-2 items-center justify-center">
@@ -329,6 +340,8 @@ export default function EntityClient({ config }) {
                         ? error.message
                         : 'Error: ocurrió algo inesperado al generar el reporte.';
             toast.error(errorMessage, { id: toastId });
+        } finally {
+            setIsGeneratingReport(false);
         }
     };
 
@@ -369,8 +382,13 @@ export default function EntityClient({ config }) {
     };
 
     // Handler para recargar datos con filtros actuales
-    const handleRefresh = () => {
-        fetchData(currentPage, filters);
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await fetchData(currentPage, filters);
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     // Preparar columns y rows para EntityTable
@@ -411,6 +429,10 @@ export default function EntityClient({ config }) {
                     onReport={handleReport}
                     onRefresh={handleRefresh}
                     actions={actions}
+                    isRefreshing={isRefreshing}
+                    isDeleting={isDeleting}
+                    isGeneratingReport={isGeneratingReport}
+                    isExporting={isExporting}
                 />
                 <EntityBody
                     data={{ loading: data.loading, rows }}
@@ -421,6 +443,7 @@ export default function EntityClient({ config }) {
                     selectedRows={selectedRows}
                     onSelectionChange={handleOnSelectionChange}
                     onEdit={handleOpenEdit}
+                    isBlocked={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                 />
                 <EntityFooter>
                     <div className='w-full flex justify-between items-center py-2'>

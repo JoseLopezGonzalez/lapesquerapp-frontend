@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { EllipsisVertical, PlusIcon, ChartPieIcon, TrashIcon, RefreshCw } from 'lucide-react';
+import { EllipsisVertical, PlusIcon, ChartPieIcon, TrashIcon, RefreshCw, Loader2 } from 'lucide-react';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from 'react-icons/fa';
 
@@ -30,6 +30,10 @@ export const EntityTableHeader = ({
     onReport,
     onRefresh,
     actions = [],
+    isRefreshing = false,
+    isDeleting = false,
+    isGeneratingReport = false,
+    isExporting = false,
 }) => {
 
     const existsSelectedRows = selectedRows && selectedRows.length > 0;
@@ -45,15 +49,23 @@ export const EntityTableHeader = ({
             <div>
                 <div className="inline-flex gap-x-2">
                     {onRefresh && (
-                        <Button onClick={onRefresh} variant="outline" size="sm">
-                            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                        <Button onClick={onRefresh} variant="outline" size="sm" disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}>
+                            {isRefreshing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                            )}
                             <span className='hidden xl:block'>Recargar</span>
                         </Button>
                     )}
 
                     {existsSelectedRows && onSelectedRowsDelete && (
-                        <Button onClick={onSelectedRowsDelete} variant="destructive" size="sm">
-                            <TrashIcon className="h-4 w-4" aria-hidden="true" />
+                        <Button onClick={onSelectedRowsDelete} variant="destructive" size="sm" disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}>
+                            {isDeleting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                <TrashIcon className="h-4 w-4" aria-hidden="true" />
+                            )}
                             <span className='hidden xl:block'>Eliminar</span>
                         </Button>
                     )}
@@ -61,7 +73,10 @@ export const EntityTableHeader = ({
                     {existsAnyOptions && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" >
+                                <Button variant="outline" size="sm" disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}>
+                                    {(isGeneratingReport || isExporting) ? (
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                    ) : null}
                                     Opciones <EllipsisVertical className="w-5 h-5" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -76,6 +91,7 @@ export const EntityTableHeader = ({
                                                     key={action.title}
                                                     onClick={() => action.onClick?.(existsSelectedRows)}
                                                     className="cursor-pointer"
+                                                    disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                                                 >
                                                     {action.title}
                                                 </DropdownMenuItem>
@@ -94,6 +110,7 @@ export const EntityTableHeader = ({
                                                     key={`export-${opt.title}`}
                                                     onClick={() => onExport(opt, existsSelectedRows)}
                                                     className="cursor-pointer"
+                                                    disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                                                 >
                                                     {opt.type === "excel" || opt.type === "xlsx" ? (
                                                         <PiMicrosoftExcelLogoFill className="w-5 h-5 text-green-700 " />
@@ -117,6 +134,7 @@ export const EntityTableHeader = ({
                                                 <DropdownMenuItem
                                                     key={`report-${opt.title}`}
                                                     onClick={() => onReport(opt, existsSelectedRows)}
+                                                    disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                                                 >
                                                     <ChartPieIcon className="w-4 h-4 mr-2" />
                                                     {opt.title}
@@ -148,6 +166,7 @@ export const EntityTableHeader = ({
                                 }
                             }} 
                             size="sm"
+                            disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                         >
                             <PlusIcon className="h-5 w-5" aria-hidden="true" />
                             Nuevo

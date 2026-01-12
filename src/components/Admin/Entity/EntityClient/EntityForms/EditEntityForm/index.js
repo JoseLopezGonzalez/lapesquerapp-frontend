@@ -149,7 +149,8 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 else if (err.status === 403) userMessage = "Permiso denegado.";
                 else if (err.status === 422) { // Unprocessable Entity - often for validation errors
                     const errorBody = await err.json();
-                    userMessage = errorBody.message || userMessage;
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    userMessage = errorBody.userMessage || errorBody.message || userMessage;
                     // You might want to display specific field errors from errorBody.errors here
                 }
             }

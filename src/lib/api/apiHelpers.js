@@ -59,8 +59,10 @@ export const apiRequest = async (url, options = {}, config = {}) => {
                 errorData = { message: `Error ${response.status}: ${response.statusText}` }
             }
 
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = errorData.userMessage || errorData.message || errorData.error || `Error en la petición: ${response.statusText}`;
             throw new ApiError(
-                errorData.message || errorData.error || `Error en la petición: ${response.statusText}`,
+                errorMessage,
                 response.status,
                 errorData
             )

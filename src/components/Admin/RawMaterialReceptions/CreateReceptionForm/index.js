@@ -45,7 +45,8 @@ import {
     transformPalletsToApiFormat, 
     transformDetailsToApiFormat,
     buildProductLotSummary,
-    createPriceKey
+    createPriceKey,
+    mapBackendPalletsToTemporal
 } from '@/helpers/receptionTransformations';
 import { formatReceptionError, logReceptionError } from '@/helpers/receptionErrorHandler';
 import { 
@@ -356,6 +357,21 @@ const CreateReceptionForm = ({ onSuccess }) => {
             }
 
             const createdReception = await createRawMaterialReception(payload);
+            
+            // Si es modo manual y hay palets, actualizar temporalPallets con los IDs del backend
+            if (mode === 'manual' && createdReception?.pallets && createdReception.pallets.length > 0) {
+                const globalPriceMap = extractGlobalPriceMap(temporalPallets);
+                const globalPricesObj = Object.fromEntries(
+                    Array.from(globalPriceMap.entries()).map(([key, value]) => [key, value.price])
+                );
+                
+                const updatedTemporalPallets = mapBackendPalletsToTemporal(
+                    createdReception.pallets,
+                    temporalPallets,
+                    globalPricesObj
+                );
+                setTemporalPallets(updatedTemporalPallets);
+            }
             
             toast.success('Recepción creada exitosamente', getToastTheme());
             

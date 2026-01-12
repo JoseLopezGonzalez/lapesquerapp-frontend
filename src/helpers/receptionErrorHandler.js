@@ -42,12 +42,24 @@ const ERROR_MESSAGES = {
 export const analyzeReceptionError = (error, context = 'operation') => {
     // Check if it's a validation error from API
     if (error?.response?.status === 422 || error?.status === 422) {
-        const validationErrors = error?.response?.data?.errors || error?.data?.errors || {};
-        const firstError = Object.values(validationErrors)[0]?.[0] || 'Error de validación';
+        const errorData = error?.response?.data || error?.data || {};
+        const validationErrors = errorData.errors || {};
+        
+        // Priorizar userMessage sobre message para mostrar errores en formato natural
+        // El userMessage puede venir en errorData.userMessage o ya estar en error.message (desde fetchWithTenant)
+        const userMessage = errorData.userMessage;
+        const errorMessage = error?.message;
+        
+        // Usar userMessage si está disponible, sino usar el mensaje del error (que ya puede contener userMessage),
+        // sino usar el primer error de validación, sino usar un mensaje genérico
+        const finalMessage = userMessage || 
+                            (errorMessage && !errorMessage.includes('Error HTTP') ? errorMessage : null) ||
+                            Object.values(validationErrors)[0]?.[0] || 
+                            'Error de validación';
         
         return {
             code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
-            message: firstError,
+            message: finalMessage,
             details: validationErrors,
             field: Object.keys(validationErrors)[0],
         };
@@ -82,6 +94,29 @@ export const analyzeReceptionError = (error, context = 'operation') => {
 
     // Check for specific error messages
     if (error?.message) {
+        // Si el error tiene data con userMessage, priorizarlo
+        const userMessage = error?.data?.userMessage;
+        if (userMessage) {
+            return {
+                code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
+                message: userMessage,
+                details: error.data,
+            };
+        }
+        
+        // Si el error.message ya contiene un mensaje útil (no es genérico), usarlo
+        // Esto cubre el caso donde fetchWithTenant ya puso el userMessage en error.message
+        if (error.message && !error.message.includes('Error HTTP') && !error.message.includes('Error inesperado')) {
+            // Verificar si parece un mensaje de validación
+            if (error.status === 422 || error?.data?.errors) {
+                return {
+                    code: RECEPTION_ERROR_CODES.VALIDATION_ERROR,
+                    message: error.message,
+                    details: error.data || {},
+                };
+            }
+        }
+        
         // Check if it's a known validation error
         const knownErrors = Object.values(ERROR_MESSAGES[RECEPTION_ERROR_CODES.VALIDATION_ERROR]);
         if (knownErrors.some(msg => error.message.includes(msg))) {

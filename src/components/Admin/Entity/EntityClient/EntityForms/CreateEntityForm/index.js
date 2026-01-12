@@ -175,7 +175,8 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 else if (error.status === 422) { // Unprocessable Entity - often for validation errors
                     // You might want to parse and display specific validation errors here
                     const errorBody = await error.json();
-                    userErrorMessage = errorBody.message || userErrorMessage;
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    userErrorMessage = errorBody.userMessage || errorBody.message || userErrorMessage;
                 }
             } else if (error instanceof Error) {
                 userErrorMessage = error.message;
