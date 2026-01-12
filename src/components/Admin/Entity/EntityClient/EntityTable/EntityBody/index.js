@@ -104,7 +104,7 @@ export const EntityBody = ({
 
     // Tabla normal
     return (
-        <div className="relative">
+        <div className="relative w-full">
             {isBlocked && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-20 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2">
@@ -113,30 +113,32 @@ export const EntityBody = ({
                     </div>
                 </div>
             )}
-            <Table className={isBlocked ? 'pointer-events-none opacity-50' : ''}>
-                <TableHeader className="sticky top-0 z-10 bg-foreground-50">
-                    {reactTable.getHeaderGroups().map(headerGroup => (
-                        <TableRow key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <TableHead key={header.id} className={header.column.columnDef.meta?.cellClass}>
-                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableHeader>
-                <TableBody>
-                    {reactTable.getRowModel().rows.map(row => (
-                        <TableRow key={row.id}>
-                            {row.getVisibleCells().map(cell => (
-                                <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClass}>
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+                <Table className={isBlocked ? 'pointer-events-none opacity-50' : ''}>
+                    <TableHeader className="sticky top-0 z-10 bg-foreground-50">
+                        {reactTable.getHeaderGroups().map(headerGroup => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map(header => (
+                                    <TableHead key={header.id} className={header.column.columnDef.meta?.cellClass}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {reactTable.getRowModel().rows.map(row => (
+                            <TableRow key={row.id}>
+                                {row.getVisibleCells().map(cell => (
+                                    <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClass}>
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 };

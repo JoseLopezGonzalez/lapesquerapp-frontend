@@ -434,17 +434,19 @@ export default function EntityClient({ config }) {
                     isGeneratingReport={isGeneratingReport}
                     isExporting={isExporting}
                 />
-                <EntityBody
-                    data={{ loading: data.loading, rows }}
-                    columns={columns}
-                    loading={data.loading}
-                    emptyState={config.emptyState || { title: '', description: '' }}
-                    isSelectable={true}
-                    selectedRows={selectedRows}
-                    onSelectionChange={handleOnSelectionChange}
-                    onEdit={handleOpenEdit}
-                    isBlocked={isRefreshing || isDeleting || isGeneratingReport || isExporting}
-                />
+                <div className="flex-1 overflow-y-auto min-h-0">
+                    <EntityBody
+                        data={{ loading: data.loading, rows }}
+                        columns={columns}
+                        loading={data.loading}
+                        emptyState={config.emptyState || { title: '', description: '' }}
+                        isSelectable={true}
+                        selectedRows={selectedRows}
+                        onSelectionChange={handleOnSelectionChange}
+                        onEdit={handleOpenEdit}
+                        isBlocked={isRefreshing || isDeleting || isGeneratingReport || isExporting}
+                    />
+                </div>
                 <EntityFooter>
                     <div className='w-full flex justify-between items-center py-2'>
                         <ResultsSummary
