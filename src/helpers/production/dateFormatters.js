@@ -1,7 +1,66 @@
 /**
  * Utilidades de formateo de fechas para el módulo de producción
  * Convierte entre formato ISO (backend) y datetime-local (inputs HTML)
+ * y entre formato ISO (backend) y date (inputs HTML solo fecha)
  */
+
+/**
+ * Convierte una fecha ISO a formato date para inputs HTML (solo fecha, sin hora)
+ * @param {string|Date|null|undefined} isoDate - Fecha en formato ISO
+ * @returns {string} - Fecha en formato YYYY-MM-DD o cadena vacía
+ */
+export const isoToDate = (isoDate) => {
+    if (!isoDate) return ''
+    
+    try {
+        const date = new Date(isoDate)
+        
+        // Verificar que la fecha es válida
+        if (isNaN(date.getTime())) {
+            return ''
+        }
+        
+        // Formato: YYYY-MM-DD (solo fecha)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        
+        return `${year}-${month}-${day}`
+    } catch (error) {
+        console.error('Error converting ISO to date:', error)
+        return ''
+    }
+}
+
+/**
+ * Convierte una fecha date (YYYY-MM-DD) a formato ISO agregando hora por defecto
+ * @param {string|null|undefined} dateValue - Fecha en formato YYYY-MM-DD
+ * @param {number} defaultHour - Hora por defecto (default: 12)
+ * @param {number} defaultMinute - Minuto por defecto (default: 0)
+ * @returns {string|null} - Fecha en formato ISO o null
+ */
+export const dateToIso = (dateValue, defaultHour = 12, defaultMinute = 0) => {
+    if (!dateValue || dateValue.trim() === '') {
+        return null
+    }
+    
+    try {
+        // Crear fecha con la hora por defecto (12:00:00)
+        const date = new Date(dateValue)
+        date.setHours(defaultHour, defaultMinute, 0, 0)
+        
+        // Verificar que la fecha es válida
+        if (isNaN(date.getTime())) {
+            return null
+        }
+        
+        // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
+        return date.toISOString()
+    } catch (error) {
+        console.error('Error converting date to ISO:', error)
+        return null
+    }
+}
 
 /**
  * Convierte una fecha ISO a formato datetime-local para inputs HTML

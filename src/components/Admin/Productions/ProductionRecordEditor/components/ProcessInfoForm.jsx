@@ -123,7 +123,7 @@ export const ProcessInfoForm = ({
                                 <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
                                 <Input
                                     id="started_at"
-                                    type="datetime-local"
+                                    type="date"
                                     value={formData.started_at}
                                     onChange={(e) => onFormDataChange({ ...formData, started_at: e.target.value })}
                                     disabled={saving}
@@ -134,7 +134,7 @@ export const ProcessInfoForm = ({
                                 <Label htmlFor="finished_at" className="text-sm">Fecha de Finalización</Label>
                                 <Input
                                     id="finished_at"
-                                    type="datetime-local"
+                                    type="date"
                                     value={formData.finished_at || ''}
                                     onChange={(e) => onFormDataChange({ ...formData, finished_at: e.target.value })}
                                     disabled={saving}
@@ -147,7 +147,7 @@ export const ProcessInfoForm = ({
                             <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
                             <Input
                                 id="started_at"
-                                type="datetime-local"
+                                type="date"
                                 value={formData.started_at}
                                 onChange={(e) => onFormDataChange({ ...formData, started_at: e.target.value })}
                                 disabled={saving}

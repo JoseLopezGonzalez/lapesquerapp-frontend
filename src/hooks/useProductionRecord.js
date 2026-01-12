@@ -9,7 +9,7 @@ import {
 } from '@/services/productionService'
 import { fetchWithTenant } from '@/lib/fetchWithTenant'
 import { API_URL_V2 } from '@/configs/config'
-import { datetimeLocalToIso } from '@/helpers/production/dateFormatters'
+import { dateToIso } from '@/helpers/production/dateFormatters'
 
 /**
  * Hook personalizado para gestionar production records
@@ -135,9 +135,10 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         setError(null)
 
         try {
-            // Convertir fechas de datetime-local a ISO usando utilidades
-            const startedAtISO = datetimeLocalToIso(formData.started_at)
-            const finishedAtISO = datetimeLocalToIso(formData.finished_at)
+            // Convertir fechas de date (YYYY-MM-DD) a ISO agregando hora por defecto (12:00:00)
+            // La hora se agrega automáticamente en el backend, imperceptible para el usuario
+            const startedAtISO = dateToIso(formData.started_at)
+            const finishedAtISO = dateToIso(formData.finished_at)
             
             const recordData = {
                 production_id: parseInt(productionId),

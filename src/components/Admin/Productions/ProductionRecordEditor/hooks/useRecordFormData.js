@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { isoToDateTimeLocal } from '@/helpers/production/dateFormatters'
+import { isoToDate } from '@/helpers/production/dateFormatters'
 import { getProcessId, getParentRecordId, getRecordNotes, getRecordField } from '@/helpers/production/recordHelpers'
 
 /**
@@ -44,9 +44,9 @@ export const useRecordFormData = (record, processes, isEditMode) => {
         const startedAt = getRecordField(record, 'startedAt')
         const finishedAt = getRecordField(record, 'finishedAt')
         
-        // Convertir fechas de ISO a datetime-local
-        const startedAtFormatted = startedAt ? isoToDateTimeLocal(startedAt) : ''
-        const finishedAtFormatted = finishedAt ? isoToDateTimeLocal(finishedAt) : ''
+        // Convertir fechas de ISO a date (solo fecha, sin hora)
+        const startedAtFormatted = startedAt ? isoToDate(startedAt) : ''
+        const finishedAtFormatted = finishedAt ? isoToDate(finishedAt) : ''
         
         // Obtener parent_record_id usando helper
         const parentRecordId = getParentRecordId(record)
