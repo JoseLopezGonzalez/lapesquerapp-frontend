@@ -74,21 +74,33 @@ export const saveDiscountPreferences = (boxCreationData) => {
     setStoredValue(STORAGE_KEYS.boxTare, boxCreationData.boxTare || '');
 };
 
-const initialboxCreationData = {
-    productId: "",
-    lot: "",
-    netWeight: "",
-    weights: "", // para masiva
-    totalWeight: "", // para promedio
-    numberOfBoxes: "", // para promedio
-    palletWeight: getStoredValue(STORAGE_KEYS.palletWeight, ""), // peso del palet/soporte de madera para descontar en promedio
-    showPalletWeight: getStoredValue(STORAGE_KEYS.showPalletWeight, false), // mostrar/ocultar campo de peso del palet
-    boxTare: getStoredValue(STORAGE_KEYS.boxTare, ""), // tara de cada caja para descontar en promedio
-    showBoxTare: getStoredValue(STORAGE_KEYS.showBoxTare, false), // mostrar/ocultar campo de tara de cajas
-    scannedCode: "", // para lector
-    deleteScannedCode: "",//para lector eliminar
-    gs1codes: "", // <- NUEVO
+const getInitialBoxCreationData = (preserveDiscounts = false, currentDiscounts = null) => {
+    return {
+        productId: "",
+        lot: "",
+        netWeight: "",
+        weights: "", // para masiva
+        totalWeight: "", // para promedio
+        numberOfBoxes: "", // para promedio
+        palletWeight: preserveDiscounts && currentDiscounts?.palletWeight !== undefined 
+            ? currentDiscounts.palletWeight 
+            : getStoredValue(STORAGE_KEYS.palletWeight, ""), // peso del palet/soporte de madera para descontar en promedio
+        showPalletWeight: preserveDiscounts && currentDiscounts?.showPalletWeight !== undefined 
+            ? currentDiscounts.showPalletWeight 
+            : getStoredValue(STORAGE_KEYS.showPalletWeight, false), // mostrar/ocultar campo de peso del palet
+        boxTare: preserveDiscounts && currentDiscounts?.boxTare !== undefined 
+            ? currentDiscounts.boxTare 
+            : getStoredValue(STORAGE_KEYS.boxTare, ""), // tara de cada caja para descontar en promedio
+        showBoxTare: preserveDiscounts && currentDiscounts?.showBoxTare !== undefined 
+            ? currentDiscounts.showBoxTare 
+            : getStoredValue(STORAGE_KEYS.showBoxTare, false), // mostrar/ocultar campo de tara de cajas
+        scannedCode: "", // para lector
+        deleteScannedCode: "",//para lector eliminar
+        gs1codes: "", // <- NUEVO
+    };
 };
+
+const initialboxCreationData = getInitialBoxCreationData();
 
 let nextBoxId = Date.now(); // base inicial
 
@@ -129,6 +141,20 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const [activeOrdersOptions, setActiveOrdersOptions] = useState([])
     const [productsOptions, setProductsOptions] = useState([]);
     const [boxCreationData, setBoxCreationData] = useState(initialboxCreationData)
+    
+    // Función helper para resetear boxCreationData preservando valores de descuento actuales
+    const resetBoxCreationDataPreservingDiscounts = (currentData) => {
+        const reset = getInitialBoxCreationData();
+        return {
+            ...reset,
+            // Preservar los valores de descuento que el usuario está usando actualmente
+            // Usar el valor actual si existe (incluso si es cadena vacía), sino usar el de reset
+            palletWeight: currentData?.palletWeight !== undefined ? currentData.palletWeight : reset.palletWeight,
+            showPalletWeight: currentData?.showPalletWeight !== undefined ? currentData.showPalletWeight : reset.showPalletWeight,
+            boxTare: currentData?.boxTare !== undefined ? currentData.boxTare : reset.boxTare,
+            showBoxTare: currentData?.showBoxTare !== undefined ? currentData.showBoxTare : reset.showBoxTare,
+        };
+    };
 
     useEffect(() => {
         setError(null);
@@ -194,7 +220,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             setLoading(false);
             setError(null);
             setReload(false);
-            setBoxCreationData(initialboxCreationData);
+            setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
         }, 1000); // Esperar un poco para que se cierre el modal antes de resetear
 
     };
@@ -202,7 +228,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     useEffect(() => {
         if (pallet) {
             setTemporalPallet({ ...pallet })
-            setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
+            setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev)); // Resetear datos preservando descuentos
             // console.log('Pallet loaded:', pallet);
         }
     }, [pallet]);
@@ -641,7 +667,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     useEffect(() => {
         if (boxCreationData.scannedCode.length >= 42) {
             onAddNewBox({ method: 'lector' });
-            setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
+            setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev)); // Resetear datos preservando descuentos
         }
     }, [boxCreationData.scannedCode]);
 
@@ -898,11 +924,11 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 toast.success(`Se agregaron ${parsedBoxes.length} cajas correctamente.`, getToastTheme());
             }
 
-            setBoxCreationData(initialboxCreationData);
+            setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
         }
 
 
-        setBoxCreationData(initialboxCreationData); // Resetear datos de creación de caja
+        setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev)); // Resetear datos preservando descuentos
     }
 
     const onDeleteScannedCode = () => {
@@ -941,7 +967,18 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
 
     const onResetBoxCreationData = () => {
-        setBoxCreationData(initialboxCreationData);
+        // Preservar los valores de descuento actuales al resetear
+        setBoxCreationData((prev) => {
+            const reset = getInitialBoxCreationData();
+            return {
+                ...reset,
+                // Preservar los valores de descuento que el usuario está usando actualmente
+                palletWeight: prev.palletWeight || reset.palletWeight,
+                showPalletWeight: prev.showPalletWeight !== undefined ? prev.showPalletWeight : reset.showPalletWeight,
+                boxTare: prev.boxTare || reset.boxTare,
+                showBoxTare: prev.showBoxTare !== undefined ? prev.showBoxTare : reset.showBoxTare,
+            };
+        });
     };
 
     const deleteAllBoxes = () => {
@@ -958,7 +995,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const resetAllChanges = () => {
         // console.log("resetAllChanges: pallet =", pallet);
         setTemporalPallet({ ...pallet });
-        setBoxCreationData(initialboxCreationData);
+        setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
         toast.success('Cambios desechos', getToastTheme());
     };
 

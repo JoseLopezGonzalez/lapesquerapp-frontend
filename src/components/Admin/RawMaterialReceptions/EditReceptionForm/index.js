@@ -124,6 +124,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [hasUsedBoxes, setHasUsedBoxes] = useState(false);
     // Store original totals by product+lot for validation
     const [originalTotals, setOriginalTotals] = useState(new Map());
+    // Store initial state of pallets to detect changes
+    const [initialPalletsState, setInitialPalletsState] = useState(null);
+    const [initialFormState, setInitialFormState] = useState(null);
     
     // Ref para evitar recargas innecesarias cuando se hace focus en la pestaña
     const hasLoadedRef = useRef(false);
@@ -156,7 +159,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         watch,
         setValue,
         reset,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isDirty },
     } = useForm({
         defaultValues: {
             supplier: null,
@@ -382,10 +385,12 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         });
                         
                         setTemporalPallets(convertedPallets);
+                        // Guardar estado inicial de pallets para detectar cambios
+                        setInitialPalletsState(JSON.stringify(convertedPallets));
                     }
                     
                     // Cargar datos básicos del formulario
-                    reset({
+                    const formData = {
                         supplier: reception.supplier?.id ? reception.supplier.id.toString() : null,
                         date: reception.date ? new Date(reception.date) : new Date(),
                         notes: reception.notes || '',
@@ -395,7 +400,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         declaredTotalNetWeight: reception.declaredTotalNetWeight !== null && reception.declaredTotalNetWeight !== undefined 
                             ? parseFloat(reception.declaredTotalNetWeight).toString() 
                             : '',
-                    });
+                    };
+                    reset(formData);
+                    // Guardar estado inicial del formulario para detectar cambios (normalizar fecha)
+                    const normalizedFormData = {
+                        ...formData,
+                        date: formData.date instanceof Date ? formData.date.toISOString().split('T')[0] : formData.date,
+                    };
+                    setInitialFormState(JSON.stringify(normalizedFormData));
                     
                     return;
                 }
@@ -452,7 +464,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 };
                 
                 // Map reception data to form values
-                reset({
+                const formData = {
                     supplier: reception.supplier?.id ? reception.supplier.id.toString() : null,
                     date: reception.date ? new Date(reception.date) : new Date(),
                     notes: reception.notes || '',
@@ -463,7 +475,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     declaredTotalNetWeight: reception.declaredTotalNetWeight !== null && reception.declaredTotalNetWeight !== undefined 
                         ? parseFloat(reception.declaredTotalNetWeight).toString() 
                         : '',
-                });
+                };
+                    reset(formData);
+                    // Guardar estado inicial del formulario para detectar cambios (normalizar fecha)
+                    const normalizedFormData = {
+                        ...formData,
+                        date: formData.date instanceof Date ? formData.date.toISOString().split('T')[0] : formData.date,
+                    };
+                    setInitialFormState(JSON.stringify(normalizedFormData));
             } catch (error) {
                 const errorInfo = logReceptionError(error, 'load', { receptionId });
                 toast.error(formatReceptionError(error, 'load'), getToastTheme());
@@ -482,6 +501,41 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             hasLoadedRef.current = false;
         }
     }, [receptionId]);
+
+    // Detectar si hay cambios sin guardar
+    const hasUnsavedChanges = useMemo(() => {
+        // Si no hay estado inicial, no hay cambios
+        if (!initialFormState && !initialPalletsState) {
+            return false;
+        }
+
+        // Función helper para normalizar fechas en la comparación
+        const normalizeFormData = (formData) => {
+            return JSON.stringify({
+                supplier: formData.supplier,
+                date: formData.date instanceof Date ? formData.date.toISOString().split('T')[0] : formData.date,
+                notes: formData.notes || '',
+                declaredTotalAmount: formData.declaredTotalAmount || '',
+                declaredTotalNetWeight: formData.declaredTotalNetWeight || '',
+            });
+        };
+
+        // Verificar cambios en el formulario
+        if (creationMode !== 'pallets') {
+            // Para modo líneas, usar isDirty del formulario
+            return isDirty;
+        } else {
+            // Para modo pallets, comparar estado actual con inicial
+            const currentPalletsState = JSON.stringify(temporalPallets);
+            const currentFormData = watch();
+            const currentFormState = normalizeFormData(currentFormData);
+            
+            const palletsChanged = initialPalletsState && currentPalletsState !== initialPalletsState;
+            const formChanged = initialFormState && currentFormState !== initialFormState;
+            
+            return palletsChanged || formChanged;
+        }
+    }, [isDirty, temporalPallets, initialPalletsState, initialFormState, creationMode, watch]);
 
     const handleUpdate = useCallback(async (data) => {
         try {
@@ -624,7 +678,19 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     globalPricesObj
                 );
                 setTemporalPallets(updatedTemporalPallets);
+                // Resetear estado inicial de pallets después de guardar
+                setInitialPalletsState(JSON.stringify(updatedTemporalPallets));
             }
+            
+            // Resetear estado inicial del formulario después de guardar (normalizar fecha)
+            const currentFormData = {
+                supplier: data.supplier,
+                date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date,
+                notes: data.notes || '',
+                declaredTotalAmount: data.declaredTotalAmount || '',
+                declaredTotalNetWeight: data.declaredTotalNetWeight || '',
+            };
+            setInitialFormState(JSON.stringify(currentFormData));
             
             toast.success('Recepción actualizada exitosamente', getToastTheme());
             announce('Recepción actualizada exitosamente', 'assertive');
@@ -706,7 +772,18 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         <p className="text-sm text-muted-foreground">#{receptionId}</p>
                     )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    {hasUnsavedChanges && (
+                        <div className="flex items-center gap-2 mr-2 px-3 py-1.5 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                            <div className="relative">
+                                <div className="h-2 w-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                <div className="absolute inset-0 h-2 w-2 bg-amber-500 rounded-full animate-ping opacity-75"></div>
+                            </div>
+                            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                                Cambios sin guardar
+                            </span>
+                        </div>
+                    )}
                     <Button
                         type="button"
                         variant="outline"
@@ -721,6 +798,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         disabled={isSubmitting}
                         aria-label="Guardar cambios en recepción"
                         title="Guardar cambios (Ctrl+S)"
+                        className={hasUnsavedChanges ? "relative" : ""}
                     >
                         {isSubmitting ? (
                             <>
@@ -732,6 +810,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 Guardar cambios
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </>
+                        )}
+                        {hasUnsavedChanges && !isSubmitting && (
+                            <span className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full border-2 border-white dark:border-gray-900"></span>
                         )}
                     </Button>
                 </div>
