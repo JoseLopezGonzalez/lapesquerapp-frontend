@@ -20,6 +20,7 @@ import { useState } from "react";
 import React from "react";
 import StoreCard from "./StoresManager/StoreCard";
 import SkeletonStoreCard from "./StoresManager/StoreCard/SkeletonStoreCard";
+import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
 import { Store } from "./StoresManager/Store";
 
 
@@ -28,7 +29,7 @@ import { Store } from "./StoresManager/Store";
 
 export default function StoresManager() {
 
-  const { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading } = useStores();
+  const { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading, loadMoreStores, hasMoreStores, loadingMore } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   /* const { store, loadingStore, updateStore } = useStore(selectedStore); */
 
@@ -84,22 +85,32 @@ export default function StoresManager() {
               }}
               hideScrollBar
               orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 py-2">
-              {stores && stores.length > 0 ? stores.map((store) => {
-                // Debug log para cada store
-                if (store.id === 'registered') {
-                  console.log('Rendering ghost store:', store);
-                }
-                return (
-                  <StoreCard 
-                    key={store.id || `store-${store.name}`} 
-                    store={store} 
-                    disabled={isStoreLoading} 
-                    isSelected={selectedStoreId} 
-                    onClick={() => handleOnSelectStore(store.id)} 
-                    block={loadingStore} 
-                  />
-                );
-              }) : (
+              {stores && stores.length > 0 ? (
+                <>
+                  {stores.map((store) => {
+                    // Debug log para cada store
+                    if (store.id === 'registered') {
+                      console.log('Rendering ghost store:', store);
+                    }
+                    return (
+                      <StoreCard 
+                        key={store.id || `store-${store.name}`} 
+                        store={store} 
+                        disabled={isStoreLoading} 
+                        isSelected={selectedStoreId} 
+                        onClick={() => handleOnSelectStore(store.id)} 
+                        block={loadingStore} 
+                      />
+                    );
+                  })}
+                  {hasMoreStores && (
+                    <LoadMoreStoreCard 
+                      onClick={loadMoreStores}
+                      loading={loadingMore}
+                    />
+                  )}
+                </>
+              ) : (
                 <div className="text-center text-muted-foreground p-4">
                   No hay almacenes disponibles
                 </div>

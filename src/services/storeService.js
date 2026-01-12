@@ -37,8 +37,9 @@ export async function getStore(id, token) {
 }
 
 /* getStores*/
-export async function getStores(token) {
-    return fetchWithTenant(`${API_URL_V2}stores`, {
+export async function getStores(token, page = 1) {
+    const url = `${API_URL_V2}stores?page=${page}&perPage=6`;
+    return fetchWithTenant(url, {
         method: 'GET',
         headers: {
             /* 'Content-Type': 'application/json', */
@@ -55,7 +56,12 @@ export async function getStores(token) {
             return response.json();
         })
         .then((data) => {
-            return data.data;
+            // Devolver la respuesta completa con paginación
+            return {
+                data: data.data || [],
+                links: data.links || null,
+                meta: data.meta || null
+            };
         })
         .catch((error) => {
             // Aquí puedes agregar lógica adicional de logging o manejo global del error

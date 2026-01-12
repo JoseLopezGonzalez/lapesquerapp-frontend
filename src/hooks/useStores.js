@@ -16,13 +16,15 @@ export function useStores() {
     const [error, setError] = useState(null);
     const [reload, setReload] = useState(false);
     const [isStoreLoading, setIsStoreLoading] = useState(false);
+    const [pagination, setPagination] = useState({ links: null, meta: null });
+    const [loadingMore, setLoadingMore] = useState(false);
 
     useEffect(() => {
         if (!token) return;
         
         // Obtener almacenes y palets registrados en paralelo
         Promise.all([
-            getStores(token),
+            getStores(token, 1),
             getRegisteredPallets(token).catch((error) => {
                 // Si falla obtener palets registrados, crear un almacén fantasma vacío
                 console.warn('Error al obtener palets registrados:', error);
@@ -42,8 +44,17 @@ export function useStores() {
                 };
             })
         ])
-            .then(([storesData, registeredPalletsData]) => {
+            .then(([storesResponse, registeredPalletsData]) => {
+                // storesResponse ahora tiene { data, links, meta }
+                const storesData = storesResponse.data || storesResponse || [];
+                
                 let allStores = [...(storesData || [])];
+                
+                // Guardar información de paginación
+                setPagination({
+                    links: storesResponse.links || null,
+                    meta: storesResponse.meta || null
+                });
                 
                 // Siempre agregar el almacén fantasma, incluso si está vacío
                 // Asegurar que el almacén fantasma tenga un ID especial para identificarlo
@@ -112,11 +123,57 @@ export function useStores() {
         });
     }, []);
 
+    const loadMoreStores = useCallback(async () => {
+        if (!token || loadingMore || !pagination.links?.next) return;
+        
+        setLoadingMore(true);
+        try {
+            // Extraer el número de página de la URL next
+            const nextUrl = pagination.links.next;
+            const pageMatch = nextUrl.match(/[?&]page=(\d+)/);
+            const nextPage = pageMatch ? parseInt(pageMatch[1]) : (pagination.meta?.current_page || 1) + 1;
+            
+            const storesResponse = await getStores(token, nextPage);
+            const newStores = storesResponse.data || [];
+            
+            // Acumular los nuevos stores sin borrar los anteriores
+            setStores((prevStores) => {
+                // Filtrar el ghost store temporalmente
+                const ghostStore = prevStores.find(s => s.id === REGISTERED_PALLETS_STORE_ID);
+                const existingStores = prevStores.filter(s => s.id !== REGISTERED_PALLETS_STORE_ID);
+                
+                // Combinar stores existentes con los nuevos (evitando duplicados)
+                const existingIds = new Set(existingStores.map(s => s.id));
+                const uniqueNewStores = newStores.filter(s => !existingIds.has(s.id));
+                
+                // Reconstruir el array con ghost store al principio
+                return ghostStore ? [ghostStore, ...existingStores, ...uniqueNewStores] : [...existingStores, ...uniqueNewStores];
+            });
+            
+            // Actualizar información de paginación
+            setPagination({
+                links: storesResponse.links || null,
+                meta: storesResponse.meta || null
+            });
+        } catch (error) {
+            console.error('Error al cargar más almacenes', error);
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [token, loadingMore, pagination]);
 
-
-
-
-    return { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading};
+    return { 
+        stores, 
+        loading, 
+        error, 
+        onUpdateCurrentStoreTotalNetWeight, 
+        onAddNetWeightToStore, 
+        isStoreLoading, 
+        setIsStoreLoading,
+        loadMoreStores,
+        hasMoreStores: pagination.links?.next !== null,
+        loadingMore
+    };
 
 }
 
