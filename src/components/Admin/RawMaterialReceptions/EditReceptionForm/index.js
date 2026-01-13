@@ -502,6 +502,106 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         }
     }, [receptionId]);
 
+    // Función helper para normalizar pallets antes de comparar
+    // Esto asegura que la comparación JSON sea consistente
+    const normalizePalletsForComparison = useCallback((pallets) => {
+        if (!Array.isArray(pallets)) return [];
+        
+        return pallets
+            .map(item => {
+                // Normalizar cajas: ordenar por ID y normalizar campos
+                const normalizedBoxes = (item.pallet?.boxes || [])
+                    .map(box => ({
+                        id: box.id || null,
+                        product: box.product?.id || null,
+                        lot: box.lot || '',
+                        grossWeight: box.grossWeight ? parseFloat(box.grossWeight).toString() : '',
+                        netWeight: box.netWeight ? parseFloat(box.netWeight).toString() : '',
+                        gs1128: box.gs1128 || undefined,
+                    }))
+                    .sort((a, b) => {
+                        // Ordenar: primero por ID (si existe), luego por producto y lote
+                        if (a.id && b.id) return a.id - b.id;
+                        if (a.id) return -1;
+                        if (b.id) return 1;
+                        if (a.product !== b.product) return (a.product || 0) - (b.product || 0);
+                        return (a.lot || '').localeCompare(b.lot || '');
+                    });
+                
+                // Normalizar precios: ordenar por key
+                const normalizedPrices = Object.fromEntries(
+                    Object.entries(item.prices || {})
+                        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+                        .sort(([a], [b]) => a.localeCompare(b))
+                );
+                
+                return {
+                    pallet: {
+                        id: item.pallet?.id || null,
+                        boxes: normalizedBoxes,
+                        numberOfBoxes: normalizedBoxes.length,
+                        netWeight: item.pallet?.netWeight || 0,
+                        observations: item.pallet?.observations || '',
+                    },
+                    prices: normalizedPrices,
+                    observations: item.observations || '',
+                };
+            })
+            .sort((a, b) => {
+                // Ordenar pallets por ID (si existe), luego por número de cajas
+                if (a.pallet.id && b.pallet.id) return a.pallet.id - b.pallet.id;
+                if (a.pallet.id) return -1;
+                if (b.pallet.id) return 1;
+                return b.pallet.numberOfBoxes - a.pallet.numberOfBoxes;
+            });
+    }, []);
+
+    // Función helper para mapear detalles del backend al formato del formulario
+    const mapDetailsFromBackend = useCallback((details, pallets = []) => {
+        if (!details || details.length === 0) return [];
+        
+        return details.map(detail => {
+            // Default values
+            let boxes = 1;
+            let price = '';
+            let lot = '';
+            
+            // Get price from detail.price field
+            if (detail.price !== null && detail.price !== undefined) {
+                price = parseFloat(detail.price).toString();
+            }
+            
+            // Get lot from detail.lot field
+            if (detail.lot) {
+                lot = detail.lot;
+            }
+            
+            // Try to get boxes count from pallets if available
+            if (pallets && pallets.length > 0) {
+                const pallet = pallets[0];
+                if (pallet.boxes && pallet.boxes.length > 0) {
+                    const productBoxes = pallet.boxes.filter(box => 
+                        box.product?.id === detail.product?.id
+                    );
+                    if (productBoxes.length > 0) {
+                        boxes = productBoxes.length;
+                        if (!lot && productBoxes[0].lot) {
+                            lot = productBoxes[0].lot;
+                        }
+                    }
+                }
+            }
+            
+            return {
+                product: detail.product?.id ? detail.product.id.toString() : null,
+                netWeight: detail.netWeight ? parseFloat(detail.netWeight).toString() : '',
+                boxes: boxes,
+                price: price,
+                lot: lot,
+            };
+        });
+    }, []);
+
     // Detectar si hay cambios sin guardar
     const hasUnsavedChanges = useMemo(() => {
         // Si no hay estado inicial, no hay cambios
@@ -525,17 +625,32 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             // Para modo líneas, usar isDirty del formulario
             return isDirty;
         } else {
-            // Para modo pallets, comparar estado actual con inicial
-            const currentPalletsState = JSON.stringify(temporalPallets);
+            // Para modo pallets, comparar estado actual con inicial usando normalización
+            const normalizedCurrent = normalizePalletsForComparison(temporalPallets);
+            const normalizedCurrentStr = JSON.stringify(normalizedCurrent);
+            
+            // Parsear el estado inicial si existe
+            let normalizedInitialStr = null;
+            if (initialPalletsState) {
+                try {
+                    const initialPallets = JSON.parse(initialPalletsState);
+                    const normalizedInitial = normalizePalletsForComparison(initialPallets);
+                    normalizedInitialStr = JSON.stringify(normalizedInitial);
+                } catch (e) {
+                    // Si hay error al parsear, usar el string original
+                    normalizedInitialStr = initialPalletsState;
+                }
+            }
+            
+            const palletsChanged = normalizedInitialStr && normalizedCurrentStr !== normalizedInitialStr;
+            
             const currentFormData = watch();
             const currentFormState = normalizeFormData(currentFormData);
-            
-            const palletsChanged = initialPalletsState && currentPalletsState !== initialPalletsState;
             const formChanged = initialFormState && currentFormState !== initialFormState;
             
             return palletsChanged || formChanged;
         }
-    }, [isDirty, temporalPallets, initialPalletsState, initialFormState, creationMode, watch]);
+    }, [isDirty, temporalPallets, initialPalletsState, initialFormState, creationMode, watch, normalizePalletsForComparison]);
 
     const handleUpdate = useCallback(async (data) => {
         try {
@@ -665,8 +780,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
             const updatedReception = await updateRawMaterialReception(receptionId, payload);
             
-            // Si es modo manual y hay palets, actualizar temporalPallets con los IDs del backend
+            // Actualizar estado después de guardar exitosamente
             if (creationMode === 'pallets' && updatedReception?.pallets && updatedReception.pallets.length > 0) {
+                // Modo pallets: actualizar temporalPallets con los IDs del backend
                 const globalPriceMap = extractGlobalPriceMap(temporalPallets);
                 const globalPricesObj = Object.fromEntries(
                     Array.from(globalPriceMap.entries()).map(([key, value]) => [key, value.price])
@@ -678,19 +794,59 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     globalPricesObj
                 );
                 setTemporalPallets(updatedTemporalPallets);
-                // Resetear estado inicial de pallets después de guardar
-                setInitialPalletsState(JSON.stringify(updatedTemporalPallets));
+                
+                // Normalizar y guardar estado inicial de pallets después de guardar
+                const normalizedPallets = normalizePalletsForComparison(updatedTemporalPallets);
+                setInitialPalletsState(JSON.stringify(normalizedPallets));
+                
+                // También actualizar estado inicial del formulario con datos del backend
+                const formDataFromBackend = {
+                    supplier: updatedReception.supplier?.id?.toString() || data.supplier,
+                    date: updatedReception.date ? new Date(updatedReception.date) : data.date,
+                    notes: updatedReception.notes || data.notes || '',
+                    declaredTotalAmount: updatedReception.declaredTotalAmount !== null && updatedReception.declaredTotalAmount !== undefined 
+                        ? parseFloat(updatedReception.declaredTotalAmount).toString() 
+                        : '',
+                    declaredTotalNetWeight: updatedReception.declaredTotalNetWeight !== null && updatedReception.declaredTotalNetWeight !== undefined 
+                        ? parseFloat(updatedReception.declaredTotalNetWeight).toString() 
+                        : '',
+                };
+                const normalizedFormData = {
+                    supplier: formDataFromBackend.supplier,
+                    date: formDataFromBackend.date instanceof Date ? formDataFromBackend.date.toISOString().split('T')[0] : formDataFromBackend.date,
+                    notes: formDataFromBackend.notes || '',
+                    declaredTotalAmount: formDataFromBackend.declaredTotalAmount || '',
+                    declaredTotalNetWeight: formDataFromBackend.declaredTotalNetWeight || '',
+                };
+                setInitialFormState(JSON.stringify(normalizedFormData));
+            } else {
+                // Modo líneas: resetear formulario con datos del backend para limpiar isDirty
+                const formDataFromBackend = {
+                    supplier: updatedReception.supplier?.id?.toString() || data.supplier,
+                    date: updatedReception.date ? new Date(updatedReception.date) : data.date,
+                    notes: updatedReception.notes || data.notes || '',
+                    details: mapDetailsFromBackend(updatedReception.details, updatedReception.pallets),
+                    declaredTotalAmount: updatedReception.declaredTotalAmount !== null && updatedReception.declaredTotalAmount !== undefined 
+                        ? parseFloat(updatedReception.declaredTotalAmount).toString() 
+                        : '',
+                    declaredTotalNetWeight: updatedReception.declaredTotalNetWeight !== null && updatedReception.declaredTotalNetWeight !== undefined 
+                        ? parseFloat(updatedReception.declaredTotalNetWeight).toString() 
+                        : '',
+                };
+                
+                // Resetear el formulario con los datos del backend para limpiar isDirty
+                reset(formDataFromBackend);
+                
+                // Actualizar estado inicial del formulario (normalizar fecha)
+                const normalizedFormData = {
+                    supplier: formDataFromBackend.supplier,
+                    date: formDataFromBackend.date instanceof Date ? formDataFromBackend.date.toISOString().split('T')[0] : formDataFromBackend.date,
+                    notes: formDataFromBackend.notes || '',
+                    declaredTotalAmount: formDataFromBackend.declaredTotalAmount || '',
+                    declaredTotalNetWeight: formDataFromBackend.declaredTotalNetWeight || '',
+                };
+                setInitialFormState(JSON.stringify(normalizedFormData));
             }
-            
-            // Resetear estado inicial del formulario después de guardar (normalizar fecha)
-            const currentFormData = {
-                supplier: data.supplier,
-                date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date,
-                notes: data.notes || '',
-                declaredTotalAmount: data.declaredTotalAmount || '',
-                declaredTotalNetWeight: data.declaredTotalNetWeight || '',
-            };
-            setInitialFormState(JSON.stringify(currentFormData));
             
             toast.success('Recepción actualizada exitosamente', getToastTheme());
             announce('Recepción actualizada exitosamente', 'assertive');
@@ -709,7 +865,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             });
             toast.error(formatReceptionError(error, 'update'), getToastTheme());
         }
-    }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce]);
+    }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce, normalizePalletsForComparison, mapDetailsFromBackend, reset]);
 
     // Keyboard shortcuts (moved after isSubmitting and handleUpdate declarations)
     useEffect(() => {
