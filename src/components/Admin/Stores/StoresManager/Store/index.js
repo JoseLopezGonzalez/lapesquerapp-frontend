@@ -4,7 +4,7 @@ import Map from './MapContainer/Map'
 import MapContainer from './MapContainer'
 import LoadingStoreDetails from '../LoadingStoreDetails';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
-import { LocateFixed, Plus } from "lucide-react"
+import { LocateFixed, Plus, ArrowRightLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
@@ -48,7 +48,8 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
         openCreatePalletDialog,
         store,
         isOpenPalletLabelDialog, closePalletLabelDialog, palletLabelDialogData,
-        closePalletDialog        
+        closePalletDialog,
+        openMoveMultiplePalletsToStoreDialog
     } = useStoreContext();
 
     const storeId = store?.id || passedStoreId;
@@ -153,6 +154,14 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        <Button 
+                            variant="outline"
+                            onClick={openMoveMultiplePalletsToStoreDialog}
+                            disabled={!store?.content?.pallets || store.content.pallets.length === 0}
+                        >
+                            <ArrowRightLeft size={24} />
+                            Traspaso masivo
+                        </Button>
                     </div>
                 </Card >
 

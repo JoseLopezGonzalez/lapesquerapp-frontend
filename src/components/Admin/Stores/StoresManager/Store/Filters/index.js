@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Package, Filter, X, ArrowRightLeft } from "lucide-react"
+import { Box, Package, Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
@@ -14,10 +14,7 @@ import { PalletsListDialog } from "../PalletsListDialog"
 
 const Filters = () => {
 
-    const { productsOptions, onChangeFilters, filters, resetFilters, palletsOptions, openMoveMultiplePalletsToStoreDialog, store } = useStoreContext();
-    
-    // Verificar si hay pallets disponibles para mover
-    const hasPallets = store?.content?.pallets && store.content.pallets.length > 0;
+    const { productsOptions, onChangeFilters, filters, resetFilters, palletsOptions } = useStoreContext();
 
     const selectedProducts = filters.products.map((product) => productsOptions.find((option) => option.value === product));
 
@@ -196,15 +193,6 @@ const Filters = () => {
                                     <PiMicrosoftExcelLogoFill className="h-5 w-5" />
                                     Exportar a Excel
                                 </Button> */}
-                                <Button 
-                                    variant="secondary" 
-                                    className="w-full"
-                                    onClick={openMoveMultiplePalletsToStoreDialog}
-                                    disabled={!hasPallets}
-                                >
-                                    <ArrowRightLeft className="h-4 w-4 mr-2" />
-                                    Traspaso masivo de palets
-                                </Button>
                                 <PalletsListDialog />
                                 <ProductSummaryDialog />
                             </div>
