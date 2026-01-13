@@ -183,7 +183,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-[1200px] max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Traspaso masivo de palets</DialogTitle>
                     <DialogDescription>
@@ -266,10 +266,10 @@ export default function MoveMultiplePalletsToStoreDialog() {
                                                         <div className="flex-1 min-w-0">
                                                             {/* Header con ID */}
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <div className="flex items-center bg-black text-white p-1.5 rounded-md gap-2">
+                                                                <div className="flex items-center bg-black text-white p-1.5 rounded-md gap-2 flex-shrink-0">
                                                                     <Layers className="h-4 w-4" />
                                                                 </div>
-                                                                <h4 className="font-medium text-base text-foreground">
+                                                                <h4 className="font-medium text-base text-foreground truncate">
                                                                     Palet #{pallet.id}
                                                                 </h4>
                                                             </div>
@@ -279,15 +279,15 @@ export default function MoveMultiplePalletsToStoreDialog() {
                                                                 <div className="text-xs font-medium text-muted-foreground mb-1.5">Productos:</div>
                                                                 <div className="space-y-2">
                                                                     {palletInfo.productsSummaryArray.map((product, index) => (
-                                                                        <div key={index} className="flex flex-col overflow-hidden">
+                                                                        <div key={index} className="flex flex-col overflow-hidden min-w-0">
                                                                             <p className="text-sm font-medium text-foreground truncate">
                                                                                 {product.name}
                                                                             </p>
                                                                             {palletInfo.hasMultipleProducts && (
                                                                                 <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-                                                                                    <span>{formatDecimalWeight(product.netWeight)} kg</span>
-                                                                                    <span className="mx-1.5">|</span>
-                                                                                    <span>
+                                                                                    <span className="truncate">{formatDecimalWeight(product.netWeight)}</span>
+                                                                                    <span className="mx-1.5 flex-shrink-0">|</span>
+                                                                                    <span className="flex-shrink-0">
                                                                                         {product.boxCount} {product.boxCount === 1 ? "caja" : "cajas"}
                                                                                     </span>
                                                                                 </div>
@@ -303,8 +303,8 @@ export default function MoveMultiplePalletsToStoreDialog() {
                                                                     <div className="text-xs font-medium text-muted-foreground mb-1">Lotes:</div>
                                                                     <div className="flex flex-wrap gap-1">
                                                                         {pallet.lots.map((lot, idx) => (
-                                                                            <Badge key={idx} variant="outline" className="bg-accent text-accent-foreground border-input text-xs">
-                                                                                {lot}
+                                                                            <Badge key={idx} variant="outline" className="bg-accent text-accent-foreground border-input text-xs truncate max-w-full">
+                                                                                <span className="truncate">{lot}</span>
                                                                             </Badge>
                                                                         ))}
                                                                     </div>
@@ -315,7 +315,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                                                             {pallet.observations && (
                                                                 <div className="mb-2">
                                                                     <div className="text-xs font-medium text-muted-foreground mb-1">Observaciones:</div>
-                                                                    <div className="text-xs text-foreground bg-muted/50 p-2 rounded-md break-words">
+                                                                    <div className="text-xs text-foreground bg-muted/50 p-2 rounded-md break-words line-clamp-3">
                                                                         {pallet.observations}
                                                                     </div>
                                                                 </div>
@@ -334,7 +334,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                                                         </div>
                                                         <div className="flex items-center justify-center py-2 bg-accent/40">
                                                             <span className="text-sm font-semibold">
-                                                                {formatDecimalWeight(palletInfo.availableNetWeight)} kg
+                                                                {formatDecimalWeight(palletInfo.availableNetWeight)}
                                                             </span>
                                                         </div>
                                                     </div>
