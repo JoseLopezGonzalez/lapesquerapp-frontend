@@ -738,10 +738,16 @@ export function useOrder(orderId, onChange) {
                 
                 // Mostrar mensajes según los resultados
                 if (result.linked > 0) {
-                    toast.success(`${result.linked} palet(s) vinculado(s) correctamente`, getToastTheme());
+                    const message = result.linked === 1 
+                        ? 'Palet vinculado correctamente' 
+                        : `${result.linked} palets vinculados correctamente`;
+                    toast.success(message, getToastTheme());
                 }
                 if (result.already_linked > 0) {
-                    toast(` ${result.already_linked} palet(s) ya estaban vinculados`, {
+                    const message = result.already_linked === 1
+                        ? '1 palet ya estaba vinculado'
+                        : `${result.already_linked} palets ya estaban vinculados`;
+                    toast(message, {
                         icon: 'ℹ️',
                         ...getToastTheme()
                     });
@@ -775,10 +781,16 @@ export function useOrder(orderId, onChange) {
             
             // Mostrar mensajes según los resultados
             if (result.unlinked > 0) {
-                toast.success(`${result.unlinked} palet(s) desvinculado(s) correctamente`, getToastTheme());
+                const message = result.unlinked === 1
+                    ? 'Palet desvinculado correctamente'
+                    : `${result.unlinked} palets desvinculados correctamente`;
+                toast.success(message, getToastTheme());
             }
             if (result.already_unlinked > 0) {
-                toast(`${result.already_unlinked} palet(s) ya estaban desvinculados`, {
+                const message = result.already_unlinked === 1
+                    ? '1 palet ya estaba desvinculado'
+                    : `${result.already_unlinked} palets ya estaban desvinculados`;
+                toast(message, {
                     icon: 'ℹ️',
                     ...getToastTheme()
                 });
