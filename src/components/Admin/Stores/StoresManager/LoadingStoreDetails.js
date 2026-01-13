@@ -36,7 +36,7 @@ const LoadingStoreDetails = ({ storeName }) => {
   }, [carouselApi]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full gap-6">
+    <div className="flex flex-col items-center justify-center h-full w-full gap-6 ">
       <Card className="grow w-full flex items-center justify-center p-8">
         <div className="flex flex-col items-center justify-center gap-2 max-w-lg w-full">
           <div className="flex flex-col items-center justify-center gap-4">
@@ -51,11 +51,11 @@ const LoadingStoreDetails = ({ storeName }) => {
             </div>
           </div>
           
-          <div className="w-full">
-            <div className="relative h-24 rounded-lg">
+          <div className="w-full ">
+            <div className="relative h-24">
               {/* Gradientes de difuminado arriba y abajo */}
-              <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background via-background/90 to-transparent z-10 pointer-events-none rounded-t-lg"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/90 to-transparent z-10 pointer-events-none rounded-b-lg"></div>
+              <div className=" absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-card to-transparent z-10 pointer-events-none"></div>
+              <div className="  absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none"></div>
               
               <Carousel
                 opts={{
@@ -65,9 +65,9 @@ const LoadingStoreDetails = ({ storeName }) => {
                 plugins={[autoplayPlugin.current]}
                 setApi={setCarouselApi}
                 orientation="vertical"
-                className="w-full h-full"
+                className="w-full h-full "
               >
-                <CarouselContent className="-mt-0 h-24">
+                <CarouselContent className="-mt-0 h-24 ">
                   {loadingSteps.map((step, index) => {
                     const Icon = step.icon;
                     return (

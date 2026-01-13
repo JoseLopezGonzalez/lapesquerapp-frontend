@@ -62,10 +62,10 @@ const LoadingStoresHeader = () => {
           </div>
           
           <div className="w-full">
-            <div className="relative h-24 rounded-lg">
+            <div className="relative h-24">
               {/* Gradientes de difuminado arriba y abajo */}
-              <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background via-background/90 to-transparent z-10 pointer-events-none rounded-t-lg"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/90 to-transparent z-10 pointer-events-none rounded-b-lg"></div>
+              <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-card to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none"></div>
               
               <Carousel
                 opts={{
