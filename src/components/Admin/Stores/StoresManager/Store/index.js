@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import PalletLabelDialog from '../../../Pallets/PalletLabelDialog';
 import MovePalletToStoreDialog from './MovePalletToStoreDialog';
+import MoveMultiplePalletsToStoreDialog from './MoveMultiplePalletsToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 
 
@@ -95,6 +96,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
                 <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} />
                 <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
                 <MovePalletToStoreDialog />
+                <MoveMultiplePalletsToStoreDialog />
             </>
         );
     }
@@ -169,6 +171,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
                 <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
 
                 <MovePalletToStoreDialog />
+                <MoveMultiplePalletsToStoreDialog />
 
                 {/* Slideovers */}
                 {/* <PositionDetailsSlideover open={openPositionDetailsSlideover} onClose={() => setOpenPositionDetailsSlideover(false)} data={positionDetailsSlideoverData} />

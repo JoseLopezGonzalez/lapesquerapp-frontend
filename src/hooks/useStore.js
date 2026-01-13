@@ -59,6 +59,16 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
 
+    const [isOpenMoveMultiplePalletsToStoreDialog, setIsOpenMoveMultiplePalletsToStoreDialog] = useState(false);
+
+    const openMoveMultiplePalletsToStoreDialog = () => {
+        setIsOpenMoveMultiplePalletsToStoreDialog(true);
+    }
+
+    const closeMoveMultiplePalletsToStoreDialog = () => {
+        setIsOpenMoveMultiplePalletsToStoreDialog(false);
+    }
+
 
 
     const openPalletLabelDialog = (palletId) => {
@@ -529,8 +539,41 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
             return newStore;
         });
+    };
 
+    const updateStoreWhenOnMoveMultiplePalletsToStore = ({ palletIds, storeId }) => {
+        const movedPallets = store?.content?.pallets?.filter(p => palletIds.includes(p.id)) || [];
+        
+        // Calcular el peso total de los pallets movidos
+        const totalMovedWeight = movedPallets.reduce((sum, pallet) => {
+            const palletTotalNetWeight = pallet.boxes?.reduce((boxSum, box) => boxSum + (box.netWeight || 0), 0) || 0;
+            return sum + palletTotalNetWeight;
+        }, 0);
 
+        if (onAddNetWeightToStore) {
+            onAddNetWeightToStore(storeId, totalMovedWeight);
+        }
+
+        setStore(prevStore => {
+            const updatedPallets = prevStore.content.pallets.filter(pallet => !palletIds.includes(pallet.id));
+
+            const newStore = {
+                ...prevStore,
+                content: {
+                    ...prevStore.content,
+                    pallets: updatedPallets
+                }
+            };
+            const totalNetWeight = updatedPallets.reduce((total, pallet) => {
+                const palletNetWeight = getAvailableNetWeight(pallet);
+                return total + palletNetWeight;
+            }, 0);
+
+            newStore.totalNetWeight = totalNetWeight;
+
+            if (onUpdateCurrentStoreTotalNetWeight) onUpdateCurrentStoreTotalNetWeight(prevStore.id, newStore.totalNetWeight);
+            return newStore;
+        });
     };
 
 
@@ -651,6 +694,11 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         movePalletToStoreDialogData,
         isOpenMovePalletToStoreDialog,
         updateStoreWhenOnMovePalletToStore,
+
+        openMoveMultiplePalletsToStoreDialog,
+        closeMoveMultiplePalletsToStoreDialog,
+        isOpenMoveMultiplePalletsToStoreDialog,
+        updateStoreWhenOnMoveMultiplePalletsToStore,
 
     };
 
