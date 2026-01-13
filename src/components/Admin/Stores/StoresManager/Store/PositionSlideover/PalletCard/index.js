@@ -1,7 +1,7 @@
 "use client"
 import React, { useRef } from 'react'
 import { useState } from "react"
-import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX, MapPinHouse, ExternalLink } from "lucide-react"
+import { Box, Package, Layers, X, Plus, Printer, Edit, LogOut, Eye, MapPin, MapPinX, MapPinHouse, ExternalLink, Copy } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -25,7 +25,7 @@ import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores'
 export default function PalletCard({ pallet }) {
     const { data: session } = useSession();
 
-    const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition, store } = useStoreContext();
+    const { openPalletDialog, isPalletRelevant, openPalletLabelDialog, openMovePalletToStoreDialog, removePalletFromPosition, openDuplicatePalletDialog, isDuplicatingPallet, store } = useStoreContext();
     
     // Detectar si estamos en el almacén fantasma o si el palet está sin ubicar
     const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
@@ -161,6 +161,14 @@ export default function PalletCard({ pallet }) {
                                 Reubicar
                             </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => openDuplicatePalletDialog(pallet.id)}
+                            disabled={isDuplicatingPallet}
+                        >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicar
+                        </DropdownMenuItem>
                         {(() => {
                             const receptionId = pallet?.receptionId;
                             const belongsToReception = receptionId !== null && receptionId !== undefined;

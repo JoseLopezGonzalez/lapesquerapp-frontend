@@ -44,6 +44,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
         isPositionRelevant,
         isPositionFilled,
         palletDialogData,
+        clonedPalletData,
         updateStoreWhenOnChangePallet,
         openCreatePalletDialog,
         store,
@@ -104,7 +105,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
                 </div>
 
                 {/* Diálogos necesarios */}
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} initialPallet={clonedPalletData} />
                 <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
                 <MovePalletToStoreDialog />
                 <MoveMultiplePalletsToStoreDialog />
@@ -185,7 +186,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
 
                 <AddElementToPosition open={isOpenAddElementToPositionDialog} />
 
-                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} />
+                <PalletDialog isOpen={isOpenPalletDialog} palletId={palletDialogData} onChange={updateStoreWhenOnChangePallet} initialStoreId={storeId} onCloseDialog={closePalletDialog} initialPallet={clonedPalletData} />
 
                 <PalletLabelDialog isOpen={isOpenPalletLabelDialog} onClose={closePalletLabelDialog} pallet={palletLabelDialogData} />
 

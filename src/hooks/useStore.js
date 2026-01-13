@@ -1,6 +1,6 @@
 import { UNLOCATED_POSITION_ID } from "@/configs/config";
 import { getToastTheme } from "@/customs/reactHotToast";
-import { removePalletPosition } from "@/services/palletService";
+import { removePalletPosition, getPallet } from "@/services/palletService";
 import { getStore, getStores, getRegisteredPallets } from "@/services/storeService";
 import { REGISTERED_PALLETS_STORE_ID } from "@/hooks/useStores";
 import { useSession } from "next-auth/react";
@@ -40,6 +40,8 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
     const [isOpenPalletDialog, setIsOpenPalletDialog] = useState(false);
     /* data */
     const [palletDialogData, setPalletDialogData] = useState(null);
+    const [clonedPalletData, setClonedPalletData] = useState(null);
+    const [isDuplicatingPallet, setIsDuplicatingPallet] = useState(false);
 
     const [isOpenPalletLabelDialog, setIsOpenPalletLabelDialog] = useState(false);
     const [palletLabelDialogData, setPalletLabelDialogData] = useState(null);
@@ -440,6 +442,7 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
 
     const openCreatePalletDialog = () => {
         setPalletDialogData('new');
+        setClonedPalletData(null);
         setIsOpenPalletDialog(true);
     }
 
@@ -447,8 +450,60 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         setIsOpenPalletDialog(false);
         setTimeout(() => {
             setPalletDialogData(null);
+            setClonedPalletData(null);
         }, 1000); // Esperar a que se cierre el diálogo antes de limpiar los datos
     }
+
+    // Función para generar IDs únicos temporales para cajas clonadas
+    const generateUniqueBoxId = (() => {
+        let nextId = Date.now();
+        return () => nextId++;
+    })();
+
+    const openDuplicatePalletDialog = async (palletId) => {
+        if (!token) {
+            toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+            return;
+        }
+
+        // Mostrar toast de carga
+        const loadingToastId = toast.loading('Duplicando...', getToastTheme());
+
+        try {
+            setIsDuplicatingPallet(true);
+            // Obtener el palet completo
+            const originalPallet = await getPallet(palletId, token);
+            
+            // Clonar el palet eliminando el ID y generando IDs únicos temporales para las cajas
+            const clonedPallet = {
+                ...originalPallet,
+                id: null, // Eliminar el ID para que se cree como nuevo
+                receptionId: null, // No mantener receptionId en el clon
+                boxes: originalPallet.boxes?.map(box => ({
+                    ...box,
+                    id: generateUniqueBoxId(), // Generar ID único temporal para evitar errores de React con keys duplicadas
+                    new: true, // Marcar como nuevas
+                })) || [],
+                store: originalPallet.store ? { id: originalPallet.store.id } : null, // Mantener el almacén
+                storeId: originalPallet.storeId || originalPallet.store?.id || storeId, // Mantener el almacén actual
+                orderId: null, // No mantener orderId en el clon
+            };
+
+            // Establecer el palet clonado y abrir el diálogo
+            setClonedPalletData(clonedPallet);
+            setPalletDialogData('new'); // Usar 'new' para indicar que es un nuevo palet
+            setIsOpenPalletDialog(true);
+            
+            // Cerrar el toast de carga
+            toast.dismiss(loadingToastId);
+        } catch (error) {
+            console.error('Error al duplicar el palet:', error);
+            toast.dismiss(loadingToastId);
+            toast.error(error.message || 'Error al duplicar el palet', getToastTheme());
+        } finally {
+            setIsDuplicatingPallet(false);
+        }
+    };
 
     /* const updateStoreWhenOnChangePallet = (updatedPallet) => {
         const updatedPallets = pallets.map(pallet => {
@@ -670,6 +725,9 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         openPalletDialog,
         closePalletDialog,
         palletDialogData,
+        clonedPalletData,
+        openDuplicatePalletDialog,
+        isDuplicatingPallet,
 
         isOpenUnallocatedPositionSlideover,
         openUnallocatedPositionSlideover,

@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useStoreContext } from "@/context/StoreContext";
 import { formatDecimalWeight, formatDecimal } from "@/helpers/formats/numbers/formatNumbers";
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
-import { Edit, Printer, MapPinHouse } from "lucide-react";
+import { Edit, Printer, MapPinHouse, Copy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -26,7 +26,7 @@ import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/
 import { useSession } from "next-auth/react";
 
 export function PalletsListDialog() {
-    const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog, openMovePalletToStoreDialog } = useStoreContext();
+    const { speciesSummary, store, pallets, openPalletDialog, openPalletLabelDialog, openMovePalletToStoreDialog, openDuplicatePalletDialog, isDuplicatingPallet } = useStoreContext();
     const { data: session } = useSession();
     const [selectedSpecies, setSelectedSpecies] = useState(null);
     const [filteredPallets, setFilteredPallets] = useState([]);
@@ -294,6 +294,21 @@ export function PalletsListDialog() {
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Imprimir etiqueta</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="icon" 
+                                                                onClick={() => openDuplicatePalletDialog(pallet.id)}
+                                                                disabled={isDuplicatingPallet}
+                                                            >
+                                                                <Copy className="h-4 w-4 " />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Duplicar</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                     {/* Opción Reubicar - Solo visible para usuarios que no son store_operator */}
