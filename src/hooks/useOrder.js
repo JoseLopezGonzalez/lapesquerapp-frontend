@@ -2,7 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
-import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders } from '@/services/palletService';
+import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders, unlinkPalletsFromOrders } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -763,6 +763,53 @@ export function useOrder(orderId, onChange) {
         }
     };
 
+    const onUnlinkAllPallets = async (palletIds) => {
+        const token = session?.user?.accessToken;
+        if (!palletIds || palletIds.length === 0) {
+            toast.error('No hay palets para desvincular', getToastTheme());
+            return;
+        }
+
+        try {
+            const result = await unlinkPalletsFromOrders(palletIds, token);
+            
+            // Mostrar mensajes según los resultados
+            if (result.unlinked > 0) {
+                toast.success(`${result.unlinked} palet(s) desvinculado(s) correctamente`, getToastTheme());
+            }
+            if (result.already_unlinked > 0) {
+                toast(`${result.already_unlinked} palet(s) ya estaban desvinculados`, {
+                    icon: 'ℹ️',
+                    ...getToastTheme()
+                });
+            }
+            if (result.errors > 0) {
+                const errorDetails = result.results?.filter(r => r.status !== 'unlinked') || [];
+                errorDetails.forEach(error => {
+                    toast.error(`Palet ${error.pallet_id}: ${error.message || 'Error al desvincular'}`, getToastTheme());
+                });
+            }
+            
+            // Actualizar estado local inmediatamente para feedback visual
+            if (!order) return;
+            const updatedOrder = {
+                ...order,
+                pallets: order.pallets.filter(pallet => !palletIds.includes(pallet.id))
+            };
+            setOrder(updatedOrder);
+            onChange?.(updatedOrder);
+            
+            // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
+            const reloadedOrder = await reload();
+            if (reloadedOrder) {
+                onChange?.(reloadedOrder);
+            }
+        } catch (error) {
+            toast.error(error.message || 'Error al desvincular los palets', getToastTheme());
+            throw error;
+        }
+    };
+
 
 
     return {
@@ -790,6 +837,7 @@ export function useOrder(orderId, onChange) {
         onCreatingPallet,
         onDeletePallet,
         onUnlinkPallet,
-        onLinkPallets
+        onLinkPallets,
+        onUnlinkAllPallets
     };
 }

@@ -23,7 +23,7 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import { Checkbox as UICheckbox } from '@/components/ui/checkbox';
 
 const OrderPallets = () => {
-    const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet, onLinkPallets } = useOrderContext();
+    const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet, onLinkPallets, onUnlinkAllPallets } = useOrderContext();
     const { data: session } = useSession();
     const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
     const [selectedPalletId, setSelectedPalletId] = useState(null);
@@ -47,6 +47,8 @@ const OrderPallets = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [clonedPallet, setClonedPallet] = useState(null);
     const [isCloning, setIsCloning] = useState(false);
+    const [unlinkingPalletId, setUnlinkingPalletId] = useState(null);
+    const [isUnlinkingAll, setIsUnlinkingAll] = useState(false);
     
     // Función para generar IDs únicos temporales para cajas clonadas
     const generateUniqueBoxId = (() => {
@@ -157,13 +159,21 @@ const OrderPallets = () => {
             if (confirmAction === 'delete') {
                 await onDeletePallet(confirmPalletId);
             } else if (confirmAction === 'unlink') {
-                await onUnlinkPallet(confirmPalletId);
+                setUnlinkingPalletId(confirmPalletId);
+                try {
+                    await onUnlinkPallet(confirmPalletId);
+                } finally {
+                    setUnlinkingPalletId(null);
+                }
             }
             setIsConfirmDialogOpen(false);
             setConfirmAction(null);
             setConfirmPalletId(null);
         } catch (error) {
             console.error('Error al ejecutar la acción:', error);
+            if (confirmAction === 'unlink') {
+                setUnlinkingPalletId(null);
+            }
         }
     };
 
@@ -171,6 +181,7 @@ const OrderPallets = () => {
         setIsConfirmDialogOpen(false);
         setConfirmAction(null);
         setConfirmPalletId(null);
+        setUnlinkingPalletId(null);
     };
 
     // Funciones para vincular palets existentes
@@ -368,6 +379,33 @@ const OrderPallets = () => {
         }
     };
 
+    const handleUnlinkAllPallets = async () => {
+        if (!pallets || pallets.length === 0) {
+            toast.error('No hay palets para desvincular', getToastTheme());
+            return;
+        }
+
+        // Filtrar palets que pertenecen a recepciones (no se pueden desvincular)
+        const palletsToUnlink = pallets.filter(p => !p.receptionId);
+        
+        if (palletsToUnlink.length === 0) {
+            toast.error('No hay palets disponibles para desvincular. Todos pertenecen a recepciones.', getToastTheme());
+            return;
+        }
+
+        const palletIds = palletsToUnlink.map(p => p.id);
+        
+        try {
+            setIsUnlinkingAll(true);
+            await onUnlinkAllPallets(palletIds);
+        } catch (error) {
+            console.error('Error al desvincular todos los palets:', error);
+            // El error ya se maneja en onUnlinkAllPallets
+        } finally {
+            setIsUnlinkingAll(false);
+        }
+    };
+
     // console.log('pallets ahiiiiii', pallets);
     return (
         <div className='h-full pb-2'>
@@ -378,6 +416,25 @@ const OrderPallets = () => {
                         <CardDescription>Modifica los palets de la orden</CardDescription>
                     </div>
                     <div className="flex gap-2">
+                        {pallets && pallets.length > 0 && (
+                            <Button 
+                                variant="outline" 
+                                onClick={handleUnlinkAllPallets}
+                                disabled={isUnlinkingAll}
+                            >
+                                {isUnlinkingAll ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Desvinculando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Unlink className="h-4 w-4 mr-2" />
+                                        Desvincular todos
+                                    </>
+                                )}
+                            </Button>
+                        )}
                         <Button variant="outline" onClick={handleOpenLinkPalletsDialog}>
                             <Link2 className="h-4 w-4 mr-2" />
                             Vincular palets existentes
@@ -491,9 +548,13 @@ const OrderPallets = () => {
                                                                         size="icon"
                                                                         className="h-8 w-8 "
                                                                         onClick={() => handleUnlinkPallet(pallet.id)}
-                                                                        disabled={!!belongsToReception}
+                                                                        disabled={!!belongsToReception || unlinkingPalletId === pallet.id}
                                                                     >
-                                                                        <Unlink className="h-4 w-4" />
+                                                                        {unlinkingPalletId === pallet.id ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Unlink className="h-4 w-4" />
+                                                                        )}
                                                                     </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
@@ -588,14 +649,22 @@ const OrderPallets = () => {
                         </p>
                     </div>
                     <DialogFooter className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancelAction}>
+                        <Button variant="outline" onClick={handleCancelAction} disabled={unlinkingPalletId !== null}>
                             Cancelar
                         </Button>
                         <Button
                             variant={confirmAction === 'delete' ? 'destructive' : 'default'}
                             onClick={handleConfirmAction}
+                            disabled={unlinkingPalletId !== null}
                         >
-                            {confirmAction === 'delete' ? 'Eliminar' : 'Desvincular'}
+                            {unlinkingPalletId !== null ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Desvinculando...
+                                </>
+                            ) : (
+                                confirmAction === 'delete' ? 'Eliminar' : 'Desvincular'
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

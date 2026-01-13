@@ -331,6 +331,44 @@ export function unlinkPalletFromOrder(palletId, token) {
 }
 
 /**
+ * Desvincula múltiples palets de sus pedidos.
+ * @param {Array<number|string>} palletIds - Array de IDs de palets a desvincular.
+ * @param {string} token - Token de autenticación.
+ * @returns {Promise<Object>} - Respuesta del backend con el estado de cada operación.
+ */
+export function unlinkPalletsFromOrders(palletIds, token) {
+    return fetchWithTenant(`${API_URL_V2}pallets/unlink-orders`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify({
+            pallet_ids: palletIds,
+        }),
+    })
+        .then((response) => {
+            // El endpoint puede retornar 207 (Multi-Status) si hay errores parciales
+            if (!response.ok && response.status !== 207) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al desvincular los palets');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data;
+        })
+        .catch((error) => {
+            throw error;
+        })
+        .finally(() => {
+        });
+}
+
+/**
  * Buscar palets por lote.
  * Retorna todos los palets que tienen cajas con el lote especificado.
  * @param {string} lot - Lote a buscar
