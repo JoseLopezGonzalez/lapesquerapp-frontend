@@ -510,14 +510,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         return pallets
             .map(item => {
                 // Normalizar cajas: ordenar por ID y normalizar campos
+                // Solo incluir campos relevantes para la comparación
                 const normalizedBoxes = (item.pallet?.boxes || [])
                     .map(box => ({
                         id: box.id || null,
                         product: box.product?.id || null,
                         lot: box.lot || '',
+                        // Normalizar pesos: convertir a string y asegurar formato consistente
                         grossWeight: box.grossWeight ? parseFloat(box.grossWeight).toString() : '',
                         netWeight: box.netWeight ? parseFloat(box.netWeight).toString() : '',
-                        gs1128: box.gs1128 || undefined,
+                        // Solo incluir gs1128 si existe (no undefined)
+                        ...(box.gs1128 ? { gs1128: box.gs1128 } : {}),
                     }))
                     .sort((a, b) => {
                         // Ordenar: primero por ID (si existe), luego por producto y lote
@@ -528,23 +531,53 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         return (a.lot || '').localeCompare(b.lot || '');
                     });
                 
-                // Normalizar precios: ordenar por key
+                // Normalizar precios: convertir valores a string y ordenar por key
+                // Filtrar valores vacíos, null o undefined
                 const normalizedPrices = Object.fromEntries(
                     Object.entries(item.prices || {})
-                        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+                        .filter(([_, value]) => {
+                            // Filtrar valores vacíos, null o undefined
+                            if (value === undefined || value === null || value === '') return false;
+                            return true;
+                        })
+                        .map(([key, value]) => {
+                            // Normalizar valores: siempre convertir a string para consistencia
+                            // Manejar tanto números como strings
+                            let normalizedValue;
+                            if (typeof value === 'number') {
+                                normalizedValue = value.toString();
+                            } else if (typeof value === 'string') {
+                                // Si es string, intentar parsear y convertir de nuevo para normalizar formato
+                                const parsed = parseFloat(value);
+                                normalizedValue = isNaN(parsed) ? value : parsed.toString();
+                            } else {
+                                normalizedValue = String(value);
+                            }
+                            return [key, normalizedValue];
+                        })
                         .sort(([a], [b]) => a.localeCompare(b))
                 );
+                
+                // Normalizar observaciones: convertir null/undefined a string vacío
+                const normalizedObservations = item.observations || item.pallet?.observations || '';
+                
+                // Normalizar peso neto: calcular siempre desde las cajas normalizadas para consistencia
+                // Esto asegura que el peso siempre se calcule de la misma manera
+                const calculatedNetWeight = normalizedBoxes.reduce((sum, box) => {
+                    const weight = parseFloat(box.netWeight) || 0;
+                    return sum + weight;
+                }, 0);
                 
                 return {
                     pallet: {
                         id: item.pallet?.id || null,
                         boxes: normalizedBoxes,
                         numberOfBoxes: normalizedBoxes.length,
-                        netWeight: item.pallet?.netWeight || 0,
-                        observations: item.pallet?.observations || '',
+                        netWeight: calculatedNetWeight,
+                        observations: normalizedObservations,
                     },
                     prices: normalizedPrices,
-                    observations: item.observations || '',
+                    observations: normalizedObservations,
                 };
             })
             .sort((a, b) => {
@@ -626,29 +659,32 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             return isDirty;
         } else {
             // Para modo pallets, comparar estado actual con inicial usando normalización
-            const normalizedCurrent = normalizePalletsForComparison(temporalPallets);
-            const normalizedCurrentStr = JSON.stringify(normalizedCurrent);
-            
-            // Parsear el estado inicial si existe
-            let normalizedInitialStr = null;
-            if (initialPalletsState) {
-                try {
-                    const initialPallets = JSON.parse(initialPalletsState);
-                    const normalizedInitial = normalizePalletsForComparison(initialPallets);
-                    normalizedInitialStr = JSON.stringify(normalizedInitial);
-                } catch (e) {
-                    // Si hay error al parsear, usar el string original
-                    normalizedInitialStr = initialPalletsState;
-                }
+            if (!initialPalletsState) {
+                // Si no hay estado inicial, no hay cambios guardados
+                return false;
             }
             
-            const palletsChanged = normalizedInitialStr && normalizedCurrentStr !== normalizedInitialStr;
-            
-            const currentFormData = watch();
-            const currentFormState = normalizeFormData(currentFormData);
-            const formChanged = initialFormState && currentFormState !== initialFormState;
-            
-            return palletsChanged || formChanged;
+            try {
+                // Normalizar el estado actual
+                const normalizedCurrent = normalizePalletsForComparison(temporalPallets);
+                const normalizedCurrentStr = JSON.stringify(normalizedCurrent);
+                
+                // initialPalletsState ya está guardado como string JSON de la versión normalizada
+                // Solo necesitamos compararlo directamente, sin parsear y normalizar de nuevo
+                // para evitar diferencias sutiles introducidas por la serialización/deserialización
+                const palletsChanged = normalizedCurrentStr !== initialPalletsState;
+                
+                // Verificar cambios en el formulario
+                const currentFormData = watch();
+                const currentFormState = normalizeFormData(currentFormData);
+                const formChanged = initialFormState && currentFormState !== initialFormState;
+                
+                return palletsChanged || formChanged;
+            } catch (e) {
+                // Si hay error al comparar, asumir que hay cambios por seguridad
+                console.warn('Error al comparar pallets:', e);
+                return true;
+            }
         }
     }, [isDirty, temporalPallets, initialPalletsState, initialFormState, creationMode, watch, normalizePalletsForComparison]);
 
@@ -793,10 +829,17 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     temporalPallets,
                     globalPricesObj
                 );
+                
+                // Normalizar los pallets para asegurar consistencia en la comparación
+                // Normalizar los pallets ANTES de actualizar el estado
+                // Esto asegura que la comparación sea consistente
+                const normalizedPallets = normalizePalletsForComparison(updatedTemporalPallets);
+                
+                // Actualizar temporalPallets con los datos del backend
                 setTemporalPallets(updatedTemporalPallets);
                 
-                // Normalizar y guardar estado inicial de pallets después de guardar
-                const normalizedPallets = normalizePalletsForComparison(updatedTemporalPallets);
+                // Guardar el estado inicial usando la versión normalizada
+                // IMPORTANTE: Guardamos la versión normalizada para que la comparación sea consistente
                 setInitialPalletsState(JSON.stringify(normalizedPallets));
                 
                 // También actualizar estado inicial del formulario con datos del backend
@@ -1596,11 +1639,47 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
                             return;
                         }
-                        setTemporalPallets(prev => [...prev, {
-                            pallet: pallet,
-                            prices: {},
-                            observations: pallet.observations || '',
-                        }]);
+                        
+                        // Buscar precios existentes para productos-lotes del nuevo palet
+                        setTemporalPallets(prev => {
+                            // Extraer mapa de precios globales de los pallets existentes
+                            const globalPriceMap = extractGlobalPriceMap(prev);
+                            
+                            // Construir objeto de precios para el nuevo palet basado en productos-lotes existentes
+                            const newPalletPrices = {};
+                            
+                            // Para cada caja del nuevo palet, buscar si existe un precio para esa combinación producto-lote
+                            (pallet.boxes || []).forEach(box => {
+                                if (box.product?.id) {
+                                    const priceKey = createPriceKey(box.product.id, box.lot);
+                                    const existingPriceEntry = globalPriceMap.get(priceKey);
+                                    
+                                    // Si existe un precio para esta combinación producto-lote, usarlo
+                                    if (existingPriceEntry && existingPriceEntry.price !== undefined && existingPriceEntry.price !== null) {
+                                        // Convertir el precio a string para mantener consistencia con el formato
+                                        newPalletPrices[priceKey] = existingPriceEntry.price.toString();
+                                    }
+                                }
+                            });
+                            
+                            // Crear el nuevo palet con los precios encontrados automáticamente
+                            const newPallet = {
+                                pallet: pallet,
+                                prices: newPalletPrices,
+                                observations: pallet.observations || '',
+                            };
+                            
+                            // Notificar al usuario si se establecieron precios automáticamente
+                            if (Object.keys(newPalletPrices).length > 0) {
+                                const priceCount = Object.keys(newPalletPrices).length;
+                                announce(
+                                    `Se han establecido ${priceCount} precio${priceCount > 1 ? 's' : ''} automáticamente para productos con lotes existentes`,
+                                    'polite'
+                                );
+                            }
+                            
+                            return [...prev, newPallet];
+                        });
                     }
                     setIsPalletDialogOpen(false);
                     setSelectedPalletId(null);
