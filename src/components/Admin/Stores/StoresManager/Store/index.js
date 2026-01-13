@@ -85,6 +85,16 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
                     {/* Vista Kanban para almacén fantasma - Solo ScrollArea con cards */}
                     <Card className='relative flex-1 flex items-center justify-center w-full h-full overflow-hidden'>
                         <PalletKanbanView />
+                        <div className="absolute bottom-4 right-4 z-10">
+                            <Button 
+                                variant="outline"
+                                onClick={openMoveMultiplePalletsToStoreDialog}
+                                disabled={!store?.content?.pallets || store.content.pallets.length === 0}
+                            >
+                                <ArrowRightLeft size={24} />
+                                Traspaso masivo
+                            </Button>
+                        </div>
                     </Card>
 
                     {/* Filtros a la derecha */}
