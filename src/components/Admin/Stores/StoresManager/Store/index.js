@@ -35,7 +35,7 @@ import MovePalletToStoreDialog from './MovePalletToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 
 
-export const StoreContent = ({ passedStoreId }) => {
+export const StoreContent = ({ passedStoreId, passedStoreName }) => {
 
     const { loading, error, isOpenAddElementToPositionDialog,
         isOpenPalletDialog,
@@ -66,9 +66,12 @@ export const StoreContent = ({ passedStoreId }) => {
         openCreatePalletDialog();
     }
 
+    // Usar el nombre pasado como prop (del store seleccionado) o el del contexto si ya está cargado
+    const displayStoreName = passedStoreName || store?.name;
+
     if (loading) {
         return (
-            <LoadingStoreDetails storeName={store?.name} />
+            <LoadingStoreDetails storeName={displayStoreName} />
         )
     }
 
@@ -203,7 +206,7 @@ export const StoreContent = ({ passedStoreId }) => {
 }
 
 
-export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading }) => {
+export const Store = ({ storeId, storeName, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading }) => {
     // Pasar el storeId al contexto para que StoreContent pueda usarlo
     return (
         <StoreProvider
@@ -212,7 +215,7 @@ export const Store = ({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNetWei
             onAddNetWeightToStore={onAddNetWeightToStore}
             setIsStoreLoading={setIsStoreLoading}
         >
-            <StoreContent passedStoreId={storeId} />
+            <StoreContent passedStoreId={storeId} passedStoreName={storeName} />
         </StoreProvider>
 
     )

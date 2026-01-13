@@ -112,11 +112,12 @@ export default function StoresManager() {
                   <EmptyState title="Selecciona un almacén" description="Selecciona un almacén para ver su información" />
                 </Card>
               ) : (
-                <Store storeId={selectedStoreId}
+                <Store 
+                  storeId={selectedStoreId}
+                  storeName={stores?.find(s => s.id === selectedStoreId)?.name}
                   onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
                   onAddNetWeightToStore={onAddNetWeightToStore}
                   setIsStoreLoading={setIsStoreLoading}
-
                 />
               )}
             </div>
