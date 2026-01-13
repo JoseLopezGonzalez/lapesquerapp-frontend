@@ -1429,6 +1429,20 @@ export const configs = {
               placeholder: "Buscar en observaciones del palet",
             }
           ],
+        },
+        /* Stores */
+        {
+          name: "stores",
+          label: "Almacenes",
+          filters: [
+            {
+              name: "stores",
+              label: "Almacenes",
+              type: "autocomplete",
+              placeholder: "Selecciona almacenes",
+              endpoint: "stores/options",
+            }
+          ],
         }
       ],
     },
