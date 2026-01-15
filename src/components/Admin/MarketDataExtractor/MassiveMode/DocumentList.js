@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Loader2, Eye, RotateCcw, FileText, CheckCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Eye, RotateCcw, FileText, CheckCircle, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import AlbaranCofraWeb from "../AlbaranCofraWeb";
@@ -12,7 +12,7 @@ import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral"
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
 
-export default function DocumentList({ documents, onRetry }) {
+export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll }) {
     const [openDialogId, setOpenDialogId] = useState(null);
 
     const getStatusIcon = (status) => {
@@ -63,7 +63,20 @@ export default function DocumentList({ documents, onRetry }) {
     return (
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <CardHeader className="flex-shrink-0 border-b px-4 py-3">
-                <CardTitle className="text-base">Documentos Procesados ({documents.length})</CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">Documentos Procesados ({documents.length})</CardTitle>
+                    {documents.length > 0 && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onDeleteAll}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar todos
+                        </Button>
+                    )}
+                </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-4 min-h-0">
                 {documents.length > 0 ? (
@@ -114,6 +127,15 @@ export default function DocumentList({ documents, onRetry }) {
                                                 </DialogContent>
                                             </Dialog>
                                         )}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => onDelete && onDelete(doc.id)}
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            title="Eliminar documento"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </div>
 

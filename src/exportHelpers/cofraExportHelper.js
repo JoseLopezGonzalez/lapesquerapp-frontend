@@ -17,8 +17,20 @@ import { armadores, barcos, lonjas } from '@/components/Admin/MarketDataExtracto
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateCofraExcelRows(document, options = {}) {
-    const { CABSERIE = "CF", startSequence = 1 } = options;
+    const { CABSERIE: baseCABSERIE = "CF", startSequence = 1 } = options;
     const { detalles: { numero, fecha, cifLonja } } = document;
+    // Extraer año de la fecha (últimos 2 dígitos)
+    // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+    let año = null;
+    const añoMatch = String(fecha).match(/(\d{4})/);
+    if (añoMatch) {
+        año = añoMatch[1].slice(-2);
+    } else {
+        // Fallback: usar Date object
+        const fechaObj = new Date(fecha);
+        año = fechaObj.getFullYear().toString().slice(-2);
+    }
+    const CABSERIE = `${baseCABSERIE}${año}`;
     const numeroLimpio = String(numero).replace(/[^0-9]/g, '');
     let albaranSequence = startSequence;
     const processedRows = [];

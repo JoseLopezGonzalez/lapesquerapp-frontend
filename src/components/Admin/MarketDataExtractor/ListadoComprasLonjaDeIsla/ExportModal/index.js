@@ -383,7 +383,18 @@ const ExportModal = ({ document }) => {
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
-        const CABSERIE = "LI";
+        // Extraer año de la fecha (últimos 2 dígitos)
+        // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+        let año = null;
+        const añoMatch = String(fecha).match(/(\d{4})/);
+        if (añoMatch) {
+            año = añoMatch[1].slice(-2);
+        } else {
+            // Fallback: usar Date object
+            const fechaObj = new Date(fecha);
+            año = fechaObj.getFullYear().toString().slice(-2);
+        }
+        const CABSERIE = `LI${año}`;
         // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
         const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
         let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento

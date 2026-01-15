@@ -56,6 +56,29 @@ export default function MassiveMode() {
         setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
     };
 
+    const handleDeleteProcessedDocument = (documentId) => {
+        setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+        toast.success('Documento eliminado de la lista', getToastTheme());
+    };
+
+    const handleDeleteAllProcessedDocuments = () => {
+        if (processedDocuments.length === 0) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `¿Estás seguro de que deseas eliminar todos los documentos procesados (${processedDocuments.length})? Esta acción no se puede deshacer.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const processedIds = processedDocuments.map((doc) => doc.id);
+        setDocuments((prev) => prev.filter((doc) => !processedIds.includes(doc.id)));
+        toast.success(`Se eliminaron ${processedDocuments.length} documento(s) de la lista`, getToastTheme());
+    };
+
     const handleProcessAll = async () => {
         // Get documents that need to be processed
         const documentsToProcess = documents.filter(
@@ -362,6 +385,8 @@ export default function MassiveMode() {
                 <DocumentList
                     documents={processedDocuments}
                     onRetry={handleRetryDocument}
+                    onDelete={handleDeleteProcessedDocument}
+                    onDeleteAll={handleDeleteAllProcessedDocuments}
                 />
                 {hasSuccessfulDocuments && (
                     <div className="px-4 py-3 border-t flex-shrink-0 bg-card flex gap-2">
