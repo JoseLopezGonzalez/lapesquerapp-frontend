@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, XCircle, Loader2, User, AlertCircle } from 'lucide-react';
+import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { getEmployees } from '@/services/employeeService';
 import { createPunch } from '@/services/punchService';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const DEVICE_ID = 'manual-web-interface';
 
@@ -19,6 +20,7 @@ export default function TimePunchManager() {
     const [loading, setLoading] = useState(false);
     const [registeringId, setRegisteringId] = useState(null);
     const [lastSuccess, setLastSuccess] = useState(null);
+    const [dialogContent, setDialogContent] = useState(null); // Contenido congelado del dialog
 
     // Cargar lista de empleados
     useEffect(() => {
@@ -122,35 +124,46 @@ export default function TimePunchManager() {
 
             const resultEmployeeName = result.employee_name || result.employeeName || employeeName;
 
-            // Guardar información del último éxito para mostrarlo en la card
-            setLastSuccess({
+            // Encontrar el empleado actual para guardar su estado previo
+            const currentEmployee = employees.find(emp => emp.id === employeeId);
+            const previousLastPunchEvent = currentEmployee?.lastPunchEvent || null;
+            
+            // Guardar información del último éxito ANTES de recargar empleados
+            // Esto asegura que el dialog muestre la información correcta
+            // También guardamos el estado previo para congelar la visualización de la card
+            const successData = {
                 employeeId,
                 employeeName: resultEmployeeName,
                 eventType: eventType,
                 timestamp: resultTimestamp,
+                previousLastPunchEvent: previousLastPunchEvent, // Estado previo antes del fichaje
+            };
+            
+            // Congelar el contenido del dialog de inmediato para evitar cambios
+            setDialogContent({
+                eventType: eventType,
+                employeeName: resultEmployeeName,
+                timestamp: resultTimestamp,
             });
-
-            // Toast con más información
-            toast.success(
-                `${resultEmployeeName} - ${eventTypeLabel} registrada${timestampString ? ` a las ${timestampString}` : ''}`,
-                {
-                    ...getToastTheme(),
-                    duration: 4000,
-                }
-            );
+            
+            setLastSuccess(successData);
 
             // Recargar lista de empleados para actualizar lastPunchEvent
-            try {
-                const response = await getEmployees(token, { perPage: 100, with_last_punch: true });
-                setEmployees(response.data || []);
-            } catch (reloadError) {
-                console.warn('Error al recargar empleados, pero el fichaje se registró correctamente:', reloadError);
-                // No mostrar error aquí, el fichaje ya se registró
-            }
+            // Hacerlo después de un pequeño delay para que el dialog se muestre primero
+            setTimeout(async () => {
+                try {
+                    const response = await getEmployees(token, { perPage: 100, with_last_punch: true });
+                    setEmployees(response.data || []);
+                } catch (reloadError) {
+                    console.warn('Error al recargar empleados, pero el fichaje se registró correctamente:', reloadError);
+                    // No mostrar error aquí, el fichaje ya se registró
+                }
+            }, 100);
 
-            // Limpiar el éxito después de 3 segundos
+            // Cerrar dialog de éxito después de 3 segundos
             setTimeout(() => {
                 setLastSuccess(null);
+                setDialogContent(null); // Limpiar contenido congelado también
             }, 3000);
         } catch (error) {
             console.error('Error al registrar fichaje:', error);
@@ -247,13 +260,29 @@ export default function TimePunchManager() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {employees.map((employee) => {
-                        const lastPunchEvent = employee.lastPunchEvent || null;
-                        const nextPunch = getNextPunchType(lastPunchEvent);
-                        const isRegistering = registeringId === employee.id;
                         const isSuccess = lastSuccess?.employeeId === employee.id;
-                        const lastPunchTimestamp = getLastPunchTimestamp(lastPunchEvent);
-                        const lastPunchDate = formatLastPunchDate(lastPunchTimestamp);
-                        const lastPunchEventType = getLastPunchEventType(lastPunchEvent);
+                        const isRegistering = registeringId === employee.id;
+                        
+                        // Si hay un éxito reciente para este empleado, congelar completamente la visualización
+                        // usando los datos ANTES del fichaje registrado para evitar cambios durante el cierre del dialog
+                        let lastPunchEvent, nextPunch, lastPunchTimestamp, lastPunchDate, lastPunchEventType;
+                        
+                        if (isSuccess && lastSuccess?.previousLastPunchEvent !== undefined) {
+                            // Cuando hay un éxito activo, usar el estado PREVIO al fichaje registrado
+                            // Esto mantiene la visualización consistente mientras el dialog se cierra
+                            lastPunchEvent = lastSuccess.previousLastPunchEvent;
+                            nextPunch = getNextPunchType(lastPunchEvent);
+                            lastPunchTimestamp = getLastPunchTimestamp(lastPunchEvent);
+                            lastPunchDate = formatLastPunchDate(lastPunchTimestamp);
+                            lastPunchEventType = getLastPunchEventType(lastPunchEvent);
+                        } else {
+                            // Comportamiento normal cuando no hay éxito activo
+                            lastPunchEvent = employee.lastPunchEvent || null;
+                            nextPunch = getNextPunchType(lastPunchEvent);
+                            lastPunchTimestamp = getLastPunchTimestamp(lastPunchEvent);
+                            lastPunchDate = formatLastPunchDate(lastPunchTimestamp);
+                            lastPunchEventType = getLastPunchEventType(lastPunchEvent);
+                        }
 
                         return (
                             <Card
@@ -287,14 +316,17 @@ export default function TimePunchManager() {
                                         {/* Información del último fichaje */}
                                         {lastPunchEvent && lastPunchEventType && (
                                             <div className="space-y-1 pt-2 border-t">
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <div className="flex items-center gap-2 text-xs">
                                                     {lastPunchEventType === 'IN' ? (
-                                                        <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                                                        <ArrowRight className={cn("h-3.5 w-3.5 text-green-600")} />
                                                     ) : (
-                                                        <XCircle className="h-3.5 w-3.5 text-gray-500" />
+                                                        <ArrowLeft className={cn("h-3.5 w-3.5 text-orange-600")} />
                                                     )}
-                                                    <span className="truncate">
-                                                        Último: {lastPunchEventType === 'IN' ? 'Entrada' : 'Salida'}
+                                                    <span className={cn(
+                                                        "truncate font-medium",
+                                                        lastPunchEventType === 'IN' ? 'text-green-600' : 'text-orange-600'
+                                                    )}>
+                                                        {lastPunchEventType === 'IN' ? 'Entrada' : 'Salida'}
                                                     </span>
                                                 </div>
                                                 {lastPunchDate && (
@@ -314,31 +346,19 @@ export default function TimePunchManager() {
                                             )}
                                         >
                                             <div className="flex items-center gap-2">
-                                                <Clock className={cn("h-4 w-4", nextPunch.color)} />
+                                                {nextPunch.type === 'IN' ? (
+                                                    <ArrowRight className={cn("h-4 w-4", nextPunch.color)} />
+                                                ) : (
+                                                    <ArrowLeft className={cn("h-4 w-4", nextPunch.color)} />
+                                                )}
                                                 <span className={cn("text-sm font-medium", nextPunch.color)}>
                                                     {nextPunch.label}
                                                 </span>
                                             </div>
-                                            {isRegistering ? (
+                                            {isRegistering && (
                                                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                            ) : isSuccess ? (
-                                                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                            ) : null}
+                                            )}
                                         </div>
-
-                                        {/* Mensaje de éxito */}
-                                        {isSuccess && lastSuccess && (
-                                            <div className="pt-2 animate-in slide-in-from-top-2 duration-300">
-                                                <div className="p-2 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
-                                                    <p className="text-xs font-medium text-green-800 dark:text-green-200">
-                                                        ✓ {lastSuccess.eventType === 'IN' ? 'Entrada' : 'Salida'} registrada
-                                                    </p>
-                                                    <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">
-                                                        {formatLastPunchDate(lastSuccess.timestamp)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -376,6 +396,59 @@ export default function TimePunchManager() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Dialog de éxito - Usa contenido congelado para evitar cambios durante animación */}
+            <Dialog open={!!lastSuccess} onOpenChange={() => {}}>
+                <DialogContent className="sm:max-w-md [&>button]:hidden">
+                    {dialogContent ? (
+                        <>
+                            <DialogTitle className="sr-only">
+                                {dialogContent.eventType === 'IN' ? 'Entrada' : 'Salida'} registrada para {dialogContent.employeeName}
+                            </DialogTitle>
+                            <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
+                                {/* Icono grande de éxito */}
+                                <div className={cn(
+                                    "rounded-full p-4",
+                                    dialogContent.eventType === 'IN' 
+                                        ? "bg-green-100 dark:bg-green-900/30" 
+                                        : "bg-orange-100 dark:bg-orange-900/30"
+                                )}>
+                                    {dialogContent.eventType === 'IN' ? (
+                                        <ArrowRight className={cn("h-12 w-12 text-green-600")} />
+                                    ) : (
+                                        <ArrowLeft className={cn("h-12 w-12 text-orange-600")} />
+                                    )}
+                                </div>
+
+                                {/* Mensaje principal */}
+                                <div className="space-y-2">
+                                    <h3 className="text-xl font-bold text-foreground">
+                                        {dialogContent.eventType === 'IN' ? 'Entrada' : 'Salida'} registrada
+                                    </h3>
+                                    <p className="text-lg font-semibold text-primary">
+                                        {dialogContent.employeeName}
+                                    </p>
+                                    {dialogContent.timestamp && (
+                                        <p className="text-sm text-muted-foreground">
+                                            {formatLastPunchDate(dialogContent.timestamp)}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Indicador de cierre automático */}
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <span>Cerrando automáticamente...</span>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center p-6">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
