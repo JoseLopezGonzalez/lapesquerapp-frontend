@@ -3593,6 +3593,203 @@ export const configs = {
     },
   },
 
+  employees: {
+    hideCreateButton: false,
+    hideEditButton: false,
+    hideViewButton: true,
+    title: "Empleados",
+    description: "Gestiona los empleados del sistema.",
+    emptyState: {
+      title: "No existen empleados según los filtros",
+      description: "Ajusta los filtros o crea un nuevo empleado.",
+    },
+    perPage: 15,
+    endpoint: "employees",
+    deleteEndpoint: "employees/:id",
+    filtersGroup: {
+      search: {
+        name: "search",
+        label: "Buscar",
+        filters: [
+          {
+            name: "name",
+            label: "Buscar",
+            type: "search",
+            placeholder: "Buscar por nombre",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "Números de ID",
+              type: "textAccumulator",
+              placeholder: "Buscar por IDs",
+            },
+            {
+              name: "nfc_uid",
+              label: "UID NFC",
+              type: "text",
+              placeholder: "Buscar por UID NFC",
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "nfcUid", label: "UID NFC", type: "text", path: "nfcUid", hideOnMobile: true },
+        { name: "createdAt", label: "Fecha de creación", type: "dateTime", path: "createdAt", hideOnMobile: true },
+        { name: "updatedAt", label: "Última actualización", type: "dateTime", path: "updatedAt", hideOnMobile: true },
+      ],
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Nombre completo del empleado",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 3,
+            message: "El nombre debe tener al menos 3 caracteres"
+          }
+        },
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        }
+      },
+      {
+        name: "nfc_uid",
+        label: "UID NFC",
+        type: "text",
+        placeholder: "UID de la tarjeta NFC (opcional)",
+        validation: {},
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        }
+      }
+    ],
+    createForm: {
+      title: "Nuevo Empleado",
+      endpoint: "employees",
+      method: "POST",
+      successMessage: "Empleado creado con éxito",
+      errorMessage: "Error al crear el empleado",
+    },
+    editForm: {
+      title: "Editar Empleado",
+      endpoint: "employees",
+      method: "PUT",
+      successMessage: "Empleado actualizado con éxito",
+      errorMessage: "Error al actualizar el empleado",
+    },
+  },
+
+  punches: {
+    hideCreateButton: true, // Los fichajes se crean desde el gestor de registro horario
+    hideEditButton: true, // Los fichajes no se pueden editar
+    hideViewButton: true,
+    title: "Eventos de Fichaje",
+    description: "Consulta y gestiona los eventos de fichaje registrados.",
+    emptyState: {
+      title: "No existen eventos de fichaje según los filtros",
+      description: "Ajusta los filtros para ver más eventos.",
+    },
+    perPage: 15,
+    endpoint: "punches",
+    deleteEndpoint: "punches/:id",
+    filtersGroup: {
+      search: {
+        name: "search",
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Buscar",
+            type: "search",
+            placeholder: "Buscar por ID",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "Números de ID",
+              type: "textAccumulator",
+              placeholder: "Buscar por IDs",
+            },
+            {
+              name: "dates",
+              label: "Fecha",
+              type: "dateRange",
+            },
+            {
+              name: "event_type",
+              label: "Tipo de evento",
+              type: "select",
+              options: [
+                { value: "IN", label: "Entrada" },
+                { value: "OUT", label: "Salida" },
+              ],
+            },
+            {
+              name: "device_id",
+              label: "Dispositivo",
+              type: "text",
+              placeholder: "Buscar por dispositivo",
+            },
+          ],
+        },
+        {
+          name: "employees",
+          label: "Empleado",
+          filters: [
+            {
+              name: "employee_id",
+              label: "Empleado",
+              type: "autocomplete",
+              placeholder: "Buscar por empleado",
+              endpoint: "employees/options",
+            }
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "employee", label: "Empleado", type: "text", path: "employee.name" },
+        { name: "eventType", label: "Tipo", type: "badge", path: "eventType", 
+          options: {
+            IN: { label: "Entrada", color: "success", outline: true },
+            OUT: { label: "Salida", color: "secondary", outline: true },
+          }
+        },
+        { name: "timestamp", label: "Fecha y Hora", type: "dateTime", path: "timestamp" },
+        { name: "deviceId", label: "Dispositivo", type: "text", path: "deviceId", hideOnMobile: true },
+        { name: "createdAt", label: "Registrado", type: "dateTime", path: "createdAt", hideOnMobile: true },
+      ],
+    },
+  },
+
 };
 
 

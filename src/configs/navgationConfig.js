@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch, Settings2, Factory, FileText } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock } from 'lucide-react';
 
 export const navigationConfig = [
     {
@@ -195,6 +195,23 @@ export const navigationConfig = [
             },
         ],
     },
+    {
+        name: 'Gestión Horaria',
+        icon: Clock,
+        allowedRoles: ["admin", "manager", "superuser"],
+        childrens: [
+            {
+                name: 'Empleados',
+                href: '/admin/employees',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+            {
+                name: 'Eventos de Fichaje',
+                href: '/admin/punches',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
+        ],
+    },
 ];
 
 export const navigationManagerConfig = [
@@ -228,6 +245,12 @@ export const navigationManagerConfig = [
         icon: TbFishHook,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/raw-material-receptions',
+    },
+    {
+        name: 'Gestor de Registro Horario',
+        icon: Clock,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/time-punch-manager',
     },
     /* {
           name: 'Salidas de Cebo',
