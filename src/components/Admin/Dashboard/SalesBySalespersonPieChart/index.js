@@ -21,6 +21,7 @@ import { getSalesBySalesperson } from "@/services/orderService"
 import Loader from "@/components/Utilities/Loader"
 import { Input } from "@/components/ui/input"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
+import { SearchX } from "lucide-react"
 
 const pieColors = [
     "var(--chart-1)",
@@ -106,13 +107,25 @@ export function SalesBySalespersonPieChart() {
                     <div className="flex items-center justify-center h-48">
                         <Loader />
                     </div>
+                ) : !chartData || !Array.isArray(chartData) || chartData.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center w-full h-full min-h-[300px]">
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <div className="relative">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                    <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                </div>
+                            </div>
+                            <h2 className="mt-3 text-lg font-medium tracking-tight">No hay datos</h2>
+                            <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                Ajusta el rango de fechas para ver el ranking de ventas por comercial.
+                            </p>
+                        </div>
+                    </div>
                 ) : (
-
-
                     <ChartContainer
                         config={chartConfig}
                         className="mx-auto aspect-square max-h-[300px] "
-
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>

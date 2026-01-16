@@ -22,7 +22,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { TrendingUp } from "lucide-react"
+import { TrendingUp, Truck } from "lucide-react"
 import { getTransportChartData } from "@/services/orderService"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -96,7 +96,7 @@ export function TransportRadarChart() {
 
                 {isLoading ? (
                     <Skeleton className="mx-auto h-[250px] w-full max-w-[300px] rounded-xl" />
-                ) : (
+                ) : data.length > 0 ? (
                     <ChartContainer
                         config={chartConfig}
                         className="mx-auto  w-full max-w-[300px] aspect-square"
@@ -152,6 +152,19 @@ export function TransportRadarChart() {
                         </RadarChart>
 
                     </ChartContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-8 min-h-[250px] w-full">
+                        <div className="relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                            <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                <Truck className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                            </div>
+                        </div>
+                        <h2 className="mt-4 text-lg font-medium tracking-tight">No hay datos de transporte</h2>
+                        <p className="mt-2 text-center text-muted-foreground max-w-[280px] text-xs whitespace-normal">
+                            No se encontraron datos de transporte para el rango de fechas seleccionado. Ajusta las fechas para ver los datos.
+                        </p>
+                    </div>
                 )}
             </CardContent>
 

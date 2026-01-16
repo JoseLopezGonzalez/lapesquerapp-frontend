@@ -41,7 +41,6 @@ export function OrderRankingChart() {
 
     const accessToken = session?.user?.accessToken
 
-
     const chartConfig = {
         totalAmount: {
             value: {
@@ -75,14 +74,32 @@ export function OrderRankingChart() {
 
         getOrderRankingStats(params, accessToken)
             .then((data) => {
-                setFullData(data) // guardamos todos
-
-                const formattedData = data.slice(0, 5)
+                // Manejar diferentes formatos de respuesta
+                let safeData = []
+                if (Array.isArray(data)) {
+                    safeData = data
+                } else if (data && typeof data === 'object') {
+                    // Si es un objeto, intentar extraer un array
+                    if (Array.isArray(data.data)) {
+                        safeData = data.data
+                    } else if (Array.isArray(data.results)) {
+                        safeData = data.results
+                    } else {
+                        safeData = []
+                    }
+                } else {
+                    safeData = []
+                }
+                
+                setFullData(safeData) // guardamos todos
+                const formattedData = safeData.slice(0, 5)
+                console.log("📊 Setting chartData:", formattedData, "Length:", formattedData.length)
                 setChartData(formattedData)
             })
             .catch((err) => {
-                console.error("Error:", err)
+                console.error("Error al obtener ranking de pedidos:", err)
                 setChartData([])
+                setFullData([])
             })
             .finally(() => {
                 setIsLoading(false)
@@ -208,60 +225,62 @@ export function OrderRankingChart() {
             </CardHeader>
 
             <CardContent>
-                {isLoading ? (
-                    <div className="flex items-center justify-center h-60 w-full">
-                        <Loader />
-                    </div>
-                ) : chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={chartData.length * 45}>
-                        <ChartContainer config={chartConfig}>
-                            <BarChart
-                                data={chartData}
-                                layout="vertical"
-                                barCategoryGap={12}
-                                margin={{ right: 90, top: 8, bottom: 8 }}
-                            >
-                                <CartesianGrid horizontal={false} />
-                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} hide />
-                                <XAxis type="number" hide />
-                                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                                <Bar dataKey="value" fill={chartConfig.value.color} radius={4} barSize={28}>
-                                    <LabelList
-                                        dataKey="value"
-                                        position="right"
-                                        offset={8}
-                                        className="fill-foreground text-nowrap"
-                                        fontSize={12}
-                                        formatter={chartConfig.formatter}
-                                    />
-                                    <LabelList
-                                        dataKey="name"
-                                        position="insideLeft"
-                                        offset={8}
-                                        className="fill-background text-nowrap"
-                                        fontSize={12}
-                                        formatter={(name) => name}
-                                    />
-                                </Bar>
-                            </BarChart>
-                        </ChartContainer>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-60">
-                        <div className="flex flex-col items-center justify-center w-full h-full">
-                            <div className="relative">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
-                                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
-                                    <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
-                                </div>
-                            </div>
-                            <h2 className="mt-3 text-lg font-medium tracking-tight">No hay datos</h2>
-                            <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
-                                Ajusta el rango de fechas, selecciona una especie o cambia el tipo de agrupación para ver los datos.
-                            </p>
+                <div className="h-[250px] w-full">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-full w-full">
+                            <Loader />
                         </div>
-                    </div>
-                )}
+                    ) : !chartData || !Array.isArray(chartData) || chartData.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                            <div className="flex flex-col items-center justify-center w-full h-full">
+                                <div className="relative">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                        <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                    </div>
+                                </div>
+                                <h2 className="mt-3 text-lg font-medium tracking-tight">No hay datos</h2>
+                                <p className="mt-3 mb-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                    Ajusta el rango de fechas, selecciona una especie o cambia el tipo de agrupación para ver los datos.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={Math.max(chartData.length * 45, 200)}>
+                            <ChartContainer config={chartConfig}>
+                                <BarChart
+                                    data={chartData}
+                                    layout="vertical"
+                                    barCategoryGap={12}
+                                    margin={{ right: 90, top: 8, bottom: 8 }}
+                                >
+                                    <CartesianGrid horizontal={false} />
+                                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} hide />
+                                    <XAxis type="number" hide />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                                    <Bar dataKey="value" fill={chartConfig.value.color} radius={4} barSize={28}>
+                                        <LabelList
+                                            dataKey="value"
+                                            position="right"
+                                            offset={8}
+                                            className="fill-foreground text-nowrap"
+                                            fontSize={12}
+                                            formatter={chartConfig.formatter}
+                                        />
+                                        <LabelList
+                                            dataKey="name"
+                                            position="insideLeft"
+                                            offset={8}
+                                            className="fill-background text-nowrap"
+                                            fontSize={12}
+                                            formatter={(name) => name}
+                                        />
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </ResponsiveContainer>
+                    )}
+                </div>
             </CardContent>
 
             <CardFooter className="flex items-center justify-between gap-2 text-sm">
