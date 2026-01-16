@@ -1,7 +1,7 @@
 'use client';
 
 import toast from 'react-hot-toast';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
@@ -146,10 +146,24 @@ export default function EntityClient({ config }) {
             // Usar el helper para procesar los datos
             const processedRows = mapEntityRows(result.data, config.table.headers, handleDelete, config);
 
+            const apiCurrentPage = result.meta.current_page;
+            const apiTotalPages = result.meta.last_page;
+
+            // Validar que la página devuelta por la API sea válida
+            // Si la página solicitada es mayor que el total de páginas, ajustar a la última página disponible
+            const validPage = apiCurrentPage > apiTotalPages && apiTotalPages > 0 
+                ? apiTotalPages 
+                : (apiTotalPages > 0 ? apiCurrentPage : 1);
+
+            // Si la página actual no coincide con la válida, actualizar el estado
+            if (validPage !== currentPage) {
+                setCurrentPage(validPage);
+            }
+
             setData({ loading: false, rows: processedRows });
             setPaginationMeta({
-                currentPage: result.meta.current_page,
-                totalPages: result.meta.last_page,
+                currentPage: validPage,
+                totalPages: apiTotalPages,
                 totalItems: result.meta.total,
                 perPage: result.meta.per_page,
             });
@@ -171,16 +185,33 @@ export default function EntityClient({ config }) {
         }
     }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]);
 
+    // Ref para rastrear los filtros anteriores y detectar cambios
+    const prevFiltersRef = useRef(JSON.stringify(filters));
+    const isInitialMount = useRef(true);
 
-    // useEffect for initial data fetch and filter changes
+    // useEffect unificado para manejar cambios en filtros y página
     useEffect(() => {
-        // Reset to page 1 when filters change
-        setCurrentPage(1);
-    }, [filters]);
+        const currentFiltersString = JSON.stringify(filters);
+        const filtersChanged = prevFiltersRef.current !== currentFiltersString;
 
-    // useEffect for page changes
-    useEffect(() => {
-        fetchData(currentPage, filters);
+        if (filtersChanged) {
+            // Actualizar la ref de filtros anteriores
+            prevFiltersRef.current = currentFiltersString;
+            // Resetear a página 1 cuando cambian los filtros
+            if (currentPage !== 1) {
+                setCurrentPage(1);
+            }
+            // Hacer fetch con página 1 cuando cambian los filtros
+            fetchData(1, filters);
+        } else if (!isInitialMount.current) {
+            // Si solo cambió la página (y no los filtros), hacer fetch con esa página
+            fetchData(currentPage, filters);
+        }
+
+        // Marcar que ya no es el montaje inicial
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        }
     }, [currentPage, filters, fetchData]);
 
 
