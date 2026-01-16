@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { OrderRankingChart } from "./OrderRanking";
 import { SalesBySalespersonPieChart } from "./SalesBySalespersonPieChart";
 import { TotalQuantitySoldCard } from "./TotalQuantitySoldCard";
@@ -40,6 +41,8 @@ const getGreeting = () => {
 
 export default function Dashboard() {
     const [greeting] = useState(() => getGreeting());
+    const { data: session } = useSession();
+    const userName = session?.user?.name || "Usuario";
 
     return (
         <div className="h-full w-full flex flex-col gap-4 px-6 py-3">
@@ -48,7 +51,7 @@ export default function Dashboard() {
                     <div className="w-full">
                         <div className="flex flex-col items-start justify-center mb-4">
                             <p className="text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
-                            <h1 className="text-4xl font-light">Administración</h1>
+                            <h1 className="text-4xl font-light">{userName}</h1>
                         </div>
                     </div>
 
