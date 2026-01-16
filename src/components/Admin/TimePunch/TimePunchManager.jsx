@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2 } from 'lucide-react';
+import Loader from '@/components/Utilities/Loader';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { getEmployees } from '@/services/employeeService';
@@ -216,11 +217,8 @@ export default function TimePunchManager() {
 
     if (loading) {
         return (
-            <div className="container mx-auto p-6 flex items-center justify-center min-h-[60vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Cargando empleados...</p>
-                </div>
+            <div className="w-full h-full flex items-center justify-center">
+                <Loader />
             </div>
         );
     }

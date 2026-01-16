@@ -3701,7 +3701,7 @@ export const configs = {
 
   punches: {
     hideCreateButton: true, // Los fichajes se crean desde el gestor de registro horario
-    hideEditButton: true, // Los fichajes no se pueden editar
+    hideEditButton: false, // Habilitar edición en modal
     hideViewButton: true,
     title: "Eventos de Fichaje",
     description: "Consulta y gestiona los eventos de fichaje registrados.",
@@ -3712,6 +3712,80 @@ export const configs = {
     perPage: 15,
     endpoint: "punches",
     deleteEndpoint: "punches/:id",
+    fields: [
+      {
+        name: "employeeId",
+        path: "employee.id",
+        label: "Empleado",
+        type: "Autocomplete",
+        placeholder: "Selecciona el empleado",
+        endpoint: "employees/options",
+        validation: {
+          required: "El empleado es obligatorio",
+        },
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        }
+      },
+      {
+        name: "eventType",
+        path: "eventType",
+        label: "Tipo de evento",
+        type: "select",
+        placeholder: "Selecciona el tipo",
+        options: [
+          { value: "IN", label: "Entrada" },
+          { value: "OUT", label: "Salida" },
+        ],
+        validation: {
+          required: "El tipo de evento es obligatorio",
+        },
+        cols: {
+          sm: 6,
+          md: 3,
+          lg: 3,
+          xl: 3,
+        }
+      },
+      {
+        name: "deviceId",
+        path: "deviceId",
+        label: "Dispositivo",
+        type: "text",
+        placeholder: "Identificador del dispositivo",
+        validation: {},
+        cols: {
+          sm: 6,
+          md: 3,
+          lg: 3,
+          xl: 3,
+        }
+      },
+      {
+        name: "timestamp",
+        path: "timestamp",
+        label: "Fecha y Hora",
+        type: "datetime-local",
+        placeholder: "Fecha y hora del evento",
+        validation: {},
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        }
+      }
+    ],
+    editForm: {
+      title: "Editar Evento de Fichaje",
+      endpoint: "punches",
+      method: "PUT",
+      successMessage: "Evento de fichaje actualizado con éxito",
+      errorMessage: "Error al actualizar el evento de fichaje",
+    },
     filtersGroup: {
       search: {
         name: "search",

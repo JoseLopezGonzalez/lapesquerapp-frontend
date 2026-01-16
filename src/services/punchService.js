@@ -155,6 +155,40 @@ export async function createPunch(punchData, token = null) {
 }
 
 /**
+ * Actualizar un evento de fichaje
+ * @param {number} id - ID del evento
+ * @param {object} punchData - Datos del fichaje a actualizar { employee_id?, event_type?, device_id?, timestamp? }
+ * @param {string} token - Token JWT de autenticación
+ * @returns {Promise<Object>} - Datos del evento actualizado
+ */
+export async function updatePunch(id, punchData, token) {
+    return fetchWithTenant(`${API_URL_V2}punches/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+        body: JSON.stringify(punchData),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al actualizar el evento de fichaje');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+/**
  * Eliminar un evento de fichaje
  * @param {number} id - ID del evento
  * @param {string} token - Token JWT de autenticación

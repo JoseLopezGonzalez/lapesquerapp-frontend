@@ -25,6 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import the new service functions
 import { fetchEntityData, fetchAutocompleteOptions, submitEntityForm } from '@/services/editEntityService';
+import { isoToDateTimeLocal, datetimeLocalToIso } from '@/helpers/production/dateFormatters';
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -41,6 +42,11 @@ export function mapApiDataToFormValues(fields, data) {
         // Convertir fechas de string a Date si el campo es de tipo date
         if (field.type === "date" && result[key]) {
             result[key] = typeof result[key] === 'string' ? new Date(result[key]) : result[key];
+        }
+        
+        // Convertir timestamps ISO a datetime-local si el campo es de tipo datetime-local
+        if (field.type === "datetime-local" && result[key]) {
+            result[key] = isoToDateTimeLocal(result[key]);
         }
     }
     return result;
@@ -137,8 +143,40 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     processedData[key] = format(processedData[key], 'yyyy-MM-dd');
                 }
             });
+            
+            // Convertir campos datetime-local a ISO antes de enviar
+            const fields = config.fields || config.editForm?.fields || [];
+            fields.forEach(field => {
+                if (field.type === "datetime-local" && processedData[field.name]) {
+                    const isoValue = datetimeLocalToIso(processedData[field.name]);
+                    if (isoValue) {
+                        processedData[field.name] = isoValue;
+                    }
+                }
+            });
 
-            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, processedData);
+            // Convertir camelCase a snake_case para campos específicos de punches
+            // Laravel normalmente acepta ambos, pero para consistencia con la API
+            const snakeCaseMap = {
+                'employeeId': 'employee_id',
+                'eventType': 'event_type',
+                'deviceId': 'device_id',
+            };
+            
+            const finalData = {};
+            
+            // Procesar todos los campos
+            Object.keys(processedData).forEach(key => {
+                if (snakeCaseMap[key]) {
+                    // Convertir a snake_case
+                    finalData[snakeCaseMap[key]] = processedData[key];
+                } else {
+                    // Mantener el nombre original
+                    finalData[key] = processedData[key];
+                }
+            });
+
+            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, finalData);
             toast.success(successMessage, getToastTheme());
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
