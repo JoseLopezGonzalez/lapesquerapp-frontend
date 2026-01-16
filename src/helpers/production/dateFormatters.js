@@ -94,8 +94,9 @@ export const isoToDateTimeLocal = (isoDate) => {
 
 /**
  * Convierte una fecha datetime-local a formato ISO
+ * Preserva la hora local exacta sin aplicar conversión de zona horaria
  * @param {string|null|undefined} datetimeLocal - Fecha en formato YYYY-MM-DDTHH:mm
- * @returns {string|null} - Fecha en formato ISO o null
+ * @returns {string|null} - Fecha en formato ISO (YYYY-MM-DDTHH:mm:ss) o null
  */
 export const datetimeLocalToIso = (datetimeLocal) => {
     if (!datetimeLocal || datetimeLocal.trim() === '') {
@@ -103,15 +104,38 @@ export const datetimeLocalToIso = (datetimeLocal) => {
     }
     
     try {
-        const localDate = new Date(datetimeLocal)
-        
-        // Verificar que la fecha es válida
-        if (isNaN(localDate.getTime())) {
+        // Parsear el string datetime-local directamente
+        // Formato esperado: YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss
+        const parts = datetimeLocal.split('T')
+        if (parts.length !== 2) {
             return null
         }
         
-        // Convertir a ISO string (YYYY-MM-DDTHH:mm:ssZ)
-        return localDate.toISOString()
+        const datePart = parts[0] // YYYY-MM-DD
+        const timePart = parts[1] // HH:mm o HH:mm:ss
+        
+        // Validar formato básico
+        const dateMatch = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+        if (!dateMatch) {
+            return null
+        }
+        
+        // Asegurar que el tiempo tenga segundos (agregar :00 si falta)
+        const timeWithSeconds = timePart.includes(':') && timePart.split(':').length === 2 
+            ? `${timePart}:00` 
+            : timePart
+        
+        // Construir string ISO preservando la hora local exacta
+        // Formato: YYYY-MM-DDTHH:mm:ss (sin Z, para que el backend lo interprete en su zona horaria)
+        const isoString = `${datePart}T${timeWithSeconds}`
+        
+        // Validar que es una fecha válida
+        const testDate = new Date(isoString)
+        if (isNaN(testDate.getTime())) {
+            return null
+        }
+        
+        return isoString
     } catch (error) {
         console.error('Error converting datetime-local to ISO:', error)
         return null
