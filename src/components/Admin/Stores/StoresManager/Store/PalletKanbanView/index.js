@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletCard from '../PositionSlideover/PalletCard';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import Masonry from 'react-masonry-css';
+import { Package } from 'lucide-react';
 
 export default function PalletKanbanView() {
     const { store, pallets } = useStoreContext();
@@ -35,11 +36,17 @@ export default function PalletKanbanView() {
         <ScrollArea className="w-full h-full">
             <div className="p-4">
                 {allPallets.length === 0 ? (
-                    <div className="flex items-center justify-center h-full min-h-[400px]">
-                        <div className="text-center text-muted-foreground">
-                            <p className="text-lg">No hay palets registrados</p>
-                            <p className="text-sm mt-2">Los palets en estado &quot;registered&quot; aparecerán aquí</p>
+                    <div className="flex flex-col items-center justify-center w-full h-full min-h-[400px]">
+                        <div className="relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                            <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                <Package className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                            </div>
                         </div>
+                        <h2 className="mt-4 text-lg font-medium tracking-tight">No hay palets registrados</h2>
+                        <p className="mt-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                            Los palets en estado &quot;registered&quot; aparecerán aquí. Registra palets para verlos en esta vista.
+                        </p>
                     </div>
                 ) : (
                     <Masonry

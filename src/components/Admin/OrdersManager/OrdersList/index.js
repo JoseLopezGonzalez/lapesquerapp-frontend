@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useState, memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PackageSearch, SearchX } from 'lucide-react';
 
 import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
@@ -226,19 +227,28 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     ) : (
                         <div className='flex flex-col items-center justify-center gap-4 h-full w-full py-8'>
                             {!error && (
-                                <>
-                                    <InboxIcon className="h-12 w-12 text-muted-foreground" />
-                                    <div className='flex flex-col items-center gap-1'>
-                                        <span className='text-neutral-300 dark:text-neutral-400 font-medium text-md'>
-                                            {searchText ? 'No se encontraron pedidos' : 'No hay pedidos activos'}
-                                        </span>
-                                        {searchText && (
-                                            <p className='text-neutral-300 dark:text-neutral-500 font-light text-sm'>
-                                                Intenta con otros parámetros de búsqueda
-                                            </p>
-                                        )}
+                                <div className="flex flex-col items-center justify-center w-full h-full">
+                                    <div className="relative">
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                        <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                            {searchText ? (
+                                                <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                            ) : (
+                                                <PackageSearch className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                            )}
+                                        </div>
                                     </div>
-                                </>
+                                    <h2 className="mt-4 text-lg font-medium tracking-tight">
+                                        {searchText ? 'No se encontraron pedidos' : 'No hay pedidos activos'}
+                                    </h2>
+                                    <p className="mt-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                        {searchText ? (
+                                            'Intenta con otros parámetros de búsqueda o ajusta los filtros.'
+                                        ) : (
+                                            'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.'
+                                        )}
+                                    </p>
+                                </div>
                             )}
                         </div>
                     )}

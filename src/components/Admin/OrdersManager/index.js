@@ -310,7 +310,7 @@ export default function OrdersManager() {
                     ) : (
                         /* Vista desktop - layout side-by-side */
                         <div className="flex flex-col xl:flex-row h-full">
-                            <div className='w-full xl:w-[360px] xl:flex-shrink-0 xl:h-full xl:border-r'>
+                            <div className='w-full xl:w-[360px] xl:flex-shrink-0 xl:h-full'>
                                 {OrdersListContent}
                             </div>
                             <div className='grow lg:pl-0 p-2'>

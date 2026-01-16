@@ -21,6 +21,8 @@ import StoreCard from "./StoresManager/StoreCard";
 import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
 import LoadingStoresHeader from "./StoresManager/LoadingStoresHeader";
 import { Store } from "./StoresManager/Store";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 
 // Configurar Numeral.js para usar el formato español
@@ -30,6 +32,10 @@ export default function StoresManager() {
 
   const { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading, loadMoreStores, hasMoreStores, loadingMore } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
+  const router = useRouter();
+  
+  // Filtrar el almacén "registered" (ghost store) para contar solo almacenes reales
+  const realStores = stores?.filter(store => store.id !== 'registered') || [];
   /* const { store, loadingStore, updateStore } = useStore(selectedStore); */
 
 
@@ -73,36 +79,53 @@ export default function StoresManager() {
               }}
               hideScrollBar
               orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 py-2">
-              {stores && stores.length > 0 ? (
-                <>
-                  {stores.map((store) => {
-                    // Debug log para cada store
-                    if (store.id === 'registered') {
-                      console.log('Rendering ghost store:', store);
-                    }
-                    return (
-                      <StoreCard 
-                        key={store.id || `store-${store.name}`} 
-                        store={store} 
-                        disabled={isStoreLoading} 
-                        isSelected={selectedStoreId} 
-                        onClick={() => handleOnSelectStore(store.id)} 
-                        block={loadingStore} 
-                      />
-                    );
-                  })}
-                  {hasMoreStores && (
-                    <LoadMoreStoreCard 
-                      onClick={loadMoreStores}
-                      loading={loadingMore}
+              <>
+                {stores && stores.length > 0 && stores.map((store) => {
+                  // Debug log para cada store
+                  if (store.id === 'registered') {
+                    console.log('Rendering ghost store:', store);
+                  }
+                  return (
+                    <StoreCard 
+                      key={store.id || `store-${store.name}`} 
+                      store={store} 
+                      disabled={isStoreLoading} 
+                      isSelected={selectedStoreId} 
+                      onClick={() => handleOnSelectStore(store.id)} 
+                      block={loadingStore} 
                     />
-                  )}
-                </>
-              ) : (
-                <div className="text-center text-muted-foreground p-4">
-                  No hay almacenes disponibles
-                </div>
-              )}
+                  );
+                })}
+                {realStores.length === 0 && (
+                  <Card
+                    onClick={() => router.push('/admin/stores/create')}
+                    className="border-2 border-dashed min-w-56 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors bg-background"
+                  >
+                    <div className="flex flex-col items-center justify-center p-6 h-full w-full gap-3">
+                      <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                        <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
+                          <Plus className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <span className="text-sm font-medium text-foreground">
+                          Crear almacén
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Haz clic para añadir tu primer almacén
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+                {hasMoreStores && (
+                  <LoadMoreStoreCard 
+                    onClick={loadMoreStores}
+                    loading={loadingMore}
+                  />
+                )}
+              </>
             </ScrollShadow>
 
             {/* Content Box */}

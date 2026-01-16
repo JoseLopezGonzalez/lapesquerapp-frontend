@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2, Users } from 'lucide-react';
 import Loader from '@/components/Utilities/Loader';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -227,16 +227,11 @@ export default function TimePunchManager() {
         <div className="container mx-auto p-4 md:p-6 space-y-6">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                        <Clock className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Registro Horario</h1>
-                        <p className="text-sm md:text-base text-muted-foreground">
-                            Toca la tarjeta de un empleado para registrar su fichaje
-                        </p>
-                    </div>
+                <div>
+                    <h2 className="text-xl font-medium">Registro Horario</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Toca la tarjeta de un empleado para registrar su fichaje
+                    </p>
                 </div>
             </div>
 
@@ -244,13 +239,16 @@ export default function TimePunchManager() {
             {employees.length === 0 ? (
                 <Card className="border-dashed">
                     <CardContent className="pt-6">
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-lg font-medium text-foreground mb-2">
-                                No hay empleados disponibles
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                Añade empleados desde la sección de gestión de empleados
+                        <div className="flex flex-col items-center justify-center py-12 min-h-[300px]">
+                            <div className="relative">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
+                                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
+                                    <Users className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                                </div>
+                            </div>
+                            <h2 className="mt-4 text-lg font-medium tracking-tight">No hay empleados disponibles</h2>
+                            <p className="mt-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
+                                Añade empleados desde la sección de gestión de empleados para poder registrar sus fichajes.
                             </p>
                         </div>
                     </CardContent>
