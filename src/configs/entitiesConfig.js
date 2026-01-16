@@ -3857,9 +3857,9 @@ export const configs = {
             OUT: { label: "Salida", color: "secondary", outline: true },
           }
         },
-        { name: "timestamp", label: "Fecha y Hora", type: "dateTime", path: "timestamp" },
+        { name: "timestamp", label: "Fecha y Hora", type: "dateHour", path: "timestamp" },
         { name: "deviceId", label: "Dispositivo", type: "text", path: "deviceId", hideOnMobile: true },
-        { name: "createdAt", label: "Registrado", type: "dateTime", path: "createdAt", hideOnMobile: true },
+        { name: "createdAt", label: "Registrado", type: "dateHour", path: "createdAt" },
       ],
     },
   },

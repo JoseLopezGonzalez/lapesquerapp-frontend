@@ -108,6 +108,15 @@ export function WorkingEmployeesCard() {
         }
     }
 
+    const formatDateTime = (timestamp) => {
+        if (!timestamp) return ""
+        try {
+            return formatDateHour(timestamp)
+        } catch {
+            return ""
+        }
+    }
+
     const getStatusBadge = (status) => {
         const statusConfig = {
             trabajando: { 
@@ -406,7 +415,7 @@ export function WorkingEmployeesCard() {
                                         <span className="truncate font-medium">{punch.employeeName}</span>
                                     </div>
                                     <div className="flex items-center gap-2 ml-2">
-                                        <span className="text-muted-foreground font-mono text-[10px]">{formatTime(punch.timestamp)}</span>
+                                        <span className="text-muted-foreground font-mono text-[10px]">{formatDateTime(punch.timestamp)}</span>
                                         <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${
                                             punch.eventType === "IN" 
                                                 ? "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" 
@@ -464,7 +473,7 @@ export function WorkingEmployeesCard() {
                                                     {incident.entryTimestamp && (
                                                         <span className="flex items-center gap-0.5">
                                                             <LogIn className="w-2.5 h-2.5 text-green-600 dark:text-green-400" />
-                                                            {formatTime(incident.entryTimestamp)}
+                                                            {formatDateTime(incident.entryTimestamp)}
                                                         </span>
                                                     )}
                                                 </div>
