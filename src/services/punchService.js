@@ -216,3 +216,42 @@ export async function deletePunch(id, token) {
         });
 }
 
+/**
+ * Obtener datos del dashboard de fichajes
+ * @param {string} token - Token JWT de autenticación
+ * @param {string} date - Fecha específica (opcional, formato: YYYY-MM-DD). Por defecto: hoy
+ * @returns {Promise<Object>} - Datos del dashboard con workingEmployees, statistics y recentPunches
+ */
+export async function getPunchesDashboard(token, date = null) {
+    const queryParams = new URLSearchParams();
+    if (date) {
+        queryParams.append('date', date);
+    }
+    
+    const queryString = queryParams.toString();
+    const url = `${API_URL_V2}punches/dashboard${queryString ? `?${queryString}` : ''}`;
+    
+    return fetchWithTenant(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    throw new Error(errorData.message || 'Error al obtener datos del dashboard');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            return data.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+

@@ -10,6 +10,7 @@ import { StockByProductsCard } from "./StockByProductsCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
 import { CurrentStockCard } from "./CurrentStockCard";
+import { WorkingEmployeesCard } from "./WorkingEmployeesCard";
 import { SalesChart } from "./SalesChart";
 import { ReceptionChart } from "./ReceptionChart";
 import { DispatchChart } from "./DispatchChart";
@@ -94,6 +95,9 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <TransportRadarChart />
+                        </div>
+                        <div>
+                            <WorkingEmployeesCard />
                         </div>
                     </Masonry>
                 </div>
