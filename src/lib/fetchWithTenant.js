@@ -30,7 +30,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         : host.split('.')[0];
     }
 
-    console.error('🌐 Tenant detectado (servidor):', tenant);
+    console.log('🌐 Tenant detectado (servidor):', tenant);
   } else {
     // ---- CLIENTE ----
     const clientHost = window.location.host;
