@@ -35,7 +35,8 @@ export const fetchEntityData = async (url) => {
             throw response;
         }
         const result = await response.json();
-        return result.data; // Assuming your API wraps data in a 'data' property
+        // Manejar ambos casos: datos envueltos en 'data' o datos directos
+        return result.data || result;
     } catch (error) {
         console.error("Error fetching entity data:", error);
         throw error;

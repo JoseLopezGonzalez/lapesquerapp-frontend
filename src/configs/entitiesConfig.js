@@ -3058,6 +3058,118 @@ export const configs = {
     },
   },
 
+  /* Roles */
+  roles: {
+    title: "Roles",
+    description: "Gestiona, edita y consulta roles del sistema.",
+    emptyState: {
+      title: "No existen roles según los filtros",
+      description: "Ajusta los filtros o crea un nuevo rol.",
+    },
+    endpoint: "roles",
+    viewRoute: "/admin/roles/:id",
+    deleteEndpoint: "roles/:id",
+    createRedirect: "/admin/roles/create",
+    perPage: 15,
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "id",
+            label: "Id",
+            type: "search",
+            placeholder: "Buscar por id",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            },
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre (snake_case)",
+            },
+            {
+              name: "displayName",
+              label: "Nombre para mostrar",
+              type: "text",
+              placeholder: "Buscar por nombre para mostrar",
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "display_name", label: "Nombre para mostrar", type: "text", path: "display_name" },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" }
+      ],
+    },
+    createForm: {
+      title: "Nuevo Rol",
+      endpoint: "roles",
+      method: "POST",
+      successMessage: "Rol creado con éxito",
+      errorMessage: "Error al crear el rol",
+    },
+    editForm: {
+      title: "Editar Rol",
+      endpoint: "roles",
+      method: "PUT",
+      successMessage: "Rol actualizado con éxito",
+      errorMessage: "Error al actualizar el rol",
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre del rol",
+        type: "text",
+        placeholder: "Ej. nuevo_rol (snake_case)",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: {
+            value: 2,
+            message: "Debe tener al menos 2 caracteres",
+          },
+          pattern: {
+            value: '/^[a-z][a-z0-9_]*$/',
+            message: "Debe estar en formato snake_case (solo minúsculas, números y guiones bajos, empezar con letra)",
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        helpText: "Formato: solo minúsculas, números y guiones bajos. Ej: nuevo_rol, admin_auxiliar",
+      },
+      {
+        name: "display_name",
+        label: "Nombre para mostrar",
+        type: "text",
+        placeholder: "Ej. Nuevo Rol",
+        validation: {
+          required: "El nombre para mostrar es obligatorio",
+          minLength: {
+            value: 2,
+            message: "Debe tener al menos 2 caracteres",
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+        helpText: "Nombre legible que se mostrará en la interfaz",
+      }
+    ],
+  },
+
   /* activity-logs */
   'activity-logs': {
     hideCreateButton: true,

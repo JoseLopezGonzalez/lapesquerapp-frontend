@@ -1,0 +1,149 @@
+/**
+ * Service de dominio para Activity Logs (Logs de Actividad)
+ * 
+ * Expone métodos semánticos de negocio para interactuar con logs de actividad.
+ * Oculta detalles técnicos (URLs, endpoints, configuración dinámica).
+ * 
+ * Este service encapsula la lógica genérica internamente, pero expone
+ * métodos claros y predecibles para componentes y AI Chat.
+ */
+
+import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
+import { 
+    fetchEntitiesGeneric, 
+    deleteEntityGeneric, 
+    performActionGeneric,
+    downloadFileGeneric
+} from '@/services/generic/entityService';
+import { 
+    createEntityGeneric 
+} from '@/services/generic/createEntityService';
+import { 
+    fetchEntityDataGeneric, 
+    submitEntityFormGeneric,
+    fetchAutocompleteOptionsGeneric
+} from '@/services/generic/editEntityService';
+
+const ENDPOINT = 'activity-logs';
+
+/**
+ * Service de dominio para Activity Logs
+ */
+export const activityLogService = {
+    /**
+     * Lista todos los logs de actividad con filtros opcionales
+     * @param {Object} filters - Filtros de búsqueda (search, ids, etc.)
+     * @param {Object} pagination - Opciones de paginación { page, perPage }
+     * @returns {Promise<Object>} Datos paginados con logs de actividad
+     * 
+     * @example
+     * const result = await activityLogService.list({ search: 'Usuario A' }, { page: 1, perPage: 10 });
+     */
+    async list(filters = {}, pagination = {}) {
+        const token = await getAuthToken();
+        const { page = 1, perPage = 12 } = pagination;
+        
+        // Construir query string desde filtros
+        const queryParams = new URLSearchParams();
+        if (filters.search) queryParams.append('search', filters.search);
+        if (filters.ids && Array.isArray(filters.ids)) {
+            filters.ids.forEach(id => queryParams.append('ids[]', id));
+        }
+        queryParams.append('page', page);
+        queryParams.append('perPage', perPage);
+        
+        const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
+        return fetchEntitiesGeneric(url, token);
+    },
+
+    /**
+     * Obtiene un log de actividad por ID
+     * @param {string|number} id - ID del log de actividad
+     * @returns {Promise<Object>} Datos del log de actividad
+     * 
+     * @example
+     * const activityLog = await activityLogService.getById(123);
+     */
+    async getById(id) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+        return fetchEntityDataGeneric(url, token);
+    },
+
+    /**
+     * Crea un nuevo log de actividad
+     * @param {Object} data - Datos del log de actividad a crear
+     * @returns {Promise<Object>} Log de actividad creado
+     * 
+     * @example
+     * const activityLog = await activityLogService.create({ ... });
+     */
+    async create(data) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}`;
+        const response = await createEntityGeneric(url, data, token);
+        const result = await response.json();
+        return result.data || result;
+    },
+
+    /**
+     * Actualiza un log de actividad existente
+     * @param {string|number} id - ID del log de actividad
+     * @param {Object} data - Datos a actualizar
+     * @returns {Promise<Object>} Log de actividad actualizado
+     * 
+     * @example
+     * const activityLog = await activityLogService.update(123, { ... });
+     */
+    async update(id, data) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+        const response = await submitEntityFormGeneric(url, 'PUT', data, token);
+        const result = await response.json();
+        return result.data || result;
+    },
+
+    /**
+     * Elimina un log de actividad
+     * @param {string|number} id - ID del log de actividad
+     * @returns {Promise<void>}
+     * 
+     * @example
+     * await activityLogService.delete(123);
+     */
+    async delete(id) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+        return deleteEntityGeneric(url, null, token);
+    },
+
+    /**
+     * Elimina múltiples logs de actividad
+     * @param {Array<string|number>} ids - Array de IDs de logs de actividad
+     * @returns {Promise<void>}
+     * 
+     * @example
+     * await activityLogService.deleteMultiple([123, 456, 789]);
+     */
+    async deleteMultiple(ids) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}`;
+        return deleteEntityGeneric(url, { ids }, token);
+    },
+
+    /**
+     * Obtiene opciones para autocompletado (formato {value, label})
+     * @returns {Promise<Array<{value: any, label: string}>>} Opciones para Combobox
+     * 
+     * @example
+     * const options = await activityLogService.getOptions();
+     * // [{ value: 1, label: 'Log A' }, { value: 2, label: 'Log B' }]
+     */
+    async getOptions() {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}/options`;
+        return fetchAutocompleteOptionsGeneric(url, token);
+    },
+};
+

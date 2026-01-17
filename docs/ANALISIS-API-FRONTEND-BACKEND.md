@@ -1,8 +1,12 @@
-# Análisis Comparativo API vs Frontend
+# Análisis Exhaustivo API vs Frontend
 
 ## 📋 Resumen Ejecutivo
 
-Este documento analiza en profundidad las diferencias entre lo que espera recibir y devolver la API (según su documentación) versus lo que el frontend envía y espera recibir. Se identifican problemas críticos, diferencias, errores y endpoints no utilizados.
+Este documento realiza un análisis exhaustivo de TODOS los endpoints de la API comparando:
+- **Estructura de Requests**: Campos requeridos, opcionales, y campos que se envían pero no se requieren
+- **Estructura de Responses**: Campos esperados vs recibidos
+- **Manejo de Errores**: Especialmente el uso de `userMessage` vs `message`
+- **Inconsistencias**: Diferencias entre lo documentado y lo implementado
 
 **Fecha de Análisis:** Diciembre 2024
 
@@ -12,297 +16,294 @@ Este documento analiza en profundidad las diferencias entre lo que espera recibi
 
 ---
 
-## 🚨 Problemas Críticos
+## 🔍 Metodología
 
-### 1. Estructura de Respuesta Inconsistente
-
-**Problema:** La API documenta diferentes estructuras de respuesta según el endpoint, pero el frontend espera siempre `data.data` o `data` directamente.
-
-**Ejemplo Problemático:**
-
-#### `GET /api/v2/orders/{id}` - Obtener Pedido
-
-- **API Documenta:**
-  ```json
-  {
-    "id": 1,
-    "customer": {...}
-  }
-  ```
-- **Frontend Usa:** Extrae `data.data` (`orderService.js:32-33`)
-- **⚠️ Inconsistencia:** Si la API devuelve directamente el objeto sin envolver en `{data: {...}}`, esto podría fallar.
+Para cada endpoint se verifica:
+1. ✅ **Request Body**: Campos requeridos vs enviados, campos opcionales vs enviados, campos sobrantes
+2. ✅ **Response Structure**: Estructura documentada vs estructura manejada
+3. ✅ **Error Handling**: Uso de `userMessage` vs `message` en manejo de errores
+4. ✅ **Query Parameters**: Parámetros documentados vs utilizados
 
 ---
 
-### 2. Campos del Login: `role` vs `roles`
+---
 
-**Problema Crítico:** Inconsistencia en el nombre del campo de roles en la respuesta del login.
+## 📚 Análisis por Módulo
 
-**Endpoint:** `POST /api/v2/login`
+### 1. Autenticación
 
-**API Documenta (Login):**
+#### `GET /api/v2/me`
 
-```json
-{
-  "user": {
-    "role": ["admin"]  // ⚠️ Campo singular
-  }
-}
-```
-
-**API Documenta (`GET /api/v2/me`):**
-
-```json
-{
-  "roles": [  // ⚠️ Campo plural
-    {
-      "id": 1,
-      "name": "admin",
-      "display_name": "Administrador"
-    }
-  ]
-}
-```
-
-**Frontend Usa:**
-
-- En NextAuth callback usa `user.role` (singular) - `route.js:99`
-- El frontend debería normalizar esto para evitar problemas.
-
-**Recomendación:** Normalizar en el frontend para siempre usar `roles` (plural) o verificar ambos campos.
+**Error Handling:**
+- ⚠️ **Observación**: Se lanza `response` directamente, el manejo de errores queda en el componente que llama
 
 ---
 
-### 3. Endpoint de Actualización de Estado de Pedido (Vamos a usar a partir de ahora la forma de la docu de la api)
+### 2. Pedidos (Orders)
 
-**API Documenta:**
+#### `POST /api/v2/orders` - Crear Pedido
 
-```http
-PUT /api/v2/orders/{order}/status
-Body: { "status": "finished" }
-```
+**Request Body:**
+- ⚠️ **Observación**: Se envían campos opcionales como `null` si están vacíos (ver sección "Campos `null` Enviados")
 
-**Frontend Usa:**
+---
 
+#### `PUT /api/v2/orders/{id}` - Actualizar Pedido
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión para confirmar qué campos se envían
+
+---
+
+### 4. Inventario
+
+#### `PUT /api/v2/pallets/{id}` - Actualizar Palet
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+- ⚠️ **Observación**: El mensaje de error dice "Error al actualizar el pedido" pero es para palets
+
+---
+
+#### `POST /api/v2/pallets` - Crear Palet
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+- ⚠️ **Observación**: El mensaje de error dice "Error al crear la linea del pedido" pero es para palets
+
+---
+
+#### `GET /api/v2/stores/options` - Opciones de Almacenes
+
+**Error Handling:**
+- ⚠️ **Verificar**: Necesita revisión del manejo de errores
+
+---
+
+### 5. Producción
+
+#### `POST /api/v2/productions` - Crear Producción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados (`lot`, `species_id`, `description`)
+
+---
+
+#### `POST /api/v2/production-records` - Crear Registro de Producción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+
+---
+
+#### `POST /api/v2/production-inputs` - Crear Entrada de Producción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+
+---
+
+#### `POST /api/v2/production-outputs` - Crear Salida de Producción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+
+---
+
+### 6. Catálogos
+
+#### Endpoints CRUD Genéricos de Catálogos
+
+**Nota:** Los endpoints CRUD (GET, POST, PUT, DELETE) de catálogos se manejan a través de `EntityClient` y están definidos en `entitiesConfig.js`.
+
+**Entidades de Catálogos en `entitiesConfig.js`:**
+- `customers`, `suppliers`, `species`, `transports`, `incoterms`, `salespeople`, `fishing-gears`, `countries`, `payment-terms`, `capture-zones`, `labels`
+
+**Request Body:**
+- ⚠️ **Verificar**: Los campos enviados dependen de la configuración de cada entidad
+- ⚠️ **Observación**: Se envían todos los campos del formulario, incluyendo `null` para campos opcionales vacíos (ver sección "Campos `null` Enviados")
+
+---
+
+### 7. Sistema (Usuarios, Roles, Empleados, Fichajes)
+
+#### `POST /api/v2/employees` - Crear Empleado
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+
+---
+
+### 8. Recepciones y Despachos
+
+#### `POST /api/v2/raw-material-receptions` - Crear Recepción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados (modo líneas vs modo palets)
+
+---
+
+### 9. Servicios Genéricos (EntityClient)
+
+**Nota:** Estos servicios se usan para múltiples entidades definidas en `entitiesConfig.js`
+
+#### `POST /api/v2/{entity}` - Crear Entidad Genérica
+
+**Request Body:**
+- ⚠️ **Verificar**: Los campos enviados dependen de la configuración de cada entidad en `entitiesConfig.js`
+- ⚠️ **Observación**: Se envían todos los campos del formulario, incluyendo `null` para campos opcionales vacíos (ver sección "Campos `null` Enviados")
+
+---
+
+#### `PUT /api/v2/{entity}/{id}` - Actualizar Entidad Genérica
+
+**Request Body:**
+- ⚠️ **Verificar**: Similar a crear, depende de la configuración de cada entidad
+
+---
+
+#### `GET /api/v2/{entity}` - Listar Entidades Genéricas
+
+**Error Handling:**
+- ⚠️ **Verificar**: Necesita revisión del manejo de errores en `fetchEntities()`
+
+---
+
+### 10. Producción Costos
+
+#### `POST /api/v2/cost-catalog` - Crear Coste en Catálogo
+
+**Request Body - Campos Requeridos:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados (`name`, `cost_type`)
+
+**Request Body - Campos Opcionales:**
+- ⚠️ **Verificar**: `description`, `default_unit`, `is_active`
+
+---
+
+#### `POST /api/v2/production-costs` - Crear Coste de Producción
+
+**Request Body:**
+- ⚠️ **Verificar**: Necesita revisión de campos requeridos vs enviados
+
+---
+
+## 📊 Resumen de Problemas por Categoría
+
+---
+
+### Estructura de Requests
+
+#### Campos `null` Enviados
+
+**Problema:** Muchos servicios envían campos con valor `null` cuando están vacíos, incluso si la API no los requiere.
+
+**Ejemplos Identificados:**
+- `createOrder()` - Envía campos opcionales como `null` si están vacíos (líneas 121-144)
+- `EntityClient` - Envía todos los campos del formulario, incluyendo `null` para campos opcionales vacíos
+- `createEntity()` - Envía el payload completo sin filtrar `null`
+
+**Impacto:** 
+- Payloads más grandes de lo necesario
+- Posibles problemas si la API rechaza `null` en ciertos campos
+- Mayor uso de ancho de banda
+
+**Recomendación:** 
+- No enviar campos opcionales si están vacíos o son `null`
+- Crear función helper: `cleanPayload(data)` que elimine campos `null` o `undefined`
+- Verificar documentación de cada endpoint para campos opcionales
+
+---
+
+#### Campos Requeridos vs Enviados
+
+**Estado General:** ✅ **Correcto**
+- Los campos requeridos se envían correctamente en la mayoría de casos
+- Ejemplo: `createOrder()` envía `customer`, `entryDate`, `loadDate` (requeridos) correctamente
+
+**Casos a Verificar:**
+- ⚠️ `POST /api/v2/productions` - Verificar campos requeridos (`lot`, `species_id`)
+- ⚠️ `POST /api/v2/cost-catalog` - Verificar campos requeridos (`name`, `cost_type`)
+- ⚠️ `POST /api/v2/production-records` - Verificar campos requeridos
+- ⚠️ `POST /api/v2/production-inputs` - Verificar campos requeridos
+- ⚠️ `POST /api/v2/production-outputs` - Verificar campos requeridos
+- ⚠️ `POST /api/v2/raw-material-receptions` - Verificar modo líneas vs modo palets
+
+---
+
+#### Campos Sobrantes
+
+**Estado:** ⚠️ **A Verificar**
+- Algunos servicios pueden enviar campos no documentados
+- Necesita revisión caso por caso comparando con la documentación de la API
+
+---
+
+---
+
+## 🔧 Recomendaciones Prioritarias
+
+### 1. **IMPORTANTE: Optimizar Payloads de Requests**
+
+**Problema:** Se envían campos `null` innecesarios
+
+**Solución:**
+Crear función helper en `apiHelpers.js`:
 ```javascript
-PUT /api/v2/orders/${orderId}/status?status=${status}
-// ⚠️ Usa query parameter en lugar de body
+/**
+ * Limpia un objeto eliminando campos null o undefined
+ * @param {Object} data - Objeto a limpiar
+ * @returns {Object} Objeto sin campos null/undefined
+ */
+export const cleanPayload = (data) => {
+    if (!data || typeof data !== 'object') return data;
+    if (Array.isArray(data)) return data.map(cleanPayload);
+    
+    const cleaned = {};
+    Object.keys(data).forEach(key => {
+        if (data[key] !== null && data[key] !== undefined) {
+            cleaned[key] = typeof data[key] === 'object' ? cleanPayload(data[key]) : data[key];
+        }
+    });
+    return cleaned;
+};
 ```
 
-**Problema:** El frontend envía el status como query parameter en lugar del body JSON. Esto puede funcionar si el backend acepta ambos, pero es inconsistente con la documentación.
-
-**Ubicación:** `orderService.js:255`
-
----
-
-
-## 📊 Endpoints NO Utilizados o Verificación Pendiente
-
-**Nota:** El sistema `EntityClient` maneja genéricamente DELETE múltiples a través de `deleteEntity` con body `{ ids: [...] }` cuando se seleccionan múltiples filas. Esto significa que endpoints como `DELETE /api/v2/orders`, `DELETE /api/v2/products`, etc. **SÍ están disponibles** para uso genérico aunque no se usen directamente en código específico.
-
-### Autenticación
-
-#### `POST /api/v2/logout` - Cerrar Sesión
-- **Método:** POST
-- **Documentado:** Sí
-- **Usado en Frontend:** ❌ NO encontrado
-- **Razón:** NextAuth maneja el logout internamente
-- **Recomendación:** Si el backend revoca tokens, debería implementarse
-
-#### `GET /api/v2/me` - Obtener Usuario Actual
-- **Método:** GET
-- **Documentado:** Sí
-- **Usado en Frontend:** ❌ NO encontrado
-- **Razón:** NextAuth guarda la información del usuario en el JWT
-- **Recomendación:** Útil para refrescar datos del usuario sin re-login
-
----
-
-### Inventario - Palets
-
-#### ❌ Endpoints NO Encontrados en Uso Directo:
-
-- `GET /api/v2/pallets/options` - Opciones de Palets
-- `GET /api/v2/pallets/stored-options` - Opciones de Palets Almacenados  
-- `GET /api/v2/pallets/shipped-options` - Opciones de Palets Enviados
-
-
-### Inventario - Cajas
-
-#### ❌ Endpoints NO Encontrados en Uso Directo:
-
-- `GET /api/v2/boxes/available` - Cajas Disponibles
-
-**Nota:** La aplicación calcula cajas disponibles desde los datos de palets (`availableBoxesCount`), pero no usa el endpoint `GET /api/v2/boxes/available` directamente.
-
----
-
-### Producción
-
-#### Endpoints NO Documentados en `/docs/API-references/produccion/README.md` pero Usados:
-
-- **`GET /api/v2/production-records/{id}/tree`** - Obtener Árbol del Registro - Usado pero NO documentado
-- **`GET /api/v2/production-records/{id}/images`** - Listar Imágenes - Usado en `productionService.js:541` pero NO documentado
-- **`POST /api/v2/production-records/{id}/images`** - Subir Imagen - Usado en `productionService.js:553` pero NO documentado
-- **`DELETE /api/v2/production-records/{id}/images/{imageId}`** - Eliminar Imagen - Usado en `productionService.js:569` pero NO documentado
-
----
-
-### Sistema
-
-**Pendiente de Verificar:**
-- Otros endpoints de roles (excepto `GET /api/v2/roles/options` que SÍ se usa)
-
----
-
-## 📝 Campos y Propiedades No Verificados
-
-### En Respuestas de Pedidos
-
-**Campos documentados que NO se verificó si se usan:**
-
-- `transportation_notes`, `production_notes`, `accounting_notes`
-- `emails`, `cc_emails`
-
-**Recomendación:** Auditar qué campos realmente se muestran/editan en el frontend.
-
----
-
-### En Respuestas de Productos
-
-**Campos documentados que NO se verificó si se usan:**
-
-- `a3erp_code`, `facil_com_code`
-
----
-
-### En Respuestas de Estadísticas
-
-**Campos adicionales documentados que podrían no usarse:**
-
-- En `GET /api/v2/statistics/orders/total-amount` (Método: GET): `average_amount`
-- En `GET /api/v2/statistics/orders/ranking` (Método: GET): `rank`
-
----
-
-## 🔧 Recomendaciones
-
-### 1. Documentar Endpoints Faltantes
-
-**Endpoints usados en frontend pero NO documentados en API references:**
-
-#### Producción:
-
-- `GET /api/v2/production-records/{id}/tree` - Obtener árbol del registro
-- `GET /api/v2/production-records/{id}/images` - Listar imágenes
-- `POST /api/v2/production-records/{id}/images` - Subir imagen
-- `DELETE /api/v2/production-records/{id}/images/{imageId}` - Eliminar imagen
-
-
-### 2. Estandarizar Estructura de Respuestas
-
-**Problema:** Algunos endpoints devuelven objetos directamente, otros envueltos en `{data: {...}}`, otros en `{data: [{...}]}`.
-
-**Recomendación:**
-
-- Crear normalizadores en el frontend para cada tipo de respuesta
-- Documentar claramente la estructura esperada de cada endpoint
-
----
-
-### 3. Normalizar Nomenclatura de Roles
-
-**Problema:** Login devuelve `role` (singular), `/me` devuelve `roles` (plural).
-
-**Recomendación:**
-
-- Estandarizar en backend para siempre usar `roles` (plural)
-- O crear normalizador en frontend para siempre usar `roles`
-
----
-
-
-### 5. Implementar Logout en Backend
-
-**Problema:** El frontend no llama a `POST /api/v2/logout` al cerrar sesión.
-
-**Recomendación:**
-
-- Si el backend revoca tokens al hacer logout, implementar la llamada
-- Si no es necesario, documentar que NextAuth maneja el logout
-
----
-
-### 6. Revisar Uso de Filtros en Listados
-
-**Problema:** La API documenta muchos filtros opcionales que pueden no estar siendo utilizados.
-
-**Recomendación:**
-
-- Auditar qué filtros realmente se usan en el frontend
-- Documentar qué filtros son críticos vs opcionales
-
----
-
-### 7. Validar Estructura de Respuesta de GET /api/v2/orders/
-
-**Problema:** El frontend espera `data.data`, pero la documentación muestra que la respuesta es directamente el objeto.
-
-**API Documenta (`GET /api/v2/orders/{id}`):**
-
-```json
-{
-  "id": 1,
-  "customer": {...}
-}
+**Usar antes de enviar:**
+```javascript
+const cleanedPayload = cleanPayload(orderPayload);
+body: JSON.stringify(cleanedPayload)
 ```
 
-**Frontend Espera:** `data.data` (`orderService.js:32-33`)
-
-**Recomendación:**
-
-- Verificar la estructura real de la respuesta del backend
-- Normalizar en el frontend para manejar ambos casos, o
-- Corregir el frontend si la API devuelve directamente el objeto
+**Impacto:** Payloads más pequeños, mejor rendimiento, menos problemas con campos `null`.
 
 ---
 
-## 📈 Estadísticas Resumidas
+### 2. **MEJORA: Verificar Campos Requeridos vs Opcionales**
 
-### Resumen:
-- **Endpoints NO Utilizados Confirmados:** ~3-5 (principalmente endpoints de opciones de palets y `boxes/available`)
-- **Endpoints Usados pero NO Documentados:** ~4-5 (solo producción: imágenes y árbol)
-
----
-
-## 🎯 Prioridades de Acción
-
-### 🔴 Crítico (Resolver Inmediatamente)
-
-1. Documentar endpoints de imágenes de producción (`/production-records/{id}/images`, `/tree`)
-2. Alinear uso de query parameter vs body en `PUT /api/v2/orders/{order}/status`
-3. Estandarizar nomenclatura de `role` vs `roles`
-
-### 🟡 Alto (Resolver Pronto)
-
-4. Implementar logout en backend si es necesario
-5. Verificar uso real de filtros en listados
-6. Validar estructura de respuestas del endpoint `GET /api/v2/orders/{id}`
-
-### 🟢 Medio (Mejorar en el Tiempo)
-
-7. Auditar uso de campos en respuestas
-8. Normalizar estructuras de respuesta
+**Acción:**
+- Revisar cada endpoint documentado en `/docs/API-references/`
+- Verificar que solo se envían campos requeridos o campos opcionales con valores válidos
+- Documentar casos donde se envían campos no documentados
+- Crear validación en frontend antes de enviar
 
 ---
 
-## 📚 Referencias
+## 📝 Notas Adicionales
 
-- Documentación API: `/docs/API-references/`
-- Servicios Frontend: `/src/services/`
-- Configuración de Entidades: `/src/configs/entitiesConfig.js`
-- Helpers API: `/src/lib/api/apiHelpers.js`
+### Servicios que Lanzan `response` Directamente
+
+Algunos servicios lanzan el objeto `response` completo en lugar de procesar el error:
+- `entityService.js` - `fetchEntities()`, `deleteEntity()`, `performAction()`
+- `createEntityService.js` - `createEntity()`, `fetchAutocompleteOptions()`
+- `editEntityService.js` - `fetchEntityData()`, `fetchAutocompleteOptions()`
+
+**Impacto:** El manejo de errores queda en el componente que llama, lo cual puede ser correcto si el componente maneja `userMessage` correctamente, pero es inconsistente.
+
+**Recomendación:** Estandarizar: o bien procesar errores en el servicio, o bien documentar que el componente debe manejar `userMessage`.
 
 ---
 
-**Fin del Análisis**
+**Fin del Análisis Exhaustivo**
+
+**Última Actualización:** Diciembre 2024

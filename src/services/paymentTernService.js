@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 /**
@@ -22,7 +23,7 @@ export function getPaymentTermsOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener método de pagos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener método de pagos');
                 });
             }
             return response.json();

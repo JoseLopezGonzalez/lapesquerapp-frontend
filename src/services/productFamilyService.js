@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Elimina duplicados de un array de opciones basándose en el ID
@@ -32,7 +33,7 @@ export function getProductFamilyOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las familias de productos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las familias de productos');
                 });
             }
             return response.json();
@@ -66,7 +67,7 @@ export function getProductFamilies(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las familias de productos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las familias de productos');
                 });
             }
             return response.json();
@@ -99,7 +100,7 @@ export function getProductFamily(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener la familia de producto');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener la familia de producto');
                 });
             }
             return response.json();

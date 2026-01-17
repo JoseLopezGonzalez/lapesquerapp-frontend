@@ -25,6 +25,14 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
   const [logoError, setLogoError] = useState(false);
 
   const handleLogout = async () => {
+    try {
+      // Primero revocar el token en el backend
+      const { logout: logoutBackend } = await import('@/services/authService');
+      await logoutBackend();
+    } catch (err) {
+      // Continuar con logout aunque falle el backend
+      console.error('Error en logout del backend:', err);
+    }
     await signOut({ redirect: false });
     router.push("/");
   };

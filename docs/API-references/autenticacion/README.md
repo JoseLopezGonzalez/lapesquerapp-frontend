@@ -7,6 +7,7 @@ Documentación de endpoints de autenticación y gestión de sesión.
 - [Login](#login)
 - [Logout](#logout)
 - [Obtener Usuario Actual](#obtener-usuario-actual)
+- [Obtener Información de Tenant](#obtener-información-de-tenant)
 
 ---
 
@@ -53,10 +54,12 @@ Content-Type: application/json
     "assignedStoreId": 1,
     "companyName": "Mi Empresa",
     "companyLogoUrl": "https://example.com/logo.png",
-    "role": ["admin"]
+    "roles": ["admin"]
   }
 }
 ```
+
+**Nota:** El campo `roles` es un array que puede contener uno o múltiples roles (ej: `["admin"]` o `["admin", "manager"]`).
 
 ### Response Errónea (401) - Credenciales Inválidas
 
@@ -154,23 +157,61 @@ Authorization: Bearer {access_token}
   "company_name": "Mi Empresa",
   "company_logo_url": "https://example.com/logo.png",
   "active": true,
+  "roles": ["admin"],
   "created_at": "2024-01-01T00:00:00.000000Z",
-  "updated_at": "2024-01-01T00:00:00.000000Z",
-  "roles": [
-    {
-      "id": 1,
-      "name": "admin",
-      "display_name": "Administrador"
-    }
-  ]
+  "updated_at": "2024-01-01T00:00:00.000000Z"
 }
 ```
+
+**Nota:** El campo `roles` es un array de strings con los nombres de los roles (ej: `["admin"]` o `["admin", "manager"]`). Consistente con el formato del endpoint de login.
 
 ### Response Errónea (401) - No Autenticado
 
 ```json
 {
   "message": "No autenticado."
+}
+```
+
+---
+
+## Obtener Información de Tenant
+
+Obtener información de un tenant por su subdominio. Este endpoint es público y no requiere autenticación.
+
+### Request
+
+```http
+GET /api/v2/public/tenant/{subdomain}
+```
+
+#### Headers
+```http
+Content-Type: application/json
+```
+
+**Nota:** Este endpoint NO requiere `X-Tenant` ni `Authorization` ya que es público.
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| subdomain | string | Subdominio del tenant |
+
+### Response Exitosa (200)
+
+```json
+{
+  "active": true,
+  "name": "Mi Empresa"
+}
+```
+
+### Response Errónea (404) - Tenant No Encontrado
+
+```json
+{
+  "error": "Tenant not found"
 }
 ```
 

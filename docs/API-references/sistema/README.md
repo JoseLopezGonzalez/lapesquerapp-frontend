@@ -32,6 +32,19 @@ X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
 ```
 
+#### Query Parameters (Opcionales)
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | string | Búsqueda por ID (coincidencias parciales) |
+| name | string | Búsqueda por nombre (coincidencias parciales) |
+| email | string | Búsqueda por email (coincidencias parciales) |
+| roles | array | Filtrar por nombres de roles |
+| created_at | object | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
+| sort | string | Campo por el que ordenar (default: created_at) |
+| direction | string | Dirección de ordenamiento: `asc` o `desc` (default: desc) |
+| perPage | integer | Elementos por página (default: 10) |
+
 #### Response Exitosa (200)
 
 ```json
@@ -41,18 +54,19 @@ Authorization: Bearer {access_token}
       "id": 1,
       "name": "Usuario Admin",
       "email": "admin@example.com",
-      "active": true,
-      "roles": [
-        {
-          "id": 1,
-          "name": "superuser"
-        }
-      ],
-      "created_at": "2024-01-15T10:00:00.000000Z"
+      "roles": ["superuser", "admin"],
+      "created_at": "2024-01-15T10:00:00",
+      "updated_at": "2024-01-15T10:00:00"
     }
-  ]
+  ],
+  "current_page": 1,
+  "last_page": 5,
+  "per_page": 10,
+  "total": 50
 }
 ```
+
+**Nota:** El campo `roles` es un array de strings con los nombres de los roles asignados al usuario.
 
 ---
 
@@ -62,6 +76,13 @@ Authorization: Bearer {access_token}
 POST /api/v2/users
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
 #### Request Body
 
 ```json
@@ -69,7 +90,6 @@ POST /api/v2/users
   "name": "Nuevo Usuario",
   "email": "nuevo@example.com",
   "password": "contraseña123",
-  "password_confirmation": "contraseña123",
   "active": true,
   "role_ids": [1, 2]
 }
@@ -82,25 +102,40 @@ POST /api/v2/users
 | name | string | Nombre del usuario |
 | email | string | Email del usuario (único) |
 | password | string | Contraseña (mínimo 8 caracteres) |
-| password_confirmation | string | Confirmación de contraseña |
+| role_ids | array | Array de IDs de roles (mínimo: 1) |
 
 #### Campos Opcionales
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
 | active | boolean | Usuario activo (default: true) |
-| role_ids | array | IDs de roles asignados |
+
+**Nota:** El campo `role_ids` es un array que permite asignar múltiples roles al usuario al crearlo.
 
 #### Response Exitosa (201)
 
 ```json
 {
+  "message": "Usuario creado correctamente.",
   "data": {
     "id": 2,
     "name": "Nuevo Usuario",
     "email": "nuevo@example.com",
-    "active": true,
-    "created_at": "2024-01-15T10:00:00.000000Z"
+    "roles": ["admin", "manager"],
+    "created_at": "2024-01-15T10:00:00",
+    "updated_at": "2024-01-15T10:00:00"
+  }
+}
+```
+
+#### Response Errónea (422) - Validación
+
+```json
+{
+  "message": "Error de validación.",
+  "userMessage": "El campo role_ids es obligatorio.",
+  "errors": {
+    "role_ids": ["The role ids field is required."]
   }
 }
 ```
@@ -113,22 +148,35 @@ POST /api/v2/users
 GET /api/v2/users/{id}
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del usuario |
+
 #### Response Exitosa (200)
 
 ```json
 {
+  "message": "Usuario obtenido correctamente.",
   "data": {
     "id": 1,
     "name": "Usuario Admin",
     "email": "admin@example.com",
-    "active": true,
-    "roles": [...],
-    "assigned_store_id": 1,
-    "created_at": "2024-01-15T10:00:00.000000Z",
-    "updated_at": "2024-01-15T10:00:00.000000Z"
+    "roles": ["admin", "manager"],
+    "created_at": "2024-01-15T10:00:00",
+    "updated_at": "2024-01-15T10:00:00"
   }
 }
 ```
+
+**Nota:** El campo `roles` es un array de strings con los nombres de los roles asignados al usuario.
 
 ---
 
@@ -138,6 +186,19 @@ GET /api/v2/users/{id}
 PUT /api/v2/users/{id}
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del usuario |
+
 #### Request Body
 
 ```json
@@ -145,13 +206,62 @@ PUT /api/v2/users/{id}
   "name": "Usuario Actualizado",
   "email": "actualizado@example.com",
   "password": "nueva_contraseña",
-  "password_confirmation": "nueva_contraseña",
   "active": true,
-  "role_ids": [1]
+  "role_ids": [1, 2]
 }
 ```
 
-**Nota:** El campo `password` es opcional al actualizar.
+#### Campos Opcionales
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| name | string | Nombre del usuario |
+| email | string | Email del usuario (único, excepto el mismo) |
+| password | string | Contraseña (mínimo 8 caracteres) |
+| active | boolean | Usuario activo |
+| role_ids | array | Array de IDs de roles (mínimo: 1 si se proporciona) |
+
+**Nota:** 
+- Todos los campos son opcionales al actualizar.
+- Si se proporciona `role_ids`, reemplazará todos los roles actuales del usuario.
+- Si no se proporciona `role_ids`, se mantienen los roles existentes.
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Usuario actualizado correctamente.",
+  "data": {
+    "id": 1,
+    "name": "Usuario Actualizado",
+    "email": "actualizado@example.com",
+    "roles": ["admin", "manager"],
+    "created_at": "2024-01-15T10:00:00",
+    "updated_at": "2024-01-15T11:00:00"
+  }
+}
+```
+
+#### Response Errónea (422) - Validación
+
+```json
+{
+  "message": "Error de validación.",
+  "userMessage": "El campo role_ids debe ser un array.",
+  "errors": {
+    "role_ids": ["The role ids must be an array."]
+  }
+}
+```
+
+#### Response Errónea (404) - Usuario No Encontrado
+
+```json
+{
+  "message": "Usuario no encontrado.",
+  "userMessage": "El usuario solicitado no existe."
+}
+```
 
 ---
 
@@ -177,6 +287,12 @@ DELETE /api/v2/users/{id}
 GET /api/v2/users/options
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
 #### Response Exitosa (200)
 
 ```json
@@ -191,6 +307,8 @@ GET /api/v2/users/options
   }
 ]
 ```
+
+**Descripción:** Devuelve una lista simple de usuarios (id y name) para usar en opciones de formularios.
 
 ---
 
@@ -213,7 +331,9 @@ GET /api/v2/roles
       "id": 1,
       "name": "superuser",
       "display_name": "Super Usuario",
-      "created_at": "2024-01-15T10:00:00.000000Z"
+      "description": "Superusuario con acceso completo al sistema",
+      "created_at": "2024-01-15T10:00:00.000000Z",
+      "updated_at": "2024-01-15T10:00:00.000000Z"
     }
   ]
 }
@@ -227,12 +347,20 @@ GET /api/v2/roles
 POST /api/v2/roles
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
 #### Request Body
 
 ```json
 {
   "name": "nuevo_rol",
-  "display_name": "Nuevo Rol"
+  "display_name": "Nuevo Rol",
+  "description": "Descripción del nuevo rol"
 }
 ```
 
@@ -240,8 +368,54 @@ POST /api/v2/roles
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| name | string | Nombre del rol (único, formato snake_case) |
-| display_name | string | Nombre para mostrar |
+| name | string | Nombre del rol (único, máximo 255 caracteres) |
+
+#### Campos Opcionales
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| display_name | string | Nombre para mostrar del rol (máximo 255 caracteres) |
+| description | string | Descripción del rol (máximo 1000 caracteres) |
+
+#### Response Exitosa (201)
+
+```json
+{
+  "message": "Rol creado correctamente.",
+  "data": {
+    "id": 3,
+    "name": "nuevo_rol",
+    "display_name": "Nuevo Rol",
+    "description": "Descripción del nuevo rol",
+    "created_at": "2024-01-15T10:00:00.000000Z",
+    "updated_at": "2024-01-15T10:00:00.000000Z"
+  }
+}
+```
+
+#### Response Errónea (422) - Validación
+
+```json
+{
+  "message": "Error de validación.",
+  "userMessage": "El campo name es obligatorio.",
+  "errors": {
+    "name": ["The name field is required."]
+  }
+}
+```
+
+#### Response Errónea (422) - Nombre Duplicado
+
+```json
+{
+  "message": "Error de validación.",
+  "userMessage": "El nombre del rol ya existe.",
+  "errors": {
+    "name": ["The name has already been taken."]
+  }
+}
+```
 
 ---
 
@@ -249,6 +423,42 @@ POST /api/v2/roles
 
 ```http
 GET /api/v2/roles/{id}
+```
+
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del rol |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "data": {
+    "id": 3,
+    "name": "admin",
+    "display_name": "Administrador",
+    "description": "Administrador con permisos limitados",
+    "created_at": "2024-01-15T10:00:00.000000Z",
+    "updated_at": "2024-01-15T10:00:00.000000Z"
+  }
+}
+```
+
+#### Response Errónea (404) - Rol No Encontrado
+
+```json
+{
+  "message": "No query results for model [App\\Models\\Role] 3",
+  "userMessage": "El rol solicitado no existe."
+}
 ```
 
 ---
@@ -259,6 +469,62 @@ GET /api/v2/roles/{id}
 PUT /api/v2/roles/{id}
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del rol |
+
+#### Request Body
+
+```json
+{
+  "name": "rol_actualizado",
+  "display_name": "Rol Actualizado",
+  "description": "Descripción actualizada"
+}
+```
+
+#### Campos Opcionales
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| name | string | Nombre del rol (único, máximo 255 caracteres) |
+| display_name | string | Nombre para mostrar del rol (máximo 255 caracteres) |
+| description | string | Descripción del rol (máximo 1000 caracteres) |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Rol actualizado correctamente.",
+  "data": {
+    "id": 3,
+    "name": "rol_actualizado",
+    "display_name": "Rol Actualizado",
+    "description": "Descripción actualizada",
+    "created_at": "2024-01-15T10:00:00.000000Z",
+    "updated_at": "2024-01-15T11:00:00.000000Z"
+  }
+}
+```
+
+#### Response Errónea (404) - Rol No Encontrado
+
+```json
+{
+  "message": "No query results for model [App\\Models\\Role] 3",
+  "userMessage": "El rol solicitado no existe."
+}
+```
+
 ---
 
 ### Eliminar Rol
@@ -266,6 +532,46 @@ PUT /api/v2/roles/{id}
 ```http
 DELETE /api/v2/roles/{id}
 ```
+
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del rol |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Rol eliminado correctamente."
+}
+```
+
+#### Response Errónea (400) - Tiene Usuarios Asignados
+
+```json
+{
+  "message": "No se puede eliminar el rol porque tiene usuarios asignados.",
+  "userMessage": "Existen usuarios con este rol. Debe desasignarlos primero."
+}
+```
+
+#### Response Errónea (404) - Rol No Encontrado
+
+```json
+{
+  "message": "No query results for model [App\\Models\\Role] 3",
+  "userMessage": "El rol solicitado no existe."
+}
+```
+
+**Descripción:** Elimina un rol. No permite eliminar roles que tienen usuarios asignados.
 
 ---
 
@@ -275,17 +581,28 @@ DELETE /api/v2/roles/{id}
 GET /api/v2/roles/options
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
 #### Response Exitosa (200)
 
 ```json
 [
   {
     "id": 1,
-    "name": "superuser",
-    "display_name": "Super Usuario"
+    "name": "superuser"
+  },
+  {
+    "id": 2,
+    "name": "manager"
   }
 ]
 ```
+
+**Descripción:** Devuelve una lista simple de roles (id y name) para usar en opciones de formularios.
 
 ---
 

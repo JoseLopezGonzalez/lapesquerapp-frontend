@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 
@@ -17,7 +18,7 @@ export function getPallet(palletId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el palet');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el palet');
                 });
             }
             return response.json();
@@ -56,7 +57,7 @@ export function updatePallet(palletId, palletData, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el pedido');
+                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el pedido');
                 });
             }
             return response.json();
@@ -88,7 +89,7 @@ export async function createPallet(palletData, token) {
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || 'Error al crear la linea del pedido');
+                throw new Error(getErrorMessage(errorData) || 'Error al crear la linea del pedido');
             });
         }
         return response.json();
@@ -129,7 +130,7 @@ export async function assignPalletsToPosition(positionId, palletIds, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al ubicar los palets');
+                    throw new Error(getErrorMessage(errorData) || 'Error al ubicar los palets');
                 });
             }
             return response.json();
@@ -170,7 +171,7 @@ export function movePalletToStore(palletId, storeId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al mover el palet');
+                    throw new Error(getErrorMessage(errorData) || 'Error al mover el palet');
                 });
             }
             return response.json();
@@ -210,7 +211,7 @@ export function moveMultiplePalletsToStore(palletIds, storeId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al mover los palets');
+                    throw new Error(getErrorMessage(errorData) || 'Error al mover los palets');
                 });
             }
             return response.json();
@@ -244,7 +245,7 @@ export function removePalletPosition(palletId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al quitar la posición del palet');
+                    throw new Error(getErrorMessage(errorData) || 'Error al quitar la posición del palet');
                 });
             }
             return response.json();
@@ -280,7 +281,7 @@ export function deletePallet(palletId, token) {
                 return response.json().then((errorData) => {
                     // Para errores 403, el backend retorna { "error": "..." }
                     // Para otros errores, puede retornar { "message": "...", "error": "..." }
-                    const errorMessage = errorData.error || errorData.message || 'Error al eliminar el palet';
+                    const errorMessage = getErrorMessage(errorData) || 'Error al eliminar el palet';
                     throw new Error(errorMessage);
                 });
             }
@@ -315,7 +316,7 @@ export function unlinkPalletFromOrder(palletId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al desvincular el palet');
+                    throw new Error(getErrorMessage(errorData) || 'Error al desvincular el palet');
                 });
             }
             return response.json();
@@ -353,7 +354,7 @@ export function unlinkPalletsFromOrders(palletIds, token) {
             // El endpoint puede retornar 207 (Multi-Status) si hay errores parciales
             if (!response.ok && response.status !== 207) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al desvincular los palets');
+                    throw new Error(getErrorMessage(errorData) || 'Error al desvincular los palets');
                 });
             }
             return response.json();
@@ -387,7 +388,7 @@ export function searchPalletsByLot(lot, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al buscar palets por lote');
+                    throw new Error(getErrorMessage(errorData) || 'Error al buscar palets por lote');
                 });
             }
             return response.json();
@@ -440,7 +441,7 @@ export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener palets disponibles');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener palets disponibles');
                 });
             }
             return response.json();
@@ -478,7 +479,7 @@ export function linkPalletToOrder(palletId, orderId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al vincular el palet al pedido');
+                    throw new Error(getErrorMessage(errorData) || 'Error al vincular el palet al pedido');
                 });
             }
             return response.json();
@@ -516,7 +517,7 @@ export function linkPalletsToOrders(pallets, token) {
             // El endpoint puede retornar 207 (Multi-Status) si hay errores parciales
             if (!response.ok && response.status !== 207) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al vincular los palets');
+                    throw new Error(getErrorMessage(errorData) || 'Error al vincular los palets');
                 });
             }
             return response.json();

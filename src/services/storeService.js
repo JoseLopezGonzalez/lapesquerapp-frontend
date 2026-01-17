@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 
@@ -19,7 +20,7 @@ export async function getStore(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener stores');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener stores');
                 });
             }
             return response.json();
@@ -50,7 +51,7 @@ export async function getStores(token, page = 1) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener stores');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener stores');
                 });
             }
             return response.json();
@@ -84,7 +85,7 @@ export function getStoreOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los almacenes');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los almacenes');
                 });
             }
             return response.json();
@@ -118,7 +119,7 @@ export async function getTotalStockStats(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Error al obtener el stock total');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock total');
                 });
             }
             return response.json();
@@ -152,7 +153,7 @@ export async function getStockBySpeciesStats(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Error al obtener el stock por especies');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock por especies');
                 });
             }
             return response.json();
@@ -184,7 +185,7 @@ export async function getStockByProducts(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Error al obtener el stock por productos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock por productos');
                 });
             }
             return response.json();
@@ -216,7 +217,7 @@ export async function getRegisteredPallets(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Error al obtener los palets registrados');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los palets registrados');
                 });
             }
             return response.json();

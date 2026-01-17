@@ -2,6 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/services/orderService.js
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 /**
@@ -22,7 +23,7 @@ export function getSalespeopleOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener comerciales');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener comerciales');
                 });
             }
             return response.json();

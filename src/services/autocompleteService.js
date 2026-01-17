@@ -2,6 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { getSession } from "next-auth/react";
 import { API_URL_V2 } from "@/configs/config"; // Asegúrate de que esta ruta sea correcta
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Obtiene opciones para un componente de autocompletado desde un endpoint específico.
@@ -29,7 +30,7 @@ export const fetchAutocompleteFilterOptions = async (endpoint) => {
         if (!response.ok) {
             // Si la respuesta no es OK, intentamos parsear el error del servidor.
             const errorData = await response.json();
-            throw new Error(errorData.message || `Error ${response.status}: Error al obtener opciones de autocompletado.`);
+            throw new Error(getErrorMessage(errorData) || `Error ${response.status}: Error al obtener opciones de autocompletado.`);
         }
 
         const data = await response.json();
@@ -74,7 +75,7 @@ export const fetchAutocompleteInputOptions = async (endpoint) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `Error ${response.status}: Error al obtener opciones de autocompletado.`);
+            throw new Error(getErrorMessage(errorData) || `Error ${response.status}: Error al obtener opciones de autocompletado.`);
         }
 
         const data = await response.json();

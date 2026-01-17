@@ -1,6 +1,7 @@
 // /src/services/orderService.js
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Fetches the incoterms options from the API.
@@ -24,7 +25,7 @@ export async function getIncotermsOptions(token) {
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
-                `Error al obtener incoterms: ${errorData.message || 'Código de estado ' + response.status}`
+                `Error al obtener incoterms: ${getErrorMessage(errorData) || 'Código de estado ' + response.status}`
             );
         }
 

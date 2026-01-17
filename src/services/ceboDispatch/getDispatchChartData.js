@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 export async function getDispatchChartData({ token, speciesId, categoryId, familyId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
@@ -30,7 +31,7 @@ export async function getDispatchChartData({ token, speciesId, categoryId, famil
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || "Error al obtener datos del gráfico de salidas de cebo");
+                throw new Error(getErrorMessage(errorData) || "Error al obtener datos del gráfico de salidas de cebo");
             });
         }
         return response.json();

@@ -2,6 +2,7 @@
 // This file would contain the actual fetchWithTenant call for species options.
 import { API_URL_V2 } from "@/configs/config"; // Assuming API_URL_V2 is also used here
 import { fetchWithTenant } from "@lib/fetchWithTenant";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 /* getActiveOrders */
@@ -17,7 +18,7 @@ export function getSpeciesOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las especies');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las especies');
                 });
             }
             return response.json();

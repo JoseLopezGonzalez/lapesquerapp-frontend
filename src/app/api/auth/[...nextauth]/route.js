@@ -1,5 +1,6 @@
 import { API_URL_V2 } from '@/configs/config';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -54,7 +55,7 @@ const handler = NextAuth({
             return { ...data.user, accessToken: data.access_token };
           }
 
-          throw new Error(data.message || 'Error al iniciar sesión');
+          throw new Error(getErrorMessage(data) || 'Error al iniciar sesión');
         } catch (err) {
           console.error('Error al autenticar:', err);
           return null;
@@ -68,11 +69,12 @@ const handler = NextAuth({
     updateAge: 60 * 60 * 24, // Actualizar token cada 1 día
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Si el usuario está presente (inicia sesión), agregar datos al token
       if (user) {
         token.accessToken = user.accessToken;
-        token.role = user.role;
+        // Normalizar roles a array (el backend puede devolver array o string)
+        token.role = Array.isArray(user.roles) ? user.roles : (user.role ? (Array.isArray(user.role) ? user.role : [user.role]) : []);
         // Campos opcionales para store_operator
         if (user.assignedStoreId) {
           token.assignedStoreId = user.assignedStoreId;
@@ -85,11 +87,45 @@ const handler = NextAuth({
         }
       }
 
-      // Validar si el token ha expirado o es inválido (simular esto con un backend en el futuro)
+      // Refrescar datos del usuario si se solicita explícitamente o periódicamente
+      if (trigger === 'update' || (token.accessToken && Date.now() - (token.lastRefresh || 0) > 60 * 60 * 1000)) {
+        try {
+          const response = await fetchWithTenant(`${API_URL_V2}me`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            const currentUser = userData.data || userData;
+            
+            // Actualizar token con datos frescos - normalizar roles a array
+            const rolesFromApi = currentUser.roles || currentUser.role || token.role;
+            token.role = Array.isArray(rolesFromApi) ? rolesFromApi : (rolesFromApi ? [rolesFromApi] : []);
+            if (currentUser.assigned_store_id !== undefined) {
+              token.assignedStoreId = currentUser.assigned_store_id;
+            }
+            if (currentUser.company_name) {
+              token.companyName = currentUser.company_name;
+            }
+            if (currentUser.company_logo_url) {
+              token.companyLogoUrl = currentUser.company_logo_url;
+            }
+            token.lastRefresh = Date.now();
+          }
+        } catch (error) {
+          console.error('Error refrescando datos del usuario:', error);
+          // No fallar si no se puede refrescar, usar datos del token
+        }
+      }
+
+      // Validar si el token ha expirado o es inválido
       const tokenIsExpired = false; // Implementa lógica de validación aquí si es necesario
 
       if (tokenIsExpired) {
-        // console.log('Token expirado');
         return null;
       }
 
@@ -106,7 +142,8 @@ const handler = NextAuth({
   },
   events: {
     async signOut(message) {
-      // console.log('Usuario deslogueado:', message);
+      // El logout del backend se maneja en los componentes antes de llamar a signOut
+      // para asegurar que el token se revoca antes de limpiar la sesión del cliente
     },
   },
   pages: {

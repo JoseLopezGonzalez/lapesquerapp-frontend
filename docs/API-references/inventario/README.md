@@ -291,35 +291,45 @@ DELETE /api/v2/pallets
 
 ---
 
-### Opciones de Palets
-
-```http
-GET /api/v2/pallets/options
-```
-
----
-
-### Palets Almacenados
-
-```http
-GET /api/v2/pallets/stored-options
-```
-
----
-
-### Palets Enviados
-
-```http
-GET /api/v2/pallets/shipped-options
-```
-
----
-
 ### Palets Registrados
 
 ```http
 GET /api/v2/pallets/registered
 ```
+
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Response Exitosa (200)
+
+```json
+{
+  "id": null,
+  "name": "Palets Registrados",
+  "temperature": null,
+  "capacity": null,
+  "netWeightPallets": 1500.50,
+  "totalNetWeight": 1500.50,
+  "content": {
+    "pallets": [
+      {
+        "id": 1,
+        "status": 1,
+        "boxes": [...],
+        "netWeight": 500.00
+      }
+    ],
+    "boxes": [],
+    "bigBoxes": []
+  },
+  "map": null
+}
+```
+
+**Descripción:** Devuelve todos los palets con estado `registered` (registrados) con sus relaciones cargadas. El formato es similar a `StoreDetailsResource` para mantener consistencia en el frontend.
 
 ---
 
@@ -329,6 +339,56 @@ GET /api/v2/pallets/registered
 GET /api/v2/pallets/search-by-lot?lot=LOT-001
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Query Parameters (Requeridos)
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| lot | string | Número de lote a buscar |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "data": {
+    "pallets": [
+      {
+        "id": 1,
+        "status": 1,
+        "boxes": [
+          {
+            "id": 10,
+            "lot": "LOT-001",
+            "product": {...},
+            "net_weight": 20.00,
+            "isAvailable": true
+          }
+        ],
+        "netWeight": 500.00
+      }
+    ],
+    "total": 1,
+    "totalBoxes": 5
+  }
+}
+```
+
+**Descripción:** Busca palets registrados que tengan cajas con el lote especificado y que estén disponibles (sin `productionInputs`). Solo retorna las cajas que coinciden con el lote.
+
+#### Response Errónea (400) - Parámetro Faltante
+
+```json
+{
+  "message": "El parámetro lot es requerido.",
+  "userMessage": "Debe proporcionar el número de lote para buscar."
+}
+```
+
 ---
 
 ### Palets Disponibles para Pedido
@@ -336,6 +396,45 @@ GET /api/v2/pallets/search-by-lot?lot=LOT-001
 ```http
 GET /api/v2/pallets/available-for-order
 ```
+
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Query Parameters (Opcionales)
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| orderId | integer | ID del pedido (si se proporciona, incluye palets sin pedido O del mismo pedido) |
+| id | string | Búsqueda por ID con coincidencias parciales |
+| perPage | integer | Elementos por página (default: 20, max: 100) |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "status": 2,
+      "boxes": [...],
+      "storedPallet": {
+        "store_id": 1,
+        "position": "A-1"
+      },
+      "order_id": null
+    }
+  ],
+  "current_page": 1,
+  "last_page": 2,
+  "per_page": 20,
+  "total": 35
+}
+```
+
+**Descripción:** Lista palets disponibles para vincular a un pedido. Solo incluye palets con estado `registered` o `stored`. Excluye palets vinculados a otros pedidos (a menos que se proporcione `orderId`, en cuyo caso permite incluir palets del mismo pedido).
 
 ---
 
@@ -404,11 +503,53 @@ POST /api/v2/pallets/{id}/unassign-position
 POST /api/v2/pallets/{id}/link-order
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del palet |
+
 #### Request Body
 
 ```json
 {
-  "order_id": 1
+  "orderId": 1
+}
+```
+
+#### Campos Requeridos
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| orderId | integer | ID del pedido |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Palet vinculado correctamente al pedido",
+  "pallet_id": 1,
+  "order_id": 1,
+  "pallet": {
+    "id": 1,
+    "status": 2,
+    "order_id": 1
+  }
+}
+```
+
+#### Response Errónea (400) - Ya Vinculado a Otro Pedido
+
+```json
+{
+  "error": "El palet #1 ya está vinculado al pedido #5. Debe desvincularlo primero."
 }
 ```
 
@@ -420,12 +561,69 @@ POST /api/v2/pallets/{id}/link-order
 POST /api/v2/pallets/link-orders
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
 #### Request Body
 
 ```json
 {
-  "palet_ids": [1, 2, 3],
-  "order_id": 1
+  "pallets": [
+    {
+      "id": 1,
+      "orderId": 1
+    },
+    {
+      "id": 2,
+      "orderId": 1
+    }
+  ]
+}
+```
+
+#### Campos Requeridos
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| pallets | array | Array de objetos con `id` (palet) y `orderId` (pedido) |
+
+#### Response Exitosa (200) - Sin Errores
+
+```json
+{
+  "message": "Proceso de vinculación completado",
+  "linked": 2,
+  "already_linked": 0,
+  "errors": 0,
+  "results": [
+    {
+      "pallet_id": 1,
+      "order_id": 1,
+      "status": "linked",
+      "message": "Palet vinculado correctamente"
+    }
+  ]
+}
+```
+
+#### Response Parcial (207) - Con Errores
+
+```json
+{
+  "message": "Proceso de vinculación completado",
+  "linked": 1,
+  "errors": 1,
+  "errors_details": [
+    {
+      "pallet_id": 2,
+      "order_id": 1,
+      "error": "El palet #2 ya está vinculado al pedido #5"
+    }
+  ]
 }
 ```
 
@@ -437,6 +635,35 @@ POST /api/v2/pallets/link-orders
 POST /api/v2/pallets/{id}/unlink-order
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+```
+
+#### Path Parameters
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| id | integer | ID del palet |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Palet desvinculado correctamente del pedido",
+  "pallet_id": 1,
+  "previous_order_id": 5,
+  "pallet": {
+    "id": 1,
+    "status": 1,
+    "order_id": null
+  }
+}
+```
+
+**Descripción:** Desvincula un palet de su pedido. Si el palet estaba `stored` o `shipped`, cambia a `registered` y elimina el almacenamiento.
+
 ---
 
 ### Desvincular Múltiples Palets de Pedidos
@@ -445,14 +672,47 @@ POST /api/v2/pallets/{id}/unlink-order
 POST /api/v2/pallets/unlink-orders
 ```
 
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
 #### Request Body
 
 ```json
 {
-  "palet_ids": [1, 2, 3],
-  "order_id": 1
+  "pallet_ids": [1, 2, 3]
 }
 ```
+
+#### Campos Requeridos
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| pallet_ids | array | Array de IDs de palets (mínimo: 1) |
+
+#### Response Exitosa (200)
+
+```json
+{
+  "message": "Proceso de desvinculación completado",
+  "unlinked": 2,
+  "already_unlinked": 1,
+  "errors": 0,
+  "results": [
+    {
+      "pallet_id": 1,
+      "order_id": 5,
+      "status": "unlinked",
+      "message": "Palet desvinculado correctamente"
+    }
+  ]
+}
+```
+
+**Descripción:** Desvincula múltiples palets de sus pedidos. Devuelve 207 si hay errores, 200 si todos fueron exitosos.
 
 ---
 
@@ -529,14 +789,6 @@ DELETE /api/v2/boxes
 {
   "ids": [1, 2, 3]
 }
-```
-
----
-
-### Cajas Disponibles
-
-```http
-GET /api/v2/boxes/available
 ```
 
 ---

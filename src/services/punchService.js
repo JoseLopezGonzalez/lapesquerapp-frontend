@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Obtener lista paginada de eventos de fichaje
@@ -45,7 +46,7 @@ export async function getPunches(token, params = {}) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener eventos de fichaje');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener eventos de fichaje');
                 });
             }
             return response.json();
@@ -80,7 +81,7 @@ export async function getPunch(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el evento de fichaje');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el evento de fichaje');
                 });
             }
             return response.json();
@@ -131,7 +132,8 @@ export async function createPunch(punchData, token = null) {
                 }
                 
                 // Crear error con más información
-                const error = new Error(errorData.message || errorData.userMessage || 'Error al registrar el fichaje');
+                const errorMessage = getErrorMessage(errorData) || 'Error al registrar el fichaje';
+                const error = new Error(errorMessage);
                 error.userMessage = errorData.userMessage || error.message;
                 error.error = errorData.error;
                 error.status = response.status;
@@ -150,7 +152,7 @@ export async function createPunch(punchData, token = null) {
                 throw error;
             }
             // Si no, crear un nuevo error
-            throw new Error(error.message || 'Error al registrar el fichaje');
+            throw new Error(getErrorMessage(error) || error.message || 'Error al registrar el fichaje');
         });
 }
 
@@ -175,7 +177,7 @@ export async function updatePunch(id, punchData, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el evento de fichaje');
+                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el evento de fichaje');
                 });
             }
             return response.json();
@@ -206,7 +208,7 @@ export async function deletePunch(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar el evento de fichaje');
+                    throw new Error(getErrorMessage(errorData) || 'Error al eliminar el evento de fichaje');
                 });
             }
             return response.json();
@@ -242,7 +244,7 @@ export async function getPunchesDashboard(token, date = null) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener datos del dashboard');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener datos del dashboard');
                 });
             }
             return response.json();

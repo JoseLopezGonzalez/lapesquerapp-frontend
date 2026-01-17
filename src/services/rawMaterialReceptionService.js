@@ -2,6 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Creates a new raw material reception by sending a POST request to the API.
@@ -101,7 +102,7 @@ export function getRawMaterialReception(receptionId, token) {
             if (!response.ok) {
                 return response.json().then((errorData) => {
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = errorData.userMessage || errorData.message || 'Error al obtener la recepción';
+                    const errorMessage = getErrorMessage(errorData) || 'Error al obtener la recepción';
                     const error = new Error(errorMessage);
                     error.status = response.status;
                     error.data = errorData;
@@ -137,7 +138,7 @@ export function getSupplierOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los proveedores');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los proveedores');
                 });
             }
             return response.json();

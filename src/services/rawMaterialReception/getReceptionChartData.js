@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 export async function getReceptionChartData({ token, speciesId, categoryId, familyId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
@@ -30,7 +31,7 @@ export async function getReceptionChartData({ token, speciesId, categoryId, fami
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || "Error al obtener datos del gráfico de recepciones");
+                throw new Error(getErrorMessage(errorData) || "Error al obtener datos del gráfico de recepciones");
             });
         }
         return response.json();

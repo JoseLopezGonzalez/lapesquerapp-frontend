@@ -11,8 +11,10 @@ export default function AdminRouteProtection({ children }) {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
+      // Normalizar roles del usuario a array
+      const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
       // Si es store_operator, redirigir a su almacén asignado
-      if (session.user.role === "store_operator" && session.user.assignedStoreId) {
+      if (userRoles.includes("store_operator") && session.user.assignedStoreId) {
         // console.log("🚫 Store_operator intentando acceder a admin, redirigiendo a:", `/warehouse/${session.user.assignedStoreId}`);
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
         return;
@@ -30,12 +32,15 @@ export default function AdminRouteProtection({ children }) {
   }
 
   // Si es store_operator, mostrar loader mientras redirige
-  if (status === "authenticated" && session.user.role === "store_operator") {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader />
-      </div>
-    );
+  if (status === "authenticated" && session?.user) {
+    const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
+    if (userRoles.includes("store_operator")) {
+      return (
+        <div className="flex justify-center items-center h-screen">
+          <Loader />
+        </div>
+      );
+    }
   }
 
   // Para otros usuarios, mostrar el contenido normal

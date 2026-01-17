@@ -530,45 +530,47 @@ export function syncProductionOutputs(productionRecordId, data, token) {
 }
 
 // ==================== PRODUCTION RECORD IMAGES ====================
+// NOTA: Funcionalidad de imágenes deshabilitada - UI es solo mockup para implementación futura
+// Las funciones están comentadas ya que los endpoints no están implementados en el backend
 
-/**
- * Obtiene todas las imágenes de un production record
- * @param {string|number} recordId - ID del record
- * @param {string} token - Token de autenticación
- * @returns {Promise<Object>} - Lista de imágenes
- */
-export function getProductionRecordImages(recordId, token) {
-    return apiGet(`${API_URL_V2}production-records/${recordId}/images`, token, {}, {
-        transform: (data) => data.data || data || []
-    })
-}
+// /**
+//  * Obtiene todas las imágenes de un production record
+//  * @param {string|number} recordId - ID del record
+//  * @param {string} token - Token de autenticación
+//  * @returns {Promise<Object>} - Lista de imágenes
+//  */
+// export function getProductionRecordImages(recordId, token) {
+//     return apiGet(`${API_URL_V2}production-records/${recordId}/images`, token, {}, {
+//         transform: (data) => data.data || data || []
+//     })
+// }
 
-/**
- * Sube una imagen a un production record
- * @param {string|number} recordId - ID del record
- * @param {File} imageFile - Archivo de imagen
- * @param {string} token - Token de autenticación
- * @returns {Promise<Object>} - Imagen subida
- */
-export function uploadProductionRecordImage(recordId, imageFile, token) {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    
-    return apiPostFormData(`${API_URL_V2}production-records/${recordId}/images`, token, formData, {
-        transform: (data) => data.data || data
-    })
-}
+// /**
+//  * Sube una imagen a un production record
+//  * @param {string|number} recordId - ID del record
+//  * @param {File} imageFile - Archivo de imagen
+//  * @param {string} token - Token de autenticación
+//  * @returns {Promise<Object>} - Imagen subida
+//  */
+// export function uploadProductionRecordImage(recordId, imageFile, token) {
+//     const formData = new FormData();
+//     formData.append('image', imageFile);
+//     
+//     return apiPostFormData(`${API_URL_V2}production-records/${recordId}/images`, token, formData, {
+//         transform: (data) => data.data || data
+//     })
+// }
 
-/**
- * Elimina una imagen de un production record
- * @param {string|number} recordId - ID del record
- * @param {string|number} imageId - ID de la imagen
- * @param {string} token - Token de autenticación
- * @returns {Promise<Object>} - Respuesta del servidor
- */
-export function deleteProductionRecordImage(recordId, imageId, token) {
-    return apiDelete(`${API_URL_V2}production-records/${recordId}/images/${imageId}`, token)
-}
+// /**
+//  * Elimina una imagen de un production record
+//  * @param {string|number} recordId - ID del record
+//  * @param {string|number} imageId - ID de la imagen
+//  * @param {string} token - Token de autenticación
+//  * @returns {Promise<Object>} - Respuesta del servidor
+//  */
+// export function deleteProductionRecordImage(recordId, imageId, token) {
+//     return apiDelete(`${API_URL_V2}production-records/${recordId}/images/${imageId}`, token)
+// }
 
 // ==================== PRODUCTION OUTPUT CONSUMPTIONS ====================
 

@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Obtener lista paginada de empleados
@@ -37,7 +38,7 @@ export async function getEmployees(token, params = {}) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener empleados');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener empleados');
                 });
             }
             return response.json();
@@ -72,7 +73,7 @@ export async function getEmployee(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el empleado');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el empleado');
                 });
             }
             return response.json();
@@ -105,7 +106,7 @@ export async function createEmployee(employeeData, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al crear el empleado');
+                    throw new Error(getErrorMessage(errorData) || 'Error al crear el empleado');
                 });
             }
             return response.json();
@@ -139,7 +140,7 @@ export async function updateEmployee(id, employeeData, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el empleado');
+                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el empleado');
                 });
             }
             return response.json();
@@ -170,7 +171,7 @@ export async function deleteEmployee(id, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar el empleado');
+                    throw new Error(getErrorMessage(errorData) || 'Error al eliminar el empleado');
                 });
             }
             return response.json();
@@ -204,7 +205,7 @@ export function getEmployeeOptions(token, params = {}) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las opciones de empleados');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las opciones de empleados');
                 });
             }
             return response.json();

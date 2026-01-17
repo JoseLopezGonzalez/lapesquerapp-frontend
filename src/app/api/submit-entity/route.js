@@ -43,7 +43,12 @@ export async function POST(req) {
 
             if (!apiResponse.ok) {
                 console.error('❌ Error al enviar al backend:', responseData);
-                return NextResponse.json({ error: responseData }, { status: apiResponse.status });
+                // Extraer userMessage si está disponible
+                const errorMessage = getErrorMessage(responseData);
+                return NextResponse.json({ 
+                    error: responseData,
+                    message: errorMessage 
+                }, { status: apiResponse.status });
             }
 
             return NextResponse.json({ success: true, data: responseData }, { status: 200 });

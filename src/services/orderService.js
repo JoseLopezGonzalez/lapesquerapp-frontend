@@ -2,6 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 
 /**
@@ -24,7 +25,7 @@ export function getOrder(orderId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el pedido');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el pedido');
                 });
             }
             return response.json();
@@ -66,7 +67,7 @@ export function updateOrder(orderId, orderData, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el pedido');
+                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el pedido');
                 });
             }
             return response.json();
@@ -112,7 +113,7 @@ export function getActiveOrders(token) {
             if (!response.ok) {
                 return response.json().then((errorData) => {
                     console.error('getActiveOrders: Error en respuesta:', errorData);
-                    throw new Error(errorData.message || 'Error al obtener los pedidos activos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
                 });
             }
             return response.json();
@@ -175,7 +176,7 @@ export async function updateOrderPlannedProductDetail(detailId, detailData, toke
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || 'Error al actualizar la linea del pedido');
+                throw new Error(getErrorMessage(errorData) || 'Error al actualizar la linea del pedido');
             });
         }
         return response.json();
@@ -204,7 +205,7 @@ export async function deleteOrderPlannedProductDetail(detailId, token) {
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || 'Error al eliminar la linea del pedido');
+                throw new Error(getErrorMessage(errorData) || 'Error al eliminar la linea del pedido');
             });
         }
         return response.json();
@@ -234,7 +235,7 @@ export async function createOrderPlannedProductDetail(detailData, token) {
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || 'Error al crear la linea del pedido');
+                throw new Error(getErrorMessage(errorData) || 'Error al crear la linea del pedido');
             });
         }
         return response.json();
@@ -252,20 +253,20 @@ export async function createOrderPlannedProductDetail(detailData, token) {
 
 export async function setOrderStatus(orderId, status, token) {
 
-    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/status?status=${status}`, {
+    return fetchWithTenant(`${API_URL_V2}orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',  // <- Este es el header que necesitas
-            'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': navigator.userAgent,
         },
-
+        body: JSON.stringify({ status }),
     })
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al actualizar el pedido');
+                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el pedido');
                 });
             }
             return response.json();
@@ -297,7 +298,7 @@ export async function createOrderIncident(orderId, description, token) {
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || 'Error al crear la incidencia');
+                    throw new Error(getErrorMessage(errorData) || 'Error al crear la incidencia');
             });
         }
         return response.json();
@@ -330,7 +331,7 @@ export async function updateOrderIncident(orderId, resolutionType, resolutionNot
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al resolver la incidencia');
+                    throw new Error(getErrorMessage(errorData) || 'Error al resolver la incidencia');
                 });
             }
             return response.json();
@@ -358,7 +359,7 @@ export async function destroyOrderIncident(orderId, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al eliminar la incidencia');
+                    throw new Error(getErrorMessage(errorData) || 'Error al eliminar la incidencia');
                 });
             }
             return response.json();
@@ -385,7 +386,7 @@ export function getActiveOrdersOptions(token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los pedidos activos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
                 });
             }
             return response.json();
@@ -426,7 +427,7 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el ranking de pedidos');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el ranking de pedidos');
                 });
             }
             return response.json();
@@ -455,7 +456,7 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener las ventas por comercial');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las ventas por comercial');
                 });
             }
             return response.json();
@@ -485,7 +486,7 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener la cantidad total vendida')
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener la cantidad total vendida')
                 })
             }
             return response.json()
@@ -517,7 +518,7 @@ export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener el importe total vendido')
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el importe total vendido')
                 })
             }
             return response.json()
@@ -563,7 +564,7 @@ export async function getSalesChartData({ token, speciesId, categoryId, familyId
     }).then((response) => {
         if (!response.ok) {
             return response.json().then((errorData) => {
-                throw new Error(errorData.message || "Error al obtener datos del gráfico de ventas");
+                throw new Error(getErrorMessage(errorData) || "Error al obtener datos del gráfico de ventas");
             });
         }
         return response.json();
@@ -592,7 +593,7 @@ export async function getTransportChartData({ token, from, to }) {
         .then((response) => {
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    throw new Error(errorData.message || 'Error al obtener los datos de transporte');
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de transporte');
                 });
             }
             return response.json();
@@ -640,7 +641,7 @@ export const createOrder = async (orderPayload) => {
         if (!response.ok) {
             const errorData = await response.json();
             // Lanza un error con el mensaje del backend si está disponible
-            throw new Error(errorData.message || `Error ${response.status}: Error al crear el pedido.`);
+            throw new Error(getErrorMessage(errorData) || `Error ${response.status}: Error al crear el pedido.`);
         }
 
         const data = await response.json();

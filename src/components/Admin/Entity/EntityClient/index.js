@@ -12,7 +12,10 @@ import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 import { FaRegFilePdf } from "react-icons/fa";
 import { getToastTheme } from '@/customs/reactHotToast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { fetchEntities, deleteEntity, performAction, downloadFile } from '@/services/entityService';
+// Utilidades genéricas para acciones y descargas (no específicas de entidades)
+import { performAction, downloadFile } from '@/lib/api/apiActions';
+import { getEntityService } from '@/services/domain/entityServiceMapper';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { EntityBody } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody';
 import { generateColumns2 } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/generateColumns';
 import { mapEntityRows } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityBody/utils/mapEntityRows';
@@ -102,12 +105,15 @@ export default function EntityClient({ config }) {
     const handleDelete = useCallback(async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
 
-        const deleteUrl = config.deleteEndpoint.replace(':id', id);
+        const entityService = getEntityService(config.endpoint);
+        if (!entityService) {
+            toast.error('No se encontró el servicio para esta entidad.');
+            return;
+        }
 
         try {
-            const result = await deleteEntity(`${API_URL_V2}${deleteUrl}`);
-            // El backend puede retornar { "message": "..." } en la respuesta exitosa
-            const successMessage = result.data?.message || 'Elemento eliminado con éxito.';
+            await entityService.delete(id);
+            const successMessage = 'Elemento eliminado con éxito.';
             toast.success(successMessage);
             setData((prevData) => ({
                 ...prevData,
@@ -119,35 +125,40 @@ export default function EntityClient({ config }) {
             if (error instanceof Response) {
                 try {
                     const errorData = await error.json();
-                    // El backend puede retornar { "error": "..." } o { "message": "...", "error": "..." }
-                    errorMessage = errorData.error || errorData.message || errorMessage;
+                    errorMessage = getErrorMessage(errorData) || errorMessage;
                 } catch (jsonError) {
-                    // Si no se puede parsear el JSON, usar el mensaje por defecto según el status
                     if (error.status === 403) {
                         errorMessage = 'No tienes permiso para eliminar este elemento.';
                     }
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.message;
+                errorMessage = error.userMessage || error.message;
             }
             toast.error(errorMessage);
         }
-    }, [config.deleteEndpoint]);
+    }, [config.endpoint]);
 
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
-        const queryString = formatFilters(currentFilters);
+        const entityService = getEntityService(config.endpoint);
+        
+        if (!entityService) {
+            toast.error('No se encontró el servicio para esta entidad.');
+            setData((prevData) => ({ ...prevData, loading: false }));
+            return;
+        }
+
         const perPage = config?.perPage || 12;
-        const url = `${API_URL_V2}${config.endpoint}?${queryString}&page=${page}&perPage=${perPage}`;
+        const filtersObject = formatFiltersObject(currentFilters);
 
         try {
-            const result = await fetchEntities(url);
+            const result = await entityService.list(filtersObject, { page, perPage });
 
             // Usar el helper para procesar los datos
             const processedRows = mapEntityRows(result.data, config.table.headers, handleDelete, config);
 
-            const apiCurrentPage = result.meta.current_page;
-            const apiTotalPages = result.meta.last_page;
+            const apiCurrentPage = result.meta?.current_page || page;
+            const apiTotalPages = result.meta?.last_page || 1;
 
             // Validar que la página devuelta por la API sea válida
             // Si la página solicitada es mayor que el total de páginas, ajustar a la última página disponible
@@ -164,8 +175,8 @@ export default function EntityClient({ config }) {
             setPaginationMeta({
                 currentPage: validPage,
                 totalPages: apiTotalPages,
-                totalItems: result.meta.total,
-                perPage: result.meta.per_page,
+                totalItems: result.meta?.total || 0,
+                perPage: result.meta?.per_page || perPage,
             });
         } catch (error) {
             let errorMessage = 'Error al cargar los datos.';
@@ -178,7 +189,7 @@ export default function EntityClient({ config }) {
                     errorMessage = `Error: ${error.statusText}`;
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.message;
+                errorMessage = error.userMessage || error.message;
             }
             toast.error(errorMessage, getToastTheme());
             setData((prevData) => ({ ...prevData, loading: false }));
@@ -222,15 +233,16 @@ export default function EntityClient({ config }) {
     const handleSelectedRowsDelete = async () => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar estos elementos?')) return;
 
-        const deleteUrl = config.deleteEndpoint.includes(':id')
-            ? config.deleteEndpoint.replace('/:id', '')
-            : config.deleteEndpoint;
+        const entityService = getEntityService(config.endpoint);
+        if (!entityService) {
+            toast.error('No se encontró el servicio para esta entidad.');
+            return;
+        }
 
         setIsDeleting(true);
         try {
-            const result = await deleteEntity(`${API_URL_V2}${deleteUrl}`, { ids: selectedRows });
-            // El backend puede retornar { "message": "..." } en la respuesta exitosa
-            const successMessage = result.data?.message || 'Elementos eliminados con éxito.';
+            await entityService.deleteMultiple(selectedRows);
+            const successMessage = 'Elementos eliminados con éxito.';
             toast.success(successMessage);
             // Filter out deleted rows and reset selectedRows state after successful deletion
             setData((prevData) => ({
@@ -243,10 +255,8 @@ export default function EntityClient({ config }) {
             if (error instanceof Response) {
                 try {
                     const errorData = await error.json();
-                    // El backend puede retornar { "error": "..." } o { "message": "...", "error": "..." }
-                    errorMessage = errorData.error || errorData.message || errorMessage;
+                    errorMessage = getErrorMessage(errorData) || errorMessage;
                 } catch (jsonError) {
-                    // Si no se puede parsear el JSON, usar el mensaje por defecto según el status
                     if (error.status === 403) {
                         errorMessage = 'No tienes permiso para eliminar estos elementos.';
                     } else if (error.status === 400) {
@@ -254,7 +264,7 @@ export default function EntityClient({ config }) {
                     }
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.message;
+                errorMessage = error.userMessage || error.message;
             }
             toast.error(errorMessage);
         } finally {
@@ -290,7 +300,8 @@ export default function EntityClient({ config }) {
             if (error instanceof Response && error.status === 403) {
                 errorMessage = 'No tienes permiso para realizar esta acción.';
             } else if (error instanceof Error) {
-                errorMessage = error.message;
+                // Si el error ya tiene userMessage (de fetchWithTenant), usarlo
+                errorMessage = error.userMessage || error.message;
             }
             toast.error(errorMessage);
         }
@@ -329,7 +340,7 @@ export default function EntityClient({ config }) {
                 error instanceof Response && error.status === 403
                     ? 'No tienes permiso para generar esta exportación.'
                     : error instanceof Error
-                        ? error.message
+                        ? (error.userMessage || error.message)
                         : 'Error: ocurrió algo inesperado al generar la exportación.';
             toast.error(errorMessage, { id: toastId });
         } finally {
@@ -368,7 +379,7 @@ export default function EntityClient({ config }) {
                 error instanceof Response && error.status === 403
                     ? 'No tienes permiso para generar este reporte.'
                     : error instanceof Error
-                        ? error.message
+                        ? (error.userMessage || error.message)
                         : 'Error: ocurrió algo inesperado al generar el reporte.';
             toast.error(errorMessage, { id: toastId });
         } finally {

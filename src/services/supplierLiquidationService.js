@@ -2,6 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
+import { getErrorMessage } from "@/lib/api/apiHelpers";
 
 /**
  * Obtiene la lista de proveedores con actividad en un rango de fechas
@@ -48,7 +49,7 @@ export const getSuppliersWithActivity = async (startDate, endDate) => {
                 errorData = { message: `Error ${response.status}: ${response.statusText}` };
             }
             throw new Error(
-                errorData.message || `Error ${response.status}: Error al obtener la lista de proveedores.`
+                getErrorMessage(errorData) || `Error ${response.status}: Error al obtener la lista de proveedores.`
             );
         }
 
@@ -106,7 +107,7 @@ export const getSupplierLiquidationDetails = async (supplierId, startDate, endDa
                 errorData = { message: `Error ${response.status}: ${response.statusText}` };
             }
             throw new Error(
-                errorData.message || `Error ${response.status}: Error al obtener el detalle de la liquidación.`
+                getErrorMessage(errorData) || `Error ${response.status}: Error al obtener el detalle de la liquidación.`
             );
         }
 

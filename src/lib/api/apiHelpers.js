@@ -18,6 +18,16 @@ export class ApiError extends Error {
 }
 
 /**
+ * Extrae el mensaje de error priorizando userMessage sobre message
+ * @param {Object} errorData - Datos del error de la API
+ * @returns {string} Mensaje de error para mostrar al usuario
+ */
+export const getErrorMessage = (errorData) => {
+    if (!errorData) return 'Error desconocido';
+    return errorData.userMessage || errorData.message || errorData.error || 'Error desconocido';
+};
+
+/**
  * Realiza una petición API con manejo de errores unificado
  * @param {string} url - URL de la petición
  * @param {object} options - Opciones de fetch (method, headers, body, etc.)
@@ -60,7 +70,7 @@ export const apiRequest = async (url, options = {}, config = {}) => {
             }
 
             // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = errorData.userMessage || errorData.message || errorData.error || `Error en la petición: ${response.statusText}`;
+            const errorMessage = getErrorMessage(errorData) || `Error en la petición: ${response.statusText}`;
             throw new ApiError(
                 errorMessage,
                 response.status,

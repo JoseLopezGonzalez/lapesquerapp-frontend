@@ -21,11 +21,19 @@ export default function Navbar() {
 
     const handleLogout = async () => {
         try {
+            // Primero revocar el token en el backend
+            const { logout: logoutBackend } = await import('@/services/authService');
+            await logoutBackend();
+            
+            // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             window.location.href = '/login';
             toast.success('Sesión cerrada correctamente');
         } catch (err) {
-            toast.error(err.message || 'Error al cerrar sesión');
+            // Incluso si falla el logout del backend, continuar con el logout del cliente
+            await signOut({ redirect: false });
+            window.location.href = '/login';
+            toast.success('Sesión cerrada correctamente');
         }
     };
 

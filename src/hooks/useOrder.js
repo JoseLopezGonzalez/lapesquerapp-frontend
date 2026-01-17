@@ -338,8 +338,9 @@ export function useOrder(orderId, onChange) {
         })
             .then((response) => {
                 if (!response.ok) {
-                    return response.json().then((errorData) => {
-                        throw new Error(errorData.message || 'Error ');
+                    return response.json().then(async (errorData) => {
+                        const { getErrorMessage } = await import('@/lib/api/apiHelpers');
+                        throw new Error(getErrorMessage(errorData) || 'Error ');
                     });
                 }
                 return response.json();
@@ -363,8 +364,9 @@ export function useOrder(orderId, onChange) {
         })
             .then((response) => {
                 if (!response.ok) {
-                    return response.json().then((errorData) => {
-                        throw new Error(errorData.message || 'Error ');
+                    return response.json().then(async (errorData) => {
+                        const { getErrorMessage } = await import('@/lib/api/apiHelpers');
+                        throw new Error(getErrorMessage(errorData) || 'Error ');
                     });
                 }
                 return response.json();

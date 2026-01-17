@@ -43,11 +43,19 @@ export function AppSidebar() {
 
     const handleLogout = React.useCallback(async () => {
         try {
+            // Primero revocar el token en el backend
+            const { logout: logoutBackend } = await import('@/services/authService');
+            await logoutBackend();
+            
+            // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             window.location.href = '/';
             toast.success('Sesión cerrada correctamente', getToastTheme());
         } catch (err) {
-            toast.error(err.message || 'Error al cerrar sesión', getToastTheme());
+            // Incluso si falla el logout del backend, continuar con el logout del cliente
+            await signOut({ redirect: false });
+            window.location.href = '/';
+            toast.success('Sesión cerrada correctamente', getToastTheme());
         }
     }, []);
 

@@ -1,5 +1,6 @@
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { getSession } from 'next-auth/react';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 
 const getAuthHeaders = async () => {
     const session = await getSession();
@@ -92,6 +93,7 @@ export const downloadFile = async (url, fileName, type) => {
             }
 
             // Crear un objeto de error más detallado
+            const errorMessage = errorData ? getErrorMessage(errorData) : (errorText || `Error HTTP ${response.status}: ${response.statusText}`);
             const detailedError = {
                 type: 'HTTP_ERROR',
                 status: response.status,
@@ -99,7 +101,7 @@ export const downloadFile = async (url, fileName, type) => {
                 url: url,
                 data: errorData,
                 text: errorText,
-                message: `Error HTTP ${response.status}: ${response.statusText}`
+                message: errorMessage
             };
 
             console.error("Error durante la descarga del archivo:", detailedError);

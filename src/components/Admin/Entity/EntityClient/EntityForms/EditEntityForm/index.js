@@ -16,15 +16,14 @@ import { DatePicker } from "@/components/ui/datePicker";
 import { format } from "date-fns"
 import { Combobox } from "@/components/Shadcn/Combobox";
 import EmailListInput from "@/components/ui/emailListInput";
-import { API_URL_V2 } from "@/configs/config";
 
 import get from "lodash.get";
 import { getToastTheme } from "@/customs/reactHotToast";
 import Loader from "@/components/Utilities/Loader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Import the new service functions
-import { fetchEntityData, fetchAutocompleteOptions, submitEntityForm } from '@/services/editEntityService';
+// Import domain services and mapper
+import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { isoToDateTimeLocal, datetimeLocalToIso } from '@/helpers/production/dateFormatters';
 
 export function mapApiDataToFormValues(fields, data) {
@@ -87,8 +86,15 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
     // Function to fetch and set entity data
     const loadEntityData = useCallback(async () => {
+        const entityService = getEntityService(endpoint);
+        if (!entityService) {
+            toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+            setLoading(false);
+            return;
+        }
+
         try {
-            const data = await fetchEntityData(`${API_URL_V2}${endpoint}/${id}`);
+            const data = await entityService.getById(id);
             const formValues = mapApiDataToFormValues(fields, data);
             reset(formValues);
         } catch (err) {
@@ -97,15 +103,15 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
                 else if (err.status === 403) userMessage = "Permiso denegado.";
                 else userMessage = `Error ${err.status}: ${userMessage}`;
+            } else if (err instanceof Error) {
+                userMessage = err.userMessage || err.message || userMessage;
             }
             toast.error(userMessage, getToastTheme());
             console.error("Error loading entity data:", err);
-            // Optionally redirect on error if data is critical
-            // router.push('/error-page');
         } finally {
             setLoading(false);
         }
-    }, [id, endpoint, fields, reset]); // Add reset to dependencies
+    }, [id, endpoint, fields, reset]);
 
     // Function to fetch autocomplete options
     const loadAutocompleteOptions = useCallback(async () => {
@@ -114,18 +120,26 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
             fields.map(async (field) => {
                 if (field.type === "Autocomplete" && field.endpoint) {
                     try {
-                        const options = await fetchAutocompleteOptions(`${API_URL_V2}${field.endpoint}`);
-                        result[field.name] = options;
+                        // Extraer nombre de entidad del endpoint (ej: "suppliers/options" -> "suppliers")
+                        const entityName = field.endpoint.replace('/options', '');
+                        const entityService = getEntityService(entityName);
+                        
+                        if (entityService) {
+                            const options = await entityService.getOptions();
+                            result[field.name] = options;
+                        } else {
+                            console.warn(`No se encontró servicio para entidad "${entityName}"`);
+                            result[field.name] = [];
+                        }
                     } catch (err) {
                         console.error(`Error cargando opciones de ${field.name}:`, err);
                         result[field.name] = [];
-                        // Optionally show a toast here if an individual autocomplete fails
                     }
                 }
             })
         );
         setLoadedOptions(result);
-    }, [fields]); // Add fields to dependencies
+    }, [fields]);
 
     // Load initial data and options on component mount
     useEffect(() => {
@@ -176,7 +190,13 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 }
             });
 
-            await submitEntityForm(`${API_URL_V2}${endpoint}/${id}`, method, finalData);
+            const entityService = getEntityService(endpoint);
+            if (!entityService) {
+                toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+                return;
+            }
+
+            await entityService.update(id, finalData);
             toast.success(successMessage, getToastTheme());
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
@@ -187,10 +207,10 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 else if (err.status === 403) userMessage = "Permiso denegado.";
                 else if (err.status === 422) { // Unprocessable Entity - often for validation errors
                     const errorBody = await err.json();
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
                     userMessage = errorBody.userMessage || errorBody.message || userMessage;
-                    // You might want to display specific field errors from errorBody.errors here
                 }
+            } else if (err instanceof Error) {
+                userMessage = err.userMessage || err.message || userMessage;
             }
             toast.error(userMessage, getToastTheme());
             console.error("Submission error:", err);

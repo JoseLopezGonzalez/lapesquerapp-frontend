@@ -18,14 +18,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/datePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
-import { API_URL_V2 } from "@/configs/config";
 import EmailListInput from "@/components/ui/emailListInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns"
 
-// Import the new service functions
-import { fetchAutocompleteOptions, createEntity } from '@/services/createEntityService';
-import { getToastTheme } from "@/customs/reactHotToast"; // Make sure this import exists and is correct
+// Import domain services and mapper
+import { getEntityService } from '@/services/domain/entityServiceMapper';
+import { getToastTheme } from "@/customs/reactHotToast";
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 
 
 function prepareValidations(fields) {
@@ -74,18 +74,26 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
             fields.map(async (field) => {
                 if (field.type === "Autocomplete" && field.endpoint) {
                     try {
-                        const options = await fetchAutocompleteOptions(`${API_URL_V2}${field.endpoint}`);
-                        result[field.name] = options;
+                        // Extraer nombre de entidad del endpoint (ej: "suppliers/options" -> "suppliers")
+                        const entityName = field.endpoint.replace('/options', '');
+                        const entityService = getEntityService(entityName);
+                        
+                        if (entityService) {
+                            const options = await entityService.getOptions();
+                            result[field.name] = options;
+                        } else {
+                            console.warn(`No se encontró servicio para entidad "${entityName}"`);
+                            result[field.name] = [];
+                        }
                     } catch (err) {
                         console.error(`Error cargando opciones para ${field.name}:`, err);
                         result[field.name] = [];
-                        // Optionally, show a more specific toast here if an individual autocomplete fails
                     }
                 }
             })
         );
         setLoadedOptions(result);
-    }, [fields]); // Add fields to dependencies
+    }, [fields]);
 
     useEffect(() => {
         loadAutocompleteOptions();
@@ -129,17 +137,15 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 }
             });
 
-            const response = await createEntity(`${API_URL_V2}${endpoint}`, finalData);
+            const entityService = getEntityService(endpoint);
+            if (!entityService) {
+                toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+                return;
+            }
 
-            if (response.ok) {
-                // Obtener el ID de la entidad creada desde la respuesta
-                let createdId = null;
-                try {
-                    const responseData = await response.json();
-                    createdId = responseData?.data?.id || responseData?.id || null;
-                } catch (parseError) {
-                    console.error("Error parsing response:", parseError);
-                }
+            try {
+                const createdEntity = await entityService.create(finalData);
+                const createdId = createdEntity?.id || createdEntity?.data?.id || null;
 
                 toast.success(successMessage || "Entidad creada con éxito!", getToastTheme());
                 reset(); // Clear form after successful submission
@@ -151,19 +157,20 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     // Para otras entidades, solo cerrar el modal
                     if (typeof onSuccess === 'function') onSuccess();
                 }
-            } else {
+            } catch (createError) {
                 let userErrorMessage = errorMessage || "Error al crear la entidad";
-                // Attempt to parse response for more specific error messages (e.g., validation errors)
-                try {
-                    // Clonar la respuesta para poder leerla
-                    const responseClone = response.clone();
-                    const errorData = await responseClone.json();
-                    userErrorMessage = errorData.message || userErrorMessage;
-                    // If your API returns field-specific errors, you could use them here
-                    // e.g., if (errorData.errors) { /* map to form errors */ }
-                } catch (parseError) {
-                    console.error("Error parsing error response:", parseError);
+                
+                if (createError instanceof Response) {
+                    try {
+                        const errorData = await createError.json();
+                        userErrorMessage = getErrorMessage(errorData) || userErrorMessage;
+                    } catch (parseError) {
+                        console.error("Error parsing error response:", parseError);
+                    }
+                } else if (createError instanceof Error) {
+                    userErrorMessage = createError.userMessage || createError.message || userErrorMessage;
                 }
+                
                 toast.error(userErrorMessage, getToastTheme());
             }
         } catch (error) {

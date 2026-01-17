@@ -175,6 +175,11 @@ export const navigationConfig = [
                 href: '/admin/users',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
+            {
+                name: 'Roles',
+                href: '/admin/roles',
+                allowedRoles: ["admin", "manager", "superuser"],
+            },
         ],
     },
     {
