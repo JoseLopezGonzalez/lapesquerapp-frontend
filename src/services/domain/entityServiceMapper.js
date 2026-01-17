@@ -27,6 +27,15 @@ import { employeeService } from './employees/employeeService';
 import { customerService } from './customers/customerService';
 import { storeService } from './stores/storeService';
 import { rawMaterialReceptionService } from './raw-material-receptions/rawMaterialReceptionService';
+import { orderService } from './orders/orderService';
+import { boxService } from './boxes/boxService';
+import { countryService } from './countries/countryService';
+import { palletService } from './pallets/palletService';
+import { productionService } from './productions/productionService';
+import { punchService } from './punches/punchService';
+import { roleService } from './roles/roleService';
+import { sessionService } from './sessions/sessionService';
+import { userService } from './users/userService';
 
 /**
  * Mapa de nombres de entidades a servicios de dominio
@@ -53,6 +62,15 @@ const entityServiceMap = {
     'customers': customerService,
     'stores': storeService,
     'raw-material-receptions': rawMaterialReceptionService,
+    'orders': orderService,
+    'boxes': boxService,
+    'countries': countryService,
+    'pallets': palletService,
+    'productions': productionService,
+    'punches': punchService,
+    'roles': roleService,
+    'sessions': sessionService,
+    'users': userService,
 };
 
 /**

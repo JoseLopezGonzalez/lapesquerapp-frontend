@@ -31,6 +31,16 @@ Ejemplo completo y documentado de cómo implementar un service de dominio, usand
 
 **🔧 Consulta esto** cuando necesites crear un nuevo service de dominio.
 
+### 5. [Plan de Integración: Vercel AI Chatbot](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md) ⭐ **NUEVO**
+Plan detallado paso a paso para integrar el template de Vercel AI Chatbot con los servicios de dominio.
+
+**🚀 Úsalo** para implementar el chat AI conectado a todos los servicios de dominio.
+
+### 6. [Próximos Pasos](./PROXIMOS-PASOS.md)
+Documento que resume las opciones de próximos pasos después de completar las fases 1-5.
+
+**📋 Revisa** para ver qué hacer después de completar la refactorización.
+
 ---
 
 ## 🗂️ Estructura de Archivos en el Proyecto
@@ -94,14 +104,16 @@ Ejemplo completo y documentado de cómo implementar un service de dominio, usand
 
 ## 📅 Estado del Proyecto
 
-**Última actualización:** Diciembre 2024
+**Última actualización:** Enero 2025
 
-**Estado:** Fundación completada - Listo para extensión gradual
+**Estado:** 
+- ✅ Fases 1-5 completadas (27 servicios de dominio creados)
+- ⏳ Fase 6 en progreso: Integración con Vercel AI Chatbot
 
 **Próximos pasos:**
-- Crear services de dominio para todas las entidades
-- Migrar componentes para usar services de dominio
-- Eliminar uso directo de servicios genéricos desde componentes
+- Implementar integración con Vercel AI Chatbot (ver [Plan de Integración](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md))
+- Crear tools/functions que conecten el AI con los servicios de dominio
+- Crear UI del chat
 
 ---
 

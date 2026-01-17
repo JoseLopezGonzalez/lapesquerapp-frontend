@@ -109,11 +109,12 @@ Todos los servicios de prioridad media ya han sido refactorizados:
   - Ubicación nueva: `/src/services/domain/raw-material-receptions/rawMaterialReceptionService.js`
   - Estado: ✅ Refactorizado y listo para usar. Funciones de compatibilidad mantenidas.
 
-- [x] **`orderService.js`** → Verificado y Documentado ✅ COMPLETADO
-  - Ubicación: `/src/services/orderService.js` (mantener en ubicación actual)
-  - Estado: ✅ Estructura verificada. Este servicio es muy complejo con 18 funciones exportadas y métodos específicos de negocio (estadísticas, incidencias, detalles planificados, etc.).
-  - Nota: El `orderService` ya tiene una buena estructura y métodos semánticos de negocio. Los métodos específicos (estadísticas, incidencias, detalles planificados) están correctamente encapsulados. 
-  - Recomendación: Mantener como está ya que expone métodos semánticos de negocio claros y está bien estructurado. Si se desea refactorizar en el futuro, se podría crear un wrapper que use genéricos para CRUD básico mientras mantiene los métodos específicos.
+- [x] **`orderService.js`** → Wrapper/Adapter Creado ✅ COMPLETADO
+  - Ubicación original: `/src/services/orderService.js` (mantener - contiene 18 métodos específicos)
+  - Ubicación nuevo wrapper: `/src/services/domain/orders/orderService.js`
+  - Estado: ✅ Wrapper creado que implementa la interfaz estándar de servicios de dominio
+  - Solución: El wrapper usa las funciones existentes de `orderService.js` internamente para métodos CRUD básicos, y reexporta todos los métodos específicos (estadísticas, incidencias, detalles planificados, etc.)
+  - Beneficio: Permite que `EntityClient` funcione con orders sin romper la funcionalidad existente
 
 ---
 
@@ -248,7 +249,7 @@ Los servicios genéricos originales (`/services/entityService.js`, `/services/cr
 ## 📊 Métricas de Progreso Finales
 
 - **Servicios genéricos creados:** 3/3 (100%) ✅
-- **Servicios de dominio creados:** 18/18 (100%) ✅
+- **Servicios de dominio creados:** 19/19 (100%) ✅ (18 completos + 1 wrapper para orders)
 - **Componentes migrados:** 3/3 (100%) ✅
 - **Helpers creados:** 3/3 (100%) ✅ (`getAuthToken`, `entityServiceMapper`, `apiActions`)
 - **Validaciones completadas:** 10/10+ (100%) ✅

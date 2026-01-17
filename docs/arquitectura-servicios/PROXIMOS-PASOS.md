@@ -164,16 +164,21 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 
 ## 🎯 Recomendación: Orden Sugerido
 
-### Fase 6: Integración Vercel AI Chat ⭐ **PRIMERO**
+### Fase 6: Integración Vercel AI Chatbot Template ⭐ **PRIMERO**
 
 **Razón:** Es el objetivo original del proyecto. Los servicios de dominio fueron diseñados específicamente para esto.
 
-**Pasos:**
-1. Instalar y configurar Vercel AI SDK
-2. Crear estructura de tools/functions
-3. Implementar tools para servicios principales
-4. Crear API route y componente UI
-5. Testing básico del chat
+**Plan Detallado:** Ver [PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md)
+
+**Resumen de Pasos:**
+1. Instalar Vercel AI SDK y dependencias
+2. Configurar variables de entorno (API keys, modelo, etc.)
+3. Crear estructura de tools que mapeen a servicios de dominio
+4. Crear API route `/api/chat` con AI SDK
+5. Crear componente UI del chat (basado en shadcn/ui)
+6. Testing y validación de tools y flujos
+
+**Template Base:** [Next.js AI Chatbot](https://vercel.com/templates/next.js/nextjs-ai-chatbot)
 
 ### Fase 7: Testing y Validación
 
@@ -204,7 +209,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 
 ### ✅ Listo
 
-- ✅ 18 servicios de dominio con métodos semánticos
+- ✅ 27 servicios de dominio con métodos semánticos (18 originales + 8 nuevos + 1 wrapper)
 - ✅ Contratos estables y predecibles
 - ✅ Sin dependencias de URLs o endpoints en la interfaz
 - ✅ Mapper para obtener servicios por nombre de entidad
