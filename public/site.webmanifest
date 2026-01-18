@@ -1,15 +1,30 @@
 {
   "name": "La PesquerApp ERP",
   "short_name": "PesquerApp",
+  "description": "ERP diseñado para empresas pesqueras. Controla producción, trazabilidad, compras, ventas y etiquetado.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0E1E2A",
+  "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#0E1E2A",
-  "background_color": "#ffffff"
+  ]
 }
