@@ -22,25 +22,30 @@ Cada apartado tiene su propio documento con:
 
 ### 🏠 02. Home y Dashboard Mobile
 - **Archivo**: [02-HOME-DASHBOARD-MOBILE.md](./02-HOME-DASHBOARD-MOBILE.md)
-- **Estado**: 📝 Planificación
+- **Estado**: 🔄 En Progreso
 - **Descripción**: Adaptación del Home y Dashboard, cards y gráficos para mobile
 
-### 📦 03. Gestores y Listas
+### 🔐 03. Login Mobile
+- **Archivo**: [03-LOGIN-MOBILE.md](./03-LOGIN-MOBILE.md)
+- **Estado**: 📝 Planificación
+- **Descripción**: Optimización de la página de login para mobile (layout, inputs, touch targets)
+
+### 📦 04. Gestores y Listas
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Adaptación de gestores (Orders, Stores, etc.) y listas a mobile
 
-### 📊 04. Tablas a Cards
+### 📊 05. Tablas a Cards
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Conversión de tablas a cards en mobile
 
-### 📱 05. Formularios Mobile
+### 📱 06. Formularios Mobile
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Optimización de formularios para mobile (inputs, bottom sheets)
 
-### 🔍 06. Modales y Diálogos
+### 🔍 07. Modales y Diálogos
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Adaptación de modales a bottom sheets en mobile
@@ -50,11 +55,12 @@ Cada apartado tiene su propio documento con:
 ## 🎯 Priorización
 
 1. ✅ **Layout y Navegación** - Base para todo lo demás (Completado)
-2. 📝 **Home y Dashboard Mobile** (Actual) - Página principal
-3. ⏳ **Gestores y Listas** - Componentes más usados
-4. ⏳ **Formularios Mobile** - Interacción crítica
-5. ⏳ **Tablas a Cards** - Visualización
-6. ⏳ **Modales y Diálogos** - Interacción
+2. 🔄 **Home y Dashboard Mobile** (En Progreso) - Página principal
+3. 📝 **Login Mobile** - Punto de entrada crítico
+4. ⏳ **Gestores y Listas** - Componentes más usados
+5. ⏳ **Formularios Mobile** - Interacción crítica
+6. ⏳ **Tablas a Cards** - Visualización
+7. ⏳ **Modales y Diálogos** - Interacción
 
 ---
 

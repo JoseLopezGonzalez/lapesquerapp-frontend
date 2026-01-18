@@ -20,20 +20,38 @@ export default function Navbar() {
     const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
 
     const handleLogout = async () => {
+        // Prevenir múltiples ejecuciones simultáneas
+        if (sessionStorage.getItem('__is_logging_out__') === 'true') {
+            return;
+        }
+        
         try {
+            // Marcar que se está ejecutando un logout
+            sessionStorage.setItem('__is_logging_out__', 'true');
+            
             // Primero revocar el token en el backend
             const { logout: logoutBackend } = await import('@/services/authService');
             await logoutBackend();
             
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
-            window.location.href = '/login';
+            
+            // Limpiar la bandera antes de redirigir
+            sessionStorage.removeItem('__is_logging_out__');
+            
+            // Mostrar mensaje y redirigir
             toast.success('Sesión cerrada correctamente');
+            window.location.href = '/login';
         } catch (err) {
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            window.location.href = '/login';
+            
+            // Limpiar la bandera antes de redirigir
+            sessionStorage.removeItem('__is_logging_out__');
+            
+            // Mostrar mensaje y redirigir
             toast.success('Sesión cerrada correctamente');
+            window.location.href = '/login';
         }
     };
 
