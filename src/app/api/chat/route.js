@@ -23,6 +23,25 @@ export const maxDuration = 30; // 30 segundos máximo
  * Maneja las peticiones del chat AI
  */
 export async function POST(req) {
+  // ✅ CRÍTICO PARA PRODUCCIÓN: Asegurar que la request no esté ya consumida
+  // En algunos casos, el body puede estar ya leído o el request cerrado
+  let requestBody;
+  try {
+    requestBody = await req.json();
+  } catch (bodyError) {
+    console.error('[CHAT API] ❌ Error al parsear request body:', bodyError);
+    return new Response(
+      JSON.stringify({ error: 'Error al procesar la petición. Intenta recargar la página.' }),
+      { 
+        status: 400,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        }
+      }
+    );
+  }
+
   try {
     // Verificar autenticación
     // ✅ CORREGIDO: Obtener sesión del servidor para pasar el token a las tools
@@ -59,8 +78,8 @@ export async function POST(req) {
     // ✅ DEBUG: Verificar que el token se configuró correctamente
     console.log('[CHAT API] 🔐 Token configurado en contexto, verificando...');
 
-    // Parsear mensajes del request
-    const { messages } = await req.json();
+    // Parsear mensajes del request (ya parseado arriba)
+    const { messages } = requestBody;
 
     console.log('[CHAT API] 📥 Mensajes recibidos del cliente:', messages?.length || 0, 'mensajes');
 
@@ -291,10 +310,24 @@ export async function POST(req) {
     // ✅ Limpiar el contexto del token antes de devolver la respuesta
     authTokenModule.clearServerTokenContext();
     
-    return result.toUIMessageStreamResponse({
+    // ✅ CRÍTICO PARA PRODUCCIÓN: Asegurar headers correctos para streaming
+    const streamResponse = result.toUIMessageStreamResponse({
       sendToolResultMessages: true, // ✅ CRÍTICO: Habilita el flujo de DOS PASOS (tool → texto)
       // Con esta opción, el SDK garantiza que el modelo genere un mensaje de texto
       // después de ejecutar una tool, cumpliendo el flujo: datos → lenguaje natural
+    });
+    
+    // ✅ Añadir headers adicionales para producción (evitar caché, asegurar streaming)
+    const headers = new Headers(streamResponse.headers);
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    
+    return new Response(streamResponse.body, {
+      status: streamResponse.status,
+      statusText: streamResponse.statusText,
+      headers: headers,
     });
   } catch (error) {
     // ✅ Asegurar que limpiamos el contexto incluso si hay error
