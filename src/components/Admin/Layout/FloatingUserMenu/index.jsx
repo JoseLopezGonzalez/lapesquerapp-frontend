@@ -123,24 +123,24 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-64 rounded-lg"
+          className="w-72 rounded-lg p-2" // Ancho aumentado y padding
           side="bottom"
           sideOffset={12}
         >
           {/* Header con avatar y info */}
           <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-3 px-3 py-3">
-              <Avatar className="h-10 w-10 rounded-lg">
+            <div className="flex items-center gap-3 px-4 py-4">
+              <Avatar className="h-12 w-12 rounded-lg">
                 <AvatarImage src={user?.avatar} alt={user?.name} />
-                <AvatarFallback className="rounded-lg text-sm">
+                <AvatarFallback className="rounded-lg text-base font-semibold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="truncate font-semibold text-sm">
+                <span className="truncate font-semibold text-base">
                   {user?.name || 'Usuario'}
                 </span>
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="truncate text-sm text-muted-foreground">
                   {user?.email || ''}
                 </span>
               </div>
@@ -151,8 +151,8 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           
           {/* Planes */}
           <DropdownMenuGroup>
-            <DropdownMenuItem className="cursor-pointer">
-              <Sparkles className="w-4 h-4 mr-2" />
+            <DropdownMenuItem className="cursor-pointer h-12 text-base px-4">
+              <Sparkles className="w-5 h-5 mr-3" />
               <span>Planes</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -163,12 +163,12 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           <DropdownMenuGroup>
             <ChatButton asMenuItem>
               <DropdownMenuItem 
-                className="cursor-pointer"
+                className="cursor-pointer h-12 text-base px-4"
                 onSelect={(e) => {
                   e.preventDefault();
                 }}
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
+                <MessageSquare className="w-5 h-5 mr-3" />
                 <span>Asistente AI</span>
               </DropdownMenuItem>
             </ChatButton>
@@ -179,52 +179,52 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           {/* Opciones de cuenta */}
           <DropdownMenuGroup>
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer h-12 text-base px-4"
               onClick={() => {
                 // TODO: Navegar a perfil
               }}
             >
-              <User className="w-4 h-4 mr-2" />
+              <User className="w-5 h-5 mr-3" />
               <span>Perfil</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer h-12 text-base px-4"
               onClick={() => {
                 // TODO: Navegar a cuenta
               }}
             >
-              <BadgeCheck className="w-4 h-4 mr-2" />
+              <BadgeCheck className="w-5 h-5 mr-3" />
               <span>Cuenta</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer h-12 text-base px-4"
               onClick={() => {
                 // TODO: Navegar a notificaciones
               }}
             >
-              <Bell className="w-4 h-4 mr-2" />
+              <Bell className="w-5 h-5 mr-3" />
               <span>Notificaciones</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer h-12 text-base px-4"
               onClick={() => {
                 router.push('/admin/settings');
               }}
             >
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings className="w-5 h-5 mr-3" />
               <span>Configuración</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem 
-              className="cursor-pointer"
+              className="cursor-pointer h-12 text-base px-4"
               onClick={() => {
                 // TODO: Navegar a ayuda
               }}
             >
-              <CircleHelp className="w-4 h-4 mr-2" />
+              <CircleHelp className="w-5 h-5 mr-3" />
               <span>Centro de ayuda</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -234,10 +234,10 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           {/* Tema */}
           <DropdownMenuGroup>
             <DropdownMenuItem 
-              className="focus:bg-transparent hover:bg-transparent cursor-default"
+              className="focus:bg-transparent hover:bg-transparent cursor-default h-12 text-base px-4"
               onSelect={(e) => e.preventDefault()}
             >
-              <span className="mr-2">Tema</span>
+              <span className="mr-3">Tema</span>
               <ThemeToggle className="ml-auto" />
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -247,9 +247,9 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           {/* Cerrar sesión */}
           <DropdownMenuItem 
             onClick={user?.logout} 
-            className="cursor-pointer text-destructive focus:text-destructive"
+            className="cursor-pointer text-destructive focus:text-destructive h-12 text-base px-4"
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-5 h-5 mr-3" />
             <span>Cerrar Sesión</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
