@@ -26,6 +26,13 @@ Este directorio contiene toda la documentación relacionada con la adaptación m
   - Accesibilidad base
   - Testing y validación
 
+### 🔨 Implementaciones por Apartados
+
+- **[implementaciones/](./implementaciones/)** - Planes detallados de implementación
+  - **[00-INDEX.md](./implementaciones/00-INDEX.md)** - Índice de implementaciones
+  - **[01-LAYOUT-NAVEGACION.md](./implementaciones/01-LAYOUT-NAVEGACION.md)** - Layout y navegación principal (actual)
+  - Más implementaciones próximamente...
+
 ### 📊 Resumen de Implementación
 
 - **[RESUMEN-IMPLEMENTACION.md](./RESUMEN-IMPLEMENTACION.md)** - Resumen completo de lo implementado y lo pendiente

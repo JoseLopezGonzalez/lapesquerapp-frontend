@@ -25,7 +25,7 @@ export const MOBILE_HEIGHTS = {
   BOTTOM_NAV: 'h-14',
   /** Touch targets - mínimo 44x44px */
   TOUCH_TARGET: 'min-h-[44px] min-w-[44px]',
-} as const;
+};
 
 // ============================================================================
 // PADDING Y SPACING
@@ -47,7 +47,7 @@ export const MOBILE_SPACING = {
   CARD_PADDING: 'p-4',
   /** Espaciado entre elementos interactivos - mínimo 8px */
   INTERACTIVE_GAP: 'gap-2', // mínimo 8px
-} as const;
+};
 
 // ============================================================================
 // BORDER RADIUS
@@ -65,7 +65,7 @@ export const MOBILE_RADIUS = {
   INPUT: 'rounded-lg',
   /** Bottom sheets - 24px (top) */
   BOTTOM_SHEET: 'rounded-t-3xl',
-} as const;
+};
 
 // ============================================================================
 // TAMAÑOS DE ICONOS
@@ -81,7 +81,7 @@ export const MOBILE_ICON_SIZES = {
   BUTTON: 'w-5 h-5',
   /** Iconos en cards - 20px */
   CARD: 'w-5 h-5',
-} as const;
+};
 
 // ============================================================================
 // SAFE AREAS (iOS)
@@ -97,7 +97,7 @@ export const MOBILE_SAFE_AREAS = {
   TOP: 'pt-[env(safe-area-inset-top)]',
   /** Bottom padding cuando hay bottom nav */
   BOTTOM_WITH_NAV: 'pb-[calc(3.5rem+env(safe-area-inset-bottom))]', // 56px (h-14) + safe area
-} as const;
+};
 
 // ============================================================================
 // TIPOGRAFÍA
@@ -112,7 +112,7 @@ export const MOBILE_TYPOGRAPHY = {
   BASE: 'text-base',
   /** Inputs - 16px mínimo */
   INPUT: 'text-base',
-} as const;
+};
 
 // ============================================================================
 // CLASES COMPUESTAS (UTILIDADES)
@@ -130,7 +130,7 @@ export const MOBILE_UTILITIES = {
   BOTTOM_NAV: `${MOBILE_HEIGHTS.BOTTOM_NAV} ${MOBILE_SAFE_AREAS.BOTTOM} fixed bottom-0 left-0 right-0`,
   /** Contenedor de pantalla mobile */
   SCREEN_CONTAINER: `${MOBILE_SPACING.SCREEN_HORIZONTAL} ${MOBILE_SPACING.SCREEN_VERTICAL}`,
-} as const;
+};
 
 // ============================================================================
 // BREAKPOINTS
@@ -146,7 +146,7 @@ export const MOBILE_BREAKPOINTS = {
   MOBILE_MAX: 'max-md',
   /** Clase Tailwind para desktop */
   DESKTOP_MIN: 'md',
-} as const;
+};
 
 // ============================================================================
 // EXPORTS
@@ -164,7 +164,7 @@ export const MOBILE_TOKENS = {
   typography: MOBILE_TYPOGRAPHY,
   utilities: MOBILE_UTILITIES,
   breakpoints: MOBILE_BREAKPOINTS,
-} as const;
+};
 
 /**
  * Función helper para combinar clases mobile
