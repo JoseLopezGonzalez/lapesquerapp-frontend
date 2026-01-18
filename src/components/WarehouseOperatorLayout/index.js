@@ -3,6 +3,8 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from 'react-hot-toast';
+import { getToastTheme } from '@/customs/reactHotToast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +49,13 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
     // Limpiar la bandera antes de redirigir
     sessionStorage.removeItem('__is_logging_out__');
     
-    router.push("/");
+    // Mostrar mensaje primero
+    toast.success('Sesión cerrada correctamente', getToastTheme());
+    
+    // Esperar un momento para que el usuario vea el mensaje antes de redirigir
+    setTimeout(() => {
+      router.push("/");
+    }, 500);
   };
 
   const handleLogoError = () => {

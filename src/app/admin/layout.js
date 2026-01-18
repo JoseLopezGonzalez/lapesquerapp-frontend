@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
@@ -10,6 +11,7 @@ import { navigationConfig, navigationManagerConfig } from "@/configs/navgationCo
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from "@/utils/navigationUtils";
 import { MessageSquare } from "lucide-react";
+import { useLogout } from "@/context/LogoutContext";
 
 export default function AdminLayout({ children }) {
   const { data: session } = useSession();
@@ -20,16 +22,39 @@ export default function AdminLayout({ children }) {
   const email = session?.user?.email || 'Desconocido';
 
   const { settings, loading } = useSettings();
+  const { setIsLoggingOut } = useLogout();
 
   const handleLogout = React.useCallback(async () => {
-    // Prevenir múltiples ejecuciones simultáneas
-    if (sessionStorage.getItem('__is_logging_out__') === 'true') {
-      return;
+    // Mostrar diálogo de logout INMEDIATAMENTE usando flushSync para render síncrono
+    flushSync(() => {
+      setIsLoggingOut(true);
+    });
+    
+    // Limpiar cualquier bandera previa que pueda estar bloqueando
+    if (typeof sessionStorage !== 'undefined') {
+      const logoutFlag = sessionStorage.getItem('__is_logging_out__');
+      if (logoutFlag === 'true') {
+        // Si hay una marca de hace más de 5 segundos, limpiarla (puede ser de un logout fallido)
+        const logoutTime = sessionStorage.getItem('__is_logging_out_time__');
+        if (logoutTime && Date.now() - parseInt(logoutTime) > 5000) {
+          sessionStorage.removeItem('__is_logging_out__');
+          sessionStorage.removeItem('__is_logging_out_time__');
+        } else if (!logoutTime) {
+          // Si no hay timestamp, limpiar la bandera (logout anterior fallido)
+          sessionStorage.removeItem('__is_logging_out__');
+        } else {
+          console.log('Logout ya en proceso, ignorando...');
+          return;
+        }
+      }
+      
+      // Marcar que se está ejecutando un logout con timestamp
+      sessionStorage.setItem('__is_logging_out__', 'true');
+      sessionStorage.setItem('__is_logging_out_time__', Date.now().toString());
     }
     
     try {
-      // Marcar que se está ejecutando un logout
-      sessionStorage.setItem('__is_logging_out__', 'true');
+      console.log('Iniciando logout...');
       
       // Primero revocar el token en el backend
       const { logout: logoutBackend } = await import('@/services/authService');
@@ -38,22 +63,25 @@ export default function AdminLayout({ children }) {
       // Luego cerrar sesión en NextAuth
       await signOut({ redirect: false });
       
-      // Limpiar la bandera antes de redirigir
-      sessionStorage.removeItem('__is_logging_out__');
+      console.log('Logout completado, redirigiendo...');
       
-      // Mostrar mensaje y redirigir
-      toast.success('Sesión cerrada correctamente', getToastTheme());
-      window.location.href = '/';
+      // NO cerrar el diálogo - mantenerlo visible durante la redirección
+      // Redirigir directamente usando replace() para evitar que aparezca el home
+      // y no dejar historial para que no pueda volver atrás
+      window.location.replace('/');
     } catch (err) {
+      console.error('Error en logout:', err);
+      
       // Incluso si falla el logout del backend, continuar con el logout del cliente
-      await signOut({ redirect: false });
+      try {
+        await signOut({ redirect: false });
+      } catch (signOutErr) {
+        console.error('Error en signOut:', signOutErr);
+      }
       
-      // Limpiar la bandera antes de redirigir
-      sessionStorage.removeItem('__is_logging_out__');
-      
-      // Mostrar mensaje y redirigir
-      toast.success('Sesión cerrada correctamente', getToastTheme());
-      window.location.href = '/';
+      // NO cerrar el diálogo - mantenerlo visible durante la redirección
+      // Redirigir directamente usando replace() para evitar que aparezca el home
+      window.location.replace('/');
     }
   }, []);
 

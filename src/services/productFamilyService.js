@@ -1,6 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getErrorMessage, isLoggingOut } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -33,6 +33,11 @@ export function getProductFamilyOptions(token) {
     })
         .then((response) => {
             if (!response.ok) {
+                // Si hay un logout en curso, no lanzar error
+                if (isLoggingOut()) {
+                    console.log('ℹ️ Logout en curso: ignorando error en getProductFamilyOptions');
+                    return []; // Retornar array vacío en lugar de lanzar error
+                }
                 return response.json().then((errorData) => {
                     throw new Error(getErrorMessage(errorData) || 'Error al obtener las familias de productos');
                 });
@@ -67,6 +72,11 @@ export function getProductFamilies(token) {
     })
         .then((response) => {
             if (!response.ok) {
+                // Si hay un logout en curso, no lanzar error
+                if (isLoggingOut()) {
+                    console.log('ℹ️ Logout en curso: ignorando error en getProductFamilyOptions');
+                    return []; // Retornar array vacío en lugar de lanzar error
+                }
                 return response.json().then((errorData) => {
                     throw new Error(getErrorMessage(errorData) || 'Error al obtener las familias de productos');
                 });

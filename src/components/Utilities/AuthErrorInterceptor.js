@@ -16,9 +16,18 @@ export default function AuthErrorInterceptor() {
     
     window.fetch = async (...args) => {
       try {
-        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+        // Extraer URL de diferentes formatos posibles
+        let url = '';
+        if (typeof args[0] === 'string') {
+          url = args[0];
+        } else if (args[0]?.url) {
+          url = args[0].url;
+        } else if (args[0] instanceof URL) {
+          url = args[0].href;
+        }
+        
         const isLogoutRequest = url.includes('/logout');
-        const isLoggingOut = sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true';
+        const isLoggingOut = typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true';
         
         // Si es una llamada a logout o ya se está ejecutando un logout, no interceptar
         if (isLogoutRequest || isLoggingOut) {
@@ -27,8 +36,8 @@ export default function AuthErrorInterceptor() {
         
         const response = await originalFetch(...args);
         
-        // Si ya se está ejecutando un logout, no interceptar errores
-        if (sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
+        // Si ya se está ejecutando un logout (puede haberse marcado durante la llamada), no interceptar errores
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
           return response;
         }
         
@@ -40,12 +49,20 @@ export default function AuthErrorInterceptor() {
           toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
           
           // Marcar que se está ejecutando un logout
-          sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+          }
           
           // Cerrar sesión y redirigir después de un breve delay
           setTimeout(async () => {
-            await signOut({ redirect: false });
-            sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+            try {
+              await signOut({ redirect: false });
+            } catch (err) {
+              console.error('Error en signOut desde interceptor:', err);
+            }
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+            }
             const currentPath = window.location.pathname;
             const loginUrl = buildLoginUrl(currentPath);
             window.location.href = loginUrl;
@@ -57,7 +74,7 @@ export default function AuthErrorInterceptor() {
         return response;
       } catch (error) {
         // Si ya se está ejecutando un logout, no interceptar errores
-        if (sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
           throw error;
         }
         
@@ -69,12 +86,20 @@ export default function AuthErrorInterceptor() {
           toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
           
           // Marcar que se está ejecutando un logout
-          sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+          }
           
           // Cerrar sesión y redirigir después de un breve delay
           setTimeout(async () => {
-            await signOut({ redirect: false });
-            sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+            try {
+              await signOut({ redirect: false });
+            } catch (err) {
+              console.error('Error en signOut desde interceptor:', err);
+            }
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+            }
             const currentPath = window.location.pathname;
             const loginUrl = buildLoginUrl(currentPath);
             window.location.href = loginUrl;
@@ -88,7 +113,7 @@ export default function AuthErrorInterceptor() {
     // Interceptar errores globales de JavaScript
     const handleGlobalError = (event) => {
       // Si ya se está ejecutando un logout, no interceptar errores
-      if (sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
         return;
       }
       
@@ -101,12 +126,20 @@ export default function AuthErrorInterceptor() {
         toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
         
         // Marcar que se está ejecutando un logout
-        sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
+        }
         
         // Cerrar sesión y redirigir después de un breve delay
         setTimeout(async () => {
-          await signOut({ redirect: false });
-          sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+          try {
+            await signOut({ redirect: false });
+          } catch (err) {
+            console.error('Error en signOut desde interceptor:', err);
+          }
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.removeItem(LOGOUT_FLAG_KEY);
+          }
           const currentPath = window.location.pathname;
           const loginUrl = buildLoginUrl(currentPath);
           window.location.href = loginUrl;

@@ -130,8 +130,19 @@ export default function LoginPage() {
                   e.currentTarget.src = "/images/landing.png";
                 }}
               />
-              {/* Degradado blanco desde el fondo (altura intermedia) */}
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, white 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 60%)' }} />
+              {/* Degradado blanco/negro según el modo desde el fondo (altura intermedia) */}
+              <div 
+                className="absolute inset-0 dark:hidden"
+                style={{
+                  background: 'linear-gradient(to top, white 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 60%)'
+                }}
+              />
+              <div 
+                className="absolute inset-0 hidden dark:block"
+                style={{
+                  background: 'linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.3) 50%, transparent 60%)'
+                }}
+              />
             </div>
 
             {/* Badge de modo demo */}
@@ -232,7 +243,7 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <div className="relative flex flex-row w-full">
+              <Card className="relative flex flex-row w-full p-2">
                 {isDemo && (
                   <div className="absolute top-2 right-2 z-10 bg-lime-100 text-lime-800 text-xs font-semibold px-3 py-1 rounded-lg shadow">
                     MODO DEMO
@@ -342,7 +353,7 @@ export default function LoginPage() {
                     </div>
                   </form>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Mobile Layout */}

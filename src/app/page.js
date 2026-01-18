@@ -6,11 +6,33 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Utilities/Loader";
+import { LogoutDialog } from "@/components/Utilities/LogoutDialog";
 
 export default function HomePage() {
   const [isSubdomain, setIsSubdomain] = useState(null);
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // Verificar si hay un logout en curso al cargar la página
+  useEffect(() => {
+    if (typeof sessionStorage !== 'undefined') {
+      const logoutFlag = sessionStorage.getItem('__is_logging_out__');
+      if (logoutFlag === 'true') {
+        setIsLoggingOut(true);
+        setShowLogoutDialog(true);
+        // Cerrar el diálogo después de un momento cuando la página de login esté lista
+        const timer = setTimeout(() => {
+          sessionStorage.removeItem('__is_logging_out__');
+          sessionStorage.removeItem('__is_logging_out_time__');
+          setShowLogoutDialog(false);
+          setIsLoggingOut(false);
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -46,6 +68,11 @@ export default function HomePage() {
       }
     }
   }, [isSubdomain, status, session, router]);
+
+  // Si hay un logout en curso, mostrar solo el diálogo sin loaders
+  if (isLoggingOut || showLogoutDialog) {
+    return <LogoutDialog open={true} />;
+  }
 
   if (isSubdomain === null) return (
     <div className="flex justify-center items-center h-screen w-full">

@@ -2,7 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -99,20 +99,9 @@ export function getRawMaterialReception(receptionId, token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = getErrorMessage(errorData) || 'Error al obtener la recepción';
-                    const error = new Error(errorMessage);
-                    error.status = response.status;
-                    error.data = errorData;
-                    throw error;
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
+        .then(async (response) => {
+            const data = await handleServiceResponse(response, null, 'Error al obtener la recepción');
+            if (!data) return null;
             return data.data || data;
         })
         .catch((error) => {
@@ -136,13 +125,8 @@ export function getSupplierOptions(token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los proveedores');
-                });
-            }
-            return response.json();
+        .then(async (response) => {
+            return await handleServiceResponse(response, [], 'Error al obtener los proveedores');
         })
         .then((data) => {
             return data.map((item) => ({ value: item.id.toString(), label: item.name }));

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { flushSync } from "react-dom"
 import {
     AudioWaveform,
     Earth,
@@ -27,6 +28,7 @@ import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles, isActiveRoute } from "@/utils/navigationUtils"
+import { useLogout } from "@/context/LogoutContext";
 
 
 export function AppSidebar() {
@@ -40,8 +42,14 @@ export function AppSidebar() {
 
     const { settings, loading } = useSettings();
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
+    const { setIsLoggingOut } = useLogout();
 
     const handleLogout = React.useCallback(async () => {
+        // Mostrar diálogo INMEDIATAMENTE usando flushSync para render síncrono
+        flushSync(() => {
+            setIsLoggingOut(true);
+        });
+        
         // Prevenir múltiples ejecuciones simultáneas
         if (sessionStorage.getItem('__is_logging_out__') === 'true') {
             return;
@@ -58,24 +66,18 @@ export function AppSidebar() {
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             
-            // Limpiar la bandera antes de redirigir
-            sessionStorage.removeItem('__is_logging_out__');
-            
-            // Mostrar mensaje y redirigir
-            toast.success('Sesión cerrada correctamente', getToastTheme());
-            window.location.href = '/';
+            // NO cerrar el diálogo - mantenerlo visible durante la redirección
+            // Redirigir directamente usando replace() para evitar que aparezca el home
+            window.location.replace('/');
         } catch (err) {
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
             
-            // Limpiar la bandera antes de redirigir
-            sessionStorage.removeItem('__is_logging_out__');
-            
-            // Mostrar mensaje y redirigir
-            toast.success('Sesión cerrada correctamente', getToastTheme());
-            window.location.href = '/';
+            // NO cerrar el diálogo - mantenerlo visible durante la redirección
+            // Redirigir directamente usando replace() para evitar que aparezca el home
+            window.location.replace('/');
         }
-    }, []);
+    }, [setIsLoggingOut]);
 
     // Filtrar navegación por roles
     const filteredNavigationConfig = React.useMemo(() => 

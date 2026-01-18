@@ -2,7 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -22,16 +22,10 @@ export function getOrder(orderId, token) {
             'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener el pedido');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.data;
+        .then(async (response) => {
+            const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
+            if (!data) return null;
+            return data.data || data;
         })
         .catch((error) => {
             // Aquí puedes agregar lógica adicional de logging o manejo global del error
@@ -561,13 +555,10 @@ export async function getSalesChartData({ token, speciesId, categoryId, familyId
             Authorization: `Bearer ${token}`,
             "User-Agent": getUserAgent(),
         },
-    }).then((response) => {
-        if (!response.ok) {
-            return response.json().then((errorData) => {
-                throw new Error(getErrorMessage(errorData) || "Error al obtener datos del gráfico de ventas");
-            });
-        }
-        return response.json();
+    }).then(async (response) => {
+        const data = await handleServiceResponse(response, [], "Error al obtener datos del gráfico de ventas");
+        if (!data) return [];
+        return data;
     }).then((data) => {
         // Si el backend devuelve { data: [...] }, extraer el array
         return data.data || data;

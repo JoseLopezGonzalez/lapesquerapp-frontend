@@ -18,6 +18,57 @@ export class ApiError extends Error {
 }
 
 /**
+ * Verifica si hay un logout en curso
+ * @returns {boolean} true si hay un logout en curso
+ */
+export const isLoggingOut = () => {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+        return false;
+    }
+    return sessionStorage.getItem('__is_logging_out__') === 'true';
+};
+
+/**
+ * Maneja una respuesta de fetch verificando si hay logout en curso
+ * Si hay logout en curso, retorna un valor por defecto en lugar de lanzar error
+ * @param {Response} response - Respuesta de fetch
+ * @param {any} defaultValue - Valor por defecto a retornar si hay logout en curso
+ * @param {string} errorMessage - Mensaje de error por defecto
+ * @returns {Promise<any>} Datos de la respuesta o valor por defecto
+ */
+export const handleServiceResponse = async (response, defaultValue = null, errorMessage = 'Error en la petición') => {
+    if (!response.ok) {
+        // Si hay un logout en curso, no lanzar error
+        if (isLoggingOut()) {
+            return defaultValue;
+        }
+        
+        // Intentar obtener el mensaje de error
+        let errorData = null;
+        try {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                errorData = await response.json();
+            } else {
+                errorData = { message: await response.text() };
+            }
+        } catch (e) {
+            errorData = { message: `Error ${response.status}: ${response.statusText}` };
+        }
+        
+        throw new Error(getErrorMessage(errorData) || errorMessage);
+    }
+    
+    // Si es JSON, parsear y retornar
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+    }
+    
+    return response;
+};
+
+/**
  * Extrae el mensaje de error priorizando userMessage sobre message
  * @param {Object} errorData - Datos del error de la API
  * @returns {string} Mensaje de error para mostrar al usuario
@@ -58,6 +109,13 @@ export const apiRequest = async (url, options = {}, config = {}) => {
         const isJson = contentType && contentType.includes('application/json')
 
         if (!response.ok) {
+            // Si hay un logout en curso, no lanzar error
+            if (isLoggingOut()) {
+                console.log('ℹ️ Logout en curso: ignorando error en apiRequest');
+                // Retornar un valor por defecto según el tipo de respuesta esperado
+                return isJson ? {} : null;
+            }
+            
             let errorData = null
             try {
                 if (isJson) {

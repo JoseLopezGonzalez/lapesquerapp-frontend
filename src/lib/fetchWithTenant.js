@@ -60,8 +60,30 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
   const res = await fetch(url, config);
 
   if (!res.ok) {
-    // Manejo específico para errores de autenticación
+    // Verificar si hay un logout en curso ANTES de procesar el error
+    const isLoggingOut = typeof window !== 'undefined' && 
+                         typeof sessionStorage !== 'undefined' && 
+                         sessionStorage.getItem('__is_logging_out__') === 'true';
+    
+    // Si es una llamada al endpoint /logout, permitir que continúe aunque devuelva 401/403
+    // ya que es esperado cuando se está cerrando sesión
+    const urlString = typeof url === 'string' ? url : (url?.href || url?.url || '');
+    const isLogoutRequest = urlString.includes('/logout') || urlString.endsWith('logout');
+    
+    // Si es un error de autenticación (401/403)
     if (isAuthStatusCode(res.status)) {
+      // Si es logout O hay un logout en curso, no tratarlo como error
+      if (isLogoutRequest || isLoggingOut) {
+        // Solo loguear sin lanzar error para que el logout continúe
+        if (isLogoutRequest) {
+          console.log('ℹ️ Logout: respuesta 401/403 esperada al revocar token');
+        } else if (isLoggingOut) {
+          console.log('ℹ️ Logout en curso: ignorando error 401/403');
+        }
+        return res; // Retornar la respuesta sin lanzar error
+      }
+      
+      // Solo mostrar error si NO es logout ni hay logout en curso
       console.error('❌ Error de autenticación (401/403): Sesión expirada o token inválido');
       throw new Error('No autenticado');
     }
@@ -100,8 +122,18 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       
       console.error('❌ Error JSON recibido:', errorJson);
       
+      // Verificar si hay un logout en curso antes de lanzar errores de autenticación
+      const isLoggingOut = typeof window !== 'undefined' && 
+                           typeof sessionStorage !== 'undefined' && 
+                           sessionStorage.getItem('__is_logging_out__') === 'true';
+      
       // Verificar si el error contiene mensaje de autenticación
       if (isAuthError({ message: errorJson.message })) {
+        // Si hay un logout en curso, no lanzar error
+        if (isLoggingOut) {
+          console.log('ℹ️ Logout en curso: ignorando error de autenticación');
+          return res; // Retornar la respuesta sin lanzar error
+        }
         throw new Error('No autenticado');
       }
       

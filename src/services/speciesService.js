@@ -2,7 +2,7 @@
 // This file would contain the actual fetchWithTenant call for species options.
 import { API_URL_V2 } from "@/configs/config"; // Assuming API_URL_V2 is also used here
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 
@@ -16,13 +16,8 @@ export function getSpeciesOptions(token) {
             'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las especies');
-                });
-            }
-            return response.json();
+        .then(async (response) => {
+            return await handleServiceResponse(response, [], 'Error al obtener las especies');
         })
         .then((data) => {
             return data;
