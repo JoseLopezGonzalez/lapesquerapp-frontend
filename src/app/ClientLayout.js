@@ -7,6 +7,7 @@ import AuthErrorInterceptor from "@/components/Utilities/AuthErrorInterceptor";
 import { OptionsProvider } from "@/context/OptionsContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ThemeProvider } from "@/components/Providers/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { registerServiceWorker } from "@/lib/sw-register";
 import { InstallPromptBanner } from "@/components/PWA/InstallPromptBanner";
 
@@ -20,17 +21,19 @@ export default function ClientLayout({ children }) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <SessionProvider>
-        <SettingsProvider>
-          <OptionsProvider>
-            <AuthErrorInterceptor />
-            {children}
-            <Toaster />
-            {/* Install Prompt Banner - Mobile */}
-            <InstallPromptBanner />
-          </OptionsProvider>
-        </SettingsProvider>
-      </SessionProvider>
+      <TooltipProvider delayDuration={0}>
+        <SessionProvider>
+          <SettingsProvider>
+            <OptionsProvider>
+              <AuthErrorInterceptor />
+              {children}
+              <Toaster />
+              {/* Install Prompt Banner - Mobile */}
+              <InstallPromptBanner />
+            </OptionsProvider>
+          </SettingsProvider>
+        </SessionProvider>
+      </TooltipProvider>
     </ThemeProvider>
   );
 }

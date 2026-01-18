@@ -134,7 +134,7 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 - ✅ Iconos + labels cortos
 - ✅ Indicador de ruta activa
 - ✅ Safe areas iOS
-- ✅ Animación con Framer Motion
+- ✅ Animación con Framer Motion (`feedbackPop`)
 - ✅ Touch targets mínimo 44x44px
 
 **Items principales** (sugeridos):
@@ -142,6 +142,17 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 2. Orders (gestor principal)
 3. Stores/Almacenes (gestor principal)
 4. Más... (menu secundario en Sheet)
+
+**⚠️ Regla importante: Qué NO va en BottomNav**
+
+BottomNav **solo** navegación primaria:
+- ✅ Solo rutas principales (Home, Orders, Stores, etc.)
+- ❌ **NUNCA** acciones destructivas (eliminar, desactivar, etc.)
+- ❌ **NUNCA** configuraciones o ajustes
+- ❌ **NUNCA** logout o sesión
+- ❌ **NUNCA** acciones contextuales
+
+Todo lo anterior va siempre al **Sheet del TopBar** (navegación completa).
 
 ### 2. Crear Top Bar Component
 
@@ -153,6 +164,18 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 - ✅ Usuario/Dropdown - derecha
 - ✅ Altura fija (h-14 o h-16)
 - ✅ Safe areas iOS (`pt-[env(safe-area-inset-top)]`)
+
+**⚠️ Regla importante: TopBar Sheet vs BottomNav**
+
+**Coherencia cognitiva**:
+- **Sheet del TopBar** = "todo" (navegación completa)
+- **BottomNav** = "rápido" (acceso rápido a principales)
+
+**Principio**:
+- Si un item está en **BottomNav**, **también debe estar** en el Sheet
+- **Pero no al revés**: El Sheet puede tener más items que BottomNav
+
+**Razón**: Esto mantiene coherencia mental - el usuario siempre puede encontrar todo en el Sheet, y BottomNav es solo un atajo.
 
 ### 3. Modificar Admin Layout
 
@@ -177,11 +200,19 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 
 **Archivo**: `src/components/Admin/Layout/ResponsiveLayout/index.jsx`
 
-**Funcionalidad**:
-- ✅ Wrapper que detecta mobile/desktop
-- ✅ Renderiza layout apropiado
-- ✅ Maneja safe areas
-- ✅ Integra TopBar, Sidebar, BottomNav
+**⚠️ Responsabilidad clara de ResponsiveLayout**
+
+ResponsiveLayout **NO decide estilos**, solo:
+- ✅ Qué layout renderizar (desktop vs mobile)
+- ✅ Qué navegación mostrar (Sidebar vs TopBar + BottomNav)
+- ✅ Safe areas estructurales (padding top/bottom)
+
+**ResponsiveLayout NO hace**:
+- ❌ Estilos visuales (eso lo hacen los componentes hijos)
+- ❌ Lógica de negocio
+- ❌ Gestión de estado compleja
+
+**Razón**: Evita que se convierta en un "Dios componente". ResponsiveLayout es solo un **router de layouts**, no un componente de presentación.
 
 ---
 
@@ -205,60 +236,94 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 - **Padding mobile**: `pt-16 pb-20` (top bar + bottom nav)
 - **Padding desktop**: `p-2` (actual)
 
+**⚠️ Importante: Scroll y overflow**
+
+**Regla de scroll**:
+- ✅ **Main content** debe ser **scrollable**
+- ✅ **TopBar** y **BottomNav** son **fixed** (no scroll)
+- ❌ **NO** aplicar `overflow-hidden` al main en mobile
+- ❌ **NO** romper scroll en iOS
+
+**Consideraciones iOS**:
+- El scroll debe funcionar nativamente
+- No interferir con momentum scrolling
+- Respetar safe areas sin afectar scroll
+
 ---
 
 ## 🎬 Motion Presets a Usar
 
-- ✅ `pageTransition` - Transiciones entre páginas
-- ✅ `feedbackPop` - Feedback al tocar items
-- ✅ `sheetTransition` - Cuando se abre el Sheet de navegación
+**⚠️ Fase inicial: Menos es más**
+
+**En esta fase**:
+- ✅ `feedbackPop` - Solo en BottomNav (feedback al tocar items)
+- ❌ `pageTransition` - **NO en esta fase** (implementar en siguiente fase)
+- ❌ `sheetTransition` - **NO necesario** (Sheet de ShadCN ya tiene animación)
+
+**Razón**: Reducir superficie de bugs. Empezar simple y añadir animaciones después.
 
 ---
 
 ## 📝 Pasos de Implementación
 
-### Fase 1: Estructura Base
+**⚠️ Orden recomendado (reduce superficie de bugs)**
 
-1. ✅ Crear componente `BottomNav`
+### Fase 1: Estructura Base (Sin animaciones)
+
+1. ✅ **Crear componente `BottomNav`** (sin animaciones)
    - Estructura básica
    - Items principales (4-5)
    - Estilos básicos
+   - Indicador de ruta activa
 
-2. ✅ Crear componente `TopBar`
-   - Logo, menú, usuario
+2. ✅ **Crear componente `TopBar`** (sin Sheet aún)
+   - Logo, botón placeholder, usuario
    - Estilos básicos
+   - Safe areas
 
-3. ✅ Crear componente `ResponsiveLayout`
-   - Detección mobile/desktop
-   - Renderizado condicional
+3. ✅ **Crear componente `ResponsiveLayout`**
+   - Detección mobile/desktop con `useIsMobileSafe()`
+   - Renderizado condicional simple
+   - Manejo de `null` state (no renderizar navegación hasta montado)
 
 ### Fase 2: Integración
 
-4. ✅ Modificar `AdminLayout`
-   - Integrar `ResponsiveLayout`
-   - Ajustar main content padding
+4. ✅ **Integrar `AdminLayout`**
+   - Integrar `ResponsiveLayout` en `AdminLayout`
+   - Ajustar main content padding (pt-16 pb-20 mobile, p-2 desktop)
+   - **Verificar que desktop NO se ve afectado**
 
-5. ✅ Configurar navegación
+5. ✅ **Configurar navegación**
    - Items principales en BottomNav
-   - Items secundarios en Sheet (TopBar menú)
+   - Items completos para Sheet (preparar)
 
-6. ✅ Ajustar Sidebar
-   - Que funcione como Sheet en mobile (si se usa)
+### Fase 3: Sheet y Navegación Completa
 
-### Fase 3: Pulido
+6. ✅ **Añadir Sheet al TopBar**
+   - Sheet con navegación completa
+   - Reutilizar `NavMain`, `NavManagers`, `NavUser` del Sidebar
+   - Incluir logout, configuraciones, etc.
 
-7. ✅ Añadir animaciones
-   - Transiciones con Framer Motion
-   - Feedback visual
+7. ✅ **Ajustar Sidebar** (si es necesario)
+   - Asegurar que sigue funcionando en desktop
+   - Verificar que mobile usa TopBar + BottomNav
 
-8. ✅ Safe areas iOS
-   - Padding superior (notch)
-   - Padding inferior (home indicator)
+### Fase 4: Pulido y Animaciones
 
-9. ✅ Testing
-   - Probar en diferentes dispositivos
-   - Verificar navegación
-   - Verificar touch targets
+8. ✅ **Añadir animaciones**
+   - `feedbackPop` en BottomNav items
+   - **NO añadir** `pageTransition` aún (siguiente fase)
+
+9. ✅ **Safe areas iOS**
+   - Padding superior (notch) en TopBar
+   - Padding inferior (home indicator) en BottomNav
+   - Verificar que scroll funciona correctamente
+
+10. ✅ **Testing**
+    - Probar en diferentes dispositivos
+    - Verificar navegación
+    - Verificar touch targets (44x44px mínimo)
+    - **Verificar que desktop NO cambió visualmente**
 
 ---
 
@@ -282,6 +347,32 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 - Logout
 
 **Nota**: Revisar `navigationConfig` y `navigationManagerConfig` para determinar items prioritarios.
+
+### useIsMobileSafe - Contrato claro
+
+**⚠️ Definición del contrato**:
+
+`useIsMobileSafe()` devuelve:
+- `null` = no montado aún (no renderizar navegación)
+- `true` = es mobile
+- `false` = es desktop
+
+**Regla crítica**:
+- **Mientras `isMobile === null`, NO renderizar navegación**
+- Esto evita hydration mismatch
+- Renderizar layout "neutro" hasta que `mounted === true`
+
+**Ejemplo**:
+```jsx
+const { isMobile, mounted } = useIsMobileSafe();
+
+if (!mounted) {
+  // Renderizar layout neutro (solo desktop por defecto)
+  return <DesktopLayout>{children}</DesktopLayout>;
+}
+
+return isMobile ? <MobileLayout /> : <DesktopLayout />;
+```
 
 ### Rutas Activas
 
@@ -332,10 +423,25 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 
 ## 🧪 Testing
 
+### ⚠️ Regla de No Regresión (CRÍTICA)
+
+**Principio explícito**:
+> **Desktop NO debe verse afectado visualmente por ningún cambio mobile.**
+
+**Verificación obligatoria**:
+- [ ] Desktop mantiene exactamente el mismo layout visual
+- [ ] Sidebar funciona igual que antes
+- [ ] Navegación desktop no cambió
+- [ ] No hay cambios visuales inesperados en desktop
+- [ ] ResponsiveLayout solo afecta mobile (<768px)
+
+**Razón**: Esto evita bugs sutiles y regresiones visuales.
+
 ### Desktop (≥768px)
-- [ ] Sidebar funciona correctamente
-- [ ] Navegación funciona
-- [ ] Layout se ve bien
+- [ ] Sidebar funciona correctamente (igual que antes)
+- [ ] Navegación funciona (igual que antes)
+- [ ] Layout se ve **exactamente igual** que antes
+- [ ] No hay cambios visuales inesperados
 
 ### Mobile (<768px)
 - [ ] TopBar se ve correctamente
@@ -344,11 +450,14 @@ Adaptación del layout principal y sistema de navegación para mobile. Incluye:
 - [ ] Sheet se abre correctamente
 - [ ] Safe areas respetadas (iOS)
 - [ ] Touch targets adecuados (44x44px)
+- [ ] Scroll funciona correctamente (iOS momentum)
+- [ ] Main content es scrollable
+- [ ] TopBar y BottomNav no scrollan (fixed)
 
 ### Dispositivos
 - [ ] iPhone (notch, safe areas)
 - [ ] Android
-- [ ] iPad (tablet)
+- [ ] iPad (tablet) - debe usar layout desktop
 
 ---
 

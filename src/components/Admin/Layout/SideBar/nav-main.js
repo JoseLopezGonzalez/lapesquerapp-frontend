@@ -33,7 +33,7 @@ export function NavMain({items}) {
                             {item.childrens ? (
                                 <>
                                     <CollapsibleTrigger asChild>
-                                        <SidebarMenuButton tooltip={item.name}>
+                                        <SidebarMenuButton tooltip={item.name || undefined}>
                                             {item.icon && <item.icon />}
                                             <span>{item.name}</span>
                                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
