@@ -87,31 +87,31 @@ const RawMaterialRadialBarChart = () => {
             <div className='bg-gradient-to-br from-neutral-500/50 via-neutral-700/50 to-sky-500 p-[1px] rounded-xl'>
                 <div className="p-4 md:p-5  flex flex-col  shadow-sm rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-sky-900 ">
                     {/* <!-- Header --> */}
-                    <div className="flex flex-col gap-4 sm:flex-row justify-between items-start">
+                    <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row justify-between items-start">
                         <div className='flex flex-col items-start '>
-                            <h2 className="text-sm text-neutral-500 dark:text-neutral-500 text-nowrap">
+                            <h2 className="text-base md:text-sm text-neutral-500 dark:text-neutral-500 text-nowrap">
                                 Calibres diarios por especie
                             </h2>
                             <div className='flex items-center justify-center gap-2'>
-                                <p className="text-xl sm:text-xl font-medium text-neutral-800 dark:text-neutral-200 text-nowrap">
+                                <p className="text-2xl md:text-xl font-medium text-neutral-800 dark:text-neutral-200 text-nowrap">
                                     {stats?.totalNetWeight && stats?.totalNetWeight === 0
                                         ? `0,00 kg`
                                         : new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(stats?.totalNetWeight)} kg
                                 </p>
                             </div>
                         </div>
-                        <div className='flex flex-row  items-center justify-center gap-2 overflow-hidden'>
+                        <div className='flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 overflow-hidden w-full sm:w-auto'>
                             <select
                                 onChange={(e) => setSpecies(e.target.value)}
                                 value={species}
-                                className="border text-xs rounded-lg block  p-1.5 px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500">
+                                className="border text-base md:text-xs rounded-lg block h-12 md:h-auto p-2 md:p-1.5 px-3 md:px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 w-full sm:w-auto">
                                 <option value="all">Todas las especies</option>
                                 {speciesOptions.map(specie => <option key={specie.id} value={specie.id}>{specie.name}</option>)}
                             </select>
                             <input
                                 onChange={(e) => setDate(e.target.value)}
                                 value={date}
-                                type="date" className="border text-xs rounded-lg block w-full p-1.5 px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 "
+                                type="date" className="border text-base md:text-xs rounded-lg block w-full h-12 md:h-auto p-2 md:p-1.5 px-3 md:px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500"
                             />
                         </div>
                     </div>
@@ -132,9 +132,9 @@ const RawMaterialRadialBarChart = () => {
                             </div>
 
                         ) : stats?.totalNetWeightByProducts.length > 0 ? (
-                            <div className='flex flex-col sm:flex-row w-full py-6 sm:py-0'>
-                                <div className='flex items-center justify-center  sm:pt-1 sm:w-[600px]'>
-                                    <ResponsiveContainer width="100%" height={255}>
+                            <div className='flex flex-col sm:flex-row w-full py-4 md:py-6 sm:py-0 gap-4'>
+                                <div className='flex items-center justify-center sm:pt-1 sm:w-[600px]'>
+                                    <ResponsiveContainer width="100%" height={220} className="md:h-[255px]">
                                         <RadialBarChart
                                             cx="50%"
                                             cy="50%"
@@ -208,15 +208,17 @@ const RawMaterialRadialBarChart = () => {
                                 <div className='flex items-center justify-center w-full px-2 sm:px-14'>
                                     <ul className="mt-3 flex flex-col w-full h-full overflow-y-auto max-h-[180px] pr-2">
                                         {stats?.totalNetWeightByProducts.map((item, index) => (
-                                            <li key={index} className="inline-flex items-center gap-x-2 py-3 px-4 text-sm border-b border-neutral-400 text-neutral-200">
-                                                <div className="flex items-center justify-between w-full">
-                                                    <div className='flex items-center justify-center gap-2'>
+                                            <li key={index} className="inline-flex items-center gap-x-2 py-3 md:py-3 px-4 text-base md:text-sm border-b border-neutral-400 text-neutral-200 min-h-[44px]">
+                                                <div className="flex items-center justify-between w-full gap-2">
+                                                    <div className='flex items-center justify-center gap-2 flex-1 min-w-0'>
                                                         {renderColorList(index)}
-                                                        <span>{item.name}</span>
+                                                        <span className="truncate">{item.name}</span>
                                                     </div>
-                                                    <span>
-                                                        {new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(item?.totalNetWeight)} kg</span>
-                                                    <span className='text-sky-300 font-medium w-10 text-end'>{item?.percentage?.toFixed(0)} %</span>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <span className="text-nowrap">
+                                                            {new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(item?.totalNetWeight)} kg</span>
+                                                        <span className='text-sky-300 font-medium w-10 text-end text-nowrap'>{item?.percentage?.toFixed(0)} %</span>
+                                                    </div>
                                                 </div>
                                             </li>
                                         ))}

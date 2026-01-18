@@ -26,15 +26,17 @@ import { TrendingUp, Truck } from "lucide-react"
 import { getTransportChartData } from "@/services/orderService"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
+import { actualYearRange } from "@/helpers/dates"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
 
-const today = new Date()
-const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
+const initialDateRange = {
+    from: actualYearRange.from,
+    to: actualYearRange.to,
+}
 
 export function TransportRadarChart() {
     const { data: session, status } = useSession()
-    const [from, setFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-    const [to, setTo] = useState(today.toLocaleDateString('sv-SE'))
+    const [range, setRange] = useState(initialDateRange)
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -45,9 +47,12 @@ export function TransportRadarChart() {
 
     useEffect(() => {
         if (status !== "authenticated") return
-        if (!from || !to) return
+        if (!range.from || !range.to) return
 
         setIsLoading(true)
+
+        const from = range.from.toLocaleDateString('sv-SE')
+        const to = range.to.toLocaleDateString('sv-SE')
 
         getTransportChartData({
             token: accessToken,
@@ -57,7 +62,7 @@ export function TransportRadarChart() {
             .then(setData)
             .catch((err) => console.error("Error al obtener datos de transporte:", err))
             .finally(() => setIsLoading(false))
-    }, [status, from, to, accessToken])
+    }, [status, range, accessToken])
 
     const chartConfig = {
         netWeight: {
@@ -68,30 +73,18 @@ export function TransportRadarChart() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="items-center">
+            <CardHeader className="items-center p-3 md:p-6">
                 <div className="flex items-center gap-2 justify-between w-full">
-                    <div className="flex flex-col items-startgap-2">
-                        <CardTitle>Empresas de transporte</CardTitle>
-                        <CardDescription>Cantidades transportadas por transportistas</CardDescription>
+                    <div className="flex flex-col items-start gap-2">
+                        <CardTitle className="text-base md:text-lg">Empresas de transporte</CardTitle>
+                        <CardDescription className="text-sm">Cantidades transportadas por transportistas</CardDescription>
                     </div>
                 </div>
-
             </CardHeader>
 
-            <CardContent className="flex flex-col items-center gap-4">
-                <div className="flex sm:flex-row flex-col items-center gap-2 w-full justify-center">
-                    <Input
-                        type="date"
-                        value={from}
-                        onChange={(e) => setFrom(e.target.value)}
-                        className=" text-sm w-fit"
-                    />
-                    <Input
-                        type="date"
-                        value={to}
-                        onChange={(e) => setTo(e.target.value)}
-                        className=" text-sm w-fit"
-                    />
+            <CardContent className="flex flex-col items-center gap-4 px-3 md:px-6">
+                <div className="w-full">
+                    <DateRangePicker dateRange={range} onChange={setRange} />
                 </div>
 
                 {isLoading ? (

@@ -27,13 +27,13 @@ const SpeciesInventoryOverview = () => {
             <div className='bg-gradient-to-br from-sky-500/50 via-sky-700/50 to-sky-500 p-[1px] rounded-2xl'>
                 <div className="p-4 md:p-5  flex flex-col  shadow-sm rounded-2xl bg-gradient-to-br from-sky-500 via-sky-700 to-sky-500 ">
                     {/* <!-- Header --> */}
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                         <div className='flex flex-col items-start '>
-                            <h2 className="text-sm text-white text-nowrap">
+                            <h2 className="text-base md:text-sm text-white text-nowrap">
                                 Inventario por especies
                             </h2>
                             <div className='flex items-center justify-center gap-2'>
-                                <p className="text-xl sm:text-xl font-medium text-neutral-100/85 text-nowrap">
+                                <p className="text-2xl md:text-xl font-medium text-neutral-100/85 text-nowrap">
                                     {totalSpeciesInventory?.totalNetWeight && totalSpeciesInventory?.totalNetWeight > 0
                                         ? new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(totalSpeciesInventory?.totalNetWeight)
                                         : `0,00`
@@ -42,12 +42,12 @@ const SpeciesInventoryOverview = () => {
                             </div>
                         </div>
                         {/* Boton acceder a almacenes */}
-                        <div className='flex flex-row  items-center justify-center gap-2 overflow-hidden'>
+                        <div className='flex flex-row items-center justify-center gap-2 overflow-hidden w-full sm:w-auto'>
                             <button
                                 onClick={() => window.location.href = '/stores_manager'}
-                                className="flex gap-2  rounded-lg items-center justify-center  p-1.5 px-4 bg-neutral-900/20  animate-pulse ">
-                                <span className='text-xs font-thin text-white/85 '>Almacenes</span>
-                                <ArrowRightIcon className="h-5 w-5" />
+                                className="flex gap-2 rounded-lg items-center justify-center min-h-[44px] px-4 py-2 bg-neutral-900/20 animate-pulse w-full sm:w-auto">
+                                <span className='text-sm md:text-xs font-thin text-white/85'>Almacenes</span>
+                                <ArrowRightIcon className="h-5 w-5 md:h-4 md:w-4" />
                             </button>
                         </div>
 
@@ -70,27 +70,27 @@ const SpeciesInventoryOverview = () => {
                             </div>
 
                         ) : totalSpeciesInventory?.speciesInventory.length > 0 ? (
-                            <div className='py-[40.5px] flex flex-col sm:flex-row items-center justify-center w-full gap-5'>
-                                <img src="/app/dashboard/3d_box.svg" alt="3d box" className="w-36 h-36 px-2 " />
+                            <div className='py-6 md:py-[40.5px] flex flex-col sm:flex-row items-center justify-center w-full gap-4 md:gap-5'>
+                                <img src="/app/dashboard/3d_box.svg" alt="3d box" className="w-24 h-24 md:w-36 md:h-36 px-2 hidden sm:block" />
                                 <div className='flex items-center justify-center w-full'>
 
-                                    <div className=" flex flex-col w-full h-full overflow-y-auto max-h-[175px] pr-2">
-                                        <table className=" text-sm  w-full ">
+                                    <div className="flex flex-col w-full h-full overflow-y-auto max-h-[175px] pr-2">
+                                        <table className="text-sm md:text-sm w-full">
                                             <tbody className='divide-y divide-sky-700/20'>
                                                 {totalSpeciesInventory.speciesInventory?.map((item, index) => (
-                                                    <tr key={index} className=" hover:bg-neutral-800/20">
-                                                        <td className='  py-3  text-sm text-white  sm:pl-6 '>
+                                                    <tr key={index} className="hover:bg-neutral-800/20">
+                                                        <td className='py-3 md:py-3 text-base md:text-sm text-white sm:pl-6'>
                                                             <span className="text-white font-medium">
                                                                 {item.name}
                                                             </span>
                                                         </td>
-                                                        <td className='text-end font-light py-3  text-sm text-white sm:pl-6 text-nowrap'>
+                                                        <td className='text-end font-light py-3 md:py-3 text-base md:text-sm text-white sm:pl-6 text-nowrap'>
                                                             <span className="text-white">
                                                                 {new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2 , useGrouping:true }).format(item?.totalNetWeight)} kg
 
                                                             </span>
                                                         </td>
-                                                        <td className='text-end py-3  text-sm text-sky-300  sm:pl-6 text-nowrap'>
+                                                        <td className='text-end py-3 md:py-3 text-base md:text-sm text-sky-300 sm:pl-6 text-nowrap'>
                                                             <span>
                                                                 {item.percentage.toFixed(2)} %
 

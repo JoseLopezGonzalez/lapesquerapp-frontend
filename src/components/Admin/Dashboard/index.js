@@ -50,59 +50,120 @@ export default function Dashboard() {
                 <div className="w-full h-full flex flex-col gap-4 pb-4">
                     <div className="w-full">
                         <div className="flex flex-col items-start justify-center mb-2 md:mb-4">
-                            <p className="text-sm md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
-                            <h1 className="text-2xl md:text-4xl font-light">{userName}</h1>
+                            <p className="text-xs md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
+                            <h1 className="text-xl md:text-4xl font-light">{userName}</h1>
                         </div>
                     </div>
 
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
-                        <div className="w-full overflow-hidden">
-                            <CurrentStockCard />
+                    {/* Cards principales - Desocultar uno por uno para corregirlos */}
+                    {/* 
+                        ESTRATEGIA: Desocultar uno por uno para corregirlos
+                        Para ocultar un card: cambiar a {false && ...}
+                        Para desocultar: cambiar a {true && ...}
+                    */}
+                    {true && (
+                        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
+                            {/* Card 1: CurrentStockCard - VISIBLE */}
+                            {true && (
+                                <div className="w-full overflow-hidden">
+                                    <CurrentStockCard />
+                                </div>
+                            )}
+                            
+                            {/* Card 2: TotalQuantitySoldCard - VISIBLE */}
+                            {true && (
+                                <div className="w-full h-full overflow-hidden">
+                                    <TotalQuantitySoldCard />
+                                </div>
+                            )}
+                            
+                            {/* Card 3: TotalAmountSoldCard - VISIBLE */}
+                            {true && (
+                                <div className="w-full h-full overflow-hidden">
+                                    <TotalAmountSoldCard />
+                                </div>
+                            )}
+                            
+                            {/* Card 4: NewLabelingFeatureCard - VISIBLE */}
+                            {true && (
+                                <div className="w-full overflow-hidden hidden sm:block">
+                                    <NewLabelingFeatureCard />
+                                </div>
+                            )}
                         </div>
-                        <div className="w-full h-full overflow-hidden">
-                            <TotalQuantitySoldCard />
-                        </div>
-                        <div className="w-full h-full overflow-hidden">
-                            <TotalAmountSoldCard />
-                        </div>
-                        <div className="w-full overflow-hidden hidden sm:block">
-                            <NewLabelingFeatureCard />
-                        </div>
-                    </div>
+                    )}
 
-                    <Masonry
-                        breakpointCols={breakpointColumnsObj}
-                        className="masonry-grid"
-                        columnClassName="masonry-grid_column"
-                    >
-                        <div>
-                            <OrderRankingChart />
-                        </div>
-                        <div>
-                            <SalesBySalespersonPieChart />
-                        </div>
-                        <div>
-                            <StockBySpeciesCard />
-                        </div>
-                        <div>
-                            <StockByProductsCard />
-                        </div>
-                        <div>
-                            <SalesChart />
-                        </div>
-                        <div>
-                            <ReceptionChart />
-                        </div>
-                        <div>
-                            <DispatchChart />
-                        </div>
-                        <div>
-                            <TransportRadarChart />
-                        </div>
-                        <div>
-                            <WorkingEmployeesCard />
-                        </div>
-                    </Masonry>
+                    {/* Gráficos en Masonry - Desocultar uno por uno para corregirlos */}
+                    {true && (
+                        <Masonry
+                            breakpointCols={breakpointColumnsObj}
+                            className="masonry-grid"
+                            columnClassName="masonry-grid_column"
+                        >
+                            {/* Gráfico 1: OrderRankingChart - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <OrderRankingChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 2: SalesBySalespersonPieChart - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <SalesBySalespersonPieChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 3: StockBySpeciesCard - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <StockBySpeciesCard />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 4: StockByProductsCard - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <StockByProductsCard />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 5: SalesChart - VISIBLE */}
+                            {true && (
+                                <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
+                                    <SalesChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 6: ReceptionChart - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <ReceptionChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 7: DispatchChart - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <DispatchChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 8: TransportRadarChart - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <TransportRadarChart />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 9: WorkingEmployeesCard - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <WorkingEmployeesCard />
+                                </div>
+                            )}
+                        </Masonry>
+                    )}
                 </div>
             </ScrollArea>
         </div>

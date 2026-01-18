@@ -19,9 +19,10 @@ import {
 import { useSession } from "next-auth/react"
 import { getSalesBySalesperson } from "@/services/orderService"
 import Loader from "@/components/Utilities/Loader"
-import { Input } from "@/components/ui/input"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { SearchX } from "lucide-react"
+import { actualYearRange } from "@/helpers/dates"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
 
 const pieColors = [
     "var(--chart-1)",
@@ -34,24 +35,27 @@ const pieColors = [
     "var(--chart-8)",
 ]
 
-const today = new Date()
-const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
-
+const initialDateRange = {
+    from: actualYearRange.from,
+    to: actualYearRange.to,
+}
 
 export function SalesBySalespersonPieChart() {
     const { data: session, status } = useSession()
     const [chartData, setChartData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
-    const [dateFrom, setDateFrom] = useState(firstDayOfCurrentYear.toLocaleDateString('sv-SE'))
-    const [dateTo, setDateTo] = useState(today.toLocaleDateString('sv-SE'))
+    const [range, setRange] = useState(initialDateRange)
 
     const accessToken = session?.user?.accessToken
 
     useEffect(() => {
         if (status !== "authenticated") return
-        if (!dateFrom || !dateTo) return
+        if (!range.from || !range.to) return
 
         setIsLoading(true)
+
+        const dateFrom = range.from.toLocaleDateString('sv-SE')
+        const dateTo = range.to.toLocaleDateString('sv-SE')
 
         getSalesBySalesperson({ dateFrom, dateTo }, accessToken)
             .then((data) => {
@@ -66,7 +70,7 @@ export function SalesBySalespersonPieChart() {
                 setChartData([])
             })
             .finally(() => setIsLoading(false))
-    }, [status, dateFrom, dateTo, accessToken])
+    }, [status, range, accessToken])
 
     const chartConfig = {
         quantity: {
@@ -83,22 +87,17 @@ export function SalesBySalespersonPieChart() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="items-start space-y-4">
+            <CardHeader className="items-start space-y-4 p-3 md:p-6">
                 <div className="flex justify-between flex-col sm:flex-row w-full gap-4">
                     <div>
-                        <CardTitle className="text-base">Ranking ventas</CardTitle>
-                        <CardDescription>
-                            Fechas seleccionadas
+                        <CardTitle className="text-base md:text-lg">Ranking ventas</CardTitle>
+                        <CardDescription className="text-sm">
+                            Ranking de ventas por comercial
                         </CardDescription>
                     </div>
-                    {/* <div className="hidden 3xl:flex gap-2">
-                        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-                        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-                    </div> */}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 w-full justify-center items-center">
-                    <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-fit" />
-                    <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-fit" />
+                <div className="w-full">
+                    <DateRangePicker dateRange={range} onChange={setRange} />
                 </div>
             </CardHeader>
 

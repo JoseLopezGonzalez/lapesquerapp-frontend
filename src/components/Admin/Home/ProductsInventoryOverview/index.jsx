@@ -40,13 +40,13 @@ const ProductsInventoryOverview = () => {
             <div className='bg-gradient-to-br from-neutral-500/50 via-neutral-700/50 to-sky-500 p-[1px] rounded-2xl'>
                 <div className="p-4 md:p-5  flex flex-col  shadow-sm rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-sky-900 ">
                     {/* <!-- Header --> */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                         <div className='flex flex-col items-start '>
-                            <h2 className="text-sm text-white text-nowrap">
+                            <h2 className="text-base md:text-sm text-white text-nowrap">
                                 Inventario por productos
                             </h2>
                             <div className='flex items-center justify-center gap-2'>
-                                <p className="text-xl sm:text-xl font-medium text-neutral-100/85 text-nowrap">
+                                <p className="text-2xl md:text-xl font-medium text-neutral-100/85 text-nowrap">
                                     {totalProductsInventory?.totalNetWeight && totalProductsInventory?.totalNetWeight > 0
                                         ? new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2, useGrouping: true }).format(totalProductsInventory?.totalNetWeight)
                                         : `0,00`
@@ -55,7 +55,7 @@ const ProductsInventoryOverview = () => {
                             </div>
                         </div>
 
-                        <div className='flex flex-row  items-center justify-center gap-2 lg:w-96'>
+                        <div className='flex flex-row items-center justify-center gap-2 w-full sm:w-auto lg:w-96'>
                             <input
                                 list="products"
                                 type="text"
@@ -64,7 +64,7 @@ const ProductsInventoryOverview = () => {
                                 onKeyUp={(e) => setProductName(e.target.value)}
                                 value={productName}
 
-                                className="border text-xs rounded-lg block w-full pt-1.5 pb-2 px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500 "
+                                className="border text-base md:text-xs rounded-lg block w-full h-12 md:h-auto pt-3 pb-3 md:pt-1.5 md:pb-2 px-3 md:px-2 bg-neutral-900 border-neutral-600 placeholder-neutral-100 text-white focus:ring-sky-500"
                             />
 
                             <datalist id="products">
@@ -96,12 +96,12 @@ const ProductsInventoryOverview = () => {
                             </div>
 
                         ) : filteredProductsInventory.length > 0 ? (
-                            <div className='py-[33px] flex items-center justify-center w-full gap-10'>
+                            <div className='py-6 md:py-[33px] flex items-center justify-center w-full gap-10'>
 
                                 <div className='flex items-center justify-center w-full'>
-                                    <div className="w-full h-full overflow-y-auto max-h-[190px] min-h-[190px] pr-2 ">
-                                        <table className=" text-sm  w-full ">
-                                            <thead className=" hidden text-xs uppercase  text-neutral-200 sticky top-0 z-10 bg-neutral-800/50 backdrop-blur-md">
+                                    <div className="w-full h-full overflow-y-auto max-h-[190px] min-h-[190px] pr-2">
+                                        <table className="text-sm w-full">
+                                            <thead className="hidden md:table-header-group text-xs uppercase text-neutral-200 sticky top-0 z-10 bg-neutral-800/50 backdrop-blur-md">
                                                 <tr>
                                                     <th scope="col" className="px-6 py-3 text-start">
                                                         <a className="group inline-flex items-center gap-x-2" href="#">
@@ -119,26 +119,26 @@ const ProductsInventoryOverview = () => {
 
                                                         </a>
                                                     </th>
-                                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6 ">
+                                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">
                                                         <span className="sr-only">Acción</span>
                                                     </th>
                                                 </tr>
                                             </thead>
                                             <tbody className='divide-y divide-sky-700/20'>
                                                 {filteredProductsInventory.map((item, index) => (
-                                                    <tr key={index} className=" hover:bg-neutral-800/20">
-                                                        <td className='  py-2  text-sm text-white  sm:pl-6 '>
+                                                    <tr key={index} className="hover:bg-neutral-800/20">
+                                                        <td className='py-3 md:py-2 text-base md:text-sm text-white sm:pl-6'>
                                                             <span className="text-white">
                                                                 {item.name}
                                                             </span>
                                                         </td>
-                                                        <td className='font-light text-end  py-2  text-sm text-white  sm:pl-6 text-nowrap'>
+                                                        <td className='font-light text-end py-3 md:py-2 text-base md:text-sm text-white sm:pl-6 text-nowrap'>
                                                             <span className="text-white">
                                                                 {new Intl.NumberFormat('es-ES', { style: 'decimal', minimumFractionDigits: 2, useGrouping: true }).format(item?.totalNetWeight)} kg
 
                                                             </span>
                                                         </td>
-                                                        <td className='text-end hidden sm:block py-2  text-sm text-sky-300  sm:pl-6 text-nowrap'>
+                                                        <td className='text-end hidden sm:table-cell py-3 md:py-2 text-base md:text-sm text-sky-300 sm:pl-6 text-nowrap'>
                                                             <span>
                                                                 {item.percentage.toFixed(2)} %
 

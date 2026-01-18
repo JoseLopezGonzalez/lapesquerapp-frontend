@@ -112,12 +112,12 @@ export function SalesChart() {
     }, [speciesId, categoryId, familyId, range, unit, status, groupBy]) // NEW
 
     return (
-        <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className=" w-full ">
-                <div className="flex items-center gap-2 justify-between w-full">
-                    <div className="grid flex-1 gap-1">
-                        <CardTitle>Ventas</CardTitle>
-                        <CardDescription>
+        <Card className="w-full max-w-full overflow-hidden min-w-0 box-border">
+            <CardHeader className="w-full min-w-0 max-w-full p-3 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:justify-between w-full min-w-0">
+                    <div className="grid flex-1 gap-1 min-w-0">
+                        <CardTitle className="text-base md:text-lg">Ventas</CardTitle>
+                        <CardDescription className="text-sm">
                             Comparativa de ventas en {unit === "quantity" ? "kilogramos" : "euros"}.
                         </CardDescription>
                     </div>
@@ -129,8 +129,8 @@ export function SalesChart() {
                         </TabsList>
                     </Tabs>
                 </div>
-                <Tabs onValueChange={setGroupBy} className=" 3xl:hidden" value={groupBy}>
-                    <TabsList>
+                <Tabs onValueChange={setGroupBy} className="3xl:hidden mt-3" value={groupBy}>
+                    <TabsList className="w-auto">
                         <TabsTrigger value="day">Día</TabsTrigger>
                         <TabsTrigger value="week">Semana</TabsTrigger>
                         <TabsTrigger value="month">Mes</TabsTrigger>
@@ -140,16 +140,19 @@ export function SalesChart() {
 
             </CardHeader>
 
-            <CardContent className="px-6">
+            <CardContent className="px-3 md:px-6 w-full min-w-0 max-w-full overflow-x-hidden">
 
 
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6 3xl:grid-cols-6">
-                    <div className="w-full col-span-6 3xl:col-span-4">
-                        <DateRangePicker dateRange={range} onChange={setRange} />
+                <div className="flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-2 mb-6 3xl:grid-cols-6 w-full box-border">
+                    <div className="w-full min-w-0 box-border md:col-span-6 3xl:col-span-4">
+                        <div className="w-full min-w-0 box-border">
+                            <DateRangePicker dateRange={range} onChange={setRange} />
+                        </div>
                     </div>
-                <Select value={speciesId} onValueChange={setSpeciesId} className="">
-                        <SelectTrigger className="sm:col-span-6 3xl:col-span-2">
+                <div className="w-full min-w-0 box-border md:col-span-6 3xl:col-span-2">
+                    <Select value={speciesId} onValueChange={setSpeciesId} className="w-full box-border">
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
                             <SelectValue placeholder="Seleccionar especie" />
                         </SelectTrigger>
                         <SelectContent>
@@ -161,8 +164,10 @@ export function SalesChart() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={categoryId} onValueChange={setCategoryId} className="">
-                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
+                    </div>
+                    <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
+                    <Select value={categoryId} onValueChange={setCategoryId} className="w-full box-border">
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
                             <SelectValue placeholder="Seleccionar categoría" />
                         </SelectTrigger>
                         <SelectContent>
@@ -174,8 +179,10 @@ export function SalesChart() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={familyId} onValueChange={setFamilyId} className="">
-                        <SelectTrigger className="sm:col-span-3 3xl:col-span-3">
+                    </div>
+                    <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
+                    <Select value={familyId} onValueChange={setFamilyId} className="w-full box-border">
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
                             <SelectValue placeholder="Seleccionar familia" />
                         </SelectTrigger>
                         <SelectContent>
@@ -187,9 +194,10 @@ export function SalesChart() {
                             ))}
                         </SelectContent>
                     </Select>
+                    </div>
                 </div>
 
-                <div className="h-[250px] w-full">
+                <div className="h-[250px] w-full min-w-0 max-w-full overflow-hidden box-border">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center w-full h-full">
                             <Loader2 className="h-8 w-8 text-primary animate-spin" />
@@ -203,7 +211,7 @@ export function SalesChart() {
                                     color: "var(--chart-1)",
                                 },
                             }}
-                            className="h-full w-full"
+                            className="h-full w-full min-w-0 max-w-full overflow-hidden !aspect-auto"
                         >
                             <AreaChart data={chartData}>
                                 <defs>
@@ -219,7 +227,8 @@ export function SalesChart() {
                                     tickLine={false}
                                     axisLine={false}
                                     tickMargin={8}
-                                    minTickGap={32}
+                                    minTickGap={16}
+                                    interval="preserveStartEnd"
                                     tickFormatter={(value) => {
                                         // Formateo condicional según tipo
                                         if (groupBy === "month") return new Date(value + "-01").toLocaleDateString("es-ES", { month: "short", year: "2-digit" })
