@@ -44,12 +44,16 @@ export default function RootLayout({ children }) {
       <head>
         {/* iOS PWA Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="apple-mobile-web-app-title" content="PesquerApp" />
         
         {/* Android/Chrome PWA Meta Tags */}
+        {/* theme-color controla: barra de estado (notificaciones), barra de navegación y navegador */}
+        {/* Light mode: barras claras (blanco) para armonizar con fondo blanco */}
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        {/* Dark mode: barras oscuras (casi negro) para armonizar con fondo oscuro */}
+        <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#0E1E2A" />
 
         {/* iOS Splash Screens - iPhone 14 Series */}
         {/* iPhone 14 Pro Max */}
