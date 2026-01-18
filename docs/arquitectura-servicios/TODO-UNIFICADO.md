@@ -182,9 +182,8 @@ Todos los servicios de prioridad media ya han sido refactorizados:
 
 ### ✅ Documentación Creada
 
-- [x] ✅ `REVISION-COMPLETA-IMPLEMENTACION.md` - Revisión completa de Fase 3
-- [x] ✅ `VALIDACION-FINAL-FASE-5.md` - Validación final de Fase 5
 - [x] ✅ `PROXIMOS-PASOS.md` - Opciones de próximos pasos
+- [x] ✅ `RESUMEN-ARQUITECTURA-SERVICIOS.md` - Resumen ejecutivo
 - [x] ✅ Todos los servicios de dominio tienen JSDoc completo
 
 ### ⏳ Limpieza Futura (Opcional - Después de Validación en Producción)
@@ -282,15 +281,8 @@ Los servicios genéricos originales (`/services/entityService.js`, `/services/cr
 
 - **📋 TODO Unificado:** Este documento (estado general y tareas)
 - **🎯 Próximos Pasos:** [PROXIMOS-PASOS.md](./PROXIMOS-PASOS.md) - Opciones después de completar fases 1-5
-- **✅ Validación Final:** [VALIDACION-FINAL-FASE-5.md](./VALIDACION-FINAL-FASE-5.md) - Validación completa de todas las fases
-- **🔍 Revisión Completa:** [REVISION-COMPLETA-IMPLEMENTACION.md](./REVISION-COMPLETA-IMPLEMENTACION.md) - Revisión detallada de Fase 3
-
-### Guías de Implementación
-
-- **🏗️ Arquitectura general:** [ARQUITECTURA-SERVICIOS-DOMINIO.md](./ARQUITECTURA-SERVICIOS-DOMINIO.md)
-- **📝 Plan detallado:** [PLAN-IMPLEMENTACION-SERVICIOS-DOMINIO.md](./PLAN-IMPLEMENTACION-SERVICIOS-DOMINIO.md)
-- **🔧 Patrón de implementación:** [IMPLEMENTACION-EJEMPLO-SUPPLIER-SERVICE.md](./IMPLEMENTACION-EJEMPLO-SUPPLIER-SERVICE.md)
 - **📊 Resumen ejecutivo:** [RESUMEN-ARQUITECTURA-SERVICIOS.md](./RESUMEN-ARQUITECTURA-SERVICIOS.md)
+- **🏗️ Arquitectura general:** [ARQUITECTURA-SERVICIOS-DOMINIO.md](./ARQUITECTURA-SERVICIOS-DOMINIO.md)
 
 ### Código de Referencia
 

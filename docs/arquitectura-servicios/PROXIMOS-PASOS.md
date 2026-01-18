@@ -168,7 +168,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 
 **Razón:** Es el objetivo original del proyecto. Los servicios de dominio fueron diseñados específicamente para esto.
 
-**Plan Detallado:** Ver [PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md)
+**Plan Detallado:** Ver [Plan de Integración](../chat-ai/PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md) en la documentación del Chat AI
 
 **Resumen de Pasos:**
 1. Instalar Vercel AI SDK y dependencias

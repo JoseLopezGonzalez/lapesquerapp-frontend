@@ -21,27 +21,7 @@ Documento principal que describe los principios arquitectónicos, estructura pro
 
 **📖 Lee esto** para entender la arquitectura completa y los principios de diseño.
 
-### 3. [Plan de Implementación](./PLAN-IMPLEMENTACION-SERVICIOS-DOMINIO.md)
-Plan detallado paso a paso para implementar la arquitectura, con fases y tareas específicas.
-
-**🎯 Úsalo** como guía para la implementación gradual.
-
-### 4. [Ejemplo de Implementación: Supplier Service](./IMPLEMENTACION-EJEMPLO-SUPPLIER-SERVICE.md)
-Ejemplo completo y documentado de cómo implementar un service de dominio, usando `supplierService` como referencia.
-
-**🔧 Consulta esto** cuando necesites crear un nuevo service de dominio.
-
-### 5. [Plan de Integración: Vercel AI Chatbot](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md) ⭐ **NUEVO**
-Plan detallado paso a paso para integrar el template de Vercel AI Chatbot con los servicios de dominio.
-
-**🚀 Úsalo** para implementar el chat AI conectado a todos los servicios de dominio.
-
-### 6. [Implementación Chat AI Completa](./IMPLEMENTACION-CHAT-AI-COMPLETA.md) ⭐ **NUEVO**
-Documento detallado que describe exactamente cómo se implementó el chat AI, incluyendo todas las librerías, versiones, código completo, problemas encontrados y soluciones. Incluye comparación con documentación oficial de Vercel y OpenAI.
-
-**📖 Consulta esto** para verificar la implementación exacta y compararla con la documentación oficial.
-
-### 7. [Próximos Pasos](./PROXIMOS-PASOS.md)
+### 3. [Próximos Pasos](./PROXIMOS-PASOS.md)
 Documento que resume las opciones de próximos pasos después de completar las fases 1-5.
 
 **📋 Revisa** para ver qué hacer después de completar la refactorización.
@@ -96,14 +76,13 @@ Documento que resume las opciones de próximos pasos después de completar las f
 2. Revisa [Arquitectura de Servicios](./ARQUITECTURA-SERVICIOS-DOMINIO.md)
 
 ### Para implementar un nuevo service:
-1. Lee [Ejemplo de Implementación](./IMPLEMENTACION-EJEMPLO-SUPPLIER-SERVICE.md)
-2. Copia el patrón de `supplierService.js`
-3. Adapta para tu entidad específica
+1. Revisa el patrón de servicios existentes en `/src/services/domain/`
+2. Usa `supplierService.js` como referencia: `/src/services/domain/suppliers/supplierService.js`
+3. Sigue el patrón establecido: métodos semánticos que usan servicios genéricos internamente
 
-### Para migrar componentes:
-1. Revisa [Plan de Implementación](./PLAN-IMPLEMENTACION-SERVICIOS-DOMINIO.md)
-2. Sigue las fases definidas
-3. Valida cada cambio antes de continuar
+### Para ver el estado actual:
+1. Revisa [TODO Unificado](./TODO-UNIFICADO.md) para ver el estado de completitud
+2. Consulta [Próximos Pasos](./PROXIMOS-PASOS.md) para futuras mejoras
 
 ---
 
@@ -113,17 +92,19 @@ Documento que resume las opciones de próximos pasos después de completar las f
 
 **Estado:** 
 - ✅ Fases 1-5 completadas (27 servicios de dominio creados)
-- ⏳ Fase 6 en progreso: Integración con Vercel AI Chatbot
+- ✅ Chat AI integrado y funcionando (ver [Documentación del Chat AI](../chat-ai/README.md))
 
 **Próximos pasos:**
-- Implementar integración con Vercel AI Chatbot (ver [Plan de Integración](./PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md))
-- Crear tools/functions que conecten el AI con los servicios de dominio
-- Crear UI del chat
+- Ver [Próximos Pasos](./PROXIMOS-PASOS.md) para próximas mejoras
 
 ---
 
 ## 🔗 Referencias Relacionadas
 
+### Documentación del Chat AI
+- **[Documentación del Chat AI](../chat-ai/README.md)** - Toda la documentación específica del sistema de Chat AI
+
+### Otra Documentación
 - [API References](../API-references/README.md) - Contratos de la API backend
 - [Análisis API Frontend Backend](../ANALISIS-API-FRONTEND-BACKEND.md) - Análisis de inconsistencias
 - [Documentación de Servicios API v2](../07-SERVICIOS-API-V2.md) - Documentación de servicios existentes

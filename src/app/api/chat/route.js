@@ -62,7 +62,7 @@ export async function POST(req) {
     // Parsear mensajes del request
     const { messages } = await req.json();
 
-    console.log('[CHAT API] 📥 Mensajes recibidos del cliente:', JSON.stringify(messages, null, 2));
+    console.log('[CHAT API] 📥 Mensajes recibidos del cliente:', messages?.length || 0, 'mensajes');
 
     if (!messages || !Array.isArray(messages)) {
       console.error('[CHAT API] ❌ Mensajes inválidos:', { messages, isArray: Array.isArray(messages) });
@@ -75,6 +75,20 @@ export async function POST(req) {
       );
     }
 
+    // ✅ GESTIÓN DE CONTEXTO: Limitar el historial para evitar exceder el límite de tokens
+    // El historial muy largo puede causar "context_length_exceeded"
+    // Mantenemos solo los últimos mensajes para conservar el contexto reciente
+    // sin exceder el límite del modelo (GPT-5-mini tiene ~128k tokens)
+    const MAX_HISTORY_MESSAGES = 30; // Últimos 30 mensajes (15 intercambios usuario-IA aproximadamente)
+    let truncatedMessages = messages;
+    
+    if (messages.length > MAX_HISTORY_MESSAGES) {
+      console.log(`[CHAT API] ⚠️ Historial largo detectado (${messages.length} mensajes). Truncando a últimos ${MAX_HISTORY_MESSAGES}...`);
+      // Mantener solo los últimos N mensajes
+      truncatedMessages = messages.slice(-MAX_HISTORY_MESSAGES);
+      console.log(`[CHAT API] ✅ Historial truncado: ${truncatedMessages.length} mensajes`);
+    }
+
     // ✅ CORRECCIÓN DEFINITIVA: Convertir UIMessage[] a ModelMessage[] para mantener el historial completo
     // useChat envía UIMessage[] con formato { id, role, parts: [{ type: 'text', text: ... }] }
     // streamText espera ModelMessage[] (formato compatible con el protocolo del SDK)
@@ -82,10 +96,11 @@ export async function POST(req) {
     // ⚠️ CRÍTICO: convertToModelMessages es ASYNC, debemos usar await
     let modelMessages;
     try {
-      console.log('[CHAT API] 🔄 Convirtiendo mensajes. Cantidad:', messages.length);
+      console.log('[CHAT API] 🔄 Convirtiendo mensajes. Cantidad:', truncatedMessages.length);
       
       // ✅ CRÍTICO: convertToModelMessages es async, usar await
-      modelMessages = await convertToModelMessages(messages);
+      // Usamos truncatedMessages en lugar de messages para evitar context_length_exceeded
+      modelMessages = await convertToModelMessages(truncatedMessages);
       
       console.log('[CHAT API] ✅ Mensajes convertidos. Tipo:', typeof modelMessages, '¿Es Array?:', Array.isArray(modelMessages));
       console.log('[CHAT API] ✅ Cantidad de mensajes convertidos:', modelMessages?.length);

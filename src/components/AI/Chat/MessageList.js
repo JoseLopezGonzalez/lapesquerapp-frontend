@@ -1,15 +1,50 @@
 'use client';
 
-import { Bot, User, Loader2 } from 'lucide-react';
+import { Sparkles, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 /**
  * Componente que renderiza la lista de mensajes del chat
  */
 export function MessageList({ messages, isLoading }) {
+  // ✅ Función auxiliar para verificar si un mensaje tiene contenido
+  const hasMessageContent = (message) => {
+    if (Array.isArray(message.parts) && message.parts.length > 0) {
+      return message.parts.some(part => 
+        part.type === 'text' && part.text && part.text.trim()
+      );
+    }
+    return typeof message.content === 'string' && message.content.trim();
+  };
+
+  // ✅ Filtrar mensajes vacíos del assistant cuando está cargando
+  // Esto evita mostrar un mensaje en blanco junto con el loader
+  const filteredMessages = messages.filter((message) => {
+    // Si es un mensaje del assistant sin contenido y está cargando, filtrarlo
+    if (message.role === 'assistant' && isLoading) {
+      // Si es el último mensaje y no tiene contenido, no mostrarlo
+      // (se mostrará el loader en su lugar)
+      const isLastMessage = messages[messages.length - 1]?.id === message.id;
+      if (isLastMessage && !hasMessageContent(message)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // ✅ Verificar si el último mensaje del assistant tiene contenido visible
+  // Si tiene contenido, no mostrar el loader porque la respuesta ya está apareciendo
+  const lastAssistantMessage = messages
+    .filter(m => m.role === 'assistant')
+    .slice(-1)[0];
+  
+  const shouldShowLoader = isLoading && messages.length > 0 && 
+    (!lastAssistantMessage || !hasMessageContent(lastAssistantMessage));
+
   return (
     <div className="space-y-4">
-      {messages.map((message) => (
+      {filteredMessages.map((message) => (
         <div
           key={message.id}
           className={cn(
@@ -20,7 +55,7 @@ export function MessageList({ messages, isLoading }) {
           {message.role === 'assistant' && (
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
             </div>
           )}
@@ -35,7 +70,11 @@ export function MessageList({ messages, isLoading }) {
           >
             {/* ✅ CORRECCIÓN SEGÚN DOC OFICIAL: Renderizar usando message.parts */}
             {/* La documentación oficial dice: "render the messages using the parts property" */}
-            <div className="text-sm whitespace-pre-wrap break-words space-y-2">
+            {/* ✅ Ajustar clases: sin whitespace-pre-wrap para Markdown, mantenerlo solo para texto plano del usuario */}
+            <div className={cn(
+              'text-sm break-words',
+              message.role === 'user' ? 'whitespace-pre-wrap' : 'whitespace-normal'
+            )}>
               {(() => {
                 // ✅ Determinar el color del texto según el rol del mensaje
                 const textColor = message.role === 'user' ? 'text-white' : 'text-foreground';
@@ -44,13 +83,17 @@ export function MessageList({ messages, isLoading }) {
                 // Según la doc oficial: https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat
                 if (Array.isArray(message.parts) && message.parts.length > 0) {
                   return message.parts.map((part, idx) => {
-                    // ✅ Tipo 'text': Mensaje de texto del assistant
+                    // ✅ Tipo 'text': Mensaje de texto del assistant (renderizar como Markdown)
                     if (part.type === 'text') {
                       const text = part.text || '';
                       if (text.trim()) {
                         return (
-                          <div key={idx} className={textColor}>
-                            {text}
+                          <div key={idx} className={message.role === 'user' ? textColor : ''}>
+                            {message.role === 'assistant' ? (
+                              <MarkdownRenderer content={text} />
+                            ) : (
+                              <div className={cn('whitespace-pre-wrap', textColor)}>{text}</div>
+                            )}
                           </div>
                         );
                       }
@@ -93,12 +136,10 @@ export function MessageList({ messages, isLoading }) {
                 
                 // ✅ Fallback: Si no hay parts, usar content (string) para compatibilidad
                 if (typeof message.content === 'string' && message.content.trim()) {
+                  if (message.role === 'assistant') {
+                    return <MarkdownRenderer content={message.content} />;
+                  }
                   return <div className={message.role === 'user' ? 'text-white' : 'text-foreground'}>{message.content}</div>;
-                }
-                
-                // ✅ Si no hay contenido y está cargando, mostrar indicador
-                if (isLoading && message.role === 'assistant') {
-                  return <div className="text-muted-foreground">Cargando respuesta...</div>;
                 }
                 
                 // ✅ Si no hay contenido y no está cargando, no mostrar nada (evitar "respuesta vacía")
@@ -117,14 +158,14 @@ export function MessageList({ messages, isLoading }) {
         </div>
       ))}
 
-      {isLoading && messages.length > 0 && (
+      {shouldShowLoader && (
         <div className="flex gap-3 justify-start">
           <div className="flex-shrink-0">
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bot className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-primary" />
             </div>
           </div>
-          <div className="bg-muted text-foreground rounded-lg px-4 py-3">
+          <div className="text-foreground px-4 py-3">
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Pensando...</span>

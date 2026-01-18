@@ -2,7 +2,8 @@
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Loader2 } from 'lucide-react';
+import { ArrowUp, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 /**
  * Componente de input para enviar mensajes
@@ -25,39 +26,53 @@ export function MessageInput({ input, handleInputChange, handleSubmit, isLoading
   // En ese caso, usar defaultValue en lugar de value
   const isControlled = typeof handleInputChange === 'function';
   
+  const isDisabled = isLoading || !inputValue || !inputValue.trim();
+  
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <Input
-        type="text"
-        {...(isControlled ? { value: inputValue } : { defaultValue: inputValue })}
-        onChange={onChangeHandler}
-        placeholder="Escribe tu mensaje..."
-        disabled={isLoading}
-        className="flex-1"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (!isLoading && inputValue.trim()) {
-              // Hacer submit del formulario correctamente
-              const form = e.target.closest('form');
-              if (form) {
-                form.requestSubmit();
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="relative flex items-center w-full">
+        <Input
+          type="text"
+          {...(isControlled ? { value: inputValue } : { defaultValue: inputValue })}
+          onChange={onChangeHandler}
+          placeholder="Escribe tu mensaje..."
+          disabled={isLoading}
+          className={cn(
+            "w-full pr-12 border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none",
+            "bg-transparent"
+          )}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (!isLoading && inputValue.trim()) {
+                // Hacer submit del formulario correctamente
+                const form = e.target.closest('form');
+                if (form) {
+                  form.requestSubmit();
+                }
               }
             }
-          }
-        }}
-      />
-      <Button 
-        type="submit" 
-        disabled={isLoading || !inputValue || !inputValue.trim()}
-        size="icon"
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Send className="h-4 w-4" />
-        )}
-      </Button>
+          }}
+        />
+        <Button 
+          type="submit" 
+          disabled={isDisabled}
+          size="icon"
+          className={cn(
+            "absolute right-1 h-7 w-7 rounded-md",
+            "bg-primary text-primary-foreground",
+            "hover:bg-primary/90",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            "transition-colors"
+          )}
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowUp className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
     </form>
   );
 }
