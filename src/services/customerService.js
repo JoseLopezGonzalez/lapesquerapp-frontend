@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 
 /**
@@ -17,7 +18,7 @@ export function getCustomersOptions(token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {
@@ -47,7 +48,7 @@ export async function getCustomer(id, token) {
         headers: {
             /* 'Content-Type': 'application/json', */
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {

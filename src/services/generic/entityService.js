@@ -10,6 +10,7 @@
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Obtiene headers de autenticación
@@ -22,7 +23,7 @@ const getAuthHeaders = async (token) => {
     return {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-        'User-Agent': navigator.userAgent,
+        'User-Agent': getUserAgent(), // ✅ Compatible con cliente y servidor
     };
 };
 

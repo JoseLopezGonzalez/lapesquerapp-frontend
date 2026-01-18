@@ -1,13 +1,14 @@
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { getSession } from 'next-auth/react';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 const getAuthHeaders = async () => {
     const session = await getSession();
     return {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session?.user?.accessToken}`,
-        'User-Agent': navigator.userAgent,
+        'User-Agent': getUserAgent(), // ✅ Compatible con cliente y servidor
     };
 };
 

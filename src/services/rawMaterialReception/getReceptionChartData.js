@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 export async function getReceptionChartData({ token, speciesId, categoryId, familyId, from, to, unit, groupBy }) {
     const query = new URLSearchParams({
@@ -26,7 +27,7 @@ export async function getReceptionChartData({ token, speciesId, categoryId, fami
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
-            "User-Agent": navigator.userAgent,
+            "User-Agent": getUserAgent(),
         },
     }).then((response) => {
         if (!response.ok) {

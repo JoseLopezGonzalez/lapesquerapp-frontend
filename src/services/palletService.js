@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 
 
@@ -12,7 +13,7 @@ export function getPallet(palletId, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {
@@ -50,7 +51,7 @@ export function updatePallet(palletId, palletData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
         body: JSON.stringify(palletData),
     })
@@ -83,7 +84,7 @@ export async function createPallet(palletData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
         body: JSON.stringify(palletData),
     }).then((response) => {
@@ -120,7 +121,7 @@ export async function assignPalletsToPosition(positionId, palletIds, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             position_id: positionId,
@@ -161,7 +162,7 @@ export function movePalletToStore(palletId, storeId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             pallet_id: palletId,
@@ -201,7 +202,7 @@ export function moveMultiplePalletsToStore(palletIds, storeId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             pallet_ids: palletIds,
@@ -239,7 +240,7 @@ export function removePalletPosition(palletId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -273,7 +274,7 @@ export function deletePallet(palletId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -310,7 +311,7 @@ export function unlinkPalletFromOrder(palletId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -344,7 +345,7 @@ export function unlinkPalletsFromOrders(palletIds, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             pallet_ids: palletIds,
@@ -382,7 +383,7 @@ export function searchPalletsByLot(lot, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -435,7 +436,7 @@ export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -470,7 +471,7 @@ export function linkPalletToOrder(palletId, orderId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             orderId: orderId,
@@ -507,7 +508,7 @@ export function linkPalletsToOrders(pallets, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             pallets: pallets.map(p => ({ id: p.id, orderId: p.orderId })),

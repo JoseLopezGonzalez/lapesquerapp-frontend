@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 
 
@@ -14,7 +15,7 @@ export async function getStore(id, token) {
         headers: {
             /* 'Content-Type': 'application/json', */
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {
@@ -45,7 +46,7 @@ export async function getStores(token, page = 1) {
         headers: {
             /* 'Content-Type': 'application/json', */
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {
@@ -79,7 +80,7 @@ export function getStoreOptions(token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
         },
     })
         .then((response) => {
@@ -113,7 +114,7 @@ export async function getTotalStockStats(token) {
         headers: {
             // 'Content-Type' no es necesario en GET con body vacío
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -147,7 +148,7 @@ export async function getStockBySpeciesStats(token) {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -179,7 +180,7 @@ export async function getStockByProducts(token) {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -211,7 +212,7 @@ export async function getRegisteredPallets(token) {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {

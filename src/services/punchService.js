@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Obtener lista paginada de eventos de fichaje
@@ -40,7 +41,7 @@ export async function getPunches(token, params = {}) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -75,7 +76,7 @@ export async function getPunch(id, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -105,7 +106,7 @@ export async function createPunch(punchData, token = null) {
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': navigator.userAgent,
+        'User-Agent': getUserAgent(),
     };
     
     // Solo agregar Authorization si hay token
@@ -170,7 +171,7 @@ export async function updatePunch(id, punchData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify(punchData),
     })
@@ -202,7 +203,7 @@ export async function deletePunch(id, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -238,7 +239,7 @@ export async function getPunchesDashboard(token, date = null) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {

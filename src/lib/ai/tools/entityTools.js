@@ -13,8 +13,16 @@ import { z } from 'zod';
 
 /**
  * Lista de entidades disponibles para el AI
+ * Array literal para usar en z.enum()
  */
-const AVAILABLE_ENTITIES = getAvailableEntities();
+const AVAILABLE_ENTITIES = [
+  'suppliers', 'capture-zones', 'fishing-gears', 'cebo-dispatches',
+  'activity-logs', 'product-categories', 'product-families', 'payment-terms',
+  'species', 'transports', 'taxes', 'incoterms', 'salespeople', 'products',
+  'employees', 'customers', 'stores', 'raw-material-receptions', 'orders',
+  'boxes', 'countries', 'pallets', 'productions', 'punches', 'roles',
+  'sessions', 'users'
+];
 
 /**
  * Tools genéricas para entidades
@@ -33,42 +41,54 @@ Ejemplos de uso:
 - "Muéstrame los pedidos activos"
 - "Busca clientes cuyo nombre contenga 'Pesca'"`,
     
+    // ⚠️ CRÍTICO: OpenAI Responses API (GPT-5) es muy estricto con JSON Schema
+    // Objetos anidados opcionales pueden causar type: "None"
+    // Simplificamos el schema: en lugar de objetos opcionales, todos los campos son opcionales en el nivel raíz
     parameters: z.object({
-      entityType: z.enum(AVAILABLE_ENTITIES, {
-        description: 'Tipo de entidad a listar',
-      }),
-      filters: z.object({
-        search: z.string().optional().describe('Texto de búsqueda general'),
-        ids: z.array(z.number()).optional().describe('Array de IDs específicos a buscar'),
-        // Filtros comunes que muchas entidades soportan
-        status: z.string().optional().describe('Estado o filtro de estado (ej: "pending", "finished")'),
-        dateFrom: z.string().optional().describe('Fecha inicio en formato YYYY-MM-DD'),
-        dateTo: z.string().optional().describe('Fecha fin en formato YYYY-MM-DD'),
-      }).optional().describe('Filtros de búsqueda'),
-      pagination: z.object({
-        page: z.number().optional().default(1).describe('Número de página'),
-        perPage: z.number().optional().default(12).describe('Elementos por página'),
-      }).optional().describe('Opciones de paginación'),
+      entityType: z.enum(AVAILABLE_ENTITIES),
+      // Campos de filtros como propiedades opcionales directas (no objeto anidado)
+      search: z.string().optional(),
+      ids: z.array(z.number()).optional(),
+      status: z.string().optional(),
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+      // Campos de paginación como propiedades opcionales directas
+      page: z.number().optional(),
+      perPage: z.number().optional(),
     }),
 
-    execute: async ({ entityType, filters = {}, pagination = {} }) => {
+    execute: async ({ entityType, search, ids, status, dateFrom, dateTo, page, perPage }) => {
       const service = getEntityService(entityType);
       if (!service) {
         throw new Error(`No se encontró servicio para la entidad: ${entityType}`);
       }
 
+      // Reconstruir filtros desde propiedades individuales
+      const filters = {};
+      if (search) filters.search = search;
+      if (ids) filters.ids = ids;
+      if (status) filters.status = status;
+      if (dateFrom) filters.dateFrom = dateFrom;
+      if (dateTo) filters.dateTo = dateTo;
+      
       // Adaptar filtros si es necesario (algunos servicios esperan formatos específicos)
       const adaptedFilters = { ...filters };
       
       // Si hay dates, algunas entidades las esperan en formato dates.start/dates.end
-      if (filters.dateFrom || filters.dateTo) {
+      if (dateFrom || dateTo) {
         adaptedFilters.dates = {
-          start: filters.dateFrom,
-          end: filters.dateTo,
+          start: dateFrom,
+          end: dateTo,
         };
         delete adaptedFilters.dateFrom;
         delete adaptedFilters.dateTo;
       }
+
+      // ✅ Aplicar defaults en execute (no en el schema)
+      const pagination = {
+        page: page ?? 1,
+        perPage: perPage ?? 12,
+      };
 
       const result = await service.list(adaptedFilters, pagination);
       
@@ -94,10 +114,8 @@ Ejemplos de uso:
 - "Consulta el cliente con ID 67"`,
 
     parameters: z.object({
-      entityType: z.enum(AVAILABLE_ENTITIES, {
-        description: 'Tipo de entidad',
-      }),
-      id: z.number().int().positive().describe('ID de la entidad'),
+      entityType: z.enum(AVAILABLE_ENTITIES),
+      id: z.number().int().positive(),
     }),
 
     execute: async ({ entityType, id }) => {
@@ -126,9 +144,7 @@ Ejemplos de uso:
 Útil cuando el usuario pregunta sobre opciones disponibles o necesita seleccionar algo.`,
 
     parameters: z.object({
-      entityType: z.enum(AVAILABLE_ENTITIES, {
-        description: 'Tipo de entidad',
-      }),
+      entityType: z.enum(AVAILABLE_ENTITIES),
     }),
 
     execute: async ({ entityType }) => {

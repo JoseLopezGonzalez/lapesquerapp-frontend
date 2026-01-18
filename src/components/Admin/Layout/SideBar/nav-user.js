@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
     BadgeCheck,
     Bell,
@@ -7,6 +8,7 @@ import {
     LogOut,
     Settings,
     Sparkles,
+    MessageSquare,
 } from "lucide-react"
 
 import {
@@ -30,6 +32,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { ChatButton } from "@/components/AI/ChatButton"
 
 import { useRouter } from "next/navigation"
 
@@ -83,6 +86,20 @@ export function NavUser({ user }) {
                                 <Sparkles />
                                 Planes
                             </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <ChatButton asMenuItem>
+                                <DropdownMenuItem 
+                                    className="cursor-pointer"
+                                    onSelect={(e) => {
+                                        e.preventDefault(); // ✅ Prevenir el cierre automático del dropdown
+                                    }}
+                                >
+                                    <MessageSquare />
+                                    Asistente AI
+                                </DropdownMenuItem>
+                            </ChatButton>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>

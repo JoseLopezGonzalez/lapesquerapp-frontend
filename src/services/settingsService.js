@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@/lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 export async function getSettings() {
   const session = await getSession();
@@ -10,7 +11,7 @@ export async function getSettings() {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session.user.accessToken}`,
-      'User-Agent': navigator.userAgent,
+      'User-Agent': getUserAgent(),
     },
   });
   if (!res.ok) throw new Error('Error al obtener configuración');
@@ -25,7 +26,7 @@ export async function updateSettings(data) {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session.user.accessToken}`,
-      'User-Agent': navigator.userAgent,
+      'User-Agent': getUserAgent(),
     },
     body: JSON.stringify(data),
   });

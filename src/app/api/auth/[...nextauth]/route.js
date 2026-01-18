@@ -18,7 +18,8 @@ function getClientIp(req) {
   );
 }
 
-const handler = NextAuth({
+// Exportar configuración para uso en otras rutas API
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -151,6 +152,8 @@ const handler = NextAuth({
     error: '/', // Redirigir a login en caso de error
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

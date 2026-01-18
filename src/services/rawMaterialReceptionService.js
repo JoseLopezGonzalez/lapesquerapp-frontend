@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Creates a new raw material reception by sending a POST request to the API.
@@ -27,7 +28,7 @@ export const createRawMaterialReception = async (receptionPayload) => {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 Authorization: `Bearer ${session.user.accessToken}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
             body: JSON.stringify(receptionPayload),
         });
@@ -66,7 +67,7 @@ export const updateRawMaterialReception = async (receptionId, receptionPayload) 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 Authorization: `Bearer ${session.user.accessToken}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
             body: JSON.stringify(receptionPayload),
         });
@@ -95,7 +96,7 @@ export function getRawMaterialReception(receptionId, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -132,7 +133,7 @@ export function getSupplierOptions(token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {

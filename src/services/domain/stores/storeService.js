@@ -15,6 +15,7 @@ import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 import { 
     fetchEntitiesGeneric, 
     deleteEntityGeneric, 
@@ -157,7 +158,7 @@ export const storeService = {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
         
@@ -184,7 +185,7 @@ export const storeService = {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
         
@@ -211,7 +212,7 @@ export const storeService = {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
         
@@ -239,7 +240,7 @@ export const storeService = {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
         

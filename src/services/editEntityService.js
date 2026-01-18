@@ -1,6 +1,7 @@
 // services/EditEntityService.js
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { getSession } from "next-auth/react";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 const getAuthHeaders = async () => {
     const session = await getSession();
@@ -10,7 +11,7 @@ const getAuthHeaders = async () => {
     return {
         Authorization: `Bearer ${session.user.accessToken}`,
         "Content-Type": "application/json",
-        "User-Agent": navigator.userAgent, // Include User-Agent if required by your backend
+        "User-Agent": getUserAgent(), // ✅ Compatible con cliente y servidor
     };
 };
 

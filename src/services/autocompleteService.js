@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { getSession } from "next-auth/react";
 import { API_URL_V2 } from "@/configs/config"; // Asegúrate de que esta ruta sea correcta
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Obtiene opciones para un componente de autocompletado desde un endpoint específico.
@@ -23,7 +24,7 @@ export const fetchAutocompleteFilterOptions = async (endpoint) => {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${session.user.accessToken}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
 
@@ -69,7 +70,7 @@ export const fetchAutocompleteInputOptions = async (endpoint) => {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${session.user.accessToken}`,
-                'User-Agent': navigator.userAgent,
+                'User-Agent': getUserAgent(),
             },
         });
 

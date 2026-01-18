@@ -3,7 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
-
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Fetches the details of an order by its ID.
@@ -19,7 +19,7 @@ export function getOrder(orderId, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
     })
         .then((response) => {
@@ -60,7 +60,7 @@ export function updateOrder(orderId, orderData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
         body: JSON.stringify(orderData),
     })
@@ -105,7 +105,7 @@ export function getActiveOrders(token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
     })
         .then((response) => {
@@ -170,7 +170,7 @@ export async function updateOrderPlannedProductDetail(detailId, detailData, toke
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
         body: JSON.stringify(detailData),
     }).then((response) => {
@@ -200,7 +200,7 @@ export async function deleteOrderPlannedProductDetail(detailId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
     }).then((response) => {
         if (!response.ok) {
@@ -229,7 +229,7 @@ export async function createOrderPlannedProductDetail(detailData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
         body: JSON.stringify(detailData),
     }).then((response) => {
@@ -259,7 +259,7 @@ export async function setOrderStatus(orderId, status, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({ status }),
     })
@@ -290,7 +290,7 @@ export async function createOrderIncident(orderId, description, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',  // <- Este es el header que necesitas
             'Authorization': `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
         body: JSON.stringify({
             description,
@@ -321,7 +321,7 @@ export async function updateOrderIncident(orderId, resolutionType, resolutionNot
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             resolution_type: resolutionType,
@@ -353,7 +353,7 @@ export async function destroyOrderIncident(orderId, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -380,7 +380,7 @@ export function getActiveOrdersOptions(token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Enviar el token
-            'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+            'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
         },
     })
         .then((response) => {
@@ -421,7 +421,7 @@ export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateT
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -450,7 +450,7 @@ export async function getSalesBySalesperson({ dateFrom, dateTo }, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -480,7 +480,7 @@ export async function getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token) 
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -512,7 +512,7 @@ export async function getOrdersTotalAmountStats({ dateFrom, dateTo }, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -559,7 +559,7 @@ export async function getSalesChartData({ token, speciesId, categoryId, familyId
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
-            "User-Agent": navigator.userAgent,
+            "User-Agent": getUserAgent(),
         },
     }).then((response) => {
         if (!response.ok) {
@@ -587,7 +587,7 @@ export async function getTransportChartData({ token, from, to }) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -633,7 +633,7 @@ export const createOrder = async (orderPayload) => {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json', // Es buena práctica incluir Accept
                 Authorization: `Bearer ${session.user.accessToken}`,
-                'User-Agent': navigator.userAgent, // Incluye el User-Agent del cliente
+                'User-Agent': getUserAgent(), // User-Agent compatible con cliente y servidor
             },
             body: JSON.stringify(orderPayload),
         });

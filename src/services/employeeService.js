@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Obtener lista paginada de empleados
@@ -32,7 +33,7 @@ export async function getEmployees(token, params = {}) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -67,7 +68,7 @@ export async function getEmployee(id, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -99,7 +100,7 @@ export async function createEmployee(employeeData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify(employeeData),
     })
@@ -133,7 +134,7 @@ export async function updateEmployee(id, employeeData, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify(employeeData),
     })
@@ -165,7 +166,7 @@ export async function deleteEmployee(id, token) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {
@@ -199,7 +200,7 @@ export function getEmployeeOptions(token, params = {}) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then((response) => {

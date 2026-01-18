@@ -3,6 +3,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
 import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
  * Obtiene la lista de proveedores con actividad en un rango de fechas
@@ -35,7 +36,7 @@ export const getSuppliersWithActivity = async (startDate, endDate) => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     Authorization: `Bearer ${session.user.accessToken}`,
-                    'User-Agent': navigator.userAgent,
+                    'User-Agent': getUserAgent(),
                 },
             }
         );
@@ -93,7 +94,7 @@ export const getSupplierLiquidationDetails = async (supplierId, startDate, endDa
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     Authorization: `Bearer ${session.user.accessToken}`,
-                    'User-Agent': navigator.userAgent,
+                    'User-Agent': getUserAgent(),
                 },
             }
         );
@@ -184,7 +185,7 @@ export const downloadSupplierLiquidationPdf = async (supplierId, startDate, endD
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${session.user.accessToken}`,
-                    'User-Agent': navigator.userAgent,
+                    'User-Agent': getUserAgent(),
                 },
             }
         );

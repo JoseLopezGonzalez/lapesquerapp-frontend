@@ -1,5 +1,6 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 export function getLabel(labelId, token) {
     return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
@@ -7,7 +8,7 @@ export function getLabel(labelId, token) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -34,7 +35,7 @@ export function createLabel(labelName, labelFormat, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             name: labelName,
@@ -64,7 +65,7 @@ export function updateLabel(labelId, labelName, labelFormat, token) {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
         body: JSON.stringify({
             name: labelName,
@@ -94,7 +95,7 @@ export function getLabels(token) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -120,7 +121,7 @@ export function deleteLabel(labelId, token) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
@@ -146,7 +147,7 @@ export function getLabelsOptions(token) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'User-Agent': navigator.userAgent,
+            'User-Agent': getUserAgent(),
         },
     })
         .then(response => {
