@@ -12,7 +12,7 @@
  */
 
 import * as React from "react";
-import { Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
@@ -24,13 +24,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import {
+  BadgeCheck,
+  Bell,
+  LogOut,
+  Settings,
+  Sparkles,
+  MessageSquare,
+  CircleHelp,
+  User,
+} from "lucide-react";
 import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
+import { ChatButton } from "@/components/AI/ChatButton";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 /**
  * TopBar - Componente principal de barra superior
@@ -55,6 +68,8 @@ export function TopBar({
   apps = [],
   loading = false,
 }) {
+  const router = useRouter();
+  
   // Iniciales del usuario (2 caracteres en mayúscula)
   const initials = user?.name
     ? user.name
@@ -83,25 +98,8 @@ export function TopBar({
           MOBILE_HEIGHTS.INPUT // h-12 para altura consistente
         )}
       >
-        {/* Left: Logo y Menú */}
+        {/* Left: Logo */}
         <div className="flex items-center gap-3">
-          {/* Botón Menú - Abre Sheet */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 shrink-0"
-            onClick={() => {
-              if (onSheetOpenChange) {
-                onSheetOpenChange(true);
-              } else if (onMenuClick) {
-                onMenuClick(); // Fallback para compatibilidad
-              }
-            }}
-            aria-label="Abrir menú"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-
           {/* Logo */}
           <img
             src={NAVBAR_LOGO}
@@ -129,23 +127,134 @@ export function TopBar({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56"
+            className="w-64 rounded-lg" // Más ancho y redondeado
             side="bottom"
             sideOffset={8}
           >
-            <DropdownMenuLabel>
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user?.name || 'Usuario'}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email || ''}
-                </p>
+            {/* Header con avatar y info */}
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-3 px-3 py-3">
+                <Avatar className="h-10 w-10 rounded-lg">
+                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="rounded-lg text-sm">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="truncate font-semibold text-sm">
+                    {user?.name || 'Usuario'}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user?.email || ''}
+                  </span>
+                </div>
               </div>
             </DropdownMenuLabel>
+            
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={user?.logout} className="cursor-pointer">
-              Cerrar Sesión
+            
+            {/* Planes */}
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="cursor-pointer">
+                <Sparkles className="w-4 h-4 mr-2" />
+                <span>Planes</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Asistente AI */}
+            <DropdownMenuGroup>
+              <ChatButton asMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  <span>Asistente AI</span>
+                </DropdownMenuItem>
+              </ChatButton>
+            </DropdownMenuGroup>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Opciones de cuenta */}
+            <DropdownMenuGroup>
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => {
+                  // TODO: Navegar a perfil
+                }}
+              >
+                <User className="w-4 h-4 mr-2" />
+                <span>Perfil</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => {
+                  // TODO: Navegar a cuenta
+                }}
+              >
+                <BadgeCheck className="w-4 h-4 mr-2" />
+                <span>Cuenta</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => {
+                  // TODO: Navegar a notificaciones
+                }}
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                <span>Notificaciones</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => {
+                  router.push('/admin/settings');
+                }}
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                <span>Configuración</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => {
+                  // TODO: Navegar a ayuda
+                }}
+              >
+                <CircleHelp className="w-4 h-4 mr-2" />
+                <span>Centro de ayuda</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Tema */}
+            <DropdownMenuGroup>
+              <DropdownMenuItem 
+                className="focus:bg-transparent hover:bg-transparent cursor-default"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <span className="mr-2">Tema</span>
+                <ThemeToggle className="ml-auto" />
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Cerrar sesión */}
+            <DropdownMenuItem 
+              onClick={user?.logout} 
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              <span>Cerrar Sesión</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

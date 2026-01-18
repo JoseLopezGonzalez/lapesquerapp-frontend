@@ -20,8 +20,9 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { AppSidebar } from "@/components/Admin/Layout/SideBar";
-import { TopBar } from "@/components/Admin/Layout/TopBar";
 import { BottomNav } from "@/components/Admin/Layout/BottomNav";
+import { FloatingUserMenu } from "@/components/Admin/Layout/FloatingUserMenu";
+import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
@@ -44,9 +45,11 @@ export function ResponsiveLayout({
   apps = [],
   loading = false,
 }) {
+  // IMPORTANTE: Todos los hooks deben ejecutarse ANTES de cualquier return condicional
   const { isMobile, mounted } = useIsMobileSafe();
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const pathname = usePathname();
+  const mainRef = React.useRef(null); // Mover ref fuera del bloque condicional
 
   // Cerrar Sheet automáticamente al navegar
   React.useEffect(() => {
@@ -105,36 +108,52 @@ export function ResponsiveLayout({
     );
   }
 
-  // Mobile layout (<768px)
-  return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* TopBar */}
-      <TopBar 
-        onMenuClick={onMenuClick}
-        sheetOpen={sheetOpen}
-        onSheetOpenChange={setSheetOpen}
+      // Mobile layout (<768px)
+      return (
+        <div className="flex flex-col h-screen overflow-hidden relative">
+          {/* Main Content - Scrollable */}
+          <main
+            ref={mainRef}
+            className={cn(
+              "flex-1 overflow-y-auto", // Contenedor scrollable
+              "pb-20", // Padding bottom (BottomNav)
+              "w-full relative" // relative para posicionar el avatar
+            )}
+          >
+            {/* Wrapper del contenido con padding superior para el avatar */}
+            <div className="relative min-h-full">
+              {/* Avatar de usuario flotante - Se mueve con el scroll */}
+              {user && (
+                <div className="absolute top-4 right-4 z-50 w-fit">
+                  <FloatingUserMenu user={user} scrollContainerRef={mainRef} />
+                </div>
+              )}
+              
+              {/* Contenido principal con padding superior */}
+              <div className="pt-4">
+                {children}
+              </div>
+            </div>
+          </main>
+
+      {/* BottomNav */}
+      {bottomNavItems && bottomNavItems.length > 0 && (
+        <BottomNav 
+          items={bottomNavItems}
+          onSwipeUp={() => setSheetOpen(true)} // Abrir NavigationSheet al hacer swipe up
+        />
+      )}
+
+      {/* NavigationSheet - Sheet con navegación completa */}
+      <NavigationSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
         user={user}
         navigationItems={navigationItems}
         navigationManagersItems={navigationManagersItems}
         apps={apps}
         loading={loading}
       />
-
-      {/* Main Content - Scrollable */}
-      <main
-        className={cn(
-          "flex-1 overflow-y-auto",
-          "pt-16 pb-20", // Padding top (TopBar) + bottom (BottomNav)
-          "w-full"
-        )}
-      >
-        {children}
-      </main>
-
-      {/* BottomNav */}
-      {bottomNavItems && bottomNavItems.length > 0 && (
-        <BottomNav items={bottomNavItems} />
-      )}
     </div>
   );
 }

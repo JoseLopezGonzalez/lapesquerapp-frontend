@@ -33,6 +33,7 @@ import {
 import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
 import { cn } from "@/lib/utils";
 import { isActiveRoute } from "@/utils/navigationUtils";
+import { useSwipe } from "@/hooks/use-swipe";
 import "./sheet-styles.css";
 
 /**
@@ -57,6 +58,14 @@ export function NavigationSheet({
   loading = false,
 }) {
   const pathname = usePathname();
+  
+  // Hook para detectar swipe down y cerrar el sheet
+  const swipeHandlers = useSwipe({
+    onSwipeDown: () => {
+      onOpenChange(false);
+    },
+    threshold: 50, // Distancia mínima de 50px para considerar swipe
+  });
 
   // Marcar rutas activas
   const activeNavigationItems = React.useMemo(() =>
@@ -89,7 +98,8 @@ export function NavigationSheet({
         data-sheet="true"
         className={cn(
           "h-[85vh] max-h-[85vh] overflow-hidden",
-          "flex flex-col p-0",
+          "w-full max-w-full", // Ancho completo sin restricciones
+          "flex flex-col p-0 m-0", // Sin padding ni margin
           "rounded-t-2xl", // Border radius superior para bottom sheet
           MOBILE_SAFE_AREAS.BOTTOM // Safe area iOS
         )}
@@ -99,34 +109,42 @@ export function NavigationSheet({
           <SheetDescription>Menú de navegación completo</SheetDescription>
         </SheetHeader>
 
+        {/* Barra indicadora para cerrar - Arriba del contenido */}
+        <div 
+          {...swipeHandlers} 
+          className="flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+        >
+          <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
+        </div>
+
         {/* Contenido del Sheet - Similar al Sidebar */}
         {/* Envolver en SidebarProvider para que AppSwitcher funcione */}
         <SidebarProvider>
-          <div className="flex flex-col h-full min-h-0 overflow-hidden">
+          <div className="flex flex-col h-full min-h-0 overflow-hidden w-full">
             {/* Header - AppSwitcher */}
             {apps && apps.length > 0 && (
-              <div className="flex-shrink-0 border-b p-3">
+              <div className="flex-shrink-0 border-b p-3 w-full">
                 <AppSwitcher apps={apps} loading={loading} />
               </div>
             )}
 
             {/* Content - Navegación */}
-            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col w-full">
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
-                <div className="flex-shrink-0 p-3">
+                <div className="flex-shrink-0 p-3 w-full">
                   <NavManagers items={activeNavigationManagersItems} />
                 </div>
               )}
 
               {/* Navegación Principal */}
-              <div className="flex flex-col flex-1 min-h-0">
+              <div className="flex flex-col flex-1 min-h-0 w-full">
                 {activeNavigationItems && activeNavigationItems.length > 0 && (
                   <>
-                    <div className="flex-shrink-0 px-4 pt-3 pb-2">
+                    <div className="flex-shrink-0 px-4 pt-3 pb-2 w-full">
                       <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">Navegación</SidebarGroupLabel>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2 w-full">
                       <NavMain items={activeNavigationItems} />
                     </div>
                   </>
@@ -136,7 +154,7 @@ export function NavigationSheet({
 
             {/* Footer - Usuario */}
             {user && (
-              <div className="flex-shrink-0 border-t p-3 mt-auto">
+              <div className="flex-shrink-0 border-t p-3 mt-auto w-full">
                 <NavUser user={user} />
               </div>
             )}

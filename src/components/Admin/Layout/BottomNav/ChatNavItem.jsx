@@ -42,22 +42,19 @@ export function ChatNavItem({ index }) {
         <button
           onClick={() => setChatOpen(true)}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1 w-full",
+            "relative flex flex-col items-center justify-center gap-1",
             "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 pb-2 rounded-lg", // px-2 py-1.5 pb-2 para espacio más compacto
-            "transition-colors duration-200",
+            "px-2 py-1.5 rounded-lg",
+            "transition-all duration-200",
             "touch-none",
-            "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+            "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
           )}
           aria-label="Chat IA"
         >
           <MessageSquare 
-            className={cn(MOBILE_ICON_SIZES.BOTTOM_NAV)} 
+            className="w-5 h-5"
           />
-          <span className={cn(
-            "text-[10px] font-medium leading-tight",
-            "truncate max-w-full px-1"
-          )}>
+          <span className="text-[10px] font-medium leading-tight text-muted-foreground">
             Chat IA
           </span>
         </button>

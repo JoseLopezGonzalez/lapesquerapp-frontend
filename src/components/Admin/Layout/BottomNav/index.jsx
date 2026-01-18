@@ -24,11 +24,13 @@ import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS, MOBILE_ICON_SIZES } from "@/lib/desi
 import { feedbackPop } from "@/lib/motion-presets";
 import { isActiveRoute } from "@/utils/navigationUtils";
 import { ChatNavItem } from "./ChatNavItem";
+import { CenterActionButton } from "./CenterActionButton";
+import { useSwipe } from "@/hooks/use-swipe";
 
 /**
  * BottomNavItem - Item individual de la navegación inferior
  * 
- * Usa feedbackPop para animación al tocar (feedback visual)
+ * Con icono y texto debajo
  */
 function BottomNavItem({ item, isActive, index }) {
   const Icon = item?.icon;
@@ -52,93 +54,69 @@ function BottomNavItem({ item, isActive, index }) {
       exit={feedbackPop.exit}
       transition={itemTransition}
       whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-      className="flex-1"
+      className="flex-1 flex flex-col items-center justify-center"
     >
       {item?.onClick ? (
         // Item especial con onClick (ej. Chat IA)
         <button
           onClick={item.onClick}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1 w-full",
+            "relative flex flex-col items-center justify-center gap-1",
             "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 pb-2 rounded-lg", // px-2 py-1.5 pb-2 para espacio más compacto
-            "transition-colors duration-200",
-            "touch-none", // Mejorar rendimiento en mobile
+            "px-2 py-1.5 rounded-lg",
+            "transition-all duration-200",
+            "touch-none",
             isActive
               ? "text-primary bg-primary/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
           )}
           aria-label={item?.name || 'Navegación'}
         >
           {Icon && (
             <Icon 
               className={cn(
-                MOBILE_ICON_SIZES.BOTTOM_NAV,
+                "w-5 h-5",
                 isActive ? "text-primary" : ""
               )} 
             />
           )}
           <span className={cn(
             "text-[10px] font-medium leading-tight",
-            "truncate max-w-full px-1", // Truncar texto largo y centrar
-            isActive ? "text-primary" : ""
+            isActive ? "text-primary" : "text-muted-foreground"
           )}>
             {item?.name || ''}
           </span>
-          {isActive && (
-            <motion.span 
-              className={cn(
-                "absolute bottom-0 left-1/2 -translate-x-1/2",
-                "w-1 h-1 rounded-full bg-primary"
-              )}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
-            />
-          )}
         </button>
       ) : (
         // Item normal con Link
         <Link
           href={item?.href || '#'}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1 w-full",
+            "relative flex flex-col items-center justify-center gap-1",
             "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 pb-2 rounded-lg", // px-2 py-1.5 pb-2 para espacio más compacto
-            "transition-colors duration-200",
-            "touch-none", // Mejorar rendimiento en mobile
+            "px-2 py-1.5 rounded-lg",
+            "transition-all duration-200",
+            "touch-none",
             isActive
               ? "text-primary bg-primary/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
           )}
           aria-label={item?.name || 'Navegación'}
         >
           {Icon && (
             <Icon 
               className={cn(
-                MOBILE_ICON_SIZES.BOTTOM_NAV,
+                "w-5 h-5",
                 isActive ? "text-primary" : ""
               )} 
             />
           )}
           <span className={cn(
             "text-[10px] font-medium leading-tight",
-            "truncate max-w-full px-1", // Truncar texto largo y centrar
-            isActive ? "text-primary" : ""
+            isActive ? "text-primary" : "text-muted-foreground"
           )}>
             {item?.name || ''}
           </span>
-          {isActive && (
-            <motion.span 
-              className={cn(
-                "absolute bottom-0 left-1/2 -translate-x-1/2",
-                "w-1 h-1 rounded-full bg-primary"
-              )}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
-            />
-          )}
         </Link>
       )}
     </motion.div>
@@ -148,24 +126,43 @@ function BottomNavItem({ item, isActive, index }) {
 /**
  * BottomNav - Componente principal de navegación inferior
  * 
+ * Diseño minimalista con solo iconos. Soporta swipe up para abrir NavigationSheet.
+ * 
  * @param {object} props
  * @param {Array} props.items - Items de navegación principales (4-5 máximo)
+ * @param {Function} props.onSwipeUp - Callback cuando se detecta swipe hacia arriba (opcional)
  */
-export function BottomNav({ items }) {
+export function BottomNav({ items, onSwipeUp }) {
+  // IMPORTANTE: Los hooks SIEMPRE deben ejecutarse en el mismo orden
+  // Por eso los ponemos ANTES de cualquier early return condicional
   const pathname = usePathname();
+  
+  // Hook para detectar swipe up
+  const swipeHandlers = useSwipe({
+    onSwipeUp: onSwipeUp || (() => {}),
+    threshold: 50, // Distancia mínima de 50px para considerar swipe
+  });
 
-  if (!items || items.length === 0) {
+  // Limitar a 5 items máximo - calcular siempre, incluso si está vacío
+  const displayItems = React.useMemo(() => {
+    if (!items || items.length === 0) {
+      return [];
+    }
+    return items.slice(0, 5);
+  }, [items]);
+
+  // Early return DESPUÉS de los hooks
+  if (!displayItems || displayItems.length === 0) {
     return null;
   }
 
-  // Limitar a 5 items máximo
-  const displayItems = items.slice(0, 5);
-
   return (
     <nav
+      {...swipeHandlers} // Agregar handlers de swipe
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
-        "bg-background border-t",
+        "bg-background/95 backdrop-blur-sm",
+        "border-t",
         "shadow-lg",
         MOBILE_SAFE_AREAS.BOTTOM,
         "animate-in slide-in-from-bottom duration-300"
@@ -173,31 +170,69 @@ export function BottomNav({ items }) {
     >
       <div className={cn(
         "container mx-auto",
-        "flex items-center justify-around",
-        "px-2 py-2 pb-3", // py-2 pb-3 para espacio reducido pero suficiente para el punto
-        MOBILE_HEIGHTS.BOTTOM_NAV
+        "flex items-end", // items-end para alinear el botón central elevado
+        "px-2 py-3", // Padding ajustado
+        "max-w-md mx-auto", // Centrar y limitar ancho
+        "gap-0" // Sin gap adicional, lo controlamos internamente
       )}>
-        {displayItems.map((item, index) => {
-          // Si es Chat IA, usar componente especial
-          if (item.name === 'Chat IA' && !item.href) {
-            return <ChatNavItem key="chat-ai" index={index} />;
-          }
-          
-          // Asegurar que el item tenga href (si no tiene, usar el primer children o '#')
-          const itemHref = item.href || item.childrens?.[0]?.href || '#';
-          const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-          
-          return (
-            <BottomNavItem
-              key={itemHref || item.name || `item-${index}`}
-              item={{ ...item, href: itemHref }}
-              isActive={isActive}
-              index={index}
-            />
-          );
-        })}
+        {/* Grupo izquierdo: Primeros 2 items */}
+        <div className="flex-1 flex items-center justify-evenly">
+          {displayItems.slice(0, 2).map((item, index) => {
+            // Si es Chat IA, usar componente especial
+            if (item.name === 'Chat IA' && !item.href) {
+              return <ChatNavItem key="chat-ai" index={index} />;
+            }
+            
+            const itemHref = item.href || item.childrens?.[0]?.href || '#';
+            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+            
+            return (
+              <BottomNavItem
+                key={itemHref || item.name || `item-${index}`}
+                item={{ ...item, href: itemHref }}
+                isActive={isActive}
+                index={index}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Botón central de acción */}
+        <div className="flex-shrink-0 mx-2">
+          <CenterActionButton />
+        </div>
+        
+        {/* Grupo derecho: Últimos 2 items */}
+        <div className="flex-1 flex items-center justify-evenly">
+          {displayItems.slice(2).map((item, index) => {
+            const actualIndex = index + 2; // Ajustar índice para continuidad
+            
+            // Si es Chat IA, usar componente especial
+            if (item.name === 'Chat IA' && !item.href) {
+              return <ChatNavItem key="chat-ai" index={actualIndex} />;
+            }
+            
+            const itemHref = item.href || item.childrens?.[0]?.href || '#';
+            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+            
+            return (
+              <BottomNavItem
+                key={itemHref || item.name || `item-${actualIndex}`}
+                item={{ ...item, href: itemHref }}
+                isActive={isActive}
+                index={actualIndex}
+              />
+            );
+          })}
+        </div>
+      </div>
+      
+      {/* Barra indicadora para swipe - Debajo de los iconos */}
+      <div className="flex items-center justify-center pt-1 pb-2">
+        <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
       </div>
     </nav>
   );
 }
+
 
