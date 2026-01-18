@@ -3,12 +3,13 @@
 /**
  * NavigationSheet - Sheet con navegación completa para mobile
  * 
- * Sheet que se abre desde abajo mostrando toda la navegación.
- * Reutiliza los componentes del Sidebar:
+ * Sheet que se abre desde abajo mostrando la navegación completa.
+ * Reutiliza temporalmente componentes del Sidebar:
  * - AppSwitcher (header)
  * - NavManagers (gestores)
  * - NavMain (navegación principal)
- * - NavUser (usuario y logout)
+ * 
+ * NOTA: En mobile NO se muestra la sección de usuario (se gestiona desde FloatingUserMenu).
  * 
  * Referencia: docs/mobile-adaptation/implementaciones/01-LAYOUT-NAVEGACION.md
  */
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/sheet";
 import { NavMain } from "@/components/Admin/Layout/SideBar/nav-main";
 import { NavManagers } from "@/components/Admin/Layout/SideBar/nav-managers";
-import { NavUser } from "@/components/Admin/Layout/SideBar/nav-user";
 import { AppSwitcher } from "@/components/Admin/Layout/SideBar/app-switcher";
 import {
   SidebarGroupLabel,
@@ -42,7 +42,6 @@ import "./sheet-styles.css";
  * @param {object} props
  * @param {boolean} props.open - Si el sheet está abierto
  * @param {Function} props.onOpenChange - Callback cuando cambia el estado de apertura
- * @param {object} props.user - Objeto usuario con name, email, logout
  * @param {Array} props.navigationItems - Items de navegación principal
  * @param {Array} props.navigationManagersItems - Items de gestores
  * @param {Array} props.apps - Array de apps para AppSwitcher
@@ -51,7 +50,6 @@ import "./sheet-styles.css";
 export function NavigationSheet({
   open,
   onOpenChange,
-  user,
   navigationItems = [],
   navigationManagersItems = [],
   apps = [],
@@ -129,7 +127,7 @@ export function NavigationSheet({
             )}
 
             {/* Contenedor scrollable con el resto del contenido */}
-            <div className="flex-1 min-h-0 overflow-y-auto w-full pb-16">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full pb-24">
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
                 <div className="p-3 w-full">
@@ -143,17 +141,10 @@ export function NavigationSheet({
                   <div className="px-4 pt-3 pb-2 w-full">
                     <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">Navegación</SidebarGroupLabel>
                   </div>
-                  <div className="px-2 pb-4 w-full">
+                  <div className="px-2 pb-24 mb-8 w-full">
                     <NavMain items={activeNavigationItems} />
                   </div>
                 </>
-              )}
-
-              {/* Footer - Usuario */}
-              {user && (
-                <div className="border-t p-3 mb-16 w-full">
-                  <NavUser user={user} />
-                </div>
               )}
             </div>
           </div>

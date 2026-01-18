@@ -45,17 +45,17 @@ export default function Dashboard() {
     const userName = session?.user?.name || "Usuario";
 
     return (
-        <div className="h-full w-full flex flex-col gap-4 px-6 py-3">
+        <div className="h-full w-full flex flex-col gap-4 px-4 md:px-6 py-3">
             <ScrollArea className="w-full h-full pr-4">
                 <div className="w-full h-full flex flex-col gap-4 pb-4">
                     <div className="w-full">
-                        <div className="flex flex-col items-start justify-center mb-4">
-                            <p className="text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
-                            <h1 className="text-4xl font-light">{userName}</h1>
+                        <div className="flex flex-col items-start justify-center mb-2 md:mb-4">
+                            <p className="text-sm md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
+                            <h1 className="text-2xl md:text-4xl font-light">{userName}</h1>
                         </div>
                     </div>
 
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
                         <div className="w-full overflow-hidden">
                             <CurrentStockCard />
                         </div>

@@ -147,7 +147,6 @@ export function ResponsiveLayout({
       <NavigationSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        user={user}
         navigationItems={navigationItems}
         navigationManagersItems={navigationManagersItems}
         apps={apps}
