@@ -115,13 +115,12 @@ export function ResponsiveLayout({
           <main
             ref={mainRef}
             className={cn(
-              "flex-1 overflow-y-auto", // Contenedor scrollable
-              "pb-20", // Padding bottom (BottomNav)
+              "flex-1 min-h-0 overflow-y-auto", // min-h-0 necesario para que flex-1 funcione con overflow
               "w-full relative" // relative para posicionar el avatar
             )}
           >
             {/* Wrapper del contenido con padding superior para el avatar */}
-            <div className="relative min-h-full">
+            <div className="relative w-full">
               {/* Avatar de usuario flotante - Se mueve con el scroll */}
               {user && (
                 <div className="absolute top-4 right-4 z-50 w-fit">
@@ -129,8 +128,8 @@ export function ResponsiveLayout({
                 </div>
               )}
               
-              {/* Contenido principal con padding superior */}
-              <div className="pt-4">
+              {/* Contenido principal con padding superior y margen inferior */}
+              <div className="pt-4 mb-36 w-full">
                 {children}
               </div>
             </div>

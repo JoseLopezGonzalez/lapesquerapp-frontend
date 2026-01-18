@@ -121,7 +121,7 @@ export function NavigationSheet({
         {/* Envolver en SidebarProvider para que AppSwitcher funcione */}
         <SidebarProvider>
           <div className="flex flex-col h-full min-h-0 overflow-hidden w-full">
-            {/* Header - AppSwitcher FIJActually */}
+            {/* Header - AppSwitcher FIJO */}
             {apps && apps.length > 0 && (
               <div className="flex-shrink-0 border-b p-3 w-full">
                 <AppSwitcher apps={apps} loading={loading} />
@@ -129,7 +129,7 @@ export function NavigationSheet({
             )}
 
             {/* Contenedor scrollable con el resto del contenido */}
-            <div className="flex-1 min-h-0 overflow-y-auto w-full">
+            <div className="flex-1 min-h-0 overflow-y-auto w-full pb-16">
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
                 <div className="p-3 w-full">
@@ -151,7 +151,7 @@ export function NavigationSheet({
 
               {/* Footer - Usuario */}
               {user && (
-                <div className="border-t p-3 w-full">
+                <div className="border-t p-3 mb-16 w-full">
                   <NavUser user={user} />
                 </div>
               )}
@@ -163,4 +163,3 @@ export function NavigationSheet({
     </Sheet>
   );
 }
-

@@ -17,28 +17,28 @@ Cada apartado tiene su propio documento con:
 
 ### 🎨 01. Layout y Navegación Principal
 - **Archivo**: [01-LAYOUT-NAVEGACION.md](./01-LAYOUT-NAVEGACION.md)
-- **Estado**: 📝 En planificación
+- **Estado**: ✅ Completado
 - **Descripción**: Adaptación del layout principal y navegación (sidebar/bottom nav)
 
-### 📦 02. Gestores y Listas
+### 🏠 02. Home y Dashboard Mobile
+- **Archivo**: [02-HOME-DASHBOARD-MOBILE.md](./02-HOME-DASHBOARD-MOBILE.md)
+- **Estado**: 📝 Planificación
+- **Descripción**: Adaptación del Home y Dashboard, cards y gráficos para mobile
+
+### 📦 03. Gestores y Listas
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Adaptación de gestores (Orders, Stores, etc.) y listas a mobile
 
-### 📊 03. Tablas a Cards
+### 📊 04. Tablas a Cards
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Conversión de tablas a cards en mobile
 
-### 📱 04. Formularios Mobile
+### 📱 05. Formularios Mobile
 - **Archivo**: Por definir
 - **Estado**: ⏳ Pendiente
 - **Descripción**: Optimización de formularios para mobile (inputs, bottom sheets)
-
-### 📈 05. Dashboards Mobile
-- **Archivo**: Por definir
-- **Estado**: ⏳ Pendiente
-- **Descripción**: Simplificación de dashboards para mobile
 
 ### 🔍 06. Modales y Diálogos
 - **Archivo**: Por definir
@@ -49,11 +49,11 @@ Cada apartado tiene su propio documento con:
 
 ## 🎯 Priorización
 
-1. ✅ **Layout y Navegación** (Actual) - Base para todo lo demás
-2. ⏳ **Gestores y Listas** - Componentes más usados
-3. ⏳ **Formularios Mobile** - Interacción crítica
-4. ⏳ **Tablas a Cards** - Visualización
-5. ⏳ **Dashboards Mobile** - Visualización
+1. ✅ **Layout y Navegación** - Base para todo lo demás (Completado)
+2. 📝 **Home y Dashboard Mobile** (Actual) - Página principal
+3. ⏳ **Gestores y Listas** - Componentes más usados
+4. ⏳ **Formularios Mobile** - Interacción crítica
+5. ⏳ **Tablas a Cards** - Visualización
 6. ⏳ **Modales y Diálogos** - Interacción
 
 ---

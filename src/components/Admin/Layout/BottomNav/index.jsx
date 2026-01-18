@@ -171,7 +171,7 @@ export function BottomNav({ items, onSwipeUp }) {
       <div className={cn(
         "container mx-auto",
         "grid grid-cols-5 items-end", // Grid de 5 columnas para distribución uniforme
-        "px-6 py-3", // Padding lateral aumentado para separar del borde
+        "px-6 pt-3 pb-4", // Padding superior normal, padding inferior aumentado
         "max-w-md mx-auto", // Centrar y limitar ancho
         "gap-0" // Sin gap entre columnas
       )}>
@@ -261,11 +261,9 @@ export function BottomNav({ items, onSwipeUp }) {
       </div>
       
       {/* Barra indicadora para swipe - Centrada perfectamente */}
-      <div className="flex items-center justify-center pt-1 pb-2">
+      <div className="flex items-center justify-center pt-1 pb-3">
         <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
       </div>
     </nav>
   );
 }
-
-
