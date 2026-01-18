@@ -45,29 +45,19 @@ export default function AdminLayout({ children }) {
   );
 
   // Preparar items principales para BottomNav
-  // Solo items principales sin childrens (rutas directas)
+  // Solo items principales sin childrens (rutas directas) o con childrens (usar primer children)
   const bottomNavItems = React.useMemo(() => {
-    const primaryItems = filteredNavigationConfig
-      .filter((item) => !item.childrens || item.childrens.length === 0)
+    // Filtrar items que tienen href o childrens, y asegurar href
+    const itemsWithHref = filteredNavigationConfig
+      .filter((item) => item && (item.href || item.childrens?.length > 0))
+      .map((item) => ({
+        ...item,
+        href: item.href || item.childrens?.[0]?.href || '#',
+      }))
+      .filter((item) => item.href !== '#') // Excluir items sin href válido
       .slice(0, 4); // Máximo 4 items principales
 
-    // Si hay un item "Stores" con childrens, usar el primer children (Todos los Almacenes)
-    const storesItem = filteredNavigationConfig.find(
-      (item) => item.name === 'Almacenes' && item.childrens?.length > 0
-    );
-    if (storesItem && storesItem.childrens?.[0]) {
-      const storesMain = {
-        ...storesItem.childrens[0],
-        icon: storesItem.icon,
-        name: storesItem.name, // Mantener nombre "Almacenes"
-      };
-      
-      // Reemplazar o añadir "Almacenes" en los items principales
-      const filtered = primaryItems.filter((item) => item.name !== 'Almacenes');
-      return [primaryItems[0], storesMain, ...filtered.slice(1)].slice(0, 4);
-    }
-
-    return primaryItems;
+    return itemsWithHref;
   }, [filteredNavigationConfig]);
 
   // Preparar user object para TopBar
@@ -77,18 +67,59 @@ export default function AdminLayout({ children }) {
     logout: handleLogout,
   }), [username, email, handleLogout]);
 
-  // Placeholder para onMenuClick (Sheet se añadirá después)
-  const handleMenuClick = React.useCallback(() => {
-    // TODO: Abrir Sheet con navegación completa
-    console.log('Menu click - Sheet pendiente de implementar');
-  }, []);
+  // Preparar navigation items con rutas activas
+  // Filtrar items que no tienen href ni childrens, y asegurar href
+  const navigationItems = React.useMemo(() => 
+    filteredNavigationConfig
+      .filter((item) => item && (item.href || item.childrens?.length > 0))
+      .map((item) => ({
+        ...item,
+        href: item.href || item.childrens?.[0]?.href || '#'
+      })),
+    [filteredNavigationConfig]
+  );
+
+  const navigationManagersItems = React.useMemo(() => 
+    filterNavigationByRoles(navigationManagerConfig, roles),
+    [roles]
+  );
+
+  // Preparar apps para AppSwitcher
+  const apps = React.useMemo(() => {
+    const { GalleryVerticalEnd, AudioWaveform, Earth } = require("lucide-react");
+    const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
+    
+    return [
+      {
+        name: companyName,
+        logo: GalleryVerticalEnd,
+        description: "Administración",
+        current: true,
+      },
+      {
+        name: companyName,
+        logo: AudioWaveform,
+        description: "Producción",
+        current: false,
+      },
+      {
+        name: companyName,
+        logo: Earth,
+        description: "World Trade",
+        current: false,
+      },
+    ];
+  }, [settings, loading]);
 
   return (
     <AdminRouteProtection>
       <ResponsiveLayout
         bottomNavItems={bottomNavItems}
         user={user}
-        onMenuClick={handleMenuClick}
+        navigationItems={navigationItems}
+        navigationManagersItems={navigationManagersItems}
+        apps={apps}
+        loading={loading}
       >
         {children}
       </ResponsiveLayout>

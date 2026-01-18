@@ -18,53 +18,82 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS, MOBILE_ICON_SIZES } from "@/lib/design-tokens-mobile";
+import { feedbackPop, useTransition } from "@/lib/motion-presets";
 import { isActiveRoute } from "@/utils/navigationUtils";
 
 /**
  * BottomNavItem - Item individual de la navegación inferior
+ * 
+ * Usa feedbackPop para animación al tocar (feedback visual)
  */
-function BottomNavItem({ item, isActive }) {
-  const Icon = item.icon;
+function BottomNavItem({ item, isActive, index }) {
+  const Icon = item?.icon;
+  const prefersReducedMotion = useReducedMotion();
+
+  // Transición con delay para stagger (entrada escalonada)
+  const itemTransition = React.useMemo(() => {
+    if (prefersReducedMotion) {
+      return { duration: 0 };
+    }
+    return {
+      ...feedbackPop.transition,
+      delay: index * 0.03,
+    };
+  }, [index, prefersReducedMotion]);
 
   return (
-    <Link
-      href={item.href}
-      className={cn(
-        "relative flex flex-col items-center justify-center gap-1",
-        "min-h-[44px] min-w-[44px]",
-        "px-3 py-2 rounded-lg",
-        "transition-colors duration-200",
-        isActive
-          ? "text-primary bg-primary/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-      )}
-      aria-label={item.name}
+    <motion.div
+      initial={feedbackPop.initial}
+      animate={feedbackPop.animate}
+      exit={feedbackPop.exit}
+      transition={itemTransition}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+      className="flex-1"
     >
-      {Icon && (
-        <Icon 
-          className={cn(
-            MOBILE_ICON_SIZES.BOTTOM_NAV,
-            isActive ? "text-primary" : ""
-          )} 
-        />
-      )}
-      <span className={cn(
-        "text-xs font-medium leading-tight",
-        isActive ? "text-primary" : ""
-      )}>
-        {item.name}
-      </span>
-      {isActive && (
-        <span 
-          className={cn(
-            "absolute bottom-0 left-1/2 -translate-x-1/2",
-            "w-1 h-1 rounded-full bg-primary"
-          )} 
-        />
-      )}
-    </Link>
+      <Link
+        href={item?.href || '#'}
+        className={cn(
+          "relative flex flex-col items-center justify-center gap-1",
+          "min-h-[44px] min-w-[44px]",
+          "px-3 py-2 rounded-lg",
+          "transition-colors duration-200",
+          "touch-none", // Mejorar rendimiento en mobile
+          isActive
+            ? "text-primary bg-primary/10"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+        )}
+        aria-label={item?.name || 'Navegación'}
+      >
+        {Icon && (
+          <Icon 
+            className={cn(
+              MOBILE_ICON_SIZES.BOTTOM_NAV,
+              isActive ? "text-primary" : ""
+            )} 
+          />
+        )}
+        <span className={cn(
+          "text-xs font-medium leading-tight",
+          isActive ? "text-primary" : ""
+        )}>
+          {item?.name || ''}
+        </span>
+        {isActive && (
+          <motion.span 
+            className={cn(
+              "absolute bottom-0 left-1/2 -translate-x-1/2",
+              "w-1 h-1 rounded-full bg-primary"
+            )}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
+          />
+        )}
+      </Link>
+    </motion.div>
   );
 }
 
@@ -100,14 +129,17 @@ export function BottomNav({ items }) {
         "px-2 py-2",
         MOBILE_HEIGHTS.BOTTOM_NAV
       )}>
-        {displayItems.map((item) => {
-          const isActive = isActiveRoute(item.href, pathname);
+        {displayItems.map((item, index) => {
+          // Asegurar que el item tenga href (si no tiene, usar el primer children o '#')
+          const itemHref = item.href || item.childrens?.[0]?.href || '#';
+          const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
           
           return (
             <BottomNavItem
-              key={item.href || item.name}
-              item={item}
+              key={itemHref || item.name}
+              item={{ ...item, href: itemHref }}
               isActive={isActive}
+              index={index}
             />
           );
         })}

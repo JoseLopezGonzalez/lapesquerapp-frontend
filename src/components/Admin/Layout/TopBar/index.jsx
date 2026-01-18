@@ -8,14 +8,11 @@
  * - Botón menú (izquierda) - Abre Sheet con navegación completa
  * - Usuario/Dropdown (derecha)
  * 
- * En esta fase inicial, el botón menú es un placeholder.
- * El Sheet se añadirá en la siguiente fase.
- * 
  * Referencia: docs/mobile-adaptation/implementaciones/01-LAYOUT-NAVEGACION.md
  */
 
 import * as React from "react";
-import { Menu, User } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
@@ -33,15 +30,31 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
 
 /**
  * TopBar - Componente principal de barra superior
  * 
  * @param {object} props
- * @param {Function} props.onMenuClick - Callback cuando se clickea el botón menú
+ * @param {Function} props.onMenuClick - Callback cuando se clickea el botón menú (deprecated, usar open/onOpenChange)
+ * @param {boolean} props.sheetOpen - Si el sheet de navegación está abierto
+ * @param {Function} props.onSheetOpenChange - Callback cuando cambia el estado del sheet
  * @param {object} props.user - Objeto usuario con name, email, logout
+ * @param {Array} props.navigationItems - Items de navegación principal
+ * @param {Array} props.navigationManagersItems - Items de gestores
+ * @param {Array} props.apps - Array de apps para AppSwitcher
+ * @param {boolean} props.loading - Si está cargando (para AppSwitcher)
  */
-export function TopBar({ onMenuClick, user }) {
+export function TopBar({ 
+  onMenuClick, 
+  sheetOpen = false,
+  onSheetOpenChange,
+  user,
+  navigationItems = [],
+  navigationManagersItems = [],
+  apps = [],
+  loading = false,
+}) {
   // Iniciales del usuario (2 caracteres en mayúscula)
   const initials = user?.name
     ? user.name
@@ -72,12 +85,18 @@ export function TopBar({ onMenuClick, user }) {
       >
         {/* Left: Logo y Menú */}
         <div className="flex items-center gap-3">
-          {/* Botón Menú (placeholder - Sheet se añadirá después) */}
+          {/* Botón Menú - Abre Sheet */}
           <Button
             variant="ghost"
             size="icon"
             className="h-10 w-10 shrink-0"
-            onClick={onMenuClick}
+            onClick={() => {
+              if (onSheetOpenChange) {
+                onSheetOpenChange(true);
+              } else if (onMenuClick) {
+                onMenuClick(); // Fallback para compatibilidad
+              }
+            }}
             aria-label="Abrir menú"
           >
             <Menu className="h-5 w-5" />
@@ -131,6 +150,17 @@ export function TopBar({ onMenuClick, user }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* NavigationSheet - Sheet con navegación completa */}
+      <NavigationSheet
+        open={sheetOpen}
+        onOpenChange={onSheetOpenChange}
+        user={user}
+        navigationItems={navigationItems}
+        navigationManagersItems={navigationManagersItems}
+        apps={apps}
+        loading={loading}
+      />
     </header>
   );
 }

@@ -188,5 +188,5 @@ export const MOTION_PRESETS = {
   drillBack: drillBackTransition,
   card: cardAppearTransition,
   modal: modalTransition,
-} as const;
+};
 

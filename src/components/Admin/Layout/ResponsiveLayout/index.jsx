@@ -17,12 +17,12 @@
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { AppSidebar } from "@/components/Admin/Layout/SideBar";
 import { TopBar } from "@/components/Admin/Layout/TopBar";
 import { BottomNav } from "@/components/Admin/Layout/BottomNav";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,9 +38,22 @@ export function ResponsiveLayout({
   children, 
   bottomNavItems = [],
   user,
-  onMenuClick 
+  onMenuClick,
+  navigationItems = [],
+  navigationManagersItems = [],
+  apps = [],
+  loading = false,
 }) {
   const { isMobile, mounted } = useIsMobileSafe();
+  const [sheetOpen, setSheetOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Cerrar Sheet automáticamente al navegar
+  React.useEffect(() => {
+    if (sheetOpen) {
+      setSheetOpen(false);
+    }
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Regla crítica: Mientras isMobile === null, NO renderizar navegación mobile
   // Renderizar layout desktop por defecto hasta que esté montado
@@ -96,7 +109,16 @@ export function ResponsiveLayout({
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* TopBar */}
-      <TopBar onMenuClick={onMenuClick} user={user} />
+      <TopBar 
+        onMenuClick={onMenuClick}
+        sheetOpen={sheetOpen}
+        onSheetOpenChange={setSheetOpen}
+        user={user}
+        navigationItems={navigationItems}
+        navigationManagersItems={navigationManagersItems}
+        apps={apps}
+        loading={loading}
+      />
 
       {/* Main Content - Scrollable */}
       <main
