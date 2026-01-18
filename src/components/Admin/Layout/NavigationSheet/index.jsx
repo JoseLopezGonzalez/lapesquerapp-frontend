@@ -109,55 +109,53 @@ export function NavigationSheet({
           <SheetDescription>Menú de navegación completo</SheetDescription>
         </SheetHeader>
 
-        {/* Barra indicadora para cerrar - Arriba del contenido */}
+        {/* Barra indicadora para cerrar - Fija arriba */}
         <div 
           {...swipeHandlers} 
-          className="flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
         >
           <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
         </div>
 
-        {/* Contenido del Sheet - Similar al Sidebar */}
+        {/* Contenido del Sheet - AppSwitcher fijo + resto scrollable */}
         {/* Envolver en SidebarProvider para que AppSwitcher funcione */}
         <SidebarProvider>
           <div className="flex flex-col h-full min-h-0 overflow-hidden w-full">
-            {/* Header - AppSwitcher */}
+            {/* Header - AppSwitcher FIJActually */}
             {apps && apps.length > 0 && (
               <div className="flex-shrink-0 border-b p-3 w-full">
                 <AppSwitcher apps={apps} loading={loading} />
               </div>
             )}
 
-            {/* Content - Navegación */}
-            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col w-full">
+            {/* Contenedor scrollable con el resto del contenido */}
+            <div className="flex-1 min-h-0 overflow-y-auto w-full">
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
-                <div className="flex-shrink-0 p-3 w-full">
+                <div className="p-3 w-full">
                   <NavManagers items={activeNavigationManagersItems} />
                 </div>
               )}
 
               {/* Navegación Principal */}
-              <div className="flex flex-col flex-1 min-h-0 w-full">
-                {activeNavigationItems && activeNavigationItems.length > 0 && (
-                  <>
-                    <div className="flex-shrink-0 px-4 pt-3 pb-2 w-full">
-                      <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">Navegación</SidebarGroupLabel>
-                    </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2 w-full">
-                      <NavMain items={activeNavigationItems} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+              {activeNavigationItems && activeNavigationItems.length > 0 && (
+                <>
+                  <div className="px-4 pt-3 pb-2 w-full">
+                    <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">Navegación</SidebarGroupLabel>
+                  </div>
+                  <div className="px-2 pb-4 w-full">
+                    <NavMain items={activeNavigationItems} />
+                  </div>
+                </>
+              )}
 
-            {/* Footer - Usuario */}
-            {user && (
-              <div className="flex-shrink-0 border-t p-3 mt-auto w-full">
-                <NavUser user={user} />
-              </div>
-            )}
+              {/* Footer - Usuario */}
+              {user && (
+                <div className="border-t p-3 w-full">
+                  <NavUser user={user} />
+                </div>
+              )}
+            </div>
           </div>
         </SidebarProvider>
         

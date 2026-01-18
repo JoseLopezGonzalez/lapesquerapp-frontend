@@ -11,6 +11,86 @@
   padding: 0 !important;
 }
 
+/* Desactivar selección visual (outline/focus) en todos los elementos interactivos */
+[data-sheet="true"] * {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  outline: none !important;
+}
+
+/* Permitir selección de texto solo en contenido de texto */
+[data-sheet="true"] span,
+[data-sheet="true"] p,
+[data-sheet="true"] div[role="menuitem"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Desactivar focus outline en botones y elementos interactivos */
+[data-sheet="true"] button:focus,
+[data-sheet="true"] button:focus-visible,
+[data-sheet="true"] [role="button"]:focus,
+[data-sheet="true"] [role="button"]:focus-visible,
+[data-sheet="true"] [data-sidebar="menu-button"]:focus,
+[data-sheet="true"] [data-sidebar="menu-button"]:focus-visible,
+[data-sheet="true"] [data-radix-dropdown-menu-trigger]:focus,
+[data-sheet="true"] [data-radix-dropdown-menu-trigger]:focus-visible,
+[data-sheet="true"] button[data-state="open"]:focus,
+[data-sheet="true"] button[data-state="open"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* Desactivar estado activo visual con borde */
+[data-sheet="true"] button:active,
+[data-sheet="true"] [role="button"]:active,
+[data-sheet="true"] [data-sidebar="menu-button"]:active,
+[data-sheet="true"] [data-radix-dropdown-menu-trigger]:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+}
+
+/* Desactivar estilos de focus-visible ring específicos de SidebarMenuButton */
+[data-sheet="true"] [data-sidebar="menu-button"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* Desactivar estado open visual con borde/ring en AppSwitcher */
+[data-sheet="true"] [data-sidebar="menu-button"][data-state="open"],
+[data-sheet="true"] [data-sidebar="menu-button"].data-\\[state\\=open\\] {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+}
+
+/* Desactivar cualquier borde o ring en todos los estados */
+[data-sheet="true"] [data-sidebar="menu-button"],
+[data-sheet="true"] [data-sidebar="menu-button"]:hover,
+[data-sheet="true"] [data-sidebar="menu-button"]:active,
+[data-sheet="true"] [data-sidebar="menu-button"]:focus {
+  outline: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
+}
+
 /* Asegurar que el contenido interno también ocupe todo el ancho */
 [data-sheet="true"] > * {
   width: 100% !important;
@@ -39,10 +119,33 @@
   margin: 2px 0 !important;
   transition: background-color 0.15s ease !important;
   -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
 }
 
 [data-sheet="true"] [data-sidebar="menu-button"]:active {
   background-color: hsl(var(--accent)) !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+}
+
+/* Específicamente para el estado open del AppSwitcher */
+[data-sheet="true"] [data-sidebar="menu-button"][data-state="open"] {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  --tw-ring-width: 0 !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
 }
 
 [data-sheet="true"] [data-sidebar="menu-button"] svg {

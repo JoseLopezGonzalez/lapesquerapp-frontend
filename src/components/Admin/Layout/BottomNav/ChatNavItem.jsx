@@ -37,7 +37,7 @@ export function ChatNavItem({ index }) {
         exit={feedbackPop.exit}
         transition={itemTransition}
         whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-        className="flex-1"
+        className="flex flex-col items-center justify-center flex-shrink-0"
       >
         <button
           onClick={() => setChatOpen(true)}

@@ -37,7 +37,7 @@ export function CenterActionButton() {
       exit={feedbackPop.exit}
       transition={itemTransition}
       whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-      className="flex items-center justify-center -mt-4" // Elevar el botón ligeramente
+      className="flex items-center justify-center" // Ya no necesita -mt-4 porque el grid lo alinea
     >
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>

@@ -54,7 +54,7 @@ function BottomNavItem({ item, isActive, index }) {
       exit={feedbackPop.exit}
       transition={itemTransition}
       whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-      className="flex-1 flex flex-col items-center justify-center"
+      className="flex flex-col items-center justify-center flex-shrink-0"
     >
       {item?.onClick ? (
         // Item especial con onClick (ej. Chat IA)
@@ -170,22 +170,19 @@ export function BottomNav({ items, onSwipeUp }) {
     >
       <div className={cn(
         "container mx-auto",
-        "flex items-end", // items-end para alinear el botón central elevado
-        "px-2 py-3", // Padding ajustado
+        "grid grid-cols-5 items-end", // Grid de 5 columnas para distribución uniforme
+        "px-6 py-3", // Padding lateral aumentado para separar del borde
         "max-w-md mx-auto", // Centrar y limitar ancho
-        "gap-0" // Sin gap adicional, lo controlamos internamente
+        "gap-0" // Sin gap entre columnas
       )}>
-        {/* Grupo izquierdo: Primeros 2 items */}
-        <div className="flex-1 flex items-center justify-evenly">
-          {displayItems.slice(0, 2).map((item, index) => {
-            // Si es Chat IA, usar componente especial
+        {/* Item 1 */}
+        <div className="flex items-center justify-center">
+          {displayItems.slice(0, 1).map((item, index) => {
             if (item.name === 'Chat IA' && !item.href) {
               return <ChatNavItem key="chat-ai" index={index} />;
             }
-            
             const itemHref = item.href || item.childrens?.[0]?.href || '#';
             const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-            
             return (
               <BottomNavItem
                 key={itemHref || item.name || `item-${index}`}
@@ -197,24 +194,60 @@ export function BottomNav({ items, onSwipeUp }) {
           })}
         </div>
         
-        {/* Botón central de acción */}
-        <div className="flex-shrink-0 mx-2">
-          <CenterActionButton />
-        </div>
-        
-        {/* Grupo derecho: Últimos 2 items */}
-        <div className="flex-1 flex items-center justify-evenly">
-          {displayItems.slice(2).map((item, index) => {
-            const actualIndex = index + 2; // Ajustar índice para continuidad
-            
-            // Si es Chat IA, usar componente especial
+        {/* Item 2 */}
+        <div className="flex items-center justify-center">
+          {displayItems.slice(1, 2).map((item, index) => {
+            const actualIndex = index + 1;
             if (item.name === 'Chat IA' && !item.href) {
               return <ChatNavItem key="chat-ai" index={actualIndex} />;
             }
-            
             const itemHref = item.href || item.childrens?.[0]?.href || '#';
             const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-            
+            return (
+              <BottomNavItem
+                key={itemHref || item.name || `item-${actualIndex}`}
+                item={{ ...item, href: itemHref }}
+                isActive={isActive}
+                index={actualIndex}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Botón central de acción - Columna 3 */}
+        <div className="flex items-center justify-center">
+          <CenterActionButton />
+        </div>
+        
+        {/* Item 3 */}
+        <div className="flex items-center justify-center">
+          {displayItems.slice(2, 3).map((item, index) => {
+            const actualIndex = index + 2;
+            if (item.name === 'Chat IA' && !item.href) {
+              return <ChatNavItem key="chat-ai" index={actualIndex} />;
+            }
+            const itemHref = item.href || item.childrens?.[0]?.href || '#';
+            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+            return (
+              <BottomNavItem
+                key={itemHref || item.name || `item-${actualIndex}`}
+                item={{ ...item, href: itemHref }}
+                isActive={isActive}
+                index={actualIndex}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Item 4 */}
+        <div className="flex items-center justify-center">
+          {displayItems.slice(3).map((item, index) => {
+            const actualIndex = index + 3;
+            if (item.name === 'Chat IA' && !item.href) {
+              return <ChatNavItem key="chat-ai" index={actualIndex} />;
+            }
+            const itemHref = item.href || item.childrens?.[0]?.href || '#';
+            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
             return (
               <BottomNavItem
                 key={itemHref || item.name || `item-${actualIndex}`}
@@ -227,7 +260,7 @@ export function BottomNav({ items, onSwipeUp }) {
         </div>
       </div>
       
-      {/* Barra indicadora para swipe - Debajo de los iconos */}
+      {/* Barra indicadora para swipe - Centrada perfectamente */}
       <div className="flex items-center justify-center pt-1 pb-2">
         <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
       </div>
