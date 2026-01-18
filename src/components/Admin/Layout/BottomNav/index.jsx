@@ -21,8 +21,9 @@ import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS, MOBILE_ICON_SIZES } from "@/lib/design-tokens-mobile";
-import { feedbackPop, useTransition } from "@/lib/motion-presets";
+import { feedbackPop } from "@/lib/motion-presets";
 import { isActiveRoute } from "@/utils/navigationUtils";
+import { ChatNavItem } from "./ChatNavItem";
 
 /**
  * BottomNavItem - Item individual de la navegación inferior
@@ -53,46 +54,93 @@ function BottomNavItem({ item, isActive, index }) {
       whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
       className="flex-1"
     >
-      <Link
-        href={item?.href || '#'}
-        className={cn(
-          "relative flex flex-col items-center justify-center gap-1",
-          "min-h-[44px] min-w-[44px]",
-          "px-3 py-2 rounded-lg",
-          "transition-colors duration-200",
-          "touch-none", // Mejorar rendimiento en mobile
-          isActive
-            ? "text-primary bg-primary/10"
-            : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
-        )}
-        aria-label={item?.name || 'Navegación'}
-      >
-        {Icon && (
-          <Icon 
-            className={cn(
-              MOBILE_ICON_SIZES.BOTTOM_NAV,
-              isActive ? "text-primary" : ""
-            )} 
-          />
-        )}
-        <span className={cn(
-          "text-xs font-medium leading-tight",
-          isActive ? "text-primary" : ""
-        )}>
-          {item?.name || ''}
-        </span>
-        {isActive && (
-          <motion.span 
-            className={cn(
-              "absolute bottom-0 left-1/2 -translate-x-1/2",
-              "w-1 h-1 rounded-full bg-primary"
-            )}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
-          />
-        )}
-      </Link>
+      {item?.onClick ? (
+        // Item especial con onClick (ej. Chat IA)
+        <button
+          onClick={item.onClick}
+          className={cn(
+            "relative flex flex-col items-center justify-center gap-1 w-full",
+            "min-h-[44px] min-w-[44px]",
+            "px-2 py-1.5 pb-2 rounded-lg", // px-2 py-1.5 pb-2 para espacio más compacto
+            "transition-colors duration-200",
+            "touch-none", // Mejorar rendimiento en mobile
+            isActive
+              ? "text-primary bg-primary/10"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+          )}
+          aria-label={item?.name || 'Navegación'}
+        >
+          {Icon && (
+            <Icon 
+              className={cn(
+                MOBILE_ICON_SIZES.BOTTOM_NAV,
+                isActive ? "text-primary" : ""
+              )} 
+            />
+          )}
+          <span className={cn(
+            "text-[10px] font-medium leading-tight",
+            "truncate max-w-full px-1", // Truncar texto largo y centrar
+            isActive ? "text-primary" : ""
+          )}>
+            {item?.name || ''}
+          </span>
+          {isActive && (
+            <motion.span 
+              className={cn(
+                "absolute bottom-0 left-1/2 -translate-x-1/2",
+                "w-1 h-1 rounded-full bg-primary"
+              )}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
+            />
+          )}
+        </button>
+      ) : (
+        // Item normal con Link
+        <Link
+          href={item?.href || '#'}
+          className={cn(
+            "relative flex flex-col items-center justify-center gap-1 w-full",
+            "min-h-[44px] min-w-[44px]",
+            "px-2 py-1.5 pb-2 rounded-lg", // px-2 py-1.5 pb-2 para espacio más compacto
+            "transition-colors duration-200",
+            "touch-none", // Mejorar rendimiento en mobile
+            isActive
+              ? "text-primary bg-primary/10"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent"
+          )}
+          aria-label={item?.name || 'Navegación'}
+        >
+          {Icon && (
+            <Icon 
+              className={cn(
+                MOBILE_ICON_SIZES.BOTTOM_NAV,
+                isActive ? "text-primary" : ""
+              )} 
+            />
+          )}
+          <span className={cn(
+            "text-[10px] font-medium leading-tight",
+            "truncate max-w-full px-1", // Truncar texto largo y centrar
+            isActive ? "text-primary" : ""
+          )}>
+            {item?.name || ''}
+          </span>
+          {isActive && (
+            <motion.span 
+              className={cn(
+                "absolute bottom-0 left-1/2 -translate-x-1/2",
+                "w-1 h-1 rounded-full bg-primary"
+              )}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
+            />
+          )}
+        </Link>
+      )}
     </motion.div>
   );
 }
@@ -126,17 +174,22 @@ export function BottomNav({ items }) {
       <div className={cn(
         "container mx-auto",
         "flex items-center justify-around",
-        "px-2 py-2",
+        "px-2 py-2 pb-3", // py-2 pb-3 para espacio reducido pero suficiente para el punto
         MOBILE_HEIGHTS.BOTTOM_NAV
       )}>
         {displayItems.map((item, index) => {
+          // Si es Chat IA, usar componente especial
+          if (item.name === 'Chat IA' && !item.href) {
+            return <ChatNavItem key="chat-ai" index={index} />;
+          }
+          
           // Asegurar que el item tenga href (si no tiene, usar el primer children o '#')
           const itemHref = item.href || item.childrens?.[0]?.href || '#';
           const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
           
           return (
             <BottomNavItem
-              key={itemHref || item.name}
+              key={itemHref || item.name || `item-${index}`}
               item={{ ...item, href: itemHref }}
               isActive={isActive}
               index={index}

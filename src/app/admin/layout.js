@@ -9,6 +9,7 @@ import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig";
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from "@/utils/navigationUtils";
+import { MessageSquare } from "lucide-react";
 
 export default function AdminLayout({ children }) {
   const { data: session } = useSession();
@@ -45,20 +46,45 @@ export default function AdminLayout({ children }) {
   );
 
   // Preparar items principales para BottomNav
-  // Solo items principales sin childrens (rutas directas) o con childrens (usar primer children)
+  // Items específicos según requerimientos: Inicio, Gestor de pedidos, Almacenes interactivos, Chat IA
   const bottomNavItems = React.useMemo(() => {
-    // Filtrar items que tienen href o childrens, y asegurar href
-    const itemsWithHref = filteredNavigationConfig
-      .filter((item) => item && (item.href || item.childrens?.length > 0))
-      .map((item) => ({
-        ...item,
-        href: item.href || item.childrens?.[0]?.href || '#',
-      }))
-      .filter((item) => item.href !== '#') // Excluir items sin href válido
-      .slice(0, 4); // Máximo 4 items principales
-
-    return itemsWithHref;
-  }, [filteredNavigationConfig]);
+    // 1. Inicio - de navigationConfig
+    const inicioItem = filteredNavigationConfig.find((item) => item.href === '/admin/home');
+    
+    // 2. Gestor de pedidos - de navigationManagerConfig (con nombre corto)
+    const filteredManagers = filterNavigationByRoles(navigationManagerConfig, roles);
+    const gestorPedidosItem = filteredManagers.find(
+      (item) => item.href === '/admin/orders-manager'
+    );
+    if (gestorPedidosItem) {
+      gestorPedidosItem.name = 'Pedidos'; // Nombre corto para BottomNav
+    }
+    
+    // 3. Almacenes interactivos - de navigationManagerConfig (con nombre corto)
+    const almacenesInteractivosItem = filteredManagers.find(
+      (item) => item.href === '/admin/stores-manager'
+    );
+    if (almacenesInteractivosItem) {
+      almacenesInteractivosItem.name = 'Almacenes'; // Nombre corto para BottomNav
+    }
+    
+    // 4. Chat IA - Item especial con onClick (no tiene href)
+    const chatIAItem = {
+      name: 'Chat IA',
+      icon: MessageSquare,
+      href: null, // No es una ruta, es una acción
+    };
+    
+    // Construir array final, filtrando items que no existen
+    const items = [
+      inicioItem,
+      gestorPedidosItem,
+      almacenesInteractivosItem,
+      chatIAItem,
+    ].filter((item) => item !== undefined && item !== null);
+    
+    return items;
+  }, [filteredNavigationConfig, roles]);
 
   // Preparar user object para TopBar
   const user = React.useMemo(() => ({

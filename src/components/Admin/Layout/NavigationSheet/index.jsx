@@ -33,6 +33,7 @@ import {
 import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
 import { cn } from "@/lib/utils";
 import { isActiveRoute } from "@/utils/navigationUtils";
+import "./sheet-styles.css";
 
 /**
  * NavigationSheet - Sheet con navegación completa
@@ -85,6 +86,7 @@ export function NavigationSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
+        data-sheet="true"
         className={cn(
           "h-[85vh] max-h-[85vh] overflow-hidden",
           "flex flex-col p-0",
@@ -103,7 +105,7 @@ export function NavigationSheet({
           <div className="flex flex-col h-full min-h-0 overflow-hidden">
             {/* Header - AppSwitcher */}
             {apps && apps.length > 0 && (
-              <div className="flex-shrink-0 border-b p-2">
+              <div className="flex-shrink-0 border-b p-3">
                 <AppSwitcher apps={apps} loading={loading} />
               </div>
             )}
@@ -112,7 +114,7 @@ export function NavigationSheet({
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
-                <div className="flex-shrink-0 p-2">
+                <div className="flex-shrink-0 p-3">
                   <NavManagers items={activeNavigationManagersItems} />
                 </div>
               )}
@@ -121,10 +123,10 @@ export function NavigationSheet({
               <div className="flex flex-col flex-1 min-h-0">
                 {activeNavigationItems && activeNavigationItems.length > 0 && (
                   <>
-                    <div className="flex-shrink-0 px-4 pt-2 pb-1">
-                      <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+                    <div className="flex-shrink-0 px-4 pt-3 pb-2">
+                      <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground">Navegación</SidebarGroupLabel>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto px-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
                       <NavMain items={activeNavigationItems} />
                     </div>
                   </>
@@ -134,12 +136,13 @@ export function NavigationSheet({
 
             {/* Footer - Usuario */}
             {user && (
-              <div className="flex-shrink-0 border-t p-2 mt-auto">
+              <div className="flex-shrink-0 border-t p-3 mt-auto">
                 <NavUser user={user} />
               </div>
             )}
           </div>
         </SidebarProvider>
+        
       </SheetContent>
     </Sheet>
   );
