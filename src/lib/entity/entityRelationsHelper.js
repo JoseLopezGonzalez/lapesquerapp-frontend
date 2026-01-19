@@ -78,18 +78,17 @@ export function addWithParams(queryParams, relations) {
         return;
     }
     
+    // Formato estándar Laravel: with[]=supplier&with[]=species
     relations.forEach(relation => {
         if (relation && typeof relation === 'string') {
-            // Laravel espera with[] para arrays en query strings
-            // Formato: with[]=supplier&with[]=species
             queryParams.append('with[]', relation);
         }
     });
     
-    // Log para debug (siempre, para verificar en producción también)
+    // DEBUG: Usar console.warn para que siempre se vea
     if (typeof window !== 'undefined') {
-        window.console.log('🔗 [EntityRelations] Relaciones solicitadas:', relations);
-        window.console.log('🔗 [EntityRelations] URL generada:', queryParams.toString());
+        window.console.warn('🔗 [EntityRelations] Relaciones agregadas:', relations);
+        window.console.warn('🔗 [EntityRelations] Query string:', queryParams.toString());
     }
 }
 

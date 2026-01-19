@@ -68,23 +68,20 @@ export const rawMaterialReceptionService = {
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
-            if (typeof window !== 'undefined') {
-                window.console.log('✅ [rawMaterialReceptionService] Agregando relaciones:', filters._requiredRelations);
-            }
             addWithParams(queryParams, filters._requiredRelations);
-        } else {
-            if (typeof window !== 'undefined') {
-                window.console.log('⚠️ [rawMaterialReceptionService] No hay _requiredRelations en filters');
-            }
         }
         
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         
         const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
+        
+        // DEBUG: Usar console.warn para asegurar visibilidad
         if (typeof window !== 'undefined') {
-            window.console.log('🌐 [rawMaterialReceptionService] URL final:', url);
+            window.console.warn('🌐 [rawMaterialReceptionService] URL completa:', url);
+            window.console.warn('🌐 [rawMaterialReceptionService] Tiene with[]:', url.includes('with'));
         }
+        
         return fetchEntitiesGeneric(url, token);
     },
 

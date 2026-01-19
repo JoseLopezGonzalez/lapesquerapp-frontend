@@ -35,10 +35,8 @@ const getAuthHeaders = async (token) => {
  * @private
  */
 export const fetchEntitiesGeneric = async (url, token = null) => {
-    // Log para verificar que la URL incluye los parámetros with[]
-    if (typeof window !== 'undefined' && url.includes('with')) {
-        window.console.log('✅ [fetchEntitiesGeneric] URL con parámetros with[]:', url);
-    }
+    // DEBUG: Verificar URL antes de la petición
+    const hasWithParam = url.includes('with');
     
     const headers = await getAuthHeaders(token);
     const response = await fetchWithTenant(url, {
@@ -50,18 +48,28 @@ export const fetchEntitiesGeneric = async (url, token = null) => {
     }
     const data = await response.json();
     
-    // Verificar si las relaciones están en la respuesta
+    // DEBUG: Verificar respuesta
     if (typeof window !== 'undefined' && data?.data?.length > 0) {
         const firstItem = data.data[0];
-        const hasRelations = Object.keys(firstItem).some(key => 
-            typeof firstItem[key] === 'object' && firstItem[key] !== null && !Array.isArray(firstItem[key]) && firstItem[key].id !== undefined
-        );
-        if (hasRelations) {
-            window.console.log('✅ [fetchEntitiesGeneric] Respuesta incluye relaciones:', Object.keys(firstItem).filter(key => 
-                typeof firstItem[key] === 'object' && firstItem[key] !== null && !Array.isArray(firstItem[key]) && firstItem[key].id !== undefined
-            ));
-        } else {
-            window.console.warn('⚠️ [fetchEntitiesGeneric] Respuesta NO incluye relaciones. Primer item:', firstItem);
+        const relationKeys = Object.keys(firstItem).filter(key => {
+            const value = firstItem[key];
+            return typeof value === 'object' && 
+                   value !== null && 
+                   !Array.isArray(value) && 
+                   value.id !== undefined &&
+                   !(value instanceof Date);
+        });
+        
+        // Log crítico - siempre mostrar
+        window.console?.warn?.('🔍 [fetchEntitiesGeneric] DEBUG INFO:', {
+            url: url.substring(0, 200), // Limitar longitud
+            hasWithParam,
+            relationKeysFound: relationKeys,
+            sampleItem: Object.keys(firstItem).slice(0, 10)
+        });
+        
+        if (hasWithParam && relationKeys.length === 0) {
+            window.console?.error?.('❌ PROBLEMA DETECTADO: URL tiene with[] pero respuesta NO tiene relaciones');
         }
     }
     

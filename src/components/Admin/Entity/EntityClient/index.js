@@ -157,12 +157,20 @@ export default function EntityClient({ config }) {
 
         const perPage = config?.perPage || 12;
         const filtersObject = formatFiltersObject(currentFilters);
-        if (typeof window !== 'undefined') {
-            window.console.log('🔍 [EntityClient] Filtros objeto inicial:', filtersObject);
-        }
 
         // Detectar relaciones necesarias desde los headers de la tabla
         const requiredRelations = extractRequiredRelations(config.table?.headers || []);
+        
+        // DEBUG: Forzar que se vea el log
+        if (typeof window !== 'undefined') {
+            const debugInfo = {
+                endpoint: config.endpoint,
+                headersCount: config.table?.headers?.length || 0,
+                requiredRelations: requiredRelations,
+                headers: config.table?.headers?.map(h => ({ name: h.name, path: h.path })) || []
+            };
+            window.console.warn('🔍 [EntityClient] DEBUG INFO:', debugInfo);
+        }
         
         // Agregar relaciones a los filtros si existen
         if (requiredRelations.length > 0) {
