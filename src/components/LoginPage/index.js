@@ -19,6 +19,8 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { pageTransition } from "@/lib/motion-presets";
+import { useAuthTransition } from "@/hooks/useAuthTransition";
+import { AuthTransitionScreen } from "@/components/Auth/AuthTransitionScreen";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,6 +33,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const { isMobile } = useIsMobileSafe();
+  const { showLogin, showSuccess, showError, hide } = useAuthTransition();
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -64,7 +67,9 @@ export default function LoginPage() {
       return;
     }
 
-    setLoading(true);
+    // ✅ Activar transición ANTES de iniciar proceso
+    showLogin();
+    
     try {
       const params = new URLSearchParams(window.location.search);
       const redirectTo = params.get("from") || "/admin/home";
@@ -78,19 +83,37 @@ export default function LoginPage() {
       if (!result || result.error) {
         setEmail("");
         setPassword("");
-        throw new Error(
-          result?.error === "CredentialsSignin"
-            ? "Datos de acceso incorrectos"
-            : result?.error || "Error al iniciar sesión"
-        );
+        
+        // ✅ Mostrar error en transición
+        const errorMsg = result?.error === "CredentialsSignin"
+          ? "Datos de acceso incorrectos"
+          : result?.error || "Error al iniciar sesión";
+        
+        showError(errorMsg);
+        
+        // Esperar 2 segundos antes de ocultar
+        setTimeout(() => {
+          hide();
+        }, 2000);
+        
+        return;
       }
 
-      toast.success("Inicio de sesión exitoso", getToastTheme());
-      window.location.href = redirectTo;
+      // ✅ Mostrar éxito en transición
+      showSuccess();
+      
+      // Redirigir después de mostrar éxito brevemente
+      setTimeout(() => {
+        window.location.href = redirectTo;
+      }, 1000);
+      
     } catch (err) {
-      toast.error(err.message, getToastTheme());
-    } finally {
-      setLoading(false);
+      // ✅ Mostrar error en transición
+      showError(err.message);
+      
+      setTimeout(() => {
+        hide();
+      }, 2000);
     }
   };
 
@@ -108,6 +131,9 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
+      {/* ✅ Pantalla de transición de autenticación */}
+      <AuthTransitionScreen />
+      
       <AnimatePresence mode="wait">
         {shouldShowWelcome ? (
           // PANTALLA DE BIENVENIDA (MOBILE)

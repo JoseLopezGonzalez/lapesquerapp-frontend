@@ -27,6 +27,8 @@ import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles, isActiveRoute } from "@/utils/navigationUtils"
+import { useAuthTransition } from '@/hooks/useAuthTransition';
+import { AuthTransitionScreen } from '@/components/Auth/AuthTransitionScreen';
 
 
 export function AppSidebar() {
@@ -40,8 +42,13 @@ export function AppSidebar() {
 
     const { settings, loading } = useSettings();
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
+    
+    const { showLogout } = useAuthTransition();
 
     const handleLogout = React.useCallback(async () => {
+        // ✅ Activar transición INMEDIATAMENTE
+        showLogout();
+        
         try {
             // Primero revocar el token en el backend
             const { logout: logoutBackend } = await import('@/services/authService');
@@ -50,23 +57,24 @@ export function AppSidebar() {
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             
-            // Mostrar toast de éxito
-            toast.success('Sesión cerrada correctamente', getToastTheme());
+            // ❌ NO usar toast - la transición lo reemplaza
+            // toast.success('Sesión cerrada correctamente', getToastTheme()); // ELIMINAR
             
-            // Redirigir después de un breve delay para que se vea el toast
+            // Redirigir después de un breve delay
             setTimeout(() => {
                 window.location.replace('/');
-            }, 500);
+            }, 800);
         } catch (err) {
             console.error('Error en logout:', err);
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            toast.success('Sesión cerrada correctamente', getToastTheme());
+            // ❌ NO usar toast - la transición lo reemplaza
+            // toast.success('Sesión cerrada correctamente', getToastTheme()); // ELIMINAR
             setTimeout(() => {
                 window.location.replace('/');
-            }, 500);
+            }, 800);
         }
-    }, []);
+    }, [showLogout]);
 
     // Filtrar navegación por roles
     const filteredNavigationConfig = React.useMemo(() => 
@@ -120,27 +128,32 @@ export function AppSidebar() {
 
 
     return (
-        <Sidebar collapsible="icon" variant='floating'>
-            <SidebarHeader>
-                <AppSwitcher apps={data.apps} loading={loading} />
-            </SidebarHeader>
-            <SidebarContent className="flex flex-col min-h-0">
-                <div className="flex-shrink-0">
-                    <NavManagers items={data.navigationManagersItems} />
-                </div>
-                <div className="flex flex-col flex-1 min-h-0">
+        <>
+            {/* ✅ Pantalla de transición de autenticación */}
+            <AuthTransitionScreen />
+            
+            <Sidebar collapsible="icon" variant='floating'>
+                <SidebarHeader>
+                    <AppSwitcher apps={data.apps} loading={loading} />
+                </SidebarHeader>
+                <SidebarContent className="flex flex-col min-h-0">
                     <div className="flex-shrink-0">
-                        <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+                        <NavManagers items={data.navigationManagersItems} />
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto">
-                        <NavMain items={data.navigationItems} />
+                    <div className="flex flex-col flex-1 min-h-0">
+                        <div className="flex-shrink-0">
+                            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-y-auto">
+                            <NavMain items={data.navigationItems} />
+                        </div>
                     </div>
-                </div>
-            </SidebarContent>
-            <SidebarFooter className="mt-4">
-                <NavUser user={data.user} />
-            </SidebarFooter>
-            <SidebarRail />
-        </Sidebar>
+                </SidebarContent>
+                <SidebarFooter className="mt-4">
+                    <NavUser user={data.user} />
+                </SidebarFooter>
+                <SidebarRail />
+            </Sidebar>
+        </>
     )
 }
