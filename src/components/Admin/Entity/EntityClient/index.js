@@ -140,16 +140,10 @@ export default function EntityClient({ config }) {
     }, [config.endpoint]);
 
     const fetchData = useCallback(async (page, currentFilters) => {
-        if (typeof window !== 'undefined') {
-            window.console.log('🚀 [EntityClient] fetchData llamado para:', config.endpoint);
-        }
         setData((prevData) => ({ ...prevData, loading: true }));
         const entityService = getEntityService(config.endpoint);
         
         if (!entityService) {
-            if (typeof window !== 'undefined') {
-                window.console.error('❌ [EntityClient] No se encontró servicio para:', config.endpoint);
-            }
             toast.error('No se encontró el servicio para esta entidad.');
             setData((prevData) => ({ ...prevData, loading: false }));
             return;
@@ -160,17 +154,6 @@ export default function EntityClient({ config }) {
 
         // Detectar relaciones necesarias desde los headers de la tabla
         const requiredRelations = extractRequiredRelations(config.table?.headers || []);
-        
-        // DEBUG: Forzar que se vea el log
-        if (typeof window !== 'undefined') {
-            const debugInfo = {
-                endpoint: config.endpoint,
-                headersCount: config.table?.headers?.length || 0,
-                requiredRelations: requiredRelations,
-                headers: config.table?.headers?.map(h => ({ name: h.name, path: h.path })) || []
-            };
-            window.console.warn('🔍 [EntityClient] DEBUG INFO:', debugInfo);
-        }
         
         // Agregar relaciones a los filtros si existen
         if (requiredRelations.length > 0) {
@@ -230,16 +213,6 @@ export default function EntityClient({ config }) {
     useEffect(() => {
         const currentFiltersString = JSON.stringify(filters);
         const filtersChanged = prevFiltersRef.current !== currentFiltersString;
-
-        // DEBUG: Verificar que el useEffect se ejecuta
-        if (typeof window !== 'undefined') {
-            window.console.warn('🔄 [EntityClient] useEffect ejecutado:', {
-                isInitialMount: isInitialMount.current,
-                filtersChanged,
-                currentPage,
-                endpoint: config.endpoint
-            });
-        }
 
         if (isInitialMount.current) {
             // En el montaje inicial, siempre hacer fetch

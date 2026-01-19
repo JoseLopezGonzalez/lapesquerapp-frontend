@@ -84,11 +84,5 @@ export function addWithParams(queryParams, relations) {
             queryParams.append('with[]', relation);
         }
     });
-    
-    // DEBUG: Usar console.warn para que siempre se vea
-    if (typeof window !== 'undefined') {
-        window.console.warn('🔗 [EntityRelations] Relaciones agregadas:', relations);
-        window.console.warn('🔗 [EntityRelations] Query string:', queryParams.toString());
-    }
 }
 

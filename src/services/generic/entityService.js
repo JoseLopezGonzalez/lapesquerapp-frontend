@@ -35,9 +35,6 @@ const getAuthHeaders = async (token) => {
  * @private
  */
 export const fetchEntitiesGeneric = async (url, token = null) => {
-    // DEBUG: Verificar URL antes de la petición
-    const hasWithParam = url.includes('with');
-    
     const headers = await getAuthHeaders(token);
     const response = await fetchWithTenant(url, {
         method: 'GET',
@@ -46,34 +43,7 @@ export const fetchEntitiesGeneric = async (url, token = null) => {
     if (!response.ok) {
         throw response;
     }
-    const data = await response.json();
-    
-    // DEBUG: Verificar respuesta
-    if (typeof window !== 'undefined' && data?.data?.length > 0) {
-        const firstItem = data.data[0];
-        const relationKeys = Object.keys(firstItem).filter(key => {
-            const value = firstItem[key];
-            return typeof value === 'object' && 
-                   value !== null && 
-                   !Array.isArray(value) && 
-                   value.id !== undefined &&
-                   !(value instanceof Date);
-        });
-        
-        // Log crítico - siempre mostrar
-        window.console?.warn?.('🔍 [fetchEntitiesGeneric] DEBUG INFO:', {
-            url: url.substring(0, 200), // Limitar longitud
-            hasWithParam,
-            relationKeysFound: relationKeys,
-            sampleItem: Object.keys(firstItem).slice(0, 10)
-        });
-        
-        if (hasWithParam && relationKeys.length === 0) {
-            window.console?.error?.('❌ PROBLEMA DETECTADO: URL tiene with[] pero respuesta NO tiene relaciones');
-        }
-    }
-    
-    return data;
+    return await response.json();
 };
 
 /**
