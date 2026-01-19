@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio } from 'lucide-react';
 
 export const navigationConfig = [
     {
@@ -215,6 +215,12 @@ export const navigationConfig = [
                 href: '/admin/punches',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
+            {
+                name: 'Fichaje Automático NFC',
+                href: '/admin/nfc-punch-manager',
+                allowedRoles: ["admin", "manager", "superuser"],
+                icon: Radio,
+            },
         ],
     },
 ];
@@ -256,6 +262,12 @@ export const navigationManagerConfig = [
         icon: Clock,
         allowedRoles: ["admin", "manager", "superuser"],
         href: '/admin/time-punch-manager',
+    },
+    {
+        name: 'Fichaje Automático NFC',
+        icon: Radio,
+        allowedRoles: ["admin", "manager", "superuser"],
+        href: '/admin/nfc-punch-manager',
     },
     /* {
           name: 'Salidas de Cebo',

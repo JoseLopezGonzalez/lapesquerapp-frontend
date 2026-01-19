@@ -46,16 +46,15 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
     
     await signOut({ redirect: false });
     
-    // Limpiar la bandera antes de redirigir
-    sessionStorage.removeItem('__is_logging_out__');
+    // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
+    // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
     
     // Mostrar mensaje primero
     toast.success('Sesión cerrada correctamente', getToastTheme());
     
-    // Esperar un momento para que el usuario vea el mensaje antes de redirigir
-    setTimeout(() => {
-      router.push("/");
-    }, 500);
+    // Redirigir usando window.location.replace para recarga completa
+    // Esto asegura que HomePage se monte y maneje el flag correctamente
+    window.location.replace('/');
   };
 
   const handleLogoError = () => {

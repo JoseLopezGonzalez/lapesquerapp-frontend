@@ -1,0 +1,6 @@
+import NFCPunchManager from '@/components/Admin/TimePunch/NFCPunchManager';
+
+export default function NFCPunchManagerPage() {
+    return <NFCPunchManager />;
+}
+

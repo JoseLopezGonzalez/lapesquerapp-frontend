@@ -60,9 +60,8 @@ export default function AuthErrorInterceptor() {
             } catch (err) {
               console.error('Error en signOut desde interceptor:', err);
             }
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.removeItem(LOGOUT_FLAG_KEY);
-            }
+            // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
+            // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
             const currentPath = window.location.pathname;
             const loginUrl = buildLoginUrl(currentPath);
             window.location.href = loginUrl;
@@ -97,9 +96,8 @@ export default function AuthErrorInterceptor() {
             } catch (err) {
               console.error('Error en signOut desde interceptor:', err);
             }
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.removeItem(LOGOUT_FLAG_KEY);
-            }
+            // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
+            // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
             const currentPath = window.location.pathname;
             const loginUrl = buildLoginUrl(currentPath);
             window.location.href = loginUrl;
@@ -137,9 +135,8 @@ export default function AuthErrorInterceptor() {
           } catch (err) {
             console.error('Error en signOut desde interceptor:', err);
           }
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.removeItem(LOGOUT_FLAG_KEY);
-          }
+          // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
+          // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
           const currentPath = window.location.pathname;
           const loginUrl = buildLoginUrl(currentPath);
           window.location.href = loginUrl;

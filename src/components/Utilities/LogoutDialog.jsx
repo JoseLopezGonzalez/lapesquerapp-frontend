@@ -12,22 +12,26 @@ import { cn } from "@/lib/utils";
  * Cubre toda la pantalla con un overlay y muestra un mensaje visual fluido.
  */
 export function LogoutDialog({ open = false }) {
+  // ✅ Estado para controlar si el componente está montado en el cliente
+  // Esto es crítico para evitar errores de hidratación
+  const [mounted, setMounted] = React.useState(false);
+  
   // Función para verificar bandera de logout en sessionStorage
   const checkLogoutFlag = React.useCallback(() => {
     if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return false;
     return sessionStorage.getItem('__is_logging_out__') === 'true';
   }, []);
   
-  // Estado inicial: solo usar la prop para evitar errores de hidratación
-  // NO verificar sessionStorage aquí para evitar diferencias servidor/cliente
+  // ✅ Estado inicial: Solo usar la prop, NO verificar sessionStorage
+  // El servidor siempre renderiza con open=false, el cliente puede cambiar después
   const [isVisible, setIsVisible] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
   
-  // Efecto para montaje: verificar sessionStorage solo después de montar en cliente
+  // Efecto para montaje: Solo después de montar en cliente verificamos sessionStorage
   React.useEffect(() => {
     setMounted(true);
     
-    // Verificar sessionStorage después del montaje
+    // ✅ Verificar sessionStorage SOLO después del montaje (solo en cliente)
+    // Esto evita errores de hidratación porque el servidor nunca ejecuta esto
     if (checkLogoutFlag()) {
       setIsVisible(true);
     } else if (open) {
@@ -45,42 +49,70 @@ export function LogoutDialog({ open = false }) {
     }
   }, [open, mounted, checkLogoutFlag]);
   
+  // ✅ Efecto para detectar cuando el flag se limpia y ocultar el diálogo
+  React.useEffect(() => {
+    if (!mounted || typeof sessionStorage === 'undefined') return;
+    
+    const checkFlagRemoved = () => {
+      const hasFlag = checkLogoutFlag();
+      // Si el flag fue removido y el diálogo está visible, ocultarlo
+      if (!hasFlag && isVisible && !open) {
+        setIsVisible(false);
+      }
+    };
+    
+    // Verificar periódicamente si el flag fue removido
+    const flagCheckInterval = setInterval(checkFlagRemoved, 200);
+    
+    return () => clearInterval(flagCheckInterval);
+  }, [mounted, isVisible, open, checkLogoutFlag]);
+  
   // Verificar periódicamente sessionStorage para mantener visible durante redirecciones
   React.useEffect(() => {
     if (!mounted || typeof sessionStorage === 'undefined') return;
     
+    // Verificar inmediatamente si hay flag de logout
+    if (checkLogoutFlag() && !isVisible) {
+      setIsVisible(true);
+    }
+    
+    let cleanupTimer = null;
+    
     const interval = setInterval(() => {
-      if (checkLogoutFlag() && !isVisible) {
+      const hasLogoutFlag = checkLogoutFlag();
+      
+      // Si hay flag y no está visible, mostrarlo
+      if (hasLogoutFlag && !isVisible) {
         setIsVisible(true);
       }
-    }, 100);
-    
-    // Si estamos en la página de login/home después de logout, mantener visible brevemente
-    const checkLoginPage = () => {
-      if (typeof window !== 'undefined') {
-        const isLoginPage = window.location.pathname === '/' || window.location.pathname === '/login';
-        if (isLoginPage && checkLogoutFlag() && isVisible) {
-          // Mantener visible durante la transición
-          const timer = setTimeout(() => {
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.removeItem('__is_logging_out__');
-              sessionStorage.removeItem('__is_logging_out_time__');
-            }
-            setIsVisible(false);
-          }, 600);
-          return () => clearTimeout(timer);
+      
+      // ✅ Si NO hay flag y está visible, ocultarlo inmediatamente
+      if (!hasLogoutFlag && isVisible && !open) {
+        setIsVisible(false);
+        if (cleanupTimer) {
+          clearTimeout(cleanupTimer);
+          cleanupTimer = null;
         }
       }
-    };
-    
-    checkLoginPage();
-    const pageCheckInterval = setInterval(checkLoginPage, 300);
+      
+      // ✅ NO limpiar el flag aquí - eso lo hace page.js
+      // Solo ocultar el diálogo si el flag fue removido
+      // La limpieza del flag se hace en page.js para mantener la lógica centralizada
+    }, 150); // Verificar cada 150ms para respuesta más rápida
     
     return () => {
       clearInterval(interval);
-      clearInterval(pageCheckInterval);
+      if (cleanupTimer) {
+        clearTimeout(cleanupTimer);
+      }
     };
-  }, [isVisible, checkLogoutFlag, mounted]);
+  }, [isVisible, checkLogoutFlag, mounted, open]);
+
+  // ✅ NO renderizar nada en el servidor para evitar errores de hidratación
+  // Solo renderizar después de que el componente esté montado en el cliente
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
