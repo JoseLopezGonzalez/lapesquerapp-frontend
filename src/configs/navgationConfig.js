@@ -215,12 +215,6 @@ export const navigationConfig = [
                 href: '/admin/punches',
                 allowedRoles: ["admin", "manager", "superuser"],
             },
-            {
-                name: 'Fichaje Automático NFC',
-                href: '/admin/nfc-punch-manager',
-                allowedRoles: ["admin", "manager", "superuser"],
-                icon: Radio,
-            },
         ],
     },
 ];

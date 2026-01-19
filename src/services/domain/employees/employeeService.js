@@ -23,6 +23,7 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'employees';
 
@@ -54,6 +55,11 @@ export const employeeService = {
         if (filters.nfc_uid) queryParams.append('nfc_uid', filters.nfc_uid);
         if (filters.with_last_punch) queryParams.append('with_last_punch', filters.with_last_punch);
         if (filters.search) queryParams.append('search', filters.search);
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
+        }
         
         // Paginación
         queryParams.append('page', page);

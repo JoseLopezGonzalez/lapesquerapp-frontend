@@ -23,6 +23,7 @@ import { EntityTableHeader } from './EntityTable/EntityHeader';
 import { EntityTable } from './EntityTable';
 import CreateEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm';
 import EditEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm';
+import { extractRequiredRelations } from '@/lib/entity/entityRelationsHelper';
 
 const initialData = {
     loading: true,
@@ -150,6 +151,14 @@ export default function EntityClient({ config }) {
 
         const perPage = config?.perPage || 12;
         const filtersObject = formatFiltersObject(currentFilters);
+
+        // Detectar relaciones necesarias desde los headers de la tabla
+        const requiredRelations = extractRequiredRelations(config.table?.headers || []);
+        
+        // Agregar relaciones a los filtros si existen
+        if (requiredRelations.length > 0) {
+            filtersObject._requiredRelations = requiredRelations;
+        }
 
         try {
             const result = await entityService.list(filtersObject, { page, perPage });

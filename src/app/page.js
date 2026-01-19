@@ -111,6 +111,7 @@ export default function HomePage() {
   
   // ✅ Verificar periódicamente si el flag fue limpiado externamente (solo para detectar cambios)
   // NOTA: Esto NO limpia el flag, solo detecta si fue limpiado en otro lugar
+  // ✅ OPTIMIZADO: Reducir frecuencia y solo verificar cuando sea necesario
   useEffect(() => {
     if (typeof sessionStorage === 'undefined' || logoutFlagCleared) return;
     
@@ -127,9 +128,10 @@ export default function HomePage() {
     // Verificar inmediatamente
     checkFlag();
     
-    // Verificar periódicamente (solo si no estamos en estado loading)
+    // ✅ Reducir frecuencia a 500ms para evitar re-renders excesivos
+    // Solo verificar si no estamos en estado loading
     if (status !== 'loading') {
-      const interval = setInterval(checkFlag, 100);
+      const interval = setInterval(checkFlag, 500); // Reducido de 100ms a 500ms
       return () => clearInterval(interval);
     }
   }, [logoutFlagCleared, status]);

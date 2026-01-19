@@ -23,6 +23,7 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'raw-material-receptions';
 
@@ -61,6 +62,12 @@ export const rawMaterialReceptionService = {
         if (filters.products && Array.isArray(filters.products)) {
             filters.products.forEach(id => queryParams.append('products[]', id));
         }
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
+        }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         

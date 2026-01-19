@@ -19,6 +19,7 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'punches';
 
@@ -37,6 +38,12 @@ export const punchService = {
             if (filters.dates.start) queryParams.append('dates[start]', filters.dates.start);
             if (filters.dates.end) queryParams.append('dates[end]', filters.dates.end);
         }
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
+        }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         

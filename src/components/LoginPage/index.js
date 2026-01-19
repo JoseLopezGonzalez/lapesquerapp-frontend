@@ -31,13 +31,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenantActive, setTenantActive] = useState(true);
   const [brandingImageUrl, setBrandingImageUrl] = useState("");
-  const [tenantChecked, setTenantChecked] = useState(false);
+  // ✅ CRÍTICO: Inicializar desde sessionStorage para persistir entre remontajes
+  const [tenantChecked, setTenantChecked] = useState(() => {
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      const cached = sessionStorage.getItem('__tenant_checked__');
+      return cached === 'true';
+    }
+    return false;
+  });
   const [isDemo, setIsDemo] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const { isMobile } = useIsMobileSafe();
 
   useEffect(() => {
+    // ✅ CRÍTICO: Verificar si ya se completó en un montaje anterior
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('__tenant_checked__') === 'true') {
+      console.log('✅ LoginPage: Tenant check ya completado previamente, sincronizando estado...');
+      const cachedActive = sessionStorage.getItem('__tenant_active__') === 'true';
+      setTenantActive(cachedActive);
+      setTenantChecked(true);
+      return; // No ejecutar fetch si ya está verificado
+    }
+    
     console.log('🔍 LoginPage: useEffect ejecutado, iniciando verificación de tenant...');
     
     const hostname = window.location.hostname;
@@ -59,14 +75,18 @@ export default function LoginPage() {
     let fetchCompleted = false;
 
     const completeTenantCheck = (active = true, source = 'unknown') => {
-      // Solo actualizar si el componente sigue montado y no se completó antes
-      if (!isMounted) {
-        console.log(`⚠️ LoginPage: Componente desmontado, ignorando completeTenantCheck desde ${source}`);
+      // Verificar si ya se completó (usando sessionStorage para persistir entre remontajes)
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('__tenant_checked__') === 'true') {
+        console.log(`⚠️ LoginPage: Tenant check ya completado previamente, ignorando llamada desde ${source}`);
+        // Asegurar que el estado local está sincronizado
+        if (isMounted) {
+          setTenantChecked(true);
+        }
         return;
       }
       
       if (fetchCompleted) {
-        console.log(`⚠️ LoginPage: completeTenantCheck ya fue llamado, ignorando llamada desde ${source}`);
+        console.log(`⚠️ LoginPage: completeTenantCheck ya fue llamado en este ciclo, ignorando llamada desde ${source}`);
         return;
       }
       
@@ -75,22 +95,42 @@ export default function LoginPage() {
         clearTimeout(timeoutId);
         timeoutId = null;
       }
+      
+      // ✅ CRÍTICO: Persistir en sessionStorage ANTES de actualizar estado
+      // Esto asegura que sobreviva a remontajes del componente
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('__tenant_checked__', 'true');
+        sessionStorage.setItem('__tenant_active__', active ? 'true' : 'false');
+      }
+      
       console.log(`✅ LoginPage: completeTenantCheck llamado desde ${source}, active=${active}`);
-      setTenantActive(active);
-      setTenantChecked(true);
-      console.log('✅ LoginPage: tenantChecked actualizado a true');
+      
+      // Solo actualizar estado si el componente está montado
+      if (isMounted) {
+        setTenantActive(active);
+        setTenantChecked(true);
+        console.log('✅ LoginPage: tenantChecked actualizado a true');
+      } else {
+        console.log(`⚠️ LoginPage: Componente desmontado, pero tenantChecked persistido en sessionStorage`);
+      }
     };
 
     // Establecer timeout que se ejecutará si el fetch no completa
-    console.log('🔍 LoginPage: Estableciendo timeout de 3 segundos...');
+    // ✅ CRÍTICO: NO verificar isMounted aquí - el timeout DEBE ejecutarse siempre
+    // para evitar que se quede colgado incluso si el componente se desmonta
+    console.log('🔍 LoginPage: Estableciendo timeout de 2 segundos...');
     timeoutId = setTimeout(() => {
-      if (isMounted && !fetchCompleted) {
+      // Verificar sessionStorage en lugar de isMounted
+      const alreadyChecked = typeof sessionStorage !== 'undefined' && 
+                            sessionStorage.getItem('__tenant_checked__') === 'true';
+      
+      if (!alreadyChecked && !fetchCompleted) {
         console.warn('⚠️ LoginPage: Timeout verificando tenant, continuando con login...');
         completeTenantCheck(true, 'timeout');
       } else {
-        console.log('✅ LoginPage: Timeout alcanzado pero componente desmontado o fetch ya completó');
+        console.log('✅ LoginPage: Timeout alcanzado pero tenant check ya completó');
       }
-    }, 3000); // Reducido a 3 segundos para respuesta más rápida
+    }, 2000); // Reducido a 2 segundos para respuesta más rápida
 
     // ✅ Fetch con manejo de errores mejorado y timeout de red
     console.log(`🔍 LoginPage: Iniciando fetch a ${API_URL_V2}public/tenant/${subdomain}`);

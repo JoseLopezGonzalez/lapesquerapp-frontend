@@ -23,6 +23,7 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'customers';
 
@@ -48,6 +49,12 @@ export const customerService = {
         if (filters.ids && Array.isArray(filters.ids)) {
             filters.ids.forEach(id => queryParams.append('ids[]', id));
         }
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
+        }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         
