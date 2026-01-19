@@ -10,6 +10,7 @@ import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
 import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
 import { UserIcon } from 'lucide-react';
+import { getToastTheme } from "@/customs/reactHotToast";
 
 export default function Navbar() {
     const currentPath = usePathname();

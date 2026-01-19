@@ -50,6 +50,7 @@ export default function HomePage() {
     }
   }, [isSubdomain, status, session, router]);
 
+
   // ✅ Si no hay logout, mostrar la página normalmente
   if (isSubdomain === null) {
     return (

@@ -87,7 +87,9 @@ export function addWithParams(queryParams, relations) {
     });
     
     // Log para debug (siempre, para verificar en producción también)
-    console.log('🔗 [EntityRelations] Relaciones solicitadas:', relations);
-    console.log('🔗 [EntityRelations] URL generada:', queryParams.toString());
+    if (typeof window !== 'undefined') {
+        window.console.log('🔗 [EntityRelations] Relaciones solicitadas:', relations);
+        window.console.log('🔗 [EntityRelations] URL generada:', queryParams.toString());
+    }
 }
 

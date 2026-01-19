@@ -41,7 +41,9 @@ export const rawMaterialReceptionService = {
      * const result = await rawMaterialReceptionService.list({ search: 'Recepción A' }, { page: 1, perPage: 17 });
      */
     async list(filters = {}, pagination = {}) {
-        console.log('🔧 [rawMaterialReceptionService] list llamado con filters:', filters);
+        if (typeof window !== 'undefined') {
+            window.console.log('🔧 [rawMaterialReceptionService] list llamado con filters:', filters);
+        }
         const token = await getAuthToken();
         const { page = 1, perPage = 17 } = pagination; // Default 17 para raw-material-receptions
         
@@ -66,17 +68,23 @@ export const rawMaterialReceptionService = {
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
-            console.log('✅ [rawMaterialReceptionService] Agregando relaciones:', filters._requiredRelations);
+            if (typeof window !== 'undefined') {
+                window.console.log('✅ [rawMaterialReceptionService] Agregando relaciones:', filters._requiredRelations);
+            }
             addWithParams(queryParams, filters._requiredRelations);
         } else {
-            console.log('⚠️ [rawMaterialReceptionService] No hay _requiredRelations en filters');
+            if (typeof window !== 'undefined') {
+                window.console.log('⚠️ [rawMaterialReceptionService] No hay _requiredRelations en filters');
+            }
         }
         
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         
         const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
-        console.log('🌐 [rawMaterialReceptionService] URL final:', url);
+        if (typeof window !== 'undefined') {
+            window.console.log('🌐 [rawMaterialReceptionService] URL final:', url);
+        }
         return fetchEntitiesGeneric(url, token);
     },
 

@@ -140,12 +140,16 @@ export default function EntityClient({ config }) {
     }, [config.endpoint]);
 
     const fetchData = useCallback(async (page, currentFilters) => {
-        console.log('🚀 [EntityClient] fetchData llamado para:', config.endpoint);
+        if (typeof window !== 'undefined') {
+            window.console.log('🚀 [EntityClient] fetchData llamado para:', config.endpoint);
+        }
         setData((prevData) => ({ ...prevData, loading: true }));
         const entityService = getEntityService(config.endpoint);
         
         if (!entityService) {
-            console.error('❌ [EntityClient] No se encontró servicio para:', config.endpoint);
+            if (typeof window !== 'undefined') {
+                window.console.error('❌ [EntityClient] No se encontró servicio para:', config.endpoint);
+            }
             toast.error('No se encontró el servicio para esta entidad.');
             setData((prevData) => ({ ...prevData, loading: false }));
             return;
@@ -153,22 +157,16 @@ export default function EntityClient({ config }) {
 
         const perPage = config?.perPage || 12;
         const filtersObject = formatFiltersObject(currentFilters);
-        console.log('🔍 [EntityClient] Filtros objeto inicial:', filtersObject);
+        if (typeof window !== 'undefined') {
+            window.console.log('🔍 [EntityClient] Filtros objeto inicial:', filtersObject);
+        }
 
         // Detectar relaciones necesarias desde los headers de la tabla
         const requiredRelations = extractRequiredRelations(config.table?.headers || []);
         
-        // Log siempre para debug
-        console.log(`📋 [EntityClient] Entidad: ${config.endpoint}`);
-        console.log(`📋 [EntityClient] Headers:`, config.table?.headers?.map(h => ({ name: h.name, path: h.path })));
-        console.log(`📋 [EntityClient] Relaciones detectadas:`, requiredRelations);
-        
         // Agregar relaciones a los filtros si existen
         if (requiredRelations.length > 0) {
             filtersObject._requiredRelations = requiredRelations;
-            console.log(`✅ [EntityClient] Relaciones agregadas a filtros:`, requiredRelations);
-        } else {
-            console.log(`⚠️ [EntityClient] No se detectaron relaciones para ${config.endpoint}`);
         }
 
         try {

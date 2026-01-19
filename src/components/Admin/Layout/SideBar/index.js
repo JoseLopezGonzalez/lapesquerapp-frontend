@@ -27,8 +27,6 @@ import { getToastTheme } from "@/customs/reactHotToast"
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles, isActiveRoute } from "@/utils/navigationUtils"
-import { useAuthTransition } from '@/hooks/useAuthTransition';
-import { AuthTransitionScreen } from '@/components/Auth/AuthTransitionScreen';
 
 
 export function AppSidebar() {
@@ -42,13 +40,8 @@ export function AppSidebar() {
 
     const { settings, loading } = useSettings();
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
-    
-    const { showLogout } = useAuthTransition();
 
     const handleLogout = React.useCallback(async () => {
-        // ✅ Activar transición INMEDIATAMENTE
-        showLogout();
-        
         try {
             // Primero revocar el token en el backend
             const { logout: logoutBackend } = await import('@/services/authService');
@@ -57,24 +50,23 @@ export function AppSidebar() {
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             
-            // ❌ NO usar toast - la transición lo reemplaza
-            // toast.success('Sesión cerrada correctamente', getToastTheme()); // ELIMINAR
+            // Mostrar toast de éxito
+            toast.success('Sesión cerrada correctamente', getToastTheme());
             
-            // Redirigir después de un breve delay
+            // Redirigir después de un breve delay para que se vea el toast
             setTimeout(() => {
                 window.location.replace('/');
-            }, 800);
+            }, 500);
         } catch (err) {
             console.error('Error en logout:', err);
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            // ❌ NO usar toast - la transición lo reemplaza
-            // toast.success('Sesión cerrada correctamente', getToastTheme()); // ELIMINAR
+            toast.success('Sesión cerrada correctamente', getToastTheme());
             setTimeout(() => {
                 window.location.replace('/');
-            }, 800);
+            }, 500);
         }
-    }, [showLogout]);
+    }, []);
 
     // Filtrar navegación por roles
     const filteredNavigationConfig = React.useMemo(() => 
@@ -128,11 +120,7 @@ export function AppSidebar() {
 
 
     return (
-        <>
-            {/* ✅ Pantalla de transición de autenticación */}
-            <AuthTransitionScreen />
-            
-            <Sidebar collapsible="icon" variant='floating'>
+        <Sidebar collapsible="icon" variant='floating'>
                 <SidebarHeader>
                     <AppSwitcher apps={data.apps} loading={loading} />
                 </SidebarHeader>
@@ -154,6 +142,5 @@ export function AppSidebar() {
                 </SidebarFooter>
                 <SidebarRail />
             </Sidebar>
-        </>
     )
 }

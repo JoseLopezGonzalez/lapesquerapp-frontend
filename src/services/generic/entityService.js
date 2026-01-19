@@ -35,6 +35,11 @@ const getAuthHeaders = async (token) => {
  * @private
  */
 export const fetchEntitiesGeneric = async (url, token = null) => {
+    // Log para verificar que la URL incluye los parámetros with[]
+    if (typeof window !== 'undefined' && url.includes('with')) {
+        window.console.log('✅ [fetchEntitiesGeneric] URL con parámetros with[]:', url);
+    }
+    
     const headers = await getAuthHeaders(token);
     const response = await fetchWithTenant(url, {
         method: 'GET',
@@ -43,7 +48,24 @@ export const fetchEntitiesGeneric = async (url, token = null) => {
     if (!response.ok) {
         throw response;
     }
-    return await response.json();
+    const data = await response.json();
+    
+    // Verificar si las relaciones están en la respuesta
+    if (typeof window !== 'undefined' && data?.data?.length > 0) {
+        const firstItem = data.data[0];
+        const hasRelations = Object.keys(firstItem).some(key => 
+            typeof firstItem[key] === 'object' && firstItem[key] !== null && !Array.isArray(firstItem[key]) && firstItem[key].id !== undefined
+        );
+        if (hasRelations) {
+            window.console.log('✅ [fetchEntitiesGeneric] Respuesta incluye relaciones:', Object.keys(firstItem).filter(key => 
+                typeof firstItem[key] === 'object' && firstItem[key] !== null && !Array.isArray(firstItem[key]) && firstItem[key].id !== undefined
+            ));
+        } else {
+            window.console.warn('⚠️ [fetchEntitiesGeneric] Respuesta NO incluye relaciones. Primer item:', firstItem);
+        }
+    }
+    
+    return data;
 };
 
 /**
