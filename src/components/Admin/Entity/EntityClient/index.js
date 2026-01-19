@@ -158,6 +158,10 @@ export default function EntityClient({ config }) {
         // Agregar relaciones a los filtros si existen
         if (requiredRelations.length > 0) {
             filtersObject._requiredRelations = requiredRelations;
+            // Log para debug (solo en desarrollo)
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`📋 Entidad: ${config.endpoint}, Relaciones detectadas:`, requiredRelations);
+            }
         }
 
         try {

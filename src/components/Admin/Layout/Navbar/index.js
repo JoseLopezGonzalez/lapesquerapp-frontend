@@ -5,13 +5,11 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { flushSync } from 'react-dom';
 import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
 import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
 import { UserIcon } from 'lucide-react';
-import { useLogout } from "@/context/LogoutContext";
 
 export default function Navbar() {
     const currentPath = usePathname();
@@ -20,23 +18,9 @@ export default function Navbar() {
     const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
 
     const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
-    const { setIsLoggingOut } = useLogout();
 
     const handleLogout = async () => {
-        // Mostrar diálogo INMEDIATAMENTE usando flushSync para render síncrono
-        flushSync(() => {
-            setIsLoggingOut(true);
-        });
-        
-        // Prevenir múltiples ejecuciones simultáneas
-        if (sessionStorage.getItem('__is_logging_out__') === 'true') {
-            return;
-        }
-        
         try {
-            // Marcar que se está ejecutando un logout
-            sessionStorage.setItem('__is_logging_out__', 'true');
-            
             // Primero revocar el token en el backend
             const { logout: logoutBackend } = await import('@/services/authService');
             await logoutBackend();
@@ -44,16 +28,21 @@ export default function Navbar() {
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             
-            // NO cerrar el diálogo - mantenerlo visible durante la redirección
-            // Redirigir directamente usando replace() para evitar que aparezca el home
-            window.location.replace('/');
+            // Mostrar toast de éxito
+            toast.success('Sesión cerrada correctamente', getToastTheme());
+            
+            // Redirigir después de un breve delay para que se vea el toast
+            setTimeout(() => {
+                window.location.replace('/');
+            }, 500);
         } catch (err) {
+            console.error('Error en logout:', err);
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            
-            // NO cerrar el diálogo - mantenerlo visible durante la redirección
-            // Redirigir directamente usando replace() para evitar que aparezca el home
-            window.location.replace('/');
+            toast.success('Sesión cerrada correctamente', getToastTheme());
+            setTimeout(() => {
+                window.location.replace('/');
+            }, 500);
         }
     };
 

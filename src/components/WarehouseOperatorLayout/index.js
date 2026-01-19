@@ -27,15 +27,7 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
   const [logoError, setLogoError] = useState(false);
 
   const handleLogout = async () => {
-    // Prevenir múltiples ejecuciones simultáneas
-    if (sessionStorage.getItem('__is_logging_out__') === 'true') {
-      return;
-    }
-    
     try {
-      // Marcar que se está ejecutando un logout
-      sessionStorage.setItem('__is_logging_out__', 'true');
-      
       // Primero revocar el token en el backend
       const { logout: logoutBackend } = await import('@/services/authService');
       await logoutBackend();
@@ -46,15 +38,13 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
     
     await signOut({ redirect: false });
     
-    // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
-    // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
-    
-    // Mostrar mensaje primero
+    // Mostrar toast de éxito
     toast.success('Sesión cerrada correctamente', getToastTheme());
     
-    // Redirigir usando window.location.replace para recarga completa
-    // Esto asegura que HomePage se monte y maneje el flag correctamente
-    window.location.replace('/');
+    // Redirigir después de un breve delay para que se vea el toast
+    setTimeout(() => {
+      window.location.replace('/');
+    }, 500);
   };
 
   const handleLogoError = () => {

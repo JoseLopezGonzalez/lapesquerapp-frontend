@@ -6,13 +6,43 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { isAuthError, isAuthStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
 
-// Constante para marcar que se está ejecutando un logout intencional
-const LOGOUT_FLAG_KEY = '__is_logging_out__';
 
 export default function AuthErrorInterceptor() {
   useEffect(() => {
+    // ✅ Flag para prevenir múltiples ejecuciones simultáneas
+    let isRedirecting = false;
+    
     // Interceptar errores de fetch para detectar errores de autenticación
     const originalFetch = window.fetch;
+    
+    const handleAuthError = () => {
+      // Prevenir múltiples ejecuciones
+      if (isRedirecting) {
+        return;
+      }
+      
+      // Si ya estamos en la página de login, no hacer nada
+      if (window.location.pathname === '/') {
+        return;
+      }
+      
+      isRedirecting = true;
+      
+      // Mostrar notificación al usuario (solo una vez)
+      toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
+      
+      // Cerrar sesión y redirigir después de un breve delay
+      setTimeout(async () => {
+        try {
+          await signOut({ redirect: false });
+        } catch (err) {
+          console.error('Error en signOut desde interceptor:', err);
+        }
+        const currentPath = window.location.pathname;
+        const loginUrl = buildLoginUrl(currentPath);
+        window.location.href = loginUrl;
+      }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+    };
     
     window.fetch = async (...args) => {
       try {
@@ -27,81 +57,25 @@ export default function AuthErrorInterceptor() {
         }
         
         const isLogoutRequest = url.includes('/logout');
-        const isLoggingOut = typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true';
         
-        // Si es una llamada a logout o ya se está ejecutando un logout, no interceptar
-        if (isLogoutRequest || isLoggingOut) {
+        // Si es una llamada a logout, no interceptar
+        if (isLogoutRequest) {
           return await originalFetch(...args);
         }
         
         const response = await originalFetch(...args);
         
-        // Si ya se está ejecutando un logout (puede haberse marcado durante la llamada), no interceptar errores
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
-          return response;
-        }
-        
         // Si es un error de autenticación, manejar la redirección
         if (isAuthStatusCode(response.status)) {
-          // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado, redirigiendo al login');
-          
-          // Mostrar notificación al usuario
-          toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
-          
-          // Marcar que se está ejecutando un logout
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
-          }
-          
-          // Cerrar sesión y redirigir después de un breve delay
-          setTimeout(async () => {
-            try {
-              await signOut({ redirect: false });
-            } catch (err) {
-              console.error('Error en signOut desde interceptor:', err);
-            }
-            // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
-            // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
-            const currentPath = window.location.pathname;
-            const loginUrl = buildLoginUrl(currentPath);
-            window.location.href = loginUrl;
-          }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
-          
+          handleAuthError();
           return response;
         }
         
         return response;
       } catch (error) {
-        // Si ya se está ejecutando un logout, no interceptar errores
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
-          throw error;
-        }
-        
         // Si el error contiene información de autenticación
         if (isAuthError(error)) {
-          // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado en fetch, redirigiendo al login');
-          
-          // Mostrar notificación al usuario
-          toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
-          
-          // Marcar que se está ejecutando un logout
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
-          }
-          
-          // Cerrar sesión y redirigir después de un breve delay
-          setTimeout(async () => {
-            try {
-              await signOut({ redirect: false });
-            } catch (err) {
-              console.error('Error en signOut desde interceptor:', err);
-            }
-            // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
-            // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
-            const currentPath = window.location.pathname;
-            const loginUrl = buildLoginUrl(currentPath);
-            window.location.href = loginUrl;
-          }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+          handleAuthError();
         }
         
         throw error;
@@ -110,37 +84,10 @@ export default function AuthErrorInterceptor() {
 
     // Interceptar errores globales de JavaScript
     const handleGlobalError = (event) => {
-      // Si ya se está ejecutando un logout, no interceptar errores
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(LOGOUT_FLAG_KEY) === 'true') {
-        return;
-      }
-      
       const error = event.error || event.reason;
       
       if (isAuthError(error)) {
-        // console.log('🔐 [AuthErrorInterceptor] Error de autenticación detectado globalmente');
-        
-        // Mostrar notificación al usuario
-        toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
-        
-        // Marcar que se está ejecutando un logout
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem(LOGOUT_FLAG_KEY, 'true');
-        }
-        
-        // Cerrar sesión y redirigir después de un breve delay
-        setTimeout(async () => {
-          try {
-            await signOut({ redirect: false });
-          } catch (err) {
-            console.error('Error en signOut desde interceptor:', err);
-          }
-          // ❌ NO limpiar el flag aquí - se limpia en HomePage cuando status === "unauthenticated"
-          // El flag debe mantenerse durante la redirección para que LogoutDialog se muestre
-          const currentPath = window.location.pathname;
-          const loginUrl = buildLoginUrl(currentPath);
-          window.location.href = loginUrl;
-        }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
+        handleAuthError();
       }
     };
 

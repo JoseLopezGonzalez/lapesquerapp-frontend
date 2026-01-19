@@ -11,7 +11,6 @@ import { navigationConfig, navigationManagerConfig } from "@/configs/navgationCo
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from "@/utils/navigationUtils";
 import { MessageSquare } from "lucide-react";
-import { useLogout } from "@/context/LogoutContext";
 
 export default function AdminLayout({ children }) {
   const { data: session } = useSession();
@@ -22,40 +21,9 @@ export default function AdminLayout({ children }) {
   const email = session?.user?.email || 'Desconocido';
 
   const { settings, loading } = useSettings();
-  const { setIsLoggingOut } = useLogout();
 
   const handleLogout = React.useCallback(async () => {
-    // Mostrar diálogo de logout INMEDIATAMENTE usando flushSync para render síncrono
-    flushSync(() => {
-      setIsLoggingOut(true);
-    });
-    
-    // Limpiar cualquier bandera previa que pueda estar bloqueando
-    if (typeof sessionStorage !== 'undefined') {
-      const logoutFlag = sessionStorage.getItem('__is_logging_out__');
-      if (logoutFlag === 'true') {
-        // Si hay una marca de hace más de 5 segundos, limpiarla (puede ser de un logout fallido)
-        const logoutTime = sessionStorage.getItem('__is_logging_out_time__');
-        if (logoutTime && Date.now() - parseInt(logoutTime) > 5000) {
-          sessionStorage.removeItem('__is_logging_out__');
-          sessionStorage.removeItem('__is_logging_out_time__');
-        } else if (!logoutTime) {
-          // Si no hay timestamp, limpiar la bandera (logout anterior fallido)
-          sessionStorage.removeItem('__is_logging_out__');
-        } else {
-          console.log('Logout ya en proceso, ignorando...');
-          return;
-        }
-      }
-      
-      // Marcar que se está ejecutando un logout con timestamp
-      sessionStorage.setItem('__is_logging_out__', 'true');
-      sessionStorage.setItem('__is_logging_out_time__', Date.now().toString());
-    }
-    
     try {
-      console.log('Iniciando logout...');
-      
       // Primero revocar el token en el backend
       const { logout: logoutBackend } = await import('@/services/authService');
       await logoutBackend();
@@ -63,25 +31,21 @@ export default function AdminLayout({ children }) {
       // Luego cerrar sesión en NextAuth
       await signOut({ redirect: false });
       
-      console.log('Logout completado, redirigiendo...');
+      // Mostrar toast de éxito
+      toast.success('Sesión cerrada correctamente', getToastTheme());
       
-      // NO cerrar el diálogo - mantenerlo visible durante la redirección
-      // Redirigir directamente usando replace() para evitar que aparezca el home
-      // y no dejar historial para que no pueda volver atrás
-      window.location.replace('/');
+      // Redirigir después de un breve delay para que se vea el toast
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 500);
     } catch (err) {
       console.error('Error en logout:', err);
-      
       // Incluso si falla el logout del backend, continuar con el logout del cliente
-      try {
-        await signOut({ redirect: false });
-      } catch (signOutErr) {
-        console.error('Error en signOut:', signOutErr);
-      }
-      
-      // NO cerrar el diálogo - mantenerlo visible durante la redirección
-      // Redirigir directamente usando replace() para evitar que aparezca el home
-      window.location.replace('/');
+      await signOut({ redirect: false });
+      toast.success('Sesión cerrada correctamente', getToastTheme());
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 500);
     }
   }, []);
 

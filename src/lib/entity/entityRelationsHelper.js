@@ -80,8 +80,14 @@ export function addWithParams(queryParams, relations) {
     
     relations.forEach(relation => {
         if (relation && typeof relation === 'string') {
+            // Laravel espera with[] para arrays en query strings
+            // Formato: with[]=supplier&with[]=species
             queryParams.append('with[]', relation);
         }
     });
+    
+    // Log para debug (siempre, para verificar en producción también)
+    console.log('🔗 [EntityRelations] Relaciones solicitadas:', relations);
+    console.log('🔗 [EntityRelations] URL generada:', queryParams.toString());
 }
 
