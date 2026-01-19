@@ -231,7 +231,22 @@ export default function EntityClient({ config }) {
         const currentFiltersString = JSON.stringify(filters);
         const filtersChanged = prevFiltersRef.current !== currentFiltersString;
 
-        if (filtersChanged) {
+        // DEBUG: Verificar que el useEffect se ejecuta
+        if (typeof window !== 'undefined') {
+            window.console.warn('🔄 [EntityClient] useEffect ejecutado:', {
+                isInitialMount: isInitialMount.current,
+                filtersChanged,
+                currentPage,
+                endpoint: config.endpoint
+            });
+        }
+
+        if (isInitialMount.current) {
+            // En el montaje inicial, siempre hacer fetch
+            isInitialMount.current = false;
+            prevFiltersRef.current = currentFiltersString;
+            fetchData(currentPage, filters);
+        } else if (filtersChanged) {
             // Actualizar la ref de filtros anteriores
             prevFiltersRef.current = currentFiltersString;
             // Resetear a página 1 cuando cambian los filtros
@@ -240,16 +255,11 @@ export default function EntityClient({ config }) {
             }
             // Hacer fetch con página 1 cuando cambian los filtros
             fetchData(1, filters);
-        } else if (!isInitialMount.current) {
+        } else {
             // Si solo cambió la página (y no los filtros), hacer fetch con esa página
             fetchData(currentPage, filters);
         }
-
-        // Marcar que ya no es el montaje inicial
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-        }
-    }, [currentPage, filters, fetchData]);
+    }, [currentPage, filters, fetchData, config.endpoint]);
 
 
     const handlePageChange = (newPage) => {
