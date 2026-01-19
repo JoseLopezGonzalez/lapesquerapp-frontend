@@ -13,6 +13,7 @@ import * as React from "react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function InstallPrompt({ 
   onDismiss, 
@@ -42,38 +43,34 @@ export function InstallPrompt({
     onDismiss?.();
   };
 
+  // Si está dentro de un contenedor con bg-primary, ajustar estilos
+  const isPrimaryContext = className?.includes('bg-primary') || className?.includes('bg-transparent');
+  
   return (
-    <div className={`bg-primary text-primary-foreground p-4 rounded-lg shadow-lg ${className || ''}`}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="font-semibold text-sm mb-1">
-            Instalar PesquerApp
-          </h3>
-          <p className="text-xs opacity-90">
-            Añade la app a tu pantalla de inicio para acceso rápido
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handleInstall}
-            size="sm"
-            variant={variant === "default" ? "secondary" : variant}
-            className="shrink-0"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Instalar
-          </Button>
-          <Button
-            onClick={handleDismiss}
-            size="sm"
-            variant="ghost"
-            className="shrink-0 h-8 w-8 p-0 hover:bg-white/20"
-          >
-            <X className="w-4 h-4" />
-            <span className="sr-only">Cerrar</span>
-          </Button>
-        </div>
-      </div>
+    <div className={className || ''}>
+      <Button
+        onClick={handleInstall}
+        size={variant === "default" ? "lg" : "sm"}
+        variant={variant === "default" ? "default" : variant}
+        className={cn(
+          "w-full",
+          isPrimaryContext && "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+        )}
+      >
+        <Download className="w-4 h-4 mr-2" />
+        Instalar
+      </Button>
+      {showDismissButton && (
+        <Button
+          onClick={handleDismiss}
+          size="sm"
+          variant="ghost"
+          className="absolute top-2 right-2 h-8 w-8 p-0"
+        >
+          <X className="w-4 h-4" />
+          <span className="sr-only">Cerrar</span>
+        </Button>
+      )}
     </div>
   );
 }

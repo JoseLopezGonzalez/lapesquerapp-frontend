@@ -24,6 +24,7 @@ import { EntityTable } from './EntityTable';
 import CreateEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm';
 import EditEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm';
 import { extractRequiredRelations } from '@/lib/entity/entityRelationsHelper';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 
 const initialData = {
     loading: true,
@@ -38,36 +39,13 @@ const initialPaginationMeta = {
 };
 
 const formatFilters = (filters) => {
-    const formattedFilters = filters.reduce((acc, filter) => {
-        if (filter.type === 'dateRange' && filter.value) {
-            if (filter.value.from) acc[`${filter.name}[start]`] = filter.value.from;
-            if (filter.value.to) acc[`${filter.name}[end]`] = filter.value.to;
-        } else if (filter.type === 'autocomplete' && filter.value) {
-            acc[filter.name] = filter.value.map((item) => item.id);
-        } else if (filter.value) {
-            acc[filter.name] = filter.value;
-        }
-        return acc;
-    }, {});
-
-    const searchFilter = filters.find((filter) => filter.type === 'search');
-    if (searchFilter?.value) {
-        formattedFilters['search'] = searchFilter.value;
-    }
-
+    // Convertir el array de filtros con formato {name, value, type} a un objeto plano
+    const filtersObject = formatFiltersObject(filters);
+    
+    // Usar el helper para agregar todos los filtros al URLSearchParams
     const queryParams = new URLSearchParams();
-
-    Object.keys(formattedFilters).forEach((key) => {
-        const value = formattedFilters[key];
-        if (Array.isArray(value)) {
-            value.forEach((item) => {
-                queryParams.append(`${key}[]`, item);
-            });
-        } else {
-            queryParams.append(key, value);
-        }
-    });
-
+    addFiltersToParams(queryParams, filtersObject);
+    
     return queryParams.toString();
 };
 
@@ -75,15 +53,46 @@ const formatFiltersObject = (filters) => {
     const result = {};
 
     filters.forEach((filter) => {
+        // Saltar filtros vacíos
+        if (!filter || !filter.name) {
+            return;
+        }
+
+        // Manejar diferentes tipos de filtros
         if (filter.type === 'autocomplete') {
-            result[filter.name] = (filter.value || []).map((item) => item.id);
+            // Para autocomplete, el valor es un array de objetos con id
+            if (filter.value && Array.isArray(filter.value) && filter.value.length > 0) {
+                result[filter.name] = filter.value.map((item) => 
+                    item && typeof item === 'object' && 'id' in item ? item.id : item
+                );
+            }
         } else if (filter.type === 'dateRange') {
-            result[filter.name] = {
-                start: filter.value?.from || null,
-                end: filter.value?.to || null,
-            };
+            // Para dateRange, convertir from/to a start/end
+            if (filter.value && (filter.value.from || filter.value.to)) {
+                result[filter.name] = {
+                    start: filter.value?.from || null,
+                    end: filter.value?.to || null,
+                };
+            }
+        } else if (filter.type === 'textAccumulator') {
+            // Para textAccumulator, el valor es un array de strings/numbers
+            if (filter.value && Array.isArray(filter.value) && filter.value.length > 0) {
+                result[filter.name] = filter.value;
+            }
+        } else if (filter.type === 'search') {
+            // Para search, el valor es un string
+            if (filter.value && typeof filter.value === 'string' && filter.value.trim().length > 0) {
+                result[filter.name] = filter.value.trim();
+            }
         } else {
-            result[filter.name] = filter.value;
+            // Para otros tipos (text, textarea, number, etc.), usar el valor directamente
+            // Solo agregar si el valor no está vacío
+            if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+                if (typeof filter.value === 'string' && filter.value.trim().length === 0) {
+                    return; // Saltar strings vacíos
+                }
+                result[filter.name] = filter.value;
+            }
         }
     });
 

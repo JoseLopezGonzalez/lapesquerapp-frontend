@@ -25,6 +25,7 @@ import {
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 
 const ENDPOINT = 'suppliers';
 
@@ -47,10 +48,9 @@ export const supplierService = {
         
         // Construir query string desde filtros
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
-        }
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {

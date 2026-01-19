@@ -24,6 +24,7 @@ import {
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 
 const ENDPOINT = 'employees';
 
@@ -46,15 +47,8 @@ export const employeeService = {
         
         const queryParams = new URLSearchParams();
         
-        // Filtros
-        if (filters.id) queryParams.append('id', filters.id);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
-        }
-        if (filters.name) queryParams.append('name', filters.name);
-        if (filters.nfc_uid) queryParams.append('nfc_uid', filters.nfc_uid);
-        if (filters.with_last_punch) queryParams.append('with_last_punch', filters.with_last_punch);
-        if (filters.search) queryParams.append('search', filters.search);
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {

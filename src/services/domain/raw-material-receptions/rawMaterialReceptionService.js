@@ -24,6 +24,7 @@ import {
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 
 const ENDPOINT = 'raw-material-receptions';
 
@@ -45,23 +46,9 @@ export const rawMaterialReceptionService = {
         const { page = 1, perPage = 17 } = pagination; // Default 17 para raw-material-receptions
         
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
-        }
-        if (filters.dates) {
-            if (filters.dates.start) queryParams.append('dates[start]', filters.dates.start);
-            if (filters.dates.end) queryParams.append('dates[end]', filters.dates.end);
-        }
-        if (filters.suppliers && Array.isArray(filters.suppliers)) {
-            filters.suppliers.forEach(id => queryParams.append('suppliers[]', id));
-        }
-        if (filters.species && Array.isArray(filters.species)) {
-            filters.species.forEach(id => queryParams.append('species[]', id));
-        }
-        if (filters.products && Array.isArray(filters.products)) {
-            filters.products.forEach(id => queryParams.append('products[]', id));
-        }
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {

@@ -31,7 +31,7 @@ export const GenericFilters = ({ data }) => {
                 ...group,
                 filters: group.filters.map((filter) => ({
                     ...filter,
-                    value: filter.value || (filter.type === 'dateRange' ? { start: '', end: '' } : ''),
+                    value: filter.value || (filter.type === 'dateRange' ? { from: null, to: null } : ''),
                 })),
             })),
         };
@@ -47,7 +47,7 @@ export const GenericFilters = ({ data }) => {
                     count +
                     group.filters.reduce((groupCount, filter) => {
                         if (filter.type === 'dateRange') {
-                            if (filter.value.start || filter.value.end) groupCount++;
+                            if (filter.value?.from || filter.value?.to) groupCount++;
                         } else if (Array.isArray(filter.value)) {
                             if (filter.value.length > 0) groupCount++;
                         } else if (filter.value) {
@@ -95,8 +95,8 @@ export const GenericFilters = ({ data }) => {
     const closeModal = () => setIsModalOpen(false);
 
     const handleFiltersSubmit = () => {
-        // Formatear los filtros para enviarlos globalmente
-        const formattedFilters = [
+        // Formatear los filtros para enviarlos globalmente, filtrando los vacíos
+        const allFilters = [
             ...localFiltersGroup.search.filters.map(({ name, value, type }) => ({
                 name,
                 value,
@@ -110,6 +110,20 @@ export const GenericFilters = ({ data }) => {
                 }))
             ),
         ];
+
+        // Filtrar los filtros vacíos
+        const formattedFilters = allFilters.filter((filter) => {
+            if (filter.type === 'dateRange') {
+                return filter.value?.from || filter.value?.to;
+            } else if (Array.isArray(filter.value)) {
+                return filter.value.length > 0;
+            } else if (typeof filter.value === 'string') {
+                return filter.value.trim().length > 0;
+            } else {
+                return filter.value !== null && filter.value !== undefined && filter.value !== '';
+            }
+        });
+
         updateFilters(formattedFilters);
         closeModal();
     };
@@ -128,7 +142,7 @@ export const GenericFilters = ({ data }) => {
                 ...group,
                 filters: group.filters.map((filter) => ({
                     ...filter,
-                    value: filter.type === 'dateRange' ? { start: '', end: '' } : '',
+                    value: filter.type === 'dateRange' ? { from: null, to: null } : '',
                 })),
             })),
         };
@@ -140,8 +154,7 @@ export const GenericFilters = ({ data }) => {
 
     return (
         <>
-            {/*  */}
-            <Dialog>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
                     <Button
                         variant="secondary"
@@ -170,8 +183,6 @@ export const GenericFilters = ({ data }) => {
                     </DialogHeader>
                 </DialogContent>
             </Dialog>
-
-
         </>
     );
 };

@@ -24,6 +24,8 @@ import {
     fetchEntityDataGeneric, 
     submitEntityFormGeneric
 } from '@/services/generic/editEntityService';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 // Importar funciones del orderService existente
 import * as orderServiceFunctions from '@/services/orderService';
 
@@ -53,17 +55,9 @@ export const orderService = {
         const { page = 1, perPage = 12 } = pagination;
         
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
-        }
-        if (filters.status) queryParams.append('status', filters.status);
-        if (filters.customer_id) queryParams.append('customer_id', filters.customer_id);
-        if (filters.salesperson_id) queryParams.append('salesperson_id', filters.salesperson_id);
-        if (filters.dates) {
-            if (filters.dates.start) queryParams.append('dates[start]', filters.dates.start);
-            if (filters.dates.end) queryParams.append('dates[end]', filters.dates.end);
-        }
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
