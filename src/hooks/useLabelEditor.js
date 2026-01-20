@@ -8,7 +8,7 @@ import { usePrintElement } from "@/hooks/usePrintElement";
 
 // labelFields.js
 
-const labelFields = {
+export const labelFields = {
     "product.name": { label: "Nombre del Producto", defaultValue: "Pulpo Fresco" },
     "product.species.name": { label: "Especie", defaultValue: "Octopus vulgaris" },
     "product.species.faoCode": { label: "Código FAO", defaultValue: "OCC" },
@@ -50,6 +50,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [elements, setElements] = useState([]);
     const [labelName, setLabelName] = useState("");
     const [labelId, setLabelId] = useState(null);
+    const [fieldExampleValues, setFieldExampleValues] = useState(() => {
+        // Inicializar con los valores por defecto de labelFields
+        const initialValues = {};
+        Object.keys(labelFields).forEach(key => {
+            initialValues[key] = labelFields[key].defaultValue;
+        });
+        return initialValues;
+    });
+    const [showFieldExamplesDialog, setShowFieldExamplesDialog] = useState(false);
 
     const [selectedElement, setSelectedElement] = useState(null);
 
@@ -121,7 +130,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         elements.forEach(el => {
             // 🔹 Campos dinámicos directos tipo "field"
             if (el.type === 'field' && el.field && labelFields[el.field] && !seenFields.has(el.field)) {
-                values[el.field] = labelFields[el.field].defaultValue;
+                values[el.field] = fieldExampleValues[el.field] || labelFields[el.field].defaultValue;
                 seenFields.add(el.field);
             }
 
@@ -136,7 +145,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             contents.forEach(content => {
                 extractPlaceholders(content).forEach(field => {
                     if (!seenFields.has(field)) {
-                        values[field] = labelFields[field]?.defaultValue || '';
+                        values[field] = fieldExampleValues[field] || labelFields[field]?.defaultValue || '';
                         seenFields.add(field);
                     }
                 });
@@ -144,7 +153,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         });
 
         return values;
-    }, [elements]);
+    }, [elements, fieldExampleValues]);
 
     const validateLabelName = (name) => {
         if (!name || name.trim().length === 0) {
@@ -611,5 +620,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         getFieldName,
         isSaving,
         clearEditor,
+        fieldExampleValues,
+        setFieldExampleValues,
+        showFieldExamplesDialog,
+        setShowFieldExamplesDialog,
     };
 }

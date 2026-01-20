@@ -50,6 +50,7 @@ import {
     FolderSearch,
     Loader2,
     Plus,
+    Settings,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -57,6 +58,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
 import LabelSelectorSheet from "./LabelSelectorSheet";
 import LabelEditorPreview from "./LabelEditorPreview";
+import FieldExamplesDialog from "./FieldExamplesDialog";
 
 import {
     DropdownMenu,
@@ -119,6 +121,10 @@ export default function LabelEditor() {
         isSaving,
         clearEditor,
         labelId,
+        fieldExampleValues,
+        setFieldExampleValues,
+        showFieldExamplesDialog,
+        setShowFieldExamplesDialog,
 
     } = useLabelEditor();
 
@@ -425,6 +431,14 @@ export default function LabelEditor() {
                                     </div>
                                     <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
                                     <Separator orientation="vertical" className="h-6" />
+                                    <Button 
+                                        variant="outline"
+                                        onClick={() => setShowFieldExamplesDialog(true)}
+                                        className="gap-2"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        Valores de Ejemplo
+                                    </Button>
                                     <Button 
                                         variant=""
                                         onClick={handleOnClickSave}
@@ -1152,6 +1166,13 @@ export default function LabelEditor() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                <FieldExamplesDialog
+                    open={showFieldExamplesDialog}
+                    onClose={() => setShowFieldExamplesDialog(false)}
+                    fieldExampleValues={fieldExampleValues}
+                    setFieldExampleValues={setFieldExampleValues}
+                />
             </TooltipProvider >
         </>
     )
