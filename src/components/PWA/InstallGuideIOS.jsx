@@ -61,7 +61,13 @@ export function InstallGuideIOS({
     onOpenChange?.(newOpen);
   };
 
-  // Contenido para mobile (iOS)
+  // Detectar Android
+  const isAndroid = React.useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android/.test(navigator.userAgent);
+  }, []);
+
+  // Contenido para mobile (iOS o Android)
   const mobileContent = (
     <>
       <div className="mt-6 space-y-6">
@@ -71,11 +77,22 @@ export function InstallGuideIOS({
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm">
               1
             </div>
-            <h3 className="font-semibold">Toca el botón "Compartir"</h3>
+            <h3 className="font-semibold">
+              {isIOS ? 'Toca el botón "Compartir"' : 'Abre el menú del navegador'}
+            </h3>
           </div>
           <p className="text-sm text-muted-foreground ml-11">
-            Busca el icono de compartir <Share2 className="w-4 h-4 inline-block mx-1" /> 
-            en la barra de herramientas del navegador (parte inferior en Safari)
+            {isIOS ? (
+              <>
+                Busca el icono de compartir <Share2 className="w-4 h-4 inline-block mx-1" /> 
+                en la barra de herramientas del navegador (parte inferior en Safari)
+              </>
+            ) : (
+              <>
+                Busca el icono de menú <Share2 className="w-4 h-4 inline-block mx-1" /> 
+                (tres puntos) en la barra de herramientas del navegador (Chrome, Edge, etc.)
+              </>
+            )}
           </p>
           <div className="ml-11 bg-muted p-4 rounded-lg">
             <div className="flex items-center justify-center gap-2 text-sm">
@@ -91,11 +108,24 @@ export function InstallGuideIOS({
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm">
               2
             </div>
-            <h3 className="font-semibold">Selecciona "Añadir a pantalla de inicio"</h3>
+            <h3 className="font-semibold">
+              {isIOS 
+                ? 'Selecciona "Añadir a pantalla de inicio"'
+                : 'Selecciona "Instalar app" o "Añadir a pantalla de inicio"'}
+            </h3>
           </div>
           <p className="text-sm text-muted-foreground ml-11">
-            En el menú que aparece, desplázate y selecciona la opción 
-            <strong> "Añadir a pantalla de inicio"</strong> o <strong>"Añadir a inicio"</strong>
+            {isIOS ? (
+              <>
+                En el menú que aparece, desplázate y selecciona la opción 
+                <strong> "Añadir a pantalla de inicio"</strong> o <strong>"Añadir a inicio"</strong>
+              </>
+            ) : (
+              <>
+                En el menú que aparece, busca y selecciona la opción 
+                <strong> "Instalar app"</strong>, <strong>"Añadir a pantalla de inicio"</strong> o <strong>"Instalar"</strong>
+              </>
+            )}
           </p>
           <div className="ml-11 bg-muted p-4 rounded-lg">
             <div className="flex items-center gap-3 text-sm">
@@ -241,7 +271,11 @@ export function InstallGuideIOS({
               Instalar PesquerApp
             </SheetTitle>
             <SheetDescription>
-              Añade la app a tu pantalla de inicio en iOS
+              {isIOS 
+                ? "Añade la app a tu pantalla de inicio en iOS"
+                : isAndroid
+                ? "Añade la app a tu pantalla de inicio en Android"
+                : "Añade la app a tu pantalla de inicio"}
             </SheetDescription>
           </SheetHeader>
           {mobileContent}

@@ -22,19 +22,32 @@ export function useIsMobile() {
     // Solo ejecutar en cliente
     if (typeof window === 'undefined') return;
 
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    
-    const onChange = () => {
+    const checkIsMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
     // Establecer valor inicial
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    checkIsMobile()
     
-    // Escuchar cambios
-    mql.addEventListener("change", onChange)
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     
-    return () => mql.removeEventListener("change", onChange);
+    // Escuchar cambios de matchMedia (más eficiente)
+    mql.addEventListener("change", checkIsMobile)
+    
+    // También escuchar resize como respaldo (para cambios más rápidos)
+    // Usar throttle para evitar demasiadas actualizaciones
+    let resizeTimeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(checkIsMobile, 100);
+    }
+    window.addEventListener("resize", handleResize)
+    
+    return () => {
+      mql.removeEventListener("change", checkIsMobile);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(resizeTimeout);
+    };
   }, [])
 
   return isMobile

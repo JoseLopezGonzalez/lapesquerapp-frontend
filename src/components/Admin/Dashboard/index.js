@@ -50,8 +50,8 @@ export default function Dashboard() {
                 <div className="w-full h-full flex flex-col gap-4 pb-4">
                     <div className="w-full">
                         <div className="flex flex-col items-start justify-center mb-2 md:mb-4">
-                            <p className="text-xs md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
-                            <h1 className="text-xl md:text-4xl font-light">{userName}</h1>
+                            <p className="text-lg md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
+                            <h1 className="text-3xl md:text-4xl font-light">{userName}</h1>
                         </div>
                     </div>
 

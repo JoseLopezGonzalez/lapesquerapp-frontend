@@ -33,7 +33,7 @@ import {
 import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
 import { cn } from "@/lib/utils";
 import { isActiveRoute } from "@/utils/navigationUtils";
-import { useSwipe } from "@/hooks/use-swipe";
+import { useDragToClose } from "@/hooks/use-drag-to-close";
 import "./sheet-styles.css";
 
 /**
@@ -46,6 +46,7 @@ import "./sheet-styles.css";
  * @param {Array} props.navigationManagersItems - Items de gestores
  * @param {Array} props.apps - Array de apps para AppSwitcher
  * @param {boolean} props.loading - Si está cargando (para AppSwitcher)
+ * @param {object} props.bottomNavDragState - Estado del drag desde BottomNav { translateY, isDragging }
  */
 export function NavigationSheet({
   open,
@@ -54,16 +55,40 @@ export function NavigationSheet({
   navigationManagersItems = [],
   apps = [],
   loading = false,
+  bottomNavDragState = { translateY: 0, isDragging: false },
 }) {
   const pathname = usePathname();
+  const dragHandleRef = React.useRef(null);
+  const sheetContentRef = React.useRef(null);
   
-  // Hook para detectar swipe down y cerrar el sheet
-  const swipeHandlers = useSwipe({
-    onSwipeDown: () => {
-      onOpenChange(false);
-    },
-    threshold: 50, // Distancia mínima de 50px para considerar swipe
+  // Hook para drag-to-open/close fluido que sigue el dedo
+  const { translateY: sheetTranslateY, isDragging: sheetIsDragging, handlers: dragHandlers } = useDragToClose({
+    isOpen: open,
+    onClose: () => onOpenChange(false),
+    onOpen: () => onOpenChange(true),
+    threshold: 0.3, // 30% de altura para cerrar/abrir
+    velocityThreshold: 0.5, // px/ms - velocidad mínima para cerrar/abrir automáticamente
+    dragHandleRef,
   });
+  
+  // Usar translateY del sheet cuando está abierto, o del BottomNav cuando está cerrado
+  const translateY = open ? sheetTranslateY : bottomNavDragState.translateY;
+  const isDragging = open ? sheetIsDragging : bottomNavDragState.isDragging;
+  
+  // Aplicar transform al SheetContent cuando se está arrastrando
+  React.useEffect(() => {
+    if (sheetContentRef.current) {
+      if (isDragging && translateY !== 0) {
+        // Desactivar animaciones CSS durante el drag
+        sheetContentRef.current.style.transition = 'none';
+        sheetContentRef.current.style.transform = `translateY(${translateY}px)`;
+      } else {
+        // Restaurar animaciones cuando no se está arrastrando
+        sheetContentRef.current.style.transition = '';
+        sheetContentRef.current.style.transform = '';
+      }
+    }
+  }, [isDragging, translateY]);
 
   // Marcar rutas activas
   const activeNavigationItems = React.useMemo(() =>
@@ -89,28 +114,46 @@ export function NavigationSheet({
     [navigationManagersItems, pathname]
   );
 
+  // Mostrar el sheet si está abierto O si se está arrastrando desde BottomNav (para drag-to-open)
+  // Cuando se arrastra desde BottomNav, translateY va de sheetHeight (cerrado) a 0 (abierto)
+  const shouldShowSheet = open || (bottomNavDragState.isDragging && bottomNavDragState.translateY > 0);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={shouldShowSheet} onOpenChange={onOpenChange}>
       <SheetContent
+        ref={sheetContentRef}
         side="bottom"
         data-sheet="true"
+        data-dragging={isDragging ? "true" : undefined}
         className={cn(
           "h-[85vh] max-h-[85vh] overflow-hidden",
           "w-full max-w-full", // Ancho completo sin restricciones
           "flex flex-col p-0 m-0", // Sin padding ni margin
           "rounded-t-2xl", // Border radius superior para bottom sheet
-          MOBILE_SAFE_AREAS.BOTTOM // Safe area iOS
+          MOBILE_SAFE_AREAS.BOTTOM, // Safe area iOS
+          isDragging && "transition-none" // Desactivar transición durante drag
         )}
+        style={{
+          transform: isDragging && translateY !== 0 ? `translateY(${translateY}px)` : undefined,
+        }}
       >
         <SheetHeader className="sr-only">
           <SheetTitle>Navegación</SheetTitle>
           <SheetDescription>Menú de navegación completo</SheetDescription>
         </SheetHeader>
 
-        {/* Barra indicadora para cerrar - Fija arriba */}
+        {/* Barra indicadora para drag - Fija arriba */}
         <div 
-          {...swipeHandlers} 
-          className="flex-shrink-0 flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+          ref={dragHandleRef}
+          data-drag-handle="true"
+          {...dragHandlers}
+          className={cn(
+            "flex-shrink-0 flex items-center justify-center pt-3 pb-2",
+            "cursor-grab active:cursor-grabbing",
+            "touch-none", // Prevenir scroll durante drag
+            isDragging && "cursor-grabbing"
+          )}
+          style={{ touchAction: 'none' }} // Solo drag, no scroll
         >
           <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
         </div>
@@ -127,7 +170,10 @@ export function NavigationSheet({
             )}
 
             {/* Contenedor scrollable con el resto del contenido */}
-            <div className="flex-1 min-h-0 overflow-y-auto w-full pb-24">
+            <div 
+              data-scrollable="true"
+              className="flex-1 min-h-0 overflow-y-auto w-full pb-24"
+            >
               {/* Gestores */}
               {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
                 <div className="p-3 w-full">

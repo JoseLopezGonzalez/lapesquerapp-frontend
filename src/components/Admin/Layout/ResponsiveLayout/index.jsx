@@ -48,6 +48,7 @@ export function ResponsiveLayout({
   // IMPORTANTE: Todos los hooks deben ejecutarse ANTES de cualquier return condicional
   const { isMobile, mounted } = useIsMobileSafe();
   const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [bottomNavDragState, setBottomNavDragState] = React.useState({ translateY: 0, isDragging: false });
   const pathname = usePathname();
   const mainRef = React.useRef(null); // Mover ref fuera del bloque condicional
 
@@ -140,6 +141,9 @@ export function ResponsiveLayout({
         <BottomNav 
           items={bottomNavItems}
           onSwipeUp={() => setSheetOpen(true)} // Abrir NavigationSheet al hacer swipe up
+          sheetOpen={sheetOpen}
+          onSheetOpenChange={setSheetOpen}
+          onDragStateChange={setBottomNavDragState}
         />
       )}
 
@@ -151,6 +155,7 @@ export function ResponsiveLayout({
         navigationManagersItems={navigationManagersItems}
         apps={apps}
         loading={loading}
+        bottomNavDragState={bottomNavDragState}
       />
     </div>
   );

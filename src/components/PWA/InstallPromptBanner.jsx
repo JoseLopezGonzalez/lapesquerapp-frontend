@@ -97,13 +97,23 @@ export function InstallPromptBanner() {
                   onOpenChange={setOpen}
                 />
               </>
-            ) : (
+            ) : canInstall ? (
               <InstallPrompt
                 onDismiss={markAsDismissed}
                 className="w-full"
                 showDismissButton={false}
                 variant="default"
               />
+            ) : (
+              // Fallback: Si no hay canInstall, mostrar botón con instrucciones
+              <Button
+                onClick={() => setOpen(true)}
+                size="default"
+                className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Cómo instalar
+              </Button>
             )}
           </div>
         </div>
@@ -161,16 +171,12 @@ export function InstallPromptBanner() {
                 onOpenChange={setOpen}
               />
             </>
-          ) : (
+          ) : canInstall ? (
             <Button
               onClick={async () => {
-                if (canInstall) {
-                  await install();
+                const success = await install();
+                if (success) {
                   markAsDismissed();
-                } else {
-                  // Si no hay prompt disponible, intentar usar el prompt nativo del navegador
-                  // En algunos navegadores, esto puede abrir el diálogo de instalación
-                  console.log('[PWA] Intentando instalar...');
                 }
               }}
               size="default"
@@ -179,6 +185,23 @@ export function InstallPromptBanner() {
               <Download className="w-4 h-4 mr-2" />
               Instalar
             </Button>
+          ) : (
+            // Fallback: Si no hay canInstall, mostrar botón con instrucciones
+            <>
+              <Button
+                onClick={() => setOpen(true)}
+                size="default"
+                className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Cómo instalar
+              </Button>
+              <InstallGuideIOS
+                open={open}
+                onOpenChange={setOpen}
+                hideIfNotIOS={false}
+              />
+            </>
           )}
         </div>
       </div>

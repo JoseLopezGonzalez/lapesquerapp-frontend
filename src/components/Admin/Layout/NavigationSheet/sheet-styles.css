@@ -196,3 +196,45 @@
   display: none;
 }
 
+/* ============================================================================
+ * ESTILOS PARA DRAG-TO-CLOSE FLUIDO
+ * ============================================================================ */
+
+/* Barra indicadora - Zona de drag */
+[data-sheet="true"] [data-drag-handle="true"],
+[data-sheet="true"] > div:first-child {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Prevenir scroll durante drag en el contenido del sheet */
+[data-sheet="true"]:has([data-dragging="true"]) {
+  overflow: hidden !important;
+}
+
+/* Contenido scrollable del sheet - permitir scroll vertical normal */
+[data-sheet="true"] [data-scrollable="true"],
+[data-sheet="true"] .overflow-y-auto {
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+}
+
+/* Transición suave cuando se suelta el drag */
+[data-sheet="true"] {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Desactivar transición durante drag activo */
+[data-sheet="true"].transition-none {
+  transition: none !important;
+}
+
+/* Asegurar que el sheet siga el dedo exactamente durante drag */
+[data-sheet="true"][style*="translateY"] {
+  transition: none !important;
+}
+
