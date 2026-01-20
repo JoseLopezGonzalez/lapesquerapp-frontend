@@ -20,13 +20,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { MOBILE_HEIGHTS, MOBILE_SAFE_AREAS, MOBILE_ICON_SIZES } from "@/lib/design-tokens-mobile";
+import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
 import { feedbackPop } from "@/lib/motion-presets";
 import { isActiveRoute } from "@/utils/navigationUtils";
 import { ChatNavItem } from "./ChatNavItem";
 import { CenterActionButton } from "./CenterActionButton";
-import { useSwipe } from "@/hooks/use-swipe";
-import { useDragToClose } from "@/hooks/use-drag-to-close";
 
 /**
  * BottomNavItem - Item individual de la navegación inferior
@@ -127,48 +125,13 @@ function BottomNavItem({ item, isActive, index }) {
 /**
  * BottomNav - Componente principal de navegación inferior
  * 
- * Diseño minimalista con solo iconos. Soporta swipe up y drag-to-open para abrir NavigationSheet.
- * 
  * @param {object} props
  * @param {Array} props.items - Items de navegación principales (4-5 máximo)
- * @param {Function} props.onSwipeUp - Callback cuando se detecta swipe hacia arriba (opcional)
  * @param {boolean} props.sheetOpen - Si el NavigationSheet está abierto
  * @param {Function} props.onSheetOpenChange - Callback cuando cambia el estado del sheet
- * @param {Function} props.onDragStateChange - Callback cuando cambia el estado del drag (translateY, isDragging)
  */
-export function BottomNav({ items, onSwipeUp, sheetOpen = false, onSheetOpenChange, onDragStateChange }) {
-  // IMPORTANTE: Los hooks SIEMPRE deben ejecutarse en el mismo orden
-  // Por eso los ponemos ANTES de cualquier early return condicional
+export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
   const pathname = usePathname();
-  const swipeZoneRef = React.useRef(null); // Ref para la barra indicadora
-  
-  // Hook para drag-to-open desde la barra indicadora cuando el sheet está cerrado
-  const { translateY: dragTranslateY, isDragging: isDraggingOpen, handlers: dragHandlers } = useDragToClose({
-    isOpen: sheetOpen,
-    onOpen: () => onSheetOpenChange?.(true),
-    threshold: 0.3,
-    velocityThreshold: 0.5,
-    dragHandleRef: swipeZoneRef,
-  });
-  
-  // Notificar el estado del drag al padre
-  React.useEffect(() => {
-    if (onDragStateChange) {
-      onDragStateChange({
-        translateY: !sheetOpen && isDraggingOpen ? dragTranslateY : 0,
-        isDragging: !sheetOpen && isDraggingOpen,
-      });
-    }
-  }, [dragTranslateY, isDraggingOpen, sheetOpen, onDragStateChange]);
-  
-  // Hook para detectar swipe up - solo desde la barra indicadora
-  const swipeHandlers = useSwipe({
-    onSwipeUp: onSwipeUp || (() => {}),
-    threshold: 50, // Distancia mínima de 50px para considerar swipe
-    velocityThreshold: 0.3, // px/ms - velocidad mínima para distinguir de scroll
-    maxHorizontalDistance: 30, // Máximo 30px de movimiento horizontal
-    activationZoneRef: swipeZoneRef, // Solo activar desde la barra indicadora
-  });
 
   // Limitar a 5 items máximo - calcular siempre, incluso si está vacío
   const displayItems = React.useMemo(() => {
@@ -183,22 +146,8 @@ export function BottomNav({ items, onSwipeUp, sheetOpen = false, onSheetOpenChan
     return null;
   }
 
-  // Asegurar que swipeHandlers siempre tenga valores válidos
-  const safeSwipeHandlers = swipeHandlers || {
-    onTouchStart: () => {},
-    onTouchMove: () => {},
-    onTouchEnd: () => {},
-  };
-  
-  // Combinar handlers: drag-to-open cuando está cerrado, swipe cuando está abierto
-  const combinedHandlers = !sheetOpen && dragHandlers ? {
-    ...safeSwipeHandlers,
-    ...dragHandlers, // Drag-to-open tiene prioridad cuando está cerrado
-  } : safeSwipeHandlers;
-
   return (
     <nav
-      {...combinedHandlers} // Agregar handlers de swipe y drag
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-background/95 backdrop-blur-sm",
@@ -210,10 +159,10 @@ export function BottomNav({ items, onSwipeUp, sheetOpen = false, onSheetOpenChan
     >
       <div className={cn(
         "container mx-auto",
-        "grid grid-cols-5 items-end", // Grid de 5 columnas para distribución uniforme
-        "px-6 pt-3 pb-4", // Padding superior normal, padding inferior aumentado
-        "max-w-md mx-auto", // Centrar y limitar ancho
-        "gap-0" // Sin gap entre columnas
+        "grid grid-cols-5 items-end",
+        "px-6 pt-3 pb-4",
+        "max-w-md mx-auto",
+        "gap-0"
       )}>
         {/* Item 1 */}
         <div className="flex items-center justify-center">
@@ -256,7 +205,7 @@ export function BottomNav({ items, onSwipeUp, sheetOpen = false, onSheetOpenChan
         
         {/* Botón central de acción - Columna 3 */}
         <div className="flex items-center justify-center">
-          <CenterActionButton />
+          <CenterActionButton onOpenSheet={onSheetOpenChange} />
         </div>
         
         {/* Item 3 */}
@@ -298,15 +247,6 @@ export function BottomNav({ items, onSwipeUp, sheetOpen = false, onSheetOpenChan
             );
           })}
         </div>
-      </div>
-      
-      {/* Barra indicadora para swipe - Centrada perfectamente */}
-      <div 
-        ref={swipeZoneRef}
-        className="flex items-center justify-center pt-1 pb-3 touch-none"
-        style={{ touchAction: 'pan-y' }} // Permitir scroll vertical pero capturar swipe
-      >
-        <div className="w-12 h-1 rounded-full bg-muted-foreground/30" />
       </div>
     </nav>
   );

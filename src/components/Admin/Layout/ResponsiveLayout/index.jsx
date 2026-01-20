@@ -48,7 +48,6 @@ export function ResponsiveLayout({
   // IMPORTANTE: Todos los hooks deben ejecutarse ANTES de cualquier return condicional
   const { isMobile, mounted } = useIsMobileSafe();
   const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [bottomNavDragState, setBottomNavDragState] = React.useState({ translateY: 0, isDragging: false });
   const pathname = usePathname();
   const mainRef = React.useRef(null); // Mover ref fuera del bloque condicional
 
@@ -111,7 +110,14 @@ export function ResponsiveLayout({
 
       // Mobile layout (<768px)
       return (
-        <div className="flex flex-col h-screen overflow-hidden relative">
+        <div 
+          className={cn(
+            "flex flex-col h-screen overflow-hidden relative",
+            // Fondo sólido para que el efecto de escala de vaul sea visible
+            "bg-muted"
+          )}
+          vaul-drawer-wrapper=""
+        >
           {/* Main Content - Scrollable */}
           <main
             ref={mainRef}
@@ -140,10 +146,8 @@ export function ResponsiveLayout({
       {bottomNavItems && bottomNavItems.length > 0 && (
         <BottomNav 
           items={bottomNavItems}
-          onSwipeUp={() => setSheetOpen(true)} // Abrir NavigationSheet al hacer swipe up
           sheetOpen={sheetOpen}
           onSheetOpenChange={setSheetOpen}
-          onDragStateChange={setBottomNavDragState}
         />
       )}
 
@@ -155,7 +159,6 @@ export function ResponsiveLayout({
         navigationManagersItems={navigationManagersItems}
         apps={apps}
         loading={loading}
-        bottomNavDragState={bottomNavDragState}
       />
     </div>
   );
