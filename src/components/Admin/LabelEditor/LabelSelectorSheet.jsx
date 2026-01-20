@@ -1,12 +1,24 @@
 "use client"
 import { useState, useEffect } from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getLabels } from "@/services/labelService"
+import { Card, CardContent } from "@/components/ui/card"
+import { getLabels, deleteLabel, duplicateLabel } from "@/services/labelService"
 import { useSession } from "next-auth/react"
 import Loader from "@/components/Utilities/Loader"
+import { Trash2, CopyPlus, Tag, Search, Plus, Loader2 } from "lucide-react"
+import toast from "react-hot-toast"
+import { getToastTheme } from "@/customs/reactHotToast"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 const exampleModels = [
   {
@@ -223,10 +235,15 @@ const exampleModels = [
   { id: "2", name: "Etiqueta Producto Fresco", width: 600, height: 800 },
 ]
 
-export default function LabelSelectorSheet({ open, onOpenChange, onSelect, children, onNew }) {
+export default function LabelSelectorSheet({ open, onOpenChange, onSelect, children, onNew, onDelete }) {
   const [models, setModels] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const [duplicatingId, setDuplicatingId] = useState(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [labelToDelete, setLabelToDelete] = useState(null)
   const { data: session, status } = useSession();
 
   const handleOnClickNewLabel = () => {
@@ -234,25 +251,92 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     onOpenChange(false)
   }
 
-  useEffect(() => {
-    if (status !== "authenticated") return; // Esperar a que esté autenticado
-    if (!session?.user?.accessToken) return;
-
+  const loadLabels = () => {
+    if (status !== "authenticated" || !session?.user?.accessToken) return;
+    
     setLoading(true);
-
     const token = session.user.accessToken;
 
     getLabels(token)
       .then((data) => {
         setModels(data);
+        setHasLoaded(true);
       })
       .catch((error) => {
         console.error("Error al cargar los modelos de etiqueta:", error);
+        toast.error("Error al cargar las etiquetas", getToastTheme());
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [status, session, open]);
+  }
+
+  const handleDeleteClick = (labelId, labelName, e) => {
+    e.stopPropagation();
+    setLabelToDelete({ id: labelId, name: labelName });
+    setDeleteDialogOpen(true);
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!labelToDelete) return;
+
+    setDeletingId(labelToDelete.id);
+    const token = session?.user?.accessToken;
+
+    try {
+      await deleteLabel(labelToDelete.id, token);
+      toast.success("Etiqueta eliminada correctamente", getToastTheme());
+      // Actualizar estado local sin recargar desde el servidor
+      setModels(prevModels => prevModels.filter(m => m.id !== labelToDelete.id));
+      // Limpiar el editor si se eliminó la etiqueta que estaba siendo editada
+      if (onDelete) {
+        onDelete(labelToDelete.id);
+      }
+      setDeleteDialogOpen(false);
+      setLabelToDelete(null);
+    } catch (error) {
+      const errorMessage = error.message || 'Error al eliminar la etiqueta';
+      toast.error(errorMessage, getToastTheme());
+      console.error("Error al eliminar etiqueta:", error);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  const handleDuplicate = async (labelId, e) => {
+    e.stopPropagation();
+    
+    setDuplicatingId(labelId);
+    const token = session?.user?.accessToken;
+
+    try {
+      const result = await duplicateLabel(labelId, token);
+      toast.success("Etiqueta duplicada correctamente", getToastTheme());
+      // Agregar la nueva etiqueta al estado local sin recargar desde el servidor
+      if (result?.data) {
+        setModels(prevModels => [...prevModels, result.data]);
+        // Limpiar el editor si se duplicó la etiqueta que estaba siendo editada
+        if (onDelete) {
+          onDelete(labelId);
+        }
+        // NO seleccionar automáticamente la nueva etiqueta - el usuario debe hacerlo conscientemente
+      }
+    } catch (error) {
+      const errorMessage = error.message || 'Error al duplicar la etiqueta';
+      toast.error(errorMessage, getToastTheme());
+      console.error("Error al duplicar etiqueta:", error);
+    } finally {
+      setDuplicatingId(null);
+    }
+  }
+
+  useEffect(() => {
+    if (status !== "authenticated") return; // Esperar a que esté autenticado
+    if (!session?.user?.accessToken) return;
+    if (hasLoaded && !open) return; // No recargar si ya se cargó y está cerrado
+
+    loadLabels();
+  }, [status, session, open, hasLoaded]);
 
   const filtered = models.filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -262,43 +346,157 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] flex flex-col gap-4 h-full  ">
-        <SheetHeader>
-          <SheetTitle>Modelos de Etiqueta</SheetTitle>
-        </SheetHeader>
-        <Input placeholder="Buscar modelo..." value={search} onChange={e => setSearch(e.target.value)} />
-        <ScrollArea className="flex-1 h-full w-full ">
-          {loading ? (
-            <div className="flex items-center justify-center w-full h-full py-20">
-              <Loader className="animate-spin h-6 w-6 text-gray-500" />
-            </div>
-          ) : (
-            <div className="flex-1 space-y-2 py-2">
-              {filtered.map((m) => (
-                <Button
-                  key={m.id}
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => handleSelect(m)}
-                >
-                  {m.name}
-                </Button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetTrigger asChild>{children}</SheetTrigger>
+        <SheetContent side="right" className="w-[400px] sm:w-[500px] flex flex-col gap-4 h-full">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Tag className="h-5 w-5" />
+              Modelos de Etiqueta
+            </SheetTitle>
+            <SheetDescription>
+              Selecciona una etiqueta para editarla o crea una nueva
+            </SheetDescription>
+          </SheetHeader>
 
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar etiqueta..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
 
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleOnClickNewLabel}
-        >
-          + Nueva etiqueta
-        </Button>
-      </SheetContent>
-    </Sheet>
+          {/* Labels List */}
+          <ScrollArea className="flex-1 w-full">
+            {loading ? (
+              <div className="flex items-center justify-center w-full h-full py-20">
+                <Loader className="animate-spin h-6 w-6 text-gray-500" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Tag className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-sm text-muted-foreground">
+                  {search ? 'No se encontraron etiquetas' : 'No hay etiquetas disponibles'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 py-2 pr-4">
+                {filtered.map((m) => (
+                  <Card
+                    key={m.id}
+                    className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/50"
+                    onClick={() => handleSelect(m)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Tag className="h-4 w-4 text-primary flex-shrink-0" />
+                            <h3 className="font-medium text-sm truncate">
+                              {m.name}
+                            </h3>
+                          </div>
+                          {m.format?.elements && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {m.format.elements.length} {m.format.elements.length === 1 ? 'elemento' : 'elementos'}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => handleDuplicate(m.id, e)}
+                            disabled={duplicatingId === m.id}
+                            title="Duplicar etiqueta"
+                          >
+                            {duplicatingId === m.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            ) : (
+                              <CopyPlus className="h-4 w-4 text-primary" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={(e) => handleDeleteClick(m.id, m.name, e)}
+                            disabled={deletingId === m.id}
+                            title="Eliminar etiqueta"
+                          >
+                            {deletingId === m.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+
+          {/* New Label Button */}
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={handleOnClickNewLabel}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva etiqueta
+          </Button>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Eliminar etiqueta?</DialogTitle>
+            <DialogDescription>
+              Estás a punto de eliminar la etiqueta <strong>"{labelToDelete?.name}"</strong>.
+              Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setLabelToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deletingId !== null}
+            >
+              {deletingId ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

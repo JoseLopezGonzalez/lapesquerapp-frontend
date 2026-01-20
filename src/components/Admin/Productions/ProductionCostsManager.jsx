@@ -36,6 +36,7 @@ export default function ProductionCostsManager({
     const [costs, setCosts] = useState([]);
     const [catalog, setCatalog] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [catalogLoading, setCatalogLoading] = useState(true);
     const [error, setError] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingCost, setEditingCost] = useState(null);
@@ -81,11 +82,14 @@ export default function ProductionCostsManager({
 
     const loadCatalog = async () => {
         try {
+            setCatalogLoading(true);
             const token = session.user.accessToken;
             const response = await getCostCatalog(token, { active_only: true });
             setCatalog(response.data || []);
         } catch (err) {
             console.error('Error loading catalog:', err);
+        } finally {
+            setCatalogLoading(false);
         }
     };
 
@@ -243,10 +247,10 @@ export default function ProductionCostsManager({
                                 <div className="space-y-2">
                                     <Label>Coste del Catálogo</Label>
                                     <Select onValueChange={handleCatalogSelect} value={formData.cost_catalog_id}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecciona un coste del catálogo" />
+                                        <SelectTrigger loading={catalogLoading}>
+                                            <SelectValue placeholder="Selecciona un coste del catálogo" loading={catalogLoading} />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent loading={catalogLoading}>
                                             {catalog.map(item => (
                                                 <SelectItem key={item.id} value={item.id.toString()}>
                                                     {item.name} ({getCostTypeLabel(item.costType)})

@@ -217,10 +217,10 @@ export default function CostSourceSelector({
                         const [type, id] = value.split('-');
                         addSource(type, parseInt(id));
                     }}>
-                        <SelectTrigger className="w-64">
-                            <SelectValue placeholder="Añadir fuente" />
+                        <SelectTrigger className="w-64" loading={loading}>
+                            <SelectValue placeholder="Añadir fuente" loading={loading} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent loading={loading}>
                             {inputs.length > 0 && (
                                 <>
                                     <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">Materias Primas</div>

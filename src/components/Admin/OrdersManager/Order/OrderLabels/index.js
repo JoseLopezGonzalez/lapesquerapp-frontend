@@ -56,7 +56,7 @@ const OrderLabels = () => {
 
     const productNames = useMemo(() => {
         const set = new Set();
-        pallets?.forEach(p => p.boxes.forEach(b => set.add(b.article.name)));
+        pallets?.forEach(p => p.boxes.forEach(b => b.product?.name && set.add(b.product.name)));
         return Array.from(set);
     }, [pallets]);
 
@@ -66,10 +66,11 @@ const OrderLabels = () => {
 
         pallets?.forEach(pallet => {
             pallet.boxes.forEach(box => {
-                const key = `${box.article.name}-${box.lot}`;
+                if (!box.product?.name) return; // Skip boxes without product
+                const key = `${box.product.name}-${box.lot}`;
                 if (!map.has(key)) {
                     map.set(key, {
-                        article: box.article,
+                        product: box.product,
                         lot: box.lot,
                         boxIds: [], // ← aquí guardamos los IDs
                         count: 0
@@ -96,7 +97,7 @@ const OrderLabels = () => {
         return list.filter(box =>
             (!palletIdFilter || box.palletId?.toString() === palletIdFilter) &&
             (!lotFilter || box.lot === lotFilter) &&
-            (!productFilter || box.article.name === productFilter)
+            (!productFilter || box.product?.name === productFilter)
         );
     }, [pallets, palletIdFilter, lotFilter, productFilter]);
 
@@ -115,14 +116,14 @@ const OrderLabels = () => {
 
     const isGroupedLineSelected = (group) => {
         return selectedGroupedLines.some(selected =>
-            selected.article.id === group.article.id && selected.lot === group.lot
+            selected.product?.id === group.product?.id && selected.lot === group.lot
         );
     };
 
     const handleSelectGroupedLine = (group) => {
         if (isGroupedLineSelected(group)) {
             setSelectedGroupedLines(prev => prev.filter(selected =>
-                !(selected.article.id === group.article.id && selected.lot === group.lot)
+                !(selected.product?.id === group.product?.id && selected.lot === group.lot)
             ));
         } else {
             setSelectedGroupedLines(prev => [...prev, group]);
@@ -173,7 +174,7 @@ const OrderLabels = () => {
             if (!box) return null; // Si no se encuentra, retornar null
             return {
                 ...box,
-                product: box.article,
+                product: box.product,
             };
         }).filter(box => box !== null); // Filtrar los nulls
 
@@ -191,7 +192,7 @@ const OrderLabels = () => {
         // console.log('Imprimiendo etiquetas individuales:', selectedIndividualLines);
         const formattedLines = selectedIndividualLines.map(box => ({
             ...box,
-            product: box.article,
+            product: box.product,
         }));
         setLabelPrintDialogBoxes(formattedLines);
         setIsOpenLabelPrintDialog(true);
@@ -255,7 +256,7 @@ const OrderLabels = () => {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">{group.article.name}</div>
+                                                    <div className="font-medium">{group.product?.name}</div>
                                                     <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
                                                 </TableCell>
                                                 <TableCell>{group.count}</TableCell>
@@ -376,7 +377,7 @@ const OrderLabels = () => {
                                                 </TableCell>
                                                 <TableCell>{box.palletId}</TableCell>
                                                 <TableCell>{box.id}</TableCell>
-                                                <TableCell>{box.article.name}</TableCell>
+                                                <TableCell>{box.product?.name}</TableCell>
                                                 <TableCell>{box.lot}</TableCell>
                                                 <TableCell className="text-right">{box.netWeight}</TableCell>
                                             </TableRow>

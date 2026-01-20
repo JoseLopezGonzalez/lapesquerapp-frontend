@@ -605,24 +605,18 @@ const OrderPallets = () => {
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="store-select">Almacén donde se creará el palet</Label>
-                            {storesLoading ? (
-                                <div className="flex items-center justify-center py-4">
-                                    <Loader />
-                                </div>
-                            ) : (
-                                <Select onValueChange={handleStoreSelection}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un almacén" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {storeOptions.map((store) => (
-                                            <SelectItem key={store.value} value={store.value}>
-                                                {store.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
+                            <Select onValueChange={handleStoreSelection}>
+                                <SelectTrigger loading={storesLoading}>
+                                    <SelectValue placeholder="Selecciona un almacén" loading={storesLoading} />
+                                </SelectTrigger>
+                                <SelectContent loading={storesLoading}>
+                                    {storeOptions.map((store) => (
+                                        <SelectItem key={store.value} value={store.value}>
+                                            {store.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <p className="text-sm text-muted-foreground">
                             El palet se creará en el almacén seleccionado y se vinculará automáticamente a este pedido.

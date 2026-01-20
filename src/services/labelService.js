@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
+import { handleLabelServiceResponse } from './labelServiceHelpers';
 
 export function getLabel(labelId, token) {
     return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
@@ -11,21 +12,10 @@ export function getLabel(labelId, token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener la etiqueta';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
+        .then(response => handleLabelServiceResponse(response, 'Error al obtener la etiqueta'))
         .then(data => data.data)
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
         });
 }
 
@@ -44,21 +34,10 @@ export function createLabel(labelName, labelFormat, token) {
             format: labelFormat,
         }),
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al crear la etiqueta';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
+        .then(response => handleLabelServiceResponse(response, 'Error al crear la etiqueta'))
         .then(data => data)
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
         });
 }
 
@@ -76,21 +55,10 @@ export function updateLabel(labelId, labelName, labelFormat, token) {
             format: labelFormat,
         }),
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la etiqueta';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
+        .then(response => handleLabelServiceResponse(response, 'Error al actualizar la etiqueta'))
         .then(data => data)
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
         });
 }
 
@@ -104,21 +72,10 @@ export function getLabels(token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener las etiquetas';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
+        .then(response => handleLabelServiceResponse(response, 'Error al obtener las etiquetas'))
         .then(data => data.data) // <- solo los datos, no el wrapper
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
         });
 }
 
@@ -132,21 +89,9 @@ export function deleteLabel(labelId, token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar la etiqueta';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
-
+        .then(response => handleLabelServiceResponse(response, 'Error al eliminar la etiqueta'))
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
         });
 }
 
@@ -160,21 +105,31 @@ export function getLabelsOptions(token) {
             'User-Agent': getUserAgent(),
         },
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener las opciones de etiquetas';
-                    throw new Error(errorMessage);
-                });
-            }
-            return response.json();
-        })
+        .then(response => handleLabelServiceResponse(response, 'Error al obtener las opciones de etiquetas'))
         .then(data => data) // <- solo los datos, no el wrapper
         .catch(error => {
             throw error;
-        })
-        .finally(() => {
+        });
+}
+
+/* Duplicate label */
+export function duplicateLabel(labelId, token, customName = null) {
+    return fetchWithTenant(`${API_URL_V2}labels/${labelId}/duplicate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'User-Agent': getUserAgent(),
+        },
+        body: JSON.stringify(
+            customName ? { name: customName } : {}
+        ),
+    })
+        .then(response => handleLabelServiceResponse(response, 'Error al duplicar la etiqueta'))
+        .then(data => data)
+        .catch(error => {
+            throw error;
         });
 }
 

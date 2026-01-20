@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -10,22 +10,41 @@ const Select = SelectPrimitive.Root
 
 const SelectGroup = SelectPrimitive.Group
 
-const SelectValue = SelectPrimitive.Value
+const SelectValue = React.forwardRef(({ className, loading, placeholder, ...props }, ref) => {
+  if (loading) {
+    return (
+      <span className={cn("text-muted-foreground", className)} ref={ref} {...props}>
+        Cargando opciones...
+      </span>
+    )
+  }
+  return <SelectPrimitive.Value ref={ref} className={className} placeholder={placeholder} {...props} />
+})
+SelectValue.displayName = SelectPrimitive.Value.displayName
 
-const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}>
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
+const SelectTrigger = React.forwardRef(({ className, children, loading, disabled, ...props }, ref) => {
+  const isDisabled = disabled || loading
+  
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      disabled={isDisabled}
+      className={cn(
+        "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        className
+      )}
+      {...props}>
+      {children}
+      <SelectPrimitive.Icon asChild>
+        {loading ? (
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin opacity-50" />
+        ) : (
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        )}
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  )
+})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => (
@@ -49,7 +68,7 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
 SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName
 
-const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
+const SelectContent = React.forwardRef(({ className, children, position = "popper", loading, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -65,7 +84,13 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       <SelectPrimitive.Viewport
         className={cn("p-1", position === "popper" &&
           "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]")}>
-        {children}
+        {loading ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">
+            Cargando opciones...
+          </div>
+        ) : (
+          children
+        )}
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>

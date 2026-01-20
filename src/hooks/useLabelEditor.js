@@ -3,6 +3,7 @@ import { createLabel, deleteLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
+import { getToastTheme } from "@/customs/reactHotToast";
 import { usePrintElement } from "@/hooks/usePrintElement";
 
 // labelFields.js
@@ -68,6 +69,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [manualValues, setManualValues] = useState({});
     const [showManualDialog, setShowManualDialog] = useState(false);
     const [manualForm, setManualForm] = useState({});
+    const [isSaving, setIsSaving] = useState(false);
     const fileInputRef = useRef(null);
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
@@ -90,8 +92,20 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     );
 
     const allFieldOptions = useMemo(
-        () => [...fieldOptions, ...manualFieldOptions],
-        [manualFieldOptions]
+        () => {
+            const baseOptions = [...fieldOptions, ...manualFieldOptions];
+            // Agregar campos virtuales para netWeight con formatos específicos
+            const netWeightField = fieldOptions.find(opt => opt.value === 'netWeight');
+            if (netWeightField) {
+                return [
+                    ...baseOptions,
+                    { value: 'netWeightFormatted', label: netWeightField.label },
+                    { value: 'netWeight6digits', label: `${netWeightField.label} (6 dígitos)` }
+                ];
+            }
+            return baseOptions;
+        },
+        [manualFieldOptions, fieldOptions]
     );
 
     const getDefaultValuesFromElements = useCallback(() => {
@@ -132,9 +146,24 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return values;
     }, [elements]);
 
+    const validateLabelName = (name) => {
+        if (!name || name.trim().length === 0) {
+            return "El nombre no puede estar vacío";
+        }
+        if (name.length > 100) {
+            return "El nombre no puede exceder 100 caracteres";
+        }
+        // Permitir paréntesis para casos como "Nombre (Copia)"
+        if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ()]+$/.test(name)) {
+            return "El nombre contiene caracteres no permitidos";
+        }
+        return null;
+    };
+
     const handleSave = async () => {
-        if (!labelName) {
-            toast.error("Por favor, introduce un nombre para la etiqueta.");
+        const validationError = validateLabelName(labelName);
+        if (validationError) {
+            toast.error(validationError, getToastTheme());
             return;
         }
         const token = session?.user?.accessToken;
@@ -148,7 +177,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             },
         };
 
-
+        setIsSaving(true);
         try {
             let result;
             if (labelId) {
@@ -160,13 +189,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 }
             }
 
-            toast.success(`Etiqueta ${selectedLabel?.id ? 'actualizada' : 'guardada'} correctamente.`);
+            toast.success(`Etiqueta ${labelId ? 'actualizada' : 'guardada'} correctamente.`);
             return result;
         } catch (err) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar etiqueta.';
             toast.error(errorMessage);
             console.error(err);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -180,10 +211,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             deleteLabel(labelId, token)
                 .then(() => {
                     toast.success("Etiqueta eliminada correctamente.");
-                    setSelectedLabel(null);
-                    setElements([]);
-                    setLabelName("");
-                    setLabelId(null);
+                    clearEditor(); // Limpiar el editor completamente
                 })
                 .catch((err) => {
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
@@ -395,6 +423,19 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return jsonData.name || "";
     };
 
+    const validateLabelJSON = (data) => {
+        if (!data || typeof data !== 'object') {
+            throw new Error('El archivo JSON no es válido');
+        }
+        if (!Array.isArray(data.elements)) {
+            throw new Error('El formato de elementos no es válido. Debe ser un array.');
+        }
+        if (!data.canvas || typeof data.canvas.width !== 'number' || typeof data.canvas.height !== 'number') {
+            throw new Error('El formato del canvas no es válido. Debe tener width y height numéricos.');
+        }
+        return true;
+    };
+
     const handleImportJSON = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -402,10 +443,14 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
+                validateLabelJSON(data);
                 const name = importJSON(data);
                 setLabelName(name);
+                toast.success('Etiqueta importada correctamente', getToastTheme());
             } catch (err) {
-                console.error(err);
+                const errorMessage = err.message || 'Error al importar la etiqueta';
+                toast.error(errorMessage, getToastTheme());
+                console.error('Error al importar etiqueta:', err);
             }
         };
         reader.readAsText(file);
@@ -457,13 +502,23 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         const labelId = label.id
         const labelName = label.name || "";
         const format = label.format
-        setSelectedLabel(format);
+        setSelectedLabel(label); // ✅ Guardar el objeto completo, no solo el formato
         setCanvasWidth(format.canvas.width);
         setCanvasHeight(format.canvas.height);
         setCanvasRotation(format.canvas.rotation || 0);
         setElements(format.elements || []);
         setLabelName(labelName || "");
         setLabelId(labelId);
+    };
+
+    /* Limpiar editor - usado cuando se elimina la etiqueta actual */
+    const clearEditor = () => {
+        setSelectedLabel(null);
+        setElements([]);
+        setLabelName("");
+        setLabelId(null);
+        setSelectedElement(null);
+        // Mantener dimensiones del canvas por si el usuario quiere crear nueva
     };
 
     /* Extraer en una constante EmptyLabelData */
@@ -478,10 +533,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setLabelId(null);
     };
 
-    /* Podemos inicializar valores al principio y no con un useEffect */
-    useEffect(() => {
-        handleCreateNewLabel();
-    }, []);
 
     const handlePrint = () => {
         const manualFields = elements.filter(el => el.type === 'manualField');
@@ -536,6 +587,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         selectedLabel,
         labelName,
         setLabelName,
+        labelId,
         openSelector,
         setOpenSelector,
         showManualDialog,
@@ -556,5 +608,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         fieldOptions,
         allFieldOptions,
         getFieldName,
+        isSaving,
+        clearEditor,
     };
 }

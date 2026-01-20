@@ -48,6 +48,8 @@ import {
     Upload,
     EllipsisVertical,
     FolderSearch,
+    Loader2,
+    Plus,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -114,6 +116,9 @@ export default function LabelEditor() {
         fieldOptions,
         allFieldOptions,
         getFieldName,
+        isSaving,
+        clearEditor,
+        labelId,
 
     } = useLabelEditor();
 
@@ -151,49 +156,122 @@ export default function LabelEditor() {
                 <div className="flex h-full w-full  bg-muted/30">
                     {/* Sidebar Izquierda */}
                     <div className="w-90 border-r bg-card p-4 h-full flex flex-col">
-                        <LabelSelectorSheet open={openSelector} onOpenChange={setOpenSelector} onSelect={handleSelectLabel} onNew={handleCreateNewLabel}>
-                            <Button className="w-full mb-4">
-                                <FolderSearch className=" h-5 w-5" />
-                                Seleccionar Etiqueta
+                        <div className="flex gap-2 mb-4">
+                            <Button 
+                                className="flex-1"
+                                onClick={handleCreateNewLabel}
+                            >
+                                <Plus className="h-5 w-5 mr-2" />
+                                Crear Nueva
                             </Button>
-                        </LabelSelectorSheet>
+                            <LabelSelectorSheet 
+                                open={openSelector} 
+                                onOpenChange={setOpenSelector} 
+                                onSelect={handleSelectLabel} 
+                                onNew={handleCreateNewLabel}
+                                onDelete={(deletedLabelId) => {
+                                    // Si se eliminó la etiqueta que estaba siendo editada, limpiar el editor
+                                    if (labelId === deletedLabelId) {
+                                        clearEditor();
+                                    }
+                                }}
+                            >
+                                <Button className="flex-1" variant="outline">
+                                    <FolderSearch className="h-5 w-5 mr-2" />
+                                    Seleccionar Etiqueta
+                                </Button>
+                            </LabelSelectorSheet>
+                        </div>
                         <div className="space-y-4 h-full flex-1 flex flex-col min-h-0">
                             <div>
                                 <h3 className="font-semibold mb-3">Añadir Elementos</h3>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("text")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("text")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <Type className="w-4 h-4" />
                                         Texto Fijo
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("field")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("field")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <Database className="w-4 h-4" />
                                         Campo Dinámico
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("manualField")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("manualField")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <BetweenHorizonalEnd className="w-4 h-4" />
                                         Campo Manual
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("sanitaryRegister")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("sanitaryRegister")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <Stamp className="w-4 h-4" />
                                         Registro Sanitario
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("richParagraph")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("richParagraph")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <Pilcrow className="w-4 h-4" />
                                         Párrafo
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("qr")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("qr")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <QrCode className="w-4 h-4" />
                                         Código QR
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("barcode")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("barcode")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <Barcode3 className="w-4 h-4" />
                                         Código de Barras
                                     </Button>
-                                    <Button variant="outline" className="justify-start gap-2" onClick={() => addElement("image")}>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("image")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
                                         <ImageIcon className="w-4 h-4" />
                                         Imagen
                                     </Button>
                                 </div>
+                                {!selectedLabel && (
+                                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                                        Selecciona una etiqueta para comenzar
+                                    </p>
+                                )}
                             </div>
                             <Separator />
                             <div className="flex-1 flex flex-col min-h-0">
@@ -347,11 +425,22 @@ export default function LabelEditor() {
                                     </div>
                                     <input type="file" accept="application/json" ref={fileInputRef} onChange={handleImportJSON} className="hidden" />
                                     <Separator orientation="vertical" className="h-6" />
-                                    <Button variant=""
+                                    <Button 
+                                        variant=""
                                         onClick={handleOnClickSave}
-                                        className='bg-lime-500  hover:bg-lime-400'>
-                                        <Save className="w-4 h-4 " />
-                                        Guardar
+                                        disabled={isSaving}
+                                        className='bg-lime-500 hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed'>
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                Guardando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="w-4 h-4 mr-2" />
+                                                Guardar
+                                            </>
+                                        )}
                                     </Button>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -427,15 +516,6 @@ export default function LabelEditor() {
                                                         handleResizeMouseDown={handleResizeMouseDown}
                                                         values={getDefaultValuesFromElements()}
                                                     />
-
-                                                    {/*  <LabelRender
-                                                        label={labelData}
-                                                        
-                                                        values={{}}
-                                                    /> */}
-
-
-
 
                                                     <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
                                                     </div>
@@ -1001,8 +1081,8 @@ export default function LabelEditor() {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.textDecoration === "lowercase"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" })}
+                                                                        pressed={selectedElementData.textTransform === "lowercase"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "lowercase" ? "none" : "lowercase" })}
                                                                     >
                                                                         <CaseLower className="w-5 h-5" />
                                                                     </Toggle>
@@ -1017,8 +1097,8 @@ export default function LabelEditor() {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.textDecoration === "capitalize"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "capitalize" ? "none" : "capitalize" })}
+                                                                        pressed={selectedElementData.textTransform === "capitalize"}
+                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "capitalize" ? "none" : "capitalize" })}
                                                                     >
                                                                         <CaseSensitive className="w-5 h-5" />
                                                                     </Toggle>
@@ -1036,29 +1116,6 @@ export default function LabelEditor() {
                                 </CardContent>
                             </Card>
                         )}
-
-                        {/* Datos de contexto */}
-                        {/*  <Card className="mt-4">
-                            <CardHeader>
-                                <CardTitle className="text-sm">Datos de Preview</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-xs space-y-1 text-muted-foreground">
-                                    <div>
-                                        <strong>Producto:</strong> {dataContext.product.name}
-                                    </div>
-                                    <div>
-                                        <strong>Especie:</strong> {dataContext.product.species.name}
-                                    </div>
-                                    <div>
-                                        <strong>Lote:</strong> {dataContext.lot_number}
-                                    </div>
-                                    <div>
-                                        <strong>Origen:</strong> {dataContext.origin}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card> */}
                     </div>
 
                     {/* Impresión */}

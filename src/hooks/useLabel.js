@@ -155,6 +155,6 @@ export function useLabel({ boxes = [], open }) {
         changeManualField,
         values,
         disabledPrintButton,
-
+        isLoading,
     };
 }

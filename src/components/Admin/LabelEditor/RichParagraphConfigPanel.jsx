@@ -7,6 +7,8 @@ import { Badge, badgeVariants } from '@/components/ui/badge'
 export default function RichParagraphConfigPanel({ html, onChange, fieldOptions = [] }) {
   const editorRef = useRef(null)
   const fieldMapRef = useRef({})
+  const isUserEditingRef = useRef(false)
+  const lastHtmlRef = useRef(html || '')
 
   useEffect(() => {
     fieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.value, o.label]))
@@ -14,8 +16,11 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
 
   useEffect(() => {
     if (!editorRef.current) return
-    const current = extractValue()
-    if (current === (html || '')) return
+    // Solo actualizar si el HTML cambió externamente y no estamos editando
+    if (isUserEditingRef.current) return
+    if (lastHtmlRef.current === (html || '')) return
+    
+    lastHtmlRef.current = html || ''
     renderContent()
   }, [html])
 
@@ -34,7 +39,8 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
           parts.forEach(part => {
             if (/^{{[^}]+}}$/.test(part)) {
               const field = part.slice(2, -2)
-              const label = fieldMapRef.current[field] || field
+              const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
+              
               const span = document.createElement('span')
               span.setAttribute('data-field', field)
               span.setAttribute('contenteditable', 'false')
@@ -73,8 +79,74 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
     return clone.innerHTML
   }
 
+  const processTextFields = () => {
+    if (!editorRef.current) return
+    const walker = document.createTreeWalker(
+      editorRef.current,
+      NodeFilter.SHOW_TEXT,
+      null
+    )
+    const textNodes = []
+    let node
+    while (node = walker.nextNode()) {
+      // Solo procesar nodos de texto que no estén dentro de un badge
+      if (node.parentElement && !node.parentElement.hasAttribute('data-field')) {
+        textNodes.push(node)
+      }
+    }
+
+    textNodes.forEach(textNode => {
+      const text = textNode.textContent
+      const parts = text.split(/({{[^}]+}})/g)
+      
+      if (parts.length > 1) {
+        const frag = document.createDocumentFragment()
+        parts.forEach(part => {
+          if (/^{{[^}]+}}$/.test(part)) {
+            const field = part.slice(2, -2)
+            const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label
+            
+            // Solo convertir si el campo existe en las opciones
+            if (label) {
+              const span = document.createElement('span')
+              span.setAttribute('data-field', field)
+              span.setAttribute('contenteditable', 'false')
+              span.className = badgeClass
+
+              const labelSpan = document.createElement('span')
+              labelSpan.textContent = label
+
+              const removeSpan = document.createElement('span')
+              removeSpan.setAttribute('data-remove', 'true')
+              removeSpan.className = 'ml-1 cursor-pointer'
+              removeSpan.textContent = '×'
+
+              span.appendChild(labelSpan)
+              span.appendChild(removeSpan)
+              frag.appendChild(span)
+            } else {
+              // Si no existe, mantener como texto
+              frag.appendChild(document.createTextNode(part))
+            }
+          } else {
+            frag.appendChild(document.createTextNode(part))
+          }
+        })
+        textNode.replaceWith(frag)
+      }
+    })
+  }
+
   const handleInput = () => {
-    onChange(extractValue())
+    isUserEditingRef.current = true
+    processTextFields()
+    const value = extractValue()
+    lastHtmlRef.current = value
+    onChange(value)
+    // Resetear el flag después de un breve delay para permitir actualizaciones externas
+    setTimeout(() => {
+      isUserEditingRef.current = false
+    }, 100)
   }
 
   const exec = (cmd) => {
@@ -89,7 +161,8 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
 
   const insertField = (field) => {
     if (!editorRef.current) return
-    const label = fieldMapRef.current[field] || field
+    const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
+    
     const span = document.createElement('span')
     span.setAttribute('data-field', field)
     span.setAttribute('contenteditable', 'false')

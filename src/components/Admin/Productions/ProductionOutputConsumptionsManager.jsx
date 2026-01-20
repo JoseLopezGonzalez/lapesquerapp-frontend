@@ -865,10 +865,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                     }
                                 }}
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un output" />
+                                <SelectTrigger loading={loadingAvailableOutputs}>
+                                    <SelectValue placeholder="Selecciona un output" loading={loadingAvailableOutputs} />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent loading={loadingAvailableOutputs}>
                                     {availableOutputs.map((available) => {
                                         const availableWeight = parseFloat(available.availableWeight || 0)
                                         const totalWeight = parseFloat(available.totalWeight || 0)
@@ -1273,10 +1273,10 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                                                 }
                                                             }}
                                                         >
-                                                            <SelectTrigger className={`h-9 ${!row.production_output_id ? 'border-destructive' : ''}`}>
-                                                                <SelectValue placeholder="Seleccionar output" />
+                                                            <SelectTrigger className={`h-9 ${!row.production_output_id ? 'border-destructive' : ''}`} loading={loadingAvailableOutputs}>
+                                                                <SelectValue placeholder="Seleccionar output" loading={loadingAvailableOutputs} />
                                                             </SelectTrigger>
-                                                            <SelectContent>
+                                                            <SelectContent loading={loadingAvailableOutputs}>
                                                                 {availableOutputs.length === 0 ? (
                                                                     <div className="px-2 py-1.5 text-sm text-muted-foreground">
                                                                         No hay outputs disponibles

@@ -30,7 +30,7 @@ import { format } from "date-fns"
 
 const CreateOrderForm = ({ onCreate }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
-    const { taxOptions } = useTaxOptions();
+    const { taxOptions, loading: taxLoading } = useTaxOptions();
 
     const { data: session } = useSession();
     // Ya no necesitamos 'token' directamente aquí para 'createOrder',
@@ -199,12 +199,12 @@ const CreateOrderForm = ({ onCreate }) => {
                         rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
-                                <SelectTrigger className="w-full overflow-hidden">
+                                <SelectTrigger className="w-full overflow-hidden" loading={loading}>
                                     <div className="w-full overflow-hidden truncate text-start">
-                                        <SelectValue placeholder={field.props?.placeholder} />
+                                        <SelectValue placeholder={field.props?.placeholder} loading={loading} />
                                     </div>
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent loading={loading}>
                                     {field.options?.map((opt) => (
                                         <SelectItem key={opt.value} value={opt.value}>
                                             {opt.label}
@@ -357,10 +357,10 @@ const CreateOrderForm = ({ onCreate }) => {
                                         rules={{ required: 'IVA es requerido' }}
                                         render={({ field: { onChange, value } }) => (
                                             <Select value={value} onValueChange={onChange}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="IVA" />
+                                                <SelectTrigger loading={taxLoading}>
+                                                    <SelectValue placeholder="IVA" loading={taxLoading} />
                                                 </SelectTrigger>
-                                                <SelectContent>
+                                                <SelectContent loading={taxLoading}>
                                                     {taxOptions.map((tax) => (
                                                         <SelectItem key={tax.value} value={tax.value}>
                                                             {tax.label}

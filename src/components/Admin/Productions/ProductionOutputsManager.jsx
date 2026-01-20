@@ -57,6 +57,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const [expandedSourcesRows, setExpandedSourcesRows] = useState(new Set())
     const [availableInputs, setAvailableInputs] = useState([])
     const [availableConsumptions, setAvailableConsumptions] = useState([])
+    const [sourcesLoading, setSourcesLoading] = useState(false)
     const [sourcesData, setSourcesData] = useState(null) // Datos completos de sources del backend
     // Estado para el dialog de gestión múltiple
     const [manageDialogOpen, setManageDialogOpen] = useState(false)
@@ -329,6 +330,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         }
         
         // Cargar datos de sources disponibles desde el nuevo endpoint
+        setSourcesLoading(true)
         try {
             const token = session.user.accessToken
             const sourcesDataResponse = await getProductionRecordSourcesData(productionRecordId, token)
@@ -374,6 +376,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             } catch (fallbackErr) {
                 console.error('Error loading sources with fallback method:', fallbackErr)
             }
+        } finally {
+            setSourcesLoading(false)
         }
         
         // Recargar outputs con sources incluidos antes de abrir el diálogo
@@ -1703,10 +1707,10 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                     updateRow(row.id, 'sources', updated)
                                                                 }}
                                                             >
-                                                                <SelectTrigger className="h-8 text-xs w-64">
-                                                                    <SelectValue placeholder="Añadir fuente" />
+                                                                <SelectTrigger className="h-8 text-xs w-64" loading={sourcesLoading}>
+                                                                    <SelectValue placeholder="Añadir fuente" loading={sourcesLoading} />
                                                                 </SelectTrigger>
-                                                                <SelectContent>
+                                                                <SelectContent loading={sourcesLoading}>
                                                                     {availableInputs.length > 0 && (
                                                                         <>
                                                                             <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Materias Primas</div>

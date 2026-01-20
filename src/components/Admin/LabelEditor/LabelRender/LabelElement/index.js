@@ -3,13 +3,41 @@ import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { ImageIcon } from "lucide-react";
 import { serializeBarcode } from "@/lib/barcodes";
+import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
 import SanitaryRegister from "./SanitaryRegister";
 import RichParagraph from "./RichParagraph";
+
+// Valor por defecto de netWeight para usar cuando no hay valor disponible
+const NET_WEIGHT_DEFAULT = "20,000 kg";
 
 const formatMap = {
     ean13: "EAN13",
     code128: "CODE128",
     // Agrega más si necesitas
+};
+
+// Función para formatear netWeight según el tipo de campo
+const formatNetWeightField = (value, fieldName) => {
+    if (!value) return value;
+    
+    // Parsear el valor (puede venir como "20,000 kg" o como número)
+    let numValue = typeof value === 'string' 
+        ? parseEuropeanNumber(value.replace(/kg/gi, '').trim()) 
+        : Number(value) || 0;
+    
+    if (fieldName === 'netWeightFormatted') {
+        // Formato decimal con separadores (ej: 1.234,56)
+        return formatDecimal(numValue);
+    } else if (fieldName === 'netWeight6digits') {
+        // Redondear a 2 decimales y multiplicar por 100 para obtener un entero de 6 dígitos
+        // Ejemplo: 20,00 kg → 2000 → 002000
+        const roundedValue = Math.round(numValue * 100) / 100; // Redondear a 2 decimales
+        const integerValue = Math.round(roundedValue * 100); // Multiplicar por 100 para obtener entero
+        return String(integerValue).padStart(6, '0');
+    }
+    
+    // Para netWeight sin formato, devolver valor original
+    return value;
 };
 
 export default function LabelElement({ element, values = {} }) {
@@ -22,9 +50,20 @@ export default function LabelElement({ element, values = {} }) {
         textDecoration: element.textDecoration,
     };
 
-    const getValue = (key) => values?.[key] ?? `{{${key}}}`;
-    const replacePlaceholders = (str) =>
-        (str || "").replace(/{{([^}]+)}}/g, (_, f) => getValue(f));
+    const getValue = (key) => {
+        // Si es un campo de netWeight con formato específico, aplicar el formato
+        if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
+            // Usar el valor de netWeight si existe, si no usar el valor por defecto
+            const baseValue = values?.['netWeight'] ?? NET_WEIGHT_DEFAULT;
+            return formatNetWeightField(baseValue, key);
+        }
+        return values?.[key] ?? `{{${key}}}`;
+    };
+    
+    const replacePlaceholders = (str) => {
+        if (!str) return '';
+        return str.replace(/{{([^}]+)}}/g, (_, field) => getValue(field));
+    };
 
 
     switch (element.type) {

@@ -21,7 +21,7 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         parts.forEach((part) => {
             if (/^{{[^}]+}}$/.test(part)) {
                 const field = part.slice(2, -2)
-                const label = fieldMapRef.current[field] || field
+                const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
 
                 const span = document.createElement('span')
                 span.setAttribute('data-field', field)
@@ -61,7 +61,66 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         return result
     }
 
+    const processTextFields = () => {
+        if (!editorRef.current) return
+        const walker = document.createTreeWalker(
+            editorRef.current,
+            NodeFilter.SHOW_TEXT,
+            null
+        )
+        const textNodes = []
+        let node
+        while (node = walker.nextNode()) {
+            // Solo procesar nodos de texto que no estén dentro de un badge
+            if (node.parentElement && !node.parentElement.hasAttribute('data-field')) {
+                textNodes.push(node)
+            }
+        }
+
+        textNodes.forEach(textNode => {
+            const text = textNode.textContent
+            const parts = text.split(/({{[^}]+}})/g)
+            
+            if (parts.length > 1) {
+                const frag = document.createDocumentFragment()
+                parts.forEach(part => {
+                    if (/^{{[^}]+}}$/.test(part)) {
+                        const field = part.slice(2, -2)
+                        const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label
+                        
+                        // Solo convertir si el campo existe en las opciones
+                        if (label) {
+                            const span = document.createElement('span')
+                            span.setAttribute('data-field', field)
+                            span.setAttribute('contenteditable', 'false')
+                            span.className = badgeClass
+
+                            const labelSpan = document.createElement('span')
+                            labelSpan.textContent = label
+
+                            const removeSpan = document.createElement('span')
+                            removeSpan.setAttribute('data-remove', 'true')
+                            removeSpan.className = 'ml-1 cursor-pointer'
+                            removeSpan.textContent = '×'
+
+                            span.appendChild(labelSpan)
+                            span.appendChild(removeSpan)
+                            frag.appendChild(span)
+                        } else {
+                            // Si no existe, mantener como texto
+                            frag.appendChild(document.createTextNode(part))
+                        }
+                    } else {
+                        frag.appendChild(document.createTextNode(part))
+                    }
+                })
+                textNode.replaceWith(frag)
+            }
+        })
+    }
+
     const handleInput = () => {
+        processTextFields()
         onChange(extractValue())
     }
 

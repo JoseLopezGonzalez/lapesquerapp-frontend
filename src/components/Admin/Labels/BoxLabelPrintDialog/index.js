@@ -16,7 +16,7 @@ import { getToastTheme } from '@/customs/reactHotToast';
 
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
-    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton } = useLabel({ boxes, open });
+    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
@@ -69,10 +69,10 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                         <div className="flex flex-col gap-1">
                             <Label className="text-sm">Formato de etiqueta</Label>
                             <Select onValueChange={handleOnChangeLabel}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona un formato" />
+                                <SelectTrigger className="w-full" loading={isLoading}>
+                                    <SelectValue placeholder="Selecciona un formato" loading={isLoading} />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent loading={isLoading}>
                                     {labelsOptions.map((option) => (
                                         <SelectItem key={option.id} value={option.id}>
                                             {option.name}

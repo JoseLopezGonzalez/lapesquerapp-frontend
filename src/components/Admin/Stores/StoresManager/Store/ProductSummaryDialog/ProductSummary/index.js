@@ -175,18 +175,15 @@ export default function ProductSummary() {
                                 })}
                             </tbody> */}
                             <tbody>
-                                {filteredProducts.map((product) => {
-                                    return (
-                                        <tr key={product.name} className="border-b border-muted last:border-0 hover:bg-muted/20">
-                                            <td className="py-3 px-4 text-sm">{product.name}</td>
-                                            <td className="py-3 px-4 text-sm text-right">{product.boxes ?? '-'} cajas</td> {/* NUEVA CELDA */}
-                                            <td className="py-3 px-4 text-sm text-right">{formatDecimalWeight(product.quantity)}</td>
-                                            <td className="py-3 px-4 text-sm text-right">
-                                                {formatDecimal(product.productPercentage)}%
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
+                                {filteredProducts.map((product) => (
+                                    <tr key={product.name} className="border-b border-muted last:border-0 hover:bg-muted/20"><td className="py-3 px-4 text-sm">{product.name}</td>
+                                        <td className="py-3 px-4 text-sm text-right">{product.boxes ?? '-'} cajas</td>
+                                        <td className="py-3 px-4 text-sm text-right">{formatDecimalWeight(product.quantity)}</td>
+                                        <td className="py-3 px-4 text-sm text-right">
+                                            {formatDecimal(product.productPercentage)}%
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
 

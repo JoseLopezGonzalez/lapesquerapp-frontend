@@ -50,10 +50,13 @@ export function DispatchChart() {
 
     const [speciesId, setSpeciesId] = useState("all")
     const [speciesOptions, setSpeciesOptions] = useState([])
+    const [speciesLoading, setSpeciesLoading] = useState(true)
     const [categoryId, setCategoryId] = useState("all")
     const [categoryOptions, setCategoryOptions] = useState([])
+    const [categoryLoading, setCategoryLoading] = useState(true)
     const [familyId, setFamilyId] = useState("all")
     const [familyOptions, setFamilyOptions] = useState([])
+    const [familyLoading, setFamilyLoading] = useState(true)
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month")
     const [range, setRange] = useState(initialDateRange)
@@ -77,17 +80,24 @@ export function DispatchChart() {
     useEffect(() => {
         if (status !== "authenticated") return
 
-        getSpeciesOptions(accessToken)
-            .then(setSpeciesOptions)
-            .catch((err) => console.error("Error al cargar especies:", err))
+        setSpeciesLoading(true)
+        setCategoryLoading(true)
+        setFamilyLoading(true)
 
-        getProductCategoryOptions(accessToken)
-            .then(setCategoryOptions)
-            .catch((err) => console.error("Error al cargar categorías:", err))
-
-        getProductFamilyOptions(accessToken)
-            .then(setFamilyOptions)
-            .catch((err) => console.error("Error al cargar familias:", err))
+        Promise.all([
+            getSpeciesOptions(accessToken)
+                .then(setSpeciesOptions)
+                .catch((err) => console.error("Error al cargar especies:", err))
+                .finally(() => setSpeciesLoading(false)),
+            getProductCategoryOptions(accessToken)
+                .then(setCategoryOptions)
+                .catch((err) => console.error("Error al cargar categorías:", err))
+                .finally(() => setCategoryLoading(false)),
+            getProductFamilyOptions(accessToken)
+                .then(setFamilyOptions)
+                .catch((err) => console.error("Error al cargar familias:", err))
+                .finally(() => setFamilyLoading(false))
+        ])
     }, [status, accessToken])
 
     useEffect(() => {
@@ -152,10 +162,10 @@ export function DispatchChart() {
                     </div>
                 <div className="w-full min-w-0 box-border md:col-span-6 3xl:col-span-2">
                     <Select value={speciesId} onValueChange={setSpeciesId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
-                            <SelectValue placeholder="Seleccionar especie" />
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={speciesLoading}>
+                            <SelectValue placeholder="Seleccionar especie" loading={speciesLoading} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent loading={speciesLoading}>
                             <SelectItem value="all">Todas las especies</SelectItem>
                             {speciesOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
@@ -167,10 +177,10 @@ export function DispatchChart() {
                     </div>
                     <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
                     <Select value={categoryId} onValueChange={setCategoryId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
-                            <SelectValue placeholder="Seleccionar categoría" />
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={categoryLoading}>
+                            <SelectValue placeholder="Seleccionar categoría" loading={categoryLoading} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent loading={categoryLoading}>
                             <SelectItem value="all">Todas las categorías</SelectItem>
                             {categoryOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
@@ -182,10 +192,10 @@ export function DispatchChart() {
                     </div>
                     <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
                     <Select value={familyId} onValueChange={setFamilyId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
-                            <SelectValue placeholder="Seleccionar familia" />
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={familyLoading}>
+                            <SelectValue placeholder="Seleccionar familia" loading={familyLoading} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent loading={familyLoading}>
                             <SelectItem value="all">Todas las familias</SelectItem>
                             {familyOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>

@@ -58,6 +58,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         temporalTotalLots,
         onResetBoxCreationData,
         activeOrdersOptions,
+        activeOrdersLoading,
         editPallet,
         onAddNewBox,
         deleteAllBoxes,
@@ -722,10 +723,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     <div className="space-y-2">
                                                         <Label>Pedido vinculado (opcional)</Label>
                                                         <Select disabled={orderIdBlocked} value={temporalPallet.orderId} onValueChange={(value) => editPallet.orderId(value)}>
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Sin pedido asignado" />
+                                                            <SelectTrigger loading={activeOrdersLoading}>
+                                                                <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
                                                             </SelectTrigger>
-                                                            <SelectContent>
+                                                            <SelectContent loading={activeOrdersLoading}>
                                                                 {activeOrdersOptions?.map((order) => (
                                                                     <SelectItem key={order.id} value={order.id}>
                                                                         #{order.name} - {formatDateShort(order.load_date)}

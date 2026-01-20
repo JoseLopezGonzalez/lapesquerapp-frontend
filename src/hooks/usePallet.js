@@ -65,13 +65,17 @@ const setStoredValue = (key, value) => {
 /**
  * Guarda las preferencias de descuento en localStorage
  * @param {Object} boxCreationData - Datos de creación de cajas con las preferencias
+ * NOTA: Deshabilitado - ya no se guarda en memoria para que el usuario elija cada vez
  */
 export const saveDiscountPreferences = (boxCreationData) => {
-    if (!boxCreationData) return;
-    setStoredValue(STORAGE_KEYS.showPalletWeight, boxCreationData.showPalletWeight || false);
-    setStoredValue(STORAGE_KEYS.showBoxTare, boxCreationData.showBoxTare || false);
-    setStoredValue(STORAGE_KEYS.palletWeight, boxCreationData.palletWeight || '');
-    setStoredValue(STORAGE_KEYS.boxTare, boxCreationData.boxTare || '');
+    // Memoria deshabilitada - no se guardan las preferencias
+    // El usuario debe elegir cada vez que entra al editor
+    return;
+    // if (!boxCreationData) return;
+    // setStoredValue(STORAGE_KEYS.showPalletWeight, boxCreationData.showPalletWeight || false);
+    // setStoredValue(STORAGE_KEYS.showBoxTare, boxCreationData.showBoxTare || false);
+    // setStoredValue(STORAGE_KEYS.palletWeight, boxCreationData.palletWeight || '');
+    // setStoredValue(STORAGE_KEYS.boxTare, boxCreationData.boxTare || '');
 };
 
 const getInitialBoxCreationData = (preserveDiscounts = false, currentDiscounts = null) => {
@@ -84,16 +88,16 @@ const getInitialBoxCreationData = (preserveDiscounts = false, currentDiscounts =
         numberOfBoxes: "", // para promedio
         palletWeight: preserveDiscounts && currentDiscounts?.palletWeight !== undefined 
             ? currentDiscounts.palletWeight 
-            : getStoredValue(STORAGE_KEYS.palletWeight, ""), // peso del palet/soporte de madera para descontar en promedio
+            : "", // peso del palet/soporte de madera para descontar en promedio - sin memoria
         showPalletWeight: preserveDiscounts && currentDiscounts?.showPalletWeight !== undefined 
             ? currentDiscounts.showPalletWeight 
-            : getStoredValue(STORAGE_KEYS.showPalletWeight, false), // mostrar/ocultar campo de peso del palet
+            : false, // mostrar/ocultar campo de peso del palet - sin memoria
         boxTare: preserveDiscounts && currentDiscounts?.boxTare !== undefined 
             ? currentDiscounts.boxTare 
-            : getStoredValue(STORAGE_KEYS.boxTare, ""), // tara de cada caja para descontar en promedio
+            : "", // tara de cada caja para descontar en promedio - sin memoria
         showBoxTare: preserveDiscounts && currentDiscounts?.showBoxTare !== undefined 
             ? currentDiscounts.showBoxTare 
-            : getStoredValue(STORAGE_KEYS.showBoxTare, false), // mostrar/ocultar campo de tara de cajas
+            : false, // mostrar/ocultar campo de tara de cajas - sin memoria
         scannedCode: "", // para lector
         deleteScannedCode: "",//para lector eliminar
         gs1codes: "", // <- NUEVO
@@ -139,6 +143,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const token = session?.user?.accessToken;
 
     const [activeOrdersOptions, setActiveOrdersOptions] = useState([])
+    const [activeOrdersLoading, setActiveOrdersLoading] = useState(true)
     const [productsOptions, setProductsOptions] = useState([]);
     const [productsLoading, setProductsLoading] = useState(true);
     const [boxCreationData, setBoxCreationData] = useState(initialboxCreationData)
@@ -194,12 +199,16 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 });
         }
 
+        setActiveOrdersLoading(true)
         getActiveOrdersOptions(token)
             .then((data) => {
                 setActiveOrdersOptions(data);
             })
             .catch((err) => {
                 console.error('Error al cargar las opciones de pedidos:', err);
+            })
+            .finally(() => {
+                setActiveOrdersLoading(false);
             });
         setProductsLoading(true);
         getProductOptions(token)
@@ -659,16 +668,17 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             [field]: value
         }));
         
-        // Guardar en localStorage los campos relacionados con descuentos
-        if (field === 'showPalletWeight') {
-            setStoredValue(STORAGE_KEYS.showPalletWeight, value);
-        } else if (field === 'showBoxTare') {
-            setStoredValue(STORAGE_KEYS.showBoxTare, value);
-        } else if (field === 'palletWeight') {
-            setStoredValue(STORAGE_KEYS.palletWeight, value);
-        } else if (field === 'boxTare') {
-            setStoredValue(STORAGE_KEYS.boxTare, value);
-        }
+        // Memoria deshabilitada - no se guardan las preferencias en localStorage
+        // El usuario debe elegir cada vez que entra al editor
+        // if (field === 'showPalletWeight') {
+        //     setStoredValue(STORAGE_KEYS.showPalletWeight, value);
+        // } else if (field === 'showBoxTare') {
+        //     setStoredValue(STORAGE_KEYS.showBoxTare, value);
+        // } else if (field === 'palletWeight') {
+        //     setStoredValue(STORAGE_KEYS.palletWeight, value);
+        // } else if (field === 'boxTare') {
+        //     setStoredValue(STORAGE_KEYS.boxTare, value);
+        // }
     };
 
     useEffect(() => {
@@ -1102,6 +1112,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         temporalTotalLots,
         temporalUniqueLots,
         activeOrdersOptions,
+        activeOrdersLoading,
         editPallet,
         productsOptions,
         productsLoading,

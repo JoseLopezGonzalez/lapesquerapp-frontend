@@ -140,6 +140,7 @@ const Filters = () => {
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
                                             id="filter-pallet"
+                                            disabled={true}
                                         /* checked={filters.types.pallet}
                                         onCheckedChange={(checked) =>
                                             setFilters({
@@ -156,6 +157,7 @@ const Filters = () => {
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
                                             id="filter-box"
+                                            disabled={true}
                                         /* checked={filters.types.box}
                                         onCheckedChange={(checked) =>
                                             setFilters({
@@ -172,6 +174,7 @@ const Filters = () => {
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
                                             id="filter-tub"
+                                            disabled={true}
                                         /* checked={filters.types.tub}
                                         onCheckedChange={(checked) =>
                                             setFilters({

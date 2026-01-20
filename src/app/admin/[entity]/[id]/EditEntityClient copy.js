@@ -182,6 +182,9 @@ export default function EditEntityClient({ config }) {
                     />
                 );
             case "select":
+                // Para selects estáticos (field.options), no hay loading
+                // Para selects dinámicos que vienen de fetch, se debería pasar loading como prop
+                const selectLoading = field.loading || false;
                 return (
                     <Controller
                         name={field.name}
@@ -189,10 +192,10 @@ export default function EditEntityClient({ config }) {
                         rules={field.validation}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={field.placeholder} />
+                                <SelectTrigger loading={selectLoading}>
+                                    <SelectValue placeholder={field.placeholder} loading={selectLoading} />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent loading={selectLoading}>
                                     {field.options?.map((opt) => (
                                         <SelectItem key={opt.value} value={opt.value}>
                                             {opt.label}
