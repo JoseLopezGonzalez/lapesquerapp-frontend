@@ -41,13 +41,13 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Editar Valores de Ejemplo de Campos Dinámicos</DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
+        <ScrollArea className="h-[calc(85vh-200px)] pr-4">
+          <div className="space-y-4 py-2">
             {Object.entries(labelFields).map(([fieldKey, fieldInfo]) => (
               <div key={fieldKey} className="space-y-2">
                 <Label htmlFor={fieldKey} className="text-sm font-medium">
@@ -68,7 +68,7 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
           </div>
         </ScrollArea>
 
-        <DialogFooter className="flex justify-between">
+        <DialogFooter className="flex justify-between mt-4">
           <Button variant="outline" onClick={handleReset}>
             Restaurar Valores por Defecto
           </Button>
