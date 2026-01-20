@@ -114,7 +114,7 @@ export function ResponsiveLayout({
           className={cn(
             "flex flex-col h-screen overflow-hidden relative",
             // Fondo sólido para que el efecto de escala de vaul sea visible
-            "bg-muted"
+            "bg-background"
           )}
           vaul-drawer-wrapper=""
         >
