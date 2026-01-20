@@ -73,11 +73,10 @@ export function SupplierLiquidationDetail({ supplierId }) {
                 }
             } catch (err) {
                 console.error("Error al obtener detalles:", err)
-                setError(err.message || "Error al obtener el detalle de la liquidación")
-                toast.error(
-                    err.message || "Error al obtener el detalle de la liquidación",
-                    getToastTheme()
-                )
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || "Error al obtener el detalle de la liquidación";
+                setError(errorMessage)
+                toast.error(errorMessage, getToastTheme())
             } finally {
                 setLoading(false)
             }

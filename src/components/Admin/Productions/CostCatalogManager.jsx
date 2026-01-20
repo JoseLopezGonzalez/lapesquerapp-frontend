@@ -64,7 +64,9 @@ export default function CostCatalogManager() {
             setCatalog(response.data || []);
         } catch (err) {
             console.error('Error loading catalog:', err);
-            setError(err.message || 'Error al cargar el catálogo');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar el catálogo';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -117,7 +119,9 @@ export default function CostCatalogManager() {
             loadCatalog();
         } catch (err) {
             console.error('Error saving catalog item:', err);
-            setError(err.message || 'Error al guardar el elemento');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar el elemento';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -133,7 +137,9 @@ export default function CostCatalogManager() {
             loadCatalog();
         } catch (err) {
             console.error('Error deleting catalog item:', err);
-            setError(err.message || 'Error al eliminar el elemento');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el elemento';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

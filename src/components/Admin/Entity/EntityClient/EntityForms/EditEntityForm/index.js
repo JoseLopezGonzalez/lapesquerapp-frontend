@@ -82,6 +82,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
+    const [loadingOptions, setLoadingOptions] = useState({});
     const [loading, setLoading] = useState(true);
 
     // Function to fetch and set entity data
@@ -104,7 +105,8 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 else if (err.status === 403) userMessage = "Permiso denegado.";
                 else userMessage = `Error ${err.status}: ${userMessage}`;
             } else if (err instanceof Error) {
-                userMessage = err.userMessage || err.message || userMessage;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
             toast.error(userMessage, getToastTheme());
             console.error("Error loading entity data:", err);
@@ -116,6 +118,16 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     // Function to fetch autocomplete options
     const loadAutocompleteOptions = useCallback(async () => {
         const result = {};
+        const loadingStates = {};
+        
+        // Inicializar estados de loading para cada campo autocomplete
+        fields.forEach((field) => {
+            if (field.type === "Autocomplete" && field.endpoint) {
+                loadingStates[field.name] = true;
+            }
+        });
+        setLoadingOptions(loadingStates);
+        
         await Promise.all(
             fields.map(async (field) => {
                 if (field.type === "Autocomplete" && field.endpoint) {
@@ -134,6 +146,11 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     } catch (err) {
                         console.error(`Error cargando opciones de ${field.name}:`, err);
                         result[field.name] = [];
+                    } finally {
+                        setLoadingOptions((prev) => ({
+                            ...prev,
+                            [field.name]: false,
+                        }));
                     }
                 }
             })
@@ -210,7 +227,8 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     userMessage = errorBody.userMessage || errorBody.message || userMessage;
                 }
             } else if (err instanceof Error) {
-                userMessage = err.userMessage || err.message || userMessage;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
             toast.error(userMessage, getToastTheme());
             console.error("Submission error:", err);
@@ -276,6 +294,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                                 onChange={onChange}
                                 onBlur={onBlur}
                                 placeholder={field.placeholder}
+                                loading={loadingOptions[field.name] || false}
                             />
                         )}
                     />

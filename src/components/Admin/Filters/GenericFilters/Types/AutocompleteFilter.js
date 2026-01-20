@@ -3,13 +3,10 @@
 
 import { Combobox } from '@/components/Shadcn/Combobox/index';
 import { Badge } from '@/components/ui/badge';
-// import AutocompleteSelector from '@/components/Utilities/AutocompleteSelector'; // Comentado, ya que no se usa en el render
-// import { API_URL_V2 } from '@/configs/config'; // Ya no es necesario aquí, lo usa el servicio
 import { XMarkIcon } from '@heroicons/react/24/outline';
-// import { getSession } from 'next-auth/react'; // Ya no es necesario aquí, lo usa el servicio
-import { useEffect, useState, useCallback } from 'react'; // Añadido useCallback
-import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService'; // Importa el nuevo servicio
-import toast from 'react-hot-toast'; // Para mostrar mensajes de error al usuario
+import { useEffect, useState, useCallback } from 'react';
+import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService';
+import toast from 'react-hot-toast';
 
 export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete, value }) => {
 
@@ -28,8 +25,9 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
             setOptions(fetchedOptions);
         } catch (error) {
             console.error("Error al cargar opciones del filtro de autocompletado:", error);
-            // Muestra un mensaje de error amigable al usuario
-            toast.error(`Error al cargar las opciones para ${label}. Por favor, inténtelo de nuevo.`);
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || `Error al cargar las opciones para ${label}. Por favor, inténtelo de nuevo.`;
+            toast.error(errorMessage);
             setOptions([]); // Asegúrate de que las opciones estén vacías en caso de error
         } finally {
             setLoading(false);
@@ -70,7 +68,8 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
                         searchPlaceholder={'Buscar...'}
                         notFoundMessage={'No se encontraron resultados'}
                         onChange={handleOnAdd}
-                        disabled={loading} // Deshabilita el Combobox mientras carga
+                        loading={loading}
+                        disabled={loading}
                     />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">

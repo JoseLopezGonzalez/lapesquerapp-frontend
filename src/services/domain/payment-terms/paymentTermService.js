@@ -27,6 +27,8 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'payment-terms';
 
@@ -36,7 +38,7 @@ const ENDPOINT = 'payment-terms';
 export const paymentTermService = {
     /**
      * Lista todos los términos de pago con filtros opcionales
-     * @param {Object} filters - Filtros de búsqueda (search, ids, etc.)
+     * @param {Object} filters - Filtros de búsqueda (search, ids, dates, etc.)
      * @param {Object} pagination - Opciones de paginación { page, perPage }
      * @returns {Promise<Object>} Datos paginados con términos de pago
      * 
@@ -47,12 +49,16 @@ export const paymentTermService = {
         const token = await getAuthToken();
         const { page = 1, perPage = 12 } = pagination;
         
-        // Construir query string desde filtros
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
         }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         

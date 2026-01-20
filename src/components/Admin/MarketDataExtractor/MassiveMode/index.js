@@ -144,7 +144,8 @@ export default function MassiveMode() {
                     successCount++;
                 }
             } catch (error) {
-                const errorMessage = error.message || 'Error desconocido';
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
                 setDocuments((prev) =>
                     prev.map((d) =>
                         d.id === doc.id
@@ -217,13 +218,15 @@ export default function MassiveMode() {
                 )
             );
         } catch (error) {
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             setDocuments((prev) =>
                 prev.map((d) =>
                     d.id === documentId
                         ? {
                               ...d,
                               status: 'error',
-                              error: error.message || 'Error desconocido',
+                              error: errorMessage,
                           }
                         : d
                 )

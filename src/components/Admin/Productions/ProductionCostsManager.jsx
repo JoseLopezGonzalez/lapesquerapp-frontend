@@ -71,7 +71,9 @@ export default function ProductionCostsManager({
             setCosts(response.data || []);
         } catch (err) {
             console.error('Error loading costs:', err);
-            setError(err.message || 'Error al cargar los costes');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los costes';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -159,7 +161,9 @@ export default function ProductionCostsManager({
             loadCosts();
         } catch (err) {
             console.error('Error saving cost:', err);
-            setError(err.message || 'Error al guardar el coste');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar el coste';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -175,7 +179,9 @@ export default function ProductionCostsManager({
             loadCosts();
         } catch (err) {
             console.error('Error deleting cost:', err);
-            setError(err.message || 'Error al eliminar el coste');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el coste';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

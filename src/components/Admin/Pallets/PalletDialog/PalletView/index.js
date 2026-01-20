@@ -46,6 +46,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const {
         productsOptions,
+        productsLoading,
         boxCreationData,
         boxCreationDataChange,
         loading,
@@ -441,6 +442,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
                                                                         disabled={isReadOnly}
+                                                                        loading={productsLoading}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
@@ -501,6 +503,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
                                                                         disabled={isReadOnly}
+                                                                        loading={productsLoading}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
@@ -557,6 +560,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             boxCreationDataChange("productId", value);
                                                                         }}
                                                                         disabled={isReadOnly}
+                                                                        loading={productsLoading}
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2 ">
@@ -1286,6 +1290,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 setOldProductId(value);
                                                                             }}
                                                                             disabled={isReadOnly}
+                                                                            loading={loading}
                                                                         />
                                                                     </div>
                                                                     <div className="space-y-2">
@@ -1300,6 +1305,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 setNewProductId(value);
                                                                             }}
                                                                             disabled={isReadOnly}
+                                                                            loading={productsLoading}
                                                                         />
                                                                     </div>
                                                                 </>

@@ -156,7 +156,7 @@ export function Chat() {
         <div className="bg-background/95 backdrop-blur-md rounded-lg shadow-lg border p-2">
           {error && (
             <div className="mb-2 text-sm text-destructive">
-              Error: {error.message || 'Ocurrió un error. Por favor intenta de nuevo.'}
+              Error: {error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Ocurrió un error. Por favor intenta de nuevo.'}
             </div>
           )}
           <MessageInput

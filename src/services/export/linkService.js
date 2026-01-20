@@ -274,7 +274,7 @@ export async function validatePurchases(linkedSummaryArray) {
                 valid: false,
                 canUpdate: false,
                 hasChanges: false,
-                message: error.message || 'Error al validar',
+                message: error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al validar',
                 error: 'Error de validación',
                 isGrouped: linea.isGrouped || false,
             }))
@@ -370,7 +370,7 @@ export async function linkAllPurchases(linkedSummaryArray) {
             errores: comprasValidas.length,
             erroresDetalles: comprasValidas.map((linea) => ({
                 barcoNombre: linea.barcoNombre,
-                error: error.message || 'Error al procesar la solicitud masiva'
+                error: error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al procesar la solicitud masiva'
             }))
         };
     }

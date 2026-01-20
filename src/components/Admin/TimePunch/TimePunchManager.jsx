@@ -35,10 +35,9 @@ export default function TimePunchManager() {
                 setEmployees(response.data || []);
             } catch (error) {
                 console.error('Error al cargar empleados:', error);
-                toast.error(
-                    error.message || 'Error al cargar la lista de empleados',
-                    getToastTheme()
-                );
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al cargar la lista de empleados';
+                toast.error(errorMessage, getToastTheme());
             } finally {
                 setLoading(false);
             }
@@ -75,16 +74,20 @@ export default function TimePunchManager() {
                     error: punchError,
                 });
                 
-                // Intentar extraer el mensaje de error más específico
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
                 let errorMessage = 'Error al registrar el fichaje';
-                if (punchError.message) {
-                    errorMessage = punchError.message;
-                } else if (punchError.userMessage) {
+                if (punchError.userMessage) {
                     errorMessage = punchError.userMessage;
+                } else if (punchError.data?.userMessage) {
+                    errorMessage = punchError.data.userMessage;
+                } else if (punchError.response?.data?.userMessage) {
+                    errorMessage = punchError.response.data.userMessage;
+                } else if (punchError.message) {
+                    errorMessage = punchError.message;
                 } else if (punchError.error) {
                     errorMessage = typeof punchError.error === 'string' 
                         ? punchError.error 
-                        : punchError.error.message || errorMessage;
+                        : (punchError.error.userMessage || punchError.error.message || errorMessage);
                 }
                 
                 throw new Error(errorMessage);
@@ -168,7 +171,8 @@ export default function TimePunchManager() {
             }, 3000);
         } catch (error) {
             console.error('Error al registrar fichaje:', error);
-            const errorMessage = error.message || error.userMessage || 'Error al registrar el fichaje';
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al registrar el fichaje';
             toast.error(errorMessage, getToastTheme());
         } finally {
             setRegisteringId(null);

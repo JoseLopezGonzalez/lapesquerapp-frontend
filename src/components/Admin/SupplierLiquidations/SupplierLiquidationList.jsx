@@ -53,11 +53,10 @@ export function SupplierLiquidationList() {
             setSuppliers(data || [])
         } catch (err) {
             console.error("Error al obtener proveedores:", err)
-            setError(err.message || "Error al obtener la lista de proveedores")
-            toast.error(
-                err.message || "Error al obtener la lista de proveedores",
-                getToastTheme()
-            )
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || "Error al obtener la lista de proveedores";
+            setError(errorMessage)
+            toast.error(errorMessage, getToastTheme())
             setSuppliers([])
         } finally {
             setLoading(false)

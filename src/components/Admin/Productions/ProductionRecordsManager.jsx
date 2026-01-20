@@ -66,7 +66,9 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
             }
         } catch (err) {
             console.error('Error loading records:', err)
-            setError(err.message || 'Error al cargar los procesos')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los procesos';
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -94,7 +96,9 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
             if (onRefresh) onRefresh()
         } catch (err) {
             console.error('Error deleting record:', err)
-            alert(err.message || 'Error al eliminar el proceso')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el proceso';
+            alert(errorMessage)
         }
     }
 

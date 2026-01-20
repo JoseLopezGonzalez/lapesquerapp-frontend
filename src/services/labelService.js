@@ -14,7 +14,9 @@ export function getLabel(labelId, token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al obtener la etiqueta');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener la etiqueta';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();
@@ -45,7 +47,9 @@ export function createLabel(labelName, labelFormat, token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al crear la etiqueta');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al crear la etiqueta';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();
@@ -75,7 +79,9 @@ export function updateLabel(labelId, labelName, labelFormat, token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al actualizar la etiqueta');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la etiqueta';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();
@@ -101,7 +107,9 @@ export function getLabels(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al obtener las etiquetas');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener las etiquetas';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();
@@ -127,7 +135,9 @@ export function deleteLabel(labelId, token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al eliminar la etiqueta');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar la etiqueta';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();
@@ -153,7 +163,9 @@ export function getLabelsOptions(token) {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
-                    throw new Error(error.message || 'Error al obtener las opciones de etiquetas');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al obtener las opciones de etiquetas';
+                    throw new Error(errorMessage);
                 });
             }
             return response.json();

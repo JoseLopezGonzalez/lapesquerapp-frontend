@@ -70,6 +70,7 @@ export default function EditEntityClient({ config }) {
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
+    const [loadingOptions, setLoadingOptions] = useState({});
     const [loading, setLoading] = useState(true);
 
     // Cargar datos de la entidad
@@ -95,6 +96,16 @@ export default function EditEntityClient({ config }) {
         const fetchWithTenantOptions = async () => {
             const session = await getSession();
             const result = {};
+            const loadingStates = {};
+            
+            // Inicializar estados de loading para cada campo autocomplete
+            fields.forEach((field) => {
+                if (field.type === "Autocomplete" && field.endpoint) {
+                    loadingStates[field.name] = true;
+                }
+            });
+            setLoadingOptions(loadingStates);
+            
             await Promise.all(
                 fields.map(async (field) => {
                     if (field.type === "Autocomplete" && field.endpoint) {
@@ -112,6 +123,11 @@ export default function EditEntityClient({ config }) {
                         } catch (err) {
                             console.error(`Error cargando ${field.name}`, err);
                             result[field.name] = [];
+                        } finally {
+                            setLoadingOptions((prev) => ({
+                                ...prev,
+                                [field.name]: false,
+                            }));
                         }
                     }
                 })
@@ -200,6 +216,7 @@ export default function EditEntityClient({ config }) {
                                 onChange={onChange}
                                 onBlur={onBlur}
                                 placeholder={field.placeholder}
+                                loading={loadingOptions[field.name] || false}
                             />
                         )}
                     />

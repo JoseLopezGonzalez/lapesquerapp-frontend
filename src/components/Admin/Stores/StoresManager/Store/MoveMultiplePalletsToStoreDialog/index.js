@@ -136,7 +136,9 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
             resetAndClose();
         } catch (error) {
-            toast.error(error.message || "Error al mover los palets", getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || "Error al mover los palets";
+            toast.error(errorMessage, getToastTheme());
         } finally {
             setIsSubmitting(false);
         }

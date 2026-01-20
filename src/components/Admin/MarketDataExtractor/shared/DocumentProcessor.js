@@ -101,11 +101,13 @@ export async function processDocument(file, documentType) {
                 errorType: 'azure'
             };
         } else {
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error inesperado al procesar el documento';
             return {
                 success: false,
                 documentType,
                 fileName: file.name,
-                error: error.message || 'Error inesperado al procesar el documento',
+                error: errorMessage,
                 errorType: 'unknown'
             };
         }

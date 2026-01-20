@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -21,8 +21,19 @@ import {
 
 
 
-export function Combobox({ options, placeholder, searchPlaceholder, notFoundMessage, className, value, onChange }) {
+export function Combobox({ 
+  options, 
+  placeholder, 
+  searchPlaceholder, 
+  notFoundMessage, 
+  className, 
+  value, 
+  onChange,
+  loading = false,
+  disabled = false,
+}) {
   const [open, setOpen] = React.useState(false)
+  const isDisabled = disabled || loading
 
   return (
     <Popover open={open} onOpenChange={setOpen} className={className || ""}>
@@ -31,20 +42,29 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={isDisabled}
           className=" justify-between w-full overflow-hidden"
         >
           <div className="w-full  truncate text-start">
-            {value
-              ? (options || []).find((option) => option.value === value)?.label
-              : placeholder}
+            {loading ? (
+              <span className="text-muted-foreground">Cargando opciones...</span>
+            ) : value ? (
+              (options || []).find((option) => option.value === value)?.label
+            ) : (
+              placeholder
+            )}
           </div>
 
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {loading ? (
+            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
+          ) : (
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0 ">
         <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+          <CommandInput placeholder={searchPlaceholder} disabled={loading} />
           <CommandList
             /* scroll con rueda de raton forzado */
             onWheel={(e) => {
@@ -55,27 +75,33 @@ export function Combobox({ options, placeholder, searchPlaceholder, notFoundMess
               })
             }}
           >
-            <CommandEmpty>{notFoundMessage}</CommandEmpty>
-            <CommandGroup>
-              {(options || []).map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  onSelect={(currentValue) => {
-                    onChange(option.value === value ? "" : option.value)
-                    setOpen(false)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {loading ? (
+              <CommandEmpty>Cargando opciones...</CommandEmpty>
+            ) : (
+              <>
+                <CommandEmpty>{notFoundMessage}</CommandEmpty>
+                <CommandGroup>
+                  {(options || []).map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.label}
+                      onSelect={(currentValue) => {
+                        onChange(option.value === value ? "" : option.value)
+                        setOpen(false)
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

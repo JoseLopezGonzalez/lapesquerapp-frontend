@@ -17,7 +17,7 @@ const OrderPlannedProductDetails = () => {
 
     const { options, plannedProductDetailActions, plannedProductDetails, order, mergedProductDetails } = useOrderContext();
 
-    const { productOptions, taxOptions } = options;
+    const { productOptions, taxOptions, loading: optionsLoading } = options;
 
     const [details, setDetails] = useState([]);
     const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
@@ -113,7 +113,9 @@ const OrderPlannedProductDetails = () => {
                 })
                 .catch((error) => {
                     console.error('Error al crear la linea:', error);
-                    toast.error('Error al crear nueva linea', { id: toastId });
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al crear nueva linea';
+                    toast.error(errorMessage, { id: toastId });
                 });
             return;
         }
@@ -128,7 +130,9 @@ const OrderPlannedProductDetails = () => {
             })
             .catch((error) => {
                 console.error('Error al actualizar la linea:', error);
-                toast.error('Error al actualizar la linea', { id: toastId });
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la linea';
+                toast.error(errorMessage, { id: toastId });
             });
     };
 
@@ -152,7 +156,9 @@ const OrderPlannedProductDetails = () => {
             })
             .catch((error) => {
                 console.error('Error al eliminar la linea:', error);
-                toast.error('Error al eliminar la linea', { id: toastId });
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar la linea';
+                toast.error(errorMessage, { id: toastId });
             });
     };
 
@@ -268,6 +274,7 @@ const OrderPlannedProductDetails = () => {
                                                         options={productOptions}
                                                         value={detail.product.id}
                                                         onChange={(e) => handleInputChange(index, 'product', e)}
+                                                        loading={optionsLoading}
                                                     />
                                                 ) : detail.product.name}
                                             </TableCell>
@@ -304,6 +311,7 @@ const OrderPlannedProductDetails = () => {
                                                         options={taxOptions}
                                                         value={detail.tax.id}
                                                         onChange={(value) => handleInputChange(index, 'tax', value)}
+                                                        loading={optionsLoading}
                                                     />
                                                 ) : `${detail.tax.rate}%`}
                                             </TableCell>

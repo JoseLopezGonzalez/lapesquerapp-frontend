@@ -261,7 +261,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             }
         } catch (err) {
             console.error('Error loading data:', err)
-            setError(err.message || 'Error al cargar los datos')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos';
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -317,7 +319,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             return enrichedOutputs
         } catch (err) {
             console.error('Error loading available outputs:', err)
-            alert(err.message || 'Error al cargar los outputs disponibles')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los outputs disponibles';
+            alert(errorMessage)
             setAvailableOutputs([])
             return []
         } finally {
@@ -440,7 +444,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             await loadConsumptionsOnly()
         } catch (err) {
             console.error('Error saving consumption:', err)
-            alert(err.message || 'Error al guardar el consumo')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar el consumo';
+            alert(errorMessage)
         } finally {
             setSavingConsumption(false)
         }
@@ -458,7 +464,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             await loadConsumptionsOnly()
         } catch (err) {
             console.error('Error deleting consumption:', err)
-            alert(err.message || 'Error al eliminar el consumo')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el consumo';
+            alert(errorMessage)
         }
     }
 
@@ -580,7 +588,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             setNewConsumptionRows([...newConsumptionRows, ...newRows])
         } catch (err) {
             console.error('Error adding all lines from parent:', err)
-            alert(err.message || 'Error al añadir las líneas del proceso padre')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al añadir las líneas del proceso padre';
+            alert(errorMessage)
         } finally {
             setAddingFromParent(false)
         }
@@ -769,7 +779,9 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             
             if (!is404SyncError) {
                 console.error('Error saving consumptions:', err)
-                alert(err.message || 'Error al guardar los consumos. Revisa la consola para más detalles.')
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar los consumos. Revisa la consola para más detalles.';
+                alert(errorMessage)
             }
             // Asegurar que el estado se resetee incluso si hay error
             setSavingAll(false)

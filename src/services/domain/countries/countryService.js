@@ -20,6 +20,8 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'countries';
 
@@ -29,10 +31,15 @@ export const countryService = {
         const { page = 1, perPage = 12 } = pagination;
         
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
         }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         

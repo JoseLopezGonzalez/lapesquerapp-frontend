@@ -110,8 +110,8 @@ const OrderEditSheet = () => {
             reset(defaultValues);
             setInitialValues(null);
         } catch (error) {
-            // Mostrar mensaje de error específico del backend si está disponible
-            const errorMessage = error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
             toast.error(errorMessage, { id: toastId });
             
             // Si hay errores de validación por campo, mostrarlos
@@ -202,6 +202,7 @@ const OrderEditSheet = () => {
                                     onChange={onChange}
                                     onBlur={onBlur}
                                     className={field.props?.className}
+                                    loading={loading}
                                 />
                             )
                         }}

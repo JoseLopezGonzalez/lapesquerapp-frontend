@@ -93,12 +93,14 @@ export default function MassiveExportDialog({
                     });
                 }
             } catch (error) {
-                allErrors.push(`Documento "${doc.file?.name || 'Desconocido'}": ${error.message || 'Error al procesar'}`);
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al procesar';
+                allErrors.push(`Documento "${doc.file?.name || 'Desconocido'}": ${errorMessage}`);
                 docsInfo.push({
                     name: doc.file?.name || 'Desconocido',
                     type: doc.documentType || 'No especificado',
                     status: 'error',
-                    error: error.message || 'Error desconocido'
+                    error: errorMessage
                 });
             }
         });
@@ -128,7 +130,9 @@ export default function MassiveExportDialog({
             onOpenChange(false);
         } catch (error) {
             console.error('Error al exportar:', error);
-            toast.error(`Error al exportar: ${error.message}`, getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al exportar';
+            toast.error(`Error al exportar: ${errorMessage}`, getToastTheme());
         } finally {
             setIsExporting(false);
         }

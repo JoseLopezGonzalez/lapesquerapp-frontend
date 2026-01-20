@@ -149,11 +149,13 @@ export async function createPunch(punchData, token = null) {
         })
         .catch((error) => {
             // Si ya es un Error con información adicional, re-lanzarlo
-            if (error.message || error.userMessage) {
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            if (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message) {
                 throw error;
             }
             // Si no, crear un nuevo error
-            throw new Error(getErrorMessage(error) || error.message || 'Error al registrar el fichaje');
+            const errorMessage = getErrorMessage(error) || error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al registrar el fichaje';
+            throw new Error(errorMessage);
         });
 }
 

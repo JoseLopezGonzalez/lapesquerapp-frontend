@@ -48,7 +48,9 @@ export default function CostBreakdownView({ outputId }) {
             setBreakdown(breakdown);
         } catch (err) {
             console.error('Error loading cost breakdown:', err);
-            setError(err.message || 'Error al cargar el desglose de costes');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar el desglose de costes';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

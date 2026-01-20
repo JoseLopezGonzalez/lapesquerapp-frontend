@@ -63,6 +63,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
+    const [loadingOptions, setLoadingOptions] = useState({});
 
     // Cargar dinámicamente los options de los campos con endpoint
     const loadAutocompleteOptions = useCallback(async () => {
@@ -70,6 +71,16 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
             return;
         }
         const result = {};
+        const loadingStates = {};
+        
+        // Inicializar estados de loading para cada campo autocomplete
+        fields.forEach((field) => {
+            if (field.type === "Autocomplete" && field.endpoint) {
+                loadingStates[field.name] = true;
+            }
+        });
+        setLoadingOptions(loadingStates);
+        
         await Promise.all(
             fields.map(async (field) => {
                 if (field.type === "Autocomplete" && field.endpoint) {
@@ -88,6 +99,11 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     } catch (err) {
                         console.error(`Error cargando opciones para ${field.name}:`, err);
                         result[field.name] = [];
+                    } finally {
+                        setLoadingOptions((prev) => ({
+                            ...prev,
+                            [field.name]: false,
+                        }));
                     }
                 }
             })
@@ -186,7 +202,8 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     userErrorMessage = errorBody.userMessage || errorBody.message || userErrorMessage;
                 }
             } else if (error instanceof Error) {
-                userErrorMessage = error.message;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                userErrorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || userErrorMessage;
             }
             toast.error(userErrorMessage, getToastTheme());
         }
@@ -254,6 +271,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                                 }}
                                 onBlur={onBlur}
                                 placeholder={field.placeholder}
+                                loading={loadingOptions[field.name] || false}
                             />
                         )}
                     />

@@ -19,6 +19,8 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'users';
 
@@ -28,19 +30,16 @@ export const userService = {
         const { page = 1, perPage = 12 } = pagination;
         
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
+        
+        // Agregar todos los filtros genéricos usando el helper
+        // Esto incluye: search, ids, name, email, roles, created_at, y cualquier otro filtro genérico
+        addFiltersToParams(queryParams, filters);
+        
+        // Agregar parámetros with[] para cargar relaciones necesarias
+        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+            addWithParams(queryParams, filters._requiredRelations);
         }
-        if (filters.name) queryParams.append('name', filters.name);
-        if (filters.email) queryParams.append('email', filters.email);
-        if (filters.roles && Array.isArray(filters.roles)) {
-            filters.roles.forEach(role => queryParams.append('roles[]', role));
-        }
-        if (filters.created_at) {
-            if (filters.created_at.start) queryParams.append('created_at[start]', filters.created_at.start);
-            if (filters.created_at.end) queryParams.append('created_at[end]', filters.created_at.end);
-        }
+        
         queryParams.append('page', page);
         queryParams.append('perPage', perPage);
         

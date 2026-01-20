@@ -67,7 +67,7 @@ const TARE_OPTIONS = [
 ];
 
 const CreateReceptionForm = ({ onSuccess }) => {
-    const { productOptions } = useProductOptions();
+    const { productOptions, loading: productsLoading } = useProductOptions();
     const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
     const { data: session } = useSession();
     const router = useRouter();
@@ -490,6 +490,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                         notFoundMessage="No se encontraron proveedores"
                                         aria-label="Seleccionar proveedor"
                                         aria-required="true"
+                                        loading={suppliersLoading}
                                     />
                                 )}
                             />
@@ -605,6 +606,7 @@ const CreateReceptionForm = ({ onSuccess }) => {
                                                             className="min-w-[200px]"
                                                             aria-label={`Producto para línea ${index + 1}`}
                                                             aria-required={mode === 'automatic'}
+                                                            loading={productsLoading}
                                                         />
                                                     )}
                                                 />

@@ -206,10 +206,12 @@ export async function POST(req) {
               console.error(`[CHAT API] ❌ Stack:`, error.stack);
               
               // Devolver error estructurado
+              // Priorizar userMessage sobre message para mostrar errores en formato natural
+              const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error ejecutando la herramienta';
               return {
                 success: false,
                 error: true,
-                message: error.message || 'Error ejecutando la herramienta',
+                message: errorMessage,
                 tool: name,
               };
             }
@@ -345,10 +347,12 @@ export async function POST(req) {
     console.error('[CHAT API] ❌ Stack:', error.stack);
     console.error('[CHAT API] ❌ Error completo:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
     
+    // Priorizar userMessage sobre message para mostrar errores en formato natural
+    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error interno del servidor';
     return new Response(
       JSON.stringify({ 
         error: 'Error interno del servidor',
-        message: error.message,
+        message: errorMessage,
         type: error.constructor.name
       }),
       { 

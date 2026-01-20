@@ -24,6 +24,7 @@ import {
     submitEntityFormGeneric,
     fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'activity-logs';
@@ -34,7 +35,7 @@ const ENDPOINT = 'activity-logs';
 export const activityLogService = {
     /**
      * Lista todos los logs de actividad con filtros opcionales
-     * @param {Object} filters - Filtros de búsqueda (search, ids, etc.)
+     * @param {Object} filters - Filtros de búsqueda (search, ids, dates, etc.)
      * @param {Object} pagination - Opciones de paginación { page, perPage }
      * @returns {Promise<Object>} Datos paginados con logs de actividad
      * 
@@ -45,12 +46,10 @@ export const activityLogService = {
         const token = await getAuthToken();
         const { page = 1, perPage = 12 } = pagination;
         
-        // Construir query string desde filtros
         const queryParams = new URLSearchParams();
-        if (filters.search) queryParams.append('search', filters.search);
-        if (filters.ids && Array.isArray(filters.ids)) {
-            filters.ids.forEach(id => queryParams.append('ids[]', id));
-        }
+        
+        // Agregar todos los filtros genéricos usando el helper
+        addFiltersToParams(queryParams, filters);
         
         // Agregar parámetros with[] para cargar relaciones necesarias
         if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {

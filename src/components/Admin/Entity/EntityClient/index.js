@@ -142,7 +142,8 @@ export default function EntityClient({ config }) {
                     }
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.userMessage || error.message;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
             toast.error(errorMessage);
         }
@@ -207,7 +208,8 @@ export default function EntityClient({ config }) {
                     errorMessage = `Error: ${error.statusText}`;
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.userMessage || error.message;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
             toast.error(errorMessage, getToastTheme());
             setData((prevData) => ({ ...prevData, loading: false }));
@@ -282,7 +284,8 @@ export default function EntityClient({ config }) {
                     }
                 }
             } else if (error instanceof Error) {
-                errorMessage = error.userMessage || error.message;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
             toast.error(errorMessage);
         } finally {
@@ -318,8 +321,8 @@ export default function EntityClient({ config }) {
             if (error instanceof Response && error.status === 403) {
                 errorMessage = 'No tienes permiso para realizar esta acción.';
             } else if (error instanceof Error) {
-                // Si el error ya tiene userMessage (de fetchWithTenant), usarlo
-                errorMessage = error.userMessage || error.message;
+                // Priorizar userMessage sobre message para mostrar errores en formato natural
+                errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
             toast.error(errorMessage);
         }
@@ -358,7 +361,7 @@ export default function EntityClient({ config }) {
                 error instanceof Response && error.status === 403
                     ? 'No tienes permiso para generar esta exportación.'
                     : error instanceof Error
-                        ? (error.userMessage || error.message)
+                        ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
                         : 'Error: ocurrió algo inesperado al generar la exportación.';
             toast.error(errorMessage, { id: toastId });
         } finally {
@@ -397,7 +400,7 @@ export default function EntityClient({ config }) {
                 error instanceof Response && error.status === 403
                     ? 'No tienes permiso para generar este reporte.'
                     : error instanceof Error
-                        ? (error.userMessage || error.message)
+                        ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
                         : 'Error: ocurrió algo inesperado al generar el reporte.';
             toast.error(errorMessage, { id: toastId });
         } finally {

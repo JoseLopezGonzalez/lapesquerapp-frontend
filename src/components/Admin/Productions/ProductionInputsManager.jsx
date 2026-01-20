@@ -165,7 +165,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             setInputs(response.data || [])
         } catch (err) {
             console.error('Error loading inputs:', err)
-            setError(err.message || 'Error al cargar las entradas')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar las entradas';
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -212,7 +214,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             setSelectedBoxes(existingBoxSelections)
         } catch (err) {
             console.error('Error loading existing data:', err)
-            alert(err.message || 'Error al cargar los datos existentes')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos existentes';
+            alert(errorMessage)
         } finally {
             setLoadingPallet(false)
         }
@@ -322,7 +326,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             setPalletSearch('')
         } catch (err) {
             console.error('Error searching pallet:', err)
-            alert(err.message || 'Error al buscar palets')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al buscar palets';
+            alert(errorMessage)
         } finally {
             setLoadingPallet(false)
         }
@@ -521,7 +527,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             }
         } catch (err) {
             console.error('Error deleting input:', err)
-            alert(err.message || 'Error al eliminar la entrada')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar la entrada';
+            alert(errorMessage)
         }
     }
 
@@ -559,7 +567,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             }
         } catch (err) {
             console.error('Error deleting all inputs:', err)
-            alert(err.message || 'Error al eliminar el consumo')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el consumo';
+            alert(errorMessage)
         }
     }
 

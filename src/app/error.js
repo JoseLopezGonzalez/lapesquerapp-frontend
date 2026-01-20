@@ -15,7 +15,7 @@ export default function Error({ error, reset }) {
     <ErrorPage 
       statusCode={500}
       title="Algo salió mal"
-      description={error?.message || 'Ha ocurrido un error inesperado. Por favor, intenta recargar la página.'}
+      description={error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Ha ocurrido un error inesperado. Por favor, intenta recargar la página.'}
       customActions={
         <Button
           onClick={reset}

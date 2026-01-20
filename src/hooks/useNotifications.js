@@ -118,12 +118,25 @@ export const useNotifications = () => {
     const handleApiError = useCallback((error, defaultMessage = 'Ha ocurrido un error') => {
         let message = defaultMessage
 
-        if (error?.message) {
+        // Priorizar userMessage sobre message para mostrar errores en formato natural
+        if (error?.userMessage) {
+            message = error.userMessage
+        } else if (error?.data?.userMessage) {
+            message = error.data.userMessage
+        } else if (error?.response?.data?.userMessage) {
+            message = error.response.data.userMessage
+        } else if (error?.message) {
             message = error.message
         } else if (typeof error === 'string') {
             message = error
+        } else if (error?.data?.userMessage) {
+            message = error.data.userMessage
+        } else if (error?.response?.data?.userMessage) {
+            message = error.response.data.userMessage
         } else if (error?.data?.message) {
             message = error.data.message
+        } else if (error?.response?.data?.message) {
+            message = error.response.data.message
         }
 
         showError(message)

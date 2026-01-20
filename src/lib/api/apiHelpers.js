@@ -161,8 +161,10 @@ export const apiRequest = async (url, options = {}, config = {}) => {
         }
 
         // Si es un error de red u otro tipo, envolverlo
+        // Priorizar userMessage sobre message para mostrar errores en formato natural
+        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error de conexión';
         throw new ApiError(
-            error.message || 'Error de conexión',
+            errorMessage,
             error.status || 0,
             error
         )

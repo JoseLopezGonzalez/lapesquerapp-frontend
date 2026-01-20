@@ -97,7 +97,7 @@ const TARE_OPTIONS = [
 ];
 
 const EditReceptionForm = ({ receptionId, onSuccess }) => {
-    const { productOptions } = useProductOptions();
+    const { productOptions, loading: productsLoading } = useProductOptions();
     const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
     const { data: session } = useSession();
     const router = useRouter();
@@ -1035,6 +1035,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                         placeholder="Seleccionar proveedor"
                                         searchPlaceholder="Buscar proveedor..."
                                         notFoundMessage="No se encontraron proveedores"
+                                        loading={suppliersLoading}
                                     />
                                 )}
                             />
@@ -1170,6 +1171,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                             className="min-w-[200px]"
                                                             aria-label={`Producto para línea ${index + 1}`}
                                                             aria-required="true"
+                                                            loading={productsLoading}
                                                         />
                                                     )}
                                                 />

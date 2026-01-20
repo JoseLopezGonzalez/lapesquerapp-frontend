@@ -103,7 +103,9 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
                     await loadExistingRecords()
                 } catch (err) {
                     console.error('Error loading record:', err)
-                    setError(err.message || 'Error al cargar el proceso')
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar el proceso';
+                    setError(errorMessage)
                 }
             } else {
                 // Si es modo creación, cargar procesos y existing records en paralelo
@@ -114,7 +116,9 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
             }
         } catch (err) {
             console.error('Error loading data:', err)
-            setError(err.message || 'Error al cargar los datos')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos';
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -178,7 +182,8 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
             return response
         } catch (err) {
             console.error('Error saving record:', err)
-            const errorMessage = err.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el proceso`
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el proceso`;
             setError(errorMessage)
             throw err
         } finally {

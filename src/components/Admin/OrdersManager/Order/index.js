@@ -100,7 +100,9 @@ const OrderContent = ({ onLoading, onClose }) => {
         toast.success('Estado del pedido actualizado', { id: toastId, ...getToastTheme() });
       })
       .catch((error) => {
-        toast.error(error.message || 'Error al actualizar el estado del pedido', { id: toastId, ...getToastTheme() });
+        // Priorizar userMessage sobre message para mostrar errores en formato natural
+        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar el estado del pedido';
+        toast.error(errorMessage, { id: toastId, ...getToastTheme() });
       });
   }, [updateOrderStatus]);
 
@@ -112,7 +114,9 @@ const OrderContent = ({ onLoading, onClose }) => {
         toast.success('Temperatura del pedido actualizada', { id: toastId, ...getToastTheme() });
       })
       .catch((error) => {
-        toast.error(error.message || 'Error al actualizar la temperatura del pedido', { id: toastId, ...getToastTheme() });
+        // Priorizar userMessage sobre message para mostrar errores en formato natural
+        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la temperatura del pedido';
+        toast.error(errorMessage, { id: toastId, ...getToastTheme() });
       });
   }, [updateTemperatureOrder]);
 

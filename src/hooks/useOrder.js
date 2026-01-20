@@ -65,6 +65,7 @@ export function useOrder(orderId, onChange) {
     const [taxOptions, setTaxOptions] = useState([]);
     const [activeTab, setActiveTab] = useState('details');
     const [optionsLoaded, setOptionsLoaded] = useState(false);
+    const [optionsLoading, setOptionsLoading] = useState(false);
     const previousOrderIdRef = useRef(null);
 
     const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
@@ -81,6 +82,7 @@ export function useOrder(orderId, onChange) {
     const loadOptions = useCallback(async () => {
         if (optionsLoaded || !accessToken) return;
         
+        setOptionsLoading(true);
         try {
             const [productsData, taxesData] = await Promise.all([
                 getProductOptions(accessToken),
@@ -100,6 +102,8 @@ export function useOrder(orderId, onChange) {
             setOptionsLoaded(true);
         } catch (err) {
             setError(err);
+        } finally {
+            setOptionsLoading(false);
         }
     }, [accessToken, optionsLoaded]);
 
@@ -387,6 +391,7 @@ export function useOrder(orderId, onChange) {
     const options = {
         taxOptions,
         productOptions,
+        loading: optionsLoading,
     }
 
     const exportDocuments = [
@@ -690,7 +695,9 @@ export function useOrder(orderId, onChange) {
             
             toast.success('Palet eliminado correctamente');
         } catch (error) {
-            toast.error(error.message || 'Error al eliminar el palet');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar el palet';
+            toast.error(errorMessage);
             throw error;
         }
     };
@@ -716,7 +723,9 @@ export function useOrder(orderId, onChange) {
             
             toast.success('Palet desvinculado correctamente');
         } catch (error) {
-            toast.error(error.message || 'Error al desvincular el palet');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular el palet';
+            toast.error(errorMessage);
             throw error;
         }
     };
@@ -757,7 +766,9 @@ export function useOrder(orderId, onChange) {
                 if (result.errors > 0) {
                     const errorDetails = result.error_details || result.errors_details || [];
                     errorDetails.forEach(error => {
-                        toast.error(`Palet ${error.pallet_id}: ${error.message}`, getToastTheme());
+                        // Priorizar userMessage sobre message para mostrar errores en formato natural
+                        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
+                        toast.error(`Palet ${error.pallet_id}: ${errorMessage}`, getToastTheme());
                     });
                 }
             }
@@ -766,7 +777,9 @@ export function useOrder(orderId, onChange) {
             const updatedOrder = await reload();
             onChange?.(updatedOrder);
         } catch (error) {
-            toast.error(error.message || 'Error al vincular los palets', getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al vincular los palets';
+            toast.error(errorMessage, getToastTheme());
             throw error;
         }
     };
@@ -800,7 +813,9 @@ export function useOrder(orderId, onChange) {
             if (result.errors > 0) {
                 const errorDetails = result.results?.filter(r => r.status !== 'unlinked') || [];
                 errorDetails.forEach(error => {
-                    toast.error(`Palet ${error.pallet_id}: ${error.message || 'Error al desvincular'}`, getToastTheme());
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular';
+                    toast.error(`Palet ${error.pallet_id}: ${errorMessage}`, getToastTheme());
                 });
             }
             
@@ -819,7 +834,9 @@ export function useOrder(orderId, onChange) {
                 onChange?.(reloadedOrder);
             }
         } catch (error) {
-            toast.error(error.message || 'Error al desvincular los palets', getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular los palets';
+            toast.error(errorMessage, getToastTheme());
             throw error;
         }
     };

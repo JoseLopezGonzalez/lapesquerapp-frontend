@@ -144,10 +144,11 @@ export const analyzeReceptionError = (error, context = 'operation') => {
             };
         }
 
-        // Return error with original message
+        // Return error with original message (verificar userMessage si está disponible)
+        const finalMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || ERROR_MESSAGES[RECEPTION_ERROR_CODES.UNKNOWN_ERROR];
         return {
             code: RECEPTION_ERROR_CODES.UNKNOWN_ERROR,
-            message: error.message || ERROR_MESSAGES[RECEPTION_ERROR_CODES.UNKNOWN_ERROR],
+            message: finalMessage,
             details: error.message,
         };
     }

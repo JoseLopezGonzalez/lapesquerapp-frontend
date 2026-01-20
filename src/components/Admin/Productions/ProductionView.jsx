@@ -63,7 +63,9 @@ const ProductionView = ({ productionId }) => {
             setTotals(totalsData)
         } catch (err) {
             console.error('Error loading production data:', err)
-            setError(err.message || 'Error al cargar los datos de la producción')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos de la producción';
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }

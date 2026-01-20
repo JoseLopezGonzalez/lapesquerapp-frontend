@@ -91,7 +91,6 @@ components/
 │   └── Combobox/          # Combobox personalizado
 ├── Utilities/             # Componentes de utilidad
 │   ├── AuthErrorInterceptor.js
-│   ├── AutocompleteSelector.js
 │   ├── Loader/
 │   ├── EmptyState/
 │   └── ...                # Otros componentes utilitarios

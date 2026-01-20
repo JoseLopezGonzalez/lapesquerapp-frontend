@@ -108,7 +108,9 @@ export const useProductionData = ({
             return newData
         } catch (err) {
             console.error('Error loading data:', err)
-            setError(err.message || 'Error al cargar los datos')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos';
+            setError(errorMessage)
             return []
         } finally {
             if (showLoading) {

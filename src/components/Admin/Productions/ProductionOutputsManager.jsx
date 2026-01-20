@@ -41,6 +41,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
 
     const [outputs, setOutputs] = useState(initialOutputs)
     const [products, setProducts] = useState([])
+    const [productsLoading, setProductsLoading] = useState(true)
     const [loading, setLoading] = useState(initialOutputs.length === 0)
     const [error, setError] = useState(null)
     // Estados de diálogos simples eliminados - solo se usa el diálogo de gestión múltiple
@@ -198,7 +199,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             setOutputs(response.data || [])
         } catch (err) {
             console.error('Error loading outputs:', err)
-            setError(err.message || 'Error al cargar las salidas')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar las salidas';
+            setError(errorMessage)
         } finally {
             if (showLoading) {
                 setLoading(false)
@@ -207,6 +210,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     }
 
     const loadProducts = async () => {
+        setProductsLoading(true)
         try {
             const token = session.user.accessToken
             const response = await getProductOptions(token)
@@ -221,6 +225,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             // console.log('Productos cargados:', formattedProducts.length, formattedProducts)
         } catch (err) {
             console.error('Error loading products:', err)
+        } finally {
+            setProductsLoading(false)
         }
     }
 
@@ -271,7 +277,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             resetForm()
         } catch (err) {
             console.error('Error creating output:', err)
-            alert(err.message || 'Error al crear la salida')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al crear la salida';
+            alert(errorMessage)
         }
     }
 
@@ -290,7 +298,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             await loadOutputsOnly()
         } catch (err) {
             console.error('Error deleting output:', err)
-            alert(err.message || 'Error al eliminar la salida')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar la salida';
+            alert(errorMessage)
         }
     }
 
@@ -629,7 +639,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             setSourceSelectionDialogOpen(false)
         } catch (err) {
             console.error('Error copying from consumptions:', err)
-            alert(err.message || 'Error al copiar desde las fuentes seleccionadas')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al copiar desde las fuentes seleccionadas';
+            alert(errorMessage)
         } finally {
             setCopyingFromConsumption(false)
         }
@@ -745,7 +757,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             
         } catch (err) {
             console.error('Error saving outputs:', err)
-            alert(err.message || 'Error al guardar las salidas')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar las salidas';
+            alert(errorMessage)
             // Asegurar que el estado se resetee incluso si hay error
             setSaving(false)
         }
@@ -779,7 +793,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             setAvailableProducts(products || [])
         } catch (err) {
             console.error('Error loading available products:', err)
-            alert(err.message || 'Error al cargar los productos disponibles')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los productos disponibles';
+            alert(errorMessage)
         } finally {
             setLoadingAvailableProducts(false)
         }
@@ -890,7 +906,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             }
         } catch (err) {
             console.error('Error adding selected products:', err)
-            alert(err.message || 'Error al agregar los productos seleccionados')
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al agregar los productos seleccionados';
+            alert(errorMessage)
         }
     }
 
@@ -1376,6 +1394,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                             placeholder="Buscar producto..."
                                                             searchPlaceholder="Buscar producto..."
                                                             notFoundMessage="No se encontraron productos"
+                                                            loading={productsLoading}
                                                         />
                                                     </div>
                                                 </TableCell>

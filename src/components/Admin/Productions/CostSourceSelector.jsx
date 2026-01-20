@@ -60,7 +60,9 @@ export default function CostSourceSelector({
             setConsumptions(consumptionsData.data || []);
         } catch (err) {
             console.error('Error loading sources:', err);
-            setError(err.message || 'Error al cargar las fuentes');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar las fuentes';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

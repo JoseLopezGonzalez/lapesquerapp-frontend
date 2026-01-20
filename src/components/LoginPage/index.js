@@ -88,7 +88,9 @@ export default function LoginPage() {
       toast.success("Inicio de sesión exitoso", getToastTheme());
       window.location.href = redirectTo;
     } catch (err) {
-      toast.error(err.message, getToastTheme());
+      // Priorizar userMessage sobre message para mostrar errores en formato natural
+      const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al iniciar sesión';
+      toast.error(errorMessage, getToastTheme());
     } finally {
       setLoading(false);
     }

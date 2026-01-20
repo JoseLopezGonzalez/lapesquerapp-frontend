@@ -140,6 +140,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const [activeOrdersOptions, setActiveOrdersOptions] = useState([])
     const [productsOptions, setProductsOptions] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
     const [boxCreationData, setBoxCreationData] = useState(initialboxCreationData)
     
     // Función helper para resetear boxCreationData preservando valores de descuento actuales
@@ -184,7 +185,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     setPallet(data);
                 })
                 .catch((err) => {
-                    setError(err.message || 'Error al cargar el palet');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar el palet';
+                    setError(errorMessage);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -198,6 +201,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             .catch((err) => {
                 console.error('Error al cargar las opciones de pedidos:', err);
             });
+        setProductsLoading(true);
         getProductOptions(token)
             .then((data) => {
                 setProductsOptions(
@@ -210,6 +214,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             })
             .catch((err) => {
                 console.error('Error al cargar las opciones de productos:', err);
+            })
+            .finally(() => {
+                setProductsLoading(false);
             });
     }, [id, token, reload, initialStoreId, initialOrderId]);
 
@@ -1033,7 +1040,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
                 .catch((err) => {
                     console.error('Error al crear el palet:', err);
-                    toast.error(err.message || 'Error al crear el palet', getToastTheme());
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al crear el palet';
+                    toast.error(errorMessage, getToastTheme());
                 })
                 .finally(() => {
                     setSaving(false);
@@ -1050,7 +1059,9 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
                 .catch((err) => {
                     console.error('Error al actualizar el palet:', err);
-                    toast.error(err.message || 'Error al actualizar el palet', getToastTheme());
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al actualizar el palet';
+                    toast.error(errorMessage, getToastTheme());
                 })
                 .finally(() => {
                     setSaving(false);
@@ -1093,6 +1104,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         activeOrdersOptions,
         editPallet,
         productsOptions,
+        productsLoading,
         boxCreationData,
         boxCreationDataChange,
         onResetBoxCreationData,

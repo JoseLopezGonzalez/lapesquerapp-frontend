@@ -447,6 +447,8 @@ Los siguientes componentes también están disponibles en `/src/components/ui/`:
 - `searchPlaceholder` - String (placeholder del input de búsqueda)
 - `notFoundMessage` - String (mensaje cuando no hay resultados)
 - `className` - String (clases adicionales)
+- `loading` - Boolean (opcional, por defecto `false`) - Muestra spinner y deshabilita el componente mientras carga
+- `disabled` - Boolean (opcional, por defecto `false`) - Deshabilita el componente
 
 **Características**:
 - Búsqueda en tiempo real
@@ -454,6 +456,8 @@ Los siguientes componentes también están disponibles en `/src/components/ui/`:
 - Indicador de selección (checkmark)
 - Cierre automático al seleccionar
 - Deselección al hacer click en item seleccionado
+- **Estado de carga**: Muestra spinner y mensaje "Cargando opciones..." cuando `loading={true}`
+- **Deshabilitado**: Se deshabilita automáticamente cuando `loading={true}` o `disabled={true}`
 
 **Uso**:
 ```jsx
@@ -469,6 +473,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
   placeholder="Seleccionar..."
   searchPlaceholder="Buscar..."
   notFoundMessage="No se encontraron resultados"
+  loading={isLoading}
 />
 ```
 
@@ -500,11 +505,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 
 ---
 
-### AutocompleteSelector (`/src/components/Utilities/AutocompleteSelector.js`)
-
-**Archivo**: `/src/components/Utilities/AutocompleteSelector.js`
-
-**Funcionalidad**: Selector con autocompletado (probablemente wrapper de Combobox o Command).
+**Nota**: El componente `AutocompleteSelector` ha sido eliminado. Se debe usar `Combobox` de Shadcn en su lugar.
 
 ---
 

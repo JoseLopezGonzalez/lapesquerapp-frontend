@@ -499,7 +499,9 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         } catch (error) {
             console.error('Error al duplicar el palet:', error);
             toast.dismiss(loadingToastId);
-            toast.error(error.message || 'Error al duplicar el palet', getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al duplicar el palet';
+            toast.error(errorMessage, getToastTheme());
         } finally {
             setIsDuplicatingPallet(false);
         }

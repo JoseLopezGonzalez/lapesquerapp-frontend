@@ -3324,15 +3324,6 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
-            },
-            {
-              name: "active",
-              label: "Estado",
-              type: "pairSelectBoxes",
-              options: [
-                { name: "active", label: "Activo", value: true },
-                { name: "inactive", label: "Inactivo", value: false },
-              ],
             }
           ],
         }
@@ -3422,15 +3413,6 @@ export const configs = {
               label: "IDs",
               type: "textAccumulator",
               placeholder: "Buscar por ID",
-            },
-            {
-              name: "active",
-              label: "Estado",
-              type: "pairSelectBoxes",
-              options: [
-                { name: "active", label: "Activo", value: true },
-                { name: "inactive", label: "Inactivo", value: false },
-              ],
             }
           ],
         },

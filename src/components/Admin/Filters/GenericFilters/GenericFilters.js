@@ -18,20 +18,24 @@ export const GenericFilters = ({ data }) => {
 
     useEffect(() => {
         // Inicializar los filtros locales agrupados
-        const { search, groups } = configFiltersGroup;
+        const { search, groups } = configFiltersGroup || {};
         const initialFiltersGroup = {
             search: {
                 ...search,
-                filters: search.filters.map((filter) => ({
+                filters: (search?.filters || []).map((filter) => ({
                     ...filter,
                     value: filter.value || '',
+                    // Asegurarse de que el tipo esté presente
+                    type: filter.type || 'search',
                 })),
             },
-            groups: groups.map((group) => ({
+            groups: (groups || []).map((group) => ({
                 ...group,
-                filters: group.filters.map((filter) => ({
+                filters: (group.filters || []).map((filter) => ({
                     ...filter,
                     value: filter.value || (filter.type === 'dateRange' ? { from: null, to: null } : ''),
+                    // Asegurarse de que el tipo esté presente
+                    type: filter.type,
                 })),
             })),
         };
@@ -68,20 +72,21 @@ export const GenericFilters = ({ data }) => {
                     ...prevGroups,
                     search: {
                         ...prevGroups.search,
-                        filters: prevGroups.search.filters.map((filter) =>
+                        filters: (prevGroups.search?.filters || []).map((filter) =>
                             filter.name === filterName ? { ...filter, value } : filter
                         ),
                     },
                 };
             }
 
+            // Buscar el grupo por nombre, asegurándose de que group.name exista
             return {
                 ...prevGroups,
-                groups: prevGroups.groups.map((group) =>
+                groups: (prevGroups.groups || []).map((group) =>
                     group.name === groupName
                         ? {
                             ...group,
-                            filters: group.filters.map((filter) =>
+                            filters: (group.filters || []).map((filter) =>
                                 filter.name === filterName ? { ...filter, value } : filter
                             ),
                         }
@@ -97,22 +102,27 @@ export const GenericFilters = ({ data }) => {
     const handleFiltersSubmit = () => {
         // Formatear los filtros para enviarlos globalmente, filtrando los vacíos
         const allFilters = [
-            ...localFiltersGroup.search.filters.map(({ name, value, type }) => ({
-                name,
-                value,
-                type,
+            ...(localFiltersGroup.search?.filters || []).map((filter) => ({
+                name: filter.name,
+                value: filter.value,
+                type: filter.type,
             })),
-            ...localFiltersGroup.groups.flatMap((group) =>
-                group.filters.map(({ name, value, type }) => ({
-                    name,
-                    value,
-                    type,
+            ...(localFiltersGroup.groups || []).flatMap((group) =>
+                (group.filters || []).map((filter) => ({
+                    name: filter.name,
+                    value: filter.value,
+                    type: filter.type,
                 }))
             ),
         ];
 
         // Filtrar los filtros vacíos
         const formattedFilters = allFilters.filter((filter) => {
+            // Asegurarse de que el filtro tenga name y type
+            if (!filter.name || !filter.type) {
+                return false;
+            }
+            
             if (filter.type === 'dateRange') {
                 return filter.value?.from || filter.value?.to;
             } else if (Array.isArray(filter.value)) {
@@ -129,18 +139,18 @@ export const GenericFilters = ({ data }) => {
     };
 
     const handleFiltersReset = () => {
-        const { search, groups } = configFiltersGroup;
+        const { search, groups } = configFiltersGroup || {};
         const resetFiltersGroup = {
             search: {
                 ...search,
-                filters: search.filters.map((filter) => ({
+                filters: (search?.filters || []).map((filter) => ({
                     ...filter,
                     value: '',
                 })),
             },
-            groups: groups.map((group) => ({
+            groups: (groups || []).map((group) => ({
                 ...group,
-                filters: group.filters.map((filter) => ({
+                filters: (group.filters || []).map((filter) => ({
                     ...filter,
                     value: filter.type === 'dateRange' ? { from: null, to: null } : '',
                 })),

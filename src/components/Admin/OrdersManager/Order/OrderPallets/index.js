@@ -148,7 +148,9 @@ const OrderPallets = () => {
             toast.success('Palet clonado. Puedes editarlo antes de guardarlo.', getToastTheme());
         } catch (error) {
             console.error('Error al clonar el palet:', error);
-            toast.error(error.message || 'Error al clonar el palet', getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al clonar el palet';
+            toast.error(errorMessage, getToastTheme());
         } finally {
             setIsCloning(false);
         }
@@ -347,7 +349,9 @@ const OrderPallets = () => {
             // NO seleccionar automáticamente - el usuario debe seleccionarlos manualmente
         } catch (error) {
             console.error('Error al buscar palets:', error);
-            toast.error(error.message || 'Error al buscar palets', getToastTheme());
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al buscar palets';
+            toast.error(errorMessage, getToastTheme());
         } finally {
             setIsSearching(false);
         }

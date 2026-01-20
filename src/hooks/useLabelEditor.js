@@ -163,7 +163,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             toast.success(`Etiqueta ${selectedLabel?.id ? 'actualizada' : 'guardada'} correctamente.`);
             return result;
         } catch (err) {
-            toast.error(err.message || 'Error al guardar etiqueta.');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar etiqueta.';
+            toast.error(errorMessage);
             console.error(err);
         }
     };
@@ -184,11 +186,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     setLabelId(null);
                 })
                 .catch((err) => {
-                    toast.error(err.message || 'Error al eliminar etiqueta.');
+                    // Priorizar userMessage sobre message para mostrar errores en formato natural
+                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar etiqueta.';
+                    toast.error(errorMessage);
                     console.error(err);
                 });
         } catch (err) {
-            toast.error(err.message || 'Error al eliminar etiqueta.');
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar etiqueta.';
+            toast.error(errorMessage);
             console.error(err);
         }
     };

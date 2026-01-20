@@ -29,7 +29,7 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
 
 const CreateOrderForm = ({ onCreate }) => {
-    const { productOptions } = useProductOptions();
+    const { productOptions, loading: productsLoading } = useProductOptions();
     const { taxOptions } = useTaxOptions();
 
     const { data: session } = useSession();
@@ -37,7 +37,8 @@ const CreateOrderForm = ({ onCreate }) => {
     // porque el servicio lo obtiene con getSession().
     // const token = session?.user?.accessToken;
 
-    const { defaultValues, formGroups, loading, handleGetCustomer } = useOrderCreateFormConfig(); // Asumiendo que handleGetCustomer no hace llamadas directas a fetchWithTenant aquí
+    const { defaultValues, formGroups, loading: formConfigLoading, handleGetCustomer } = useOrderCreateFormConfig(); // Asumiendo que handleGetCustomer no hace llamadas directas a fetchWithTenant aquí
+    const loading = formConfigLoading || productsLoading;
 
     // Ref para rastrear si el formulario ya fue inicializado
     const isInitializedRef = useRef(false);
@@ -159,8 +160,9 @@ const CreateOrderForm = ({ onCreate }) => {
 
         } catch (error) {
             console.error('Error al crear el pedido:', error);
-            // Mostrar el mensaje de error del servicio o un mensaje genérico
-            toast.error(error.message || 'Error desconocido al crear el pedido', { id: toastId });
+            // Priorizar userMessage sobre message para mostrar errores en formato natural
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido al crear el pedido';
+            toast.error(errorMessage, { id: toastId });
         }
     };
 
@@ -229,6 +231,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                 onChange={onChange}
                                 onBlur={onBlur}
                                 className={field.props?.className}
+                                loading={loading}
                             />
                         )}
                     />
@@ -314,6 +317,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                                 value={value}
                                                 onChange={onChange}
                                                 placeholder="Selecciona un producto"
+                                                loading={productsLoading}
                                             />
                                         )}
                                     />

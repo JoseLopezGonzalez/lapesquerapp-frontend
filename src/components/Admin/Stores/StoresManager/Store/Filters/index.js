@@ -14,7 +14,7 @@ import { PalletsListDialog } from "../PalletsListDialog"
 
 const Filters = () => {
 
-    const { productsOptions, onChangeFilters, filters, resetFilters, palletsOptions } = useStoreContext();
+    const { productsOptions, onChangeFilters, filters, resetFilters, palletsOptions, loading } = useStoreContext();
 
     const selectedProducts = filters.products.map((product) => productsOptions.find((option) => option.value === product));
 
@@ -75,6 +75,7 @@ const Filters = () => {
                                     searchPlaceholder="Buscar producto"
                                     notFoundMessage="No se encontraron productos"
                                     onChange={handleOnAddProduct}
+                                    loading={loading}
                                 />
                             </div>
 
@@ -108,6 +109,7 @@ const Filters = () => {
                                     searchPlaceholder="Buscar palet"
                                     notFoundMessage="No se encontraron palets"
                                     onChange={handleOnAddPallet}
+                                    loading={loading}
                                 />
                             </div>
                             <div className="flex flex-wrap gap-2">

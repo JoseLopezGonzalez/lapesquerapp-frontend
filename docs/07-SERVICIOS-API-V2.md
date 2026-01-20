@@ -508,19 +508,7 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
 - **Uso**: Para filtros de autocompletado
 - **Formato**: Elimina duplicados y mapea a `{value: id, label: name}`
 
-##### `fetchAutocompleteInputOptions(endpoint)`
-- **Método**: GET
-- **Endpoint**: `/api/v2/{endpoint}` (dinámico)
-- **Nota**: Obtiene token automáticamente con `getSession()`
-- **Retorna**: `Promise<Array<{id: any, name: string}>>`
-- **Uso**: Para inputs de autocompletado
-- **Formato**: Elimina duplicados y mapea a `{id: id, name: name}`
-
-**Ejemplo de uso**:
-```javascript
-const options = await fetchAutocompleteFilterOptions('products/options');
-// Retorna: [{value: 1, label: "Producto 1"}, ...]
-```
+**Nota**: La función `fetchAutocompleteInputOptions` ha sido eliminada. Se debe usar `fetchAutocompleteFilterOptions` en su lugar, que retorna el formato `{value, label}` compatible con el componente `Combobox` de Shadcn.
 
 ---
 
