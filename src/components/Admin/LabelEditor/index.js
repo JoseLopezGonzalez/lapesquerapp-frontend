@@ -732,6 +732,7 @@ export default function LabelEditor() {
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Párrafo</h4>
                                             <RichParagraphConfigPanel
+                                                key={selectedElementData.id}
                                                 html={selectedElementData.html || ''}
                                                 onChange={(val) => updateElement(selectedElementData.id, { html: val })}
                                                 fieldOptions={allFieldOptions}

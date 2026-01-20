@@ -8,7 +8,8 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
   const editorRef = useRef(null)
   const fieldMapRef = useRef({})
   const isUserEditingRef = useRef(false)
-  const lastHtmlRef = useRef(html || '')
+  const lastHtmlRef = useRef('')
+  const isInitialMountRef = useRef(true)
 
   useEffect(() => {
     fieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.value, o.label]))
@@ -16,11 +17,22 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
 
   useEffect(() => {
     if (!editorRef.current) return
+    
+    const currentHtml = html || ''
+    
+    // En el montaje inicial, siempre renderizar el contenido
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false
+      lastHtmlRef.current = currentHtml
+      renderContent()
+      return
+    }
+    
     // Solo actualizar si el HTML cambió externamente y no estamos editando
     if (isUserEditingRef.current) return
-    if (lastHtmlRef.current === (html || '')) return
+    if (lastHtmlRef.current === currentHtml) return
     
-    lastHtmlRef.current = html || ''
+    lastHtmlRef.current = currentHtml
     renderContent()
   }, [html])
 

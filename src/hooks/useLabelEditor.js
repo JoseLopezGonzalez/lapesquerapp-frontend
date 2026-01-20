@@ -185,6 +185,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             } else {
                 result = await createLabel(labelName, labelFormat, token);
                 if (result?.data?.id) {
+                    setLabelId(result.data.id);
                     setSelectedLabel(result.data);
                 }
             }
