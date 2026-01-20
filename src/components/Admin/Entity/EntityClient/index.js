@@ -498,13 +498,16 @@ export default function EntityClient({ config }) {
                     <EntityBody
                         data={{ loading: data.loading, rows }}
                         columns={columns}
+                        headers={config.table?.headers || []}
                         loading={data.loading}
                         emptyState={config.emptyState || { title: '', description: '' }}
                         isSelectable={true}
                         selectedRows={selectedRows}
                         onSelectionChange={handleOnSelectionChange}
                         onEdit={handleOpenEdit}
+                        onView={handleOpenView}
                         isBlocked={isRefreshing || isDeleting || isGeneratingReport || isExporting}
+                        config={config}
                     />
                 </div>
                 <EntityFooter>

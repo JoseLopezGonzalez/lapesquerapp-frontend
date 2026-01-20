@@ -7,18 +7,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
+import { useIsMobileSafe } from "@/hooks/use-mobile";
+import { AccordionBody } from "./AccordionBody";
 
 export const EntityBody = ({ 
     data, 
-    columns, 
+    columns,
+    headers,
     loading = false, 
     emptyState, 
     isSelectable = false, 
     selectedRows = [], 
     onSelectionChange,
     onEdit,
-    isBlocked = false
+    onView,
+    isBlocked = false,
+    config
 }) => {
+    const { isMobile } = useIsMobileSafe();
     // Añadir columna de selección si corresponde
     const tableColumns = React.useMemo(() => {
         if (!isSelectable) return columns;
@@ -73,6 +79,25 @@ export const EntityBody = ({
         columns: tableColumns,
         getCoreRowModel: getCoreRowModel(),
     });
+
+    // Renderizado condicional: Accordion en mobile, Tabla en desktop
+    if (isMobile) {
+        return (
+            <AccordionBody
+                data={data}
+                headers={headers}
+                loading={loading}
+                emptyState={emptyState}
+                isSelectable={isSelectable}
+                selectedRows={selectedRows}
+                onSelectionChange={onSelectionChange}
+                onEdit={onEdit}
+                onView={onView}
+                isBlocked={isBlocked}
+                config={config}
+            />
+        );
+    }
 
     // Loading state
     if (loading) {
