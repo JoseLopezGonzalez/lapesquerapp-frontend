@@ -55,6 +55,7 @@ export function useLabel({ boxes = [], open }) {
 
     const [label, setLabel] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingLabel, setIsLoadingLabel] = useState(false);
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
     const [manualFields, setManualFields] = useState({});
@@ -88,12 +89,14 @@ export function useLabel({ boxes = [], open }) {
                 setFields([]);
                 setLabelsOptions([]);
                 setIsLoading(false);
+                setIsLoadingLabel(false);
             }, 500); // Esperar un poco para que el modal se cierre antes de resetear
         }
 
     }, [open]);
 
     const selectLabel = (labelId) => {
+        setIsLoadingLabel(true);
         getLabel(labelId, token)
             .then((data) => {
                 setLabel(data);
@@ -126,6 +129,9 @@ export function useLabel({ boxes = [], open }) {
             })
             .catch((error) => {
                 console.error("Error fetchWithTenanting label:", error);
+            })
+            .finally(() => {
+                setIsLoadingLabel(false);
             });
     }
 
@@ -156,5 +162,6 @@ export function useLabel({ boxes = [], open }) {
         values,
         disabledPrintButton,
         isLoading,
+        isLoadingLabel,
     };
 }

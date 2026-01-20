@@ -3,12 +3,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { COMPANY_NAME } from "@/configs/config";
 import { useOrderContext } from "@/context/OrderContext";
+import { useSettings } from "@/context/SettingsContext";
 
 const OrderMap = () => {
     const { order } = useOrderContext();
+    const { settings, loading } = useSettings();
 
     const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
-    const origin = COMPANY_NAME
+    const origin = !loading && settings?.["company.name"] ? settings["company.name"] : COMPANY_NAME;
 
     return (
         <div className='h-full pb-2'>

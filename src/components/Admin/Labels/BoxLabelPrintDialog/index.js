@@ -10,13 +10,14 @@ import { useLabel } from '@/hooks/useLabel';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import LabelRender from '../../LabelEditor/LabelRender';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Printer } from 'lucide-react';
+import { Printer, SquareMousePointer } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
+import { motion } from 'framer-motion';
 
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
-    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading } = useLabel({ boxes, open });
+    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
@@ -48,7 +49,39 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                 <ScrollArea className="max-h-[70vh] w-full ">
                     <div className="space-y-6 px-2 pr-3">
 
-                        {label && (
+                        {isLoadingLabel && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex items-center justify-center w-full py-8"
+                            >
+                                <div className="flex flex-col items-center justify-center gap-3">
+                                    <motion.div
+                                        animate={{ scale: [1, 1.1, 1] }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className="rounded-full bg-primary/10 p-4"
+                                    >
+                                        <SquareMousePointer className="h-6 w-6 text-primary" />
+                                    </motion.div>
+                                    <motion.p
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.1 }}
+                                        className="text-sm font-medium text-muted-foreground"
+                                    >
+                                        Cargando formato...
+                                    </motion.p>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {label && !isLoadingLabel && (
                             <div className="flex items-center justify-center w-full">
                                 <div className='bg-orange-200 px-4'>
                                     <div className="flex flex-col items-center  gap-4">
@@ -66,35 +99,39 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                         )}
 
                         {/* Selector de formato */}
-                        <div className="flex flex-col gap-1">
-                            <Label className="text-sm">Formato de etiqueta</Label>
-                            <Select onValueChange={handleOnChangeLabel}>
-                                <SelectTrigger className="w-full" loading={isLoading}>
-                                    <SelectValue placeholder="Selecciona un formato" loading={isLoading} />
-                                </SelectTrigger>
-                                <SelectContent loading={isLoading}>
-                                    {labelsOptions.map((option) => (
-                                        <SelectItem key={option.id} value={option.id}>
-                                            {option.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {!isLoadingLabel && (
+                            <div className="flex flex-col gap-1">
+                                <Label className="text-sm">Formato de etiqueta</Label>
+                                <Select onValueChange={handleOnChangeLabel}>
+                                    <SelectTrigger className="w-full" loading={isLoading}>
+                                        <SelectValue placeholder="Selecciona un formato" loading={isLoading} />
+                                    </SelectTrigger>
+                                    <SelectContent loading={isLoading}>
+                                        {labelsOptions.map((option) => (
+                                            <SelectItem key={option.id} value={option.id}>
+                                                {option.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         {/* Campos manuales */}
-                        <div className="space-y-4">
-                            {Object.entries(manualFields).map(([key, value]) => (
-                                <div key={key} className="flex flex-col gap-1">
-                                    <Label className="text-sm">{key}</Label>
-                                    <Input
-                                        placeholder={`Introduce ${key.toLowerCase()}`}
-                                        value={value}
-                                        onChange={(e) => handleOnChangeManualField(key, e.target.value)}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        {!isLoadingLabel && (
+                            <div className="space-y-4">
+                                {Object.entries(manualFields).map(([key, value]) => (
+                                    <div key={key} className="flex flex-col gap-1">
+                                        <Label className="text-sm">{key}</Label>
+                                        <Input
+                                            placeholder={`Introduce ${key.toLowerCase()}`}
+                                            value={value}
+                                            onChange={(e) => handleOnChangeManualField(key, e.target.value)}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Imprimir */}
                         <div id="print-area-id" className="hidden print:block">
@@ -111,16 +148,17 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                     </div>
                 </ScrollArea>
 
-                <DialogFooter className="pt-4">
-                    <Button
-
-                        onClick={handleOnClickPrintLabel}
-                        className="w-full"
-                    >
-                        <Printer className="h-4 w-4" />
-                        Imprimir {`(${boxes.length})`}
-                    </Button>
-                </DialogFooter>
+                {!isLoadingLabel && (
+                    <DialogFooter className="pt-4">
+                        <Button
+                            onClick={handleOnClickPrintLabel}
+                            className="w-full"
+                        >
+                            <Printer className="h-4 w-4" />
+                            Imprimir {`(${boxes.length})`}
+                        </Button>
+                    </DialogFooter>
+                )}
             </DialogContent>
         </Dialog>
     );

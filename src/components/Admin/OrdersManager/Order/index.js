@@ -267,8 +267,8 @@ const OrderContent = ({ onLoading, onClose }) => {
                     </DropdownMenu>
                   </div>
                   <div className='flex flex-col items-end justify-center'>
-                    <img className="max-w-[120px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <h3 className='text-xl sm:text-2xl font-light'>{order.transport.name}</h3>
+                    <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                    <h3 className='text-3xl font-light'>{order.transport.name}</h3>
                   </div>
                 </div>
               </div>
