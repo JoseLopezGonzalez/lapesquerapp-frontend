@@ -20,6 +20,12 @@ export default function AllPalletsLabelDialog({ isOpen, onClose, pallets = [] })
         onPrint();
     };
 
+    // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
+    // PALLET_LABEL_SIZE.width es "110mm", extraemos el número
+    const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110; // default 110mm
+    // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
+    const maxDialogWidth = Math.max(512, (labelWidth * 3.779) + 200); // mínimo 512px (max-w-lg), más espacio para padding
+
     if (!pallets || pallets.length === 0) {
         return null;
     }
@@ -33,7 +39,7 @@ export default function AllPalletsLabelDialog({ isOpen, onClose, pallets = [] })
     if (validPallets.length === 0) {
         return (
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-full max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="w-full max-h-[90vh] overflow-hidden flex flex-col" style={{ maxWidth: `${maxDialogWidth}px` }}>
                     <DialogHeader>
                         <DialogTitle>
                             Imprimir Todas las Etiquetas
@@ -56,7 +62,7 @@ export default function AllPalletsLabelDialog({ isOpen, onClose, pallets = [] })
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="w-full max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogContent className="w-full max-h-[90vh] overflow-hidden flex flex-col" style={{ maxWidth: `${maxDialogWidth}px` }}>
                     <DialogHeader>
                         <DialogTitle>
                             Imprimir Todas las Etiquetas ({validPallets.length} pallets)
@@ -70,8 +76,8 @@ export default function AllPalletsLabelDialog({ isOpen, onClose, pallets = [] })
                                 Productos o lotes podrían no mostrarse completamente. Cada etiqueta se imprimirá en una página separada.
                             </AlertDescription>
                         </Alert>
-                        <div className="flex flex-col items-center gap-4">
-                            <div className='bg-orange-200 px-4 py-4 overflow-y-auto' style={{ maxHeight: PALLET_LABEL_SIZE.height, height: PALLET_LABEL_SIZE.height }}>
+                        <div className="flex flex-col items-center gap-4 overflow-x-auto w-full">
+                            <div className='bg-orange-200 px-4 py-4 overflow-y-auto flex-shrink-0' style={{ maxHeight: PALLET_LABEL_SIZE.height, height: PALLET_LABEL_SIZE.height }}>
                                 <div className="flex flex-col items-center gap-4"
                                     style={{ width: PALLET_LABEL_SIZE.width }}>
                                     <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground shadow">

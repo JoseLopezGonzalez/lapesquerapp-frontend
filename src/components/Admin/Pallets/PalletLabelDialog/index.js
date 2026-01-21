@@ -24,6 +24,12 @@ export default function PalletLabelDialog({isOpen , onClose , pallet}) {
         onClose();
     };
 
+    // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
+    // PALLET_LABEL_SIZE.width es "110mm", extraemos el número
+    const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110; // default 110mm
+    // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
+    const maxDialogWidth = Math.max(512, (labelWidth * 3.779) + 200); // mínimo 512px (max-w-lg), más espacio para padding
+
     return (
         <>
             <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
@@ -48,7 +54,7 @@ export default function PalletLabelDialog({isOpen , onClose , pallet}) {
                     </div>
                 </DialogContent>
             ) : (
-                <DialogContent className="w-full  max-h-[90vw] overflow-hidden">
+                <DialogContent className="w-full max-h-[90vh] overflow-hidden" style={{ maxWidth: `${maxDialogWidth}px` }}>
                     <DialogHeader>
                         <DialogTitle className="">
                             {pallet?.id ? `Etiqueta - Palet #${pallet.id}` : "Nuevo Palet"}
@@ -62,8 +68,8 @@ export default function PalletLabelDialog({isOpen , onClose , pallet}) {
                                     Productos o lotes podrían no mostrarse completamente.
                                 </AlertDescription>
                             </Alert>
-                            <div className="flex flex-col items-center gap-4 mt-4  ">
-                                <div className='bg-orange-200 px-4'>
+                            <div className="flex flex-col items-center gap-4 mt-4 overflow-x-auto w-full">
+                                <div className='bg-orange-200 px-4 flex-shrink-0'>
                                     <div className="flex flex-col items-center  gap-4"
                                         style={{ width: PALLET_LABEL_SIZE.width }}>
                                         <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">

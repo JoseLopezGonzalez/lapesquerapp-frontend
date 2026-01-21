@@ -14,7 +14,7 @@ export const labelFields = {
     "product.species.faoCode": { label: "Código FAO", defaultValue: "OCC" },
     "product.species.scientificName": { label: "Nombre Científico", defaultValue: "Octopus vulgaris" },
     "product.species.fishingGear.name": { label: "Arte de Pesca", defaultValue: "Nasas y trampas" },
-    "product.species.captureZone.name": { label: "Zona de Captura", defaultValue: "FAO 27 IX.a Atlántico Nordeste" },
+    "product.captureZone.name": { label: "Zona de Captura", defaultValue: "FAO 27 IX.a Atlántico Nordeste" },
     "product.boxGtin": { label: "GTIN del Producto", defaultValue: "98436613931182" },
     "netWeight": { label: "Peso Neto", defaultValue: "20,000 kg" },
     "lot": { label: "Lote", defaultValue: "120225OCC01001" },

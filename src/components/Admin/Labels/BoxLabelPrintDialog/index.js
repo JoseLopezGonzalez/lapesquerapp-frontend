@@ -39,14 +39,19 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
         changeManualField(key, value);
     };
 
+    // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
+    // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
+    const labelWidth = label?.format?.canvas?.width || 110; // default 110mm
+    const maxDialogWidth = Math.max(512, (labelWidth * 3.779) + 200); // mínimo 512px (max-w-lg), más espacio para padding
+
     return (
         <Dialog open={open} onOpenChange={onClose} >
-            <DialogContent className="max-w-lg overflow-hidden">
+            <DialogContent className="overflow-hidden" style={{ maxWidth: `${maxDialogWidth}px` }}>
                 <DialogHeader>
                     <DialogTitle>Completa campos manuales</DialogTitle>
                 </DialogHeader>
 
-                <ScrollArea className="max-h-[70vh] w-full ">
+                <ScrollArea className="max-h-[70vh] w-full overflow-x-auto">
                     <div className="space-y-6 px-2 pr-3">
 
                         {isLoadingLabel && (
@@ -82,8 +87,8 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                         )}
 
                         {label && !isLoadingLabel && (
-                            <div className="flex items-center justify-center w-full">
-                                <div className='bg-orange-200 px-4'>
+                            <div className="flex items-center justify-center w-full overflow-x-auto">
+                                <div className='bg-orange-200 px-4 flex-shrink-0'>
                                     <div className="flex flex-col items-center  gap-4">
                                         <div className="w-full h-10 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
                                         </div>

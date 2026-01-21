@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { Maximize2 } from 'lucide-react'
 
@@ -17,11 +16,13 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
   const largeEditorRef = useRef(null)
   const fieldMapRef = useRef({})
   const isUserEditingRef = useRef(false)
+  const isLargeEditorEditingRef = useRef(false)
   const lastHtmlRef = useRef('')
+  const lastLargeEditorHtmlRef = useRef('')
   const isInitialMountRef = useRef(true)
+  const isLargeEditorInitialMountRef = useRef(true)
   const selectedBadgeRef = useRef(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [dialogHtml, setDialogHtml] = useState('')
 
   useEffect(() => {
     fieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.value, o.label]))
@@ -466,8 +467,9 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
       } else {
         range.deleteContents()
         range.insertNode(badge)
-        range.insertNode(placeholder.cloneNode())
-        range.setStartAfter(placeholder)
+        const insertedPlaceholder = placeholder.cloneNode()
+        range.insertNode(insertedPlaceholder)
+        range.setStartAfter(insertedPlaceholder)
         range.collapse(true)
         sel.removeAllRanges()
         sel.addRange(range)
@@ -602,14 +604,13 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
   }, [onChange])
 
   const handleOpenDialog = () => {
-    // Obtener el contenido actual del editor pequeño como HTML con tokens
-    const currentContent = editorRef.current ? extractValue() : (html || '')
-    // Establecer el contenido primero
-    setDialogHtml(currentContent)
-    // Luego abrir el diálogo después de un pequeño delay para asegurar que dialogHtml esté actualizado
-    setTimeout(() => {
-      setIsDialogOpen(true)
-    }, 0)
+    // Resetear flags del editor grande
+    isLargeEditorInitialMountRef.current = true
+    isLargeEditorEditingRef.current = false
+    lastLargeEditorHtmlRef.current = ''
+    
+    // Abrir el diálogo (el contenido se sincronizará desde html via useEffect)
+    setIsDialogOpen(true)
   }
 
   // Callback ref para el editor grande
@@ -617,31 +618,146 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
     largeEditorRef.current = element
   }
   
-  // Efecto para renderizar cuando el diálogo se abre o cuando dialogHtml cambia
-  useEffect(() => {
-    if (isDialogOpen && largeEditorRef.current) {
-      const contentToRender = dialogHtml || html || ''
-      // Usar setTimeout para asegurar que el DOM esté completamente listo
-      const timer = setTimeout(() => {
-        if (largeEditorRef.current && contentToRender) {
-          renderContentInEditor(largeEditorRef.current, contentToRender)
-        }
-      }, 150)
+  // Función para renderizar contenido en el editor grande (igual que renderContent pero para el editor grande)
+  const renderContentInLargeEditor = () => {
+    if (!largeEditorRef.current) return
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html || '', 'text/html')
+
+    const replaceTokens = (node, styleWrappers = []) => {
+      const children = Array.from(node.childNodes)
       
-      return () => clearTimeout(timer)
+      children.forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const parts = child.textContent.split(/({{[^}]+}})/g)
+          const frag = document.createDocumentFragment()
+          
+          parts.forEach(part => {
+            if (/^{{[^}]+}}$/.test(part)) {
+              const field = part.slice(2, -2)
+              const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
+              
+              const { badge, placeholder } = createBadge(field, label)
+              let badgeElement = badge
+              
+              // Aplicar wrappers de estilo en orden (del más interno al más externo)
+              styleWrappers.forEach(wrapper => {
+                const wrapperEl = document.createElement(wrapper.tag)
+                if (wrapper.style) {
+                  wrapperEl.setAttribute('style', wrapper.style)
+                }
+                wrapperEl.appendChild(badgeElement)
+                badgeElement = wrapperEl
+              })
+              
+              frag.appendChild(badgeElement)
+              frag.appendChild(placeholder.cloneNode())
+            } else if (part) {
+              frag.appendChild(document.createTextNode(part))
+            }
+          })
+          
+          child.replaceWith(frag)
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          // Detectar elementos de estilo
+          const newWrappers = [...styleWrappers]
+          
+          if (child.tagName === 'B' || child.tagName === 'I' || child.tagName === 'U') {
+            newWrappers.push({ tag: child.tagName.toLowerCase() })
+          } else if (child.tagName === 'SPAN' && child.hasAttribute('style')) {
+            newWrappers.push({ tag: 'span', style: child.getAttribute('style') })
+          }
+          
+          replaceTokens(child, newWrappers)
+        }
+      })
     }
-  }, [isDialogOpen, dialogHtml, html])
+
+    replaceTokens(doc.body)
+    largeEditorRef.current.innerHTML = doc.body.innerHTML
+    
+    // Asegurar que todos los badges tienen un placeholder después
+    const allBadges = largeEditorRef.current.querySelectorAll('[data-field]')
+    allBadges.forEach(badge => {
+      let nextSibling = badge.nextSibling
+      // Verificar si el siguiente nodo es un placeholder
+      if (!nextSibling || nextSibling.nodeType !== Node.TEXT_NODE || nextSibling.textContent !== '\u200B') {
+        // Crear placeholder si no existe
+        const placeholder = document.createTextNode('\u200B')
+        badge.parentNode.insertBefore(placeholder, badge.nextSibling)
+      }
+    })
+  }
+
+  // Renderizar el editor grande cuando el diálogo está abierto, usando html (tokens) como fuente de verdad
+  useEffect(() => {
+    if (!isDialogOpen) return
+    
+    const currentHtml = html || ''
+    
+    // Esperar a que Radix termine de montar el portal y la animación
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Verificar que el ref esté disponible
+        if (!largeEditorRef.current) {
+          // Si aún no está disponible, reintentar después de un pequeño delay
+          setTimeout(() => {
+            if (largeEditorRef.current) {
+              if (isLargeEditorInitialMountRef.current) {
+                isLargeEditorInitialMountRef.current = false
+                lastLargeEditorHtmlRef.current = currentHtml
+                renderContentInLargeEditor()
+              } else if (!isLargeEditorEditingRef.current && lastLargeEditorHtmlRef.current !== currentHtml) {
+                lastLargeEditorHtmlRef.current = currentHtml
+                renderContentInLargeEditor()
+              }
+            }
+          }, 100)
+          return
+        }
+        
+        // En el montaje inicial del editor grande, siempre renderizar el contenido
+        if (isLargeEditorInitialMountRef.current) {
+          isLargeEditorInitialMountRef.current = false
+          lastLargeEditorHtmlRef.current = currentHtml
+          renderContentInLargeEditor()
+          return
+        }
+        
+        // Solo actualizar si el HTML cambió externamente y no estamos editando
+        if (isLargeEditorEditingRef.current) return
+        if (lastLargeEditorHtmlRef.current === currentHtml) return
+        
+        lastLargeEditorHtmlRef.current = currentHtml
+        renderContentInLargeEditor()
+      })
+    })
+  }, [isDialogOpen, html, fieldOptions])
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false)
+    // Resetear el flag de montaje inicial para que se renderice correctamente la próxima vez
+    isLargeEditorInitialMountRef.current = true
+    lastLargeEditorHtmlRef.current = ''
   }
-
-  const handleSaveDialog = () => {
-    if (largeEditorRef.current) {
-      const largeValue = extractValueFromEditor(largeEditorRef.current)
-      onChange(largeValue)
-    }
-    setIsDialogOpen(false)
+  
+  // Función para sincronizar cambios del editor grande (igual que handleInput del editor pequeño)
+  const handleLargeEditorInput = () => {
+    if (!largeEditorRef.current) return
+    isLargeEditorEditingRef.current = true
+    processTextFieldsInLargeEditor()
+    // Convertir a tokens y actualizar inmediatamente (igual que el editor pequeño)
+    const value = extractValueFromEditor(largeEditorRef.current)
+    lastLargeEditorHtmlRef.current = value
+    // CLAVE: Actualizar también lastHtmlRef para mantener la simetría del sistema
+    // lastHtmlRef representa "lo último que el editor pequeño considera aplicado"
+    // y debe actualizarse cuando CUALQUIER editor llama a onChange
+    lastHtmlRef.current = value
+    onChange(value)
+    // Resetear el flag después de un breve delay para permitir actualizaciones externas
+    setTimeout(() => {
+      isLargeEditorEditingRef.current = false
+    }, 100)
   }
 
   const processTextFieldsInLargeEditor = () => {
@@ -668,15 +784,12 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
         parts.forEach(part => {
           if (/^{{[^}]+}}$/.test(part)) {
             const field = part.slice(2, -2)
-            const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label
+            // Siempre convertir a badge, incluso si no está en las opciones actuales
+            const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
             
-            if (label) {
-              const { badge, placeholder } = createBadge(field, label)
-              frag.appendChild(badge)
-              frag.appendChild(placeholder.cloneNode())
-            } else {
-              frag.appendChild(document.createTextNode(part))
-            }
+            const { badge, placeholder } = createBadge(field, label)
+            frag.appendChild(badge)
+            frag.appendChild(placeholder.cloneNode())
           } else {
             frag.appendChild(document.createTextNode(part))
           }
@@ -715,13 +828,12 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
       } else if (cmd === 'underline') {
         applyStyleToBadge(selectedBadge, 'underline')
       }
-      setDialogHtml(extractValueFromEditor(largeEditorRef.current))
+      handleLargeEditorInput()
       setSelectedBadge(selectedBadge)
     } else {
       // Comportamiento normal para texto
       document.execCommand(cmd, false, null)
-      processTextFieldsInLargeEditor()
-      setDialogHtml(extractValueFromEditor(largeEditorRef.current))
+      handleLargeEditorInput()
       setSelectedBadge(null)
     }
   }
@@ -748,12 +860,11 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
     
     if (selectedBadge) {
       applyStyleToBadge(selectedBadge, 'color', color)
-      setDialogHtml(extractValueFromEditor(largeEditorRef.current))
+      handleLargeEditorInput()
       setSelectedBadge(selectedBadge)
     } else {
       document.execCommand('foreColor', false, color)
-      processTextFieldsInLargeEditor()
-      setDialogHtml(extractValueFromEditor(largeEditorRef.current))
+      handleLargeEditorInput()
       setSelectedBadge(null)
     }
   }
@@ -835,90 +946,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
     return clone.innerHTML
   }
 
-  const renderContentInEditor = (editor, contentHtml) => {
-    if (!editor) return
-    
-    // Usar exactamente la misma lógica que renderContent()
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(contentHtml || '', 'text/html')
 
-    const replaceTokens = (node, styleWrappers = []) => {
-      const children = Array.from(node.childNodes)
-      
-      children.forEach((child) => {
-        if (child.nodeType === Node.TEXT_NODE) {
-          const parts = child.textContent.split(/({{[^}]+}})/g)
-          const frag = document.createDocumentFragment()
-          
-          parts.forEach(part => {
-            if (/^{{[^}]+}}$/.test(part)) {
-              const field = part.slice(2, -2)
-              const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
-              
-              const { badge, placeholder } = createBadge(field, label)
-              let badgeElement = badge
-              
-              // Aplicar wrappers de estilo en orden (del más interno al más externo)
-              styleWrappers.forEach(wrapper => {
-                const wrapperEl = document.createElement(wrapper.tag)
-                if (wrapper.style) {
-                  wrapperEl.setAttribute('style', wrapper.style)
-                }
-                wrapperEl.appendChild(badgeElement)
-                badgeElement = wrapperEl
-              })
-              
-              frag.appendChild(badgeElement)
-              frag.appendChild(placeholder.cloneNode())
-            } else if (part) {
-              frag.appendChild(document.createTextNode(part))
-            }
-          })
-          
-          child.replaceWith(frag)
-        } else if (child.nodeType === Node.ELEMENT_NODE) {
-          // Detectar elementos de estilo
-          const newWrappers = [...styleWrappers]
-          
-          if (child.tagName === 'B' || child.tagName === 'I' || child.tagName === 'U') {
-            newWrappers.push({ tag: child.tagName.toLowerCase() })
-          } else if (child.tagName === 'SPAN' && child.hasAttribute('style')) {
-            newWrappers.push({ tag: 'span', style: child.getAttribute('style') })
-          }
-          
-          replaceTokens(child, newWrappers)
-        }
-      })
-    }
-
-    replaceTokens(doc.body)
-    editor.innerHTML = doc.body.innerHTML
-    
-    // Asegurar que todos los badges tienen un placeholder después
-    const allBadges = editor.querySelectorAll('[data-field]')
-    allBadges.forEach(badge => {
-      let nextSibling = badge.nextSibling
-      // Verificar si el siguiente nodo es un placeholder
-      if (!nextSibling || nextSibling.nodeType !== Node.TEXT_NODE || nextSibling.textContent !== '\u200B') {
-        // Crear placeholder si no existe
-        const placeholder = document.createTextNode('\u200B')
-        badge.parentNode.insertBefore(placeholder, badge.nextSibling)
-      }
-    })
-  }
-
-  // Efecto para sincronizar el contenido del diálogo cuando dialogHtml cambia o cuando se abre
-  useEffect(() => {
-    if (isDialogOpen) {
-      const timer = setTimeout(() => {
-        if (largeEditorRef.current) {
-          const contentToRender = dialogHtml || html || ''
-          renderContentInEditor(largeEditorRef.current, contentToRender)
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [dialogHtml, isDialogOpen, html])
 
   // Efecto para manejar eventos del editor grande
   useEffect(() => {
@@ -934,7 +962,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
         e.stopPropagation()
         const badge = target.closest('[data-field]')
         badge?.remove()
-        setDialogHtml(extractValueFromEditor(largeEditor))
+        handleLargeEditorInput()
         return
       }
       
@@ -962,7 +990,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
           e.preventDefault()
           selectedBadge.remove()
           setSelectedBadge(null)
-          setDialogHtml(extractValueFromEditor(largeEditor))
+          handleLargeEditorInput()
         } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
           e.preventDefault()
         }
@@ -994,7 +1022,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
             sel.addRange(range)
           }
           
-          setDialogHtml(extractValueFromEditor(largeEditor))
+          handleLargeEditorInput()
         }
       }
     }
@@ -1044,19 +1072,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
         ))}
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={(open) => {
-        setIsDialogOpen(open)
-        // Cuando se abre el diálogo, renderizar el contenido
-        if (open) {
-          setTimeout(() => {
-            if (largeEditorRef.current) {
-              // Obtener el contenido actual del editor pequeño
-              const currentContent = editorRef.current ? extractValue() : (html || '')
-              renderContentInEditor(largeEditorRef.current, currentContent)
-            }
-          }, 200)
-        }
-      }}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className='max-w-4xl max-h-[90vh] flex flex-col'>
           <DialogHeader>
             <DialogTitle>Editor de Texto</DialogTitle>
@@ -1074,12 +1090,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
                 className='min-h-[400px] border border-input bg-background rounded-md p-4 focus:outline-none'
                 style={{ fontSize: '16px', lineHeight: '2.2' }}
                 contentEditable
-                onInput={() => {
-                  if (largeEditorRef.current) {
-                    processTextFieldsInLargeEditor()
-                    setDialogHtml(extractValueFromEditor(largeEditorRef.current))
-                  }
-                }}
+                onInput={handleLargeEditorInput}
               />
               <div className='flex flex-wrap gap-1'>
                 {fieldOptions.map(opt => (
@@ -1093,18 +1104,20 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
                       const sel = window.getSelection()
                       if (!sel || !sel.rangeCount) {
                         largeEditorRef.current.appendChild(badge)
-                        largeEditorRef.current.appendChild(placeholder.cloneNode())
+                        const insertedPlaceholder = placeholder.cloneNode()
+                        largeEditorRef.current.appendChild(insertedPlaceholder)
                       } else {
                         const range = sel.getRangeAt(0)
                         range.deleteContents()
                         range.insertNode(badge)
-                        range.insertNode(placeholder.cloneNode())
-                        range.setStartAfter(placeholder)
+                        const insertedPlaceholder = placeholder.cloneNode()
+                        range.insertNode(insertedPlaceholder)
+                        range.setStartAfter(insertedPlaceholder)
                         range.collapse(true)
                         sel.removeAllRanges()
                         sel.addRange(range)
                       }
-                      setDialogHtml(extractValueFromEditor(largeEditorRef.current))
+                      handleLargeEditorInput()
                     }}
                   >
                     {opt.label}
@@ -1113,10 +1126,6 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant='outline' onClick={handleCloseDialog}>Cancelar</Button>
-            <Button onClick={handleSaveDialog}>Guardar</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

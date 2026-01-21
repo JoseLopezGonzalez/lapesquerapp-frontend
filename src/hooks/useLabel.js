@@ -105,20 +105,90 @@ export function useLabel({ boxes = [], open }) {
                 const updatedFields = extractFieldsFromLabel(data.format.elements);
                 // Rellenar cada field con el valor desde la primera caja disponible
                 // Función para acceder profundamente con path tipo 'product.species.name'
+                // También intenta rutas alternativas para compatibilidad (snake_case, diferentes estructuras)
                 const getValueByPath = (obj, path) => {
-                    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+                    // Intentar la ruta original primero
+                    let value = path.split('.').reduce((acc, key) => acc?.[key], obj);
+                    
+                    // Si no se encuentra, intentar rutas alternativas para captureZone
+                    if (!value && (path === 'product.captureZone.name' || path === 'product.species.captureZone.name')) {
+                        // Si se busca product.species.captureZone.name, intentar primero product.captureZone.name (estructura real)
+                        if (path === 'product.species.captureZone.name') {
+                            value = 'product.captureZone.name'.split('.').reduce((acc, key) => acc?.[key], obj);
+                        }
+                        
+                        // Si aún no se encuentra, intentar product.capture_zone.name (snake_case)
+                        if (!value) {
+                            value = 'product.captureZone.name'.split('.').reduce((acc, key) => {
+                                if (key === 'captureZone') {
+                                    return acc?.['capture_zone'] || acc?.[key];
+                                }
+                                return acc?.[key];
+                            }, obj);
+                        }
+                        
+                        // Si aún no se encuentra y se buscaba product.captureZone.name, intentar product.species.captureZone.name (estructura antigua)
+                        if (!value && path === 'product.captureZone.name') {
+                            value = 'product.species.captureZone.name'.split('.').reduce((acc, key) => acc?.[key], obj);
+                        }
+                    }
+                    
+                    // Manejar product.species.faoCode -> product.species.fao
+                    if (!value && path === 'product.species.faoCode') {
+                        value = 'product.species.fao'.split('.').reduce((acc, key) => acc?.[key], obj);
+                    }
+                    
+                    return value;
                 };
 
+                // Log completo de la primera caja para debugging
+                if (boxes.length > 0) {
+                    console.log('📦 ===== ESTRUCTURA COMPLETA DEL BOX (primera caja) =====');
+                    console.log('Box completo:', JSON.stringify(boxes[0], null, 2));
+                    console.log('Box.product:', boxes[0]?.product);
+                    console.log('Box.product.captureZone:', boxes[0]?.product?.captureZone);
+                    console.log('Box.product.capture_zone:', boxes[0]?.product?.capture_zone);
+                    console.log('Box.product.species:', boxes[0]?.product?.species);
+                    console.log('Box.product.species?.captureZone:', boxes[0]?.product?.species?.captureZone);
+                    console.log('Box.product.species?.capture_zone:', boxes[0]?.product?.species?.capture_zone);
+                    console.log('Campos a buscar:', Object.keys(updatedFields));
+                    console.log('========================================================');
+                }
+
                 const filledFieldsArray = boxes.map((box, index) => {
-                    // console.log(`🧊 Procesando box[${index}]`, box);
+                    // Log detallado para cada campo que se busca
+                    if (index === 0) {
+                        console.log(`\n🔍 ===== BUSCANDO VALORES EN BOX[${index}] =====`);
+                    }
 
                     const fieldObject = Object.fromEntries(
                         Object.keys(updatedFields).map((key) => {
                             const value = getValueByPath(box, key);
-                            // console.log(`🔍 Buscando "${key}" en box[${index}] →`, value);
+                            
+                            // Log específico para captureZone
+                            if (key === 'product.captureZone.name' && index === 0) {
+                                console.log(`\n🎯 Campo: ${key}`);
+                                console.log('  - Valor encontrado:', value);
+                                console.log('  - box.product:', box?.product);
+                                console.log('  - box.product?.captureZone:', box?.product?.captureZone);
+                                console.log('  - box.product?.capture_zone:', box?.product?.capture_zone);
+                                console.log('  - box.product?.species:', box?.product?.species);
+                                console.log('  - box.product?.species?.captureZone:', box?.product?.species?.captureZone);
+                                console.log('  - box.product?.species?.capture_zone:', box?.product?.species?.capture_zone);
+                            }
+                            
+                            if (index === 0) {
+                                console.log(`  ${key}:`, value || '(vacío)');
+                            }
+                            
                             return [key, value ?? ''];
                         })
                     );
+                    
+                    if (index === 0) {
+                        console.log(`\n📋 Resultado final para box[${index}]:`, fieldObject);
+                        console.log('========================================================\n');
+                    }
 
                     // console.log(`📦 Resultado para box[${index}] →`, fieldObject);
                     return fieldObject;
