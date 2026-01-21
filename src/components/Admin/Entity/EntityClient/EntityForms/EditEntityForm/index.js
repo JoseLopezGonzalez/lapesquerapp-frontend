@@ -305,10 +305,22 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
             case "textarea":
                 return <Textarea {...commonProps} rows={field.rows || 3} />;
             case "emailList":
+                // Crear función validate dentro del componente para evitar problemas de serialización
+                const emailListRules = field.validation?.validate 
+                    ? field.validation 
+                    : field.validation?.required 
+                        ? {
+                            validate: (emails) =>
+                                Array.isArray(emails) && emails.length > 0
+                                    ? true
+                                    : field.validation.required || "Al menos un email es obligatorio",
+                          }
+                        : field.validation;
                 return (
                     <Controller
                         name={field.name}
                         control={control}
+                        rules={emailListRules}
                         render={({ field: { value, onChange } }) => (
                             <EmailListInput value={value || []} onChange={onChange} placeholder={field.placeholder} />
                         )}

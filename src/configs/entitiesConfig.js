@@ -2565,14 +2565,10 @@ export const configs = {
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        /* required */
         name: "emails",
         label: "Emails",
         type: "emailList",
         placeholder: "Introduce un correo y pulsa Enter",
-        validation: {
-          required: "Al menos un email es obligatorio",
-        },
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
