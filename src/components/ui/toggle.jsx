@@ -26,12 +26,14 @@ const toggleVariants = cva(
   }
 )
 
-const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) => {
+const Toggle = React.forwardRef(({ className, variant, size, pressed, onPressedChange, ...props }, ref) => {
   return (
     <TogglePrimitive
       ref={ref}
-      className={cn(toggleVariants({ variant, size, className }))}
+      className={cn(toggleVariants({ variant, size }), className)}
       {...props}
+      pressed={pressed}
+      onPressedChange={onPressedChange}
     />
   )
 })

@@ -364,7 +364,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 if (el.id === id) {
                     const merged = { ...el, ...updates };
                     // Normalizar el elemento actualizado antes de guardarlo
-                    return normalizeElement(merged);
+                    // Crear un objeto completamente nuevo para forzar re-render
+                    return { ...normalizeElement(merged) };
                 }
                 return el;
             });
@@ -551,9 +552,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     };
 
     // Normalizar el elemento seleccionado antes de pasarlo a la UI
-    const selectedElementData = selectedElement 
-        ? normalizeElement(elements.find((el) => el.id === selectedElement))
-        : null;
+    // Usar useMemo para hacerlo reactivo y forzar re-render cuando cambia
+    // Crear un objeto nuevo para forzar detección de cambios en React
+    const selectedElementData = useMemo(() => {
+        if (!selectedElement) return null;
+        const element = elements.find((el) => el.id === selectedElement);
+        if (!element) return null;
+        // Crear un objeto completamente nuevo para forzar detección de cambios
+        return normalizeElement({ ...element });
+    }, [selectedElement, elements]);
 
     const rotateCanvasTo = useCallback((angle) => {
         const diff = (angle - canvasRotation + 360) % 360;

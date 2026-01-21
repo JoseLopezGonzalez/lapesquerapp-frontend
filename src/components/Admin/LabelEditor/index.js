@@ -1,9 +1,8 @@
 // LabelEditor.js (Versión convertida a JavaScript desde TSX)
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React, { useRef, useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -135,6 +134,35 @@ export default function LabelEditor() {
     const scrollAreaRef = useRef(null);
     const elementRefs = useRef({});
     const isClickingFromListRef = useRef(false);
+
+    // Estado local del panel de propiedades (snapshot editable)
+    // Este es la única fuente de verdad para los controles del panel
+    const [activeElementState, setActiveElementState] = useState(null);
+
+    // Sincronizar snapshot cuando cambia el elemento seleccionado
+    // Solo cuando cambia el ID, no cuando cambian las propiedades
+    useEffect(() => {
+        if (selectedElement && selectedElementData) {
+            // Crear un snapshot completo del elemento (objeto nuevo)
+            setActiveElementState({ ...selectedElementData });
+        } else {
+            setActiveElementState(null);
+        }
+    }, [selectedElement]); // Solo cuando cambia el ID del elemento seleccionado
+
+    // Función para actualizar el estado local y sincronizar con el canvas
+    const updateActiveElement = useCallback((updates) => {
+        if (!activeElementState) return;
+        
+        // Actualizar estado local primero (para UI inmediata)
+        setActiveElementState((prev) => {
+            if (!prev) return null;
+            const updated = { ...prev, ...updates };
+            // Sincronizar inmediatamente con el canvas
+            updateElement(prev.id, updates);
+            return updated;
+        });
+    }, [activeElementState, updateElement]);
 
     const handleOnClickElementCard = (elementId) => {
         isClickingFromListRef.current = true;
@@ -629,55 +657,55 @@ export default function LabelEditor() {
                     </div>
 
                     {/* Panel Derecho - Propiedades */}
-                    {selectedElementData && (
+                    {activeElementState && (
                         <div className="w-80 p-4 overflow-y-auto">
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center justify-between">
 
-                                        {selectedElementData.type === "text" && (
+                                        {activeElementState.type === "text" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Type className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Texto</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "field" && (
+                                        {activeElementState.type === "field" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Database className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Campo Dinámico</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "manualField" && (
+                                        {activeElementState.type === "manualField" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <BetweenHorizonalEnd className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Campo Manual</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "sanitaryRegister" && (
+                                        {activeElementState.type === "sanitaryRegister" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Stamp className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Registro Sanitario</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "richParagraph" && (
+                                        {activeElementState.type === "richParagraph" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Pilcrow className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Párrafo</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "qr" && (
+                                        {activeElementState.type === "qr" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <QrCode className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Código QR</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "barcode" && (
+                                        {activeElementState.type === "barcode" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Barcode3 className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Código de Barras</h4>
                                             </div>
                                         )}
-                                        {selectedElementData.type === "image" && (
+                                        {activeElementState.type === "image" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <ImageIcon className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Imagen</h4>
@@ -687,7 +715,7 @@ export default function LabelEditor() {
                                             className='text-red-500 hover:bg-red-500/10 hover:text-red-600'
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => deleteElement(selectedElementData.id)}
+                                            onClick={() => deleteElement(activeElementState.id)}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -697,12 +725,12 @@ export default function LabelEditor() {
                                 <CardContent className="space-y-6">
 
                                     {/* Campo dinámico */}
-                                    {selectedElementData.type === "field" && (
+                                    {activeElementState.type === "field" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Campo dinámico</h4>
                                             <Select
-                                                value={selectedElementData.field}
-                                                onValueChange={(value) => updateElement(selectedElementData.id, { field: value })}
+                                                value={activeElementState.field}
+                                                onValueChange={(value) => updateActiveElement({ field: value })}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
@@ -716,19 +744,19 @@ export default function LabelEditor() {
                                                 </SelectContent>
                                             </Select>
                                             <div className="mt-2 p-2 bg-muted rounded text-sm">
-                                                <strong></strong> {getFieldValue(selectedElementData.field || "")}
+                                                <strong></strong> {getFieldValue(activeElementState.field || "")}
                                             </div>
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "manualField" && (
+                                    {activeElementState.type === "manualField" && (
                                         <div className="space-y-2">
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
                                                 <Input
-                                                    value={selectedElementData.key}
+                                                    value={activeElementState.key}
                                                     onChange={(e) => {
-                                                        const oldValue = selectedElementData.key || ''
+                                                        const oldValue = activeElementState.key || ''
                                                         const newValue = e.target.value
                                                         
                                                         // Filtrar solo letras
@@ -778,7 +806,7 @@ export default function LabelEditor() {
                                                         }
                                                         
                                                         // Actualizar con el valor filtrado
-                                                        updateElement(selectedElementData.id, { key: filteredValue })
+                                                        updateActiveElement({ key: filteredValue })
                                                     }}
                                                     placeholder="Solo letras"
                                                 />
@@ -786,34 +814,34 @@ export default function LabelEditor() {
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Valor de prueba</h4>
                                                 <Input
-                                                    value={selectedElementData.sample || ''}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { sample: e.target.value })}
+                                                    value={activeElementState.sample || ''}
+                                                    onChange={(e) => updateActiveElement({ sample: e.target.value })}
                                                 />
                                             </div>
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "sanitaryRegister" && (
+                                    {activeElementState.type === "sanitaryRegister" && (
                                         <div className="space-y-2">
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Código de país</h4>
                                                 <Input
-                                                    value={selectedElementData.countryCode || ''}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { countryCode: e.target.value })}
+                                                    value={activeElementState.countryCode || ''}
+                                                    onChange={(e) => updateActiveElement({ countryCode: e.target.value })}
                                                 />
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Número de aprobación</h4>
                                                 <Input
-                                                    value={selectedElementData.approvalNumber || ''}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { approvalNumber: e.target.value })}
+                                                    value={activeElementState.approvalNumber || ''}
+                                                    onChange={(e) => updateActiveElement({ approvalNumber: e.target.value })}
                                                 />
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Sufijo</h4>
                                                 <Input
-                                                    value={selectedElementData.suffix || ''}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { suffix: e.target.value })}
+                                                    value={activeElementState.suffix || ''}
+                                                    onChange={(e) => updateActiveElement({ suffix: e.target.value })}
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -821,8 +849,8 @@ export default function LabelEditor() {
                                                     <span className="text-xs text-muted-foreground">Color Borde</span>
                                                     <Input
                                                         type="color"
-                                                        value={selectedElementData.borderColor || '#000000'}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { borderColor: e.target.value })}
+                                                        value={activeElementState.borderColor || '#000000'}
+                                                        onChange={(e) => updateActiveElement({ borderColor: e.target.value })}
                                                         className="w-10 h-8 p-0"
                                                     />
                                                 </div>
@@ -830,16 +858,16 @@ export default function LabelEditor() {
                                                     <span className="text-xs text-muted-foreground">Grosor</span>
                                                     <Input
                                                         type="number"
-                                                        value={selectedElementData.borderWidth || 1}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { borderWidth: Number(e.target.value) })}
+                                                        value={activeElementState.borderWidth || 1}
+                                                        onChange={(e) => updateActiveElement({ borderWidth: Number(e.target.value) })}
                                                     />
                                                 </div> */}
                                                 <div className="flex flex-col flex-1">
                                                     <span className="text-xs text-muted-foreground">Grosor</span>
                                                     <Select
-                                                        value={String(selectedElementData.borderWidth || '0.10')}
+                                                        value={String(activeElementState.borderWidth || '0.10')}
                                                         onValueChange={(value) =>
-                                                            updateElement(selectedElementData.id, { borderWidth: value })
+                                                            updateActiveElement({ borderWidth: value })
                                                         }
                                                     >
                                                         <SelectTrigger className="w-full">
@@ -858,59 +886,59 @@ export default function LabelEditor() {
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "richParagraph" && (
+                                    {activeElementState.type === "richParagraph" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Párrafo</h4>
                                             <RichParagraphConfigPanel
-                                                key={selectedElementData.id}
-                                                html={selectedElementData.html || ''}
-                                                onChange={(val) => updateElement(selectedElementData.id, { html: val })}
+                                                key={activeElementState.id}
+                                                html={activeElementState.html || ''}
+                                                onChange={(val) => updateActiveElement({ html: val })}
                                                 fieldOptions={allFieldOptions}
                                             />
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "text" && (
+                                    {activeElementState.type === "text" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Contenido</h4>
                                             <div className="flex w-full gap-2 items-center justify-between">
                                                 <Input
                                                     id="text"
-                                                    value={selectedElementData.text}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { text: e.target.value })}
+                                                    value={activeElementState.text}
+                                                    onChange={(e) => updateActiveElement({ text: e.target.value })}
                                                 />
                                             </div>
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "qr" && (
+                                    {activeElementState.type === "qr" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Contenido QR</h4>
                                             <QRConfigPanel
-                                                value={selectedElementData.qrContent || ""}
-                                                onChange={(val) => updateElement(selectedElementData.id, { qrContent: val })}
+                                                value={activeElementState.qrContent || ""}
+                                                onChange={(val) => updateActiveElement({ qrContent: val })}
                                                 fieldOptions={allFieldOptions}
                                             />
                                         </div>
                                     )}
 
-                                    {selectedElementData.type === "barcode" && (
+                                    {activeElementState.type === "barcode" && (
                                         <div>
                                             <h4 className="text-sm font-medium mb-2">Código de Barras</h4>
                                             <BarcodeConfigPanel
-                                                value={selectedElementData.barcodeContent || ""}
-                                                onChange={(val) => updateElement(selectedElementData.id, { barcodeContent: val })}
+                                                value={activeElementState.barcodeContent || ""}
+                                                onChange={(val) => updateActiveElement({ barcodeContent: val })}
                                                 fieldOptions={allFieldOptions}
-                                                type={selectedElementData.barcodeType || 'ean13'}
-                                                onTypeChange={(val) => updateElement(selectedElementData.id, { barcodeType: val })}
+                                                type={activeElementState.barcodeType || 'ean13'}
+                                                onTypeChange={(val) => updateActiveElement({ barcodeType: val })}
                                                 getFieldValue={getFieldValue}
-                                                showValue={!!selectedElementData.showValue}
-                                                onShowValueChange={(val) => updateElement(selectedElementData.id, { showValue: val })}
+                                                showValue={!!activeElementState.showValue}
+                                                onShowValueChange={(val) => updateActiveElement({ showValue: val })}
                                             />
                                         </div>
                                     )}
 
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "qr" || selectedElementData.type === "barcode" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "qr" || activeElementState.type === "barcode" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
@@ -928,14 +956,14 @@ export default function LabelEditor() {
                                                     <Input
                                                         id="x"
                                                         type="number"
-                                                        value={Math.round(selectedElementData.x)}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { x: Number(e.target.value) })}
+                                                        value={Math.round(activeElementState.x)}
+                                                        onChange={(e) => updateActiveElement({ x: Number(e.target.value) })}
                                                     />
                                                     <Input
                                                         id="y"
                                                         type="number"
-                                                        value={Math.round(selectedElementData.y)}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { y: Number(e.target.value) })}
+                                                        value={Math.round(activeElementState.y)}
+                                                        onChange={(e) => updateActiveElement({ y: Number(e.target.value) })}
                                                     />
                                                 </div>
                                             </div>
@@ -947,19 +975,19 @@ export default function LabelEditor() {
                                                     <Input
                                                         id="width"
                                                         type="number"
-                                                        value={selectedElementData.width}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { width: Number(e.target.value) })}
+                                                        value={activeElementState.width}
+                                                        onChange={(e) => updateActiveElement({ width: Number(e.target.value) })}
                                                     />
                                                     <Input
                                                         id="height"
                                                         type="number"
-                                                        value={selectedElementData.height}
-                                                        onChange={(e) => updateElement(selectedElementData.id, { height: Number(e.target.value) })}
+                                                        value={activeElementState.height}
+                                                        onChange={(e) => updateActiveElement({ height: Number(e.target.value) })}
                                                     />
                                                 </div>
 
                                             </div>
-                                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "richParagraph" || selectedElementData.type === "sanitaryRegister") && (
+                                            {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "richParagraph" || activeElementState.type === "sanitaryRegister") && (
                                                 <div className="flex w-full gap-2 items-center justify-between">
                                                     <span className="text-xs text-muted-foreground">
                                                         Ajustar al contenido
@@ -967,7 +995,7 @@ export default function LabelEditor() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => autoFitToContent(selectedElementData.id)}
+                                                        onClick={() => autoFitToContent(activeElementState.id)}
                                                         className="flex items-center gap-2"
                                                     >
                                                         <Maximize className="w-4 h-4" />
@@ -983,8 +1011,8 @@ export default function LabelEditor() {
 
                                                 {/* Select angle */}
                                                 <Select
-                                                    value={String(selectedElementData.rotation || 0)}
-                                                    onValueChange={(value) => handleElementRotationChange(selectedElementData.id, Number(value))}
+                                                    value={String(activeElementState.rotation || 0)}
+                                                    onValueChange={(value) => handleElementRotationChange(activeElementState.id, Number(value))}
                                                 >
                                                     <SelectTrigger className="w-24">
                                                         <SelectValue placeholder="Ángulo" />
@@ -1004,7 +1032,7 @@ export default function LabelEditor() {
                                                 <div className="flex items-center gap-2 ">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "start"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "start" })}><AlignVerticalJustifyStart className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.verticalAlign === "start" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ verticalAlign: "start" })}><AlignVerticalJustifyStart className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Alinear arriba</p>
@@ -1012,7 +1040,7 @@ export default function LabelEditor() {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "end"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "end" })}><AlignVerticalJustifyEnd className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.verticalAlign === "end" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ verticalAlign: "end" })}><AlignVerticalJustifyEnd className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Alinear abajo</p>
@@ -1020,7 +1048,7 @@ export default function LabelEditor() {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.verticalAlign === "center"} onPressedChange={() => updateElement(selectedElementData.id, { verticalAlign: "center" })}><AlignVerticalJustifyCenter className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.verticalAlign === "center" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ verticalAlign: "center" })}><AlignVerticalJustifyCenter className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Centro vertical</p>
@@ -1035,7 +1063,7 @@ export default function LabelEditor() {
                                                 <div className="flex items-center gap-2 ">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "left"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}><AlignLeft className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.horizontalAlign === "left" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ horizontalAlign: "left" })}><AlignLeft className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Alinear a la izquierda</p>
@@ -1043,7 +1071,7 @@ export default function LabelEditor() {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "center"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "center" })}><AlignCenter className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.horizontalAlign === "center" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ horizontalAlign: "center" })}><AlignCenter className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Alinear al centro</p>
@@ -1051,7 +1079,7 @@ export default function LabelEditor() {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "right"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "right" })}><AlignRight className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.horizontalAlign === "right" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ horizontalAlign: "right" })}><AlignRight className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Alinear a la derecha</p>
@@ -1059,7 +1087,7 @@ export default function LabelEditor() {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Toggle variant="outline" size="sm" className="w-8" pressed={selectedElementData.horizontalAlign === "justify"} onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "justify" })}><AlignJustify className="w-4 h-4" /></Toggle>
+                                                            <Button variant={activeElementState.horizontalAlign === "justify" ? "default" : "outline"} size="sm" className="w-8" onClick={() => updateActiveElement({ horizontalAlign: "justify" })}><AlignJustify className="w-4 h-4" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Justificar</p>
@@ -1072,12 +1100,12 @@ export default function LabelEditor() {
 
 
 
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
                                     {/* Text properties */}
-                                    {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "sanitaryRegister" || selectedElementData.type === "richParagraph" || selectedElementData.type === "barcode"
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph" || activeElementState.type === "barcode"
 
                                     ) && (
                                             <div>
@@ -1088,10 +1116,10 @@ export default function LabelEditor() {
                                                             Tamaño
                                                         </span>
                                                         <Select
-                                                            key={`fontSize-${selectedElementData.id}-${selectedElementData.fontSize}`}
-                                                            value={selectedElementData.fontSize?.toString() || '2.5'}
+                                                            key={`fontSize-${activeElementState.id}-${activeElementState.fontSize}`}
+                                                            value={activeElementState.fontSize?.toString() || '2.5'}
                                                             onValueChange={(value) => {
-                                                                updateElement(selectedElementData.id, { fontSize: Number(value) });
+                                                                updateActiveElement({ fontSize: Number(value) });
                                                             }}
                                                         >
                                                             <SelectTrigger className="w-24">
@@ -1128,8 +1156,8 @@ export default function LabelEditor() {
                                                         <Input
                                                             id="color"
                                                             type="color"
-                                                            value={selectedElementData.color}
-                                                            onChange={(e) => updateElement(selectedElementData.id, { color: e.target.value })}
+                                                            value={activeElementState.color}
+                                                            onChange={(e) => updateActiveElement({ color: e.target.value })}
                                                             className="w-9 h-9 p-1 cursor-pointer"
                                                         />
                                                     </div>
@@ -1140,18 +1168,16 @@ export default function LabelEditor() {
                                                         <div className="flex items-center gap-2 w-fit">
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        key={`bold-${selectedElementData.id}`}
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.fontWeight === "bold" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.fontWeight === "bold"}
-                                                                        onPressedChange={(pressed) => {
-                                                                            updateElement(selectedElementData.id, { fontWeight: pressed ? "bold" : "normal" });
+                                                                        onClick={() => {
+                                                                            updateActiveElement({ fontWeight: activeElementState.fontWeight === "bold" ? "normal" : "bold" });
                                                                         }}
                                                                     >
                                                                         <BoldIcon className="w-4 h-4" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Negrita</p>
@@ -1159,18 +1185,16 @@ export default function LabelEditor() {
                                                             </Tooltip>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        key={`italic-${selectedElementData.id}`}
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.fontStyle === "italic" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.fontStyle === "italic"}
-                                                                        onPressedChange={(pressed) => {
-                                                                            updateElement(selectedElementData.id, { fontStyle: pressed ? "italic" : "normal" });
+                                                                        onClick={() => {
+                                                                            updateActiveElement({ fontStyle: activeElementState.fontStyle === "italic" ? "normal" : "italic" });
                                                                         }}
                                                                     >
                                                                         <Italic className="w-4 h-4" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Cursiva</p>
@@ -1178,18 +1202,16 @@ export default function LabelEditor() {
                                                             </Tooltip>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        key={`underline-${selectedElementData.id}`}
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.textDecoration === "underline" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.textDecoration === "underline"}
-                                                                        onPressedChange={(pressed) => {
-                                                                            updateElement(selectedElementData.id, { textDecoration: pressed ? "underline" : "none" });
+                                                                        onClick={() => {
+                                                                            updateActiveElement({ textDecoration: activeElementState.textDecoration === "underline" ? "none" : "underline" });
                                                                         }}
                                                                     >
                                                                         <Underline className="w-4 h-4" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Subrayado</p>
@@ -1197,18 +1219,16 @@ export default function LabelEditor() {
                                                             </Tooltip>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        key={`strikethrough-${selectedElementData.id}`}
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.textDecoration === "line-through" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        pressed={selectedElementData.textDecoration === "line-through"}
-                                                                        onPressedChange={(pressed) => {
-                                                                            updateElement(selectedElementData.id, { textDecoration: pressed ? "line-through" : "none" });
+                                                                        onClick={() => {
+                                                                            updateActiveElement({ textDecoration: activeElementState.textDecoration === "line-through" ? "none" : "line-through" });
                                                                         }}
                                                                     >
                                                                         <Strikethrough className="w-4 h-4" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Tachado</p>
@@ -1223,16 +1243,14 @@ export default function LabelEditor() {
                                                         <div className="flex items-center gap-2 w-fit">
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.textTransform === "uppercase" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8 p-0"
-                                                                        className="w-8 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                                                                        pressed={selectedElementData.textTransform === "uppercase"}
-                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "uppercase" : "none" })}
+                                                                        onClick={() => updateActiveElement({ textTransform: activeElementState.textTransform === "uppercase" ? "none" : "uppercase" })}
                                                                     >
                                                                         <CaseUpper className="w-5 h-5" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Mayúsculas</p>
@@ -1240,16 +1258,14 @@ export default function LabelEditor() {
                                                             </Tooltip>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.textTransform === "lowercase" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        className="w-8"
-                                                                        pressed={selectedElementData.textTransform === "lowercase"}
-                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "lowercase" : "none" })}
+                                                                        onClick={() => updateActiveElement({ textTransform: activeElementState.textTransform === "lowercase" ? "none" : "lowercase" })}
                                                                     >
                                                                         <CaseLower className="w-5 h-5" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Minúsculas</p>
@@ -1257,16 +1273,14 @@ export default function LabelEditor() {
                                                             </Tooltip>
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <Toggle
-                                                                        variant="outline"
+                                                                    <Button
+                                                                        variant={activeElementState.textTransform === "capitalize" ? "default" : "outline"}
                                                                         size="sm"
                                                                         className="w-8"
-                                                                        className="w-8"
-                                                                        pressed={selectedElementData.textTransform === "capitalize"}
-                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "capitalize" : "none" })}
+                                                                        onClick={() => updateActiveElement({ textTransform: activeElementState.textTransform === "capitalize" ? "none" : "capitalize" })}
                                                                     >
                                                                         <CaseSensitive className="w-5 h-5" />
-                                                                    </Toggle>
+                                                                    </Button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>Capitalizar</p>
