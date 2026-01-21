@@ -80,7 +80,7 @@ export default function LabelElement({ element, values = {} }) {
             return <SanitaryRegister element={element} />;
 
         case "richParagraph":
-            return <RichParagraph element={{ ...element, html: replacePlaceholders(element.html) }} />;
+            return <RichParagraph key={`richParagraph-${element.id}-${element.fontSize}`} element={{ ...element, html: replacePlaceholders(element.html) }} />;
 
         case "qr":
             return (

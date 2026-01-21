@@ -287,7 +287,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     };
 
     const updateElement = (id, updates) => {
-        setElements((prev) => prev.map((el) => (el.id === id ? { ...el, ...updates } : el)));
+        setElements((prev) => {
+            const updated = prev.map((el) => (el.id === id ? { ...el, ...updates } : el));
+            return updated;
+        });
     };
 
     const getFieldValue = (field) => {

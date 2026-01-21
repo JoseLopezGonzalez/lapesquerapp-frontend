@@ -1,11 +1,34 @@
 export default function RichParagraph({ element, style = {} }) {
+  const fontSize = element.fontSize || 2.5;
+  
+  // Función para limpiar fontSize inline del HTML para que el fontSize del contenedor se aplique correctamente
+  const processHtml = (html) => {
+    if (!html) return '';
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    
+    // Remover fontSize de todos los elementos y aplicar el fontSize del contenedor
+    const removeFontSize = (node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.style) {
+          node.style.removeProperty('font-size');
+        }
+        Array.from(node.children).forEach(child => removeFontSize(child));
+      }
+    };
+    
+    removeFontSize(doc.body);
+    return doc.body.innerHTML;
+  };
+  
   if (element.html) {
+    const processedHtml = processHtml(element.html);
     return (
       <div
         className="w-full h-full"
         style={{
           textAlign: element.textAlign,
-          fontSize: `${element.fontSize}mm`,
+          fontSize: `${fontSize}mm`,
           fontWeight: element.fontWeight,
           color: element.color,
           textTransform: element.textTransform,
@@ -13,7 +36,7 @@ export default function RichParagraph({ element, style = {} }) {
           textDecoration: element.textDecoration,
           ...style,
         }}
-        dangerouslySetInnerHTML={{ __html: element.html }}
+        dangerouslySetInnerHTML={{ __html: processedHtml }}
       />
     );
   }
@@ -27,7 +50,7 @@ export default function RichParagraph({ element, style = {} }) {
       className="w-full h-full"
       style={{
         textAlign: element.textAlign,
-        fontSize: `${element.fontSize}mm`,
+        fontSize: `${fontSize}mm`,
         fontWeight: element.fontWeight,
         color: element.color,
         textTransform: element.textTransform,

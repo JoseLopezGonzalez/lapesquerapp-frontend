@@ -956,8 +956,11 @@ export default function LabelEditor() {
                                                             Tamaño
                                                         </span>
                                                         <Select
-                                                            value={selectedElementData.fontSize.toString()}
-                                                            onValueChange={(value) => updateElement(selectedElementData.id, { fontSize: Number(value) })}
+                                                            key={`fontSize-${selectedElementData.id}-${selectedElementData.fontSize}`}
+                                                            value={selectedElementData.fontSize?.toString() || '2.5'}
+                                                            onValueChange={(value) => {
+                                                                updateElement(selectedElementData.id, { fontSize: Number(value) });
+                                                            }}
                                                         >
                                                             <SelectTrigger className="w-24">
                                                                 <SelectValue placeholder="Tamaño" />

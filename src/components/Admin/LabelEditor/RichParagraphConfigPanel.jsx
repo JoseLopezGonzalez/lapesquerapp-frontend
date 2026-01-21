@@ -235,7 +235,8 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
       </div>
       <div
         ref={editorRef}
-        className='min-h-[80px] border border-input bg-background rounded-md p-2 text-sm focus:outline-none'
+        className='min-h-[80px] border border-input bg-background rounded-md p-2 focus:outline-none'
+        style={{ fontSize: '14px' }}
         contentEditable
         onInput={handleInput}
       />
