@@ -246,7 +246,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             y: 50,
             width: ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
             height: type === "richParagraph"
-                ? 60
+                ? 15
                 : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
                     ? 10
                     : 10,

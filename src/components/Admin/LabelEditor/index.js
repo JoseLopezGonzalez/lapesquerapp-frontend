@@ -1,7 +1,7 @@
 // LabelEditor.js (Versión convertida a JavaScript desde TSX)
 "use client"
 
-import React from "react"
+import React, { useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
@@ -130,10 +130,47 @@ export default function LabelEditor() {
 
     } = useLabelEditor();
 
+    const scrollAreaRef = useRef(null);
+    const elementRefs = useRef({});
+    const isClickingFromListRef = useRef(false);
 
     const handleOnClickElementCard = (elementId) => {
+        isClickingFromListRef.current = true;
         handleSelectElementCard(elementId);
+        setTimeout(() => {
+            isClickingFromListRef.current = false;
+        }, 100);
     }
+
+    // Scroll automático cuando se selecciona un elemento desde la previsualización
+    useEffect(() => {
+        if (!selectedElement || isClickingFromListRef.current) return;
+        
+        const elementRef = elementRefs.current[selectedElement];
+        if (elementRef && scrollAreaRef.current) {
+            // Obtener el contenedor del ScrollArea (Radix UI usa un viewport interno)
+            const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollContainer) {
+                // Calcular la posición del elemento relativa al contenedor
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const elementRect = elementRef.getBoundingClientRect();
+                
+                // Calcular la posición relativa dentro del contenedor
+                const relativeTop = elementRect.top - containerRect.top + scrollContainer.scrollTop;
+                const containerHeight = containerRect.height;
+                const elementHeight = elementRect.height;
+                
+                // Calcular la posición centrada
+                const targetScrollTop = relativeTop - (containerHeight / 2) + (elementHeight / 2);
+                
+                // Hacer scroll suave
+                scrollContainer.scrollTo({
+                    top: targetScrollTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [selectedElement]);
 
     const handleOnClickDeleteLabel = () => {
         handleDeleteLabel();
@@ -288,12 +325,19 @@ export default function LabelEditor() {
                                         <h3 className="font-semibold mb-3 flex items-center justify-between">
                                             <span>Elementos</span>  {elements.length}</h3>
                                         <div className="flex-1 overflow-hidden h-full">
-                                            <ScrollArea className="flex-1 h-full pr-3">
+                                            <ScrollArea ref={scrollAreaRef} className="flex-1 h-full pr-3">
                                                 <div className="flex flex-col gap-2 p-2"> {/* aquí sí el gap y padding-bottom para evitar cortar por el scroll */}
 
                                                     {elements.map((element) => (
                                                         <div
                                                             key={element.id}
+                                                            ref={(el) => {
+                                                                if (el) {
+                                                                    elementRefs.current[element.id] = el;
+                                                                } else {
+                                                                    delete elementRefs.current[element.id];
+                                                                }
+                                                            }}
                                                             className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
                                                                 }`}
                                                             onClick={() => handleOnClickElementCard(element.id)}

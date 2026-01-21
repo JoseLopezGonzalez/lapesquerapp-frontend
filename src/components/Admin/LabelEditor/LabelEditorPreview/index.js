@@ -73,23 +73,27 @@ export default function LabelEditorPreview({
                     >
                         <LabelElement element={element} /* getFieldValue={getFieldValue} manualValues={manualValues} */ values={values} />
 
-                        {selectedElement === element.id && !isZoomed && (
+                        {selectedElement === element.id && (
                             <>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "nw")}
-                                    className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"
+                                    className={`absolute -top-1 -left-1 bg-primary rounded-full cursor-nwse-resize ${isZoomed ? 'w-3 h-3' : 'w-2 h-2'}`}
+                                    style={{ zIndex: 10 }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "ne")}
-                                    className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"
+                                    className={`absolute -top-1 -right-1 bg-primary rounded-full cursor-nesw-resize ${isZoomed ? 'w-3 h-3' : 'w-2 h-2'}`}
+                                    style={{ zIndex: 10 }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "sw")}
-                                    className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full cursor-nesw-resize"
+                                    className={`absolute -bottom-1 -left-1 bg-primary rounded-full cursor-nesw-resize ${isZoomed ? 'w-3 h-3' : 'w-2 h-2'}`}
+                                    style={{ zIndex: 10 }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "se")}
-                                    className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full cursor-nwse-resize"
+                                    className={`absolute -bottom-1 -right-1 bg-primary rounded-full cursor-nwse-resize ${isZoomed ? 'w-3 h-3' : 'w-2 h-2'}`}
+                                    style={{ zIndex: 10 }}
                                 ></div>
                             </>
                         )}
