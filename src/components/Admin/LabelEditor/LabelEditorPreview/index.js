@@ -16,17 +16,17 @@ export default function LabelEditorPreview({
     values = {},
 
 }) {
-
+    const isZoomed = zoom !== 1;
 
     return (
         <div
             ref={canvasRef}
-            className="relative bg-white border-2 border-dashed border-border shadow-lg rounded-lg"
+            className={`relative bg-white ${isZoomed ? 'border-2 border-border/70 shadow-md rounded-sm' : 'border-2 border-dashed border-border shadow-lg rounded-lg'}`}
             style={{
                 width: `${canvasWidth}mm`,
                 height: `${canvasHeight}mm`,
                 transform: `scale(${zoom})`,
-                transformOrigin: "top left",
+                transformOrigin: isZoomed ? "center center" : "top left",
             }}
         >
             {elements.map((element) => {
@@ -73,7 +73,7 @@ export default function LabelEditorPreview({
                     >
                         <LabelElement element={element} /* getFieldValue={getFieldValue} manualValues={manualValues} */ values={values} />
 
-                        {selectedElement === element.id && (
+                        {selectedElement === element.id && !isZoomed && (
                             <>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "nw")}

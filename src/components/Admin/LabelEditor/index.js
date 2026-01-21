@@ -511,34 +511,49 @@ export default function LabelEditor() {
 
                                 {/* Canvas */}
                                 <div className="flex-1 p-8 overflow-auto h-full flex items-center justify-center ">
-                                    <div className="flex justify-center items-center h-full">
-                                        <div className="flex flex-col items-center gap-4 mt-4  ">
-                                            <div className='bg-orange-200 px-4'>
-                                                <div className="flex flex-col items-center  gap-4"
-                                                >
-                                                    <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
-                                                    </div>
+                                    <div className="flex justify-center items-center h-full w-full">
+                                        {zoom === 1 ? (
+                                            <div className="flex flex-col items-center gap-4 mt-4">
+                                                <div className='bg-orange-200 px-4'>
+                                                    <div className="flex flex-col items-center  gap-4"
+                                                    >
+                                                        <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
+                                                        </div>
 
 
 
-                                                    <LabelEditorPreview
-                                                        canvasRef={canvasRef}
-                                                        zoom={zoom}
-                                                        canvasWidth={canvasWidth}
-                                                        canvasHeight={canvasHeight}
-                                                        elements={elements}
-                                                        selectedElement={selectedElement}
-                                                        handleMouseDown={handleMouseDown}
-                                                        handleResizeMouseDown={handleResizeMouseDown}
-                                                        values={getDefaultValuesFromElements()}
-                                                    />
+                                                        <LabelEditorPreview
+                                                            canvasRef={canvasRef}
+                                                            zoom={zoom}
+                                                            canvasWidth={canvasWidth}
+                                                            canvasHeight={canvasHeight}
+                                                            elements={elements}
+                                                            selectedElement={selectedElement}
+                                                            handleMouseDown={handleMouseDown}
+                                                            handleResizeMouseDown={handleResizeMouseDown}
+                                                            values={getDefaultValuesFromElements()}
+                                                        />
 
-                                                    <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
+                                                        <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-
+                                        ) : (
+                                            <div className="flex items-center justify-center w-full h-full">
+                                                <LabelEditorPreview
+                                                    canvasRef={canvasRef}
+                                                    zoom={zoom}
+                                                    canvasWidth={canvasWidth}
+                                                    canvasHeight={canvasHeight}
+                                                    elements={elements}
+                                                    selectedElement={selectedElement}
+                                                    handleMouseDown={handleMouseDown}
+                                                    handleResizeMouseDown={handleResizeMouseDown}
+                                                    values={getDefaultValuesFromElements()}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -568,8 +583,8 @@ export default function LabelEditor() {
                     </div>
 
                     {/* Panel Derecho - Propiedades */}
-                    <div className="w-80 p-4 overflow-y-auto">
-                        {selectedElementData && (
+                    {selectedElementData && (
+                        <div className="w-80 p-4 overflow-y-auto">
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center justify-between">
@@ -1188,8 +1203,8 @@ export default function LabelEditor() {
                                         )}
                                 </CardContent>
                             </Card>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Impresión */}
 

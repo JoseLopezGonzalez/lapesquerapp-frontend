@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Edit3, QrCode } from 'lucide-react'
+import { Edit3, QrCode, Info } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function QRConfigPanel({ value, onChange, fieldOptions }) {
     const editorRef = useRef(null)
@@ -22,6 +23,12 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         // Crear mapeo inverso: label -> campo
         labelToFieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.label, o.value]))
     }, [fieldOptions])
+
+    // Separar campos dinámicos de manuales
+    // Los campos manuales tienen value === label (porque vienen de el.key)
+    // Los campos dinámicos tienen labels diferentes a sus values (vienen de labelFields)
+    const dynamicFields = fieldOptions.filter(opt => opt.value !== opt.label)
+    const manualFields = fieldOptions.filter(opt => opt.value === opt.label)
 
     // Convertir tokens {{campo}} a {{label}} en el texto
     const tokensToLabels = (text) => {
@@ -174,45 +181,69 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className='max-w-5xl max-h-[90vh] flex flex-col'>
-                    <DialogHeader className='pb-4 border-b'>
-                        <DialogTitle className='text-xl font-semibold flex items-center gap-2'>
-                            <QrCode className='h-5 w-5' />
-                            Editor de Contenido QR
-                        </DialogTitle>
-                        <p className='text-sm text-muted-foreground mt-1'>Edita el contenido que se mostrará en el código QR</p>
+                    <DialogHeader>
+                        <DialogTitle>Editor de Contenido QR</DialogTitle>
                     </DialogHeader>
-                    <div className='flex-1 overflow-auto p-1'>
+                    <div className='flex-1 overflow-auto'>
                         <div className='space-y-4'>
                             {/* Editor */}
-                            <div className='border-2 border-dashed border-muted-foreground/20 rounded-lg overflow-hidden focus-within:border-primary transition-colors'>
-                                <div
-                                    ref={setEditorRef}
-                                    className="relative whitespace-pre-wrap break-words min-h-[450px] bg-background rounded-md p-6 text-base focus:outline-none"
-                                    style={{ lineHeight: '1.8' }}
-                                    contentEditable
-                                    onInput={handleInput}
-                                />
-                            </div>
+                            <div
+                                ref={setEditorRef}
+                                className="relative whitespace-pre-wrap break-words min-h-[300px] border border-input bg-background rounded-md p-4 text-base focus-within:outline-none"
+                                style={{ lineHeight: '1.8' }}
+                                contentEditable
+                                onInput={handleInput}
+                            />
                             
-                            {/* Campos dinámicos */}
-                            <div className='space-y-2'>
-                                <div className='flex items-center gap-2'>
-                                    <span className='text-sm font-medium text-foreground'>Campos dinámicos:</span>
-                                    <span className='text-xs text-muted-foreground'>Haz clic para insertar</span>
-                                </div>
-                                <div className='flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border'>
-                                    {fieldOptions.map((opt) => (
-                                        <Badge
-                                            key={opt.value}
-                                            variant='secondary'
-                                            className="cursor-pointer select-none px-3 py-1.5 text-sm font-normal hover:bg-primary hover:text-primary-foreground transition-colors"
-                                            onClick={() => insertField(opt.value)}
-                                        >
-                                            {opt.label}
-                                        </Badge>
-                                    ))}
-                                </div>
+                            {/* Información */}
+                            <div className='bg-muted/50 border border-muted rounded-lg px-4 py-3 flex items-center gap-3'>
+                                <Info className='h-4 w-4 flex-shrink-0 text-foreground' />
+                                <p className='text-sm text-foreground m-0'>
+                                    Haz clic en un campo para insertarlo en el editor.
+                                </p>
                             </div>
+
+                            {/* Campos dinámicos */}
+                            {dynamicFields.length > 0 && (
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='text-sm font-medium text-foreground'>Campos dinámicos</span>
+                                        <span className='text-xs text-muted-foreground'>(se rellenan automáticamente con la info de la caja)</span>
+                                    </div>
+                                    <div className='flex flex-wrap gap-2'>
+                                        {dynamicFields.map((opt) => (
+                                            <Badge
+                                                key={opt.value}
+                                                className="cursor-pointer select-none px-2 py-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                                                onClick={() => insertField(opt.value)}
+                                            >
+                                                {opt.label}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Campos manuales */}
+                            {manualFields.length > 0 && (
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='text-sm font-medium text-foreground'>Campos manuales</span>
+                                        <span className='text-xs text-muted-foreground'>(se solicitarán a la hora de imprimir la etiqueta)</span>
+                                    </div>
+                                    <div className='flex flex-wrap gap-2'>
+                                        {manualFields.map((opt) => (
+                                            <Badge
+                                                key={opt.value}
+                                                className="cursor-pointer select-none px-2 py-1 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                                                onClick={() => insertField(opt.value)}
+                                            >
+                                                {opt.label}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </DialogContent>

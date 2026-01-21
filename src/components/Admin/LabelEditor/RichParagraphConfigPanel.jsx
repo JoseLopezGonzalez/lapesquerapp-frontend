@@ -9,7 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Edit3, Bold, Italic, Underline, Palette } from 'lucide-react'
+import { Edit3, Bold, Italic, Underline, Palette, Info } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function RichParagraphConfigPanel({ html, onChange, fieldOptions = [] }) {
   const largeEditorRef = useRef(null)
@@ -23,6 +24,12 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
     // Crear mapeo inverso: label -> campo
     labelToFieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.label, o.value]))
   }, [fieldOptions])
+
+  // Separar campos dinámicos de manuales
+  // Los campos manuales tienen value === label (porque vienen de el.key)
+  // Los campos dinámicos tienen labels diferentes a sus values (vienen de labelFields)
+  const dynamicFields = fieldOptions.filter(opt => opt.value !== opt.label)
+  const manualFields = fieldOptions.filter(opt => opt.value === opt.label)
 
   // Convertir tokens {{campo}} a {{label}} en el texto
   const tokensToLabels = (htmlString) => {
@@ -206,85 +213,103 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className='max-w-5xl max-h-[90vh] flex flex-col'>
-          <DialogHeader className='pb-4 border-b'>
-            <DialogTitle className='text-xl font-semibold'>Editor de Texto</DialogTitle>
-            <p className='text-sm text-muted-foreground mt-1'>Edita el contenido del párrafo con formato y campos dinámicos</p>
+          <DialogHeader>
+            <DialogTitle>Editor de Texto</DialogTitle>
           </DialogHeader>
-          <div className='flex-1 overflow-auto p-1'>
+          <div className='flex-1 overflow-auto'>
             <div className='space-y-4'>
               {/* Barra de herramientas de formato */}
-              <div className='flex items-center gap-2 p-3 bg-muted/50 rounded-lg border'>
-                <div className='flex items-center gap-1'>
-                  <Button 
-                    variant='ghost' 
-                    size='sm' 
-                    onClick={() => execLargeEditor('bold')}
-                    className='h-9 w-9 p-0'
-                    title='Negrita'
-                  >
-                    <Bold className='h-4 w-4' />
-                  </Button>
-                  <Button 
-                    variant='ghost' 
-                    size='sm' 
-                    onClick={() => execLargeEditor('italic')}
-                    className='h-9 w-9 p-0'
-                    title='Cursiva'
-                  >
-                    <Italic className='h-4 w-4' />
-                  </Button>
-                  <Button 
-                    variant='ghost' 
-                    size='sm' 
-                    onClick={() => execLargeEditor('underline')}
-                    className='h-9 w-9 p-0'
-                    title='Subrayado'
-                  >
-                    <Underline className='h-4 w-4' />
-                  </Button>
-                </div>
-                <div className='h-6 w-px bg-border mx-1' />
-                <div className='flex items-center gap-2'>
-                  <Palette className='h-4 w-4 text-muted-foreground' />
-                  <Input 
-                    type='color' 
-                    className='w-10 h-9 p-1 cursor-pointer border rounded' 
-                    onChange={(e) => setColorLargeEditor(e.target.value)}
-                    title='Color del texto'
-                  />
-                </div>
-              </div>
-              
-              {/* Editor */}
-              <div className='border-2 border-dashed border-muted-foreground/20 rounded-lg overflow-hidden focus-within:border-primary transition-colors'>
-                <div
-                  ref={setLargeEditorRef}
-                  className='min-h-[450px] bg-background rounded-md p-6 focus:outline-none prose prose-sm max-w-none'
-                  style={{ fontSize: '16px', lineHeight: '1.8' }}
-                  contentEditable
-                  onInput={handleLargeEditorInput}
+              <div className='flex items-center gap-2'>
+                <Button 
+                  variant='outline' 
+                  size='sm' 
+                  onClick={() => execLargeEditor('bold')}
+                  title='Negrita'
+                >
+                  <Bold className='h-4 w-4' />
+                </Button>
+                <Button 
+                  variant='outline' 
+                  size='sm' 
+                  onClick={() => execLargeEditor('italic')}
+                  title='Cursiva'
+                >
+                  <Italic className='h-4 w-4' />
+                </Button>
+                <Button 
+                  variant='outline' 
+                  size='sm' 
+                  onClick={() => execLargeEditor('underline')}
+                  title='Subrayado'
+                >
+                  <Underline className='h-4 w-4' />
+                </Button>
+                <Input 
+                  type='color' 
+                  className='w-10 h-9 p-1 cursor-pointer' 
+                  onChange={(e) => setColorLargeEditor(e.target.value)}
+                  title='Color del texto'
                 />
               </div>
               
-              {/* Campos dinámicos */}
-              <div className='space-y-2'>
-                <div className='flex items-center gap-2'>
-                  <span className='text-sm font-medium text-foreground'>Campos dinámicos:</span>
-                  <span className='text-xs text-muted-foreground'>Haz clic para insertar</span>
-                </div>
-                <div className='flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border'>
-                  {fieldOptions.map(opt => (
-                    <Badge
-                      key={opt.value}
-                      variant='secondary'
-                      className='cursor-pointer select-none px-3 py-1.5 text-sm font-normal hover:bg-primary hover:text-primary-foreground transition-colors'
-                      onClick={() => insertFieldLarge(opt.value)}
-                    >
-                      {opt.label}
-                    </Badge>
-                  ))}
-                </div>
+              {/* Editor */}
+              <div
+                ref={setLargeEditorRef}
+                className='min-h-[300px] border border-input bg-background rounded-md p-4 focus-within:outline-none'
+                style={{ fontSize: '16px', lineHeight: '1.8' }}
+                contentEditable
+                onInput={handleLargeEditorInput}
+              />
+              
+              {/* Información */}
+              <div className='bg-muted/50 border border-muted rounded-lg px-4 py-3 flex items-center gap-3'>
+                <Info className='h-4 w-4 flex-shrink-0 text-foreground' />
+                <p className='text-sm text-foreground m-0'>
+                  Haz clic en un campo para insertarlo en el editor.
+                </p>
               </div>
+
+              {/* Campos dinámicos */}
+              {dynamicFields.length > 0 && (
+                <div className='space-y-2'>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm font-medium text-foreground'>Campos dinámicos</span>
+                    <span className='text-xs text-muted-foreground'>(se rellenan automáticamente con la info de la caja)</span>
+                  </div>
+                  <div className='flex flex-wrap gap-2'>
+                    {dynamicFields.map(opt => (
+                      <Badge
+                        key={opt.value}
+                        className='cursor-pointer select-none px-2 py-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors'
+                        onClick={() => insertFieldLarge(opt.value)}
+                      >
+                        {opt.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Campos manuales */}
+              {manualFields.length > 0 && (
+                <div className='space-y-2'>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm font-medium text-foreground'>Campos manuales</span>
+                    <span className='text-xs text-muted-foreground'>(se solicitarán a la hora de imprimir la etiqueta)</span>
+                  </div>
+                  <div className='flex flex-wrap gap-2'>
+                    {manualFields.map(opt => (
+                      <Badge
+                        key={opt.value}
+                        className='cursor-pointer select-none px-2 py-1 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors'
+                        onClick={() => insertFieldLarge(opt.value)}
+                      >
+                        {opt.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
