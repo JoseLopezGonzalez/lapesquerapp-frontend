@@ -72,6 +72,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { usePrintElement } from "@/hooks/usePrintElement"
 import LabelRender from "./LabelRender"
+import toast from "react-hot-toast"
+import { getToastTheme } from "@/customs/reactHotToast"
 
 export default function LabelEditor() {
     const {
@@ -664,7 +666,60 @@ export default function LabelEditor() {
                                                 <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
                                                 <Input
                                                     value={selectedElementData.key}
-                                                    onChange={(e) => updateElement(selectedElementData.id, { key: e.target.value })}
+                                                    onChange={(e) => {
+                                                        const oldValue = selectedElementData.key || ''
+                                                        const newValue = e.target.value
+                                                        
+                                                        // Filtrar solo letras
+                                                        const filteredValue = newValue.replace(/[^a-zA-Z]/g, '')
+                                                        
+                                                        // Si el valor filtrado es diferente al nuevo valor, hay caracteres inválidos
+                                                        if (filteredValue !== newValue) {
+                                                            // Encontrar los caracteres que se eliminaron
+                                                            const invalidChars = newValue.split('').filter(char => !/[a-zA-Z]/.test(char))
+                                                            
+                                                            // Agrupar por tipo de carácter
+                                                            const charTypes = {
+                                                                espacios: invalidChars.filter(c => c === ' ').length > 0,
+                                                                numeros: invalidChars.some(c => /[0-9]/.test(c)),
+                                                                tildes: invalidChars.some(c => /[áéíóúñÁÉÍÓÚÑ]/.test(c)),
+                                                                guiones: invalidChars.some(c => c === '-'),
+                                                                guionesBajos: invalidChars.some(c => c === '_'),
+                                                                puntos: invalidChars.some(c => c === '.'),
+                                                                comas: invalidChars.some(c => c === ','),
+                                                                dosPuntos: invalidChars.some(c => c === ':'),
+                                                                otros: invalidChars.filter(c => 
+                                                                    c !== ' ' && 
+                                                                    !/[0-9]/.test(c) && 
+                                                                    !/[áéíóúñÁÉÍÓÚÑ]/.test(c) &&
+                                                                    c !== '-' && c !== '_' && c !== '.' && c !== ',' && c !== ':'
+                                                                )
+                                                            }
+                                                            
+                                                            const messages = []
+                                                            if (charTypes.espacios) messages.push('espacios')
+                                                            if (charTypes.numeros) messages.push('números')
+                                                            if (charTypes.tildes) messages.push('letras con tilde (á, é, í, ó, ú, ñ)')
+                                                            if (charTypes.guiones) messages.push('guiones (-)')
+                                                            if (charTypes.guionesBajos) messages.push('guiones bajos (_)')
+                                                            if (charTypes.puntos) messages.push('puntos (.)')
+                                                            if (charTypes.comas) messages.push('comas (,)')
+                                                            if (charTypes.dosPuntos) messages.push('dos puntos (:)')
+                                                            if (charTypes.otros.length > 0) {
+                                                                const otrosChars = [...new Set(charTypes.otros)].map(c => `"${c}"`).join(', ')
+                                                                messages.push(`otros caracteres (${otrosChars})`)
+                                                            }
+                                                            
+                                                            toast.error(
+                                                                `Solo se permiten letras (a-z, A-Z). No se permiten: ${messages.join(', ')}`,
+                                                                getToastTheme()
+                                                            )
+                                                        }
+                                                        
+                                                        // Actualizar con el valor filtrado
+                                                        updateElement(selectedElementData.id, { key: filteredValue })
+                                                    }}
+                                                    placeholder="Solo letras"
                                                 />
                                             </div>
                                             <div>

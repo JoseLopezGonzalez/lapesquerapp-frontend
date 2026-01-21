@@ -21,6 +21,7 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
         parts.forEach((part) => {
             if (/^{{[^}]+}}$/.test(part)) {
                 const field = part.slice(2, -2)
+                // Siempre convertir a badge, incluso si no está en las opciones actuales
                 const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
 
                 const span = document.createElement('span')
@@ -40,24 +41,44 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
                 span.appendChild(removeSpan)
 
                 editorRef.current.appendChild(span)
-            } else {
-                editorRef.current.appendChild(document.createTextNode(part))
+            } else if (part !== undefined && part !== null) {
+                // Agregar texto incluso si está vacío (para preservar espacios)
+                // Pero solo si realmente hay contenido o es un espacio
+                if (part.length > 0 || part === ' ') {
+                    editorRef.current.appendChild(document.createTextNode(part))
+                }
             }
         })
+        
+        // Procesar cualquier token que pueda haber quedado como texto después del renderizado
+        processTextFields()
     }
 
     const extractValue = () => {
         if (!editorRef.current) return ''
         let result = ''
-        editorRef.current.childNodes.forEach((node) => {
+        
+        // Función recursiva para recorrer todo el árbol DOM preservando el orden
+        const traverse = (node) => {
             if (node.nodeType === Node.TEXT_NODE) {
+                // Agregar el texto tal cual (incluyendo espacios)
                 result += node.textContent
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 const field = node.getAttribute('data-field')
-                if (field) result += `{{${field}}}`
-                else result += node.textContent
+                if (field) {
+                    // Es un badge, agregar el token
+                    result += `{{${field}}}`
+                } else {
+                    // No es un badge, recorrer sus hijos recursivamente en orden
+                    // Esto maneja casos donde hay elementos wrapper o contenedores
+                    Array.from(node.childNodes).forEach(child => traverse(child))
+                }
             }
-        })
+        }
+        
+        // Recorrer todos los nodos hijos del editor en orden
+        Array.from(editorRef.current.childNodes).forEach(node => traverse(node))
+        
         return result
     }
 
@@ -88,28 +109,23 @@ export default function QRConfigPanel({ value, onChange, fieldOptions }) {
                         const field = part.slice(2, -2)
                         const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label
                         
-                        // Solo convertir si el campo existe en las opciones
-                        if (label) {
-                            const span = document.createElement('span')
-                            span.setAttribute('data-field', field)
-                            span.setAttribute('contenteditable', 'false')
-                            span.className = badgeClass
+                        // Siempre convertir a badge, incluso si no está en las opciones actuales
+                        const span = document.createElement('span')
+                        span.setAttribute('data-field', field)
+                        span.setAttribute('contenteditable', 'false')
+                        span.className = badgeClass
 
-                            const labelSpan = document.createElement('span')
-                            labelSpan.textContent = label
+                        const labelSpan = document.createElement('span')
+                        labelSpan.textContent = label || field
 
-                            const removeSpan = document.createElement('span')
-                            removeSpan.setAttribute('data-remove', 'true')
-                            removeSpan.className = 'ml-1 cursor-pointer'
-                            removeSpan.textContent = '×'
+                        const removeSpan = document.createElement('span')
+                        removeSpan.setAttribute('data-remove', 'true')
+                        removeSpan.className = 'ml-1 cursor-pointer'
+                        removeSpan.textContent = '×'
 
-                            span.appendChild(labelSpan)
-                            span.appendChild(removeSpan)
-                            frag.appendChild(span)
-                        } else {
-                            // Si no existe, mantener como texto
-                            frag.appendChild(document.createTextNode(part))
-                        }
+                        span.appendChild(labelSpan)
+                        span.appendChild(removeSpan)
+                        frag.appendChild(span)
                     } else {
                         frag.appendChild(document.createTextNode(part))
                     }
