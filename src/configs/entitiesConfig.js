@@ -2060,7 +2060,7 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
+        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
         { name: "address", label: "Dirección", type: "text", path: "address" },
         { name: "contactPerson", label: "Persona de contacto", type: "text", path: "contactPerson" },
         { name: "phone", label: "Teléfono", type: "text", path: "phone" },
@@ -2123,7 +2123,7 @@ export const configs = {
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "facilcom_code",
+        name: "facil_com_code",
         path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
