@@ -69,21 +69,13 @@ export default function PalletLabelDialog({isOpen , onClose , pallet}) {
                                 </AlertDescription>
                             </Alert>
                             <div className="flex flex-col items-center gap-4 mt-4 overflow-x-auto w-full">
-                                <div className='bg-orange-200 px-4 flex-shrink-0'>
-                                    <div className="flex flex-col items-center  gap-4"
-                                        style={{ width: PALLET_LABEL_SIZE.width }}>
-                                        <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
-                                        </div>
-                                        {/* Vista previa - también es el área de impresión */}
-                                        <div id='print-area-id' className="text-black"
-                                            style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}>
-                                            <PalletLabel pallet={pallet} />
-                                        </div>
-                                        <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
-                                        </div>
+                                <div className="flex-shrink-0">
+                                    {/* Vista previa - también es el área de impresión */}
+                                    <div id='print-area-id' className="text-black"
+                                        style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}>
+                                        <PalletLabel pallet={pallet} />
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">

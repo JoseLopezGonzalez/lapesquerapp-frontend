@@ -77,30 +77,23 @@ export default function AllPalletsLabelDialog({ isOpen, onClose, pallets = [] })
                             </AlertDescription>
                         </Alert>
                         <div className="flex flex-col items-center gap-4 overflow-x-auto w-full">
-                            <div className='bg-orange-200 px-4 py-4 overflow-y-auto flex-shrink-0' style={{ maxHeight: PALLET_LABEL_SIZE.height, height: PALLET_LABEL_SIZE.height }}>
-                                <div className="flex flex-col items-center gap-4"
-                                    style={{ width: PALLET_LABEL_SIZE.width }}>
-                                    <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground shadow">
-                                    </div>
-                                    {/* Vista previa - muestra todas las etiquetas */}
-                                    <div className="flex flex-col gap-4">
-                                        {validPallets.map((item, index) => {
-                                            const pallet = item.pallet;
-                                            return (
-                                                <div 
-                                                    key={pallet.id || `preview-${index}`}
-                                                    className="text-black"
-                                                    style={{ 
-                                                        width: PALLET_LABEL_SIZE.width, 
-                                                        height: PALLET_LABEL_SIZE.height 
-                                                    }}>
-                                                    <PalletLabel pallet={pallet} />
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="w-full h-20 bg-white rounded-t-xl border border-b-0 bg-card text-card-foreground">
-                                    </div>
+                            <div className="flex-shrink-0 overflow-y-auto" style={{ maxHeight: '70vh' }}>
+                                {/* Vista previa - muestra todas las etiquetas */}
+                                <div className="flex flex-col gap-4">
+                                    {validPallets.map((item, index) => {
+                                        const pallet = item.pallet;
+                                        return (
+                                            <div 
+                                                key={pallet.id || `preview-${index}`}
+                                                className="text-black"
+                                                style={{ 
+                                                    width: PALLET_LABEL_SIZE.width, 
+                                                    height: PALLET_LABEL_SIZE.height 
+                                                }}>
+                                                <PalletLabel pallet={pallet} />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

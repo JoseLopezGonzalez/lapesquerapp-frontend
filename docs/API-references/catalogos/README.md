@@ -44,11 +44,15 @@ Authorization: Bearer {access_token}
       "name": "Cliente A",
       "code": "CLI-001",
       "tax_id": "12345678A",
+      "facil_com_code": "FACIL-001",
+      "a3erp_code": "A3ERP-001",
       "created_at": "2024-01-15T10:00:00.000000Z"
     }
   ]
 }
 ```
+
+**Nota:** Los campos `facil_com_code` y `a3erp_code` son opcionales y se utilizan para exportaciones a sistemas externos (Facilcom y A3ERP respectivamente).
 
 ---
 
@@ -69,9 +73,15 @@ POST /api/v2/customers
   "city": "Ciudad",
   "country_id": 1,
   "email": "cliente@example.com",
-  "phone": "123456789"
+  "phone": "123456789",
+  "facil_com_code": "FACIL-001",
+  "a3erp_code": "A3ERP-001"
 }
 ```
+
+**Campos opcionales:**
+- `facil_com_code` (string): Código para exportaciones a Facilcom (máximo 255 caracteres)
+- `a3erp_code` (string): Código para exportaciones a A3ERP (máximo 255 caracteres)
 
 ---
 

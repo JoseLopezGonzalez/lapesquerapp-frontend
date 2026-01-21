@@ -88,17 +88,11 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
 
                         {label && !isLoadingLabel && (
                             <div className="flex items-center justify-center w-full overflow-x-auto">
-                                <div className='bg-orange-200 px-4 flex-shrink-0'>
-                                    <div className="flex flex-col items-center  gap-4">
-                                        <div className="w-full h-10 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
-                                        </div>
-                                        <LabelRender
-                                            label={label?.format}
-                                            values={values[0]}
-                                        />
-                                        <div className="w-full h-10 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
-                                        </div>
-                                    </div>
+                                <div className="flex-shrink-0">
+                                    <LabelRender
+                                        label={label?.format}
+                                        values={values[0]}
+                                    />
                                 </div>
                             </div>
                         )}

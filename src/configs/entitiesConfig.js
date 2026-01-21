@@ -1004,8 +1004,8 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
         { name: "family", label: "Familia", type: "text", path: "family.name", hideOnMobile: true },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode", hideOnMobile: true },
-        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode", hideOnMobile: true },
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erp_code", hideOnMobile: true },
+        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facil_com_code", hideOnMobile: true },
         { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
         { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name", hideOnMobile: true },
         { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin", hideOnMobile: true },
@@ -1096,7 +1096,7 @@ export const configs = {
       },
       {
         name: "a3erp_code",
-        path: "a3erpCode",
+        path: "a3erp_code",
         label: "Código A3ERP",
         type: "text",
         placeholder: 'Código para exportaciones a "a3ERP - Software ERP"',
@@ -1104,7 +1104,7 @@ export const configs = {
       },
       {
         name: "facil_com_code",
-        path: "facilcomCode",
+        path: "facil_com_code",
         label: "Código Facilcom",
         type: "text",
         placeholder: 'Código para exportaciones a "Facilcom - Gestión comercial integral"',
@@ -1820,8 +1820,8 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
         { name: "vatNumber", label: "NIF", type: "text", path: "vatNumber" },
-        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcom_code" },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erp_code" },
+        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode" },
         { name: "paymentTerm", label: "Plazo de pago", type: "text", path: "paymentTerm.name" },
         { name: "salesperson", label: "Comercial", type: "text", path: "salesperson.name" },
         /* emails */
@@ -2060,7 +2060,7 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "facilcomCode", label: "Código Facilcom", type: "text", path: "facilcomCode" },
+        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
         { name: "address", label: "Dirección", type: "text", path: "address" },
         { name: "contactPerson", label: "Persona de contacto", type: "text", path: "contactPerson" },
         { name: "phone", label: "Teléfono", type: "text", path: "phone" },
@@ -2123,7 +2123,7 @@ export const configs = {
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "facil_com_code",
+        name: "facilcom_code",
         path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",

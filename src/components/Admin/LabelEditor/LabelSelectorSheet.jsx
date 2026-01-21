@@ -349,7 +349,7 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetTrigger asChild>{children}</SheetTrigger>
-        <SheetContent side="right" className="w-[400px] sm:w-[500px] flex flex-col gap-4 h-full">
+        <SheetContent side="right" className="w-[400px] sm:w-[700px] sm:max-w-[700px] flex flex-col gap-4 h-full">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5" />
