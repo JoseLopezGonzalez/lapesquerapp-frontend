@@ -43,7 +43,72 @@ const getFieldName = (field) => labelFields[field]?.label || field;
 
 const pxToMm = (px) => px / 3.78;
 
+/**
+ * Normaliza un elemento para asegurar que todas las propiedades de formato
+ * tengan valores explícitos y canónicos (nunca undefined, nunca números, nunca strings mixtos)
+ * 
+ * Regla de oro: La UI no interpreta estado, solo lo refleja.
+ */
+const normalizeElement = (element) => {
+    if (!element) return element;
+    
+    // Normalizar fontWeight: "bold" | "normal" (nunca números ni undefined)
+    let fontWeight = element.fontWeight;
+    if (fontWeight === 700 || fontWeight === "700") {
+        fontWeight = "bold";
+    } else if (!fontWeight || fontWeight === "normal") {
+        fontWeight = "normal";
+    }
+    
+    // Normalizar fontStyle: "italic" | "normal" (nunca undefined)
+    let fontStyle = element.fontStyle || "normal";
+    if (fontStyle === "oblique") {
+        fontStyle = "italic"; // Tratar oblique como italic
+    }
+    
+    // Normalizar textDecoration: "none" | "underline" | "line-through" (nunca undefined)
+    let textDecoration = element.textDecoration || "none";
+    
+    // Normalizar textTransform: "none" | "uppercase" | "lowercase" | "capitalize" (nunca undefined)
+    let textTransform = element.textTransform || "none";
+    
+    // Normalizar horizontalAlign: convertir textAlign legacy a horizontalAlign si es necesario
+    let horizontalAlign = element.horizontalAlign;
+    if (!horizontalAlign && element.textAlign) {
+        // Migración legacy: textAlign -> horizontalAlign
+        horizontalAlign = element.textAlign;
+    }
+    // Asegurar valores válidos
+    if (!horizontalAlign || !["left", "center", "right", "justify"].includes(horizontalAlign)) {
+        horizontalAlign = "left";
+    }
+    
+    // Normalizar verticalAlign: "start" | "end" | "center" (nunca undefined)
+    let verticalAlign = element.verticalAlign || "start";
+    if (!["start", "end", "center"].includes(verticalAlign)) {
+        verticalAlign = "start";
+    }
+    
+    return {
+        ...element,
+        fontWeight,
+        fontStyle,
+        textDecoration,
+        textTransform,
+        horizontalAlign,
+        verticalAlign,
+        // Mantener textAlign para compatibilidad, pero no usarlo en la UI
+        textAlign: horizontalAlign, // Sincronizar con horizontalAlign
+    };
+};
 
+/**
+ * Normaliza un array de elementos
+ */
+const normalizeElements = (elements) => {
+    if (!Array.isArray(elements)) return [];
+    return elements.map(normalizeElement);
+};
 
 export function useLabelEditor(dataContext = defaultDataContext) {
     const [selectedLabel, setSelectedLabel] = useState(null);
@@ -252,7 +317,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     : 10,
             fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
             fontWeight: "normal",
-            textAlign: "left",
+            fontStyle: "normal",
+            textDecoration: "none",
+            textTransform: "none",
+            horizontalAlign: "left",
+            verticalAlign: "start",
+            textAlign: "left", // Mantener para compatibilidad
             text: type === "text" ? "Texto ejemplo" : undefined,
             countryCode: type === "sanitaryRegister" ? "ES" : undefined,
             approvalNumber: type === "sanitaryRegister" ? "12.021462/H" : undefined,
@@ -269,8 +339,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             borderWidth: type === "sanitaryRegister" ? 0.10 : undefined,
             color: "#000000",
         };
-        setElements((prev) => [...prev, newElement]);
-        setSelectedElement(newElement.id);
+        // Normalizar antes de agregar
+        const normalizedElement = normalizeElement(newElement);
+        setElements((prev) => [...prev, normalizedElement]);
+        setSelectedElement(normalizedElement.id);
     };
 
     const deleteElement = (id) => {
@@ -288,7 +360,14 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const updateElement = (id, updates) => {
         setElements((prev) => {
-            const updated = prev.map((el) => (el.id === id ? { ...el, ...updates } : el));
+            const updated = prev.map((el) => {
+                if (el.id === id) {
+                    const merged = { ...el, ...updates };
+                    // Normalizar el elemento actualizado antes de guardarlo
+                    return normalizeElement(merged);
+                }
+                return el;
+            });
             return updated;
         });
     };
@@ -426,7 +505,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         if (!jsonData) return;
         if (Array.isArray(jsonData.elements)) {
             const newElements = jsonData.elements.map((el, i) => ({ id: `element-${Date.now()}-${i}`, ...el }));
-            setElements(newElements);
+            // Normalizar elementos al importar JSON
+            const normalizedElements = normalizeElements(newElements);
+            setElements(normalizedElements);
         }
         if (jsonData.canvas) {
             setCanvasWidth(jsonData.canvas.width || canvasWidth);
@@ -469,7 +550,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         reader.readAsText(file);
     };
 
-    const selectedElementData = selectedElement ? elements.find((el) => el.id === selectedElement) : null;
+    // Normalizar el elemento seleccionado antes de pasarlo a la UI
+    const selectedElementData = selectedElement 
+        ? normalizeElement(elements.find((el) => el.id === selectedElement))
+        : null;
 
     const rotateCanvasTo = useCallback((angle) => {
         const diff = (angle - canvasRotation + 360) % 360;
@@ -519,7 +603,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setCanvasWidth(format.canvas.width);
         setCanvasHeight(format.canvas.height);
         setCanvasRotation(format.canvas.rotation || 0);
-        setElements(format.elements || []);
+        // Normalizar elementos al cargar desde la BD
+        const normalizedElements = normalizeElements(format.elements || []);
+        setElements(normalizedElements);
         setLabelName(labelName || "");
         setLabelId(labelId);
     };
@@ -574,7 +660,123 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         handleSave();
     };
 
+    /**
+     * Ajusta automáticamente el tamaño del elemento seleccionado al contenido
+     */
+    const autoFitToContent = (elementId) => {
+        if (!elementId || !canvasRef.current) return;
+        
+        const element = elements.find(el => el.id === elementId);
+        if (!element) return;
 
+        // Solo funciona para elementos de texto
+        const textTypes = ['text', 'field', 'manualField', 'richParagraph', 'sanitaryRegister'];
+        if (!textTypes.includes(element.type)) {
+            toast.error('Esta función solo está disponible para elementos de texto', getToastTheme());
+            return;
+        }
+
+        // Crear un elemento temporal fuera del DOM para medir
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.visibility = 'hidden';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = 'auto';
+        tempContainer.style.height = 'auto';
+        tempContainer.style.whiteSpace = element.type === 'richParagraph' ? 'normal' : 'nowrap';
+        document.body.appendChild(tempContainer);
+
+        try {
+            const tempElement = document.createElement('div');
+            tempElement.style.fontSize = `${element.fontSize || 2.5}mm`;
+            tempElement.style.fontWeight = element.fontWeight || 'normal';
+            tempElement.style.fontStyle = element.fontStyle || 'normal';
+            tempElement.style.textDecoration = element.textDecoration || 'none';
+            tempElement.style.textTransform = element.textTransform || 'none';
+            tempElement.style.color = element.color || '#000000';
+            tempElement.style.fontFamily = 'inherit';
+            tempElement.style.lineHeight = '1.2';
+            
+            // Para richParagraph, permitir múltiples líneas
+            if (element.type === 'richParagraph') {
+                // Si es justify, usar el ancho actual para medir correctamente
+                if (element.horizontalAlign === 'justify') {
+                    tempElement.style.width = `${element.width || 50}mm`;
+                } else {
+                    tempElement.style.width = 'max-content';
+                }
+                tempElement.style.whiteSpace = 'normal';
+                tempElement.style.wordWrap = 'break-word';
+            }
+
+            // Obtener el contenido según el tipo
+            if (element.type === 'text') {
+                tempElement.textContent = element.text || '';
+            } else if (element.type === 'field') {
+                tempElement.textContent = getFieldValue(element.field || '');
+            } else if (element.type === 'manualField') {
+                tempElement.textContent = element.sample || '';
+            } else if (element.type === 'richParagraph') {
+                // Para richParagraph, crear un contenedor con el HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(element.html || '', 'text/html');
+                // Limpiar fontSize inline para que use el del contenedor
+                const processHtml = (html) => {
+                    if (!html) return '';
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const removeFontSize = (node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (node.style) {
+                                node.style.removeProperty('font-size');
+                            }
+                            Array.from(node.children).forEach(child => removeFontSize(child));
+                        }
+                    };
+                    removeFontSize(doc.body);
+                    return doc.body.innerHTML;
+                };
+                tempElement.innerHTML = processHtml(element.html || '');
+            } else if (element.type === 'sanitaryRegister') {
+                // Para sanitaryRegister, construir el texto
+                const parts = [];
+                if (element.countryCode) parts.push(element.countryCode);
+                if (element.approvalNumber) parts.push(element.approvalNumber);
+                if (element.suffix) parts.push(element.suffix);
+                tempElement.textContent = parts.join(' ');
+            }
+
+            tempContainer.appendChild(tempElement);
+
+            // Forzar reflow para que el navegador calcule el tamaño
+            tempContainer.offsetHeight;
+
+            // Medir el tamaño
+            const rect = tempElement.getBoundingClientRect();
+            const widthMm = pxToMm(rect.width);
+            const heightMm = pxToMm(rect.height);
+
+            // Limpiar
+            document.body.removeChild(tempContainer);
+
+            // Actualizar el elemento con un pequeño margen
+            const minSize = 5; // Mínimo 5mm
+            const margin = 1; // Margen de 1mm
+            updateElement(elementId, {
+                width: Math.max(minSize, widthMm + margin),
+                height: Math.max(minSize, heightMm + margin),
+            });
+
+            toast.success('Tamaño ajustado al contenido', getToastTheme());
+        } catch (error) {
+            console.error('Error al ajustar tamaño:', error);
+            if (document.body.contains(tempContainer)) {
+                document.body.removeChild(tempContainer);
+            }
+            toast.error('Error al ajustar el tamaño', getToastTheme());
+        }
+    };
 
     return {
         elements,
@@ -627,5 +829,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setFieldExampleValues,
         showFieldExamplesDialog,
         setShowFieldExamplesDialog,
+        autoFitToContent,
     };
 }

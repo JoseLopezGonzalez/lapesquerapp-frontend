@@ -51,6 +51,7 @@ import {
     Loader2,
     Plus,
     Settings,
+    Maximize,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -127,6 +128,7 @@ export default function LabelEditor() {
         setFieldExampleValues,
         showFieldExamplesDialog,
         setShowFieldExamplesDialog,
+        autoFitToContent,
 
     } = useLabelEditor();
 
@@ -957,6 +959,22 @@ export default function LabelEditor() {
                                                 </div>
 
                                             </div>
+                                            {(selectedElementData.type === "text" || selectedElementData.type === "field" || selectedElementData.type === "manualField" || selectedElementData.type === "richParagraph" || selectedElementData.type === "sanitaryRegister") && (
+                                                <div className="flex w-full gap-2 items-center justify-between">
+                                                    <span className="text-xs text-muted-foreground">
+                                                        Ajustar al contenido
+                                                    </span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => autoFitToContent(selectedElementData.id)}
+                                                        className="flex items-center gap-2"
+                                                    >
+                                                        <Maximize className="w-4 h-4" />
+                                                        <span className="text-xs">Ajustar</span>
+                                                    </Button>
+                                                </div>
+                                            )}
                                             {/* Rotate */}
                                             <div className="flex w-full gap-2 items-center justify-between">
                                                 <span className="text-xs text-muted-foreground">
@@ -1123,11 +1141,14 @@ export default function LabelEditor() {
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <Toggle
+                                                                        key={`bold-${selectedElementData.id}`}
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
                                                                         pressed={selectedElementData.fontWeight === "bold"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { fontWeight: selectedElementData.fontWeight === "bold" ? "normal" : "bold" })}
+                                                                        onPressedChange={(pressed) => {
+                                                                            updateElement(selectedElementData.id, { fontWeight: pressed ? "bold" : "normal" });
+                                                                        }}
                                                                     >
                                                                         <BoldIcon className="w-4 h-4" />
                                                                     </Toggle>
@@ -1139,11 +1160,14 @@ export default function LabelEditor() {
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <Toggle
+                                                                        key={`italic-${selectedElementData.id}`}
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
                                                                         pressed={selectedElementData.fontStyle === "italic"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { fontStyle: selectedElementData.fontStyle === "italic" ? "normal" : "italic" })}
+                                                                        onPressedChange={(pressed) => {
+                                                                            updateElement(selectedElementData.id, { fontStyle: pressed ? "italic" : "normal" });
+                                                                        }}
                                                                     >
                                                                         <Italic className="w-4 h-4" />
                                                                     </Toggle>
@@ -1155,11 +1179,14 @@ export default function LabelEditor() {
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <Toggle
+                                                                        key={`underline-${selectedElementData.id}`}
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
                                                                         pressed={selectedElementData.textDecoration === "underline"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "underline" ? "none" : "underline" })}
+                                                                        onPressedChange={(pressed) => {
+                                                                            updateElement(selectedElementData.id, { textDecoration: pressed ? "underline" : "none" });
+                                                                        }}
                                                                     >
                                                                         <Underline className="w-4 h-4" />
                                                                     </Toggle>
@@ -1171,11 +1198,14 @@ export default function LabelEditor() {
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <Toggle
+                                                                        key={`strikethrough-${selectedElementData.id}`}
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
                                                                         pressed={selectedElementData.textDecoration === "line-through"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textDecoration: selectedElementData.textDecoration === "line-through" ? "none" : "line-through" })}
+                                                                        onPressedChange={(pressed) => {
+                                                                            updateElement(selectedElementData.id, { textDecoration: pressed ? "line-through" : "none" });
+                                                                        }}
                                                                     >
                                                                         <Strikethrough className="w-4 h-4" />
                                                                     </Toggle>
@@ -1197,8 +1227,9 @@ export default function LabelEditor() {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8 p-0"
+                                                                        className="w-8 p-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                                                                         pressed={selectedElementData.textTransform === "uppercase"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "uppercase" ? "none" : "uppercase" })}
+                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "uppercase" : "none" })}
                                                                     >
                                                                         <CaseUpper className="w-5 h-5" />
                                                                     </Toggle>
@@ -1213,8 +1244,9 @@ export default function LabelEditor() {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
+                                                                        className="w-8"
                                                                         pressed={selectedElementData.textTransform === "lowercase"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "lowercase" ? "none" : "lowercase" })}
+                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "lowercase" : "none" })}
                                                                     >
                                                                         <CaseLower className="w-5 h-5" />
                                                                     </Toggle>
@@ -1229,8 +1261,9 @@ export default function LabelEditor() {
                                                                         variant="outline"
                                                                         size="sm"
                                                                         className="w-8"
+                                                                        className="w-8"
                                                                         pressed={selectedElementData.textTransform === "capitalize"}
-                                                                        onPressedChange={() => updateElement(selectedElementData.id, { textTransform: selectedElementData.textTransform === "capitalize" ? "none" : "capitalize" })}
+                                                                        onPressedChange={(pressed) => updateElement(selectedElementData.id, { textTransform: pressed ? "capitalize" : "none" })}
                                                                     >
                                                                         <CaseSensitive className="w-5 h-5" />
                                                                     </Toggle>
