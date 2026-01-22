@@ -37,9 +37,9 @@ export default function LabelEditorPreview({
                 return (
                     <div
                         key={element.id}
-                        className={`absolute flex cursor-move border transition-colors ${selectedElement === element.id
-                            ? "border-primary bg-primary/5"
-                            : "border-transparent hover:border-muted-foreground/30"
+                        className={`absolute flex cursor-move transition-colors ${selectedElement === element.id
+                            ? "border border-blue-500/60 bg-blue-50/30 ring-1 ring-blue-500/30"
+                            : "border border-transparent hover:border-gray-200/50"
                             }`}
                         style={{
                             left: `${element.x}mm`,
@@ -77,22 +77,22 @@ export default function LabelEditorPreview({
                             <>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "nw")}
-                                    className="absolute -top-1 -left-1 bg-primary rounded-full cursor-nwse-resize w-2 h-2"
+                                    className="absolute -top-1 -left-1 bg-blue-600 border-2 border-white rounded-full cursor-nwse-resize w-2 h-2 shadow-sm"
                                     style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "ne")}
-                                    className="absolute -top-1 -right-1 bg-primary rounded-full cursor-nesw-resize w-2 h-2"
+                                    className="absolute -top-1 -right-1 bg-blue-600 border-2 border-white rounded-full cursor-nesw-resize w-2 h-2 shadow-sm"
                                     style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "sw")}
-                                    className="absolute -bottom-1 -left-1 bg-primary rounded-full cursor-nesw-resize w-2 h-2"
+                                    className="absolute -bottom-1 -left-1 bg-blue-600 border-2 border-white rounded-full cursor-nesw-resize w-2 h-2 shadow-sm"
                                     style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
                                 ></div>
                                 <div
                                     onMouseDown={(e) => handleResizeMouseDown(e, element.id, "se")}
-                                    className="absolute -bottom-1 -right-1 bg-primary rounded-full cursor-nwse-resize w-2 h-2"
+                                    className="absolute -bottom-1 -right-1 bg-blue-600 border-2 border-white rounded-full cursor-nwse-resize w-2 h-2 shadow-sm"
                                     style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
                                 ></div>
                             </>

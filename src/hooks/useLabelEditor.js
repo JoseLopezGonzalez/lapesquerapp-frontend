@@ -5,14 +5,15 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { usePrintElement } from "@/hooks/usePrintElement";
+import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
 
 // labelFields.js
 
 export const labelFields = {
     "product.name": { label: "Nombre del Producto", defaultValue: "Pulpo Fresco" },
     "product.species.name": { label: "Especie", defaultValue: "Octopus vulgaris" },
-    "product.species.faoCode": { label: "Código FAO", defaultValue: "OCC" },
-    "product.species.scientificName": { label: "Nombre Científico", defaultValue: "Octopus vulgaris" },
+    "product.species.faoCode": { label: "Codigo FAO", defaultValue: "OCC" },
+    "product.species.scientificName": { label: "Nombre Cientifico", defaultValue: "Octopus vulgaris" },
     "product.species.fishingGear.name": { label: "Arte de Pesca", defaultValue: "Nasas y trampas" },
     "product.captureZone.name": { label: "Zona de Captura", defaultValue: "FAO 27 IX.a Atlántico Nordeste" },
     "product.boxGtin": { label: "GTIN del Producto", defaultValue: "98436613931182" },
@@ -42,6 +43,33 @@ const fieldOptions = Object.entries(labelFields).map(([value, { label }]) => ({
 const getFieldName = (field) => labelFields[field]?.label || field;
 
 const pxToMm = (px) => px / 3.78;
+
+// Valor por defecto de netWeight para usar cuando no hay valor disponible
+const NET_WEIGHT_DEFAULT = "20,000 kg";
+
+// Función para formatear netWeight según el tipo de campo
+const formatNetWeightField = (value, fieldName) => {
+    if (!value) return value;
+    
+    // Parsear el valor (puede venir como "20,000 kg" o como número)
+    let numValue = typeof value === 'string' 
+        ? parseEuropeanNumber(value.replace(/kg/gi, '').trim()) 
+        : Number(value) || 0;
+    
+    if (fieldName === 'netWeightFormatted') {
+        // Formato decimal con separadores (ej: 1.234,56)
+        return formatDecimal(numValue);
+    } else if (fieldName === 'netWeight6digits') {
+        // Redondear a 2 decimales y multiplicar por 100 para obtener un entero de 6 dígitos
+        // Ejemplo: 20,00 kg → 2000 → 002000
+        const roundedValue = Math.round(numValue * 100) / 100; // Redondear a 2 decimales
+        const integerValue = Math.round(roundedValue * 100); // Multiplicar por 100 para obtener entero
+        return String(integerValue).padStart(6, '0');
+    }
+    
+    // Para netWeight sin formato, devolver valor original
+    return value;
+};
 
 /**
  * Normaliza un elemento para asegurar que todas las propiedades de formato
@@ -89,7 +117,22 @@ const normalizeElement = (element) => {
         verticalAlign = "start";
     }
     
-    return {
+    // Normalizar direction para líneas: "horizontal" | "vertical" (nunca undefined)
+    let direction = element.direction;
+    if (element.type === "line") {
+        direction = direction || "horizontal";
+        if (!["horizontal", "vertical"].includes(direction)) {
+            direction = "horizontal";
+        }
+    }
+    
+    // Normalizar strokeWidth para líneas (siempre número positivo)
+    let strokeWidth = element.strokeWidth;
+    if (element.type === "line") {
+        strokeWidth = typeof strokeWidth === "number" && strokeWidth > 0 ? strokeWidth : 0.1;
+    }
+    
+    const normalized = {
         ...element,
         fontWeight,
         fontStyle,
@@ -100,6 +143,14 @@ const normalizeElement = (element) => {
         // Mantener textAlign para compatibilidad, pero no usarlo en la UI
         textAlign: horizontalAlign, // Sincronizar con horizontalAlign
     };
+    
+    // Añadir propiedades específicas de línea si es necesario
+    if (element.type === "line") {
+        normalized.direction = direction;
+        normalized.strokeWidth = strokeWidth;
+    }
+    
+    return normalized;
 };
 
 /**
@@ -115,6 +166,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [elements, setElements] = useState([]);
     const [labelName, setLabelName] = useState("");
     const [labelId, setLabelId] = useState(null);
+    
     const [fieldExampleValues, setFieldExampleValues] = useState(() => {
         // Inicializar con los valores por defecto de labelFields
         const initialValues = {};
@@ -137,6 +189,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const [canvasHeight, setCanvasHeight] = useState(300);
     const [canvasRotation, setCanvasRotation] = useState(0);
     const canvasRef = useRef(null);
+    const mouseDownPosRef = useRef(null);
+    const wasSelectedOnMouseDownRef = useRef(false);
+    const clickedElementIdRef = useRef(null);
     const { data: session } = useSession();
 
     const [openSelector, setOpenSelector] = useState(false);
@@ -309,12 +364,16 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             type,
             x: 50,
             y: 50,
-            width: ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
-            height: type === "richParagraph"
-                ? 15
-                : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
-                    ? 10
-                    : 10,
+            width: type === "line" 
+                ? 30 
+                : ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
+            height: type === "line"
+                ? 1
+                : type === "richParagraph"
+                    ? 15
+                    : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
+                        ? 10
+                        : 10,
             fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
             fontWeight: "normal",
             fontStyle: "normal",
@@ -338,6 +397,8 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             borderColor: type === "sanitaryRegister" ? "#000000" : undefined,
             borderWidth: type === "sanitaryRegister" ? 0.10 : undefined,
             color: "#000000",
+            direction: type === "line" ? "horizontal" : undefined,
+            strokeWidth: type === "line" ? 0.1 : undefined,
         };
         // Normalizar antes de agregar
         const normalizedElement = normalizeElement(newElement);
@@ -384,7 +445,23 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const handleMouseDown = (e, elementId) => {
         e.preventDefault();
-        setSelectedElement(elementId);
+        
+        // Guardar el elementId y si el elemento ya estaba seleccionado
+        clickedElementIdRef.current = elementId;
+        wasSelectedOnMouseDownRef.current = selectedElement === elementId;
+        
+        // Guardar la posición inicial del mouse
+        mouseDownPosRef.current = {
+            x: e.clientX,
+            y: e.clientY
+        };
+        
+        // Si el elemento ya estaba seleccionado, no seleccionarlo de nuevo todavía
+        // Esperaremos a ver si hay movimiento en handleMouseMove
+        if (!wasSelectedOnMouseDownRef.current) {
+            setSelectedElement(elementId);
+        }
+        
         setIsDragging(true);
         const element = elements.find((el) => el.id === elementId);
         if (element && canvasRef.current) {
@@ -417,7 +494,23 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const handleMouseMove = useCallback(
         (e) => {
-            if ((!isDragging && !isResizing) || !selectedElement || !canvasRef.current) return;
+            if ((!isDragging && !isResizing) || !canvasRef.current) return;
+
+            // Si el elemento estaba seleccionado y ahora hay movimiento, seleccionarlo y empezar a arrastrar
+            if (isDragging && wasSelectedOnMouseDownRef.current && mouseDownPosRef.current && clickedElementIdRef.current) {
+                const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
+                const movedY = Math.abs(e.clientY - mouseDownPosRef.current.y);
+                const threshold = 3; // 3 píxeles de umbral para considerar movimiento
+                
+                if (movedX > threshold || movedY > threshold) {
+                    // Hay movimiento significativo, seleccionar el elemento y continuar con el arrastre
+                    if (!selectedElement) {
+                        setSelectedElement(clickedElementIdRef.current);
+                    }
+                }
+            }
+
+            if (!selectedElement) return;
 
             const rect = canvasRef.current.getBoundingClientRect();
             const curX = pxToMm(e.clientX - rect.left) / zoom;
@@ -467,9 +560,24 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         [isDragging, isResizing, selectedElement, dragOffset, resizeStart, resizeCorner, zoom, canvasWidth, canvasHeight, elements]
     );
 
-    const handleMouseUp = useCallback(() => {
+    const handleMouseUp = useCallback((e) => {
+        // Si el elemento ya estaba seleccionado y no hubo movimiento significativo, deseleccionarlo
+        if (wasSelectedOnMouseDownRef.current && mouseDownPosRef.current && e && clickedElementIdRef.current) {
+            const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
+            const movedY = Math.abs(e.clientY - mouseDownPosRef.current.y);
+            const threshold = 3; // 3 píxeles de umbral
+            
+            if (movedX <= threshold && movedY <= threshold) {
+                // No hubo movimiento significativo, deseleccionar
+                setSelectedElement(null);
+            }
+        }
+        
         setIsDragging(false);
         setIsResizing(false);
+        mouseDownPosRef.current = null;
+        wasSelectedOnMouseDownRef.current = false;
+        clickedElementIdRef.current = null;
     }, []);
 
     const handleSelectElementCard = (elementId) => {
@@ -683,6 +791,27 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             return;
         }
 
+        // Función auxiliar para obtener valores de ejemplo (similar a LabelElement)
+        const getExampleValue = (key) => {
+            // Si es un campo de netWeight con formato específico, aplicar el formato
+            if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
+                // Usar el valor de netWeight si existe, si no usar el valor por defecto
+                const baseValue = fieldExampleValues['netWeight'] || labelFields['netWeight']?.defaultValue || NET_WEIGHT_DEFAULT;
+                return formatNetWeightField(baseValue, key);
+            }
+            // Usar fieldExampleValues primero, luego defaultValue de labelFields, o el sample para campos manuales
+            return fieldExampleValues[key] || labelFields[key]?.defaultValue || '';
+        };
+
+        // Función para reemplazar placeholders en texto/HTML con valores de ejemplo
+        const replacePlaceholders = (str) => {
+            if (!str) return '';
+            return str.replace(/{{([^}]+)}}/g, (_, field) => {
+                const value = getExampleValue(field);
+                return value || `{{${field}}}`;
+            });
+        };
+
         // Crear un elemento temporal fuera del DOM para medir
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'absolute';
@@ -717,17 +846,19 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 tempElement.style.wordWrap = 'break-word';
             }
 
-            // Obtener el contenido según el tipo
+            // Obtener el contenido según el tipo usando valores de ejemplo
             if (element.type === 'text') {
                 tempElement.textContent = element.text || '';
             } else if (element.type === 'field') {
-                tempElement.textContent = getFieldValue(element.field || '');
+                // Usar valores de ejemplo en lugar de getFieldValue
+                const exampleValue = getExampleValue(element.field || '');
+                tempElement.textContent = exampleValue || element.field || '';
             } else if (element.type === 'manualField') {
-                tempElement.textContent = element.sample || '';
+                // Usar sample si existe, sino usar valor de ejemplo
+                tempElement.textContent = element.sample || getExampleValue(element.key || '') || '';
             } else if (element.type === 'richParagraph') {
-                // Para richParagraph, crear un contenedor con el HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(element.html || '', 'text/html');
+                // Para richParagraph, reemplazar placeholders con valores de ejemplo antes de medir
+                const htmlWithExamples = replacePlaceholders(element.html || '');
                 // Limpiar fontSize inline para que use el del contenedor
                 const processHtml = (html) => {
                     if (!html) return '';
@@ -744,7 +875,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     removeFontSize(doc.body);
                     return doc.body.innerHTML;
                 };
-                tempElement.innerHTML = processHtml(element.html || '');
+                tempElement.innerHTML = processHtml(htmlWithExamples);
             } else if (element.type === 'sanitaryRegister') {
                 // Para sanitaryRegister, construir el texto
                 const parts = [];
@@ -766,7 +897,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
             // Limpiar
             document.body.removeChild(tempContainer);
-
+            
             // Actualizar el elemento con un pequeño margen
             const minSize = 5; // Mínimo 5mm
             const margin = 1; // Margen de 1mm

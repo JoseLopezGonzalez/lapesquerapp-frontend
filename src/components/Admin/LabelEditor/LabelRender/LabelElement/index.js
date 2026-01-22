@@ -138,6 +138,62 @@ export default function LabelElement({ element, values = {} }) {
                 </div>
             );
 
+        case "line": {
+            const direction = element.direction || "horizontal";
+            const strokeWidth = element.strokeWidth || 0.1;
+            const color = element.color || "#000000";
+            
+            if (direction === "horizontal") {
+                // Línea horizontal: va de izquierda a derecha
+                return (
+                    <div
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "stretch",
+                            position: "relative"
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: "100%",
+                                height: `${Math.max(strokeWidth, 0.1)}mm`,
+                                backgroundColor: color,
+                                minHeight: "1px",
+                                flexShrink: 0
+                            }}
+                        />
+                    </div>
+                );
+            } else {
+                // Línea vertical: va de arriba a abajo
+                return (
+                    <div
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "stretch",
+                            justifyContent: "center",
+                            position: "relative"
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: `${Math.max(strokeWidth, 0.1)}mm`,
+                                height: "100%",
+                                backgroundColor: color,
+                                minWidth: "1px",
+                                flexShrink: 0
+                            }}
+                        />
+                    </div>
+                );
+            }
+        }
+
         default:
             return null;
     }

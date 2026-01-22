@@ -51,6 +51,8 @@ import {
     Plus,
     Settings,
     Maximize,
+    Keyboard,
+    Minus,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -138,6 +140,9 @@ export default function LabelEditor() {
     // Estado local del panel de propiedades (snapshot editable)
     // Este es la única fuente de verdad para los controles del panel
     const [activeElementState, setActiveElementState] = useState(null);
+    
+    // Estado para el diálogo de atajos de teclado
+    const [showKeyboardShortcutsDialog, setShowKeyboardShortcutsDialog] = useState(false);
 
     // Sincronizar snapshot cuando cambia el elemento seleccionado
     // Solo cuando cambia el ID, no cuando cambian las propiedades
@@ -171,6 +176,89 @@ export default function LabelEditor() {
             isClickingFromListRef.current = false;
         }, 100);
     }
+
+    // Manejar movimiento con teclado (flechas)
+    useEffect(() => {
+        if (!selectedElement || !selectedElementData) return;
+
+        const handleKeyDown = (e) => {
+            // Ignorar si el usuario está escribiendo en un input, textarea o contenteditable
+            const target = e.target;
+            const isInputElement = 
+                target.tagName === 'INPUT' || 
+                target.tagName === 'TEXTAREA' || 
+                target.isContentEditable ||
+                target.closest('[contenteditable="true"]') ||
+                target.closest('input') ||
+                target.closest('textarea');
+
+            if (isInputElement) return;
+
+            // Manejar tecla Suprimir/Delete para eliminar el elemento
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                e.preventDefault();
+                deleteElement(selectedElement);
+                return;
+            }
+
+            // Solo procesar teclas de flecha
+            const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+            if (!arrowKeys.includes(e.key)) return;
+
+            e.preventDefault();
+
+            // Determinar el paso de movimiento (0.1mm normal, 1mm con Shift)
+            const step = e.shiftKey ? 1 : 0.1;
+            
+            const element = selectedElementData;
+            let newX = element.x;
+            let newY = element.y;
+
+            // Calcular nueva posición según la tecla presionada
+            switch (e.key) {
+                case 'ArrowUp':
+                    newY = element.y - step;
+                    break;
+                case 'ArrowDown':
+                    newY = element.y + step;
+                    break;
+                case 'ArrowLeft':
+                    newX = element.x - step;
+                    break;
+                case 'ArrowRight':
+                    newX = element.x + step;
+                    break;
+                default:
+                    return;
+            }
+
+            // Limitar movimiento dentro de los límites del canvas
+            const maxX = canvasWidth - (element.width || 0);
+            const maxY = canvasHeight - (element.height || 0);
+            
+            newX = Math.max(0, Math.min(maxX, newX));
+            newY = Math.max(0, Math.min(maxY, newY));
+
+            // Actualizar posición del elemento
+            updateElement(element.id, {
+                x: newX,
+                y: newY,
+            });
+
+            // Actualizar también el estado local para mantener sincronizado el panel de propiedades
+            if (activeElementState && activeElementState.id === element.id) {
+                setActiveElementState((prev) => {
+                    if (!prev) return null;
+                    return { ...prev, x: newX, y: newY };
+                });
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedElement, selectedElementData, canvasWidth, canvasHeight, updateElement, deleteElement]);
 
     // Scroll automático cuando se selecciona un elemento desde la previsualización
     useEffect(() => {
@@ -341,6 +429,16 @@ export default function LabelEditor() {
                                         <ImageIcon className="w-4 h-4" />
                                         Imagen
                                     </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("line")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
+                                        <Minus className="w-4 h-4" />
+                                        Línea
+                                    </Button>
                                 </div>
                                 {!selectedLabel && (
                                     <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -368,7 +466,7 @@ export default function LabelEditor() {
                                                                     delete elementRefs.current[element.id];
                                                                 }
                                                             }}
-                                                            className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? " ring-2 ring-foreground-500 " : "border-border hover:bg-foreground-50/50"
+                                                            className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? "ring-2 ring-primary border-primary/50 bg-primary/5 dark:bg-primary/10" : "border-border hover:bg-muted/50 dark:hover:bg-muted/30"
                                                                 }`}
                                                             onClick={() => handleOnClickElementCard(element.id)}
                                                         >
@@ -380,7 +478,7 @@ export default function LabelEditor() {
                                                                                 <Type className="w-3 h-3" />
                                                                                 <span className="text-sm font-medium capitalize">Texto Fijo</span>
                                                                             </div>
-                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.text}</span>
                                                                             </div>
                                                                         </div>)}
@@ -390,7 +488,7 @@ export default function LabelEditor() {
                                                                                 <Database className="w-3 h-3" />
                                                                                 <span className="text-sm font-medium capitalize">Campo Dinámico</span>
                                                                             </div>
-                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{getFieldName(element.field || "")}</span>
                                                                             </div>
                                                                         </div>)}
@@ -400,7 +498,7 @@ export default function LabelEditor() {
                                                                                 <BetweenHorizonalEnd className="w-3 h-3" />
                                                                                 <span className="text-sm font-medium capitalize">Campo Manual</span>
                                                                             </div>
-                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || `{{${element.key}}}`}</span>
                                                                             </div>
                                                                         </div>)}
@@ -410,7 +508,7 @@ export default function LabelEditor() {
                                                                                 <Stamp className="w-3 h-3" />
                                                                                 <span className="text-sm font-medium capitalize">Registro Sanitario</span>
                                                                             </div>
-                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{`${element.countryCode || ''} ${element.approvalNumber || ''} ${element.suffix || ''}`.trim()}</span>
                                                                             </div>
                                                                         </div>
@@ -421,7 +519,7 @@ export default function LabelEditor() {
                                                                                 <Pilcrow className="w-3 h-3" />
                                                                                 <span className="text-sm font-medium capitalize">Párrafo</span>
                                                                             </div>
-                                                                            <div className="flex items-center bg-foreground-100 rounded-md p-2 w-full">
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">
                                                                                     {element.html ? element.html.replace(/<[^>]+>/g, '') : element.text || ''}
                                                                                 </span>
@@ -442,6 +540,19 @@ export default function LabelEditor() {
                                                                             <ImageIcon className="w-3 h-3" />
                                                                             <span className="text-sm font-medium capitalize">Imagen</span>
                                                                         </div>)}
+                                                                    {element.type === "line" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <Minus className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Línea</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                                                                    {element.direction === "vertical" ? "Vertical" : "Horizontal"} - {element.strokeWidth || 0.1}mm
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100">
                                                                     <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); duplicateElement(element.id); }}>
@@ -515,6 +626,20 @@ export default function LabelEditor() {
                                         <Settings className="w-4 h-4" />
                                         Valores de Ejemplo
                                     </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button 
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => setShowKeyboardShortcutsDialog(true)}
+                                            >
+                                                <Keyboard className="w-4 h-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Atajos de teclado</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                     <Button 
                                         variant=""
                                         onClick={handleOnClickSave}
@@ -591,7 +716,7 @@ export default function LabelEditor() {
                                                 <div className='bg-orange-200 px-4'>
                                                     <div className="flex flex-col items-center  gap-4"
                                                     >
-                                                        <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border bg-card text-card-foreground  shadow">
+                                                        <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border shadow">
                                                         </div>
 
 
@@ -608,7 +733,7 @@ export default function LabelEditor() {
                                                             values={getDefaultValuesFromElements()}
                                                         />
 
-                                                        <div className="w-full h-20 bg-white rounded-t-xl  border border-b-0 bg-card text-card-foreground  ">
+                                                        <div className="w-full h-20 bg-white rounded-t-xl border border-b-0">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -709,6 +834,12 @@ export default function LabelEditor() {
                                             <div className="flex items-center gap-2 justify-center">
                                                 <ImageIcon className="w-4 h-4" />
                                                 <h4 className="capitalize text-xl font-normal">Imagen</h4>
+                                            </div>
+                                        )}
+                                        {activeElementState.type === "line" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <Minus className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Línea</h4>
                                             </div>
                                         )}
                                         <Button
@@ -935,6 +1066,82 @@ export default function LabelEditor() {
                                                 showValue={!!activeElementState.showValue}
                                                 onShowValueChange={(val) => updateActiveElement({ showValue: val })}
                                             />
+                                        </div>
+                                    )}
+
+                                    {activeElementState.type === "line" && (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Dirección</h4>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant={activeElementState.direction === "horizontal" ? "default" : "outline"}
+                                                        size="sm"
+                                                        className="flex-1"
+                                                        onClick={() => {
+                                                            const currentWidth = activeElementState.width;
+                                                            const currentHeight = activeElementState.height;
+                                                            // Si es vertical, intercambiar dimensiones para horizontal
+                                                            if (activeElementState.direction === "vertical") {
+                                                                updateActiveElement({ 
+                                                                    direction: "horizontal",
+                                                                    width: currentHeight,
+                                                                    height: currentWidth
+                                                                });
+                                                            } else {
+                                                                updateActiveElement({ direction: "horizontal" });
+                                                            }
+                                                        }}
+                                                    >
+                                                        Horizontal
+                                                    </Button>
+                                                    <Button
+                                                        variant={activeElementState.direction === "vertical" ? "default" : "outline"}
+                                                        size="sm"
+                                                        className="flex-1"
+                                                        onClick={() => {
+                                                            const currentWidth = activeElementState.width;
+                                                            const currentHeight = activeElementState.height;
+                                                            // Si es horizontal, intercambiar dimensiones para vertical
+                                                            if (activeElementState.direction === "horizontal") {
+                                                                updateActiveElement({ 
+                                                                    direction: "vertical",
+                                                                    width: currentHeight,
+                                                                    height: currentWidth
+                                                                });
+                                                            } else {
+                                                                updateActiveElement({ direction: "vertical" });
+                                                            }
+                                                        }}
+                                                    >
+                                                        Vertical
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Grosor</h4>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    max="5"
+                                                    value={activeElementState.strokeWidth || 0.1}
+                                                    onChange={(e) => {
+                                                        const value = parseFloat(e.target.value) || 0.1;
+                                                        updateActiveElement({ strokeWidth: value });
+                                                    }}
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">Grosor en mm (0.01 - 5)</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Color</h4>
+                                                <Input
+                                                    type="color"
+                                                    value={activeElementState.color || "#000000"}
+                                                    onChange={(e) => updateActiveElement({ color: e.target.value })}
+                                                    className="w-full h-10 cursor-pointer"
+                                                />
+                                            </div>
                                         </div>
                                     )}
 
@@ -1337,6 +1544,66 @@ export default function LabelEditor() {
                     fieldExampleValues={fieldExampleValues}
                     setFieldExampleValues={setFieldExampleValues}
                 />
+
+                {/* Diálogo de Atajos de Teclado */}
+                <Dialog open={showKeyboardShortcutsDialog} onOpenChange={setShowKeyboardShortcutsDialog}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Keyboard className="w-5 h-5" />
+                                Atajos de Teclado
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-3">
+                                <div>
+                                    <h4 className="text-sm font-semibold mb-2 text-foreground">Movimiento</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Mover elemento</span>
+                                            <div className="flex items-center gap-1">
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">↑</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">↓</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">←</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">→</kbd>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Mover rápido (5mm)</span>
+                                            <div className="flex items-center gap-1">
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">Shift</kbd>
+                                                <span className="text-xs text-muted-foreground">+</span>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">↑</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">↓</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">←</kbd>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">→</kbd>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <Separator />
+                                <div>
+                                    <h4 className="text-sm font-semibold mb-2 text-foreground">Acciones</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Eliminar elemento</span>
+                                            <div className="flex items-center gap-1">
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">Delete</kbd>
+                                                <span className="text-xs text-muted-foreground">o</span>
+                                                <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-muted border border-border rounded">Backspace</kbd>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-muted/50 border border-muted rounded-lg px-3 py-2">
+                                <p className="text-xs text-muted-foreground">
+                                    <strong>Nota:</strong> Los atajos solo funcionan cuando un elemento está seleccionado y no estás escribiendo en un campo de texto.
+                                </p>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </TooltipProvider >
         </>
     )
