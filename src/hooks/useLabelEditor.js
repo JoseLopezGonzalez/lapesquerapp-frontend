@@ -475,7 +475,6 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
     const handleResizeMouseDown = (e, elementId, corner) => {
         e.preventDefault();
-        e.stopPropagation(); // Prevenir que el evento se propague y seleccione otros elementos
         setSelectedElement(elementId);
         setIsResizing(true);
         setResizeCorner(corner);
