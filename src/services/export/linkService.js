@@ -7,6 +7,7 @@
 
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 
 /**
  * Formats error message from error detail object
@@ -174,6 +175,9 @@ export async function validatePurchases(linkedSummaryArray) {
     }
 
     try {
+        // Get authentication token
+        const token = await getAuthToken();
+
         // Prepare request body for validation endpoint
         const receptions = comprasValidas.map((linea) => ({
             supplier_id: linea.supplierId,
@@ -185,7 +189,10 @@ export async function validatePurchases(linkedSummaryArray) {
         // Make validation request
         const res = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/validate-bulk-update-declared-data`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ receptions }),
         });
 
@@ -308,6 +315,9 @@ export async function linkAllPurchases(linkedSummaryArray) {
     }
 
     try {
+        // Get authentication token
+        const token = await getAuthToken();
+
         // Prepare request body for bulk endpoint
         const receptions = comprasValidas.map((linea) => ({
             supplier_id: linea.supplierId,
@@ -319,7 +329,10 @@ export async function linkAllPurchases(linkedSummaryArray) {
         // Make bulk request
         const res = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/bulk-update-declared-data`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ receptions }),
         });
 
