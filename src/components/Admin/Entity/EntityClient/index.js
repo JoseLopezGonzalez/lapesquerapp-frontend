@@ -219,31 +219,70 @@ export default function EntityClient({ config }) {
     // Ref para rastrear los filtros anteriores y detectar cambios
     const prevFiltersRef = useRef(JSON.stringify(filters));
     const isInitialMount = useRef(true);
+    const isLoadingRef = useRef(false);
+    const prevPageRef = useRef(currentPage);
+    const prevEndpointRef = useRef(config.endpoint);
+    const fetchDataRef = useRef(fetchData);
+
+    // Mantener fetchDataRef actualizado sin causar re-renders
+    useEffect(() => {
+        fetchDataRef.current = fetchData;
+    }, [fetchData]);
 
     // useEffect unificado para manejar cambios en filtros y página
     useEffect(() => {
+        // Prevenir llamadas múltiples simultáneas
+        if (isLoadingRef.current) {
+            return;
+        }
+
         const currentFiltersString = JSON.stringify(filters);
         const filtersChanged = prevFiltersRef.current !== currentFiltersString;
+        const pageChanged = prevPageRef.current !== currentPage;
+        const endpointChanged = prevEndpointRef.current !== config.endpoint;
+
+        // Si cambió el endpoint, resetear todo
+        if (endpointChanged) {
+            prevEndpointRef.current = config.endpoint;
+            prevFiltersRef.current = currentFiltersString;
+            prevPageRef.current = currentPage;
+            isInitialMount.current = true;
+        }
 
         if (isInitialMount.current) {
             // En el montaje inicial, siempre hacer fetch
             isInitialMount.current = false;
             prevFiltersRef.current = currentFiltersString;
-            fetchData(currentPage, filters);
+            prevPageRef.current = currentPage;
+            isLoadingRef.current = true;
+            fetchDataRef.current(currentPage, filters).finally(() => {
+                isLoadingRef.current = false;
+            });
         } else if (filtersChanged) {
             // Actualizar la ref de filtros anteriores
             prevFiltersRef.current = currentFiltersString;
             // Resetear a página 1 cuando cambian los filtros
             if (currentPage !== 1) {
+                prevPageRef.current = 1;
                 setCurrentPage(1);
+                // No hacer fetch aquí, el cambio de currentPage disparará otro useEffect
+                return;
             }
             // Hacer fetch con página 1 cuando cambian los filtros
-            fetchData(1, filters);
-        } else {
+            isLoadingRef.current = true;
+            fetchDataRef.current(1, filters).finally(() => {
+                isLoadingRef.current = false;
+            });
+        } else if (pageChanged) {
             // Si solo cambió la página (y no los filtros), hacer fetch con esa página
-            fetchData(currentPage, filters);
+            prevPageRef.current = currentPage;
+            isLoadingRef.current = true;
+            fetchDataRef.current(currentPage, filters).finally(() => {
+                isLoadingRef.current = false;
+            });
         }
-    }, [currentPage, filters, fetchData, config.endpoint]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, filters, config.endpoint]); // Remover fetchData de dependencias para evitar loops
 
 
     const handlePageChange = (newPage) => {
