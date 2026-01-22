@@ -39,7 +39,7 @@ export default function LabelEditorPreview({
                         key={element.id}
                         className={`absolute flex cursor-move transition-colors ${selectedElement === element.id
                             ? "border border-blue-500/60 bg-blue-50/30 ring-1 ring-blue-500/30"
-                            : "border border-transparent hover:border-gray-200/50"
+                            : selectedElement ? "border border-transparent" : "border border-transparent hover:border-gray-200/50"
                             }`}
                         style={{
                             left: `${element.x}mm`,
@@ -76,24 +76,36 @@ export default function LabelEditorPreview({
                         {selectedElement === element.id && (
                             <>
                                 <div
-                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "nw")}
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation(); // Prevenir propagación antes de llamar al handler
+                                        handleResizeMouseDown(e, element.id, "nw");
+                                    }}
                                     className="absolute -top-1 -left-1 bg-blue-600 border-2 border-white rounded-full cursor-nwse-resize w-2 h-2 shadow-sm"
-                                    style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
+                                    style={{ zIndex: 100, transform: `scale(${1 / zoom})`, pointerEvents: "auto" }}
                                 ></div>
                                 <div
-                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "ne")}
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation(); // Prevenir propagación antes de llamar al handler
+                                        handleResizeMouseDown(e, element.id, "ne");
+                                    }}
                                     className="absolute -top-1 -right-1 bg-blue-600 border-2 border-white rounded-full cursor-nesw-resize w-2 h-2 shadow-sm"
-                                    style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
+                                    style={{ zIndex: 100, transform: `scale(${1 / zoom})`, pointerEvents: "auto" }}
                                 ></div>
                                 <div
-                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "sw")}
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation(); // Prevenir propagación antes de llamar al handler
+                                        handleResizeMouseDown(e, element.id, "sw");
+                                    }}
                                     className="absolute -bottom-1 -left-1 bg-blue-600 border-2 border-white rounded-full cursor-nesw-resize w-2 h-2 shadow-sm"
-                                    style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
+                                    style={{ zIndex: 100, transform: `scale(${1 / zoom})`, pointerEvents: "auto" }}
                                 ></div>
                                 <div
-                                    onMouseDown={(e) => handleResizeMouseDown(e, element.id, "se")}
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation(); // Prevenir propagación antes de llamar al handler
+                                        handleResizeMouseDown(e, element.id, "se");
+                                    }}
                                     className="absolute -bottom-1 -right-1 bg-blue-600 border-2 border-white rounded-full cursor-nwse-resize w-2 h-2 shadow-sm"
-                                    style={{ zIndex: 10, transform: `scale(${1 / zoom})` }}
+                                    style={{ zIndex: 100, transform: `scale(${1 / zoom})`, pointerEvents: "auto" }}
                                 ></div>
                             </>
                         )}
