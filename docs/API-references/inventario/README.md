@@ -60,7 +60,34 @@ Content-Type: application/json
 ```json
 {
   "name": "Almacén Principal",
-  "code": "ALM-001"
+  "temperature": -18.5,
+  "capacity": 5000.00
+}
+```
+
+#### Validaciones del Backend
+
+| Campo | Tipo | Requerido | Reglas de Validación |
+|-------|------|-----------|---------------------|
+| `name` | string | Sí | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
+| `temperature` | numeric | Sí | Entre -99.99 y 99.99 (`between:-99.99,99.99`) |
+| `capacity` | numeric | Sí | Mínimo 0 (`min:0`) |
+
+**Nota:** Las validaciones se aplican tanto en la creación (`POST`) como en la actualización (`PUT`) de almacenes.
+
+#### Response Errónea - Validación (422)
+
+Cuando los datos no cumplen con las validaciones:
+
+```json
+{
+  "message": "Error de validación.",
+  "userMessage": "El nombre debe tener al menos 3 caracteres y la temperatura debe estar entre -99.99 y 99.99.",
+  "errors": {
+    "name": ["The name must be at least 3 characters."],
+    "temperature": ["The temperature must be between -99.99 and 99.99."],
+    "capacity": ["The capacity must be at least 0."]
+  }
 }
 ```
 
@@ -71,7 +98,8 @@ Content-Type: application/json
   "data": {
     "id": 1,
     "name": "Almacén Principal",
-    "code": "ALM-001",
+    "temperature": -18.5,
+    "capacity": 5000.00,
     "created_at": "2024-01-15T10:00:00.000000Z"
   }
 }
@@ -92,7 +120,8 @@ GET /api/v2/stores/{id}
   "data": {
     "id": 1,
     "name": "Almacén Principal",
-    "code": "ALM-001"
+    "temperature": -18.5,
+    "capacity": 5000.00
   }
 }
 ```
@@ -110,9 +139,20 @@ PUT /api/v2/stores/{id}
 ```json
 {
   "name": "Almacén Actualizado",
-  "code": "ALM-001-UPD"
+  "temperature": 4.0,
+  "capacity": 6000.00
 }
 ```
+
+#### Validaciones del Backend
+
+Las mismas validaciones que para la creación se aplican en la actualización:
+
+| Campo | Tipo | Requerido | Reglas de Validación |
+|-------|------|-----------|---------------------|
+| `name` | string | Sí | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
+| `temperature` | numeric | Sí | Entre -99.99 y 99.99 (`between:-99.99,99.99`) |
+| `capacity` | numeric | Sí | Mínimo 0 (`min:0`) |
 
 ---
 

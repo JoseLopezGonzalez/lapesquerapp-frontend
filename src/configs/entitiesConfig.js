@@ -1204,6 +1204,10 @@ export const configs = {
             value: 3,
             message: "Debe tener al menos 3 caracteres",
           },
+          maxLength: {
+            value: 255,
+            message: "No puede exceder los 255 caracteres",
+          },
         },
         cols: {
           sm: 3, md: 3, lg: 3, xl: 6,
@@ -1212,10 +1216,19 @@ export const configs = {
       {
         name: "temperature",
         label: "Temperatura",
-        type: "text",
-        placeholder: "Ej. -18 ºC",
+        type: "number",
+        placeholder: "Ej. -18",
         validation: {
           required: "La temperatura es obligatoria",
+          valueAsNumber: true,
+          min: {
+            value: -99.99,
+            message: "La temperatura debe ser mayor o igual a -99.99",
+          },
+          max: {
+            value: 99.99,
+            message: "La temperatura debe ser menor o igual a 99.99",
+          },
         },
         cols: {
           sm: 3, md: 3, lg: 3, xl: 3,
@@ -1228,9 +1241,10 @@ export const configs = {
         placeholder: "Capacidad máxima en kg",
         validation: {
           required: "La capacidad es obligatoria",
+          valueAsNumber: true,
           min: {
             value: 0,
-            message: "Debe ser un valor positivo",
+            message: "Debe ser un valor mayor o igual a 0",
           },
         },
         cols: {
