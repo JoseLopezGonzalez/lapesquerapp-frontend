@@ -6,7 +6,7 @@
  */
 
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V1 } from '@/configs/config';
+import { API_URL_V2 } from '@/configs/config';
 
 /**
  * Formats error message from error detail object
@@ -183,7 +183,7 @@ export async function validatePurchases(linkedSummaryArray) {
         }));
 
         // Make validation request
-        const res = await fetchWithTenant(`${API_URL_V1}raw-material-receptions/validate-bulk-update-declared-data`, {
+        const res = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/validate-bulk-update-declared-data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ receptions }),
@@ -317,7 +317,7 @@ export async function linkAllPurchases(linkedSummaryArray) {
         }));
 
         // Make bulk request
-        const res = await fetchWithTenant(`${API_URL_V1}raw-material-receptions/bulk-update-declared-data`, {
+        const res = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/bulk-update-declared-data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ receptions }),
