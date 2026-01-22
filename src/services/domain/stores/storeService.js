@@ -135,6 +135,20 @@ export const storeService = {
     },
 
     /**
+     * Elimina múltiples almacenes
+     * @param {Array<string|number>} ids - Array de IDs de almacenes
+     * @returns {Promise<void>}
+     * 
+     * @example
+     * await storeService.deleteMultiple([123, 456, 789]);
+     */
+    async deleteMultiple(ids) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}`;
+        return deleteEntityGeneric(url, { ids }, token);
+    },
+
+    /**
      * Obtiene opciones para autocompletado (formato {value, label})
      * @returns {Promise<Array<{value: any, label: string}>>} Opciones para Combobox
      * 
