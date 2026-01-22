@@ -33,35 +33,19 @@ export function useOrderFormOptions() {
         isMountedRef.current = true;
         const token = session?.user?.accessToken;
 
-        console.log('useOrderFormOptions: useEffect ejecutado', {
-            hasLoadedRef: hasLoadedRef.current,
-            hasToken: !!token,
-            currentLoading: loading,
-            optionsCount: {
-                salespeople: options.salespeople.length,
-                incoterms: options.incoterms.length,
-                paymentTerms: options.paymentTerms.length,
-                transports: options.transports.length
-            }
-        });
-
         // Si ya se cargaron las opciones, asegurarse de que loading sea false y no volver a cargar
         if (hasLoadedRef.current && token) {
-            // Asegurarse de que el estado de loading sea correcto
-            console.log('useOrderFormOptions: Opciones ya cargadas, estableciendo loading a false');
             setLoading(false);
             return;
         }
 
         if (!token) {
-            console.log('useOrderFormOptions: No hay token, estableciendo loading a false');
             setLoading(false);
             hasLoadedRef.current = false; // Resetear para permitir recarga cuando haya token
             return;
         }
 
         // Marcar que se está cargando
-        console.log('useOrderFormOptions: Iniciando carga de opciones');
         hasLoadedRef.current = false;
         setLoading(true);
 
@@ -87,16 +71,8 @@ export function useOrderFormOptions() {
             .then(([salespeople, incoterms, paymentTerms, transports]) => {
                 // Verificar que el componente sigue montado antes de actualizar estado
                 if (!isMountedRef.current) {
-                    console.log('useOrderFormOptions: Componente desmontado, no actualizando estado');
                     return;
                 }
-
-                console.log('useOrderFormOptions: Opciones cargadas exitosamente', {
-                    salespeople: (salespeople || []).length,
-                    incoterms: (incoterms || []).length,
-                    paymentTerms: (paymentTerms || []).length,
-                    transports: (transports || []).length
-                });
 
                 setOptions({
                     salespeople: salespeople || [],
@@ -107,7 +83,6 @@ export function useOrderFormOptions() {
                 setLoading(false);
                 setError(null);
                 hasLoadedRef.current = true;
-                console.log('useOrderFormOptions: Estado actualizado, loading=false, hasLoadedRef=true');
             })
             .catch((err) => {
                 console.error('Error loading form options:', err);
@@ -132,27 +107,8 @@ export function useOrderFormOptions() {
                               options.paymentTerms.length > 0 || 
                               options.transports.length > 0;
         
-        console.log('useOrderFormOptions: Segundo useEffect ejecutado', {
-            hasAnyOptions,
-            loading,
-            optionsCount: {
-                salespeople: options.salespeople.length,
-                incoterms: options.incoterms.length,
-                paymentTerms: options.paymentTerms.length,
-                transports: options.transports.length
-            },
-            hasLoadedRef: hasLoadedRef.current
-        });
-        
         // Si tenemos opciones pero loading está en true, corregirlo
         if (hasAnyOptions && loading) {
-            console.log('useOrderFormOptions: ⚠️ CORRIGIENDO loading a false porque hay opciones disponibles', {
-                salespeople: options.salespeople.length,
-                incoterms: options.incoterms.length,
-                paymentTerms: options.paymentTerms.length,
-                transports: options.transports.length,
-                hasLoadedRef: hasLoadedRef.current
-            });
             setLoading(false);
             // Si no se había marcado como cargado, marcarlo ahora
             if (!hasLoadedRef.current) {
@@ -167,15 +123,6 @@ export function useOrderFormOptions() {
                           options.paymentTerms.length > 0 || 
                           options.transports.length > 0;
     const finalLoading = loading && !hasAnyOptions;
-
-    // Log del valor que se retorna
-    if (loading !== finalLoading) {
-        console.log('useOrderFormOptions: ⚠️ Ajustando loading en return', {
-            loadingInterno: loading,
-            finalLoading,
-            hasAnyOptions
-        });
-    }
 
     return { options, loading: finalLoading, error };
 }

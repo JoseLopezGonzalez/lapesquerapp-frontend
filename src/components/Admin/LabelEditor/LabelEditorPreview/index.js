@@ -21,7 +21,7 @@ export default function LabelEditorPreview({
     return (
         <div
             ref={canvasRef}
-            className={`relative bg-white ${isZoomed ? 'border-2 border-border/70 shadow-md rounded-sm' : 'border-2 border-dashed border-border shadow-lg rounded-lg'}`}
+            className={`relative bg-white ${isZoomed ? 'border-2 border-border/70 shadow-md rounded-sm' : 'border-2 border-border shadow-lg rounded-lg'}`}
             style={{
                 width: `${canvasWidth}mm`,
                 height: `${canvasHeight}mm`,

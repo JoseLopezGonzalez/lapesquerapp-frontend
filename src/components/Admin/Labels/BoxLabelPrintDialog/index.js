@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
-    const { label, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
+    const { label, selectedLabelId, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
@@ -88,11 +88,22 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
 
                         {label && !isLoadingLabel && (
                             <div className="flex items-center justify-center w-full overflow-x-auto">
-                                <div className="flex-shrink-0">
-                                    <LabelRender
-                                        label={label?.format}
-                                        values={values[0]}
-                                    />
+                                <div className="flex flex-col items-center gap-4 mt-4">
+                                    <div className='bg-orange-200 px-4'>
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border shadow">
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                                <LabelRender
+                                                    label={label?.format}
+                                                    values={values[0]}
+                                                    showPreviewBorder={true}
+                                                />
+                                            </div>
+                                            <div className="w-full h-20 bg-white rounded-t-xl border border-b-0">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -101,9 +112,14 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                         {!isLoadingLabel && (
                             <div className="flex flex-col gap-1">
                                 <Label className="text-sm">Formato de etiqueta</Label>
-                                <Select onValueChange={handleOnChangeLabel}>
+                                <Select value={selectedLabelId || undefined} onValueChange={handleOnChangeLabel}>
                                     <SelectTrigger className="w-full" loading={isLoading}>
-                                        <SelectValue placeholder="Selecciona un formato" loading={isLoading} />
+                                        <SelectValue 
+                                            placeholder="Selecciona un formato" 
+                                            loading={isLoading}
+                                            value={selectedLabelId || undefined}
+                                            options={labelsOptions.map(opt => ({ value: opt.id, label: opt.name }))}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent loading={isLoading}>
                                         {labelsOptions.map((option) => (

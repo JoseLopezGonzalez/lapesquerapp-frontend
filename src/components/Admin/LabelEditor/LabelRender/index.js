@@ -6,6 +6,7 @@ export default function LabelRender({
   label,
   values = {},
   zoom = 1, // Puedes pasarle zoom también si quieres
+  showPreviewBorder = false, // Para mostrar bordes redondeados en preview
 }) {
   if (!label) return null;
 
@@ -15,7 +16,7 @@ export default function LabelRender({
 
   return (
     <div
-      className="relative text-black bg-white " /* shadow rounded border-2 border-dashed border-border */
+      className={`relative text-black bg-white ${showPreviewBorder ? 'border-2 border-border shadow-lg rounded-lg' : ''}`}
       style={{
         width: `${width}mm`,
         height: `${height}mm`,

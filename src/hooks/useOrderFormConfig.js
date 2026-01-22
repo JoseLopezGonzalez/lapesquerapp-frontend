@@ -221,19 +221,6 @@ export function useOrderFormConfig({ orderData }) {
     const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
     const [formGroups, setFormGroups] = useState(initialFormGroups);
     const { options, loading: optionsLoading } = useOrderFormOptions();
-    
-    // Log cuando optionsLoading cambia
-    useEffect(() => {
-        console.log('useOrderFormConfig: optionsLoading cambió', {
-            optionsLoading,
-            optionsCount: {
-                salespeople: options.salespeople.length,
-                incoterms: options.incoterms.length,
-                paymentTerms: options.paymentTerms.length,
-                transports: options.transports.length
-            }
-        });
-    }, [optionsLoading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
 
     // Función helper para convertir fechas de forma segura
     const parseDate = (dateValue) => {
@@ -350,18 +337,6 @@ export function useOrderFormConfig({ orderData }) {
                           options.transports.length > 0;
         
         const calculatedLoading = hasOptions ? false : (optionsLoading && !hasOptions);
-        
-        console.log('useOrderFormConfig: Calculando actualLoading', {
-            hasOptions,
-            optionsLoading,
-            calculatedLoading,
-            optionsCount: {
-                salespeople: options.salespeople.length,
-                incoterms: options.incoterms.length,
-                paymentTerms: options.paymentTerms.length,
-                transports: options.transports.length
-            }
-        });
         
         return calculatedLoading;
     }, [optionsLoading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);

@@ -41,13 +41,6 @@ const OrderEditSheet = () => {
         }
     }, [open, defaultValues, loading, reset]);
 
-    // Log cuando el Sheet se abre
-    useEffect(() => {
-        if (open) {
-            console.log('OrderEditSheet: Sheet abierto', { loading, hasFormGroups: formGroups.length > 0 });
-        }
-    }, [open, loading, formGroups.length]);
-
     const handleFormSubmit = handleSubmit(
         (data) => {
             onSubmit(data);

@@ -54,6 +54,7 @@ export const extractManualFieldsFromLabel = (elements) => {
 export function useLabel({ boxes = [], open }) {
 
     const [label, setLabel] = useState(null);
+    const [selectedLabelId, setSelectedLabelId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingLabel, setIsLoadingLabel] = useState(false);
     const { data: session } = useSession();
@@ -85,6 +86,7 @@ export function useLabel({ boxes = [], open }) {
         } else {
             setTimeout(() => {
                 setLabel(null);
+                setSelectedLabelId(null);
                 setManualFields({});
                 setFields([]);
                 setLabelsOptions([]);
@@ -96,6 +98,7 @@ export function useLabel({ boxes = [], open }) {
     }, [open]);
 
     const selectLabel = (labelId) => {
+        setSelectedLabelId(labelId);
         setIsLoadingLabel(true);
         getLabel(labelId, token)
             .then((data) => {
@@ -213,10 +216,13 @@ export function useLabel({ boxes = [], open }) {
     }
 
     /* Unir  manual Values a cada elemento de fields en variable Values*/
-    const values = fields.map(field => ({
-        ...manualFields,
-        ...field,
-    }));
+    /* Los campos manuales tienen prioridad sobre los campos automáticos */
+    const values = useMemo(() => {
+        return fields.map(field => ({
+            ...field,
+            ...manualFields, // Los campos manuales sobrescriben los automáticos
+        }));
+    }, [fields, manualFields]);
 
     const isSomeManualFieldEmpty = Object.values(manualFields).some(value => value === '');
 
@@ -224,6 +230,7 @@ export function useLabel({ boxes = [], open }) {
 
     return {
         label,
+        selectedLabelId,
         labelsOptions,
         selectLabel,
         manualFields,
