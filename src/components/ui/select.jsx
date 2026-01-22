@@ -10,14 +10,41 @@ const Select = SelectPrimitive.Root
 
 const SelectGroup = SelectPrimitive.Group
 
-const SelectValue = React.forwardRef(({ className, loading, placeholder, ...props }, ref) => {
-  if (loading) {
+const SelectValue = React.forwardRef(({ className, loading, placeholder, value, options, ...props }, ref) => {
+  // Si hay un valor y opciones disponibles, intentar encontrar el label incluso durante el loading
+  const selectedOption = React.useMemo(() => {
+    if (!value || !options || !Array.isArray(options)) return null
+    return options.find((option) => option.value === value || String(option.value) === String(value))
+  }, [options, value])
+
+  // Si está cargando pero no hay valor, mostrar mensaje de carga
+  if (loading && !value) {
     return (
       <span className={cn("text-muted-foreground", className)} ref={ref} {...props}>
         Cargando opciones...
       </span>
     )
   }
+
+  // Si está cargando pero hay un valor y encontramos la opción, mostrar el label
+  if (loading && value && selectedOption) {
+    return (
+      <span className={className} ref={ref} {...props}>
+        {selectedOption.label}
+      </span>
+    )
+  }
+
+  // Si está cargando, hay valor pero no encontramos la opción, mostrar el valor como fallback
+  if (loading && value && !selectedOption) {
+    return (
+      <span className={cn("text-muted-foreground", className)} ref={ref} {...props}>
+        Cargando...
+      </span>
+    )
+  }
+
+  // Comportamiento normal cuando no está cargando
   return <SelectPrimitive.Value ref={ref} className={className} placeholder={placeholder} {...props} />
 })
 SelectValue.displayName = SelectPrimitive.Value.displayName

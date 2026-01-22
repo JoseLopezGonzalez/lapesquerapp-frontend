@@ -221,6 +221,19 @@ export function useOrderFormConfig({ orderData }) {
     const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
     const [formGroups, setFormGroups] = useState(initialFormGroups);
     const { options, loading: optionsLoading } = useOrderFormOptions();
+    
+    // Log cuando optionsLoading cambia
+    useEffect(() => {
+        console.log('useOrderFormConfig: optionsLoading cambió', {
+            optionsLoading,
+            optionsCount: {
+                salespeople: options.salespeople.length,
+                incoterms: options.incoterms.length,
+                paymentTerms: options.paymentTerms.length,
+                transports: options.transports.length
+            }
+        });
+    }, [optionsLoading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
 
     // Función helper para convertir fechas de forma segura
     const parseDate = (dateValue) => {
@@ -261,7 +274,15 @@ export function useOrderFormConfig({ orderData }) {
     // Actualizar formGroups cuando se carguen las opciones
     // Usar useMemo para evitar recrear formGroups innecesariamente
     const formGroupsWithOptions = useMemo(() => {
-        if (optionsLoading) return initialFormGroups;
+        // Si está cargando y no tenemos opciones aún, retornar initialFormGroups
+        // Pero si ya tenemos opciones cargadas (aunque esté recargando), mantenerlas
+        if (optionsLoading && 
+            (!options.salespeople?.length && 
+             !options.paymentTerms?.length && 
+             !options.incoterms?.length && 
+             !options.transports?.length)) {
+            return initialFormGroups;
+        }
 
         return initialFormGroups.map((group) => {
             if (group.group === 'Información Comercial') {
@@ -320,17 +341,40 @@ export function useOrderFormConfig({ orderData }) {
         });
     }, [options.salespeople, options.paymentTerms, options.incoterms, options.transports, optionsLoading]);
 
+    // Asegurarse de que loading se actualice correctamente cuando optionsLoading cambia
+    // Usar useMemo para calcular loading basándose en si realmente hay opciones
+    const actualLoading = useMemo(() => {
+        const hasOptions = options.salespeople.length > 0 || 
+                          options.incoterms.length > 0 || 
+                          options.paymentTerms.length > 0 || 
+                          options.transports.length > 0;
+        
+        const calculatedLoading = hasOptions ? false : (optionsLoading && !hasOptions);
+        
+        console.log('useOrderFormConfig: Calculando actualLoading', {
+            hasOptions,
+            optionsLoading,
+            calculatedLoading,
+            optionsCount: {
+                salespeople: options.salespeople.length,
+                incoterms: options.incoterms.length,
+                paymentTerms: options.paymentTerms.length,
+                transports: options.transports.length
+            }
+        });
+        
+        return calculatedLoading;
+    }, [optionsLoading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
+
     useEffect(() => {
-        if (!optionsLoading) {
-            setFormGroups(formGroupsWithOptions);
-        }
-    }, [formGroupsWithOptions, optionsLoading]);
+        // Actualizar formGroups cuando las opciones cambien
+        // Si está cargando pero ya tenemos opciones, actualizarlas igualmente
+        // para mantener los valores visibles durante recargas
+        setFormGroups(formGroupsWithOptions);
+    }, [formGroupsWithOptions]);
 
-    const loading = optionsLoading;
-    const loadingProgress = { current: optionsLoading ? 0 : 4, total: 4 };
-
-
-
+    const loading = actualLoading;
+    const loadingProgress = { current: actualLoading ? 0 : 4, total: 4 };
 
     return { defaultValues, formGroups, loading, loadingProgress };
 }

@@ -271,7 +271,12 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                 <SelectTrigger loading={selectLoading}>
-                                    <SelectValue placeholder={field.placeholder} loading={selectLoading} />
+                                    <SelectValue 
+                                        placeholder={field.placeholder} 
+                                        loading={selectLoading}
+                                        value={value}
+                                        options={field.options}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent loading={selectLoading}>
                                     {field.options?.map((opt) => (

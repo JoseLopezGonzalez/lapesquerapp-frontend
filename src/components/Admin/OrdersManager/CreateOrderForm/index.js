@@ -201,7 +201,12 @@ const CreateOrderForm = ({ onCreate }) => {
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                 <SelectTrigger className="w-full overflow-hidden" loading={loading}>
                                     <div className="w-full overflow-hidden truncate text-start">
-                                        <SelectValue placeholder={field.props?.placeholder} loading={loading} />
+                                        <SelectValue 
+                                            placeholder={field.props?.placeholder} 
+                                            loading={loading}
+                                            value={value}
+                                            options={field.options}
+                                        />
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent loading={loading}>

@@ -27,6 +27,7 @@ const OrderEditSheet = () => {
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [initialValues, setInitialValues] = useState(null);
 
+
     const { register, handleSubmit, reset, control, formState: { errors, isDirty, dirtyFields } } = useForm({
         defaultValues,
         mode: 'onChange',
@@ -39,6 +40,13 @@ const OrderEditSheet = () => {
             reset(defaultValues);
         }
     }, [open, defaultValues, loading, reset]);
+
+    // Log cuando el Sheet se abre
+    useEffect(() => {
+        if (open) {
+            console.log('OrderEditSheet: Sheet abierto', { loading, hasFormGroups: formGroups.length > 0 });
+        }
+    }, [open, loading, formGroups.length]);
 
     const handleFormSubmit = handleSubmit(
         (data) => {
@@ -170,7 +178,12 @@ const OrderEditSheet = () => {
                                 <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                     <SelectTrigger className="w-full overflow-hidden" loading={loading}>
                                         <div className="w-full overflow-hidden truncate text-start">
-                                            <SelectValue placeholder={field.props?.placeholder} loading={loading} />
+                                            <SelectValue 
+                                                placeholder={field.props?.placeholder} 
+                                                loading={loading}
+                                                value={value}
+                                                options={field.options}
+                                            />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent loading={loading}>
@@ -231,7 +244,7 @@ const OrderEditSheet = () => {
             default:
                 return <Input {...commonProps} />;
         }
-    }, [register, control]);
+    }, [register, control, loading]);
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -241,74 +254,68 @@ const OrderEditSheet = () => {
                     Editar Pedido
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg" >
+            <SheetContent 
+                side="right" 
+                className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg"
+            >
                 <SheetHeader>
                     <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-full py-8">
-                        <Loader2 className="h-6 w-6 animate-spin mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                            Cargando opciones... ({loadingProgress.current}/{loadingProgress.total})
-                        </p>
-                    </div>
-                ) : (
-                    <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
-                        <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
-                            {formGroups.map((group) => (
-                                <div key={group.group} className=" w-full">
-                                    <h3 className="text-sm font-medium">{group.group}</h3>
-                                    <Separator className="my-2" />
-                                    <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
-                                        {group.fields.map((field) => {
-                                            const hasError = errors[field.name];
-                                            return (
-                                                <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
-                                                    <Label htmlFor={field.name}>{field.label}</Label>
-                                                    <div className={hasError ? 'border-red-300 rounded-md' : ''}>
-                                                        {renderField(field)}
-                                                    </div>
-                                                    {hasError && (
-                                                        <p className="text-red-500 text-sm flex items-center gap-1">
-                                                            <AlertTriangle className="h-3 w-3" />
-                                                            {errors[field.name].message}
-                                                        </p>
-                                                    )}
+                <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
+                    <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
+                        {formGroups.map((group) => (
+                            <div key={group.group} className=" w-full">
+                                <h3 className="text-sm font-medium">{group.group}</h3>
+                                <Separator className="my-2" />
+                                <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
+                                    {group.fields.map((field) => {
+                                        const hasError = errors[field.name];
+                                        return (
+                                            <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
+                                                <Label htmlFor={field.name}>{field.label}</Label>
+                                                <div className={hasError ? 'border-red-300 rounded-md' : ''}>
+                                                    {renderField(field)}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                                {hasError && (
+                                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                                        <AlertTriangle className="h-3 w-3" />
+                                                        {errors[field.name].message}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-end gap-4 pt-4">
-                            <SheetClose asChild>
-                                <Button
-                                    onClick={onCloseSheet}
-                                    variant="outline" 
-                                    type="button"
-                                    disabled={saving}>
-                                    Cancelar
-                                </Button>
-                            </SheetClose>
-                            <Button 
-                                type="submit"
-                                disabled={saving || Object.keys(errors).length > 0}>
-                                {saving ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Guardando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Guardar cambios
-                                    </>
-                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex justify-end gap-4 pt-4">
+                        <SheetClose asChild>
+                            <Button
+                                onClick={onCloseSheet}
+                                variant="outline" 
+                                type="button"
+                                disabled={saving}>
+                                Cancelar
                             </Button>
-                        </div>
-                    </form>
-                )}
+                        </SheetClose>
+                        <Button 
+                            type="submit"
+                            disabled={saving || Object.keys(errors).length > 0}>
+                            {saving ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Guardar cambios
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </form>
 
                 {/* Diálogo de confirmación al cancelar con cambios */}
                 <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>

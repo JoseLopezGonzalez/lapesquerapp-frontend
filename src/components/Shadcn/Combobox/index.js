@@ -31,12 +31,31 @@ export function Combobox({
   onChange,
   loading = false,
   disabled = false,
+  onBlur,
 }) {
   const [open, setOpen] = React.useState(false)
   const isDisabled = disabled || loading
 
+  // Intentar encontrar el label del valor actual, incluso durante el loading
+  const selectedOption = React.useMemo(() => {
+    if (!value) return null
+    return (options || []).find((option) => option.value === value)
+  }, [options, value])
+
+  // Manejar el cierre del popover para llamar onBlur si está definido
+  const handleOpenChange = React.useCallback((newOpen) => {
+    setOpen(newOpen)
+    // Si se está cerrando y hay onBlur, llamarlo
+    if (!newOpen && onBlur) {
+      // Usar setTimeout para asegurar que se ejecute después del cambio de estado
+      setTimeout(() => {
+        onBlur()
+      }, 0)
+    }
+  }, [onBlur])
+
   return (
-    <Popover open={open} onOpenChange={setOpen} className={className || ""}>
+    <Popover open={open} onOpenChange={handleOpenChange} className={className || ""}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -46,10 +65,21 @@ export function Combobox({
           className=" justify-between w-full overflow-hidden"
         >
           <div className="w-full  truncate text-start">
-            {loading ? (
+            {loading && !value ? (
+              // Solo mostrar "Cargando..." si no hay valor seleccionado
               <span className="text-muted-foreground">Cargando opciones...</span>
+            ) : selectedOption ? (
+              // Si encontramos la opción, mostrar su label
+              selectedOption.label
             ) : value ? (
-              (options || []).find((option) => option.value === value)?.label
+              // Si hay un valor pero no se encontró en las opciones (puede ser durante el loading),
+              // mostrar un mensaje indicando que se está cargando, pero mantener el valor visible
+              loading ? (
+                <span className="text-muted-foreground">Cargando...</span>
+              ) : (
+                // Si no está cargando y no se encontró, mostrar el valor como fallback
+                <span className="text-muted-foreground">{String(value)}</span>
+              )
             ) : (
               placeholder
             )}
