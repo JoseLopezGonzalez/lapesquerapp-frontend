@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useLabel } from '@/hooks/useLabel';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import LabelRender from '../../LabelEditor/LabelRender';
@@ -17,13 +18,24 @@ import { motion } from 'framer-motion';
 
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
+    const [printInPairs, setPrintInPairs] = useState(false);
     const { label, selectedLabelId, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
     };
 
-    const { onPrint } = usePrintElement({ id: 'print-area-id', width: label?.format?.canvas?.width, height: label?.format?.canvas?.height });
+    // Calcular dimensiones de impresión: si es por pares, duplicar la altura
+    const printWidth = useMemo(() => {
+        return label?.format?.canvas?.width || 110;
+    }, [label?.format?.canvas?.width]);
+
+    const printHeight = useMemo(() => {
+        const baseHeight = label?.format?.canvas?.height || 90;
+        return printInPairs ? baseHeight * 2 : baseHeight;
+    }, [label?.format?.canvas?.height, printInPairs]);
+
+    const { onPrint } = usePrintElement({ id: 'print-area-id', width: printWidth, height: printHeight });
 
     const handleOnClickPrintLabel = () => {
         if (disabledPrintButton) {
@@ -93,12 +105,31 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                                         <div className="flex flex-col items-center gap-4">
                                             <div className="w-full h-20 bg-white rounded-b-xl border-t-0 border shadow">
                                             </div>
-                                            <div className="flex-shrink-0">
-                                                <LabelRender
-                                                    label={label?.format}
-                                                    values={values[0]}
-                                                    showPreviewBorder={true}
-                                                />
+                                            <div className={`flex-shrink-0 ${printInPairs ? 'flex flex-col gap-0' : ''}`} style={printInPairs ? { width: `${label?.format?.canvas?.width || 110}mm` } : {}}>
+                                                {printInPairs ? (
+                                                    <>
+                                                        <div>
+                                                            <LabelRender
+                                                                label={label?.format}
+                                                                values={values[0]}
+                                                                showPreviewBorder={true}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <LabelRender
+                                                                label={label?.format}
+                                                                values={values[1] || values[0]}
+                                                                showPreviewBorder={true}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <LabelRender
+                                                        label={label?.format}
+                                                        values={values[0]}
+                                                        showPreviewBorder={true}
+                                                    />
+                                                )}
                                             </div>
                                             <div className="w-full h-20 bg-white rounded-t-xl border border-b-0">
                                             </div>
@@ -148,17 +179,60 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                             </div>
                         )}
 
+                        {/* Opción de impresión por pares */}
+                        {!isLoadingLabel && (
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="print-in-pairs"
+                                    checked={printInPairs}
+                                    onCheckedChange={(checked) => setPrintInPairs(checked)}
+                                />
+                                <Label
+                                    htmlFor="print-in-pairs"
+                                    className="text-sm font-normal cursor-pointer"
+                                >
+                                    Imprimir por pares (para rollos de etiquetas dobles)
+                                </Label>
+                            </div>
+                        )}
+
                         {/* Imprimir */}
                         <div id="print-area-id" className="hidden print:block">
-                            {/* {console.log('Valores a imprimir:', values)} */}
-                            {values.map((valuesElements, i) => (
-                                <div key={i} className="page ">
-                                    <LabelRender
-                                        label={label?.format}
-                                        values={valuesElements}
-                                    />
-                                </div>
-                            ))}
+                            {printInPairs ? (
+                                // Modo pares: agrupar etiquetas de dos en dos, una encima de la otra
+                                (() => {
+                                    const pairs = [];
+                                    for (let i = 0; i < values.length; i += 2) {
+                                        pairs.push([values[i], values[i + 1]]);
+                                    }
+                                    return pairs.map((pair, pairIndex) => (
+                                        <div key={pairIndex} className="page" style={{ display: 'flex', flexDirection: 'column', gap: '0mm' }}>
+                                            {pair.filter(Boolean).map((valuesElements, labelIndex) => (
+                                                <div key={labelIndex} style={{ width: '100%' }}>
+                                                    <LabelRender
+                                                        label={label?.format}
+                                                        values={valuesElements}
+                                                    />
+                                                </div>
+                                            ))}
+                                            {/* Si hay un número impar, añadir espacio vacío para la segunda etiqueta */}
+                                            {pair.filter(Boolean).length === 1 && (
+                                                <div style={{ width: '100%', height: `${label?.format?.canvas?.height || 90}mm` }}></div>
+                                            )}
+                                        </div>
+                                    ));
+                                })()
+                            ) : (
+                                // Modo normal: una etiqueta por página
+                                values.map((valuesElements, i) => (
+                                    <div key={i} className="page">
+                                        <LabelRender
+                                            label={label?.format}
+                                            values={valuesElements}
+                                        />
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </ScrollArea>
