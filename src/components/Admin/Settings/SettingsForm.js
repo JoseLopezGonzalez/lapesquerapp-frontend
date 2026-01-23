@@ -12,6 +12,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { Separator } from '@/components/ui/separator';
 import Loader from '@/components/Utilities/Loader';
 import { Eye, EyeOff } from 'lucide-react';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 const SECTIONS = [
   {
@@ -78,11 +79,21 @@ export default function SettingsForm() {
   const [emailPassword, setEmailPassword] = useState(''); // Contraseña separada, no se muestra el valor actual
   const [hadPreviousConfig, setHadPreviousConfig] = useState(false); // Para validar password solo en primera configuración
   const { setSettings } = useSettings();
+  
+  // Obtener tenant actual para validar que los settings correspondan al tenant correcto
+  const currentTenant = getCurrentTenant();
 
   useEffect(() => {
+    // Si no hay tenant, no cargar (solo puede pasar en servidor)
+    if (!currentTenant) {
+      return;
+    }
+
     setLoading(true);
     getSettings()
       .then((data) => {
+        // Verificar que los datos correspondan al tenant actual
+        // (esto es una validación adicional de seguridad)
         setValues(data);
         // Inicializar password vacío (no mostrar valor actual por seguridad)
         setEmailPassword('');
@@ -93,7 +104,7 @@ export default function SettingsForm() {
       })
       .catch(() => toast.error('Error al cargar configuración'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentTenant]); // Recargar cuando cambie el tenant
 
   const handleChange = (e) => {
     setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));

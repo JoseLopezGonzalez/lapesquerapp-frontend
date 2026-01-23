@@ -4,6 +4,7 @@ import { getSettings } from "@/services/settingsService";
 import { invalidateSettingsCache } from "@/helpers/getSettingValue";
 import { isAuthError } from "@/configs/authConfig";
 import { useSession } from "next-auth/react";
+import { getCurrentTenant } from "@/lib/utils/getCurrentTenant";
 
 const SettingsContext = createContext();
 
@@ -15,10 +16,14 @@ export function SettingsProvider({ children }) {
   // Usar accessToken en lugar del objeto session completo para evitar cambios de referencia
   const accessToken = session?.user?.accessToken;
   
+  // Obtener tenant actual (solo en cliente)
+  const currentTenant = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  
   // Ref para prevenir múltiples llamadas simultáneas y rastrear errores
   const isLoadingRef = useRef(false);
   const hasErrorRef = useRef(false);
   const lastTokenRef = useRef(null);
+  const lastTenantRef = useRef(null);
 
   useEffect(() => {
     // Solo cargar settings si hay una sesión activa
@@ -34,7 +39,21 @@ export function SettingsProvider({ children }) {
       isLoadingRef.current = false;
       hasErrorRef.current = false;
       lastTokenRef.current = null;
+      lastTenantRef.current = null;
       return;
+    }
+
+    // Si no hay tenant (solo puede pasar en servidor), no cargar settings
+    if (!currentTenant) {
+      return;
+    }
+
+    // Si el tenant cambió, limpiar settings y caché del tenant anterior
+    if (lastTenantRef.current && lastTenantRef.current !== currentTenant) {
+      console.log(`[SettingsProvider] Tenant cambió de ${lastTenantRef.current} a ${currentTenant}, limpiando settings`);
+      setSettings(null);
+      invalidateSettingsCache(lastTenantRef.current);
+      hasErrorRef.current = false; // Resetear error al cambiar tenant
     }
 
     // Prevenir llamadas múltiples simultáneas
@@ -42,16 +61,19 @@ export function SettingsProvider({ children }) {
       return;
     }
 
-    // Si el token no cambió y ya hay un error previo, no reintentar automáticamente
+    // Si el token y tenant no cambiaron y ya hay un error previo, no reintentar automáticamente
     // (evita loops infinitos con errores 500)
-    if (lastTokenRef.current === accessToken && hasErrorRef.current) {
+    if (lastTokenRef.current === accessToken && 
+        lastTenantRef.current === currentTenant && 
+        hasErrorRef.current) {
       return;
     }
 
-    // Si el token cambió, resetear el flag de error
-    if (lastTokenRef.current !== accessToken) {
+    // Si el token o tenant cambió, resetear el flag de error
+    if (lastTokenRef.current !== accessToken || lastTenantRef.current !== currentTenant) {
       hasErrorRef.current = false;
       lastTokenRef.current = accessToken;
+      lastTenantRef.current = currentTenant;
     }
 
     // Marcar como cargando y hacer la llamada
@@ -60,12 +82,12 @@ export function SettingsProvider({ children }) {
 
     getSettings()
       .then((data) => {
-        // console.log("[SettingsProvider] Settings recibidos:", data);
+        // console.log(`[SettingsProvider] Settings recibidos para tenant ${currentTenant}:`, data);
         setSettings(data);
         hasErrorRef.current = false; // Resetear flag de error en éxito
       })
       .catch((err) => {
-        console.error("[SettingsProvider] Error al obtener settings:", err);
+        console.error(`[SettingsProvider] Error al obtener settings para tenant ${currentTenant}:`, err);
         
         // Para errores de autenticación, el AuthErrorInterceptor se encargará de la redirección
         // Para otros errores (incluyendo 500), establecer settings vacío y marcar error
@@ -83,12 +105,13 @@ export function SettingsProvider({ children }) {
         setLoading(false);
         isLoadingRef.current = false;
       });
-  }, [status, accessToken]); // Usar accessToken en lugar de session completo
+  }, [status, accessToken, currentTenant]); // Incluir currentTenant en dependencias
 
-  // Cuando se actualizan los settings, invalidamos el caché global
+  // Cuando se actualizan los settings, invalidamos el caché del tenant actual
   const updateSettingsContext = (newSettings) => {
     setSettings(newSettings);
-    invalidateSettingsCache();
+    // Invalidar caché del tenant actual (o todos si no se puede obtener tenant)
+    invalidateSettingsCache(currentTenant);
   };
 
   return (
