@@ -156,7 +156,7 @@ const CreateOrderForm = ({ onCreate }) => {
             });
             // Resetear referencias para permitir que se carguen los datos del cliente de nuevo si se selecciona
             lastCustomerIdRef.current = null;
-            onCreate(newOrderData.id); // Llama a la prop onCreate con el ID del nuevo pedido
+            onCreate(newOrderData.id, newOrderData); // Pasa también el objeto completo del pedido creado
 
         } catch (error) {
             console.error('Error al crear el pedido:', error);

@@ -212,10 +212,18 @@ export default function OrdersManager() {
         setOnCreatingNewOrder(false);
     }, []);
 
-    const handleOnCreatedOrder = useCallback((id) => {
-        reloadOrders();
+    const handleOnCreatedOrder = useCallback((id, newOrderData = null) => {
+        // Primero seleccionar el pedido para que se cargue inmediatamente
+        // Esto permite que el componente Order comience a cargar el pedido sin esperar
         setOnCreatingNewOrder(false);
         setSelectedOrder(id);
+        
+        // Recargar la lista en segundo plano para asegurar que esté actualizada
+        // pero sin bloquear la carga del pedido individual
+        // Usamos setTimeout para que la carga del pedido individual tenga prioridad
+        setTimeout(() => {
+            reloadOrders();
+        }, 0);
     }, [reloadOrders]);
 
 
