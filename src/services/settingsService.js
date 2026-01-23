@@ -30,6 +30,19 @@ export async function updateSettings(data) {
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Error al guardar configuración');
+  if (!res.ok) {
+    // Intentar parsear el error del backend para mostrar mensaje más específico
+    try {
+      const errorData = await res.json();
+      const error = new Error(errorData.message || 'Error al guardar configuración');
+      error.userMessage = errorData.userMessage || errorData.message;
+      throw error;
+    } catch (parseError) {
+      if (parseError instanceof Error && parseError.userMessage) {
+        throw parseError;
+      }
+      throw new Error('Error al guardar configuración');
+    }
+  }
   return await res.json();
 } 
