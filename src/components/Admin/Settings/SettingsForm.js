@@ -79,11 +79,11 @@ export default function SettingsForm() {
   const [emailPassword, setEmailPassword] = useState(''); // Contraseña separada, no se muestra el valor actual
   const [hadPreviousConfig, setHadPreviousConfig] = useState(false); // Para validar password solo en primera configuración
   const { setSettings } = useSettings();
-  
-  // Obtener tenant actual para validar que los settings correspondan al tenant correcto
-  const currentTenant = getCurrentTenant();
 
   useEffect(() => {
+    // Obtener tenant actual DENTRO del useEffect para asegurar que siempre sea el valor actual
+    const currentTenant = getCurrentTenant();
+    
     // Si no hay tenant, no cargar (solo puede pasar en servidor)
     if (!currentTenant) {
       return;
@@ -104,7 +104,7 @@ export default function SettingsForm() {
       })
       .catch(() => toast.error('Error al cargar configuración'))
       .finally(() => setLoading(false));
-  }, [currentTenant]); // Recargar cuando cambie el tenant
+  }, []); // Solo ejecutar una vez al montar, el tenant se obtiene dentro
 
   const handleChange = (e) => {
     setValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));

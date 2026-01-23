@@ -146,7 +146,11 @@ const CreateOrderForm = ({ onCreate }) => {
             };
 
             // Llama al servicio `createOrder`
+            console.log('[CreateOrderForm] 🚀 Iniciando creación de pedido - timestamp:', new Date().toISOString());
+            const createStartTime = performance.now();
             const newOrderData = await createOrder(payload);
+            const createEndTime = performance.now();
+            console.log('[CreateOrderForm] ✅ Pedido creado (tiempo:', (createEndTime - createStartTime).toFixed(2), 'ms) - ID:', newOrderData.id);
 
             toast.success('Pedido creado correctamente', { id: toastId });
             // Resetea el formulario después de una creación exitosa

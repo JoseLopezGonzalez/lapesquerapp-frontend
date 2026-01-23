@@ -121,8 +121,17 @@ export function useOrder(orderId, onChange) {
         
         // Si ya se cargó este orderId y no cambió el token, no recargar
         if (orderIdAlreadyLoaded && !tokenChanged && !orderIdChanged) {
+            console.log('[useOrder] ⏭️ Saltando recarga - pedido ya cargado:', orderId);
             return;
         }
+
+        console.log('[useOrder] 🚀 useEffect getOrder - Inicio', { 
+            orderId, 
+            orderIdChanged, 
+            tokenChanged, 
+            timestamp: new Date().toISOString() 
+        });
+        const startTime = performance.now();
 
         // Actualizar referencias
         lastTokenRef.current = accessToken;
@@ -137,10 +146,15 @@ export function useOrder(orderId, onChange) {
         setLoading(true);
         getOrder(orderId, accessToken)
             .then((data) => {
+                const fetchTime = performance.now();
+                console.log('[useOrder] ⏱️ getOrder completado (tiempo:', (fetchTime - startTime).toFixed(2), 'ms)');
                 setOrder(data);
                 setLoading(false);
+                console.log('[useOrder] ✅ Pedido cargado y estado actualizado (tiempo total:', (performance.now() - startTime).toFixed(2), 'ms)');
             })
             .catch((err) => {
+                const errorTime = performance.now();
+                console.error('[useOrder] ❌ Error al cargar pedido (tiempo:', (errorTime - startTime).toFixed(2), 'ms):', err);
                 setError(err);
                 setLoading(false);
                 // Si hay error, permitir reintento removiendo la referencia
