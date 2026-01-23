@@ -14,9 +14,6 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  * @throws {Error} Throws an error if the request fails or the response is not OK.
  */
 export function getOrder(orderId, token) {
-    console.log('[getOrder] 🚀 Inicio - orderId:', orderId, 'timestamp:', new Date().toISOString());
-    const startTime = performance.now();
-    
     return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
         method: 'GET',
         headers: {
@@ -26,25 +23,15 @@ export function getOrder(orderId, token) {
         },
     })
         .then(async (response) => {
-            const responseTime = performance.now();
-            console.log('[getOrder] ⏱️ Respuesta recibida (tiempo:', (responseTime - startTime).toFixed(2), 'ms)');
-            
             const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
-            const parseTime = performance.now();
-            console.log('[getOrder] ⏱️ Datos parseados (tiempo total:', (parseTime - startTime).toFixed(2), 'ms)');
-            
             if (!data) return null;
             return data.data || data;
         })
         .catch((error) => {
-            const errorTime = performance.now();
-            console.error('[getOrder] ❌ Error (tiempo:', (errorTime - startTime).toFixed(2), 'ms):', error);
             // Aquí puedes agregar lógica adicional de logging o manejo global del error
             throw error;
         })
         .finally(() => {
-            const totalTime = performance.now();
-            console.log('[getOrder] ✅ Finalizado (tiempo total:', (totalTime - startTime).toFixed(2), 'ms)');
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
         });
 }
@@ -100,15 +87,12 @@ export function updateOrder(orderId, orderData, token) {
  */
 export function getActiveOrders(token) {
     if (!token) {
-        console.error('[getActiveOrders] ❌ No se proporcionó token');
+        console.error('getActiveOrders: No se proporcionó token');
         return Promise.reject(new Error('No se proporcionó token de autenticación'));
     }
 
-    console.log('[getActiveOrders] 🚀 Inicio - timestamp:', new Date().toISOString());
-    const startTime = performance.now();
-    
     const url = `${API_URL_V2}orders/active`;
-    console.log('[getActiveOrders] 📡 Realizando petición a:', url);
+    console.log('getActiveOrders: Realizando petición a:', url);
 
     return fetchWithTenant(url, {
         method: 'GET',
@@ -119,53 +103,46 @@ export function getActiveOrders(token) {
         },
     })
         .then((response) => {
-            const responseTime = performance.now();
-            console.log('[getActiveOrders] ⏱️ Respuesta recibida (tiempo:', (responseTime - startTime).toFixed(2), 'ms) - status:', response.status, response.statusText);
+            console.log('getActiveOrders: Respuesta recibida, status:', response.status, response.statusText);
             if (!response.ok) {
                 return response.json().then((errorData) => {
-                    console.error('[getActiveOrders] ❌ Error en respuesta:', errorData);
+                    console.error('getActiveOrders: Error en respuesta:', errorData);
                     throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
                 });
             }
             return response.json();
         })
         .then((data) => {
-            const parseTime = performance.now();
-            console.log('[getActiveOrders] ⏱️ Datos parseados (tiempo:', (parseTime - startTime).toFixed(2), 'ms)');
-            
+            console.log('getActiveOrders: Datos parseados:', data);
             // Manejar diferentes estructuras de respuesta
             // Si la respuesta es directamente un array, devolverlo
             if (Array.isArray(data)) {
-                console.log('[getActiveOrders] ✅ Respuesta es array directo, longitud:', data.length);
-                console.log('[getActiveOrders] ✅ Completado (tiempo total:', (performance.now() - startTime).toFixed(2), 'ms)');
+                console.log('getActiveOrders: Respuesta es array directo, longitud:', data.length);
                 return data;
             }
             // Si la respuesta tiene la estructura { data: [...] }, devolver data.data
             if (data && data.data !== undefined) {
                 // Si data.data es un array, devolverlo
                 if (Array.isArray(data.data)) {
-                    console.log('[getActiveOrders] ✅ Respuesta tiene data.data (array), longitud:', data.data.length);
-                    console.log('[getActiveOrders] ✅ Completado (tiempo total:', (performance.now() - startTime).toFixed(2), 'ms)');
+                    console.log('getActiveOrders: Respuesta tiene data.data (array), longitud:', data.data.length);
                     return data.data;
                 }
                 // Si data.data es null o undefined, devolver array vacío
-                console.warn('[getActiveOrders] ⚠️ data.data no es un array:', data.data);
+                console.warn('getActiveOrders: data.data no es un array:', data.data);
                 return [];
             }
             // Si la respuesta tiene otra estructura, intentar devolver data directamente
             // o un array vacío si no hay datos
-            console.warn('[getActiveOrders] ⚠️ Estructura de respuesta inesperada:', data);
+            console.warn('getActiveOrders: Estructura de respuesta inesperada:', data);
             return [];
         })
         .catch((error) => {
-            const errorTime = performance.now();
-            console.error('[getActiveOrders] ❌ Error capturado (tiempo:', (errorTime - startTime).toFixed(2), 'ms):', error);
+            console.error('getActiveOrders: Error capturado:', error);
             // Aquí puedes agregar lógica adicional de logging o manejo global del error
             throw error;
         })
         .finally(() => {
-            const totalTime = performance.now();
-            console.log('[getActiveOrders] 🏁 Finalizando petición (tiempo total:', (totalTime - startTime).toFixed(2), 'ms)');
+            console.log('getActiveOrders: Finalizando petición');
             // Código a ejecutar independientemente del resultado (por ejemplo, limpiar loaders)
         });
 }

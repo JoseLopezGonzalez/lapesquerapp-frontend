@@ -56,6 +56,9 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     return Array.from(resultMap.values());
 };
 
+// Cache global de promesas de carga para compartir entre instancias
+const loadingPromises = new Map();
+
 export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
     const [order, setOrder] = useState(null);
@@ -124,18 +127,8 @@ export function useOrder(orderId, onChange) {
         
         // Si ya se cargó este orderId y no cambió el token, no recargar
         if (orderIdAlreadyLoaded && !tokenChanged && !orderIdChanged) {
-            console.log('[useOrder] ⏭️ Saltando recarga - pedido ya cargado:', orderId);
             return;
         }
-        
-        console.log('[useOrder] 🚀 useEffect getOrder - Inicio', { 
-            orderId, 
-            orderIdChanged, 
-            tokenChanged, 
-            loadingInProgress: loadingInProgressRef.current,
-            timestamp: new Date().toISOString() 
-        });
-        const startTime = performance.now();
 
         // Marcar que hay una carga en progreso (solo local)
         loadingInProgressRef.current = true;
@@ -151,22 +144,40 @@ export function useOrder(orderId, onChange) {
         }
 
         setLoading(true);
-        getOrder(orderId, accessToken)
+        
+        // Si ya hay una promesa de carga para este pedido, reutilizarla
+        let loadPromise;
+        if (loadingPromises.has(orderId)) {
+            loadPromise = loadingPromises.get(orderId);
+        } else {
+            // Crear nueva promesa de carga
+            loadPromise = getOrder(orderId, accessToken)
+                .then((data) => {
+                    // Limpiar la promesa del cache después de completarse
+                    loadingPromises.delete(orderId);
+                    return data;
+                })
+                .catch((err) => {
+                    // Limpiar la promesa del cache incluso en caso de error
+                    loadingPromises.delete(orderId);
+                    throw err;
+                });
+            
+            // Guardar la promesa en el cache
+            loadingPromises.set(orderId, loadPromise);
+        }
+        
+        loadPromise
             .then((data) => {
-                const fetchTime = performance.now();
-                console.log('[useOrder] ⏱️ getOrder completado (tiempo:', (fetchTime - startTime).toFixed(2), 'ms)');
                 setOrder(data);
                 setLoading(false);
                 loadingInProgressRef.current = false; // Liberar el flag local
-                console.log('[useOrder] ✅ Pedido cargado y estado actualizado (tiempo total:', (performance.now() - startTime).toFixed(2), 'ms)');
             })
             .catch((err) => {
-                const errorTime = performance.now();
-                console.error('[useOrder] ❌ Error al cargar pedido (tiempo:', (errorTime - startTime).toFixed(2), 'ms):', err);
+                console.error('Error al cargar pedido:', err);
                 setError(err);
                 setLoading(false);
-                loadingInProgressRef.current = false; // Liberar el flag local incluso en caso de error
-                globalLoadingOrders.delete(orderId); // Liberar el flag global incluso en caso de error
+                loadingInProgressRef.current = false; // Liberar el flag incluso en caso de error
                 // Si hay error, permitir reintento removiendo la referencia
                 if (lastOrderIdLoadedRef.current === orderId) {
                     lastOrderIdLoadedRef.current = null;

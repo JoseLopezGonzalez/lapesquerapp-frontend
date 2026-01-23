@@ -89,30 +89,20 @@ export default function OrdersManager() {
             return;
         }
 
-        console.log('[OrdersManager] 📥 useEffect getActiveOrders - Inicio', { reloadCounter, timestamp: new Date().toISOString() });
-        const startTime = performance.now();
-        
         setLoading(true);
         setError(null);
 
         getActiveOrders(token)
             .then((data) => {
-                const fetchTime = performance.now();
-                console.log('[OrdersManager] ⏱️ getActiveOrders - Tiempo de respuesta API:', (fetchTime - startTime).toFixed(2), 'ms');
-                
                 // Asegurar que data sea un array
                 const ordersArray = Array.isArray(data) ? data : [];
                 setOrders(ordersArray);
                 setLoading(false);
                 setError(null);
-                
-                const totalTime = performance.now();
-                console.log('[OrdersManager] ✅ getActiveOrders - Completado (total:', (totalTime - startTime).toFixed(2), 'ms, pedidos:', ordersArray.length, ')');
             })
             .catch((error) => {
-                const errorTime = performance.now();
                 const errorMessage = error?.message || 'Error al obtener los pedidos activos';
-                console.error('[OrdersManager] ❌ Error al obtener los pedidos activos (tiempo:', (errorTime - startTime).toFixed(2), 'ms):', error);
+                console.error('Error al obtener los pedidos activos:', error);
                 setError(errorMessage);
                 toast.error(errorMessage, getToastTheme());
                 setLoading(false);
@@ -223,29 +213,17 @@ export default function OrdersManager() {
     }, []);
 
     const handleOnCreatedOrder = useCallback((id, newOrderData = null) => {
-        console.log('[OrdersManager] 🚀 handleOnCreatedOrder - Inicio', { id, timestamp: new Date().toISOString() });
-        const startTime = performance.now();
-        
         // Primero seleccionar el pedido para que se cargue inmediatamente
         // Esto permite que el componente Order comience a cargar el pedido sin esperar
-        console.log('[OrdersManager] 📌 Seleccionando pedido:', id);
         setOnCreatingNewOrder(false);
         setSelectedOrder(id);
-        
-        const selectTime = performance.now();
-        console.log('[OrdersManager] ⏱️ Tiempo hasta seleccionar pedido:', (selectTime - startTime).toFixed(2), 'ms');
         
         // Recargar la lista en segundo plano para asegurar que esté actualizada
         // pero sin bloquear la carga del pedido individual
         // Usamos setTimeout para que la carga del pedido individual tenga prioridad
         setTimeout(() => {
-            console.log('[OrdersManager] 🔄 Iniciando recarga de lista de pedidos');
-            const reloadStartTime = performance.now();
             reloadOrders();
-            console.log('[OrdersManager] ⏱️ Tiempo hasta iniciar recarga:', (performance.now() - reloadStartTime).toFixed(2), 'ms');
         }, 0);
-        
-        console.log('[OrdersManager] ✅ handleOnCreatedOrder - Fin (total:', (performance.now() - startTime).toFixed(2), 'ms)');
     }, [reloadOrders]);
 
 
