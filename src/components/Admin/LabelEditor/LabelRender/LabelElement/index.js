@@ -3,7 +3,7 @@ import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { ImageIcon } from "lucide-react";
 import { serializeBarcode } from "@/lib/barcodes";
-import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
+import { formatDecimal, formatDecimalWeight, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
 import SanitaryRegister from "./SanitaryRegister";
 import RichParagraph from "./RichParagraph";
 
@@ -56,6 +56,15 @@ export default function LabelElement({ element, values = {} }) {
             // Usar el valor de netWeight si existe, si no usar el valor por defecto
             const baseValue = values?.['netWeight'] ?? NET_WEIGHT_DEFAULT;
             return formatNetWeightField(baseValue, key);
+        }
+        // Si es el campo netWeight directamente, formatearlo con formato español + kg
+        if (key === 'netWeight') {
+            const baseValue = values?.['netWeight'] ?? NET_WEIGHT_DEFAULT;
+            // Parsear el valor (puede venir como "20,000 kg" o como número)
+            let numValue = typeof baseValue === 'string' 
+                ? parseEuropeanNumber(baseValue.replace(/kg/gi, '').trim()) 
+                : Number(baseValue) || 0;
+            return formatDecimalWeight(numValue);
         }
         return values?.[key] ?? `{{${key}}}`;
     };
