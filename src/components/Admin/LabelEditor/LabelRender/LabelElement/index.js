@@ -16,14 +16,45 @@ const formatMap = {
     // Agrega más si necesitas
 };
 
+// Función para parsear un valor numérico que puede venir en diferentes formatos
+const parseWeightValue = (value) => {
+    if (value === null || value === undefined || value === '') return 0;
+    
+    // Si ya es un número, devolverlo directamente
+    if (typeof value === 'number') return value;
+    
+    // Si es string, limpiar y parsear
+    const cleaned = String(value).replace(/kg/gi, '').trim();
+    
+    // Si está vacío después de limpiar, retornar 0
+    if (!cleaned) return 0;
+    
+    // Detectar formato: si tiene coma y no tiene punto, o tiene coma y punto (formato europeo: 1.234,56)
+    // Si solo tiene punto y no tiene coma, es formato inglés (1.1)
+    const hasComma = cleaned.includes(',');
+    const hasDot = cleaned.includes('.');
+    
+    if (hasComma && !hasDot) {
+        // Solo coma: formato europeo simple (1,5)
+        return parseFloat(cleaned.replace(',', '.')) || 0;
+    } else if (hasComma && hasDot) {
+        // Tiene ambos: formato europeo con separadores de miles (1.234,56)
+        return parseEuropeanNumber(cleaned);
+    } else if (hasDot && !hasComma) {
+        // Solo punto: formato inglés (1.1 o 1234.56)
+        return parseFloat(cleaned) || 0;
+    } else {
+        // No tiene ni coma ni punto: número entero
+        return parseFloat(cleaned) || 0;
+    }
+};
+
 // Función para formatear netWeight según el tipo de campo
 const formatNetWeightField = (value, fieldName) => {
     if (!value) return value;
     
-    // Parsear el valor (puede venir como "20,000 kg" o como número)
-    let numValue = typeof value === 'string' 
-        ? parseEuropeanNumber(value.replace(/kg/gi, '').trim()) 
-        : Number(value) || 0;
+    // Parsear el valor (puede venir como "20,000 kg", "1.1", 1.1, etc.)
+    let numValue = parseWeightValue(value);
     
     if (fieldName === 'netWeightFormatted') {
         // Formato decimal con separadores (ej: 1.234,56)
@@ -60,10 +91,8 @@ export default function LabelElement({ element, values = {} }) {
         // Si es el campo netWeight directamente, formatearlo con formato español + kg
         if (key === 'netWeight') {
             const baseValue = values?.['netWeight'] ?? NET_WEIGHT_DEFAULT;
-            // Parsear el valor (puede venir como "20,000 kg" o como número)
-            let numValue = typeof baseValue === 'string' 
-                ? parseEuropeanNumber(baseValue.replace(/kg/gi, '').trim()) 
-                : Number(baseValue) || 0;
+            // Parsear el valor (puede venir como "20,000 kg", "1.1", 1.1, etc.)
+            let numValue = parseWeightValue(baseValue);
             return formatDecimalWeight(numValue);
         }
         return values?.[key] ?? `{{${key}}}`;
