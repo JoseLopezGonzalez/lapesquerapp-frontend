@@ -151,11 +151,8 @@ export default function BulkPunchForm() {
         id: Date.now() + Math.random(), // Nuevo ID único
       };
       
-      const rowIndex = prev.findIndex(row => row.id === id);
-      const newRows = [...prev];
-      newRows.splice(rowIndex + 1, 0, duplicatedRow);
-      
-      return newRows;
+      // Añadir la fila duplicada al final
+      return [...prev, duplicatedRow];
     });
     setValidationResults(null);
     setSubmitResults(null);
