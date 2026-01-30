@@ -153,9 +153,9 @@ export default function PunchesCalendar() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <Card>
-        <CardHeader>
+    <div className="container mx-auto p-4 md:p-6 space-y-6 overflow-y-auto h-[calc(100vh-2rem)]">
+      <Card className="shadow-lg mb-6">
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle>Calendario Mensual</CardTitle>
@@ -167,9 +167,9 @@ export default function PunchesCalendar() {
                 )}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Select value={year.toString()} onValueChange={handleYearChange}>
-                <SelectTrigger className="w-[100px]">
+                <SelectTrigger className="w-[100px] h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,7 +181,7 @@ export default function PunchesCalendar() {
                 </SelectContent>
               </Select>
               <Select value={month.toString()} onValueChange={handleMonthChange}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,26 +192,31 @@ export default function PunchesCalendar() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToPreviousMonth}
-                disabled={loading}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToNextMonth}
-                disabled={loading}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1 border rounded-md p-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goToPreviousMonth}
+                  disabled={loading}
+                  className="h-8 w-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={goToNextMonth}
+                  disabled={loading}
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 onClick={goToCurrentMonth}
                 disabled={loading}
+                className="h-9"
               >
                 Hoy
               </Button>
@@ -224,17 +229,19 @@ export default function PunchesCalendar() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Encabezados de días de la semana */}
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-2.5 mb-2">
                 {WEEKDAYS.map((day, index) => {
                   const isWeekend = index === 5 || index === 6; // Sábado (5) o Domingo (6)
                   return (
                     <div
                       key={index}
                       className={cn(
-                        "text-center text-sm font-medium p-2",
-                        isWeekend ? "text-muted-foreground font-semibold" : "text-muted-foreground"
+                        "text-center text-sm font-semibold py-2.5 px-1 rounded-md",
+                        isWeekend 
+                          ? "text-muted-foreground bg-muted/50" 
+                          : "text-muted-foreground"
                       )}
                     >
                       {day}
@@ -244,7 +251,7 @@ export default function PunchesCalendar() {
               </div>
 
               {/* Días del calendario */}
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-2.5">
                 {days.map((day, index) => {
                   const dayNumber = day.getDate();
                   const isCurrentMonth = isSameMonth(day, currentDate);
@@ -269,76 +276,84 @@ export default function PunchesCalendar() {
                       onClick={() => (hasPunches || hasIssues) && isCurrentMonth && handleDayClick(dayNumber, day)}
                       disabled={!hasPunches && !hasIssues || !isCurrentMonth}
                       className={cn(
-                        'relative min-h-[100px] p-2 rounded-lg border transition-colors',
-                        'hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                        !isCurrentMonth && 'opacity-40',
-                        isCurrentDay && 'border-primary border-2',
-                        (hasPunches || hasIssues) && 'cursor-pointer hover:border-primary',
+                        'relative min-h-[110px] p-2.5 rounded-lg border transition-all duration-200',
+                        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                        'shadow-sm hover:shadow-md',
+                        !isCurrentMonth && 'opacity-30',
+                        isCurrentDay && 'border-primary border-2 shadow-md ring-2 ring-primary/20',
+                        (hasPunches || hasIssues) && isCurrentMonth && 'cursor-pointer hover:scale-[1.02] hover:shadow-lg',
                         !hasPunches && !hasIssues && 'cursor-default',
-                        hasIncidents && !hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20',
-                        hasAnomalies && !hasIncidents && 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20',
-                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20',
+                        !isCurrentMonth && 'bg-muted/20',
+                        isCurrentMonth && !hasPunches && !hasIssues && !isWeekend && 'bg-background hover:bg-muted/50',
+                        hasIncidents && !hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20 shadow-red-100 dark:shadow-red-950',
+                        hasAnomalies && !hasIncidents && 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20 shadow-orange-100 dark:shadow-orange-950',
+                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20 shadow-red-100 dark:shadow-red-950',
                         isWeekend && isCurrentMonth && !hasPunches && !hasIssues && 'bg-gray-200 dark:bg-gray-800/70',
                         isWeekend && isCurrentMonth && (hasPunches || hasIssues) && 'bg-gray-100/50 dark:bg-gray-800/30'
                       )}
                     >
-                      <div className="flex flex-col h-full">
+                      <div className="flex flex-col h-full relative">
                         <div
                           className={cn(
-                            'text-sm font-medium mb-1',
-                            isCurrentDay && 'text-primary'
+                            'text-lg font-normal absolute top-1.5 right-2',
+                            isCurrentDay && 'text-primary',
+                            !isCurrentMonth && 'text-muted-foreground opacity-50',
+                            isCurrentMonth && !isCurrentDay && 'text-foreground'
                           )}
                         >
                           {dayNumber}
                         </div>
                         {(hasPunches || hasIssues) && (
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-1 space-y-1.5 mt-6">
                             {hasPunches && (
                               <>
-                                <div className="flex items-center gap-1 text-xs">
-                                  <CalendarIcon className="h-3 w-3 text-green-600" />
-                                  <span className="text-green-700 dark:text-green-400 font-medium">
+                                <div className="flex items-center gap-1.5 text-xs">
+                                  <CalendarIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-500 flex-shrink-0" />
+                                  <span className="text-green-700 dark:text-green-400 font-semibold leading-tight">
                                     {punchCount} {punchCount === 1 ? 'fichaje' : 'fichajes'}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs">
-                                  <span className="text-blue-700 dark:text-blue-400 font-medium">
+                                <div className="flex items-center gap-1.5 text-xs">
+                                  <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500 flex-shrink-0" />
+                                  <span className="text-blue-700 dark:text-blue-400 font-medium leading-tight">
                                     {employeeCount} {employeeCount === 1 ? 'empleado' : 'empleados'}
                                   </span>
                                 </div>
                               </>
                             )}
                             {hasIncidents && (
-                              <div className="flex items-center gap-1 text-xs">
-                                <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
-                                <span className="text-red-600 dark:text-red-400 font-medium">
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                <span className="text-red-600 dark:text-red-400 font-semibold leading-tight">
                                   {incidents.length} {incidents.length === 1 ? 'incidencia' : 'incidencias'}
                                 </span>
                               </div>
                             )}
                             {hasAnomalies && (
-                              <div className="flex items-center gap-1 text-xs">
-                                <AlertCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
-                                <span className="text-orange-600 dark:text-orange-400 font-medium">
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <AlertCircle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                                <span className="text-orange-600 dark:text-orange-400 font-semibold leading-tight">
                                   {anomalies.length} {anomalies.length === 1 ? 'anomalía' : 'anomalías'}
                                 </span>
                               </div>
                             )}
                             {/* Indicadores visuales */}
-                            <div className="flex gap-1 mt-1">
-                              {punches
-                                .filter((p) => p.event_type === 'IN')
-                                .slice(0, 3)
-                                .map((p, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="h-1.5 w-full rounded bg-green-500"
-                                    title={`Entrada: ${format(new Date(p.timestamp), 'HH:mm', { locale: es })}`}
-                                  />
-                                ))}
-                            </div>
+                            {hasPunches && (
+                              <div className="flex gap-1 mt-2 pt-1.5 border-t border-border/50">
+                                {punches
+                                  .filter((p) => p.event_type === 'IN')
+                                  .slice(0, 3)
+                                  .map((p, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="h-2 w-full rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-sm"
+                                      title={`Entrada: ${format(new Date(p.timestamp), 'HH:mm', { locale: es })}`}
+                                    />
+                                  ))}
+                              </div>
+                            )}
                             {punches.filter((p) => p.event_type === 'IN').length > 3 && (
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-[10px] text-muted-foreground font-medium">
                                 +{punches.filter((p) => p.event_type === 'IN').length - 3} más
                               </div>
                             )}
@@ -351,26 +366,26 @@ export default function PunchesCalendar() {
               </div>
 
               {/* Leyenda */}
-              <div className="flex flex-wrap items-center gap-4 pt-4 border-t text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded border-2 border-primary" />
-                  <span className="text-muted-foreground">Hoy</span>
+              <div className="flex flex-wrap items-center gap-4 pt-5 mt-5 border-t border-border/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 rounded-md border-2 border-primary shadow-sm" />
+                  <span className="text-sm text-muted-foreground font-medium">Hoy</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded border bg-green-100 dark:bg-green-900/20" />
-                  <span className="text-muted-foreground">Con fichajes</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 rounded-md border border-border bg-green-100 dark:bg-green-900/20 shadow-sm" />
+                  <span className="text-sm text-muted-foreground font-medium">Con fichajes</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded border bg-red-100 dark:bg-red-900/20 border-red-400 dark:border-red-600" />
-                  <span className="text-muted-foreground">Con incidencias</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 rounded-md border border-red-400 dark:border-red-600 bg-red-100 dark:bg-red-900/20 shadow-sm" />
+                  <span className="text-sm text-muted-foreground font-medium">Con incidencias</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded border bg-orange-100 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600" />
-                  <span className="text-muted-foreground">Con anomalías</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-4 w-4 rounded-md border border-orange-400 dark:border-orange-600 bg-orange-100 dark:bg-orange-900/20 shadow-sm" />
+                  <span className="text-sm text-muted-foreground font-medium">Con anomalías</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-8 rounded bg-green-500" />
-                  <span className="text-muted-foreground">Indicador de entrada</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-2 w-8 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-sm" />
+                  <span className="text-sm text-muted-foreground font-medium">Indicador de entrada</span>
                 </div>
               </div>
             </div>
