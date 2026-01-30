@@ -169,6 +169,13 @@ export const configs = {
         waitingMessage: "Generando exportación a excel",
         fileName: "export_pedidos",
       },
+      {
+        title: "Imprimir Hojas de Pedidos",
+        endpoint: "orders/pdf/order-sheets-filtered",
+        type: "pdf",
+        waitingMessage: "Generando hojas de pedidos",
+        fileName: "Hojas_de_pedido_masivas",
+      },
       /* {
         title: "Exportar a PDF",
         endpoint: "/exports/orders_report/pdf",
@@ -1004,8 +1011,8 @@ export const configs = {
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
         { name: "family", label: "Familia", type: "text", path: "family.name", hideOnMobile: true },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erp_code", hideOnMobile: true },
-        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facil_com_code", hideOnMobile: true },
+        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode", hideOnMobile: true },
+        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode", hideOnMobile: true },
         { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
         { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name", hideOnMobile: true },
         { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin", hideOnMobile: true },
@@ -1096,7 +1103,7 @@ export const configs = {
       },
       {
         name: "a3erp_code",
-        path: "a3erp_code",
+        path: "a3erpCode",
         label: "Código A3ERP",
         type: "text",
         placeholder: 'Código para exportaciones a "a3ERP - Software ERP"',
@@ -1104,7 +1111,7 @@ export const configs = {
       },
       {
         name: "facil_com_code",
-        path: "facil_com_code",
+        path: "facilcomCode",
         label: "Código Facilcom",
         type: "text",
         placeholder: 'Código para exportaciones a "Facilcom - Gestión comercial integral"',
