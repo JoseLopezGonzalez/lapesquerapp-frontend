@@ -282,7 +282,7 @@ export default function BulkPunchExcelUpload() {
       const { data, errors } = await parseExcel(file);
 
       if (errors.length > 0) {
-        toast.warning(
+        toast.error(
           `Se encontraron ${errors.length} error(es) al parsear el Excel`,
           getToastTheme()
         );
@@ -382,7 +382,7 @@ export default function BulkPunchExcelUpload() {
         toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
       } else {
         setIsValidated(false);
-        toast.warning(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
+        toast.error(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
       }
     } catch (error) {
       console.error('Error al validar:', error);
@@ -437,7 +437,7 @@ export default function BulkPunchExcelUpload() {
           }
         }, 3000);
       } else {
-        toast.warning(
+        toast.error(
           `Se registraron ${result.created} fichaje(s), ${result.failed} fallaron`,
           getToastTheme()
         );

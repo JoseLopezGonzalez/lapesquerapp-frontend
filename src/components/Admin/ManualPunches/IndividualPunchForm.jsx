@@ -188,7 +188,7 @@ export default function IndividualPunchForm() {
         if (result.failed === 0) {
           toast.success('Sesión completa registrada correctamente (Entrada + Salida)', getToastTheme());
         } else {
-          toast.warning(`Se registró la entrada, pero la salida falló`, getToastTheme());
+          toast.error(`Se registró la entrada, pero la salida falló`, getToastTheme());
         }
       } else {
         // Crear fichaje individual

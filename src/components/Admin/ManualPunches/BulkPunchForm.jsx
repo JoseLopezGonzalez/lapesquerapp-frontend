@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
@@ -140,6 +140,28 @@ export default function BulkPunchForm() {
     setIsValidated(false);
   };
 
+  // Duplicar una fila
+  const duplicateRow = (id) => {
+    setRows(prev => {
+      const rowToDuplicate = prev.find(row => row.id === id);
+      if (!rowToDuplicate) return prev;
+      
+      const duplicatedRow = {
+        ...rowToDuplicate,
+        id: Date.now() + Math.random(), // Nuevo ID único
+      };
+      
+      const rowIndex = prev.findIndex(row => row.id === id);
+      const newRows = [...prev];
+      newRows.splice(rowIndex + 1, 0, duplicatedRow);
+      
+      return newRows;
+    });
+    setValidationResults(null);
+    setSubmitResults(null);
+    setIsValidated(false);
+  };
+
   // Actualizar una fila
   const updateRow = (id, field, value) => {
     setRows(prev =>
@@ -183,7 +205,7 @@ export default function BulkPunchForm() {
         toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
       } else {
         setIsValidated(false);
-        toast.warning(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
+        toast.error(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
       }
     } catch (error) {
       console.error('Error al validar:', error);
@@ -234,7 +256,7 @@ export default function BulkPunchForm() {
           setIsValidated(false);
         }, 3000);
       } else {
-        toast.warning(
+        toast.error(
           `Se registraron ${result.created} fichaje(s), ${result.failed} fallaron`,
           getToastTheme()
         );
@@ -412,7 +434,7 @@ export default function BulkPunchForm() {
                   <TableHead>Empleado</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Fecha y Hora</TableHead>
-                  <TableHead className="w-[100px]">Acciones</TableHead>
+                  <TableHead className="w-[120px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -487,15 +509,28 @@ export default function BulkPunchForm() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeRow(row.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => duplicateRow(row.id)}
+                            className="text-muted-foreground hover:text-foreground"
+                            title="Duplicar fila"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRow(row.id)}
+                            className="text-destructive hover:text-destructive"
+                            title="Eliminar fila"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
