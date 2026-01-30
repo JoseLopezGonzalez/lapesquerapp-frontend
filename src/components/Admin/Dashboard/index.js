@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
 import { CurrentStockCard } from "./CurrentStockCard";
 import { WorkingEmployeesCard } from "./WorkingEmployeesCard";
+import { WorkerStatisticsCard } from "./WorkerStatisticsCard";
 import { SalesChart } from "./SalesChart";
 import { ReceptionChart } from "./ReceptionChart";
 import { DispatchChart } from "./DispatchChart";
@@ -160,6 +161,13 @@ export default function Dashboard() {
                             {true && (
                                 <div>
                                     <WorkingEmployeesCard />
+                                </div>
+                            )}
+                            
+                            {/* Gráfico 10: WorkerStatisticsCard - VISIBLE */}
+                            {true && (
+                                <div>
+                                    <WorkerStatisticsCard />
                                 </div>
                             )}
                         </Masonry>

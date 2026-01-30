@@ -200,23 +200,33 @@ export const navigationConfig = [
             },
         ],
     },
-    {
-        name: 'Gestión Horaria',
-        icon: Clock,
-        allowedRoles: ["admin", "manager", "superuser"],
-        childrens: [
-            {
-                name: 'Empleados',
-                href: '/admin/employees',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-            {
-                name: 'Eventos de Fichaje',
-                href: '/admin/punches',
-                allowedRoles: ["admin", "manager", "superuser"],
-            },
-        ],
-    },
+        {
+            name: 'Gestión Horaria',
+            icon: Clock,
+            allowedRoles: ["admin", "manager", "superuser"],
+            childrens: [
+                {
+                    name: 'Empleados',
+                    href: '/admin/employees',
+                    allowedRoles: ["admin", "manager", "superuser"],
+                },
+                {
+                    name: 'Eventos de Fichaje',
+                    href: '/admin/punches',
+                    allowedRoles: ["admin", "manager", "superuser"],
+                },
+                {
+                    name: 'Gestión Manual de Fichajes',
+                    href: '/admin/manual-punches',
+                    allowedRoles: ["admin", "manager", "superuser"],
+                },
+                {
+                    name: 'Calendario de Fichajes',
+                    href: '/admin/punches-calendar',
+                    allowedRoles: ["admin", "manager", "superuser"],
+                },
+            ],
+        },
 ];
 
 export const navigationManagerConfig = [

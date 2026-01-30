@@ -71,7 +71,7 @@ function validateDocument(document, index, validator) {
         document.tables.peces.forEach((row, rowIndex) => {
             validator.requireField(row.fao, 'fao', `document[${index}].tables.peces[${rowIndex}]`);
             validator.requireField(row.descripcion, 'descripcion', `document[${index}].tables.peces[${rowIndex}]`);
-            validator.requireField(row.cajas, 'cajas', `document[${index}].tables.peces[${rowIndex}]`);
+            // cajas es opcional (Azure no siempre lo extrae correctamente)
             validator.requireField(row.kilos, 'kilos', `document[${index}].tables.peces[${rowIndex}]`);
             validator.requireField(row.importe, 'importe', `document[${index}].tables.peces[${rowIndex}]`);
         });

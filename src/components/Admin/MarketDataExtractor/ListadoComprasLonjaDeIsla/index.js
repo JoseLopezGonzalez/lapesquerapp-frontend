@@ -128,7 +128,7 @@ const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
                                             <TableRow key={index} className="hover:bg-muted hover:text-white">
                                                 <TableCell>{especie.fao}</TableCell>
                                                 <TableCell>{especie.descripcion}</TableCell>
-                                                <TableCell className="text-right">{especie.cajas}</TableCell>
+                                                <TableCell className="text-right">{especie.cajas ?? '-'}</TableCell>
                                                 <TableCell className="text-right">{especie.kilos} kg</TableCell>
                                                 <TableCell className="text-right">{especie.importe}€</TableCell>
                                             </TableRow>
