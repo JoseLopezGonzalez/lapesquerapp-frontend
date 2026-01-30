@@ -473,14 +473,14 @@ export default function BulkPunchExcelUpload() {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Registro Masivo desde Excel</CardTitle>
         <CardDescription>
           Importa múltiples fichajes desde un archivo Excel (.xlsx)
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 flex-1 min-h-0 overflow-y-auto">
         {/* Indicador de carga de empleados */}
         {loadingEmployees && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
@@ -665,7 +665,7 @@ export default function BulkPunchExcelUpload() {
 
         {/* Vista previa de datos */}
         {parsedData.length > 0 ? (
-          <div className="border rounded-md overflow-x-auto">
+          <div className="border rounded-md overflow-x-auto max-h-[60vh] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>

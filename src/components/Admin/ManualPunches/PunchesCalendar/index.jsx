@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertTriangle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { getPunchesByMonth } from '@/services/punchService';
@@ -158,7 +158,7 @@ export default function PunchesCalendar() {
               <CardDescription>
                 {punchesData && (
                   <>
-                    {punchesData.total_punches} fichaje(s) de {punchesData.total_employees} empleado(s)
+                    {punchesData.total_punches} {punchesData.total_punches === 1 ? 'fichaje' : 'fichajes'} de {punchesData.total_employees} {punchesData.total_employees === 1 ? 'empleado' : 'empleados'}
                   </>
                 )}
               </CardDescription>
@@ -246,7 +246,9 @@ export default function PunchesCalendar() {
                   const punchCount = punches.length;
                   const employeeCount = getDayEmployees(dayNumber);
                   const hasPunches = punchCount > 0;
-                  const hasIssues = incidents.length > 0 || anomalies.length > 0;
+                  const hasIncidents = incidents.length > 0;
+                  const hasAnomalies = anomalies.length > 0;
+                  const hasIssues = hasIncidents || hasAnomalies;
 
                   return (
                     <button
@@ -260,7 +262,9 @@ export default function PunchesCalendar() {
                         isCurrentDay && 'border-primary border-2',
                         (hasPunches || hasIssues) && 'cursor-pointer hover:border-primary',
                         !hasPunches && !hasIssues && 'cursor-default',
-                        hasIssues && 'border-yellow-400 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20'
+                        hasIncidents && !hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20',
+                        hasAnomalies && !hasIncidents && 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20',
+                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20'
                       )}
                     >
                       <div className="flex flex-col h-full">
@@ -279,27 +283,29 @@ export default function PunchesCalendar() {
                                 <div className="flex items-center gap-1 text-xs">
                                   <CalendarIcon className="h-3 w-3 text-green-600" />
                                   <span className="text-green-700 dark:text-green-400 font-medium">
-                                    {punchCount} fichaje(s)
+                                    {punchCount} {punchCount === 1 ? 'fichaje' : 'fichajes'}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1 text-xs">
                                   <span className="text-blue-700 dark:text-blue-400 font-medium">
-                                    {employeeCount} empleado(s)
+                                    {employeeCount} {employeeCount === 1 ? 'empleado' : 'empleados'}
                                   </span>
                                 </div>
                               </>
                             )}
-                            {incidents.length > 0 && (
+                            {hasIncidents && (
                               <div className="flex items-center gap-1 text-xs">
-                                <span className="text-orange-600 dark:text-orange-400 font-medium">
-                                  ⚠️ {incidents.length} incidencia(s)
+                                <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
+                                <span className="text-red-600 dark:text-red-400 font-medium">
+                                  {incidents.length} {incidents.length === 1 ? 'incidencia' : 'incidencias'}
                                 </span>
                               </div>
                             )}
-                            {anomalies.length > 0 && (
+                            {hasAnomalies && (
                               <div className="flex items-center gap-1 text-xs">
-                                <span className="text-red-600 dark:text-red-400 font-medium">
-                                  ⚠️ {anomalies.length} anomalía(s)
+                                <AlertCircle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                                <span className="text-orange-600 dark:text-orange-400 font-medium">
+                                  {anomalies.length} {anomalies.length === 1 ? 'anomalía' : 'anomalías'}
                                 </span>
                               </div>
                             )}
@@ -345,8 +351,12 @@ export default function PunchesCalendar() {
                   <span className="text-muted-foreground">Con fichajes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded border bg-yellow-100 dark:bg-yellow-900/20 border-yellow-400 dark:border-yellow-600" />
-                  <span className="text-muted-foreground">Con incidencias/anomalías</span>
+                  <div className="h-4 w-4 rounded border bg-red-100 dark:bg-red-900/20 border-red-400 dark:border-red-600" />
+                  <span className="text-muted-foreground">Con incidencias</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border bg-orange-100 dark:bg-orange-900/20 border-orange-400 dark:border-orange-600" />
+                  <span className="text-muted-foreground">Con anomalías</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-8 rounded bg-green-500" />

@@ -264,14 +264,14 @@ export default function IndividualPunchForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Registro Individual de Fichaje</CardTitle>
         <CardDescription>
           Registra un fichaje individual con fecha y hora personalizada
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-y-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Empleado */}
           <div className="space-y-2">

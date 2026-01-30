@@ -259,54 +259,57 @@ export default function BulkPunchForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Registro Masivo de Fichajes</CardTitle>
         <CardDescription>
           Registra múltiples fichajes a la vez mediante un formulario
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 flex-1 min-h-0 overflow-y-auto">
         {/* Botones de acción */}
-        <div className="flex gap-2 flex-wrap">
-          <Button type="button" onClick={addRow} variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir Fila
-          </Button>
-          <Button type="button" onClick={addFullSession} variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir Sesión Completa
-          </Button>
-          <Button
-            type="button"
-            onClick={handleValidate}
-            variant="outline"
-            disabled={validating || rows.length === 0}
-          >
-            {validating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Validando...
-              </>
-            ) : (
-              'Validar'
-            )}
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || rows.length === 0 || !isValidated}
-            className="ml-auto"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registrando...
-              </>
-            ) : (
-              'Registrar Todos'
-            )}
-          </Button>
+        <div className="flex gap-2 flex-wrap justify-between items-center">
+          <div className="flex gap-2 flex-wrap">
+            <Button type="button" onClick={addRow} variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Añadir Fila
+            </Button>
+            <Button type="button" onClick={addFullSession} variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Añadir Sesión Completa
+            </Button>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              type="button"
+              onClick={handleValidate}
+              variant="outline"
+              disabled={validating || rows.length === 0}
+            >
+              {validating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Validando...
+                </>
+              ) : (
+                'Validar'
+              )}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || rows.length === 0 || !isValidated}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registrando...
+                </>
+              ) : (
+                'Registrar Todos'
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Mensaje de validación requerida */}
@@ -324,8 +327,8 @@ export default function BulkPunchForm() {
           </div>
         )}
 
-        {/* Resumen de validación */}
-        {validationResults && (
+        {/* Resumen de validación - Solo se muestra si no hay resultados de registro */}
+        {validationResults && !submitResults && (
           <div
             className={`p-4 rounded-md border ${
               validationResults.invalid === 0
@@ -401,7 +404,7 @@ export default function BulkPunchForm() {
             </Button>
           </div>
         ) : (
-          <div className="border rounded-md overflow-x-auto">
+          <div className="border rounded-md overflow-x-auto max-h-[60vh] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>

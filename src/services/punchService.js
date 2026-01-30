@@ -752,8 +752,13 @@ export async function getPunchesByMonth(year, month, token, filters = {}) {
                     // Normalizar timestamps de incidencias
                     if (dayData.incidents && Array.isArray(dayData.incidents)) {
                         dayData.incidents = dayData.incidents.map(incident => {
+                            // Normalizar entry_timestamp si existe
                             if (incident.entry_timestamp && typeof incident.entry_timestamp === 'string' && !incident.entry_timestamp.includes('T')) {
                                 incident.entry_timestamp = incident.entry_timestamp.replace(' ', 'T') + '.000Z';
+                            }
+                            // Normalizar exit_timestamp si existe
+                            if (incident.exit_timestamp && typeof incident.exit_timestamp === 'string' && !incident.exit_timestamp.includes('T')) {
+                                incident.exit_timestamp = incident.exit_timestamp.replace(' ', 'T') + '.000Z';
                             }
                             return incident;
                         });

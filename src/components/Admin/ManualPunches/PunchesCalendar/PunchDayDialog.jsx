@@ -92,6 +92,10 @@ export default function PunchDayDialog({ day, month, year, punches, open, onOpen
     return timestamp;
   };
 
+  // Contar tipos de incidencias
+  const entryWithoutExitCount = incidents.filter(i => i.type === 'entry_without_exit').length;
+  const exitWithoutEntryCount = incidents.filter(i => i.type === 'exit_without_entry').length;
+
   const date = new Date(year, month - 1, day);
   const dateFormatted = format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
 
@@ -104,65 +108,90 @@ export default function PunchDayDialog({ day, month, year, punches, open, onOpen
             Fichajes del {dateFormatted}
           </DialogTitle>
           <DialogDescription>
-            {punchesList.length} fichaje(s) de {Object.keys(punchesByEmployee).length} empleado(s)
-            {incidents.length > 0 && ` • ${incidents.length} incidencia(s)`}
-            {anomalies.length > 0 && ` • ${anomalies.length} anomalía(s)`}
+            {punchesList.length} {punchesList.length === 1 ? 'fichaje' : 'fichajes'} de {Object.keys(punchesByEmployee).length} {Object.keys(punchesByEmployee).length === 1 ? 'empleado' : 'empleados'}
+            {incidents.length > 0 && ` • ${incidents.length} ${incidents.length === 1 ? 'incidencia' : 'incidencias'}`}
+            {anomalies.length > 0 && ` • ${anomalies.length} ${anomalies.length === 1 ? 'anomalía' : 'anomalías'}`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-4 overflow-y-auto flex-1 pr-2">
           {/* Incidencias */}
           {incidents.length > 0 && (
-            <div className="border rounded-lg">
-              <Accordion type="multiple" defaultValue={['incidents']} className="w-full">
-                <AccordionItem value="incidents" className="border-0">
-                  <AccordionTrigger className="hover:no-underline px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                        <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-semibold text-base">Incidencias</div>
-                        <div className="text-sm text-muted-foreground">
-                          {incidents.length} entrada(s) sin salida correspondiente
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800">
-                        {incidents.length}
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-3 pt-2 pb-4 px-4">
-                      {incidents.map((incident, idx) => (
-                        <div
-                          key={idx}
-                          className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                              <User className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <div className="flex-1 space-y-2">
-                              <div className="font-medium text-base">{incident.employee_name}</div>
-                              <div className="flex items-center gap-4 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-orange-600" />
-                                  <div>
-                                    <span className="text-muted-foreground">Entrada: </span>
-                                    <span className="font-medium">
-                                      {incident.entry_time || format(new Date(normalizeIncidentTimestamp(incident.entry_timestamp)), 'HH:mm:ss', { locale: es })}
-                                    </span>
-                                  </div>
+                    <div className="border rounded-lg">
+                      <Accordion type="multiple" defaultValue={['incidents']} className="w-full">
+                        <AccordionItem value="incidents" className="border-0">
+                          <AccordionTrigger className="hover:no-underline px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <div className="font-semibold text-base">Incidencias</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {entryWithoutExitCount > 0 && `${entryWithoutExitCount} ${entryWithoutExitCount === 1 ? 'entrada' : 'entradas'} sin salida`}
+                                  {entryWithoutExitCount > 0 && exitWithoutEntryCount > 0 && ' • '}
+                                  {exitWithoutEntryCount > 0 && `${exitWithoutEntryCount} ${exitWithoutEntryCount === 1 ? 'salida' : 'salidas'} sin entrada`}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {incident.device_id === 'manual-admin' ? 'Manual' : incident.device_id}
+                              </div>
+                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800">
+                                {incidents.length}
+                              </Badge>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-3 pt-2 pb-4 px-4">
+                              {incidents.map((incident, idx) => {
+                                const isEntryWithoutExit = incident.type === 'entry_without_exit';
+                                const isExitWithoutEntry = incident.type === 'exit_without_entry';
+                                
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                                        <User className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                      </div>
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="font-medium text-base">{incident.employee_name}</div>
+                                  <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    {incident.type_label || (isEntryWithoutExit ? 'Entrada sin salida' : 'Salida sin entrada')}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                  {isEntryWithoutExit && (
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-4 w-4 text-red-600" />
+                                      <div>
+                                        <span className="text-muted-foreground">Entrada: </span>
+                                        <span className="font-medium">
+                                          {incident.entry_time || format(new Date(normalizeIncidentTimestamp(incident.entry_timestamp)), 'HH:mm:ss', { locale: es })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {isExitWithoutEntry && (
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-4 w-4 text-red-600" />
+                                      <div>
+                                        <span className="text-muted-foreground">Salida: </span>
+                                        <span className="font-medium">
+                                          {incident.exit_time || format(new Date(normalizeIncidentTimestamp(incident.exit_timestamp)), 'HH:mm:ss', { locale: es })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-muted-foreground">
+                                    {incident.device_id === 'manual-admin' ? 'Manual' : incident.device_id}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -177,31 +206,31 @@ export default function PunchDayDialog({ day, month, year, punches, open, onOpen
                 <AccordionItem value="anomalies" className="border-0">
                   <AccordionTrigger className="hover:no-underline px-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
-                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                        <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                       </div>
                       <div className="flex-1 text-left">
                         <div className="font-semibold text-base">Anomalías</div>
                         <div className="text-sm text-muted-foreground">
-                          Jornadas con horas fuera de lo normal
+                          {anomalies.length === 1 ? 'Jornada' : 'Jornadas'} con horas fuera de lo normal
                         </div>
                       </div>
-                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800">
-                        {anomalies.length}
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-3 pt-2 pb-4 px-4">
-                      {anomalies.map((anomaly, idx) => (
-                        <div
-                          key={idx}
-                          className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
-                              <User className="h-4 w-4 text-red-600 dark:text-red-400" />
+                              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800">
+                                {anomalies.length}
+                              </Badge>
                             </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-3 pt-2 pb-4 px-4">
+                              {anomalies.map((anomaly, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                                      <User className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                    </div>
                             <div className="flex-1 space-y-2">
                               <div className="font-medium text-base">{anomaly.employee_name}</div>
                               <div className="space-y-1 text-sm">
@@ -252,7 +281,7 @@ export default function PunchDayDialog({ day, month, year, punches, open, onOpen
                             <div className="text-left">
                               <div className="font-medium">{emp.employee_name}</div>
                               <div className="text-sm text-muted-foreground">
-                                {emp.punches.length} fichaje(s) • {sessions.length} sesión(es)
+                                {emp.punches.length} {emp.punches.length === 1 ? 'fichaje' : 'fichajes'} • {sessions.length} {sessions.length === 1 ? 'sesión' : 'sesiones'}
                               </div>
                             </div>
                           </div>
