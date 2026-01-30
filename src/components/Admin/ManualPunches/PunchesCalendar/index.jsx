@@ -126,11 +126,15 @@ export default function PunchesCalendar() {
   };
 
   // Manejar clic en día
-  const handleDayClick = (day) => {
-    const dayData = getDayData(day);
+  const handleDayClick = (dayNumber, dayDate) => {
+    // Verificar que el día pertenezca al mes actual
+    if (!isSameMonth(dayDate, currentDate)) {
+      return;
+    }
+    const dayData = getDayData(dayNumber);
     if (dayData.punches.length > 0 || dayData.incidents.length > 0 || dayData.anomalies.length > 0) {
       setSelectedDayPunches(dayData);
-      setSelectedDay(day);
+      setSelectedDay(dayNumber);
     }
   };
 
@@ -223,14 +227,20 @@ export default function PunchesCalendar() {
             <div className="space-y-4">
               {/* Encabezados de días de la semana */}
               <div className="grid grid-cols-7 gap-2">
-                {WEEKDAYS.map((day, index) => (
-                  <div
-                    key={index}
-                    className="text-center text-sm font-medium text-muted-foreground p-2"
-                  >
-                    {day}
-                  </div>
-                ))}
+                {WEEKDAYS.map((day, index) => {
+                  const isWeekend = index === 5 || index === 6; // Sábado (5) o Domingo (6)
+                  return (
+                    <div
+                      key={index}
+                      className={cn(
+                        "text-center text-sm font-medium p-2",
+                        isWeekend ? "text-muted-foreground font-semibold" : "text-muted-foreground"
+                      )}
+                    >
+                      {day}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Días del calendario */}
@@ -239,7 +249,10 @@ export default function PunchesCalendar() {
                   const dayNumber = day.getDate();
                   const isCurrentMonth = isSameMonth(day, currentDate);
                   const isCurrentDay = isToday(day);
-                  const dayData = getDayData(dayNumber);
+                  const dayOfWeek = day.getDay(); // 0 = Domingo, 6 = Sábado
+                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                  // Solo obtener datos si el día pertenece al mes actual
+                  const dayData = isCurrentMonth ? getDayData(dayNumber) : { punches: [], incidents: [], anomalies: [] };
                   const punches = dayData.punches || [];
                   const incidents = dayData.incidents || [];
                   const anomalies = dayData.anomalies || [];
@@ -253,8 +266,8 @@ export default function PunchesCalendar() {
                   return (
                     <button
                       key={index}
-                      onClick={() => (hasPunches || hasIssues) && handleDayClick(dayNumber)}
-                      disabled={!hasPunches && !hasIssues}
+                      onClick={() => (hasPunches || hasIssues) && isCurrentMonth && handleDayClick(dayNumber, day)}
+                      disabled={!hasPunches && !hasIssues || !isCurrentMonth}
                       className={cn(
                         'relative min-h-[100px] p-2 rounded-lg border transition-colors',
                         'hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
@@ -264,7 +277,9 @@ export default function PunchesCalendar() {
                         !hasPunches && !hasIssues && 'cursor-default',
                         hasIncidents && !hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20',
                         hasAnomalies && !hasIncidents && 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20',
-                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20'
+                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20',
+                        isWeekend && isCurrentMonth && !hasPunches && !hasIssues && 'bg-gray-200 dark:bg-gray-800/70',
+                        isWeekend && isCurrentMonth && (hasPunches || hasIssues) && 'bg-gray-100/50 dark:bg-gray-800/30'
                       )}
                     >
                       <div className="flex flex-col h-full">
@@ -327,11 +342,6 @@ export default function PunchesCalendar() {
                                 +{punches.filter((p) => p.event_type === 'IN').length - 3} más
                               </div>
                             )}
-                          </div>
-                        )}
-                        {!hasPunches && isCurrentMonth && (
-                          <div className="flex-1 flex items-center justify-center">
-                            <span className="text-xs text-muted-foreground">Sin fichajes</span>
                           </div>
                         )}
                       </div>
