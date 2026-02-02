@@ -202,7 +202,7 @@ export default function BulkPunchForm() {
         toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
       } else {
         setIsValidated(false);
-        toast.error(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
+        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
       }
     } catch (error) {
       console.error('Error al validar:', error);
@@ -244,7 +244,7 @@ export default function BulkPunchForm() {
       setSubmitResults(result);
 
       if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} fichaje(s) correctamente`, getToastTheme());
+        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
         // Limpiar formulario después de éxito
         setTimeout(() => {
           setRows([]);
@@ -254,7 +254,7 @@ export default function BulkPunchForm() {
         }, 3000);
       } else {
         toast.error(
-          `Se registraron ${result.created} fichaje(s), ${result.failed} fallaron`,
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
           getToastTheme()
         );
       }

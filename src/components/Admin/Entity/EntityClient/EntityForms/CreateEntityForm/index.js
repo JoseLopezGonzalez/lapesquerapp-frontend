@@ -21,6 +21,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 import EmailListInput from "@/components/ui/emailListInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns"
+import { Loader2 } from "lucide-react";
 
 // Import domain services and mapper
 import { getEntityService } from '@/services/domain/entityServiceMapper';
@@ -342,7 +343,14 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     Cancelar
                 </Button>
                 <Button type="submit" form="entity-form" disabled={isSubmitting}>
-                    Crear
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creando...
+                        </>
+                    ) : (
+                        'Crear'
+                    )}
                 </Button>
             </div>
         </div>

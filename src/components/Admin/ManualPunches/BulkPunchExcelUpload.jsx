@@ -97,7 +97,13 @@ export default function BulkPunchExcelUpload() {
           }
           
           const worksheet = workbook.Sheets[firstSheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          // Leer datos con raw: false para obtener valores formateados como texto cuando sea posible
+          // Esto ayuda a preservar el formato original de las fechas
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1, 
+            defval: '',
+            raw: false  // Obtener valores formateados como texto
+          });
           
           if (jsonData.length === 0) {
             throw new Error('El archivo Excel está vacío');
@@ -156,12 +162,15 @@ export default function BulkPunchExcelUpload() {
               timestamp = row[2];
             }
 
-            // Convertir a string y limpiar
+            // Convertir a string y limpiar (excepto timestamp que puede ser número)
             employeeName = String(employeeName || '').trim();
             eventType = String(eventType || '').trim();
-            timestamp = String(timestamp || '').trim();
+            
+            // Preservar el tipo original del timestamp para detectar números de Excel
+            const timestampOriginal = timestamp;
+            const timestampString = String(timestamp || '').trim();
 
-            if (!employeeName || !eventType || !timestamp) {
+            if (!employeeName || !eventType || !timestampString) {
               errors.push({
                 row: i + 1,
                 message: `Fila ${i + 1}: Faltan datos obligatorios`,
@@ -195,21 +204,59 @@ export default function BulkPunchExcelUpload() {
               // Intentar parsear diferentes formatos
               let date;
               
-              // Si es un número de Excel (días desde 1900-01-01)
-              if (typeof timestamp === 'number') {
+              // Detectar si es un número de Excel (puede venir como número o string numérico)
+              const isNumeric = typeof timestampOriginal === 'number' || 
+                               (!isNaN(parseFloat(timestampString)) && 
+                                isFinite(timestampString) && 
+                                /^\d+\.?\d*$/.test(timestampString.trim()));
+              
+              if (isNumeric) {
                 // Convertir número de Excel a fecha
-                const excelEpoch = new Date(1899, 11, 30);
-                date = new Date(excelEpoch.getTime() + timestamp * 86400000);
-              } else if (timestamp.includes('T')) {
+                // Excel cuenta días desde 1900-01-01, pero tiene un bug: considera 1900 como año bisiesto
+                // Por eso usamos 1899-12-30 como epoch
+                const excelDays = typeof timestampOriginal === 'number' 
+                  ? timestampOriginal 
+                  : parseFloat(timestampString);
+                
+                // Excel epoch: 1899-12-30 (día 0 en Excel) a medianoche UTC
+                const excelEpoch = Date.UTC(1899, 11, 30);
+                // Convertir días a milisegundos (86400000 ms = 1 día)
+                const totalMs = excelEpoch + excelDays * 86400000;
+                
+                // Crear fecha desde UTC y luego extraer componentes en hora local
+                // para preservar la hora exacta sin conversión de zona horaria
+                const utcDate = new Date(totalMs);
+                date = new Date(
+                  utcDate.getUTCFullYear(),
+                  utcDate.getUTCMonth(),
+                  utcDate.getUTCDate(),
+                  utcDate.getUTCHours(),
+                  utcDate.getUTCMinutes(),
+                  utcDate.getUTCSeconds()
+                );
+              } else if (timestampString.includes('T')) {
                 // ISO format
-                date = new Date(timestamp);
+                date = new Date(timestampString);
               } else {
-                // Formato YYYY-MM-DD HH:mm:ss o YYYY-MM-DD
-                const [datePart, timePart] = timestamp.split(' ');
-                if (datePart && timePart) {
-                  date = new Date(`${datePart}T${timePart}`);
+                // Intentar parsear formato D-M-YY HH:MM o D-M-YY HH:MM:SS (formato común en Excel)
+                // Ejemplo: "2-1-26 9:00" o "2-1-26 9:00:00"
+                const dateTimeMatch = timestampString.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                if (dateTimeMatch) {
+                  const [, day, month, year, hour, minute, second = '0'] = dateTimeMatch;
+                  // Convertir año de 2 dígitos a 4 dígitos (asumir 2000-2099)
+                  const fullYear = year.length === 2 
+                    ? (parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year))
+                    : parseInt(year);
+                  // Crear fecha en hora local (sin conversión de zona horaria)
+                  date = new Date(fullYear, parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second));
                 } else {
-                  date = new Date(timestamp);
+                  // Formato YYYY-MM-DD HH:mm:ss o YYYY-MM-DD
+                  const [datePart, timePart] = timestampString.split(' ');
+                  if (datePart && timePart) {
+                    date = new Date(`${datePart}T${timePart}`);
+                  } else {
+                    date = new Date(timestampString);
+                  }
                 }
               }
 
@@ -217,14 +264,32 @@ export default function BulkPunchExcelUpload() {
                 throw new Error('Fecha inválida');
               }
 
-              timestampISO = date.toISOString();
+              // Convertir a ISO preservando la hora local (sin aplicar zona horaria)
+              // Formato: YYYY-MM-DDTHH:mm:ss (sin Z para que se interprete como hora local)
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              const hours = String(date.getHours()).padStart(2, '0');
+              const minutes = String(date.getMinutes()).padStart(2, '0');
+              const seconds = String(date.getSeconds()).padStart(2, '0');
+              timestampISO = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
             } catch (error) {
               errors.push({
                 row: i + 1,
-                message: `Fila ${i + 1}: Formato de fecha inválido: "${timestamp}"`,
+                message: `Fila ${i + 1}: Formato de fecha inválido: "${timestampString}"`,
               });
               continue;
             }
+
+            // Formatear fecha para mostrar (formato legible en español)
+            const formattedDate = new Date(timestampISO).toLocaleString('es-ES', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            });
 
             parsedRows.push({
               id: i,
@@ -233,7 +298,7 @@ export default function BulkPunchExcelUpload() {
               event_type: eventTypeConverted,
               event_type_display: eventType,
               timestamp: timestampISO,
-              timestampDisplay: timestamp,
+              timestampDisplay: formattedDate,
             });
           }
 
@@ -295,7 +360,7 @@ export default function BulkPunchExcelUpload() {
       }
 
       setParsedData(data);
-      toast.success(`Se parsearon ${data.length} fichaje(s) correctamente`, getToastTheme());
+      toast.success(`Se parsearon ${data.length} ${data.length === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
     } catch (error) {
       console.error('Error al parsear Excel:', error);
       toast.error(`Error al parsear el Excel: ${error.message}`, getToastTheme());
@@ -382,7 +447,7 @@ export default function BulkPunchExcelUpload() {
         toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
       } else {
         setIsValidated(false);
-        toast.error(`${result.invalid} fichaje(s) con errores. Corrige los errores antes de registrar`, getToastTheme());
+        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
       }
     } catch (error) {
       console.error('Error al validar:', error);
@@ -424,7 +489,7 @@ export default function BulkPunchExcelUpload() {
       setSubmitResults(result);
 
       if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} fichaje(s) correctamente`, getToastTheme());
+        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
         // Limpiar después de éxito
         setTimeout(() => {
           setParsedData([]);
@@ -438,7 +503,7 @@ export default function BulkPunchExcelUpload() {
         }, 3000);
       } else {
         toast.error(
-          `Se registraron ${result.created} fichaje(s), ${result.failed} fallaron`,
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
           getToastTheme()
         );
       }
@@ -515,7 +580,7 @@ export default function BulkPunchExcelUpload() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
-            disabled={loadingEmployees}
+            disabled={loadingEmployees || employeeOptions.length === 0}
           >
             <Upload className="mr-2 h-4 w-4" />
             Seleccionar Archivo Excel
@@ -525,6 +590,7 @@ export default function BulkPunchExcelUpload() {
             type="file"
             accept=".xlsx,.xls"
             onChange={handleFileSelect}
+            disabled={loadingEmployees || employeeOptions.length === 0}
             className="hidden"
           />
           {parsedData.length > 0 && (
@@ -578,7 +644,7 @@ export default function BulkPunchExcelUpload() {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <span className="text-sm font-medium">Archivo: {fileName}</span>
             <span className="text-xs text-muted-foreground">
-              ({parsedData.length} fichaje(s) parseado(s))
+              ({parsedData.length} {parsedData.length === 1 ? 'fichaje parseado' : 'fichajes parseados'})
             </span>
           </div>
         )}
@@ -701,7 +767,17 @@ export default function BulkPunchExcelUpload() {
                           {row.event_type_display || (row.event_type === 'IN' ? 'Entrada' : 'Salida')}
                         </span>
                       </TableCell>
-                      <TableCell>{row.timestampDisplay || new Date(row.timestamp).toLocaleString('es-ES')}</TableCell>
+                      <TableCell>
+                        {row.timestampDisplay || 
+                         new Date(row.timestamp).toLocaleString('es-ES', {
+                           year: 'numeric',
+                           month: '2-digit',
+                           day: '2-digit',
+                           hour: '2-digit',
+                           minute: '2-digit',
+                           second: '2-digit',
+                         })}
+                      </TableCell>
                       <TableCell>
                         {hasError && (
                           <div className="flex items-center gap-1 text-xs text-destructive">

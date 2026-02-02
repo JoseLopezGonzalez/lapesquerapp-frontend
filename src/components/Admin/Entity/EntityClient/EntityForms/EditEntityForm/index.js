@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/datePicker";
 import { format } from "date-fns"
 import { Combobox } from "@/components/Shadcn/Combobox";
+import { Loader2 } from "lucide-react";
 import EmailListInput from "@/components/ui/emailListInput";
 
 import get from "lodash.get";
@@ -371,7 +372,14 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     Cancelar
                 </Button>
                 <Button type="submit" form="entity-form" disabled={isSubmitting}>
-                    Guardar
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Guardando...
+                        </>
+                    ) : (
+                        'Guardar'
+                    )}
                 </Button>
             </div>
         </div>
