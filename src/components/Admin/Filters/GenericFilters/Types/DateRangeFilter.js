@@ -1,31 +1,56 @@
 "use client"
 
-import React, { use, useEffect, useState } from "react"
-import { addDays, format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import React, { useEffect, useState } from "react"
+import { format, parse } from "date-fns"
+import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import { cn } from "@/lib/utils"
 
-export function DateRangeFilter({ className, value, onChange , label, name }) {
-    const [date, setDate] = useState({
-        from: null,
-        to: null,
+export function DateRangeFilter({ className, value, onChange, label, name }) {
+    // Convertir value (strings) a dateRange (Dates) para DateRangePicker
+    const [dateRange, setDateRange] = useState(() => {
+        if (value?.from && value?.to && value.from !== null && value.to !== null) {
+            try {
+                const fromDate = parse(value.from, "yyyy-MM-dd", new Date())
+                const toDate = parse(value.to, "yyyy-MM-dd", new Date())
+                // Validar que las fechas sean válidas
+                if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
+                    return { from: fromDate, to: toDate }
+                }
+            } catch (e) {
+                // Si hay error al parsear, retornar undefined
+            }
+        }
+        return { from: undefined, to: undefined }
     })
 
+    // Sincronizar cuando cambia el value externo
     useEffect(() => {
-        if (value) {
-            setDate(value)
+        if (value?.from && value?.to && value.from !== null && value.to !== null) {
+            try {
+                const fromDate = parse(value.from, "yyyy-MM-dd", new Date())
+                const toDate = parse(value.to, "yyyy-MM-dd", new Date())
+                // Validar que las fechas sean válidas
+                if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
+                    setDateRange({ from: fromDate, to: toDate })
+                    return
+                }
+            } catch (e) {
+                // Si hay error al parsear, continuar
+            }
         }
+        // Si no hay valores válidos, resetear
+        setDateRange({ from: undefined, to: undefined })
     }, [value])
 
-    const handleOnChange = (date) => {
+    // Manejar cambios del DateRangePicker y convertir Dates a strings
+    const handleDateRangeChange = (range) => {
+        setDateRange(range)
+        
         const formattedDate = {
-            from: date.from ? format(date.from, "yyyy-MM-dd") : null,
-            to: date.to ? format(date.to, "yyyy-MM-dd") : null,
+            from: range?.from ? format(range.from, "yyyy-MM-dd") : null,
+            to: range?.to ? format(range.to, "yyyy-MM-dd") : null,
         }
-        setDate(date)
+        
         onChange(formattedDate)
     }
 
@@ -40,45 +65,12 @@ export function DateRangeFilter({ className, value, onChange , label, name }) {
                         {label}
                     </label>
                     <div className={cn("grid gap-2 w-full", className)}>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    id="date"
-                                    variant="outline"
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon />
-                                    {date?.from ? (
-                                        date.to ? (
-                                            <>
-                                                {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-                                            </>
-                                        ) : (
-                                            format(date.from, "LLL dd, y")
-                                        )
-                                    ) : (
-                                        <span>Selecciona un rango de fechas</span>
-                                    )}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    initialFocus
-                                    mode="range"
-                                    defaultMonth={date?.from}
-                                    selected={date}
-                                    onSelect={handleOnChange}
-                                    onChange={handleOnChange}
-                                    numberOfMonths={2}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        <DateRangePicker
+                            dateRange={dateRange}
+                            onChange={handleDateRangeChange}
+                        />
                     </div>
                 </div>
-
             </div>
         </div>
     )
