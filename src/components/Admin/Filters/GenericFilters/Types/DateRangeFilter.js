@@ -1,45 +1,64 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { format, parse } from "date-fns"
+import { format, parse, isValid } from "date-fns"
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import { cn } from "@/lib/utils"
 
-export function DateRangeFilter({ className, value, onChange, label, name }) {
-    // Convertir value (strings) a dateRange (Dates) para DateRangePicker
-    const [dateRange, setDateRange] = useState(() => {
-        if (value?.from && value?.to && value.from !== null && value.to !== null) {
-            try {
-                const fromDate = parse(value.from, "yyyy-MM-dd", new Date())
-                const toDate = parse(value.to, "yyyy-MM-dd", new Date())
-                // Validar que las fechas sean válidas
-                if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
-                    return { from: fromDate, to: toDate }
-                }
-            } catch (e) {
-                // Si hay error al parsear, retornar undefined
-            }
-        }
+// Función helper para convertir strings a Dates
+function parseValueToDateRange(val) {
+    // Si no hay value o es null/undefined, retornar undefined
+    if (!val || (val.from === null && val.to === null) || (val.from === undefined && val.to === undefined)) {
         return { from: undefined, to: undefined }
-    })
+    }
+
+    // Intentar parsear las fechas si existen
+    let fromDate = undefined
+    let toDate = undefined
+
+    if (val.from && val.from !== null && val.from !== '') {
+        try {
+            const parsed = parse(val.from, "yyyy-MM-dd", new Date())
+            if (isValid(parsed)) {
+                fromDate = parsed
+            }
+        } catch (e) {
+            // Si hay error al parsear, mantener undefined
+        }
+    }
+
+    if (val.to && val.to !== null && val.to !== '') {
+        try {
+            const parsed = parse(val.to, "yyyy-MM-dd", new Date())
+            if (isValid(parsed)) {
+                toDate = parsed
+            }
+        } catch (e) {
+            // Si hay error al parsear, mantener undefined
+        }
+    }
+
+    return { from: fromDate, to: toDate }
+}
+
+export function DateRangeFilter({ className, value, onChange, label, name }) {
+    // Convertir value inicial (strings) a dateRange (Dates) para DateRangePicker
+    const [dateRange, setDateRange] = useState(() => parseValueToDateRange(value))
 
     // Sincronizar cuando cambia el value externo
     useEffect(() => {
-        if (value?.from && value?.to && value.from !== null && value.to !== null) {
-            try {
-                const fromDate = parse(value.from, "yyyy-MM-dd", new Date())
-                const toDate = parse(value.to, "yyyy-MM-dd", new Date())
-                // Validar que las fechas sean válidas
-                if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
-                    setDateRange({ from: fromDate, to: toDate })
-                    return
-                }
-            } catch (e) {
-                // Si hay error al parsear, continuar
+        const newDateRange = parseValueToDateRange(value)
+        
+        // Actualizar el estado solo si realmente cambió
+        setDateRange((prevDateRange) => {
+            const fromChanged = prevDateRange?.from?.getTime() !== newDateRange?.from?.getTime()
+            const toChanged = prevDateRange?.to?.getTime() !== newDateRange?.to?.getTime()
+            
+            if (fromChanged || toChanged) {
+                return newDateRange
             }
-        }
-        // Si no hay valores válidos, resetear
-        setDateRange({ from: undefined, to: undefined })
+            return prevDateRange
+        })
     }, [value])
 
     // Manejar cambios del DateRangePicker y convertir Dates a strings
@@ -47,8 +66,8 @@ export function DateRangeFilter({ className, value, onChange, label, name }) {
         setDateRange(range)
         
         const formattedDate = {
-            from: range?.from ? format(range.from, "yyyy-MM-dd") : null,
-            to: range?.to ? format(range.to, "yyyy-MM-dd") : null,
+            from: range?.from && isValid(range.from) ? format(range.from, "yyyy-MM-dd") : null,
+            to: range?.to && isValid(range.to) ? format(range.to, "yyyy-MM-dd") : null,
         }
         
         onChange(formattedDate)
