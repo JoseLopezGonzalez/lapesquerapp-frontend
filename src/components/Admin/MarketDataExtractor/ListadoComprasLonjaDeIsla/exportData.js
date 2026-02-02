@@ -1712,8 +1712,8 @@ export const barcos = [
     cod: '544',
     barco: "URTAIN PRIMERO",
     codBrisapp: '5',
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'IS'
   },
   {
     barco: "BEGOÑAKO AMA",
@@ -4545,8 +4545,8 @@ export const barcos = [
     cod: '705',
     codBrisapp: '190',
     barco: "MI NIÑA CORAIMA",
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'IS'
   },
   {
     barco: "ANGEL CUSTODIO",
