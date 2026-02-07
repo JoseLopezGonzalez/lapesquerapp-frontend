@@ -23,7 +23,7 @@ export default function ClientLayout({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <TooltipProvider delayDuration={0}>
-        <SessionProvider refetchOnWindowFocus={false}>
+        <SessionProvider>
           <SettingsProvider>
             <LogoutProvider>
               <AuthErrorInterceptor />
