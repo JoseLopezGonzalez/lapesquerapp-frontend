@@ -916,7 +916,7 @@ Además, en la misma carga aparecen peticiones a **brisamar.lapesquerapp.es** (N
 3. **Duplicados en otros endpoints**  
    **OptionsProvider** tiene dos `useEffect` independientes (productos y proveedores), cada uno con `[token]`. Si la sesión se dispone dos veces, ambos efectos corren dos veces. **SettingsProvider** intenta evitar duplicados con refs (`isLoadingRef`), pero si el efecto se dispara dos veces seguidas por la doble sesión, puede haber dos `getSettings()`.
 
-**Resumen**: La duplicación tiene como **causa raíz la sesión que se pide dos veces**; a partir de ahí, todos los efectos que dependen de `token` (OrdersManager, OptionsProvider, SettingsProvider) pueden ejecutarse dos veces y generar peticiones duplicadas.
+**Resumen**: La duplicación tiene como **causa raíz la sesión que se pide dos veces**; a partir de ahí, todos los efectos que dependen de `token` (OrdersManager, OptionsProvider, SettingsProvider) pueden ejecutarse dos veces y generar peticiones duplicadas. **Análisis detallado de por qué la sesión se pide dos veces**: ver [SESION-DOBLE-PETICION.md](./SESION-DOBLE-PETICION.md).
 
 ### Por qué se cargan **antes** endpoints que “deberían” ir después
 
