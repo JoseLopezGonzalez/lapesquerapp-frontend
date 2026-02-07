@@ -87,6 +87,10 @@ La respuesta debe incluir también los años disponibles en el historial complet
       "average_unit_price": 7.46,
       "last_order_date": "2026-02-06",
       "total_amount": 312938,
+      "trend": {
+        "direction": "up",
+        "percentage": 15.5
+      },
       "lines": [
         {
           "order_id": 2416,
@@ -143,6 +147,23 @@ Fecha del último pedido del producto en formato ISO 8601: `YYYY-MM-DD`
 
 #### `total_amount` (number, requerido)
 Importe total vendido del producto en todo el historial (en la moneda del sistema)
+
+#### `trend` (object, opcional)
+Información de tendencia comparando con el período anterior del mismo rango:
+- `direction` (string): Dirección de la tendencia
+  - `"up"`: Aumento respecto al período anterior
+  - `"down"`: Disminución respecto al período anterior
+  - `"stable"`: Sin cambio significativo (< 5%)
+- `percentage` (number): Porcentaje de variación (valor absoluto, sin signo)
+  - Ejemplo: Si aumentó 25%, `percentage: 25.0`
+  - Ejemplo: Si disminuyó 15%, `percentage: 15.0`
+  - Si es estable, `percentage: 0`
+- **Cálculo**: Compara el peso neto total del período actual vs período anterior del mismo rango
+- **Período anterior**:
+  - Si filtro es "mes": compara con el mes anterior
+  - Si filtro es "trimestre": compara con el trimestre anterior
+  - Si filtro es "año": compara con el año anterior
+- **Umbral**: Si la variación es menor al 5%, se considera "stable"
 
 #### `lines` (array, requerido)
 Array de líneas de pedido del producto, ordenadas por fecha descendente (más reciente primero)
@@ -260,6 +281,10 @@ El frontend utiliza estos datos de la siguiente manera:
       "average_unit_price": 7.46,
       "last_order_date": "2026-02-06",
       "total_amount": 312938,
+      "trend": {
+        "direction": "up",
+        "percentage": 15.5
+      },
       "lines": [
         {
           "order_id": 2416,
@@ -306,6 +331,10 @@ El frontend utiliza estos datos de la siguiente manera:
       "average_unit_price": 6.25,
       "last_order_date": "2026-01-20",
       "total_amount": 163562.5,
+      "trend": {
+        "direction": "down",
+        "percentage": 8.3
+      },
       "lines": [
         {
           "order_id": 2412,

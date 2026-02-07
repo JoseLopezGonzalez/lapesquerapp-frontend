@@ -85,7 +85,8 @@ export default function OrderCustomerHistory() {
     const { data: session } = useSession()
     const [customerHistory, setCustomerHistory] = useState([])
     const [availableYears, setAvailableYears] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [initialLoading, setInitialLoading] = useState(true) // Solo para la primera carga
+    const [loadingData, setLoadingData] = useState(false) // Para cambios de filtro
     const [error, setError] = useState(null)
     const [expandedItems, setExpandedItems] = useState([])
     const [dateFilter, setDateFilter] = useState("month") // "month", "quarter", "year", "year-1", "year-select", "year-select"
@@ -148,18 +149,23 @@ export default function OrderCustomerHistory() {
 
             if (!customerId) {
                 setError("No se pudo obtener el ID del cliente")
-                setLoading(false)
+                setInitialLoading(false)
                 return
             }
 
             if (!token) {
                 setError("No se pudo obtener el token de autenticación")
-                setLoading(false)
+                setInitialLoading(false)
                 return
             }
 
             try {
-                setLoading(true)
+                // Si ya hay datos, solo mostrar loader en la sección de productos
+                if (customerHistory.length > 0) {
+                    setLoadingData(true)
+                } else {
+                    setInitialLoading(true)
+                }
                 setError(null)
                 
                 const dateRange = getDateRange
@@ -176,9 +182,13 @@ export default function OrderCustomerHistory() {
                 const errorMessage = err.message || "Error al cargar el historial del cliente"
                 setError(errorMessage)
                 toast.error(errorMessage, getToastTheme())
-                setCustomerHistory([])
+                // Solo limpiar datos si es la primera carga
+                if (customerHistory.length === 0) {
+                    setCustomerHistory([])
+                }
             } finally {
-                setLoading(false)
+                setInitialLoading(false)
+                setLoadingData(false)
             }
         }
 
@@ -378,8 +388,8 @@ export default function OrderCustomerHistory() {
         return null
     }
 
-    // Mostrar loader mientras carga
-    if (loading) {
+    // Mostrar loader solo en la primera carga
+    if (initialLoading) {
         return (
             <div className="h-full pb-2 flex items-center justify-center">
                 <Loader />
@@ -407,8 +417,8 @@ export default function OrderCustomerHistory() {
         )
     }
 
-    // Mostrar mensaje si no hay historial
-    if (!customerHistory || customerHistory.length === 0) {
+    // Mostrar mensaje si no hay historial (solo si no está cargando)
+    if (!loadingData && (!customerHistory || customerHistory.length === 0)) {
         return (
             <div className="h-full pb-2">
                 <Card className="h-full flex flex-col bg-transparent">
@@ -539,7 +549,12 @@ export default function OrderCustomerHistory() {
                 )}
 
                 <CardContent className="flex-1 overflow-y-auto py-2">
-                    {filteredHistory.length > maxProductsToShow && (
+                    {loadingData && (
+                        <div className="flex h-full items-center justify-center py-4">
+                            <Loader />
+                        </div>
+                    )}
+                    {!loadingData && filteredHistory.length > maxProductsToShow && (
                         <div className="mb-3 flex items-center justify-between p-2 bg-muted/50 rounded-lg">
                             <p className="text-xs text-muted-foreground">
                                 Mostrando {maxProductsToShow} de {filteredHistory.length} productos
@@ -554,10 +569,12 @@ export default function OrderCustomerHistory() {
                             </Button>
                         </div>
                     )}
-                    <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="space-y-3">
+                    {!loadingData && (
+                        <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="space-y-3">
                         {filteredHistory.slice(0, maxProductsToShow).map((product) => {
                             const chartData = getChartDataByProduct(product)
-                            const trend = calculateTrend(product)
+                            // Usar trend del backend si está disponible, sino calcularlo
+                            const trend = product.trend || calculateTrend(product)
 
                             return (
                                 <AccordionItem key={product.product.id} value={product.product.id.toString()} className="border rounded-lg overflow-hidden shadow-sm">
@@ -702,6 +719,7 @@ export default function OrderCustomerHistory() {
                             )
                         })}
                     </Accordion>
+                    )}
                 </CardContent>
             </Card>
         </div>
