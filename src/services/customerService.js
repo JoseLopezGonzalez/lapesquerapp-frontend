@@ -77,8 +77,31 @@ export async function getCustomer(id, token) {
  * @param {string} token - Token de autenticación
  * @returns {Promise<Array>} - Array con el historial de productos del cliente
  */
-export async function getCustomerOrderHistory(customerId, token) {
-    return fetchWithTenant(`${API_URL_V2}customers/${customerId}/order-history`, {
+/**
+ * Obtiene el historial de pedidos de un cliente
+ * @param {string|number} customerId - ID del cliente
+ * @param {string} token - Token de autenticación
+ * @param {Object} options - Opciones de filtrado
+ * @param {string} options.dateFrom - Fecha de inicio en formato YYYY-MM-DD
+ * @param {string} options.dateTo - Fecha de fin en formato YYYY-MM-DD
+ * @param {number} options.year - Año específico
+ * @returns {Promise<Object>} - Objeto con available_years y data
+ */
+export async function getCustomerOrderHistory(customerId, token, options = {}) {
+    const { dateFrom, dateTo, year } = options
+    
+    // Construir query params
+    const queryParams = new URLSearchParams()
+    if (dateFrom && dateTo) {
+        queryParams.append('date_from', dateFrom)
+        queryParams.append('date_to', dateTo)
+    } else if (year) {
+        queryParams.append('year', year.toString())
+    }
+    
+    const url = `${API_URL_V2}customers/${customerId}/order-history${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    
+    return fetchWithTenant(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -95,7 +118,10 @@ export async function getCustomerOrderHistory(customerId, token) {
             return response.json();
         })
         .then((data) => {
-            return data.data || [];
+            return {
+                available_years: data.available_years || [],
+                data: data.data || []
+            };
         })
         .catch((error) => {
             // Aquí puedes agregar lógica adicional de logging o manejo global del error
