@@ -886,6 +886,90 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 
 ---
 
+## Análisis en profundidad: peticiones al backend al abrir el gestor de pedidos
+
+**Objetivo**: Entender por qué se hacen **dos llamadas** a `orders/active` (y a otros endpoints) y por qué se cargan **antes** endpoints que deberían hacerse **después**.
+
+### Origen de las peticiones en el código
+
+| Endpoint (API externa) | Origen en código | Cuándo se dispara |
+|------------------------|------------------|-------------------|
+| `GET /api/v2/orders/active` | `OrdersManager/index.js` → `getActiveOrders(token)` en un `useEffect` con dependencias `[reloadCounter, token]` | Al montar la página cuando hay token; y al incrementar `reloadCounter`. |
+| `GET /api/v2/products/options` | **OptionsProvider** (`context/OptionsContext.js`): un `useEffect` con `[token]` que llama a `getProductOptions(token)`. También **useProductOptions** hace fallback a `getProductOptions` si el contexto no tiene datos. | En cuanto hay `token`, a nivel de **toda la app** (ClientLayout envuelve con OptionsProvider). No depende de estar en orders-manager. |
+| `GET /api/v2/suppliers/options` | **OptionsProvider** (`context/OptionsContext.js`): otro `useEffect` con `[token]` que llama a `getSupplierOptions(token)`. | Mismo que products: en cuanto hay token, a nivel app. |
+| `GET /api/v2/settings` | **SettingsProvider** (`context/SettingsContext.js`) y consumo con **useSettings()** en `admin/layout.js` y **SideBar**. | En cuanto hay sesión autenticada y tenant; layout y sidebar los usan para nombre de empresa, etc. |
+
+Además, en la misma carga aparecen peticiones a **brisamar.lapesquerapp.es** (Next.js): documento, **varias** `GET /api/auth/session`, y prefetches RSC de otras rutas admin (`salespeople`, `incoterms`, `transports`, `orders`, `productions`, etc.) por el comportamiento de Next.js al navegar.
+
+### Por qué hay **dos** llamadas a `orders/active` (y posiblemente a otros)
+
+**Causa raíz confirmada**: Las peticiones se hacen **dos veces** porque **la sesión se pide dos veces** (`GET /api/auth/session` aparece duplicada en el HAR). Varios componentes/hooks usan `useSession()` y cuando NextAuth devuelve o actualiza la sesión, todos los efectos que dependen de `token` (derivado de `session?.user?.accessToken`) se ejecutan. Si la sesión se dispone o se refetcha dos veces (p. ej. varios consumidores de `useSession`, o refetch en background), los efectos que tienen `[token]` en sus dependencias corren dos veces → **dos llamadas** a `orders/active`, y lo mismo para products/options, suppliers/options y settings.
+
+1. **Solo un componente llama a `getActiveOrders`**  
+   En el código, el único lugar que llama a `getActiveOrders()` es **OrdersManager** (`src/components/Admin/OrdersManager/index.js`), dentro de un único `useEffect`. No hay otro componente de la página que llame a este endpoint. La duplicación no viene de dos sitios distintos, sino de **ese mismo efecto ejecutado dos veces** cuando la sesión se pide/proporciona dos veces.
+
+2. **Cadena causa-efecto**  
+   - **Session se pide dos veces** → más de un consumidor de `useSession()` o refetch de sesión.  
+   - Eso hace que los componentes que dependen de `token` se re-rendericen y sus `useEffect([token])` se ejecuten dos veces.  
+   - Resultado: **orders/active**, **products/options**, **suppliers/options** (y posiblemente **settings**) se disparan dos veces cada uno.
+
+3. **Duplicados en otros endpoints**  
+   **OptionsProvider** tiene dos `useEffect` independientes (productos y proveedores), cada uno con `[token]`. Si la sesión se dispone dos veces, ambos efectos corren dos veces. **SettingsProvider** intenta evitar duplicados con refs (`isLoadingRef`), pero si el efecto se dispara dos veces seguidas por la doble sesión, puede haber dos `getSettings()`.
+
+**Resumen**: La duplicación tiene como **causa raíz la sesión que se pide dos veces**; a partir de ahí, todos los efectos que dependen de `token` (OrdersManager, OptionsProvider, SettingsProvider) pueden ejecutarse dos veces y generar peticiones duplicadas.
+
+### Por qué se cargan **antes** endpoints que “deberían” ir después
+
+No es que el código llame explícitamente a `orders/active` después de settings/products/suppliers; lo que ocurre es que **todo se dispara en paralelo** en cuanto hay `token`, y el **orden visual** en el HAR depende del orden de montaje y de qué efecto corre antes.
+
+1. **Settings**  
+   **SettingsProvider** está en **ClientLayout** (por encima de admin y de la página). En cuanto la sesión está lista y hay tenant, el efecto de settings corre. **Admin layout** y **SideBar** usan **useSettings()** para el nombre de empresa, etc. Por tanto, **settings se pide para el layout/sidebar**, no para el gestor de pedidos en sí. Se carga “antes” en el sentido de que es **necesario para pintar la shell** (layout) antes o a la vez que el contenido de la página.
+
+2. **Products/options y suppliers/options**  
+   **OptionsProvider** también está en **ClientLayout**. En cuanto hay `token`, sus dos useEffects hacen **getProductOptions** y **getSupplierOptions**. Eso significa que **products y suppliers se cargan para toda la app** en el primer render con sesión, no cuando el usuario abre “Crear pedido” o el detalle de un pedido. Desde el punto de vista del gestor de pedidos, estos endpoints “deberían” hacerse **después** (p. ej. al abrir el formulario de creación o al abrir el detalle), pero actualmente se hacen **antes** (en paralelo con orders/active) porque el provider los dispara por token a nivel global. **Por qué están en ClientLayout** se explica en el siguiente apartado.
+
+3. **orders/active**  
+   Es el único que realmente pertenece al gestor de pedidos en esta página. Se dispara cuando **OrdersManager** monta y tiene `token`. En la práctica va en paralelo con settings, products y suppliers; no hay una secuencia “primero orders/active, luego el resto”.
+
+**Resumen**:  
+- **Settings** se carga “antes” porque el **layout/sidebar** lo necesita.  
+- **Products** y **suppliers** se cargan “antes” de lo estrictamente necesario para la página porque **OptionsProvider** los carga por token a nivel app, no bajo demanda.  
+- **orders/active** es el único específico del gestor y se carga a la vez que los anteriores; la sensación de “otros antes” viene de que layout y providers globales piden settings y options en cuanto hay sesión.
+
+### Resumen de causas y posibles mejoras
+
+| Observación | Causa en código | Posible mejora |
+|-------------|-----------------|----------------|
+| Dos llamadas a `orders/active` (y a session, products, suppliers, settings) | **Causa raíz**: la sesión se pide dos veces; los efectos que dependen de `token` se ejecutan dos veces. | Reducir duplicación de **session** (menos consumidores de useSession o un único punto de refetch). Opcional: deduplicar en cada efecto con un ref (evitar segunda petición si ya hay una en vuelo). |
+| Products/suppliers en ClientLayout (OptionsProvider) | Caché global para useProductOptions/useSupplierOptions; solo dos zonas los usan (gestor de pedidos y recepciones). | **Quitar OptionsProvider global**. Usar **contexto por gestor**: OrdersManagerOptionsProvider (solo productOptions/taxOptions) en la página del gestor de pedidos; otro provider similar en recepciones (productOptions + supplierOptions). |
+| Settings/products/suppliers “antes” de orders/active | Layout y OptionsProvider montan con la app y disparan en cuanto hay token. | Aceptar que settings es de layout. Para products/suppliers: al moverlos a contexto por gestor, solo se piden al entrar en cada gestor. |
+
+Con esto se explica en el código **por qué** se ven dos llamadas a orders/active y por qué endpoints que conceptualmente “deberían” ir después se cargan antes o en paralelo al abrir el gestor de pedidos.
+
+### Por qué en ClientLayout se cargan `getProductOptions` y `getSupplierOptions`
+
+**ClientLayout** no llama directamente a esos servicios: lo hace **OptionsProvider**, que envuelve la app. Al tener token, OptionsProvider ejecuta dos `useEffect` que llaman a `getProductOptions(token)` y `getSupplierOptions(token)`.
+
+**Quién consume esas opciones** (vía **useProductOptions()** y **useSupplierOptions()**):
+
+| Consumidor | productOptions | supplierOptions |
+|------------|----------------|-----------------|
+| **Orders Manager** → CreateOrderForm, OrderPlannedProductDetails | ✅ | — |
+| **Recepciones de materia prima** → CreateReceptionForm, EditReceptionForm | ✅ | ✅ |
+
+**Problema con el contexto global**: Cargar products y suppliers a nivel de toda la app (OptionsProvider en ClientLayout) no aporta mucho: solo dos zonas los usan (gestor de pedidos y recepciones), y en cada carga de la app se piden aunque el usuario no entre en ninguna de esas pantallas.
+
+**Propuesta: contexto (o carga) por gestor**
+
+- **Quitar** OptionsProvider del ClientLayout: que la app no precargue ni products ni suppliers.
+- **Gestor de pedidos** (`/admin/orders-manager`): un **contexto solo para ese gestor** (p. ej. `OrdersManagerOptionsProvider`) que cargue **solo** lo que use la página: `productOptions` (y si hace falta `taxOptions`). Ese provider envuelve solo a `OrdersManager` (o a la página `orders-manager`). Así products/options solo se pide cuando el usuario entra en el gestor de pedidos, y dentro del gestor CreateOrderForm y OrderPlannedProductDetails comparten el mismo caché.
+- **Recepciones de materia prima**: otro **contexto solo para ese gestor** que cargue `productOptions` y `supplierOptions`. Misma idea: solo se piden cuando el usuario entra en esa sección.
+- Los hooks `useProductOptions` y `useSupplierOptions` pueden seguir existiendo pero leyendo del contexto del gestor correspondiente (o hacer fetch directo si no hay provider, para compatibilidad con rutas que no usen el nuevo patrón).
+
+Ventajas: no se piden products/suppliers en cada carga de la app; cada gestor solo carga lo que necesita; la propiedad de los datos es clara (cada gestor “posee” sus opciones). Si en el futuro otra pantalla necesita productos o proveedores, se añade un provider en esa ruta o se reutiliza el patrón.
+
+---
+
 ## Conclusión
 
 El Orders Manager ha sido analizado y las correcciones críticas e importantes han sido implementadas exitosamente. Se logró una mejora significativa en funcionalidad, rendimiento y UX.
