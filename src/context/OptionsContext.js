@@ -1,130 +1,22 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { getProductOptions } from "@/services/productService";
-import { getSupplierOptions } from "@/services/rawMaterialReceptionService";
-import { useSession } from "next-auth/react";
-
-const OptionsContext = createContext();
+import React, { createContext, useContext } from "react";
 
 /**
- * Provider for caching product and supplier options
- * Prevents duplicate API calls when multiple components need the same data
+ * @deprecated Opciones globales de productos/proveedores.
+ * Sustituido por contextos por gestor (solo cargan al entrar en cada sección).
+ * Ver: docs/OPCIONES-POR-GESTOR.md y src/context/gestor-options/
  */
+const OptionsContext = createContext(null);
+
+/** @deprecated Passthrough: ya no carga datos. Usar OrdersManagerOptionsProvider o RawMaterialReceptionsOptionsProvider. */
 export function OptionsProvider({ children }) {
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
-
-    const [productOptions, setProductOptions] = useState([]);
-    const [supplierOptions, setSupplierOptions] = useState([]);
-    const [productsLoading, setProductsLoading] = useState(true);
-    const [suppliersLoading, setSuppliersLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // Load product options
-    useEffect(() => {
-        if (!token) {
-            setProductsLoading(false);
-            return;
-        }
-
-        getProductOptions(token)
-            .then((products) => {
-                setProductOptions(
-                    products.map((p) => ({ value: `${p.id}`, label: p.name }))
-                );
-                setError(null);
-            })
-            .catch((err) => {
-                console.error("Error al cargar productos:", err);
-                setError(err);
-            })
-            .finally(() => setProductsLoading(false));
-    }, [token]);
-
-    // Load supplier options
-    useEffect(() => {
-        if (!token) {
-            setSuppliersLoading(false);
-            return;
-        }
-
-        getSupplierOptions(token)
-            .then((suppliers) => {
-                setSupplierOptions(suppliers);
-                setError(null);
-            })
-            .catch((err) => {
-                console.error("Error al cargar proveedores:", err);
-                setError(err);
-            })
-            .finally(() => setSuppliersLoading(false));
-    }, [token]);
-
-    // Memoize context value to prevent unnecessary re-renders
-    const contextValue = useMemo(
-        () => ({
-            productOptions,
-            supplierOptions,
-            productsLoading,
-            suppliersLoading,
-            loading: productsLoading || suppliersLoading,
-            error,
-            // Helper to refresh options if needed
-            refreshProducts: () => {
-                if (token) {
-                    setProductsLoading(true);
-                    getProductOptions(token)
-                        .then((products) => {
-                            setProductOptions(
-                                products.map((p) => ({
-                                    value: `${p.id}`,
-                                    label: p.name,
-                                }))
-                            );
-                        })
-                        .catch((err) => {
-                            console.error("Error al refrescar productos:", err);
-                            setError(err);
-                        })
-                        .finally(() => setProductsLoading(false));
-                }
-            },
-            refreshSuppliers: () => {
-                if (token) {
-                    setSuppliersLoading(true);
-                    getSupplierOptions(token)
-                        .then((suppliers) => {
-                            setSupplierOptions(suppliers);
-                        })
-                        .catch((err) => {
-                            console.error("Error al refrescar proveedores:", err);
-                            setError(err);
-                        })
-                        .finally(() => setSuppliersLoading(false));
-                }
-            },
-        }),
-        [
-            productOptions,
-            supplierOptions,
-            productsLoading,
-            suppliersLoading,
-            error,
-            token,
-        ]
-    );
-
-    return (
-        <OptionsContext.Provider value={contextValue}>
-            {children}
-        </OptionsContext.Provider>
-    );
+  return children;
 }
 
 /**
- * Hook to consume options context
- * @returns {Object} Options context value
+ * @deprecated Los hooks useProductOptions/useSupplierOptions usan ahora contextos por gestor o API directa. Ver docs/OPCIONES-POR-GESTOR.md
+ * @returns {Object} Options context value (vacío si no hay provider)
  */
 export function useOptions() {
     const context = useContext(OptionsContext);

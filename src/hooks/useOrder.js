@@ -9,6 +9,7 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
 import { getTaxOptions } from '@/services/taxService';
+import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerOptionsContext';
 
 const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     const resultMap = new Map();
@@ -84,7 +85,20 @@ export function useOrder(orderId, onChange) {
     // Ref para rastrear si hay una carga en progreso y evitar llamadas duplicadas
     const loadingInProgressRef = useRef(false);
 
-    // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading)
+    const ordersManagerOptions = useOrdersManagerOptions();
+
+    // Si estamos dentro del Gestor de pedidos, usar opciones del contexto para no duplicar peticiones
+    useEffect(() => {
+        if (!ordersManagerOptions) return;
+        if (ordersManagerOptions.productOptions?.length > 0 && ordersManagerOptions.taxOptions?.length > 0) {
+            setProductOptions(ordersManagerOptions.productOptions);
+            setTaxOptions(ordersManagerOptions.taxOptions);
+            setOptionsLoaded(true);
+            setOptionsLoading(false);
+        }
+    }, [ordersManagerOptions?.productOptions, ordersManagerOptions?.taxOptions]);
+
+    // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading) y no vengan del contexto
     const loadOptions = useCallback(async () => {
         if (optionsLoaded || !accessToken) return;
         
@@ -185,12 +199,12 @@ export function useOrder(orderId, onChange) {
             });
     }, [orderId, status, accessToken]);
 
-    // Cargar opciones cuando se cambie al tab de productos planificados
+    // Cargar opciones cuando se cambie al tab de productos planificados (solo si no vienen del contexto del gestor)
     useEffect(() => {
-        if (activeTab === 'products' && !optionsLoaded && accessToken) {
+        if (activeTab === 'products' && !optionsLoaded && accessToken && !ordersManagerOptions?.productOptions?.length) {
             loadOptions();
         }
-    }, [activeTab, optionsLoaded, accessToken, loadOptions]);
+    }, [activeTab, optionsLoaded, accessToken, loadOptions, ordersManagerOptions?.productOptions?.length]);
 
     const reload = useCallback(async () => {
         const token = session?.user?.accessToken;

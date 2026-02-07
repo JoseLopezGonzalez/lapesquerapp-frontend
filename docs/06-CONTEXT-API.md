@@ -5,6 +5,7 @@
 - **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks que complementan los contextos
 - **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura y uso de providers
 - **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía práctica de uso de Settings
+- **[OPCIONES-POR-GESTOR.md](./OPCIONES-POR-GESTOR.md)** - Contextos de opciones por gestor (productos, proveedores, impuestos) y cómo añadir nuevos
 
 ---
 
@@ -36,6 +37,17 @@ Provider Component
 ---
 
 ## 📦 Contextos Disponibles
+
+### Opciones por gestor (productos, proveedores, impuestos)
+
+Las opciones para formularios (productos, proveedores, impuestos) se cargan **por gestor**, no a nivel global: solo cuando el usuario entra en el Gestor de pedidos o en Recepciones de materia prima. Ver **[OPCIONES-POR-GESTOR.md](./OPCIONES-POR-GESTOR.md)** para el patrón, la implementación actual y cómo añadir más gestores o más opciones.
+
+- **OrdersManagerOptionsContext** – Gestor de pedidos: `productOptions`, `taxOptions`
+- **RawMaterialReceptionsOptionsContext** – Recepciones de materia prima: `productOptions`, `supplierOptions`
+
+Los hooks `useProductOptions`, `useSupplierOptions` y `useTaxOptions` leen de estos contextos cuando existen y hacen fetch directo en el resto de rutas (ej. Gestor de almacenes).
+
+---
 
 ### 1. SettingsContext - Configuraciones Globales
 

@@ -4,7 +4,6 @@ import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { useEffect } from "react";
 import AuthErrorInterceptor from "@/components/Utilities/AuthErrorInterceptor";
-import { OptionsProvider } from "@/context/OptionsContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { LogoutProvider } from "@/context/LogoutContext";
 import { ThemeProvider } from "@/components/Providers/ThemeProvider";
@@ -26,15 +25,13 @@ export default function ClientLayout({ children }) {
       <TooltipProvider delayDuration={0}>
         <SessionProvider>
           <SettingsProvider>
-            <OptionsProvider>
-              <LogoutProvider>
-                <AuthErrorInterceptor />
-                {children}
-                <Toaster />
-                {/* Install Prompt Banner - Mobile */}
-                <InstallPromptBanner />
-              </LogoutProvider>
-            </OptionsProvider>
+            <LogoutProvider>
+              <AuthErrorInterceptor />
+              {children}
+              <Toaster />
+              {/* Install Prompt Banner - Mobile */}
+              <InstallPromptBanner />
+            </LogoutProvider>
           </SettingsProvider>
         </SessionProvider>
       </TooltipProvider>

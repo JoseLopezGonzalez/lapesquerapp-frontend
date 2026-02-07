@@ -1,65 +1,68 @@
-// src/hooks/useProductsAndTaxesOptions.js
+// src/hooks/useProductOptions.js
 import { useEffect, useState } from 'react';
 import { getProductOptions } from '@/services/productService';
-/* import { getTaxTypesOptions } from '@/services/taxService'; */
 import { useSession } from 'next-auth/react';
-import { useOptions } from '@/context/OptionsContext';
+import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerOptionsContext';
+import { useRawMaterialReceptionsOptions } from '@/context/gestor-options/RawMaterialReceptionsOptionsContext';
 
 /**
- * Hook to get product options
- * Uses OptionsContext if available (cached), otherwise falls back to direct API call
- * This allows gradual migration and backward compatibility
+ * Hook para obtener opciones de productos.
+ * Usa el contexto del gestor actual si existe (Gestor de pedidos o Recepciones de materia prima),
+ * si no hace fetch directo. Otros apartados (ej. Gestor de almacenes) pueden usar el hook
+ * sin provider y obtienen los datos por API.
+ * Ver: docs/OPCIONES-POR-GESTOR.md
  */
 export const useProductOptions = () => {
-    // Try to use context first (cached data)
-    const contextOptions = useOptions();
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
+  const ordersManagerOptions = useOrdersManagerOptions();
+  const receptionsOptions = useRawMaterialReceptionsOptions();
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
 
-    // Check if context is available and has data
-    const hasContextData = contextOptions && contextOptions.productOptions && contextOptions.productOptions.length > 0;
-    const contextLoading = contextOptions?.productsLoading ?? true;
+  const [productOptions, setProductOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    // Fallback state for when context is not available
-    const [productOptions, setProductOptions] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const fromOrdersManager = ordersManagerOptions?.productOptions?.length > 0 || ordersManagerOptions?.productsLoading;
+  const fromReceptions = receptionsOptions?.productOptions?.length > 0 || receptionsOptions?.productsLoading;
 
-    // Only fetch if context is not available or doesn't have data
-    useEffect(() => {
-        // If context has data, use it
-        if (hasContextData) {
-            setProductOptions(contextOptions.productOptions);
-            setLoading(false);
-            return;
-        }
-
-        // If context is loading, wait for it
-        if (contextLoading && contextOptions?.productOptions) {
-            setLoading(true);
-            return;
-        }
-
-        // Fallback: fetch directly if no context or context failed
-        if (!token) {
-            setLoading(false);
-            return;
-        }
-
-        getProductOptions(token)
-            .then((products) => {
-                setProductOptions(products.map(p => ({ value: `${p.id}`, label: p.name })));
-            })
-            .catch(err => console.error('Error al cargar productos:', err))
-            .finally(() => setLoading(false));
-    }, [token, hasContextData, contextLoading, contextOptions]);
-
-    // Return context data if available, otherwise return fallback
-    if (hasContextData) {
-        return { 
-            productOptions: contextOptions.productOptions, 
-            loading: contextOptions.productsLoading 
-        };
+  useEffect(() => {
+    if (fromOrdersManager && ordersManagerOptions?.productOptions?.length > 0) {
+      setProductOptions(ordersManagerOptions.productOptions);
+      setLoading(ordersManagerOptions.productsLoading ?? false);
+      return;
+    }
+    if (fromReceptions && receptionsOptions?.productOptions?.length > 0) {
+      setProductOptions(receptionsOptions.productOptions);
+      setLoading(receptionsOptions.productsLoading ?? false);
+      return;
+    }
+    if (fromOrdersManager && ordersManagerOptions?.productsLoading) {
+      setLoading(true);
+      return;
+    }
+    if (fromReceptions && receptionsOptions?.productsLoading) {
+      setLoading(true);
+      return;
     }
 
-    return { productOptions, loading };
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    getProductOptions(token)
+      .then((products) => {
+        setProductOptions((products || []).map(p => ({ value: `${p.id}`, label: p.name })));
+      })
+      .catch(err => console.error('Error al cargar productos:', err))
+      .finally(() => setLoading(false));
+  }, [token, fromOrdersManager, fromReceptions, ordersManagerOptions, receptionsOptions]);
+
+  if (fromOrdersManager && ordersManagerOptions?.productOptions?.length > 0) {
+    return { productOptions: ordersManagerOptions.productOptions, loading: ordersManagerOptions.productsLoading ?? false };
+  }
+  if (fromReceptions && receptionsOptions?.productOptions?.length > 0) {
+    return { productOptions: receptionsOptions.productOptions, loading: receptionsOptions.productsLoading ?? false };
+  }
+
+  return { productOptions, loading };
 };
