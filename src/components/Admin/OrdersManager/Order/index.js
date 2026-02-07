@@ -307,61 +307,61 @@ const OrderContent = ({ onLoading, onClose }) => {
 
                     {/* Tabs con lazy loading - solo se cargan cuando están activos */}
                     <TabsContent value="products" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderPlannedProductDetails />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderProductDetails />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="production" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderProduction />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="pallets" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderPallets />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="documents" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderDocuments />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="export" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderExport />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="labels" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderLabels />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="map" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderMap />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="incident" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderIncident />
                       </Suspense>
                     </TabsContent>
 
                     <TabsContent value="customer-history" className='h-full'>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                         <OrderCustomerHistory />
                       </Suspense>
                     </TabsContent>

@@ -2,7 +2,8 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import {
     Accordion,
     AccordionContent,
@@ -18,7 +19,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Calendar } from "lucide-react"
+import { Calendar, AlertCircle } from "lucide-react"
 import { useOrderContext } from "@/context/OrderContext"
 import {
     Card,
@@ -42,11 +43,55 @@ import {
     Area,
     Line,
 } from "recharts"
+import { getCustomerOrderHistory } from "@/services/customerService"
+import toast from "react-hot-toast"
+import { getToastTheme } from "@/customs/reactHotToast"
+import Loader from "@/components/Utilities/Loader"
 
 export default function OrderCustomerHistory() {
     const { order } = useOrderContext()
-    const customerHistory = order.customerHistory
+    const { data: session } = useSession()
+    const [customerHistory, setCustomerHistory] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [expandedItems, setExpandedItems] = useState([])
+
+    // Cargar historial del cliente cuando el componente se monte
+    useEffect(() => {
+        const loadCustomerHistory = async () => {
+            // Verificar que tenemos el customer ID y el token
+            const customerId = order?.customer?.id
+            const token = session?.user?.accessToken
+
+            if (!customerId) {
+                setError("No se pudo obtener el ID del cliente")
+                setLoading(false)
+                return
+            }
+
+            if (!token) {
+                setError("No se pudo obtener el token de autenticación")
+                setLoading(false)
+                return
+            }
+
+            try {
+                setLoading(true)
+                setError(null)
+                const history = await getCustomerOrderHistory(customerId, token)
+                setCustomerHistory(history || [])
+            } catch (err) {
+                const errorMessage = err.message || "Error al cargar el historial del cliente"
+                setError(errorMessage)
+                toast.error(errorMessage, getToastTheme())
+                setCustomerHistory([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadCustomerHistory()
+    }, [order?.customer?.id, session?.user?.accessToken])
 
     const getChartDataByProduct = (product) => {
         return product.lines
@@ -75,6 +120,55 @@ export default function OrderCustomerHistory() {
             )
         }
         return null
+    }
+
+    // Mostrar loader mientras carga
+    if (loading) {
+        return (
+            <div className="h-full pb-2 flex items-center justify-center">
+                <Loader />
+            </div>
+        )
+    }
+
+    // Mostrar error si hay
+    if (error) {
+        return (
+            <div className="h-full pb-2">
+                <Card className="h-full flex flex-col bg-transparent">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-medium">Históricos de productos</CardTitle>
+                        <CardDescription>Histórico de productos del cliente</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <AlertCircle className="h-8 w-8" />
+                            <p className="text-sm">{error}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
+    // Mostrar mensaje si no hay historial
+    if (!customerHistory || customerHistory.length === 0) {
+        return (
+            <div className="h-full pb-2">
+                <Card className="h-full flex flex-col bg-transparent">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-medium">Históricos de productos</CardTitle>
+                        <CardDescription>Histórico de productos del cliente</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-8 w-8" />
+                            <p className="text-sm">No hay historial de pedidos para este cliente</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     return (
