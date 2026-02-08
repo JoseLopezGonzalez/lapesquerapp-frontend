@@ -471,7 +471,7 @@ export function useOrder(orderId, onChange) {
         {
             name: 'order-packing-list',
             label: 'Packing List',
-            types: ['pdf', 'xls'],
+            types: ['pdf'],
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
         },
         {
