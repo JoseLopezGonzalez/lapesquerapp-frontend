@@ -103,7 +103,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                         label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
                     />
                 </div>
-                <h3 className={`font-bold ${isMobile ? 'text-2xl' : 'text-lg sm:text-xl font-semibold'}`}>#{orderId}</h3>
+                <h3 className={`font-bold ${isMobile ? 'text-xl' : 'text-base sm:text-lg font-semibold'}`}>#{orderId}</h3>
                 <div>
                     <p className={`font-semibold truncate ${isMobile ? 'text-lg' : 'text-base sm:text-lg font-medium'}`} title={order.customer.name}>
                         {order.customer.name}

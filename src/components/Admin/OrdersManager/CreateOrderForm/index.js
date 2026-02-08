@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Save, PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, ArrowLeft, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig'; // Hook personalizado
@@ -27,11 +27,14 @@ import { createOrder } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
+import { useRouter } from 'next/navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const CreateOrderForm = ({ onCreate }) => {
+const CreateOrderForm = ({ onCreate, onClose }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
     const { taxOptions, loading: taxLoading } = useTaxOptions();
-
+    const isMobile = useIsMobile();
+    const router = useRouter();
     const { data: session } = useSession();
     // Ya no necesitamos 'token' directamente aquí para 'createOrder',
     // porque el servicio lo obtiene con getSession().
@@ -50,7 +53,7 @@ const CreateOrderForm = ({ onCreate }) => {
         handleSubmit,
         control,
         reset,
-        formState: { errors, isSubmitting }, // Añadido isSubmitting para controlar el estado del botón
+        formState: { errors, isSubmitting, isValid }, // Añadido isSubmitting e isValid para controlar el estado del botón
         watch,
         setValue
     } = useForm({
@@ -242,7 +245,7 @@ const CreateOrderForm = ({ onCreate }) => {
                     />
                 );
             case 'Textarea':
-                return <Textarea {...commonProps} className={field.props?.className} rows={field.props?.rows} />;
+                return <Textarea {...commonProps} className={`${isMobile ? 'text-base min-h-[100px]' : ''} ${field.props?.className || ''}`} rows={field.props?.rows} />;
             case 'emailList':
                 return (
                     <Controller
@@ -261,13 +264,47 @@ const CreateOrderForm = ({ onCreate }) => {
                 );
             case 'Input':
             default:
-                return <Input {...commonProps} />;
+                return <Input {...commonProps} className={isMobile ? `h-12 text-base ${commonProps.className || ''}` : commonProps.className} />;
         }
     };
 
     return (
-        <div className="w-full h-full p-6">
-            <h1 className="text-2xl font-semibold mb-4">Crear nuevo pedido</h1>
+        <div className="w-full h-full flex flex-col">
+            {/* Header */}
+            <div className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-8 pb-3' : 'pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
+                {isMobile ? (
+                    /* Layout mobile: botón back izquierda + título centrado */
+                    <div className="relative flex items-center justify-center px-4">
+                        {/* Botón back a la izquierda */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onClose ? onClose() : router.back()}
+                            className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                            aria-label="Volver"
+                        >
+                            <ArrowLeft className="h-6 w-6" />
+                        </Button>
+                        {/* Título centrado */}
+                        <h2 className="text-xl font-normal dark:text-white text-center">
+                            Crear nuevo pedido
+                        </h2>
+                        {/* Espacio derecho para balance */}
+                        <div className="absolute right-4 w-12 h-12" />
+                    </div>
+                ) : (
+                    /* Layout desktop: título */
+                    <div className="w-full flex flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex flex-col gap-1">
+                            <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
+                                Crear nuevo pedido
+                            </h2>
+                        </div>
+                    </div>
+                )}
+            </div>
+            {/* Form content */}
+            <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-4 pt-6 pb-0' : 'px-4 sm:px-7 pt-4'}`}>
             {loading ? (
                 <div className='w-full h-full flex items-center justify-center'>
                     <Loader />
@@ -285,18 +322,18 @@ const CreateOrderForm = ({ onCreate }) => {
                             getToastTheme()
                         );
                     }
-                )} className="flex flex-col gap-8">
+                )} className={`flex flex-col ${isMobile ? 'gap-6' : 'gap-8'}`}>
                     {formGroups.map((group) => (
                         <div key={group.group} className="w-full">
-                            <h3 className="text-sm font-medium text-muted-foreground">{group.group}</h3>
-                            <Separator className="my-2" />
-                            <div className={`grid w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
+                            <h3 className={`font-medium text-muted-foreground ${isMobile ? 'text-base mb-3' : 'text-sm my-2'}`}>{group.group}</h3>
+                            <Separator className={isMobile ? 'mb-4' : 'my-2'} />
+                            <div className={`grid w-full ${isMobile ? 'grid-cols-1 gap-4' : group.grid || 'grid-cols-1 gap-4'}`}>
                                 {group.fields.map((field) => (
                                     <div key={field.name} className={`grid gap-2 w-full ${field.colSpan || ''}`}>
-                                        <Label htmlFor={field.name}>{field.label}</Label>
+                                        <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>{field.label}</Label>
                                         {renderField(field)}
                                         {errors[field.name] && (
-                                            <p className="text-red-500 text-sm">
+                                            <p className={`text-red-500 ${isMobile ? 'text-sm' : 'text-sm'}`}>
                                                 {errors[field.name].message}
                                             </p>
                                         )}
@@ -307,11 +344,11 @@ const CreateOrderForm = ({ onCreate }) => {
                     ))}
 
                     <div className="w-full">
-                        <h3 className="text-sm font-medium text-muted-foreground">Productos previstos</h3>
-                        <Separator className="my-2" />
-                        <div className="flex flex-col gap-4">
+                        <h3 className={`font-medium text-muted-foreground ${isMobile ? 'text-base mb-3' : 'text-sm my-2'}`}>Productos previstos</h3>
+                        <Separator className={isMobile ? 'mb-4' : 'my-2'} />
+                        <div className={`flex flex-col ${isMobile ? 'gap-4' : 'gap-4'}`}>
                             {fields.map((item, index) => (
-                                <div key={item.id} className="flex items-center justify-center gap-2 ">
+                                <div key={item.id} className={`${isMobile ? 'flex flex-col gap-3' : 'flex items-center justify-center gap-2'}`}>
                                     <Controller
                                         control={control}
                                         name={`plannedProducts.${index}.product`}
@@ -335,6 +372,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                             min: { value: 0.01, message: 'Cantidad debe ser mayor que 0' }
                                         })}
                                         placeholder="Cantidad"
+                                        className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Input
                                         type="number"
@@ -345,6 +383,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                             min: { value: 1, message: 'Cajas debe ser al menos 1' }
                                         })}
                                         placeholder="Cajas"
+                                        className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Input
                                         type="number"
@@ -355,6 +394,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                             min: { value: 0.01, message: 'Precio debe ser mayor que 0' }
                                         })}
                                         placeholder="Precio"
+                                        className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Controller
                                         control={control}
@@ -362,7 +402,7 @@ const CreateOrderForm = ({ onCreate }) => {
                                         rules={{ required: 'IVA es requerido' }}
                                         render={({ field: { onChange, value } }) => (
                                             <Select value={value} onValueChange={onChange}>
-                                                <SelectTrigger loading={taxLoading}>
+                                                <SelectTrigger loading={taxLoading} className={isMobile ? 'h-12 text-base' : ''}>
                                                     <SelectValue placeholder="IVA" loading={taxLoading} />
                                                 </SelectTrigger>
                                                 <SelectContent loading={taxLoading}>
@@ -375,8 +415,14 @@ const CreateOrderForm = ({ onCreate }) => {
                                             </Select>
                                         )}
                                     />
-                                    <Button type="button" variant="outline" onClick={() => remove(index)}>
-                                        <Trash2 className="h-4 w-4 " />
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => remove(index)}
+                                        className={isMobile ? 'h-12 w-full' : ''}
+                                    >
+                                        <Trash2 className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                                        {isMobile && <span className="ml-2">Eliminar</span>}
                                     </Button>
                                     {/* Muestra errores para campos de productos planificados */}
                                     {errors.plannedProducts?.[index]?.product && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].product.message}</p>}
@@ -386,20 +432,31 @@ const CreateOrderForm = ({ onCreate }) => {
                                     {errors.plannedProducts?.[index]?.tax && <p className="text-red-500 text-sm col-span-full">{errors.plannedProducts[index].tax.message}</p>}
                                 </div>
                             ))}
-                            <Button type="button" variant="outline" onClick={() => append({ product: '', quantity: '', boxes: '', unitPrice: '', tax: '' })}>
-                                <PlusCircle className="h-4 w-4 mr-2" /> Añadir producto
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => append({ product: '', quantity: '', boxes: '', unitPrice: '', tax: '' })}
+                                className={isMobile ? 'h-12 text-base w-full' : ''}
+                            >
+                                <PlusCircle className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} /> Añadir producto
                             </Button>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-4">
-                        <Button type="submit" disabled={isSubmitting}>
-                            <Save className="h-4 w-4 mr-2" />
-                            {isSubmitting ? 'Guardando...' : 'Guardar Pedido'}
+                    {/* Botón de guardar - sticky en mobile */}
+                    <div className={`flex justify-end gap-4 ${isMobile ? 'sticky bottom-0 bg-background pt-4 pb-4 border-t mt-6 -mx-4 px-4' : 'pt-4'}`}>
+                        <Button 
+                            type="submit" 
+                            disabled={isSubmitting || !isValid || fields.length === 0}
+                            className={isMobile ? 'h-12 text-base w-full' : ''}
+                        >
+                            <Plus className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />
+                            {isSubmitting ? 'Creando...' : 'Crear Pedido'}
                         </Button>
                     </div>
                 </form>
             )}
+            </div>
         </div>
     );
 };

@@ -118,16 +118,23 @@ export function ResponsiveLayout({
           )}
           vaul-drawer-wrapper=""
         >
-          {/* Main Content - Scrollable */}
+          {/* Main Content - NO scrollable en mobile, cada componente gestiona su scroll */}
+          {/* Altura ajustada restando el bottom nav si existe */}
           <main
             ref={mainRef}
             className={cn(
-              "flex-1 min-h-0 overflow-y-auto", // min-h-0 necesario para que flex-1 funcione con overflow
-              "w-full relative" // relative para posicionar el avatar
+              "overflow-hidden", // overflow-hidden para que cada componente gestione su scroll
+              "w-full relative", // relative para posicionar el avatar
+              // Altura ajustada restando el bottom nav si existe
+              // Bottom nav: pt-3 (12px) + contenido min-h-[44px] + pb-4 (16px) + safe area ≈ 72px + safe area
+              // Usamos 5rem (80px) para dar margen extra y evitar que se corte el contenido
+              bottomNavItems && bottomNavItems.length > 0 
+                ? "h-[calc(100vh-5rem-env(safe-area-inset-bottom))]" 
+                : "flex-1 min-h-0"
             )}
           >
             {/* Wrapper del contenido con padding superior para el avatar */}
-            <div className="relative w-full">
+            <div className="relative w-full h-full">
               {/* Avatar de usuario flotante - Se mueve con el scroll */}
               {user && (
                 <div className="absolute top-4 right-4 z-50 w-fit">
@@ -135,8 +142,8 @@ export function ResponsiveLayout({
                 </div>
               )}
               
-              {/* Contenido principal con padding superior y margen inferior */}
-              <div className="pt-4 mb-36 w-full">
+              {/* Contenido principal - altura completa para que los hijos puedan usar h-full */}
+              <div className="h-full w-full">
                 {children}
               </div>
             </div>

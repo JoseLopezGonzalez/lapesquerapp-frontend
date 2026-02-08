@@ -2,7 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useState, memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PackageSearch, SearchX, ArrowLeft } from 'lucide-react';
+import { PackageSearch, SearchX, ArrowLeft, CheckCircle2, Clock, AlertCircle, Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import OrderCard from './OrderCard';
@@ -54,9 +54,9 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     
                     // Restaurar después del render
                     requestAnimationFrame(() => {
-                        if (scrollAreaRef.current && scrollPositionRef.current > 0) {
+                        if (scrollAreaRef.current) {
                             const restoredViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-                            if (restoredViewport) {
+                            if (restoredViewport && scrollPositionRef.current > 0) {
                                 restoredViewport.scrollTop = scrollPositionRef.current;
                             }
                         }
@@ -110,9 +110,9 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
 
     return (
-        <div className='flex flex-col h-full relative'>
+        <div className={`flex flex-col h-full relative overflow-hidden`}>
             {/* Header */}
-            <div className={`bg-background ${isMobile ? 'px-0 pt-4 pb-3' : 'sticky top-0 z-10 pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
+            <div className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-8 pb-3' : 'pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
                 {isMobile ? (
                     /* Layout mobile: botón back izquierda + título centrado */
                     <div className="relative flex items-center justify-center px-4">
@@ -127,7 +127,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <ArrowLeft className="h-6 w-6" />
                         </Button>
                         {/* Título centrado */}
-                        <h2 className="text-2xl font-normal dark:text-white text-center">
+                        <h2 className="text-xl font-normal dark:text-white text-center">
                             Pedidos Activos
                         </h2>
                         {/* Espacio derecho para balance */}
@@ -154,9 +154,9 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                 </>
             ) : (
-                <div className={`flex-1 flex flex-col ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
                     {/* Filtro */}
-                    <div className={`w-full ${isMobile ? 'mb-4 pt-6' : 'mb-5 pt-4'}`}>
+                    <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-4 pt-6' : 'mb-5 pt-4'}`}>
                         {/* input search - mobile-friendly */}
                         <div className={`relative ${isMobile ? 'w-full max-w-full mx-auto' : 'w-full'}`}>
                             <Input 
@@ -211,22 +211,6 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                     )}
                                     {/* Botones como badges adicionales */}
                                     <button
-                                        onClick={handleExportActivePlannedProducts}
-                                        className={`
-                                            whitespace-nowrap 
-                                            ${isMobile 
-                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
-                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
-                                            }
-                                            min-h-[32px] sm:min-h-0
-                                            flex-shrink-0
-                                        `}
-                                        aria-label="Descargar reporte excel"
-                                    >
-                                        <Download className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
-                                        <span>Exportar</span>
-                                    </button>
-                                    <button
                                         onClick={onClickAddNewOrder}
                                         className={`
                                             whitespace-nowrap 
@@ -242,6 +226,22 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                         <Plus className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
                                         <span>Nuevo</span>
                                     </button>
+                                    <button
+                                        onClick={handleExportActivePlannedProducts}
+                                        className={`
+                                            whitespace-nowrap 
+                                            ${isMobile 
+                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
+                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
+                                            }
+                                            min-h-[32px] sm:min-h-0
+                                            flex-shrink-0
+                                        `}
+                                        aria-label="Descargar reporte excel"
+                                    >
+                                        <Download className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
+                                        <span>Exportar</span>
+                                    </button>
                                     </TabsList>
                                 </div>
                             </div>
@@ -250,7 +250,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Mensaje de error */}
                     {error && (
-                        <div className={`${isMobile ? 'mb-3' : 'mb-4'} p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg`}>
+                        <div className={`flex-shrink-0 ${isMobile ? 'mb-3' : 'mb-4'} p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg`}>
                             <p className="text-red-800 dark:text-red-200 text-sm mb-2">{error}</p>
                             {onRetry && (
                                 <Button 
@@ -265,46 +265,96 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         </div>
                     )}
 
-                    {/* Lista de orders */}
+                    {/* Lista de orders - Solo esta sección es scrollable */}
                     {orders?.length > 0 ? (
-                        <ScrollArea ref={scrollAreaRef} className={`h-full grow ${isMobile ? 'pb-20' : 'pr-2 pb-4 mb-4'}`}>
-                            <div className="flex flex-col gap-3">
-                                {orders.map((order) => (
-                                    <div key={order.id}>
-                                        <OrderCard
-                                            onClick={() => onClickOrderCard(order.id)}
-                                            order={order}
-                                            disabled={disabled}
-                                            isSelected={selectedOrderId === order.id}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
+                        <div className="relative flex-1 min-h-0 overflow-hidden">
+                            {/* Fade gradients para indicar scroll arriba/abajo */}
+                            <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+                            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+                            <ScrollArea 
+                                ref={scrollAreaRef}
+                                className="h-full w-full"
+                            >
+                                <div className={`flex flex-col gap-3 ${isMobile ? 'pb-6' : 'pr-2 pb-4'}`}>
+                                    {orders.map((order) => (
+                                        <div key={order.id}>
+                                            <OrderCard
+                                                onClick={() => onClickOrderCard(order.id)}
+                                                order={order}
+                                                disabled={disabled}
+                                                isSelected={selectedOrderId === order.id}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </div>
                     ) : (
                         <div className={`flex flex-col items-center justify-center gap-4 h-full w-full ${isMobile ? 'py-6' : 'py-8'}`}>
                             {!error && (
-                                <div className="flex flex-col items-center justify-center w-full h-full">
+                                <div className="flex flex-col items-center justify-center w-full h-full px-4">
                                     <div className="relative">
                                         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
                                         <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
-                                            {searchText ? (
-                                                <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />
-                                            ) : (
-                                                <PackageSearch className="h-6 w-6 text-primary" strokeWidth={1.5} />
-                                            )}
+                                            {(() => {
+                                                if (searchText) {
+                                                    return <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />;
+                                                }
+                                                switch (activeTab) {
+                                                    case 'finished':
+                                                        return <CheckCircle2 className="h-6 w-6 text-green-500" strokeWidth={1.5} />;
+                                                    case 'pending':
+                                                        return <Clock className="h-6 w-6 text-orange-500" strokeWidth={1.5} />;
+                                                    case 'incident':
+                                                        return <AlertCircle className="h-6 w-6 text-red-500" strokeWidth={1.5} />;
+                                                    default:
+                                                        return <Package className="h-6 w-6 text-primary" strokeWidth={1.5} />;
+                                                }
+                                            })()}
                                         </div>
                                     </div>
                                     <h2 className="mt-4 text-lg font-medium tracking-tight">
-                                        {searchText ? 'No se encontraron pedidos' : 'No hay pedidos activos'}
+                                        {(() => {
+                                            if (searchText) {
+                                                return 'No se encontraron pedidos';
+                                            }
+                                            switch (activeTab) {
+                                                case 'finished':
+                                                    return 'No hay pedidos terminados';
+                                                case 'pending':
+                                                    return 'No hay pedidos en producción';
+                                                case 'incident':
+                                                    return 'No hay pedidos con incidentes';
+                                                default:
+                                                    return 'No hay pedidos activos';
+                                            }
+                                        })()}
                                     </h2>
                                     <p className="mt-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
-                                        {searchText ? (
-                                            'Intenta con otros parámetros de búsqueda o ajusta los filtros.'
-                                        ) : (
-                                            'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.'
-                                        )}
+                                        {(() => {
+                                            if (searchText) {
+                                                return 'Intenta con otros parámetros de búsqueda o ajusta los filtros.';
+                                            }
+                                            switch (activeTab) {
+                                                case 'finished':
+                                                    return 'Los pedidos terminados aparecerán aquí una vez que se completen.';
+                                                case 'pending':
+                                                    return 'Los pedidos en producción aparecerán aquí cuando estén en proceso.';
+                                                case 'incident':
+                                                    return 'Los pedidos con incidentes aparecerán aquí cuando se reporten problemas.';
+                                                default:
+                                                    return 'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.';
+                                            }
+                                        })()}
                                     </p>
+                                    {!searchText && activeTab === 'all' && (
+                                        <button
+                                            onClick={onClickAddNewOrder}
+                                            className="mt-4 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                                        >
+                                            Crear nuevo pedido
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

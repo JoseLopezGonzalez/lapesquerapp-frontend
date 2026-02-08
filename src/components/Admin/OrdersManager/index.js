@@ -267,11 +267,9 @@ export default function OrdersManager() {
         }
         if (onCreatingNewOrder) {
             return (
-                <Card className='h-full p-4 sm:p-7 flex flex-col justify-center items-center'>
-                    <div className='w-full h-full overflow-y-auto'>
-                        <CreateOrderForm onCreate={handleOnCreatedOrder} />
-                    </div>
-                </Card>
+                <div className='h-full flex flex-col overflow-hidden'>
+                    <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} />
+                </div>
             );
         }
         return (
@@ -298,10 +296,10 @@ export default function OrdersManager() {
                 </div>
             ) : (
                 /* Vista - layout adaptativo: lista siempre visible, detalle se muestra cuando se selecciona */
-                <div className="h-full">
+                <div className="h-full flex flex-col">
                     {isMobile ? (
                         /* Vista móvil: lista o detalle según selección */
-                        <div className="h-full flex flex-col">
+                        <div className="h-full flex flex-col min-h-0">
                             {selectedOrder || onCreatingNewOrder ? (
                                 /* Mostrar detalle cuando hay selección */
                                 <div className='h-full overflow-hidden'>
@@ -309,7 +307,7 @@ export default function OrdersManager() {
                                 </div>
                             ) : (
                                 /* Mostrar lista cuando no hay selección */
-                                <div className='h-full'>
+                                <div className='h-full flex flex-col overflow-hidden min-h-0'>
                                     {OrdersListContent}
                                 </div>
                             )}
