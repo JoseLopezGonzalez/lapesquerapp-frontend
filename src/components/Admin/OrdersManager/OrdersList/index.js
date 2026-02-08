@@ -2,7 +2,8 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 import React, { useState, memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PackageSearch, SearchX } from 'lucide-react';
+import { PackageSearch, SearchX, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
@@ -14,6 +15,7 @@ import { API_URL_V2 } from '@/configs/config';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { useSession } from 'next-auth/react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import {
     Tooltip,
@@ -29,6 +31,8 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
+    const isMobile = useIsMobile();
+    const router = useRouter();
     const scrollAreaRef = React.useRef(null);
     const scrollPositionRef = React.useRef(0);
     const prevSelectedOrderIdRef = React.useRef(selectedOrderId);
@@ -106,94 +110,147 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
 
     return (
-        <div className='flex flex-col h-full pt-4 sm:pt-5 px-4 sm:px-7'>
-            <div className='w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pb-3'>
-                <div className='flex flex-col gap-1'>
-                    <h2 className='text-lg sm:text-xl dark:text-white font-semibold'>Pedidos Activos</h2>
-                    {orders.length > 0 && (
-                        <p className='text-xs sm:text-sm text-muted-foreground'>
-                            {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
-                        </p>
-                    )}
-                </div>
-                {/* Botones de acción */}
-                <div className='flex items-center gap-2'>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button size="icon" variant='outline' onClick={handleExportActivePlannedProducts} className="h-9 w-9 sm:h-10 sm:w-10">
-                                <Download className='h-4 w-4 sm:h-5 sm:w-5' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Descargar reporte excel</p>
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button size="icon" variant='' onClick={onClickAddNewOrder} className="h-9 w-9 sm:h-10 sm:w-10">
-                                <Plus className='h-4 w-4 sm:h-5 sm:w-5' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Crear nuevo pedido</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </div>
+        <div className='flex flex-col h-full relative'>
+            {/* Header */}
+            <div className={`bg-background ${isMobile ? 'px-0 pt-4 pb-3' : 'sticky top-0 z-10 pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
+                {isMobile ? (
+                    /* Layout mobile: botón back izquierda + título centrado */
+                    <div className="relative flex items-center justify-center px-4">
+                        {/* Botón back a la izquierda */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                            aria-label="Volver"
+                        >
+                            <ArrowLeft className="h-6 w-6" />
+                        </Button>
+                        {/* Título centrado */}
+                        <h2 className="text-2xl font-normal dark:text-white text-center">
+                            Pedidos Activos
+                        </h2>
+                        {/* Espacio derecho para balance */}
+                        <div className="absolute right-4 w-12 h-12" />
+                    </div>
+                ) : (
+                    /* Layout desktop: título + botones */
+                    <div className="w-full flex flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex flex-col gap-1">
+                            <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
+                                Pedidos Activos
+                            </h2>
+                            {orders.length > 0 && (
+                                <p className='text-xs sm:text-sm text-muted-foreground'>
+                                    {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
             {loading ? (
                 <>
 
                 </>
             ) : (
-                <>
+                <div className={`flex-1 flex flex-col ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
                     {/* Filtro */}
-                    <div className='w-full mb-5'>
-                        {/*  <OrderFilters categories={categories} /> */}
-
-                        {/* input search  */}
-                        <div className='relative w-full text-sm'>
+                    <div className={`w-full ${isMobile ? 'mb-4 pt-6' : 'mb-5 pt-4'}`}>
+                        {/* input search - mobile-friendly */}
+                        <div className={`relative ${isMobile ? 'w-full max-w-full mx-auto' : 'w-full'}`}>
                             <Input 
                                 onChange={(e) => onChangeSearch(e.target.value)} 
                                 value={searchText}
                                 type="text" 
                                 placeholder='Buscar por id o cliente' 
-                                className='w-full py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base' 
+                                className={`w-full ${isMobile 
+                                    ? 'h-12 text-base px-4 pr-12 rounded-lg' 
+                                    : 'py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base rounded-md'
+                                }`}
                             />
                             <button 
-                                className='absolute right-0 top-0 h-full w-10 sm:w-12 flex items-center justify-center'
+                                className={`absolute right-0 top-0 h-full flex items-center justify-center touch-manipulation ${
+                                    isMobile ? 'w-12' : 'w-10 sm:w-12'
+                                }`}
                                 onClick={() => searchText.length > 0 && onChangeSearch('')}
+                                aria-label={searchText.length > 0 ? 'Limpiar búsqueda' : 'Buscar'}
                             >
                                 {searchText.length > 0 ? (
-                                    <XMarkIcon className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground' />
+                                    <XMarkIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground hover:text-foreground`} />
                                 ) : (
-                                    <MagnifyingGlassIcon className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground' />
+                                    <MagnifyingGlassIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground`} />
                                 )}
                             </button>
                         </div>
 
-                        {/* <select className="mt-2 py-2 px-3 pe-9 block w-full border rounded-2xl text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-black/15 dark:border-neutral-600 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
-                            <option>Esta Semana</option>
-                            <option>Hoy</option>
-                            <option>Mañana</option>
-                        </select> */}
-
-                        {/* Tab Shadcn categories */}
-                        <Tabs value={activeTab} onValueChange={onClickCategory} className='mt-5'>
-                            <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
-                                <TabsList className="w-max min-w-full sm:min-w-0">
+                        {/* Tab Shadcn categories - Mobile-friendly style */}
+                        <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-4 mb-4' : 'mt-5 mb-5'}>
+                            <div className="relative -mx-4 sm:mx-0 px-4 sm:px-0">
+                                {/* Fade gradients para los extremos */}
+                                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 sm:hidden" />
+                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 sm:hidden" />
+                                <div className="overflow-x-auto scrollbar-hide">
+                                    <TabsList className={`w-max min-w-full sm:min-w-0 flex gap-1.5 ${isMobile ? 'bg-transparent p-0 h-auto' : 'bg-muted p-1 h-9'}`}>
                                     {categories.map((category) =>
-                                        <TabsTrigger key={category.name} value={category.name} className="whitespace-nowrap text-xs sm:text-sm">
+                                        <TabsTrigger 
+                                            key={category.name} 
+                                            value={category.name} 
+                                            className={`
+                                                whitespace-nowrap 
+                                                ${isMobile 
+                                                    ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-foreground/70 data-[state=inactive]:hover:bg-muted data-[state=inactive]:hover:text-foreground' 
+                                                    : 'px-3 py-1 text-sm rounded-md'
+                                                }
+                                                min-h-[32px] sm:min-h-0
+                                                flex-shrink-0
+                                            `}
+                                        >
                                             {category.label}
                                         </TabsTrigger>
                                     )}
-                                </TabsList>
+                                    {/* Botones como badges adicionales */}
+                                    <button
+                                        onClick={handleExportActivePlannedProducts}
+                                        className={`
+                                            whitespace-nowrap 
+                                            ${isMobile 
+                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
+                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
+                                            }
+                                            min-h-[32px] sm:min-h-0
+                                            flex-shrink-0
+                                        `}
+                                        aria-label="Descargar reporte excel"
+                                    >
+                                        <Download className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
+                                        <span>Exportar</span>
+                                    </button>
+                                    <button
+                                        onClick={onClickAddNewOrder}
+                                        className={`
+                                            whitespace-nowrap 
+                                            ${isMobile 
+                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
+                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
+                                            }
+                                            min-h-[32px] sm:min-h-0
+                                            flex-shrink-0
+                                        `}
+                                        aria-label="Crear nuevo pedido"
+                                    >
+                                        <Plus className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
+                                        <span>Nuevo</span>
+                                    </button>
+                                    </TabsList>
+                                </div>
                             </div>
                         </Tabs>
                     </div>
 
                     {/* Mensaje de error */}
                     {error && (
-                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className={`${isMobile ? 'mb-3' : 'mb-4'} p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg`}>
                             <p className="text-red-800 dark:text-red-200 text-sm mb-2">{error}</p>
                             {onRetry && (
                                 <Button 
@@ -210,10 +267,10 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                     {/* Lista de orders */}
                     {orders?.length > 0 ? (
-                        <ScrollArea ref={scrollAreaRef} className="h-full grow pr-2 pb-4 mb-4">
+                        <ScrollArea ref={scrollAreaRef} className={`h-full grow ${isMobile ? 'pb-20' : 'pr-2 pb-4 mb-4'}`}>
                             <div className="flex flex-col gap-3">
                                 {orders.map((order) => (
-                                    <div key={order.id} className='' >
+                                    <div key={order.id}>
                                         <OrderCard
                                             onClick={() => onClickOrderCard(order.id)}
                                             order={order}
@@ -225,7 +282,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             </div>
                         </ScrollArea>
                     ) : (
-                        <div className='flex flex-col items-center justify-center gap-4 h-full w-full py-8'>
+                        <div className={`flex flex-col items-center justify-center gap-4 h-full w-full ${isMobile ? 'py-6' : 'py-8'}`}>
                             {!error && (
                                 <div className="flex flex-col items-center justify-center w-full h-full">
                                     <div className="relative">
@@ -252,11 +309,9 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             )}
                         </div>
                     )}
-                </>
-            )
-            }
-
-        </div >
+                </div>
+            )}
+        </div>
     )
 }
 

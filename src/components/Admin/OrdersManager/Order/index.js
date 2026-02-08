@@ -4,6 +4,7 @@ import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from
 import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import OrderDetails from './OrderDetails';
@@ -15,6 +16,7 @@ import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Lazy load de componentes pesados para mejorar el rendimiento inicial
 const OrderPallets = lazy(() => import('./OrderPallets'));
@@ -171,20 +173,30 @@ const OrderContent = ({ onLoading, onClose }) => {
         </div>
       ) : (
         <Card className='p-4 sm:p-6 lg:p-9 h-full w-full relative'>
+          {/* Header sticky para mobile con botón volver */}
+          {isMobile && onClose && (
+            <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 mb-4">
+              <Button variant="ghost" onClick={onClose} className="p-0 h-auto">
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                <span className="text-base font-medium">Volver</span>
+              </Button>
+            </div>
+          )}
+          
           {/* Botones móviles - sticky bottom bar */}
           {isMobile && onClose && (
-            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg">
-              <Button variant="outline" onClick={onClose} className="flex-1">
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg pb-[env(safe-area-inset-bottom)]">
+              <Button variant="outline" onClick={onClose} className="flex-1 min-h-[44px]">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
               <OrderEditSheet />
-              <Button variant="outline" onClick={handleOnClickPrint} size="icon">
+              <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="min-h-[44px] min-w-[44px]">
                 <Printer className="h-4 w-4" />
               </Button>
             </div>
           )}
-          <div className='h-full flex flex-col w-full pb-16 lg:pb-0'>
+          <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-20' : 'pb-16 lg:pb-0'}`}>
             <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
               <div className='space-y-1 flex-1'>
                 {order && renderStatusBadge(order.status)}
@@ -282,93 +294,200 @@ const OrderContent = ({ onLoading, onClose }) => {
               )}
             </div>
             <div className='flex-1 w-full overflow-y-hidden '>
-              <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
-                  <div className="mb-4 flex justify-start">
-                    <TabsList className='w-fit inline-flex'>
-                      <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
-                      <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
-                      <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
-                      <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
-                      <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
-                      <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
-                      <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
-                      <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
-                      <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
-                      <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
-                      <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
-                    </TabsList>
+              {isMobile ? (
+                /* Vista Mobile: Acordeones */
+                <ScrollArea className="h-full w-full pb-20">
+                  <div className="px-4 py-4 space-y-2">
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="details">
+                        <AccordionTrigger className="text-base font-medium">Detalles</AccordionTrigger>
+                        <AccordionContent>
+                          <OrderDetails />
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="products">
+                        <AccordionTrigger className="text-base font-medium">Previsión</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderPlannedProductDetails />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="productDetails">
+                        <AccordionTrigger className="text-base font-medium">Detalle productos</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderProductDetails />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="production">
+                        <AccordionTrigger className="text-base font-medium">Producción</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderProduction />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="pallets">
+                        <AccordionTrigger className="text-base font-medium">Palets</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderPallets />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="labels">
+                        <AccordionTrigger className="text-base font-medium">Etiquetas</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderLabels />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="documents">
+                        <AccordionTrigger className="text-base font-medium">Envío de Documentos</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderDocuments />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="export">
+                        <AccordionTrigger className="text-base font-medium">Exportar</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderExport />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="map">
+                        <AccordionTrigger className="text-base font-medium">Mapa</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderMap />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="incident">
+                        <AccordionTrigger className="text-base font-medium">Incidencia</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderIncident />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="customer-history">
+                        <AccordionTrigger className="text-base font-medium">Histórico</AccordionTrigger>
+                        <AccordionContent>
+                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                            <OrderCustomerHistory />
+                          </Suspense>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
-                  <div className="flex-1 overflow-y-hidden w-full">
-                    {/* Tab Details - siempre cargado ya que es el default */}
-                    <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
-                      <OrderDetails />
-                    </TabsContent>
+                </ScrollArea>
+              ) : (
+                /* Vista Desktop: Tabs (mantener comportamiento actual) */
+                <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
+                    <div className="mb-4 flex justify-start">
+                      <TabsList className='w-fit inline-flex'>
+                        <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
+                        <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
+                        <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
+                        <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
+                        <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
+                        <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
+                        <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
+                        <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
+                        <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
+                        <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
+                        <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
+                      </TabsList>
+                    </div>
+                    <div className="flex-1 overflow-y-hidden w-full">
+                      {/* Tab Details - siempre cargado ya que es el default */}
+                      <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
+                        <OrderDetails />
+                      </TabsContent>
 
-                    {/* Tabs con lazy loading - solo se cargan cuando están activos */}
-                    <TabsContent value="products" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderPlannedProductDetails />
-                      </Suspense>
-                    </TabsContent>
+                      {/* Tabs con lazy loading - solo se cargan cuando están activos */}
+                      <TabsContent value="products" className="space-y-4 w-full h-full ">
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderPlannedProductDetails />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderProductDetails />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderProductDetails />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="production" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderProduction />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="production" className="space-y-4 w-full h-full ">
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderProduction />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="pallets" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderPallets />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="pallets" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderPallets />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="documents" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderDocuments />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="documents" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderDocuments />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="export" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderExport />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="export" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderExport />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="labels" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderLabels />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="labels" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderLabels />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="map" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderMap />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="map" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderMap />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="incident" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderIncident />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="incident" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderIncident />
+                        </Suspense>
+                      </TabsContent>
 
-                    <TabsContent value="customer-history" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderCustomerHistory />
-                      </Suspense>
-                    </TabsContent>
+                      <TabsContent value="customer-history" className='h-full'>
+                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                          <OrderCustomerHistory />
+                        </Suspense>
+                      </TabsContent>
 
-                  </div>
-                </Tabs>
-              </div>
+                    </div>
+                  </Tabs>
+                </div>
+              )}
             </div>
           </div>
         </Card>

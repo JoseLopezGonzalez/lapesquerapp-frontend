@@ -18,10 +18,13 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import EmailListInput from '@/components/ui/emailListInput';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const OrderEditSheet = () => {
     const { order, updateOrderData } = useOrderContext()
     const { formGroups, defaultValues, loading, loadingProgress } = useOrderFormConfig({ orderData: order });
+    const isMobile = useIsMobile();
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -136,6 +139,7 @@ const OrderEditSheet = () => {
             id: field.name,
             placeholder: field.props?.placeholder || '',
             ...register(field.name, field.rules),
+            className: isMobile ? 'h-12 text-base' : '',
         };
 
         switch (field.component) {
@@ -237,7 +241,7 @@ const OrderEditSheet = () => {
             default:
                 return <Input {...commonProps} />;
         }
-    }, [register, control, loading]);
+    }, [register, control, loading, isMobile]);
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -248,53 +252,60 @@ const OrderEditSheet = () => {
                 </Button>
             </SheetTrigger>
             <SheetContent 
-                side="right" 
-                className="w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg"
+                side={isMobile ? "bottom" : "right"}
+                className={isMobile 
+                    ? "max-h-[90vh] px-4 py-4 pb-[env(safe-area-inset-bottom)] rounded-t-3xl"
+                    : "w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg"
+                }
             >
-                <SheetHeader>
-                    <SheetTitle>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
+                <SheetHeader className={isMobile ? "pb-3" : ""}>
+                    <SheetTitle className={isMobile ? "text-lg" : ""}>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
                 <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
-                    <div className="grow grid gap-6 py-4 px-5 h-full overflow-y-auto w-full">
-                        {formGroups.map((group) => (
-                            <div key={group.group} className=" w-full">
-                                <h3 className="text-sm font-medium">{group.group}</h3>
-                                <Separator className="my-2" />
-                                <div className={`grid py-4 w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
-                                    {group.fields.map((field) => {
-                                        const hasError = errors[field.name];
-                                        return (
-                                            <div key={field.name} className={`grid gap-2 w-full ${field.colSpan}`}>
-                                                <Label htmlFor={field.name}>{field.label}</Label>
-                                                <div className={hasError ? 'border-red-300 rounded-md' : ''}>
-                                                    {renderField(field)}
+                    <ScrollArea className={`grow ${isMobile ? 'pr-2' : ''}`}>
+                        <div className={`grid gap-6 ${isMobile ? 'py-2' : 'py-4 px-5'}`}>
+                            {formGroups.map((group) => (
+                                <div key={group.group} className="w-full">
+                                    <h3 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{group.group}</h3>
+                                    <Separator className="my-2" />
+                                    <div className={`grid py-4 w-full ${isMobile ? 'grid-cols-1 gap-4' : group.grid || 'grid-cols-1 gap-4'}`}>
+                                        {group.fields.map((field) => {
+                                            const hasError = errors[field.name];
+                                            return (
+                                                <div key={field.name} className={`grid gap-2 w-full ${isMobile ? '' : field.colSpan}`}>
+                                                    <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>{field.label}</Label>
+                                                    <div className={hasError ? 'border-red-300 rounded-md' : ''}>
+                                                        {renderField(field)}
+                                                    </div>
+                                                    {hasError && (
+                                                        <p className="text-red-500 text-sm flex items-center gap-1">
+                                                            <AlertTriangle className="h-3 w-3" />
+                                                            {errors[field.name].message}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                {hasError && (
-                                                    <p className="text-red-500 text-sm flex items-center gap-1">
-                                                        <AlertTriangle className="h-3 w-3" />
-                                                        {errors[field.name].message}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-end gap-4 pt-4">
+                            ))}
+                        </div>
+                    </ScrollArea>
+                    <div className={`flex ${isMobile ? 'flex-col-reverse gap-2 sticky bottom-0 bg-background border-t pt-4 pb-2' : 'justify-end gap-4 pt-4'}`}>
                         <SheetClose asChild>
                             <Button
                                 onClick={onCloseSheet}
                                 variant="outline" 
                                 type="button"
-                                disabled={saving}>
+                                disabled={saving}
+                                className={isMobile ? 'w-full min-h-[44px]' : ''}>
                                 Cancelar
                             </Button>
                         </SheetClose>
                         <Button 
                             type="submit"
-                            disabled={saving || Object.keys(errors).length > 0}>
+                            disabled={saving || Object.keys(errors).length > 0}
+                            className={isMobile ? 'w-full min-h-[44px]' : ''}>
                             {saving ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
