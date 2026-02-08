@@ -17,7 +17,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
 
     // Mobile: padding más generoso, altura mínima para touch target
     const baseClass = isMobile 
-        ? "relative flex rounded-2xl p-4 border-l-4 min-h-[120px] active:scale-[0.98] transition-transform"
+        ? "relative flex rounded-2xl p-5 border-l-4 min-h-[130px] active:scale-[0.98] transition-all"
         : "relative flex rounded-xl p-4 sm:p-5 border-l-4"
 
     let statusClass = ''
@@ -87,40 +87,40 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
             }}
         >
             {isToday && (
-                <span className="absolute top-3 right-3 text-xs font-medium animate-pulse bg-primary/20 text-primary px-2.5 py-1 rounded-full z-10 border border-primary/30">
+                <span className={`absolute ${isMobile ? 'top-4 right-4' : 'top-3 right-3'} text-xs font-semibold animate-pulse bg-primary/20 text-primary ${isMobile ? 'px-3 py-1.5' : 'px-2.5 py-1'} rounded-full z-10 border border-primary/30`}>
                     Hoy
                 </span>)}
 
             {isTomorrow && (
-                <span className="absolute top-3 right-3 text-xs font-medium animate-pulse bg-primary/20 text-primary px-2.5 py-1 rounded-full z-10 border border-primary/30">
+                <span className={`absolute ${isMobile ? 'top-4 right-4' : 'top-3 right-3'} text-xs font-semibold animate-pulse bg-primary/20 text-primary ${isMobile ? 'px-3 py-1.5' : 'px-2.5 py-1'} rounded-full z-10 border border-primary/30`}>
                     Mañana
                 </span>)}
 
-            <div className='grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2'>
+            <div className={`grow w-full max-w-xs xl:max-w-none ${isMobile ? 'space-y-3' : 'space-y-2 sm:space-y-2'}`}>
                 <div className="flex items-center gap-2 flex-wrap">
                     <StatusBadge
                         color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                         label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
                     />
                 </div>
-                <h3 className={`font-semibold ${isMobile ? 'text-xl' : 'text-lg sm:text-xl'}`}>#{orderId}</h3>
+                <h3 className={`font-bold ${isMobile ? 'text-2xl' : 'text-lg sm:text-xl font-semibold'}`}>#{orderId}</h3>
                 <div>
-                    <p className={`font-medium truncate ${isMobile ? 'text-base' : 'text-base sm:text-lg'}`} title={order.customer.name}>
+                    <p className={`font-semibold truncate ${isMobile ? 'text-lg' : 'text-base sm:text-lg font-medium'}`} title={order.customer.name}>
                         {order.customer.name}
                     </p>
                 </div>
-                <div className='flex items-center gap-4 flex-wrap'>
+                <div className={`flex items-center ${isMobile ? 'gap-6' : 'gap-4'} flex-wrap`}>
                     <div>
-                        <p className='text-xs text-muted-foreground mb-0.5'>Fecha de Carga</p>
-                        <p className={`font-medium ${isMobile ? 'text-sm' : 'text-base sm:text-lg'}`}>
+                        <p className={`text-muted-foreground mb-1 ${isMobile ? 'text-xs font-medium' : 'text-xs'}`}>Fecha de Carga</p>
+                        <p className={`font-semibold ${isMobile ? 'text-base' : 'text-base sm:text-lg font-medium'}`}>
                             {loadDate}
                         </p>
                     </div>
                     {/* Información adicional en mobile si está disponible */}
                     {isMobile && order.numberOfBoxes && (
                         <div>
-                            <p className='text-xs text-muted-foreground mb-0.5'>Cajas</p>
-                            <p className='font-medium text-sm'>{order.numberOfBoxes}</p>
+                            <p className='text-xs text-muted-foreground mb-1 font-medium'>Cajas</p>
+                            <p className='font-semibold text-base'>{order.numberOfBoxes}</p>
                         </div>
                     )}
                 </div>
