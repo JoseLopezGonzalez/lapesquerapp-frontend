@@ -29,6 +29,7 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
 import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import CreateOrderFormMobile from './CreateOrderFormMobile';
 
 const CreateOrderForm = ({ onCreate, onClose }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
@@ -268,40 +269,43 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         }
     };
 
+    // Si es mobile, usar el componente con stepper
+    if (isMobile) {
+        return (
+            <CreateOrderFormMobile
+                formGroups={formGroups}
+                fields={fields}
+                register={register}
+                control={control}
+                errors={errors}
+                handleSubmit={handleSubmit}
+                handleCreate={handleCreate}
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                renderField={renderField}
+                productOptions={productOptions}
+                productsLoading={productsLoading}
+                taxOptions={taxOptions}
+                taxLoading={taxLoading}
+                append={append}
+                remove={remove}
+                onClose={onClose}
+                loading={loading}
+            />
+        );
+    }
+
     return (
         <div className="w-full h-full flex flex-col">
             {/* Header */}
             <div className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-8 pb-3' : 'pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
-                {isMobile ? (
-                    /* Layout mobile: botón back izquierda + título centrado */
-                    <div className="relative flex items-center justify-center px-4">
-                        {/* Botón back a la izquierda */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onClose ? onClose() : router.back()}
-                            className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
-                            aria-label="Volver"
-                        >
-                            <ArrowLeft className="h-6 w-6" />
-                        </Button>
-                        {/* Título centrado */}
-                        <h2 className="text-xl font-normal dark:text-white text-center">
+                <div className="w-full flex flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
                             Crear nuevo pedido
                         </h2>
-                        {/* Espacio derecho para balance */}
-                        <div className="absolute right-4 w-12 h-12" />
                     </div>
-                ) : (
-                    /* Layout desktop: título */
-                    <div className="w-full flex flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
-                                Crear nuevo pedido
-                            </h2>
-                        </div>
-                    </div>
-                )}
+                </div>
             </div>
             {/* Form content */}
             <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-4 pt-6 pb-0' : 'px-4 sm:px-7 pt-4'}`}>

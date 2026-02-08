@@ -32,8 +32,9 @@ export function Combobox({
   loading = false,
   disabled = false,
   onBlur,
+  defaultOpen = false,
 }) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(defaultOpen)
   const isDisabled = disabled || loading
 
   // Intentar encontrar el label del valor actual, incluso durante el loading
