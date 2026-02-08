@@ -457,22 +457,10 @@ export function useOrder(orderId, onChange) {
             fields: ['Datos básicos - sin nombre de cliente', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes'],
         },
         {
-            name: 'traceability-document',
-            label: 'Documento de trazabilidad',
-            types: ['pdf'],
-            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Historial'],
-        },
-        {
             name: 'order-cmr',
             label: 'Documento de transporte (CMR)',
             types: ['pdf'],
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
-        },
-        {
-            name: 'order-confirmation-document',
-            label: 'Documento confirmación de pedido',
-            types: ['pdf'],
-            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Precios'],
         },
         {
             name: 'order-signs',
@@ -493,18 +481,6 @@ export function useOrder(orderId, onChange) {
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Productos'],
         },
         {
-            name: 'article-report',
-            label: 'Reporte de Artículos',
-            types: ['xlsx'],
-            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Productos'],
-        },
-        {
-            name: 'pallet-report',
-            label: 'Reporte de Palets',
-            types: ['xlsx'],
-            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Palets', 'Lotes', 'Productos'],
-        },
-        {
             name: 'lots-report',
             label: 'Reporte de Lotes',
             types: ['xlsx'],
@@ -515,12 +491,6 @@ export function useOrder(orderId, onChange) {
             label: 'Reporte de Cajas',
             types: ['xlsx'],
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Cajas', 'Productos'],
-        },
-        {
-            name: 'logs-differences-report',
-            label: 'Reporte Logs de diferencias',
-            types: ['xlsx'],
-            fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Historial', 'Productos'],
         },
         {
             name: 'A3ERP-sales-delivery-note',
