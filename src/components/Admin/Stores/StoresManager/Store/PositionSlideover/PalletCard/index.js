@@ -47,21 +47,22 @@ export default function PalletCard({ pallet }) {
 
     /* const hasMultipleProducts = pallet.products.length > 1 */
 
-    // Solo contar cajas disponibles
-    const availableBoxes = getAvailableBoxes(pallet.boxes || []);
     const availableBoxCount = getAvailableBoxesCount(pallet);
     const availableNetWeight = getAvailableNetWeight(pallet);
 
+    // Calcular desde boxes (Stores Manager siempre tiene boxes)
+    const availableBoxes = getAvailableBoxes(pallet.boxes || []);
     const productsSummary = availableBoxes.reduce((acc, box) => {
         const product = box.product
+        if (!product || !product.id) return acc;
         if (!acc[product.id]) {
             acc[product.id] = {
-                name: product.name,
+                name: product.name || '',
                 netWeight: 0,
                 boxCount: 0,
             }
         }
-        acc[product.id].netWeight += Number(box.netWeight)
+        acc[product.id].netWeight += Number(box.netWeight || 0)
         acc[product.id].boxCount += 1
         return acc
     }, {})

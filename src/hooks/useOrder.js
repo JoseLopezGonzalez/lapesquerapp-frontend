@@ -689,10 +689,13 @@ export function useOrder(orderId, onChange) {
             const reloadedOrder = await reload();
             if (reloadedOrder) {
                 onChange?.(reloadedOrder);
+                // El toast de actualización se muestra en usePallet.js, pero los datos ya están actualizados aquí
             }
         } catch (error) {
             console.error('Error al recargar el pedido después de editar palet:', error);
-            // No mostrar error al usuario ya que la actualización local ya se hizo
+            // Mostrar error al usuario
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
+            toast.error(errorMessage, getToastTheme());
         }
     }
 
@@ -716,10 +719,14 @@ export function useOrder(orderId, onChange) {
             const reloadedOrder = await reload();
             if (reloadedOrder) {
                 onChange?.(reloadedOrder);
+                // Mostrar toast DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
+                toast.success('Palet creado y vinculado correctamente', getToastTheme());
             }
         } catch (error) {
             console.error('Error al recargar el pedido después de crear palet:', error);
-            // No mostrar error al usuario ya que la actualización local ya se hizo
+            // Mostrar error al usuario
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
+            toast.error(errorMessage, getToastTheme());
         }
     }
 
@@ -787,15 +794,24 @@ export function useOrder(orderId, onChange) {
         }
 
         try {
+            let result;
             // Si solo hay un palet, usar el endpoint individual
             if (palletIds.length === 1) {
-                const result = await linkPalletToOrder(palletIds[0], order.id, token);
-                toast.success(result.message || 'Palet vinculado correctamente', getToastTheme());
+                result = await linkPalletToOrder(palletIds[0], order.id, token);
             } else {
                 // Si hay múltiples palets, usar el endpoint de múltiples vinculaciones
                 const palletsData = palletIds.map(id => ({ id, orderId: order.id }));
-                const result = await linkPalletsToOrders(palletsData, token);
-                
+                result = await linkPalletsToOrders(palletsData, token);
+            }
+            
+            // Recargar para obtener los palets actualizados y productionProductDetails
+            const updatedOrder = await reload();
+            onChange?.(updatedOrder);
+            
+            // Mostrar toasts DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
+            if (palletIds.length === 1) {
+                toast.success(result.message || 'Palet vinculado correctamente', getToastTheme());
+            } else {
                 // Mostrar mensajes según los resultados
                 if (result.linked > 0) {
                     const message = result.linked === 1 
@@ -821,10 +837,6 @@ export function useOrder(orderId, onChange) {
                     });
                 }
             }
-            
-            // Recargar para obtener los palets actualizados
-            const updatedOrder = await reload();
-            onChange?.(updatedOrder);
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al vincular los palets';

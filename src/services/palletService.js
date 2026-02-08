@@ -410,20 +410,30 @@ export function searchPalletsByLot(lot, token) {
  * @param {Object} params - Parámetros de búsqueda
  * @param {number|string} params.orderId - ID del pedido (opcional). Si se proporciona, incluye palets sin pedido o del mismo pedido
  * @param {string} params.id - Filtro por ID con coincidencias parciales (opcional)
+ * @param {number|string} params.storeId - ID del almacén para filtrar (opcional)
  * @param {number} params.perPage - Resultados por página (1-100, default: 20) (opcional)
  * @param {number} params.page - Número de página (opcional)
  * @param {string} token - Token JWT de autenticación
  * @returns {Promise<Object>} - Respuesta con data (array de palets), meta (paginación) y links
  */
-export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage = 50, page = 1 }, token) {
+export function getAvailablePalletsForOrder({ orderId, ids = null, storeId = null, perPage = 50, page = 1 }, token) {
+    if (!orderId) {
+        throw new Error('orderId es requerido');
+    }
+
     const params = new URLSearchParams();
     
-    if (orderId) {
-        params.append('orderId', orderId);
+    // ids tiene prioridad absoluta sobre storeId
+    if (ids && Array.isArray(ids) && ids.length > 0) {
+        // Agregar cada ID como ids[]=value
+        ids.forEach(id => {
+            params.append('ids[]', id);
+        });
+    } else if (storeId) {
+        // Solo agregar storeId si no hay ids
+        params.append('storeId', storeId);
     }
-    if (id) {
-        params.append('id', id);
-    }
+    
     if (perPage) {
         params.append('perPage', perPage);
     }
@@ -431,7 +441,10 @@ export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage
         params.append('page', page);
     }
 
-    return fetchWithTenant(`${API_URL_V2}pallets/available-for-order?${params.toString()}`, {
+    const queryString = params.toString();
+    const url = `${API_URL_V2}orders/${orderId}/available-pallets${queryString ? `?${queryString}` : ''}`;
+
+    return fetchWithTenant(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -448,7 +461,28 @@ export function getAvailablePalletsForOrder({ orderId = null, id = null, perPage
             return response.json();
         })
         .then((data) => {
-            return data;
+            // El nuevo endpoint siempre devuelve { data: [...], current_page, last_page, per_page, total }
+            if (data.data && Array.isArray(data.data)) {
+                return {
+                    data: data.data,
+                    meta: {
+                        current_page: data.current_page || 1,
+                        last_page: data.last_page || 1,
+                        per_page: data.per_page || perPage,
+                        total: data.total || data.data.length
+                    }
+                };
+            }
+            // Fallback: si no viene con la estructura esperada
+            return {
+                data: Array.isArray(data) ? data : [],
+                meta: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: perPage,
+                    total: Array.isArray(data) ? data.length : 0
+                }
+            };
         })
         .catch((error) => {
             throw error;
