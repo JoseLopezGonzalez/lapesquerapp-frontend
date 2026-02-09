@@ -530,61 +530,61 @@ export default function OrderCustomerHistory() {
                                 </Tabs>
                             ) : (
                                 <>
-                                    <Tabs value={dateFilter} onValueChange={(value) => {
-                                        setDateFilter(value)
-                                        if (value !== "year-select") {
-                                            setSelectedYear(null)
-                                        }
-                                    }} className="w-auto">
-                                        <TabsList 
-                                            className="grid w-full h-8"
-                                            style={{
-                                                gridTemplateColumns: `repeat(${2 + (hasCurrentYear ? 1 : 0) + (hasYear1 ? 1 : 0)}, minmax(0, 1fr))`
+                            <Tabs value={dateFilter} onValueChange={(value) => {
+                                setDateFilter(value)
+                                if (value !== "year-select") {
+                                    setSelectedYear(null)
+                                }
+                            }} className="w-auto">
+                                <TabsList 
+                                    className="grid w-full h-8"
+                                    style={{
+                                        gridTemplateColumns: `repeat(${2 + (hasCurrentYear ? 1 : 0) + (hasYear1 ? 1 : 0)}, minmax(0, 1fr))`
+                                    }}
+                                >
+                                    <TabsTrigger value="month" className="text-xs px-2">Mes</TabsTrigger>
+                                    <TabsTrigger value="quarter" className="text-xs px-2">Trimestre</TabsTrigger>
+                                    {hasCurrentYear && (
+                                        <TabsTrigger value="year" className="text-xs px-2">{currentYear}</TabsTrigger>
+                                    )}
+                                    {hasYear1 && (
+                                        <TabsTrigger value="year-1" className="text-xs px-2">{currentYear - 1}</TabsTrigger>
+                                    )}
+                                </TabsList>
+                            </Tabs>
+                            {yearsForSelector.length > 0 && (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            aria-label="Más años"
+                                        >
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-3" align="end">
+                                        <Select
+                                            value={dateFilter === "year-select" && selectedYear ? String(selectedYear) : ""}
+                                            onValueChange={(value) => {
+                                                setSelectedYear(parseInt(value))
+                                                setDateFilter("year-select")
                                             }}
                                         >
-                                            <TabsTrigger value="month" className="text-xs px-2">Mes</TabsTrigger>
-                                            <TabsTrigger value="quarter" className="text-xs px-2">Trimestre</TabsTrigger>
-                                            {hasCurrentYear && (
-                                                <TabsTrigger value="year" className="text-xs px-2">{currentYear}</TabsTrigger>
-                                            )}
-                                            {hasYear1 && (
-                                                <TabsTrigger value="year-1" className="text-xs px-2">{currentYear - 1}</TabsTrigger>
-                                            )}
-                                        </TabsList>
-                                    </Tabs>
-                                    {yearsForSelector.length > 0 && (
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                    aria-label="Más años"
-                                                >
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-3" align="end">
-                                                <Select
-                                                    value={dateFilter === "year-select" && selectedYear ? String(selectedYear) : ""}
-                                                    onValueChange={(value) => {
-                                                        setSelectedYear(parseInt(value))
-                                                        setDateFilter("year-select")
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="w-[140px] text-xs">
-                                                        <SelectValue placeholder="Seleccionar año" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {yearsForSelector.map(year => (
-                                                            <SelectItem key={year} value={String(year)}>
-                                                                {year}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </PopoverContent>
-                                        </Popover>
+                                            <SelectTrigger className="w-[140px] text-xs">
+                                                <SelectValue placeholder="Seleccionar año" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {yearsForSelector.map(year => (
+                                                    <SelectItem key={year} value={String(year)}>
+                                                        {year}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </PopoverContent>
+                                </Popover>
                                     )}
                                 </>
                             )}
@@ -594,45 +594,45 @@ export default function OrderCustomerHistory() {
 
     const mainContent = isMobile ? (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            {/* Métricas Generales */}
-            {generalMetrics && (
+                {/* Métricas Generales */}
+                {generalMetrics && (
                 <div className="pb-3 pt-0 flex-shrink-0">
                     <div className="grid grid-cols-2 gap-2">
                         <Card className="p-3 border-2">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <Package className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="text-xs font-medium text-muted-foreground">Total Pedidos</span>
-                            </div>
+                                </div>
                             <p className="text-base font-bold">{generalMetrics.totalOrders}</p>
-                        </Card>
+                            </Card>
                         <Card className="p-3 border-2">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <Coins className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <Coins className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="text-xs font-medium text-muted-foreground">Valor Total</span>
-                            </div>
+                                </div>
                             <p className="text-base font-bold">{formatDecimalCurrency(generalMetrics.totalAmount)}</p>
-                        </Card>
+                            </Card>
                         <Card className="p-3 border-2">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="text-xs font-medium text-muted-foreground">Frecuencia</span>
-                            </div>
+                                </div>
                             <p className="text-base font-bold">{generalMetrics.avgDaysBetween} días</p>
-                        </Card>
+                            </Card>
                         <Card className="p-3 border-2">
                             <div className="flex items-center gap-1 mb-1.5">
-                                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="text-xs font-medium text-muted-foreground">Último Pedido</span>
-                            </div>
+                                </div>
                             <p className="text-base font-bold">
-                                {generalMetrics.daysSinceLastOrder !== null 
-                                    ? `Hace ${generalMetrics.daysSinceLastOrder} días`
-                                    : "N/A"}
-                            </p>
-                        </Card>
-                    </div>
+                                    {generalMetrics.daysSinceLastOrder !== null 
+                                        ? `Hace ${generalMetrics.daysSinceLastOrder} días`
+                                        : "N/A"}
+                                </p>
+                            </Card>
+                        </div>
                 </div>
-            )}
+                )}
 
             <ScrollArea className="flex-1 min-h-0">
                 <div className="py-2">

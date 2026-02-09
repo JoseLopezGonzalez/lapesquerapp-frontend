@@ -297,32 +297,32 @@ const OrderEditSheet = () => {
                     ) : (
                         <ScrollArea className="grow">
                             <div className="grid gap-6 py-4 px-5">
-                            {formGroups.map((group) => (
+                        {formGroups.map((group) => (
                                 <div key={group.group} className="w-full">
                                     <h3 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{group.group}</h3>
-                                    <Separator className="my-2" />
+                                <Separator className="my-2" />
                                     <div className={`grid py-4 w-full ${isMobile ? 'grid-cols-1 gap-4' : group.grid || 'grid-cols-1 gap-4'}`}>
-                                        {group.fields.map((field) => {
-                                            const hasError = errors[field.name];
-                                            return (
+                                    {group.fields.map((field) => {
+                                        const hasError = errors[field.name];
+                                        return (
                                                 <div key={field.name} className={`grid gap-2 w-full ${isMobile ? '' : field.colSpan}`}>
                                                     <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>{field.label}</Label>
-                                                    <div className={hasError ? 'border-red-300 rounded-md' : ''}>
-                                                        {renderField(field)}
-                                                    </div>
-                                                    {hasError && (
-                                                        <p className="text-red-500 text-sm flex items-center gap-1">
-                                                            <AlertTriangle className="h-3 w-3" />
-                                                            {errors[field.name].message}
-                                                        </p>
-                                                    )}
+                                                <div className={hasError ? 'border-red-300 rounded-md' : ''}>
+                                                    {renderField(field)}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                                {hasError && (
+                                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                                        <AlertTriangle className="h-3 w-3" />
+                                                        {errors[field.name].message}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
                             </div>
+                        ))}
+                    </div>
                         </ScrollArea>
                     )}
                     <div className={`flex flex-shrink-0 ${isMobile ? 'pt-4 pb-2 border-t bg-background' : 'justify-end gap-4 pt-4'}`}>

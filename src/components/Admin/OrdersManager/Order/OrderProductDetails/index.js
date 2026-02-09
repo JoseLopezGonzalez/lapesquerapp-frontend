@@ -41,9 +41,9 @@ const OrderProductDetails = () => {
                     <div>
                         <CardTitle className="text-lg font-medium">Detalle de productos</CardTitle>
                         {!isMobile && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Desglose de productos con precio y cantidad
-                            </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Desglose de productos con precio y cantidad
+                        </p>
                         )}
                     </div>
                 </CardHeader>

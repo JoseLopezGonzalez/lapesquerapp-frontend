@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical } from 'lucide-react';
+import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -15,16 +15,19 @@ import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const OrderPlannedProductDetails = () => {
     const isMobile = useIsMobile();
     const { options, plannedProductDetailActions, plannedProductDetails, order, mergedProductDetails } = useOrderContext();
+    const scrollAreaRef = useRef(null);
 
     const { productOptions, taxOptions, loading: optionsLoading } = options;
 
     const [details, setDetails] = useState([]);
     const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
     const [editIndex, setEditIndex] = useState(null);
+    const [showTotalsDialog, setShowTotalsDialog] = useState(false);
 
     // Crear Maps para búsquedas O(1) en lugar de O(n)
     const productOptionsMap = useMemo(() => {
@@ -68,6 +71,19 @@ const OrderPlannedProductDetails = () => {
         setTemporaryDetails([...temporaryDetails, newTemporaryDetail]);
         // El índice será la posición final en la lista combinada
         setEditIndex(plannedProductDetails.length + temporaryDetails.length);
+        
+        // Hacer scroll hasta abajo después de añadir la línea
+        if (isMobile && scrollAreaRef.current) {
+            setTimeout(() => {
+                const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+                if (viewport) {
+                    viewport.scrollTo({
+                        top: viewport.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        }
     };
 
     const handleInputChange = useCallback((index, field, value) => {
@@ -220,7 +236,7 @@ const OrderPlannedProductDetails = () => {
         <div className="flex-1 flex flex-col min-h-0">
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                    <ScrollArea className="flex-1 min-h-0">
+                    <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0">
                         <div className="pb-20 space-y-6">
                             {details.length === 0 ? (
                                 <div className="rounded-md border">
@@ -240,7 +256,6 @@ const OrderPlannedProductDetails = () => {
                                             <div className="space-y-3">
                                                 {/* Artículo */}
                                                 <div>
-                                                    <p className="text-xs text-muted-foreground mb-1.5">Artículo</p>
                                                     {editIndex === index ? (
                                                         <div className="[&_button]:!h-9">
                                                             <Combobox
@@ -332,7 +347,7 @@ const OrderPlannedProductDetails = () => {
                                                                 <Edit2 size={16} className="mr-2" />
                                                                 Editar
                                                             </Button>
-                                                            <Button variant="secondary" onClick={() => handleOnClickDeleteLine(detail.id)} size="sm" className="flex-1">
+                                                            <Button variant="destructive" onClick={() => handleOnClickDeleteLine(detail.id)} size="sm" className="flex-1">
                                                                 <Trash2 size={16} className="mr-2" />
                                                                 Eliminar
                                                             </Button>
@@ -343,26 +358,6 @@ const OrderPlannedProductDetails = () => {
                                         </Card>
                                     ))}
                                     
-                                    {/* Totales Mobile */}
-                                    <Card className="p-4 bg-muted/30 border-2">
-                                        <div className="space-y-4">
-                                            <p className="text-base font-semibold text-foreground">Totales</p>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cajas</p>
-                                                    <p className="text-base font-semibold text-foreground">{formatInteger(totals.boxes)}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cantidad</p>
-                                                    <p className="text-base font-semibold text-foreground">{formatDecimalWeight(totals.quantity)}</p>
-                                                </div>
-                                                <div className="space-y-1 col-span-2 pt-2 border-t">
-                                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Precio promedio</p>
-                                                    <p className="text-base font-semibold text-foreground">{formatDecimalCurrency(totals.averageUnitPrice)}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Card>
                                 </div>
                         </>
                             )}
@@ -370,6 +365,14 @@ const OrderPlannedProductDetails = () => {
                     </ScrollArea>
                     {/* Footer con botones */}
                     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+                        <Button 
+                            onClick={() => setShowTotalsDialog(true)}
+                            variant="outline"
+                            size="icon"
+                            className="min-h-[44px] min-w-[44px]"
+                        >
+                            <Info className="h-4 w-4" />
+                        </Button>
                         <Button 
                             onClick={handleOnClickAddLine} 
                             size="sm"
@@ -401,51 +404,78 @@ const OrderPlannedProductDetails = () => {
                             </DropdownMenu>
                         )}
                     </div>
+                    
+                    {/* Dialog de Totales */}
+                    <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
+                        <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col' : ''}`}>
+                            <DialogHeader>
+                                <DialogTitle>Totales</DialogTitle>
+                            </DialogHeader>
+                            <div className={`${isMobile ? 'flex-1 flex flex-col items-center justify-center px-4' : ''}`}>
+                                <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
+                                    <div className="flex flex-col space-y-6">
+                                        <div className="space-y-2 text-center">
+                                            <p className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Cajas</p>
+                                            <p className="text-xl font-medium text-foreground">{formatInteger(totals.boxes)}</p>
+                                        </div>
+                                        <div className="space-y-2 pt-4 border-t text-center">
+                                            <p className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Cantidad</p>
+                                            <p className="text-xl font-medium text-foreground">{formatDecimalWeight(totals.quantity)}</p>
+                                        </div>
+                                        <div className="space-y-2 pt-4 border-t text-center">
+                                            <p className="text-xs font-normal text-muted-foreground uppercase tracking-wide">Precio promedio</p>
+                                            <p className="text-xl font-medium text-foreground">{formatDecimalCurrency(totals.averageUnitPrice)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             ) : (
-                <Card className='h-full flex flex-col bg-transparent'>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Tabla con los productos previstos en el pedido
-                            </p>
-                        </div>
-                        <div className="space-x-2">
+            <Card className='h-full flex flex-col bg-transparent'>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Tabla con los productos previstos en el pedido
+                        </p>
+                    </div>
+                    <div className="space-x-2">
                             <Button onClick={handleOnClickAddLine} size="default">
                                 <Plus size={16} className="mr-2" />
-                                Añadir línea
-                            </Button>
-                            {isSomeProductDetected && (
+                            Añadir línea
+                        </Button>
+                        {isSomeProductDetected && (
                                 <Button variant="secondary" className="animate-pulse" onClick={handleOnClickAddDetectedProducts} size="default">
                                     <GitBranchPlus size={16} className="mr-2" />
-                                    Añadir productos detectados
-                                </Button>
-                            )}
+                                Añadir productos detectados
+                            </Button>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6 flex-1 overflow-y-auto">
+                    {details.length === 0 ? (
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableBody>
+                                    <TableRow className='text-nowrap'>
+                                        <TableCell className='py-14'>
+                                            <EmptyState
+                                                title={'No existen productos previstos'}
+                                                description={'Añade productos a la previsión del pedido'}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
                         </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                        {details.length === 0 ? (
-                            <div className="rounded-md border">
-                                <Table>
-                                    <TableBody>
-                                        <TableRow className='text-nowrap'>
-                                            <TableCell className='py-14'>
-                                                <EmptyState
-                                                    title={'No existen productos previstos'}
-                                                    description={'Añade productos a la previsión del pedido'}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        ) : (
+                    ) : (
                             <div className="border rounded-md max-h-[500px] overflow-y-auto">
-                                <Table>
-                                    <TableHeader>
+                            <Table>
+                                <TableHeader>
                                         <TableRow>
-                                            <TableHead>Artículo</TableHead>
+                                        <TableHead>Artículo</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
                                             <TableHead className="text-right">Cantidad</TableHead>
                                             <TableHead className="text-right">Precio Unitario</TableHead>
@@ -453,9 +483,9 @@ const OrderPlannedProductDetails = () => {
                                             <TableHead className="text-right">Subtotal</TableHead>
                                             <TableHead className="text-right">Total</TableHead>
                                             <TableHead className="text-right">Acciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                         {details.map((detail, index) => {
                                             const quantity = Number(detail.quantity);
                                             const unitPrice = Number(detail.unitPrice);
@@ -465,108 +495,108 @@ const OrderPlannedProductDetails = () => {
 
                                             return (
                                                 <TableRow key={detail.id || detail.tempId}>
-                                                    <TableCell>
-                                                        {editIndex === index ? (
-                                                            <Combobox
-                                                                options={productOptions}
-                                                                value={detail.product.id}
-                                                                onChange={(e) => handleInputChange(index, 'product', e)}
-                                                                loading={optionsLoading}
-                                                            />
+                                            <TableCell>
+                                                {editIndex === index ? (
+                                                    <Combobox
+                                                        options={productOptions}
+                                                        value={detail.product.id}
+                                                        onChange={(e) => handleInputChange(index, 'product', e)}
+                                                        loading={optionsLoading}
+                                                    />
                                                         ) : (
                                                             detail.product.name || 'Sin producto'
                                                         )}
-                                                    </TableCell>
+                                            </TableCell>
                                                     <TableCell className="text-right">
-                                                        {editIndex === index ? (
-                                                            <Input
-                                                                type="number"
-                                                                value={detail.boxes}
-                                                                onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
+                                                {editIndex === index ? (
+                                                    <Input
+                                                        type="number"
+                                                        value={detail.boxes}
+                                                        onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
                                                                 className="w-20 text-right"
-                                                            />
+                                                    />
                                                         ) : (
                                                             formatInteger(detail.boxes)
                                                         )}
-                                                    </TableCell>
+                                            </TableCell>
                                                     <TableCell className="text-right">
-                                                        {editIndex === index ? (
-                                                            <Input
-                                                                type="number"
-                                                                value={detail.quantity}
-                                                                onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
+                                                {editIndex === index ? (
+                                                    <Input
+                                                        type="number"
+                                                        value={detail.quantity}
+                                                        onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
                                                                 className="w-24 text-right"
-                                                            />
+                                                    />
                                                         ) : (
                                                             formatDecimalWeight(detail.quantity)
                                                         )}
-                                                    </TableCell>
+                                            </TableCell>
                                                     <TableCell className="text-right">
-                                                        {editIndex === index ? (
-                                                            <Input
-                                                                type="number"
-                                                                value={detail.unitPrice}
-                                                                onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
+                                                {editIndex === index ? (
+                                                    <Input
+                                                        type="number"
+                                                        value={detail.unitPrice}
+                                                        onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
                                                                 className="w-24 text-right"
-                                                            />
+                                                    />
                                                         ) : (
                                                             formatDecimalCurrency(detail.unitPrice)
                                                         )}
-                                                    </TableCell>
+                                            </TableCell>
                                                     <TableCell className="text-right">
-                                                        {editIndex === index ? (
-                                                            <Combobox
-                                                                options={taxOptions}
-                                                                value={detail.tax.id}
+                                                {editIndex === index ? (
+                                                    <Combobox
+                                                        options={taxOptions}
+                                                        value={detail.tax.id}
                                                                 onChange={(e) => handleInputChange(index, 'tax', e)}
-                                                                loading={optionsLoading}
-                                                            />
+                                                        loading={optionsLoading}
+                                                    />
                                                         ) : (
                                                             `${taxRate}%`
                                                         )}
-                                                    </TableCell>
+                                            </TableCell>
                                                     <TableCell className="text-right">{formatDecimalCurrency(subtotal)}</TableCell>
                                                     <TableCell className="text-right">{formatDecimalCurrency(total)}</TableCell>
                                                     <TableCell className="text-right">
-                                                        {editIndex === index ? (
+                                                {editIndex === index ? (
                                                             <div className="flex justify-end gap-1">
                                                                 <Button onClick={handleOnClickSaveLine} size="sm">
                                                                     <Check size={16} />
-                                                                </Button>
+                                                        </Button>
                                                                 <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm">
                                                                     <X size={16} />
-                                                                </Button>
+                                                        </Button>
                                                             </div>
-                                                        ) : (
+                                                ) : (
                                                             <div className="flex justify-end gap-1">
                                                                 <Button onClick={() => setEditIndex(index)} size="sm" variant="outline">
                                                                     <Edit2 size={16} />
-                                                                </Button>
+                                                        </Button>
                                                                 <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="outline" className="text-destructive hover:text-destructive">
                                                                     <Trash2 size={16} />
-                                                                </Button>
+                                                        </Button>
                                                             </div>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
                                             );
                                         })}
-                                    </TableBody>
-                                    <TableFooter>
-                                        <TableRow>
+                                </TableBody>
+                                <TableFooter>
+                                    <TableRow>
                                             <TableCell colSpan={2} className="text-right font-semibold">Totales</TableCell>
                                             <TableCell className="text-right font-semibold">{formatInteger(totals.boxes)}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalWeight(totals.quantity)}</TableCell>
                                             <TableCell colSpan={2}></TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.averageUnitPrice)}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.totalAmount)}</TableCell>
-                                        </TableRow>
-                                    </TableFooter>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
             )}
         </div>
     );

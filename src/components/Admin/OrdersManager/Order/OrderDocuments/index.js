@@ -268,16 +268,16 @@ const OrderDocuments = () => {
 
     // Sección: Envío Personalizado de Documentos
     const customSection = (
-        <div>
-            <Card className="border  shadow-sm bg-transparent" >
-                <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-lg">
-                        Envío Personalizado de Documentos
-                    </CardTitle>
-                    <p className="text-neutral-500 text-sm">
-                        Haz una selección personalizada de los documentos a enviar
-                    </p>
-                </CardHeader>
+                        <div>
+                            <Card className="border  shadow-sm bg-transparent" >
+                                <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="text-lg">
+                                        Envío Personalizado de Documentos
+                                    </CardTitle>
+                                    <p className="text-neutral-500 text-sm">
+                                        Haz una selección personalizada de los documentos a enviar
+                                    </p>
+                                </CardHeader>
                                 <CardContent className="p-4 pt-2 flex w-full">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {recipients.map((recipient) => (
@@ -351,9 +351,9 @@ const OrderDocuments = () => {
                                 </CardContent>
                                 <CardFooter className={`p-4 pt-4 border-t ${isMobile ? 'flex-col gap-3' : 'flex items-center justify-between'}`}>
                                     <div className={`flex items-center ${isMobile ? 'w-full justify-between' : ''}`}>
-                                        <p className="text-sm font-medium">
+                                <p className="text-sm font-medium">
                                             {numberOfSelectedDocuments} {numberOfSelectedDocuments === 1 ? 'documento seleccionado' : 'documentos seleccionados'}
-                                        </p>
+                                </p>
                                         {numberOfSelectedDocuments > 0 && isMobile && (
                                             <Button
                                                 variant="outline"
@@ -368,24 +368,24 @@ const OrderDocuments = () => {
                                     </div>
                                     <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
                                         {numberOfSelectedDocuments > 0 && !isMobile && (
-                                            <Button
-                                                variant="outline"
-                                                onClick={handleOnClickResetSelectedDocs}
-                                                className='animate-pulse'
-                                            >
-                                                <Ban className="h-4 w-4 mr-2" />
-                                                Cancelar selección
-                                            </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={handleOnClickResetSelectedDocs}
+                                            className='animate-pulse'
+                                        >
+                                            <Ban className="h-4 w-4 mr-2" />
+                                            Cancelar selección
+                                        </Button>
                                         )}
                                         <Button 
                                             onClick={handleOnClickSendSelectedDocuments}
                                             className={isMobile ? 'w-full' : ''}
                                             disabled={numberOfSelectedDocuments === 0}
                                         >
-                                            <Send className="h-4 w-4 mr-2" />
-                                            Enviar selección
-                                        </Button>
-                                    </div>
+                                        <Send className="h-4 w-4 mr-2" />
+                                        Enviar selección
+                                    </Button>
+                                </div>
                                 </CardFooter>
                             </Card>
                         </div>
@@ -393,73 +393,73 @@ const OrderDocuments = () => {
 
     // Sección: Envío Múltiple Destinatario
     const multipleSection = (
-        <Card className="border  shadow-sm bg-transparent">
-            <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-lg">
-                    Envío Múltiple Destinatario
-                </CardTitle>
-                <p className="text-neutral-500 text-sm">
-                    Seleccione un documento para enviarlo a múltiples destinatarios
-                </p>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-sm font-medium mb-2 block">
-                            Documento a enviar:
-                        </label>
-                        <Select value={selectedDocument} onValueChange={setSelectedDocument}>
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Seleccione un documento" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {availableDocuments.map((doc) => (
-                                    <SelectItem key={doc.id} value={doc.id}>
-                                        {doc.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                                <Card className="border  shadow-sm bg-transparent">
+                                    <CardHeader className="p-4 pb-2">
+                                        <CardTitle className="text-lg">
+                                            Envío Múltiple Destinatario
+                                        </CardTitle>
+                                        <p className="text-neutral-500 text-sm">
+                                            Seleccione un documento para enviarlo a múltiples destinatarios
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent className="p-4 pt-2">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-sm font-medium mb-2 block">
+                                                    Documento a enviar:
+                                                </label>
+                                                <Select value={selectedDocument} onValueChange={setSelectedDocument}>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Seleccione un documento" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableDocuments.map((doc) => (
+                                                            <SelectItem key={doc.id} value={doc.id}>
+                                                                {doc.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
 
-                    <div>
-                        <label className="text-sm font-medium mb-2 block">
-                            Destinatarios:
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            {recipients.map((recipient) => (
-                                <div
-                                    key={recipient.name}
-                                    className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.name]
-                                        ? " bg-primary/20"
-                                        : ""
-                                        }`}
-                                    onClick={() => toggleRecipientSelection(recipient.name)}
-                                >
-                                    <div
-                                        className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.name]
-                                            ? ""
-                                            : ""
-                                            }`}
-                                    >
-                                        {recipient.icon}
-                                    </div>
-                                    <span className="text-sm font-medium">
-                                        {recipient.label}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0">
-                <Button onClick={handleOnClickSendMultiple}>
-                    <Send className="h-4 w-4 mr-2" />
-                    Enviar documento
-                </Button>
-            </CardFooter>
-        </Card>
+                                            <div>
+                                                <label className="text-sm font-medium mb-2 block">
+                                                    Destinatarios:
+                                                </label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                    {recipients.map((recipient) => (
+                                                        <div
+                                                            key={recipient.name}
+                                                            className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.name]
+                                                                ? " bg-primary/20"
+                                                                : ""
+                                                                }`}
+                                                            onClick={() => toggleRecipientSelection(recipient.name)}
+                                                        >
+                                                            <div
+                                                                className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.name]
+                                                                    ? ""
+                                                                    : ""
+                                                                    }`}
+                                                            >
+                                                                {recipient.icon}
+                                                            </div>
+                                                            <span className="text-sm font-medium">
+                                                                {recipient.label}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter className="p-4 pt-0">
+                                        <Button onClick={handleOnClickSendMultiple}>
+                                            <Send className="h-4 w-4 mr-2" />
+                                            Enviar documento
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
     );
 
     const content = (
@@ -481,8 +481,8 @@ const OrderDocuments = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-2">
                             {multipleSection}
-                        </div>
-                        <div className="md:col-span-1">
+                            </div>
+                            <div className="md:col-span-1">
                             {standardSection}
                         </div>
                     </div>
@@ -503,8 +503,8 @@ const OrderDocuments = () => {
                 <Card className='h-full flex flex-col bg-transparent'>
                     <CardContent className="flex-1 overflow-y-auto py-6">
                         {content}
-                    </CardContent>
-                </Card>
+                </CardContent>
+            </Card>
             )}
         </div>
     );

@@ -269,7 +269,7 @@ export default function OrdersManager() {
             return (
                 <div className='h-full flex flex-col overflow-hidden'>
                     <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} />
-                </div>
+                    </div>
             );
         }
         return (

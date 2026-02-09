@@ -36,9 +36,9 @@ const OrderProduction = () => {
                     <div>
                         <CardTitle className={isMobile ? "text-base font-medium" : "text-lg font-medium"}>Productos del Pedido</CardTitle>
                         {!isMobile && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Comparación entre productos registrados y paletizados
-                            </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Comparación entre productos registrados y paletizados
+                        </p>
                         )}
                     </div>
                 </CardHeader>
@@ -62,18 +62,18 @@ const OrderProduction = () => {
                                     />
                                 </div>
                             ) : (
-                                <Table>
-                                    <TableBody>
-                                        <TableRow className='text-nowrap'>
-                                            <TableCell className='py-14'>
-                                                <EmptyState
-                                                    title={'No existen productos'}
-                                                    description={'No se han añadido productos a este pedido'}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
+                            <Table>
+                                <TableBody>
+                                    <TableRow className='text-nowrap'>
+                                        <TableCell className='py-14'>
+                                            <EmptyState
+                                                title={'No existen productos'}
+                                                description={'No se han añadido productos a este pedido'}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
                             )}
                         </div>
                     ) : (
@@ -170,90 +170,90 @@ const OrderProduction = () => {
                                 </div>
                             ) : (
                                 /* Vista Desktop: Tabla */
-                                <div className="rounded-md border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="">Artículo</TableHead>
-                                                <TableHead>Pedido</TableHead>
-                                                <TableHead>Produccion</TableHead>
-                                                <TableHead>Diferencia</TableHead>
-                                                <TableHead>Estado</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {mergedProductDetails.map((detail) => (
-                                                <TableRow key={`${detail.product.id}-${detail.status}`} className='text-nowrap'>
-                                                    <TableCell className="font-medium">{detail.product.name}</TableCell>
-                                                    <TableCell>
-                                                        {detail.status === 'noPlanned' ? (
-                                                            <div className="space-y-1">
-                                                                <div>-</div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="space-y-1">
-                                                                <div>{formatDecimalWeight(detail.plannedQuantity)}</div>
-                                                                <div className="text-sm text-muted-foreground">{formatInteger(detail.plannedBoxes)} cajas</div>
-                                                            </div>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {detail.productionQuantity === 0 && detail.productionBoxes === 0
-                                                            ? '-'
-                                                            : (
-                                                                <div className="space-y-1">
-                                                                    <div>{formatDecimalWeight(detail.productionQuantity)}</div>
-                                                                    <div className="text-sm text-muted-foreground">{formatInteger(detail.productionBoxes)} cajas</div>
-                                                                </div>
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {detail.status === 'noPlanned' ? '-' : formatDecimalWeight(detail.quantityDifference)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-end gap-2">
-                                                            {detail.status === 'success' ? (
-                                                                <Badge variant="success" className="bg-green-500 text-foreground-50">
-                                                                    Correcto
-                                                                </Badge>
-                                                            ) : detail.status === 'difference' ? (
-                                                                <Badge variant="warning" className="bg-orange-500">
-                                                                    Diferencia
-                                                                </Badge>
-                                                            ) : detail.status === 'noPlanned' ? (
-                                                                <Badge variant="destructive">
-                                                                    No previsto
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge >
-                                                                    Pendiente
-                                                                </Badge>
-                                                            )}
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="">Artículo</TableHead>
+                                        <TableHead>Pedido</TableHead>
+                                        <TableHead>Produccion</TableHead>
+                                        <TableHead>Diferencia</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {mergedProductDetails.map((detail) => (
+                                        <TableRow key={`${detail.product.id}-${detail.status}`} className='text-nowrap'>
+                                            <TableCell className="font-medium">{detail.product.name}</TableCell>
+                                            <TableCell>
+                                                {detail.status === 'noPlanned' ? (
+                                                    <div className="space-y-1">
+                                                        <div>-</div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-1">
+                                                        <div>{formatDecimalWeight(detail.plannedQuantity)}</div>
+                                                        <div className="text-sm text-muted-foreground">{formatInteger(detail.plannedBoxes)} cajas</div>
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {detail.productionQuantity === 0 && detail.productionBoxes === 0
+                                                    ? '-'
+                                                    : (
+                                                        <div className="space-y-1">
+                                                            <div>{formatDecimalWeight(detail.productionQuantity)}</div>
+                                                            <div className="text-sm text-muted-foreground">{formatInteger(detail.productionBoxes)} cajas</div>
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                        <TableFooter className='text-nowrap'>
-                                            <TableRow>
-                                                <TableCell className="font-medium">Total</TableCell>
-                                                <TableCell>
-                                                    {formatDecimalWeight(totals.plannedQuantity)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {formatDecimalWeight(totals.productionQuantity)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {formatDecimalWeight(totals.quantityDifference)}
-                                                </TableCell>
-                                                <TableCell>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
-                                </div>
+                                                    )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {detail.status === 'noPlanned' ? '-' : formatDecimalWeight(detail.quantityDifference)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-end gap-2">
+                                                    {detail.status === 'success' ? (
+                                                        <Badge variant="success" className="bg-green-500 text-foreground-50">
+                                                            Correcto
+                                                        </Badge>
+                                                    ) : detail.status === 'difference' ? (
+                                                        <Badge variant="warning" className="bg-orange-500">
+                                                            Diferencia
+                                                        </Badge>
+                                                    ) : detail.status === 'noPlanned' ? (
+                                                        <Badge variant="destructive">
+                                                            No previsto
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge >
+                                                            Pendiente
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                                <TableFooter className='text-nowrap'>
+                                    <TableRow>
+                                        <TableCell className="font-medium">Total</TableCell>
+                                        <TableCell>
+                                            {formatDecimalWeight(totals.plannedQuantity)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalWeight(totals.productionQuantity)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatDecimalWeight(totals.quantityDifference)}
+                                        </TableCell>
+                                        <TableCell>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                        </div>
                             )}
                         </>
                     )}

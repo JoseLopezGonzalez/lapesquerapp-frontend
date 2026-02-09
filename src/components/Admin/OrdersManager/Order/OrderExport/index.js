@@ -51,83 +51,83 @@ const OrderExport = () => {
                     <h3 className="text-base font-semibold mb-1">Exportación rápida</h3>
                     <p className="text-sm text-muted-foreground">Exporta documentos comunes con un solo clic</p>
                 </div>
-                <div className="border rounded-lg p-4 space-y-3">
-                    <div className="grid gap-2">
-                        {
-                            fastExportDocuments.map((doc) => (
-                                <Button
-                                    key={doc.name}
-                                    variant="outline"
-                                    className="justify-start"
-                                    onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
-                                >
-                                    {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
-                                    {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
-                                    {doc.label}
-                                </Button>
-                            ))
-                        }
-                    </div>
-                    <Button className="w-full" onClick={handleOnClickExportAll}>
+                        <div className="border rounded-lg p-4 space-y-3">
+                            <div className="grid gap-2">
+                                {
+                                    fastExportDocuments.map((doc) => (
+                                        <Button
+                                            key={doc.name}
+                                            variant="outline"
+                                            className="justify-start"
+                                            onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
+                                        >
+                                            {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
+                                            {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
+                                            {doc.label}
+                                        </Button>
+                                    ))
+                                }
+                            </div>
+                            <Button className="w-full" onClick={handleOnClickExportAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                        Exportar todos
-                    </Button>
-                </div>
+                                Exportar todos
+                            </Button>
+                        </div>
             </div>
 
             {/* Separador en mobile */}
             {isMobile && <Separator />}
 
             {/* Exportación por selección */}
-            <div className="space-y-4">
+                        <div className="space-y-4">
                 <div className={isMobile ? "text-center" : ""}>
                     <h3 className="text-base font-semibold mb-1">Exportación por selección</h3>
                     <p className="text-sm text-muted-foreground">Selecciona un documento específico para exportar</p>
                 </div>
                 <div className="border rounded-lg p-4 space-y-4">
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <Select onValueChange={(value) => setSelectedDocument(value)} value={selectedDocument}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {exportDocuments.map((doc) => (
-                                        <SelectItem key={doc.name} value={doc.name}>
-                                            {doc.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="w-[150px]">
-                            <Select value={selectedType} onValueChange={(value) => setSelectedType(value)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent align="end">
-                                    {exportDocuments.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
-                                        <SelectItem key={type} value={type} >
-                                            {type}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-4">
+                                <div className="flex-1">
+                                    <Select onValueChange={(value) => setSelectedDocument(value)} value={selectedDocument}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {exportDocuments.map((doc) => (
+                                                <SelectItem key={doc.name} value={doc.name}>
+                                                    {doc.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="w-[150px]">
+                                    <Select value={selectedType} onValueChange={(value) => setSelectedType(value)}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent align="end">
+                                            {exportDocuments.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
+                                                <SelectItem key={type} value={type} >
+                                                    {type}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                    {!isMobile && (
+                            <div className="flex flex-wrap gap-2">
+                                {exportDocuments.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
+                                    <Badge key={field} variant="outline">{field}</Badge>
+                                ))}
+                            </div>
+                    )}
+                            <Button className="w-full" onClick={handleOnClickSelectExport}>
+                        <Download className="h-4 w-4 mr-2" />
+                                Exportar selección
+                            </Button>
                         </div>
                     </div>
-                    {!isMobile && (
-                        <div className="flex flex-wrap gap-2">
-                            {exportDocuments.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
-                                <Badge key={field} variant="outline">{field}</Badge>
-                            ))}
-                        </div>
-                    )}
-                    <Button className="w-full" onClick={handleOnClickSelectExport}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar selección
-                    </Button>
-                </div>
-            </div>
         </div>
     );
 
@@ -145,8 +145,8 @@ const OrderExport = () => {
                 <Card className='h-full flex flex-col bg-transparent'>
                     <CardContent className="flex-1 overflow-y-auto py-2">
                         {content}
-                    </CardContent>
-                </Card>
+                </CardContent>
+            </Card>
             )}
         </div>
     )

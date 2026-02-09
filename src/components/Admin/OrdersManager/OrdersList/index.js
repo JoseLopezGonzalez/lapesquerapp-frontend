@@ -140,43 +140,43 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
                                 Pedidos Activos
                             </h2>
-                            {orders.length > 0 && (
-                                <p className='text-xs sm:text-sm text-muted-foreground'>
-                                    {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
-                                </p>
-                            )}
-                        </div>
+                    {orders.length > 0 && (
+                        <p className='text-xs sm:text-sm text-muted-foreground'>
+                            {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
+                        </p>
+                    )}
+                </div>
                         {/* Botones de acción en desktop */}
                         <div className="flex items-center gap-2">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                                     <Button
                                         variant="default"
                                         size="icon"
                                         onClick={onClickAddNewOrder}
                                     >
                                         <Plus className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
                                     <p>Crear nuevo pedido</p>
-                                </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                                     <Button
                                         variant="outline"
                                         size="icon"
                                         onClick={handleExportActivePlannedProducts}
                                     >
                                         <Download className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
                                     <p>Exportar productos planificados activos</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
                     </div>
                 )}
             </div>
@@ -297,18 +297,18 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                 className="h-full w-full"
                             >
                                 <div className={`flex flex-col gap-3 ${isMobile ? 'pt-2 pb-6' : 'pr-2 pb-4'}`}>
-                                    {orders.map((order) => (
+                                {orders.map((order) => (
                                         <div key={order.id}>
-                                            <OrderCard
-                                                onClick={() => onClickOrderCard(order.id)}
-                                                order={order}
-                                                disabled={disabled}
-                                                isSelected={selectedOrderId === order.id}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </ScrollArea>
+                                        <OrderCard
+                                            onClick={() => onClickOrderCard(order.id)}
+                                            order={order}
+                                            disabled={disabled}
+                                            isSelected={selectedOrderId === order.id}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
                         </div>
                     ) : (
                         <div className={`flex flex-col items-center justify-center gap-4 h-full w-full ${isMobile ? 'py-6' : 'py-8'}`}>

@@ -98,10 +98,10 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
 
             <div className={`grow w-full max-w-xs xl:max-w-none ${isMobile ? 'space-y-3' : 'space-y-2 sm:space-y-2'}`}>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <StatusBadge
-                        color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
-                        label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
-                    />
+                <StatusBadge
+                    color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
+                    label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
+                />
                 </div>
                 <h3 className={`font-bold ${isMobile ? 'text-xl' : 'text-base sm:text-lg font-semibold'}`}>#{orderId}</h3>
                 <div>
@@ -113,8 +113,8 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                     <div>
                         <p className={`${isSelected ? 'text-foreground/80' : 'text-muted-foreground'} mb-1 ${isMobile ? 'text-xs font-medium' : 'text-xs'}`}>Fecha de Carga</p>
                         <p className={`font-semibold ${isMobile ? 'text-base' : 'text-base sm:text-lg font-medium'}`}>
-                            {loadDate}
-                        </p>
+                        {loadDate}
+                    </p>
                     </div>
                     {/* Información adicional en mobile si está disponible */}
                     {isMobile && order.numberOfBoxes && (

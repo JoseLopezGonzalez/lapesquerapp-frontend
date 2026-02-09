@@ -737,172 +737,172 @@ const OrderPallets = () => {
                     </div>
                 </div>
             ) : (
-                <Card className='h-full flex flex-col bg-transparent'>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle className="text-lg font-medium">Gestión de Palets</CardTitle>
-                            <CardDescription>Modifica los palets de la orden</CardDescription>
-                        </div>
-                        <div className="flex gap-2">
-                            {pallets && pallets.length > 0 && (
-                                <Button 
-                                    variant="outline" 
-                                    onClick={handleUnlinkAllPallets}
-                                    disabled={isUnlinkingAll}
-                                >
-                                    {isUnlinkingAll ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            Desvinculando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Unlink className="h-4 w-4 mr-2" />
-                                            Desvincular todos
-                                        </>
-                                    )}
-                                </Button>
-                            )}
+            <Card className='h-full flex flex-col bg-transparent'>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="text-lg font-medium">Gestión de Palets</CardTitle>
+                        <CardDescription>Modifica los palets de la orden</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                        {pallets && pallets.length > 0 && (
+                            <Button 
+                                variant="outline" 
+                                onClick={handleUnlinkAllPallets}
+                                disabled={isUnlinkingAll}
+                            >
+                                {isUnlinkingAll ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Desvinculando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Unlink className="h-4 w-4 mr-2" />
+                                        Desvincular todos
+                                    </>
+                                )}
+                            </Button>
+                        )}
                             <Button 
                                 variant="outline" 
                                 onClick={handleOpenLinkPalletsDialog}
                             >
-                                <Link2 className="h-4 w-4 mr-2" />
-                                Vincular palets existentes
-                            </Button>
+                            <Link2 className="h-4 w-4 mr-2" />
+                            Vincular palets existentes
+                        </Button>
                             <Button 
                                 onClick={handleOpenNewPallet}
                             >
                                 <Plus className="h-4 w-4 mr-2" />
-                                Crear palet
-                            </Button>
+                            Crear palet
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-auto">
+                    {pallets.length === 0 ? (
+                        <div className="flex items-center justify-center min-h-[400px]">
+                            <EmptyState
+                                title={'No existen palets vinculados'}
+                                description={'No se han añadido palets a este pedido'}
+                            />
                         </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 overflow-auto">
-                        {pallets.length === 0 ? (
-                            <div className="flex items-center justify-center min-h-[400px]">
-                                <EmptyState
-                                    title={'No existen palets vinculados'}
-                                    description={'No se han añadido palets a este pedido'}
-                                />
-                            </div>
-                        ) : (
-                            <div className="border rounded-md max-h-[500px] overflow-y-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>ID</TableHead>
-                                            <TableHead>Productos</TableHead>
-                                            <TableHead>Lotes</TableHead>
-                                            <TableHead>Observaciones</TableHead>
-                                            <TableHead className="text-right">Cajas</TableHead>
-                                            <TableHead className="text-right">Peso Neto</TableHead>
-                                            <TableHead className="text-right">Acciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {pallets.map((pallet) => {
-                                            const productNames = pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
-                                                ? pallet.productsNames.join('\n')
-                                                : '';
-                                            const lots = pallet.lots && Array.isArray(pallet.lots) && pallet.lots.length > 0
-                                                ? pallet.lots.join(', ')
-                                                : '';
-                                            const observations = pallet.observations || '';
-                                            const belongsToReception = pallet?.receptionId !== null && pallet?.receptionId !== undefined;
+                    ) : (
+                        <div className="border rounded-md max-h-[500px] overflow-y-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Productos</TableHead>
+                                        <TableHead>Lotes</TableHead>
+                                        <TableHead>Observaciones</TableHead>
+                                        <TableHead className="text-right">Cajas</TableHead>
+                                        <TableHead className="text-right">Peso Neto</TableHead>
+                                        <TableHead className="text-right">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {pallets.map((pallet) => {
+                                        const productNames = pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
+                                            ? pallet.productsNames.join('\n')
+                                            : '';
+                                        const lots = pallet.lots && Array.isArray(pallet.lots) && pallet.lots.length > 0
+                                            ? pallet.lots.join(', ')
+                                            : '';
+                                        const observations = pallet.observations || '';
+                                        const belongsToReception = pallet?.receptionId !== null && pallet?.receptionId !== undefined;
 
-                                            return (
-                                                <TableRow key={pallet.id} className="border-b border-muted last:border-0 hover:bg-muted/20">
-                                                    <TableCell className="px-4 py-3">{pallet.id}</TableCell>
-                                                    <TableCell className="px-4 py-3 whitespace-pre-wrap">{productNames || '-'}</TableCell>
-                                                    <TableCell className="px-4 py-3 max-w-[150px] truncate" title={lots}>
-                                                        {lots || '-'}
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 max-w-[200px] truncate" title={observations}>
-                                                        {observations || '-'}
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-right text-nowrap">
-                                                        {formatDecimalWeight(pallet.netWeight || 0)}
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="flex justify-end gap-1">
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => handleOpenEditPallet(pallet.id)}
-                                                                        title={belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}
-                                                                    >
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>{belongsToReception ? "Ver palet" : "Editar palet"}</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => handleClonePallet(pallet.id)}
-                                                                        disabled={belongsToReception || isCloning}
-                                                                    >
-                                                                        <Copy className="h-4 w-4" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Clonar palet</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => handleUnlinkPallet(pallet.id)}
-                                                                        disabled={unlinkingPalletId === pallet.id}
-                                                                    >
-                                                                        {unlinkingPalletId === pallet.id ? (
-                                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                                        ) : (
-                                                                            <Unlink className="h-4 w-4" />
-                                                                        )}
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Desvincular palet</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        onClick={() => handleDeletePallet(pallet.id)}
-                                                                        disabled={belongsToReception}
-                                                                        className="text-destructive hover:text-destructive"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Eliminar palet</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                        return (
+                                            <TableRow key={pallet.id} className="border-b border-muted last:border-0 hover:bg-muted/20">
+                                                <TableCell className="px-4 py-3">{pallet.id}</TableCell>
+                                                <TableCell className="px-4 py-3 whitespace-pre-wrap">{productNames || '-'}</TableCell>
+                                                <TableCell className="px-4 py-3 max-w-[150px] truncate" title={lots}>
+                                                    {lots || '-'}
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 max-w-[200px] truncate" title={observations}>
+                                                    {observations || '-'}
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
+                                                <TableCell className="px-4 py-3 text-right text-nowrap">
+                                                    {formatDecimalWeight(pallet.netWeight || 0)}
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => handleOpenEditPallet(pallet.id)}
+                                                                    title={belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>{belongsToReception ? "Ver palet" : "Editar palet"}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => handleClonePallet(pallet.id)}
+                                                                    disabled={belongsToReception || isCloning}
+                                                                >
+                                                                    <Copy className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Clonar palet</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => handleUnlinkPallet(pallet.id)}
+                                                                    disabled={unlinkingPalletId === pallet.id}
+                                                                >
+                                                                    {unlinkingPalletId === pallet.id ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
+                                                                        <Unlink className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Desvincular palet</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => handleDeletePallet(pallet.id)}
+                                                                    disabled={belongsToReception}
+                                                                    className="text-destructive hover:text-destructive"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Eliminar palet</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
             )}
 
             {/* Store Selection Modal */}
