@@ -575,6 +575,14 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
         const remainingQuantity = plannedQuantity - completedQuantity
         const remainingBoxes = plannedBoxes - completedBoxes
         
+        // Generar array de palets para pruebas (formato #0563)
+        const paletsArray = []
+        const numPallets = order.numberOfPallets || 0
+        const basePaletNumber = order.id * 100 // Base para generar números únicos
+        for (let i = 0; i < numPallets; i++) {
+          paletsArray.push(basePaletNumber + i)
+        }
+        
         productGroup.orders.push({
           orderId: order.id,
           order: order,
@@ -591,7 +599,9 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
           customer: order.customer,
           status: order.status,
           temperature: order.temperature,
-          transport: order.transport
+          transport: order.transport,
+          numberOfPallets: order.numberOfPallets || 0,
+          palets: paletsArray
         })
       })
     })
@@ -754,8 +764,15 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                 {currentProduct.name}
               </CardTitle>
               
-              {/* Totales usando Badges de shadcn - en fila horizontal */}
+              {/* Indicador pause/play y totales usando Badges de shadcn - en fila horizontal */}
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-muted border-2 border-border">
+                  {isAutoPlay ? (
+                    <Pause className="h-10 w-10 text-foreground" />
+                  ) : (
+                    <Play className="h-10 w-10 text-foreground ml-1" />
+                  )}
+                </div>
                 <Badge variant="default" className="gap-2 px-6 py-4 text-3xl sm:text-4xl font-bold">
                   <Package className="h-8 w-8" />
                   <span>{formatInteger(totalBoxes)} cajas</span> 
@@ -810,7 +827,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* Separador */}
                               <Separator className="opacity-40" />
 
-                              {/* Tres bloques de cantidades: horizontal si hay completado, vertical si está completado */}
+                              {/* Cuatro bloques de cantidades: horizontal si hay completado, vertical si está completado */}
                               <div className={`flex items-start gap-2 sm:gap-3 flex-wrap justify-center ${lineStatusConfig.color === 'green' ? 'flex-col' : ''}`}>
                                 {/* Bloque 1: Pedido (Planificado) */}
                                 <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
@@ -869,48 +886,138 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                   </div>
                                 )}
 
-                                {/* Bloque 3: Sobrante/Restante/Diferencia - usa fondo destacado y color de texto del estado del card */}
-                                <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
-                                  {(() => {
-                                    const completed = orderItem.completedQuantity || 0
-                                    const planned = orderItem.quantity || 0
-                                    let blockTitle = 'Restante'
-                                    
-                                    if (completed > planned) {
-                                      blockTitle = 'Sobrante'
-                                    } else if (Math.abs(completed - planned) < 0.01 || (orderItem.remainingQuantity || 0) <= 0) {
-                                      blockTitle = 'Diferencia'
-                                    }
-                                    
-                                    return (
-                                      <>
-                                        <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">{blockTitle}</p>
-                                        <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
-                                          <div className="flex items-center justify-center">
-                                            <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
-                                              <span>
-                                                {completed > planned
-                                                  ? formatInteger(Math.abs(orderItem.remainingBoxes || 0))
-                                                  : formatInteger(orderItem.remainingBoxes || 0)
-                                                }
-                                              </span>
-                                              <span className="opacity-70 text-lg font-semibold">/c</span>
+                                {/* Bloque 3 y 4: Diferencia y Palets - cuando está completado van juntos en una fila */}
+                                {lineStatusConfig.color === 'green' ? (
+                                  <div className="flex items-start gap-2 sm:gap-3 w-full">
+                                    {/* Bloque 3: Diferencia */}
+                                    <div className="text-center flex-1 min-w-[140px]">
+                                      {(() => {
+                                        const completed = orderItem.completedQuantity || 0
+                                        const planned = orderItem.quantity || 0
+                                        let blockTitle = 'Restante'
+                                        
+                                        if (completed > planned) {
+                                          blockTitle = 'Sobrante'
+                                        } else if (Math.abs(completed - planned) < 0.01 || (orderItem.remainingQuantity || 0) <= 0) {
+                                          blockTitle = 'Diferencia'
+                                        }
+                                        
+                                        return (
+                                          <>
+                                            <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">{blockTitle}</p>
+                                            <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
+                                              <div className="flex items-center justify-center">
+                                                <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                                  <span>
+                                                    {completed > planned
+                                                      ? formatInteger(Math.abs(orderItem.remainingBoxes || 0))
+                                                      : formatInteger(orderItem.remainingBoxes || 0)
+                                                    }
+                                                  </span>
+                                                  <span className="opacity-70 text-lg font-semibold">/c</span>
+                                                </p>
+                                              </div>
+                                              <div className={`w-full h-[1px] ${lineStatusConfig.borderColor.replace('border-', 'bg-')} opacity-80`} />
+                                              <div className="flex items-center justify-center">
+                                                <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                                  {completed > planned
+                                                    ? formatDecimalWeight(Math.abs(orderItem.remainingQuantity || 0))
+                                                    : formatDecimalWeight(orderItem.remainingQuantity || 0)
+                                                  }
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </>
+                                        )
+                                      })()}
+                                    </div>
+
+                                    {/* Bloque 4: Palets */}
+                                    <div className="text-center flex-1 min-w-[140px]">
+                                      <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Palets</p>
+                                      <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                                        <div className="flex flex-col items-center gap-1">
+                                          {(orderItem.palets && orderItem.palets.length > 0) ? (
+                                            orderItem.palets.slice(0, 3).map((paletNumber, idx) => (
+                                              <p key={idx} className="text-xl sm:text-2xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                                #{paletNumber.toString().padStart(4, '0')}
+                                              </p>
+                                            ))
+                                          ) : (
+                                            <p className="text-2xl sm:text-3xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                              {orderItem.numberOfPallets || orderItem.order?.numberOfPallets || 0}
                                             </p>
-                                          </div>
-                                          <div className={`w-full h-[1px] ${lineStatusConfig.borderColor.replace('border-', 'bg-')} opacity-80`} />
-                                          <div className="flex items-center justify-center">
-                                            <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
-                                              {completed > planned
-                                                ? formatDecimalWeight(Math.abs(orderItem.remainingQuantity || 0))
-                                                : formatDecimalWeight(orderItem.remainingQuantity || 0)
-                                              }
-                                            </p>
-                                          </div>
+                                          )}
                                         </div>
-                                      </>
-                                    )
-                                  })()}
-                                </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    {/* Bloque 3: Sobrante/Restante - cuando NO está completado */}
+                                    <div className="text-center flex-1 min-w-[140px]">
+                                      {(() => {
+                                        const completed = orderItem.completedQuantity || 0
+                                        const planned = orderItem.quantity || 0
+                                        let blockTitle = 'Restante'
+                                        
+                                        if (completed > planned) {
+                                          blockTitle = 'Sobrante'
+                                        } else if (Math.abs(completed - planned) < 0.01 || (orderItem.remainingQuantity || 0) <= 0) {
+                                          blockTitle = 'Diferencia'
+                                        }
+                                        
+                                        return (
+                                          <>
+                                            <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">{blockTitle}</p>
+                                            <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
+                                              <div className="flex items-center justify-center">
+                                                <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                                  <span>
+                                                    {completed > planned
+                                                      ? formatInteger(Math.abs(orderItem.remainingBoxes || 0))
+                                                      : formatInteger(orderItem.remainingBoxes || 0)
+                                                    }
+                                                  </span>
+                                                  <span className="opacity-70 text-lg font-semibold">/c</span>
+                                                </p>
+                                              </div>
+                                              <div className={`w-full h-[1px] ${lineStatusConfig.borderColor.replace('border-', 'bg-')} opacity-80`} />
+                                              <div className="flex items-center justify-center">
+                                                <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                                  {completed > planned
+                                                    ? formatDecimalWeight(Math.abs(orderItem.remainingQuantity || 0))
+                                                    : formatDecimalWeight(orderItem.remainingQuantity || 0)
+                                                  }
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </>
+                                        )
+                                      })()}
+                                    </div>
+
+                                    {/* Bloque 4: Palets */}
+                                    <div className="text-center flex-1 min-w-[140px]">
+                                      <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Palets</p>
+                                      <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                                        <div className="flex flex-col items-center gap-1">
+                                          {(orderItem.palets && orderItem.palets.length > 0) ? (
+                                            orderItem.palets.slice(0, 3).map((paletNumber, idx) => (
+                                              <p key={idx} className="text-xl sm:text-2xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                                #{paletNumber.toString().padStart(4, '0')}
+                                              </p>
+                                            ))
+                                          ) : (
+                                            <p className="text-2xl sm:text-3xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                              {orderItem.numberOfPallets || orderItem.order?.numberOfPallets || 0}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             </div>
                           </CardContent>
