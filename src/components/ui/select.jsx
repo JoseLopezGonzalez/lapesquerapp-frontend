@@ -20,7 +20,7 @@ const SelectValue = React.forwardRef(({ className, loading, placeholder, value, 
   // Si está cargando pero no hay valor, mostrar mensaje de carga
   if (loading && !value) {
     return (
-      <span className={cn("text-muted-foreground", className)} ref={ref} {...props}>
+      <span className={cn("text-base md:text-sm text-muted-foreground", className)} ref={ref} {...props}>
         Cargando opciones...
       </span>
     )
@@ -29,7 +29,7 @@ const SelectValue = React.forwardRef(({ className, loading, placeholder, value, 
   // Si está cargando pero hay un valor y encontramos la opción, mostrar el label
   if (loading && value && selectedOption) {
     return (
-      <span className={className} ref={ref} {...props}>
+      <span className={cn("text-base md:text-sm", className)} ref={ref} {...props}>
         {selectedOption.label}
       </span>
     )
@@ -38,14 +38,14 @@ const SelectValue = React.forwardRef(({ className, loading, placeholder, value, 
   // Si está cargando, hay valor pero no encontramos la opción, mostrar el valor como fallback
   if (loading && value && !selectedOption) {
     return (
-      <span className={cn("text-muted-foreground", className)} ref={ref} {...props}>
+      <span className={cn("text-base md:text-sm text-muted-foreground", className)} ref={ref} {...props}>
         Cargando...
       </span>
     )
   }
 
   // Comportamiento normal cuando no está cargando
-  return <SelectPrimitive.Value ref={ref} className={className} placeholder={placeholder} {...props} />
+  return <SelectPrimitive.Value ref={ref} className={cn("text-base md:text-sm", className)} placeholder={placeholder} {...props} />
 })
 SelectValue.displayName = SelectPrimitive.Value.displayName
 
@@ -57,7 +57,7 @@ const SelectTrigger = React.forwardRef(({ className, children, loading, disabled
       ref={ref}
       disabled={isDisabled}
       className={cn(
-        "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        "flex h-12 md:h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
         className
       )}
       {...props}>

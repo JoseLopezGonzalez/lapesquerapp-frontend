@@ -65,7 +65,7 @@ export function Combobox({
           disabled={isDisabled}
           className=" justify-between w-full overflow-hidden"
         >
-          <div className="w-full  truncate text-start">
+          <div className="w-full truncate text-start text-base md:text-sm">
             {loading && !value ? (
               // Solo mostrar "Cargando..." si no hay valor seleccionado
               <span className="text-muted-foreground">Cargando opciones...</span>
