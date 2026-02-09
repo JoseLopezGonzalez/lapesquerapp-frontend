@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History } from 'lucide-react';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -274,15 +274,15 @@ const OrderContent = ({ onLoading, onClose }) => {
                     <div className={`px-4 pt-6 ${onClose ? 'pb-24' : 'pb-2'}`} style={onClose ? { paddingBottom: `calc(6rem + env(safe-area-inset-bottom))` } : {}}>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { id: 'details', title: 'Detalles', component: OrderDetails, icon: FileText },
+                          { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
                           { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
                           { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: Boxes },
                           { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
                           { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
-                          { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tag },
+                          { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
                           { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true, icon: FileCheck },
-                          { id: 'export', title: 'Exportar', component: OrderExport, lazy: true, icon: Download },
-                          { id: 'map', title: 'Mapa', component: OrderMap, lazy: true, icon: MapPin },
+                          { id: 'export', title: 'Descargas', component: OrderExport, lazy: true, icon: Download },
+                          { id: 'map', title: 'Ruta', component: OrderMap, lazy: true, icon: Map },
                           { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true, icon: AlertTriangle },
                           { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
                         ].map((section) => {
@@ -333,15 +333,15 @@ const OrderContent = ({ onLoading, onClose }) => {
                     </Button>
                     <h2 className="text-xl font-normal dark:text-white text-center">
                       {[
-                        { id: 'details', title: 'Detalles' },
+                        { id: 'details', title: 'Información' },
                         { id: 'products', title: 'Previsión' },
                         { id: 'productDetails', title: 'Detalle productos' },
                         { id: 'production', title: 'Producción' },
                         { id: 'pallets', title: 'Palets' },
                         { id: 'labels', title: 'Etiquetas' },
                         { id: 'documents', title: 'Envío de Documentos' },
-                        { id: 'export', title: 'Exportar' },
-                        { id: 'map', title: 'Mapa' },
+                        { id: 'export', title: 'Descargas' },
+                        { id: 'map', title: 'Ruta' },
                         { id: 'incident', title: 'Incidencia' },
                         { id: 'customer-history', title: 'Histórico' },
                       ].find(s => s.id === activeSection)?.title || 'Sección'}
@@ -364,25 +364,25 @@ const OrderContent = ({ onLoading, onClose }) => {
                   </div>
                 ) : activeSection === 'export' && isMobile ? (
                   <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
                       <OrderExport />
                     </Suspense>
                   </div>
                 ) : activeSection === 'pallets' && isMobile ? (
                   <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
                       <OrderPallets />
                     </Suspense>
                   </div>
                 ) : activeSection === 'products' && isMobile ? (
                   <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
                       <OrderPlannedProductDetails />
                     </Suspense>
                   </div>
                 ) : activeSection === 'documents' && isMobile ? (
                   <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
                       <OrderDocuments />
                     </Suspense>
                   </div>
@@ -529,15 +529,15 @@ const OrderContent = ({ onLoading, onClose }) => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
                   <div className="mb-4 flex justify-start">
                     <TabsList className='w-fit inline-flex'>
-                      <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
+                      <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Información</TabsTrigger>
                       <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
                       <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
                       <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
                       <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
                       <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
                       <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
-                      <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
-                      <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
+                      <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Descargas</TabsTrigger>
+                      <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Ruta</TabsTrigger>
                       <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
                       <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
                     </TabsList>

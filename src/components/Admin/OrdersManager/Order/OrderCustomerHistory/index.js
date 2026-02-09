@@ -394,9 +394,13 @@ export default function OrderCustomerHistory() {
     // Mostrar loader solo en la primera carga
     if (initialLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center min-h-0">
-                <Loader />
-            </div>
+            <TooltipProvider>
+                <div className="flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 flex items-center justify-center min-h-0">
+                        <Loader />
+                    </div>
+                </div>
+            </TooltipProvider>
         )
     }
 
