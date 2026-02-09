@@ -13,7 +13,7 @@ import { getToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -202,23 +202,8 @@ const OrderContent = ({ onLoading, onClose }) => {
                   </div>
                 )}
                 
-                {/* Botones móviles - sticky bottom bar - Solo en vista principal */}
-                {onClose && (
-                  <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
-              <OrderEditSheet />
-                    <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
-                <Printer className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-              </>
-            ) : null
-          ) : null}
-          
-          {isMobile ? (
-            activeSection === null ? (
-              /* Vista principal del pedido con lista de secciones */
-              <div className="h-full flex flex-col w-full pb-24 min-h-0">
+                {/* Vista principal del pedido con lista de secciones */}
+                <div className="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
                 {/* Vista Mobile: Cabecera centrada y mobile-friendly */}
                 <div className='space-y-5 px-4 pt-6 text-center flex-shrink-0'>
                   {/* Nombre del cliente */}
@@ -286,33 +271,51 @@ const OrderContent = ({ onLoading, onClose }) => {
                 {/* Lista de secciones */}
                 <div className='flex-1 w-full overflow-hidden min-h-0'>
                   <ScrollArea className="h-full w-full">
-                    <div className="px-4 pt-6 pb-2 space-y-2">
-                      {[
-                        { id: 'details', title: 'Detalles', component: OrderDetails },
-                        { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true },
-                        { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true },
-                        { id: 'production', title: 'Producción', component: OrderProduction, lazy: true },
-                        { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true },
-                        { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true },
-                        { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true },
-                        { id: 'export', title: 'Exportar', component: OrderExport, lazy: true },
-                        { id: 'map', title: 'Mapa', component: OrderMap, lazy: true },
-                        { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true },
-                        { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true },
-                      ].map((section) => (
-                        <button
-                          key={section.id}
-                          className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left group"
-                          onClick={() => setActiveSection(section.id)}
-                        >
-                          <span className="text-sm font-medium text-foreground">{section.title}</span>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-                        </button>
-                      ))}
+                    <div className={`px-4 pt-6 ${onClose ? 'pb-24' : 'pb-2'}`} style={onClose ? { paddingBottom: `calc(6rem + env(safe-area-inset-bottom))` } : {}}>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: 'details', title: 'Detalles', component: OrderDetails, icon: FileText },
+                          { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
+                          { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: Boxes },
+                          { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
+                          { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
+                          { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tag },
+                          { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true, icon: FileCheck },
+                          { id: 'export', title: 'Exportar', component: OrderExport, lazy: true, icon: Download },
+                          { id: 'map', title: 'Mapa', component: OrderMap, lazy: true, icon: MapPin },
+                          { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true, icon: AlertTriangle },
+                          { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
+                        ].map((section) => {
+                          const Icon = section.icon;
+                          return (
+                            <Card
+                              key={section.id}
+                              className="cursor-pointer hover:bg-muted/50 transition-colors border"
+                              onClick={() => setActiveSection(section.id)}
+                            >
+                              <CardContent className="p-4 flex flex-col items-center justify-center gap-2">
+                                <Icon className="h-5 w-5 text-primary" />
+                                <span className="text-sm font-medium text-foreground text-center">{section.title}</span>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
                     </div>
                   </ScrollArea>
                 </div>
-              </div>
+                </div>
+                
+                {/* Botones móviles - sticky bottom bar - Solo en vista principal */}
+                {onClose && (
+                  <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+                    <OrderEditSheet />
+                    <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               /* Vista de sección individual - pantalla completa */
               <div className="h-full flex flex-col w-full">
@@ -382,6 +385,12 @@ const OrderContent = ({ onLoading, onClose }) => {
                     <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
                       <OrderDocuments />
                     </Suspense>
+                  </div>
+                ) : activeSection === 'details' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <ScrollArea className="flex-1 min-h-0">
+                      <OrderDetails />
+                    </ScrollArea>
                   </div>
                 ) : (
                   <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>

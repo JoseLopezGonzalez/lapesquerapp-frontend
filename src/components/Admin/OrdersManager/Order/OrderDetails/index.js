@@ -1,17 +1,21 @@
 import React, { useMemo } from 'react'
 import { CalendarIcon, FileText, Package, Truck, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatInteger, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Mover API key a constante fuera del componente
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
 
 const OrderDetails = () => {
     const { order } = useOrderContext();
+    const isMobile = useIsMobile();
 
     // Memoizar encodedAddress para evitar recálculos innecesarios
     const encodedAddress = useMemo(() => {
@@ -23,6 +27,153 @@ const OrderDetails = () => {
         if (!encodedAddress) return '';
         return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
     }, [encodedAddress]);
+
+    if (isMobile) {
+        return (
+            <div className="flex-1 flex flex-col min-h-0">
+                <ScrollArea className="flex-1 min-h-0">
+                    <div className="space-y-6 pb-4">
+                {/* Comercial */}
+                <div className="space-y-3">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Comercial</h3>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Vendedor</div>
+                            <div className="font-medium">{order.salesperson.name}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Forma de pago</div>
+                            <div className="font-medium">{order.paymentTerm.name}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Incoterm</div>
+                            <div className="font-medium">{`${order.incoterm.code} - ${order.incoterm.description}`}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Fechas */}
+                <div className="space-y-3">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <CalendarIcon className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Fechas</h3>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Entrada</div>
+                            <div className="font-medium">{formatDate(order.entryDate)}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Carga prevista</div>
+                            <div className="font-medium">{formatDate(order.loadDate)}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Referencia Cliente</div>
+                            <div className="font-medium">{order.buyerReference}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Resumen */}
+                <div className="space-y-3">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <Package className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Resumen</h3>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Total productos</div>
+                            <div className="font-medium">
+                                {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Unidades de envasado</div>
+                            <div className="font-medium">
+                                {order.totalBoxes ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)` : '-'}
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Importe</div>
+                            <div className="font-medium">{formatDecimalCurrency(order.totalAmount)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Envío */}
+                <div className="space-y-3">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <Truck className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Envío</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="text-center">
+                            <div className="text-base font-semibold mb-1.5">Dirección de entrega</div>
+                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress}</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-base font-semibold mb-1.5">Transporte</div>
+                            <div className="text-sm">{order.transport.name}</div>
+                            <div className="text-sm text-muted-foreground whitespace-pre-line mt-2">
+                                <ul className="list-disc px-5 pl-8 text-left inline-block">
+                                    {order.transport.emails.map((email) => (
+                                        <li key={email} className="text-xs font-medium">
+                                            <a href={`mailto:${email}`} className="hover:underline">
+                                                {email}
+                                            </a>
+                                        </li>
+                                    ))}
+                                    {order.transport.ccEmails.map((copyEmail) => (
+                                        <li key={copyEmail} className="text-xs font-medium">
+                                            <div className="flex gap-1 items-center justify-center">
+                                                <Badge variant="outline" className="px-1">CC</Badge>
+                                                <a href={`mailto:${copyEmail}`} className="hover:underline">
+                                                    {copyEmail}
+                                                </a>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-base font-semibold mb-1.5">Observaciones</div>
+                            <div className="text-sm text-muted-foreground">
+                                {order.transportationNotes}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Mapa */}
+                <div className="space-y-3">
+                    <div className="map-container rounded-lg overflow-hidden">
+                        <iframe
+                            width="100%"
+                            height="270"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            src={mapUrl}
+                        />
+                    </div>
+                </div>
+                    </div>
+                </ScrollArea>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
