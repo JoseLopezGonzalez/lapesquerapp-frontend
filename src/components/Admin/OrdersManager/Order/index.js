@@ -208,34 +208,33 @@ const OrderContent = ({ onLoading, onClose }) => {
             </div>
           )}
           
-          <Card className={`h-full w-full relative ${isMobile ? 'p-0' : 'p-4 sm:p-6 lg:p-9'}`}>
-            <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-24' : 'pb-16 lg:pb-0'}`}>
-            {isMobile ? (
-              /* Vista Mobile: Cabecera centrada y mobile-friendly */
+          {isMobile ? (
+            <div className="h-full flex flex-col w-full pb-24">
+              {/* Vista Mobile: Cabecera centrada y mobile-friendly */}
               <div className='space-y-5 px-4 pt-6 text-center'>
+                {/* Nombre del cliente */}
+                <div>
+                  <p className='text-xl font-semibold'>{order.customer.name}</p>
+                  <p className='text-base text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
+                </div>
+                
                 {/* Badge de estado */}
                 <div className='flex justify-center'>
                   {order && renderStatusBadge(order.status)}
                 </div>
                 
-                {/* Nombre del cliente */}
-                <div>
-                  <p className='text-lg font-semibold'>{order.customer.name}</p>
-                  <p className='text-sm text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
-                </div>
-                
                 {/* Fecha de Carga y Temperatura en fila */}
                 <div className='flex items-center justify-center gap-6 flex-wrap'>
                   <div>
-                    <p className='text-xs text-muted-foreground mb-1'>Fecha de Carga</p>
-                    <p className='text-base font-semibold'>{formatDate(order.loadDate)}</p>
+                    <p className='text-sm text-muted-foreground mb-1'>Fecha de Carga</p>
+                    <p className='text-lg font-semibold'>{formatDate(order.loadDate)}</p>
                   </div>
                   <div>
-                    <p className='text-xs text-muted-foreground mb-1'>Temperatura</p>
+                    <p className='text-sm text-muted-foreground mb-1'>Temperatura</p>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="focus:outline-none">
-                        <span className='text-base font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
-                          <ThermometerSnowflake className='h-4 w-4' />
+                        <span className='text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
+                          <ThermometerSnowflake className='h-5 w-5' />
                           {order.temperature || '0'} ºC
                         </span>
                       </DropdownMenuTrigger>
@@ -259,85 +258,12 @@ const OrderContent = ({ onLoading, onClose }) => {
                 
                 {/* Transporte */}
                 <div className='flex flex-col items-center justify-center gap-2 pt-3 border-t'>
-                  <img className="max-w-[140px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                  <p className='text-base font-medium'>{order.transport.name}</p>
+                  <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                  <p className='text-lg font-medium'>{order.transport.name}</p>
                 </div>
               </div>
-            ) : (
-              /* Vista Desktop: Estructura original */
-              <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
-                <div className='space-y-1 flex-1'>
-                  {order && renderStatusBadge(order.status)}
-                  <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
-                  <div className=''>
-                    <p className=''>
-                      <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
-                      <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
-                    </p>
-                  </div>
-                  <div className=''>
-                    <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
-                    <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
-                  </div>
-                  <div className=''>
-                    <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="focus:outline-none">
-                        <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
-                          <ThermometerSnowflake className='h-5 w-5 inline-block' />
-                          {order.temperature || '0'} ºC
-                        </span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className=' '>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
-                          0 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
-                          4 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
-                          - 18 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
-                          - 23 ºC
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
-                <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
-                  <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
-                    <div className="flex gap-2">
-                      <OrderEditSheet />
-                      <Button variant="outline" onClick={handleOnClickPrint} >
-                        <Printer className="h-4 w-4 mr-2" />
-                        Imprimir
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
-                          <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className='flex flex-col items-end justify-center'>
-                      <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                      <h3 className='text-3xl font-light'>{order.transport.name}</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className='flex-1 w-full overflow-y-hidden '>
-              {isMobile ? (
-                /* Vista Mobile: Acordeones */
+              <div className='flex-1 w-full overflow-y-hidden '>
+                {/* Vista Mobile: Acordeones */}
                 <ScrollArea className="h-full w-full" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
                   <div className="px-4 py-4 space-y-2">
                     <Accordion type="single" collapsible className="w-full">
@@ -440,99 +366,174 @@ const OrderContent = ({ onLoading, onClose }) => {
                     </Accordion>
                   </div>
                 </ScrollArea>
-              ) : (
-                /* Vista Desktop: Tabs (mantener comportamiento actual) */
-                <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
-                    <div className="mb-4 flex justify-start">
-                      <TabsList className='w-fit inline-flex'>
-                        <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
-                        <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
-                        <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
-                        <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
-                        <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
-                        <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
-                        <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
-                        <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
-                        <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
-                        <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
-                        <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
-                      </TabsList>
-                    </div>
-                    <div className="flex-1 overflow-y-hidden w-full">
-                      {/* Tab Details - siempre cargado ya que es el default */}
-                      <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
-                        <OrderDetails />
-                      </TabsContent>
-
-                      {/* Tabs con lazy loading - solo se cargan cuando están activos */}
-                      <TabsContent value="products" className="space-y-4 w-full h-full ">
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderPlannedProductDetails />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderProductDetails />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="production" className="space-y-4 w-full h-full ">
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderProduction />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="pallets" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderPallets />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="documents" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderDocuments />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="export" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderExport />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="labels" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderLabels />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="map" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderMap />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="incident" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderIncident />
-                        </Suspense>
-                      </TabsContent>
-
-                      <TabsContent value="customer-history" className='h-full'>
-                        <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                          <OrderCustomerHistory />
-                        </Suspense>
-                      </TabsContent>
-
-                    </div>
-                  </Tabs>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-          </Card>
+          ) : (
+            <Card className="h-full w-full relative p-4 sm:p-6 lg:p-9">
+              <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
+                {/* Vista Desktop: Estructura original */}
+                <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
+                    <div className='space-y-1 flex-1'>
+                      {order && renderStatusBadge(order.status)}
+                      <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
+                      <div className=''>
+                        <p className=''>
+                          <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
+                          <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
+                        </p>
+                      </div>
+                      <div className=''>
+                        <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
+                        <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
+                      </div>
+                      <div className=''>
+                        <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="focus:outline-none">
+                            <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
+                              <ThermometerSnowflake className='h-5 w-5 inline-block' />
+                              {order.temperature || '0'} ºC
+                            </span>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className=' '>
+                            <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
+                              0 ºC
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
+                              4 ºC
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
+                              - 18 ºC
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
+                              - 23 ºC
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                    {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
+                    <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
+                      <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
+                        <div className="flex gap-2">
+                          <OrderEditSheet />
+                          <Button variant="outline" onClick={handleOnClickPrint} >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Imprimir
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
+                              <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <div className='flex flex-col items-end justify-center'>
+                          <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                          <h3 className='text-3xl font-light'>{order.transport.name}</h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <div className='flex-1 w-full overflow-y-hidden '>
+                  {/* Vista Desktop: Tabs (mantener comportamiento actual) */}
+                  <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
+                      <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
+                        <div className="mb-4 flex justify-start">
+                          <TabsList className='w-fit inline-flex'>
+                            <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Detalles</TabsTrigger>
+                            <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
+                            <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
+                            <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
+                            <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
+                            <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
+                            <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
+                            <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Exportar</TabsTrigger>
+                            <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Mapa</TabsTrigger>
+                            <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
+                            <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
+                          </TabsList>
+                        </div>
+                        <div className="flex-1 overflow-y-hidden w-full">
+                          {/* Tab Details - siempre cargado ya que es el default */}
+                          <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
+                            <OrderDetails />
+                          </TabsContent>
+
+                          {/* Tabs con lazy loading - solo se cargan cuando están activos */}
+                          <TabsContent value="products" className="space-y-4 w-full h-full ">
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderPlannedProductDetails />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderProductDetails />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="production" className="space-y-4 w-full h-full ">
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderProduction />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="pallets" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderPallets />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="documents" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderDocuments />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="export" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderExport />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="labels" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderLabels />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="map" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderMap />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="incident" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderIncident />
+                            </Suspense>
+                          </TabsContent>
+
+                          <TabsContent value="customer-history" className='h-full'>
+                            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                              <OrderCustomerHistory />
+                            </Suspense>
+                          </TabsContent>
+
+                        </div>
+                      </Tabs>
+                    </div>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       )}
     </>
