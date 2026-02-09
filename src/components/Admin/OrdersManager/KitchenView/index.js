@@ -739,7 +739,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
 
   return (
     <div className="h-full flex flex-col overflow-hidden relative">
-      {/* Card principal - usando componentes shadcn nativos */}
+      {/* Card principal - usando componentes shadcn nativos asdasdasd*/}
       <div className="flex-1 flex items-center justify-center px-3 sm:px-4 pt-0 pb-3 sm:pb-4">
         <Card className="w-full h-full shadow-lg flex flex-col">
           <CardHeader className="flex-shrink-0 pb-3 pt-2 sm:pt-3">
