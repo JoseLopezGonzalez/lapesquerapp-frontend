@@ -528,7 +528,7 @@ const CreateOrderFormMobile = ({
                     </div>
 
                     {/* Navigation Buttons - Absolute en la parte inferior del contenedor, justo encima del BottomNav */}
-                    <div className="absolute bottom-0 left-0 right-0 z-[60] pt-3 pb-4 px-5">
+                    <div className="absolute bottom-0 left-0 right-0 z-40 pt-3 pb-4 px-5">
                         <div className="flex items-center justify-between gap-3">
                             {!isFirstStep && (
                                 <Button
