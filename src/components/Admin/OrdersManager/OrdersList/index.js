@@ -216,14 +216,14 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                         </div>
 
                         {/* Tab Shadcn categories - Mobile-friendly style */}
-                        <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-4 mb-4' : 'mt-5 mb-5'}>
+                        <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-4 mb-2' : 'mt-5 mb-5'}>
                             {isMobile ? (
                                 <div className="relative -mx-4 px-4">
                                     {/* Fade gradients para los extremos */}
                                     <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
                                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
                                     <div className="overflow-x-auto scrollbar-hide">
-                                        <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto">
+                                        <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto pl-2 pr-2">
                                             {categories.map((category) =>
                                                 <TabsTrigger 
                                                     key={category.name} 
@@ -296,7 +296,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                 ref={scrollAreaRef}
                                 className="h-full w-full"
                             >
-                                <div className={`flex flex-col gap-3 ${isMobile ? 'pb-6' : 'pr-2 pb-4'}`}>
+                                <div className={`flex flex-col gap-3 ${isMobile ? 'pt-2 pb-6' : 'pr-2 pb-4'}`}>
                                     {orders.map((order) => (
                                         <div key={order.id}>
                                             <OrderCard
