@@ -10,6 +10,11 @@ import { formatDate } from '@/helpers/formats/dates/formatDates'
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers'
 import { ThermometerSnowflake, Package, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Play, Pause, Box, Weight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useSession } from 'next-auth/react'
+import { getProductionViewData } from '@/services/orderService'
+import toast from 'react-hot-toast'
+import { getToastTheme } from '@/customs/reactHotToast'
+import Loader from '@/components/Utilities/Loader'
 
 // Datos de prueba - simulan la estructura real de pedidos con productos planificados
 const MOCK_ORDERS = [
@@ -485,135 +490,53 @@ const MOCK_ORDERS = [
   }
 ]
 
-const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useMockData = false, onToggleViewMode }) => {
+const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useMockData = false, onToggleViewMode }) => {
   const isMobile = useIsMobile()
+  const { data: session } = useSession()
+  const token = session?.user?.accessToken
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlay, setIsAutoPlay] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [productionData, setProductionData] = useState([])
 
-  // Usar datos de prueba solo si no hay pedidos reales o si se fuerza con useMockData
-  const ordersToDisplay = useMemo(() => {
-    // Si se fuerza el uso de datos de prueba
-    if (useMockData) {
-      console.log('Forzando uso de datos de prueba MOCK_ORDERS')
-      return MOCK_ORDERS
+  // Cargar datos de producción desde la API
+  useEffect(() => {
+    if (!token) {
+      setLoading(false)
+      setError('No hay sesión autenticada')
+      return
     }
-    
-    // Si hay pedidos reales y tienen productos, usarlos
-    if (orders && Array.isArray(orders) && orders.length > 0) {
-      // Verificar que al menos un pedido tenga productos planificados
-      const hasProducts = orders.some(order => 
-        (order.plannedProducts && Array.isArray(order.plannedProducts) && order.plannedProducts.length > 0) ||
-        (order.plannedProductDetails && Array.isArray(order.plannedProductDetails) && order.plannedProductDetails.length > 0)
-      )
-      if (hasProducts) {
-        console.log('Usando pedidos reales:', orders.length)
-        return orders
-      }
-    }
-    // Fallback a datos de prueba para desarrollo/demo
-    console.log('Usando datos de prueba MOCK_ORDERS (no hay pedidos reales o no tienen productos)')
-    return MOCK_ORDERS
-  }, [orders, useMockData])
 
-  // Agrupar pedidos por producto
-  const productsGrouped = useMemo(() => {
-    const productMap = new Map()
+    setLoading(true)
+    setError(null)
 
-    console.log('ordersToDisplay:', ordersToDisplay.length, 'pedidos')
-    
-    ordersToDisplay.forEach(order => {
-      // Obtener productos del pedido (soporta diferentes estructuras)
-      const products = order.plannedProducts || order.plannedProductDetails || []
-      
-      console.log(`Pedido ${order.id}: ${products.length} productos`)
-      
-      products.forEach(product => {
-        const productId = product.product?.id || product.productId
-        const productName = product.product?.name || product.productName || 'Producto sin nombre'
-        
-        if (!productId) {
-          console.warn('Producto sin ID:', product)
-          return
-        }
-
-        if (!productMap.has(productId)) {
-          productMap.set(productId, {
-            id: productId,
-            name: productName,
-            orders: []
-          })
-        }
-
-        const productGroup = productMap.get(productId)
-        
-        // Calcular datos de producción (completado y restante) - datos de prueba
-        const plannedQuantity = product.quantity || 0
-        const plannedBoxes = product.boxes || 0
-        
-        // Simular diferentes estados de producción para pruebas
-        // Usar el ID del pedido para generar estados consistentes
-        const orderIdMod = order.id % 3
-        let completedQuantity, completedBoxes
-        
-        if (orderIdMod === 0) {
-          // Verde: Completado = Planificado (100%)
-          completedQuantity = plannedQuantity
-          completedBoxes = plannedBoxes
-        } else if (orderIdMod === 1) {
-          // Naranja: Falta por terminar (70-90% del planificado)
-          const completedPercentage = 0.7 + (order.id % 3) * 0.1 // Entre 70% y 90%
-          completedQuantity = plannedQuantity * completedPercentage
-          completedBoxes = Math.round(plannedBoxes * completedPercentage)
-        } else {
-          // Rojo: Se ha pasado (110-120% del planificado)
-          const overPercentage = 1.1 + (order.id % 2) * 0.1 // Entre 110% y 120%
-          completedQuantity = plannedQuantity * overPercentage
-          completedBoxes = Math.round(plannedBoxes * overPercentage)
-        }
-        
-        // Restante = planificado - completado (puede ser negativo si se pasó)
-        const remainingQuantity = plannedQuantity - completedQuantity
-        const remainingBoxes = plannedBoxes - completedBoxes
-        
-        // Generar array de palets para pruebas (formato #0563)
-        const paletsArray = []
-        const numPallets = order.numberOfPallets || 0
-        const basePaletNumber = order.id * 100 // Base para generar números únicos
-        for (let i = 0; i < numPallets; i++) {
-          paletsArray.push(basePaletNumber + i)
-        }
-        
-        productGroup.orders.push({
-          orderId: order.id,
-          order: order,
-          // Pedido (planificado)
-          quantity: plannedQuantity,
-          boxes: plannedBoxes,
-          // Completado
-          completedQuantity: completedQuantity,
-          completedBoxes: completedBoxes,
-          // Restante
-          remainingQuantity: remainingQuantity,
-          remainingBoxes: remainingBoxes,
-          loadDate: order.loadDate,
-          customer: order.customer,
-          status: order.status,
-          temperature: order.temperature,
-          transport: order.transport,
-          numberOfPallets: order.numberOfPallets || 0,
-          palets: paletsArray
-        })
+    getProductionViewData(token)
+      .then((data) => {
+        console.log('ProductionView: Datos obtenidos:', data)
+        setProductionData(Array.isArray(data) ? data : [])
+        setLoading(false)
+        setError(null)
       })
-    })
+      .catch((error) => {
+        const errorMessage = error?.message || 'Error al obtener los datos de producción'
+        console.error('ProductionView: Error al obtener datos:', error)
+        setError(errorMessage)
+        toast.error(errorMessage, getToastTheme())
+        setLoading(false)
+        setProductionData([])
+      })
+  }, [token])
 
-    const result = Array.from(productMap.values()).sort((a, b) => 
-      a.name.localeCompare(b.name)
-    )
+  // Los datos ya vienen agrupados por producto del backend
+  const productsGrouped = useMemo(() => {
+    if (!productionData || !Array.isArray(productionData)) {
+      return []
+    }
     
-    console.log('Productos agrupados:', result.length)
-    
-    return result
-  }, [ordersToDisplay])
+    // Ordenar productos alfabéticamente por nombre
+    return [...productionData].sort((a, b) => a.name.localeCompare(b.name))
+  }, [productionData])
 
   // Navegación
   const goToNext = useCallback(() => {
@@ -675,14 +598,12 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToPrevious, goToNext, onToggleViewMode])
 
-  // Determinar el estado de la línea basado en las cantidades
+  // Determinar el estado de la línea basado en status del backend
   const getLineStatusConfig = (orderItem) => {
-    const planned = orderItem.quantity || 0
-    const completed = orderItem.completedQuantity || 0
-    const remaining = orderItem.remainingQuantity || 0
+    const status = orderItem.status || 'pending'
     
-    // Rojo: se ha pasado de la cantidad prevista (completado > planificado)
-    if (completed > planned) {
+    // Rojo: se ha excedido la cantidad prevista
+    if (status === 'exceeded') {
       return {
         color: 'red',
         bgColor: 'bg-red-50 dark:bg-red-950/20',
@@ -694,8 +615,8 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
       }
     }
     
-    // Verde: está terminada esa línea (completado = planificado, o restante <= 0)
-    if (remaining <= 0 || Math.abs(completed - planned) < 0.01) {
+    // Verde: línea completada
+    if (status === 'completed') {
       return {
         color: 'green',
         bgColor: 'bg-green-50 dark:bg-green-950/20',
@@ -707,7 +628,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
       }
     }
     
-    // Naranja: falta por terminar (completado < planificado y restante > 0)
+    // Naranja: falta por terminar (default)
     return {
       color: 'orange',
       bgColor: 'bg-orange-50 dark:bg-orange-950/20',
@@ -724,6 +645,27 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
     if (temp <= 0) return 'text-cyan-600 dark:text-cyan-400'
     if (temp <= 4) return 'text-green-600 dark:text-green-400'
     return 'text-orange-600 dark:text-orange-400'
+  }
+
+  // Mostrar loader mientras se cargan los datos
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <Loader />
+      </div>
+    )
+  }
+
+  // Mostrar error si hay algún problema
+  if (error) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-destructive">{error}</p>
+          <p className="text-sm text-muted-foreground">No se pudieron cargar los datos de producción</p>
+        </div>
+      </div>
+    )
   }
 
   if (productsGrouped.length === 0) {
@@ -827,10 +769,10 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* Separador */}
                               <Separator className="opacity-40" />
 
-                              {/* Cuatro bloques de cantidades: horizontal si hay completado, vertical si está completado */}
-                              <div className={`flex items-start gap-2 sm:gap-3 flex-wrap justify-center ${lineStatusConfig.color === 'green' ? 'flex-col' : ''}`}>
+                              {/* Cuatro bloques de cantidades: grid 2x2 normal, 1+2 si está completado */}
+                              <div className={`grid gap-2 sm:gap-3 ${lineStatusConfig.color === 'green' ? 'grid-cols-2 grid-rows-[auto_auto]' : 'grid-cols-2 grid-rows-2'}`}>
                                 {/* Bloque 1: Pedido (Planificado) */}
-                                <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
+                                <div className={`text-center ${lineStatusConfig.color === 'green' ? 'col-span-2' : ''}`}>
                                   <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pedido</p>
                                   <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle}`}>
                                     <div className="flex items-center justify-center">
@@ -850,7 +792,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
 
                                 {/* Bloque 2: Completado - solo se muestra si NO está completado */}
                                 {lineStatusConfig.color !== 'green' && (
-                                  <div className="text-center flex-1 min-w-[140px]">
+                                  <div className="text-center">
                                     <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
                                     {/* Tema original comentado:
                                     <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle}`}>
@@ -888,9 +830,9 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
 
                                 {/* Bloque 3 y 4: Diferencia y Palets - cuando está completado van juntos en una fila */}
                                 {lineStatusConfig.color === 'green' ? (
-                                  <div className="flex items-start gap-2 sm:gap-3 w-full">
+                                  <>
                                     {/* Bloque 3: Diferencia */}
-                                    <div className="text-center flex-1 min-w-[140px]">
+                                    <div className="text-center">
                                       {(() => {
                                         const completed = orderItem.completedQuantity || 0
                                         const planned = orderItem.quantity || 0
@@ -933,7 +875,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                     </div>
 
                                     {/* Bloque 4: Palets */}
-                                    <div className="text-center flex-1 min-w-[140px]">
+                                    <div className="text-center">
                                       <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Palets</p>
                                       <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
                                         <div className="flex flex-col items-center gap-1">
@@ -945,17 +887,17 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                             ))
                                           ) : (
                                             <p className="text-2xl sm:text-3xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                                              {orderItem.numberOfPallets || orderItem.order?.numberOfPallets || 0}
+                                              0
                                             </p>
                                           )}
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
+                                  </>
                                 ) : (
                                   <>
                                     {/* Bloque 3: Sobrante/Restante - cuando NO está completado */}
-                                    <div className="text-center flex-1 min-w-[140px]">
+                                    <div className="text-center">
                                       {(() => {
                                         const completed = orderItem.completedQuantity || 0
                                         const planned = orderItem.quantity || 0
@@ -998,7 +940,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                     </div>
 
                                     {/* Bloque 4: Palets */}
-                                    <div className="text-center flex-1 min-w-[140px]">
+                                    <div className="text-center">
                                       <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Palets</p>
                                       <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
                                         <div className="flex flex-col items-center gap-1">
@@ -1010,7 +952,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                             ))
                                           ) : (
                                             <p className="text-2xl sm:text-3xl font-extrabold text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                                              {orderItem.numberOfPallets || orderItem.order?.numberOfPallets || 0}
+                                              0
                                             </p>
                                           )}
                                         </div>
@@ -1045,4 +987,4 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
   )
 }
 
-export default KitchenView
+export default ProductionView

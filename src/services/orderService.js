@@ -397,6 +397,67 @@ export function getActiveOrdersOptions(token) {
         });
 }
 
+/**
+ * Obtiene los datos de producción agrupados por producto para la vista de producción
+ * 
+ * @param {string} token - Token de autenticación
+ * @returns {Promise<Array>} Array de productos con sus pedidos agrupados
+ */
+export function getProductionViewData(token) {
+    if (!token) {
+        console.error('getProductionViewData: No se proporcionó token');
+        return Promise.reject(new Error('No se proporcionó token de autenticación'));
+    }
+
+    const url = `${API_URL_V2}orders/production-view`;
+    console.log('getProductionViewData: Realizando petición a:', url);
+
+    return fetchWithTenant(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': getUserAgent(),
+        },
+    })
+        .then((response) => {
+            console.log('getProductionViewData: Respuesta recibida, status:', response.status, response.statusText);
+            if (!response.ok) {
+                return response.json().then((errorData) => {
+                    console.error('getProductionViewData: Error en respuesta:', errorData);
+                    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log('getProductionViewData: Datos parseados:', data);
+            // La respuesta tiene la estructura { data: [...] }
+            if (data && data.data !== undefined) {
+                if (Array.isArray(data.data)) {
+                    console.log('getProductionViewData: Respuesta tiene data.data (array), longitud:', data.data.length);
+                    return data.data;
+                }
+                console.warn('getProductionViewData: data.data no es un array:', data.data);
+                return [];
+            }
+            // Si la respuesta es directamente un array, devolverlo
+            if (Array.isArray(data)) {
+                console.log('getProductionViewData: Respuesta es array directo, longitud:', data.length);
+                return data;
+            }
+            console.warn('getProductionViewData: Estructura de respuesta inesperada:', data);
+            return [];
+        })
+        .catch((error) => {
+            console.error('getProductionViewData: Error capturado:', error);
+            throw error;
+        })
+        .finally(() => {
+            console.log('getProductionViewData: Finalizando petición');
+        });
+}
+
 export async function getOrderRankingStats({ groupBy, valueType, dateFrom, dateTo, speciesId }, token) {
     const query = new URLSearchParams({
         groupBy,

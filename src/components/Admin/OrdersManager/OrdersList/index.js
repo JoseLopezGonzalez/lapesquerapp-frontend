@@ -165,7 +165,7 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                                    <p>Vista de Cocina</p>
+                                    <p>Vista de Producción</p>
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
@@ -245,13 +245,13 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                                 size="icon"
                                                 onClick={onToggleViewMode}
                                                 className="h-12 w-12 flex-shrink-0"
-                                                aria-label="Vista de Cocina"
+                                                aria-label="Vista de Producción"
                                             >
                                                 <LayoutGrid className="h-5 w-5" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Vista de Cocina</p>
+                                            <p>Vista de Producción</p>
                                         </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>

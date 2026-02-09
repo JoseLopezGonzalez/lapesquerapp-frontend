@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
-import KitchenView from './KitchenView';
+import ProductionView from './ProductionView';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -54,7 +54,7 @@ export default function OrdersManager() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [reloadCounter, setReloadCounter] = useState(0);
-    const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'kitchen'
+    const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'production'
 
     // Debouncing de búsqueda para mejorar rendimiento
     const debouncedSearchText = useDebounce(searchText, 300);
@@ -155,7 +155,7 @@ export default function OrdersManager() {
 
     // Toggle entre vista normal y vista cocina
     const toggleViewMode = useCallback(() => {
-        setViewMode(prev => prev === 'normal' ? 'kitchen' : 'normal');
+        setViewMode(prev => prev === 'normal' ? 'production' : 'normal');
         // Al cambiar a vista cocina, cerrar el detalle del pedido si está abierto
         if (viewMode === 'normal') {
             setSelectedOrder(null);
@@ -165,8 +165,8 @@ export default function OrdersManager() {
 
     const handleOnClickOrderCard = useCallback((orderId) => {
         setOnCreatingNewOrder(false);
-        // Si estamos en vista cocina, cambiar a vista normal
-        if (viewMode === 'kitchen') {
+        // Si estamos en vista producción, cambiar a vista normal
+        if (viewMode === 'production') {
             setViewMode('normal');
         }
         setSelectedOrder(prevSelectedOrder => {
@@ -315,12 +315,12 @@ export default function OrdersManager() {
             ) : (
                 /* Vista - layout adaptativo: lista siempre visible, detalle se muestra cuando se selecciona */
                 <div className="h-full flex flex-col">
-                    {viewMode === 'kitchen' ? (
-                        /* Vista de cocina - pantalla completa */
+                    {viewMode === 'production' ? (
+                        /* Vista de producción - pantalla completa */
                         <div className="h-full flex flex-col overflow-hidden">
-                            {/* Contenido de vista cocina - ocupa todo el espacio */}
+                            {/* Contenido de vista producción - ocupa todo el espacio */}
                             <div className="h-full min-h-0 overflow-hidden">
-                                <KitchenView
+                                <ProductionView
                                     orders={sortedOrders}
                                     onClickOrder={handleOnClickOrderCard}
                                     useMockData={sortedOrders.length === 0}
