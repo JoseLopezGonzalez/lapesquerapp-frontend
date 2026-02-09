@@ -60,12 +60,12 @@ export function DateRangePicker({ dateRange, onChange }) {
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-between text-left font-normal",
+            "w-full justify-between text-left font-normal min-w-0",
             !dateRange?.from && "text-muted-foreground"
           )}
         >
-          {displayValue}
-          <CalendarIcon className="h-4 w-4 ml-2" />
+          <span className="truncate flex-1 min-w-0 text-left">{displayValue}</span>
+          <CalendarIcon className="h-4 w-4 ml-2 flex-shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent 

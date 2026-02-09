@@ -166,7 +166,7 @@ export default function Dashboard() {
                             
                             {/* Gráfico 10: WorkerStatisticsCard - VISIBLE */}
                             {true && (
-                                <div>
+                                <div className="min-w-0 max-w-full overflow-hidden">
                                     <WorkerStatisticsCard />
                                 </div>
                             )}
