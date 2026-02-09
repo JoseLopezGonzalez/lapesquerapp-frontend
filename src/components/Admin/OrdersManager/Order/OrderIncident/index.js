@@ -74,7 +74,111 @@ export default function OrderIncidentPanel() {
     const isResolved = incident?.status === "resolved"
     const isOpen = incident?.status === "open"
 
-    const content = (
+    const content = isMobile ? (
+        <div className="w-full">
+            {incident ? (
+                <div className="space-y-4 py-5">
+                    <div className="space-y-2">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Fecha de creación</Label>
+                                <p className="text-sm">{formatDate(incident.createdAt)}</p>
+                            </div>
+                            <div className="hidden sm:block">
+                                <div className="mt-1">
+                                    {isOpen ? (
+                                        <div className="flex items-center gap-1.5  border border-amber-500 rounded-lg p-1.5  w-fit">
+                                            <div className=" text-amber-500  rounded-md">
+                                                <AlertCircle className="h-4 w-4" />
+                                            </div>
+                                            <span className=" text-amber-500 text-sm">Incidencia Abierta</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1.5 justify-center  border border-green-500 rounded-lg p-1.5 w-fit">
+                                            <div className=" text-green-500  rounded-md">
+                                                <CheckCircle className="h-4 w-4" />
+                                            </div>
+                                            <span className="font-medium text-green-500 text-sm">Incidencia Resuelta</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="pt-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Descripción</Label>
+                            <p className="text-sm mt-1 whitespace-pre-line">{incident.description}</p>
+                        </div>
+                    </div>
+                    <Separator className="my-4" />
+                    {isResolved ? (
+                        <div className="space-y-3">
+                            <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Fecha de resolución</Label>
+                                <p className="text-sm">{formatDate(incident.resolvedAt)}</p>
+                            </div>
+                            <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Tipo de resolución</Label>
+                                <p className="text-sm capitalize">
+                                    {incident.resolutionType === "returned" && "Devuelto"}
+                                    {incident.resolutionType === "partially_returned" && "Parcialmente devuelto"}
+                                    {incident.resolutionType === "compensated" && "Compensado"}
+                                </p>
+                            </div>
+                            <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Notas de resolución</Label>
+                                <p className="text-sm whitespace-pre-line">{incident.resolutionNotes}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="resolution-type">Tipo de resolución</Label>
+                                <Select value={resolutionType} onValueChange={setResolutionType}>
+                                    <SelectTrigger id="resolution-type">
+                                        <SelectValue placeholder="Selecciona el tipo de resolución" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="returned">Devuelto</SelectItem>
+                                        <SelectItem value="partially_returned">Parcialmente devuelto</SelectItem>
+                                        <SelectItem value="compensated">Compensado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="resolution-notes">Notas de resolución</Label>
+                                <Textarea
+                                    id="resolution-notes"
+                                    placeholder="Añade notas sobre la resolución de la incidencia"
+                                    value={resolutionNotes}
+                                    onChange={(e) => setResolutionNotes(e.target.value)}
+                                    className="min-h-[100px]"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-4 py-5">
+                    <div className="space-y-2">
+                        <Label htmlFor="incident-description">Descripción de la incidencia</Label>
+                        <Textarea
+                            id="incident-description"
+                            placeholder="Describe la incidencia reportada por el cliente"
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                            className="min-h-[100px]"
+                        />
+                    </div>
+                </div>
+            )}
+            <div className="flex justify-end pt-4">
+                {incident ? isOpen && <Button onClick={handleResolve} disabled={loading}>Marcar como resuelta</Button>
+                    : (
+                        <Button onClick={handleCreate} disabled={loading}>Crear incidencia</Button>
+                    )}
+            </div>
+        </div>
+    ) : (
         <Card className="w-full shadow-sm bg-transparent">
             {incident ? (
                 <CardContent className="space-y-4 py-5">

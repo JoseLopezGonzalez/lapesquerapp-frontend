@@ -11,6 +11,7 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 
@@ -46,7 +47,7 @@ const OrderExport = () => {
         <div className={isMobile ? "space-y-6" : "grid md:grid-cols-2 gap-6"}>
             {/* Exportación rápida */}
             <div className="space-y-4">
-                <div>
+                <div className={isMobile ? "text-center" : ""}>
                     <h3 className="text-base font-semibold mb-1">Exportación rápida</h3>
                     <p className="text-sm text-muted-foreground">Exporta documentos comunes con un solo clic</p>
                 </div>
@@ -79,7 +80,7 @@ const OrderExport = () => {
 
             {/* Exportación por selección */}
             <div className="space-y-4">
-                <div>
+                <div className={isMobile ? "text-center" : ""}>
                     <h3 className="text-base font-semibold mb-1">Exportación por selección</h3>
                     <p className="text-sm text-muted-foreground">Selecciona un documento específico para exportar</p>
                 </div>
@@ -131,12 +132,14 @@ const OrderExport = () => {
     );
 
     return (
-        <div className='h-full pb-2'>
+        <div className='flex-1 flex flex-col min-h-0'>
             {isMobile ? (
-                <div className='h-full flex flex-col'>
-                    <div className="flex-1 overflow-y-auto py-2">
-                        {content}
-                    </div>
+                <div className='flex-1 flex flex-col min-h-0'>
+                    <ScrollArea className="flex-1 min-h-0">
+                        <div className="py-2">
+                            {content}
+                        </div>
+                    </ScrollArea>
                 </div>
             ) : (
                 <Card className='h-full flex flex-col bg-transparent'>

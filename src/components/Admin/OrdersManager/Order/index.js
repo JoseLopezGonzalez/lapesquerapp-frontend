@@ -346,6 +346,12 @@ const OrderContent = ({ onLoading, onClose }) => {
                       <OrderCustomerHistory />
                     </Suspense>
                   </div>
+                ) : activeSection === 'export' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                      <OrderExport />
+                    </Suspense>
+                  </div>
                 ) : (
                   <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
                     <div className="px-4 py-4">
@@ -378,11 +384,6 @@ const OrderContent = ({ onLoading, onClose }) => {
                       {activeSection === 'documents' && (
                         <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
                           <OrderDocuments />
-                        </Suspense>
-                      )}
-                      {activeSection === 'export' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderExport />
                         </Suspense>
                       )}
                       {activeSection === 'map' && (
