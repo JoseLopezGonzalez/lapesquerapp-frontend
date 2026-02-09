@@ -752,7 +752,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                 <Badge variant="default" className="gap-2 px-6 py-4 text-xl sm:text-2xl font-bold">
                   <Package className="h-6 w-6" />
-                  <span>{formatInteger(totalBoxes)} cajas</span>
+                  <span>{formatInteger(totalBoxes)} cajas</span> 
                 </Badge>
                 <Badge variant="default" className="px-6 py-4 text-xl sm:text-2xl font-bold">
                   <span>{formatDecimalWeight(totalQuantity)}</span>
