@@ -65,9 +65,64 @@ export default function AuthErrorInterceptor() {
         
         const response = await originalFetch(...args);
         
-        // Si es un error de autenticación, manejar la redirección
+        // Si es un error de autenticación, verificar si realmente es un error de sesión expirada
         if (isAuthStatusCode(response.status)) {
-          handleAuthError();
+          // Clonar la respuesta para poder leer el cuerpo sin consumir el original
+          const responseClone = response.clone();
+          
+          try {
+            // Intentar leer el cuerpo de la respuesta para verificar el mensaje de error
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
+            
+            if (isJson) {
+              const errorData = await responseClone.json().catch(() => ({}));
+              const errorMessage = (errorData.message || errorData.userMessage || '').toLowerCase();
+              
+              // Verificar si el mensaje indica que es un error de validación del backend
+              // (no un error de sesión expirada)
+              const isValidationError = errorMessage.includes('validation') ||
+                                       errorMessage.includes('validación') ||
+                                       errorMessage.includes('invalid') ||
+                                       errorMessage.includes('inválido') ||
+                                       errorMessage.includes('required') ||
+                                       errorMessage.includes('requerido') ||
+                                       errorMessage.includes('error al crear') ||
+                                       errorMessage.includes('error al registrar') ||
+                                       errorMessage.includes('requieren autenticación') ||
+                                       errorMessage.includes('require authentication') ||
+                                       errorMessage.includes('fichajes manuales');
+              
+              // Solo cerrar sesión si NO es un error de validación
+              // Si es un error de validación, permitir que el componente lo maneje
+              if (!isValidationError) {
+                // Si no es un error de validación, verificar si indica sesión expirada
+                const isSessionExpired = errorMessage.includes('token') ||
+                                        errorMessage.includes('sesión expirada') ||
+                                        errorMessage.includes('session expired') ||
+                                        errorMessage.includes('unauthorized') ||
+                                        errorMessage.includes('no autenticado') ||
+                                        errorMessage.includes('invalid token') ||
+                                        errorMessage.includes('token expired') ||
+                                        errorMessage === ''; // Si no hay mensaje, asumir sesión expirada
+                
+                if (isSessionExpired) {
+                  handleAuthError();
+                }
+                // Si hay un mensaje pero no es de validación ni de sesión expirada,
+                // permitir que el componente maneje el error
+              }
+              // Si es un error de validación, permitir que el componente maneje el error
+            } else {
+              // Si no es JSON, asumir que es un error de sesión expirada
+              handleAuthError();
+            }
+          } catch (parseError) {
+            // Si no se puede parsear, asumir que es un error de sesión expirada
+            console.warn('No se pudo parsear la respuesta de error:', parseError);
+            handleAuthError();
+          }
+          
           return response;
         }
         

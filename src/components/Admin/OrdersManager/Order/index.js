@@ -334,61 +334,69 @@ const OrderContent = ({ onLoading, onClose }) => {
                   </div>
                 </div>
                 {/* Contenido de la sección */}
-                <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
-                  <div className="px-4 py-4">
-                    {activeSection === 'details' && <OrderDetails />}
-                    {activeSection === 'products' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderPlannedProductDetails />
-                      </Suspense>
-                    )}
-                    {activeSection === 'productDetails' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderProductDetails />
-                      </Suspense>
-                    )}
-                    {activeSection === 'production' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderProduction />
-                      </Suspense>
-                    )}
-                    {activeSection === 'pallets' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderPallets />
-                      </Suspense>
-                    )}
-                    {activeSection === 'labels' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderLabels />
-                      </Suspense>
-                    )}
-                    {activeSection === 'documents' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderDocuments />
-                      </Suspense>
-                    )}
-                    {activeSection === 'export' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderExport />
-                      </Suspense>
-                    )}
-                    {activeSection === 'map' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderMap />
-                      </Suspense>
-                    )}
-                    {activeSection === 'incident' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderIncident />
-                      </Suspense>
-                    )}
-                    {activeSection === 'customer-history' && (
-                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                        <OrderCustomerHistory />
-                      </Suspense>
-                    )}
+                {activeSection === 'map' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4">
+                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                      <OrderMap />
+                    </Suspense>
                   </div>
-                </ScrollArea>
+                ) : (
+                  <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
+                    <div className="px-4 py-4">
+                      {activeSection === 'details' && <OrderDetails />}
+                      {activeSection === 'products' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderPlannedProductDetails />
+                        </Suspense>
+                      )}
+                      {activeSection === 'productDetails' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderProductDetails />
+                        </Suspense>
+                      )}
+                      {activeSection === 'production' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderProduction />
+                        </Suspense>
+                      )}
+                      {activeSection === 'pallets' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderPallets />
+                        </Suspense>
+                      )}
+                      {activeSection === 'labels' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderLabels />
+                        </Suspense>
+                      )}
+                      {activeSection === 'documents' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderDocuments />
+                        </Suspense>
+                      )}
+                      {activeSection === 'export' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderExport />
+                        </Suspense>
+                      )}
+                      {activeSection === 'map' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderMap />
+                        </Suspense>
+                      )}
+                      {activeSection === 'incident' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderIncident />
+                        </Suspense>
+                      )}
+                      {activeSection === 'customer-history' && (
+                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                          <OrderCustomerHistory />
+                        </Suspense>
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
               </div>
             )
           ) : (

@@ -70,7 +70,30 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
     const urlString = typeof url === 'string' ? url : (url?.href || url?.url || '');
     const isLogoutRequest = urlString.includes('/logout') || urlString.endsWith('logout');
     
-    // Si es un error de autenticación (401/403)
+    // Leer el cuerpo de la respuesta una sola vez
+    const responseClone = res.clone();
+    const contentType = res.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+    
+    let errorJson = {};
+    let errorText = '';
+    
+    // Leer el cuerpo de la respuesta
+    try {
+      if (isJson) {
+        errorText = await responseClone.text();
+        if (errorText && errorText.trim()) {
+          errorJson = JSON.parse(errorText);
+        }
+      } else {
+        errorText = await responseClone.text();
+      }
+    } catch (parseError) {
+      // Si falla el parseo, continuar con errorJson vacío
+      console.warn('⚠️ No se pudo parsear la respuesta de error:', parseError);
+    }
+    
+    // Si es un error de autenticación (401/403), verificar el tipo de error
     if (isAuthStatusCode(res.status)) {
       // Si es logout O hay un logout en curso, no tratarlo como error
       if (isLogoutRequest || isLoggingOut) {
@@ -83,54 +106,48 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         return res; // Retornar la respuesta sin lanzar error
       }
       
-      // Solo mostrar error si NO es logout ni hay logout en curso
-      console.error('❌ Error de autenticación (401/403): Sesión expirada o token inválido');
-      throw new Error('No autenticado');
+      // Verificar si el mensaje indica que es un error de validación del backend
+      // (no un error de sesión expirada)
+      const errorMessage = (errorJson.message || errorJson.userMessage || '').toLowerCase();
+      const isValidationError = errorMessage.includes('validation') ||
+                               errorMessage.includes('validación') ||
+                               errorMessage.includes('invalid') ||
+                               errorMessage.includes('inválido') ||
+                               errorMessage.includes('required') ||
+                               errorMessage.includes('requerido') ||
+                               errorMessage.includes('error al crear') ||
+                               errorMessage.includes('error al registrar') ||
+                               errorMessage.includes('employee') ||
+                               errorMessage.includes('empleado') ||
+                               errorMessage.includes('timestamp') ||
+                               errorMessage.includes('event_type') ||
+                               errorMessage.includes('requieren autenticación') ||
+                               errorMessage.includes('require authentication') ||
+                               errorMessage.includes('fichajes manuales');
+      
+      // Si es un error de validación, NO lanzar "No autenticado"
+      // Permitir que el error se propague con el mensaje real del backend
+      if (!isValidationError) {
+        // Si no es un error de validación, es realmente un error de autenticación
+        console.error('❌ Error de autenticación (401/403): Sesión expirada o token inválido');
+        throw new Error('No autenticado');
+      }
+      // Si es un error de validación, continuar con el flujo normal de manejo de errores
     }
 
+    // Procesar el error normalmente (para todos los códigos de error, incluyendo 401/403 de validación)
     try {
-      // Clonar la respuesta para poder leer el body sin consumir el original
-      const responseClone = res.clone();
-      const contentType = res.headers.get('content-type');
-      const isJson = contentType && contentType.includes('application/json');
-      
-      let errorJson = {};
-      let errorText = '';
-      
-      if (isJson) {
-        try {
-          // Intentar leer como JSON
-          errorText = await responseClone.text();
-          if (errorText && errorText.trim()) {
-            errorJson = JSON.parse(errorText);
-          } else {
-            // Si el body está vacío, usar un objeto vacío
-            errorJson = {};
-          }
-        } catch (parseError) {
-          console.error('❌ Error al parsear JSON del error:', parseError);
-          console.error('❌ Texto recibido:', errorText);
-          // Si falla el parseo, usar el texto como mensaje
-          throw new Error(errorText || `Error HTTP ${res.status}: ${res.statusText}`);
-        }
-      } else {
-        // Si no es JSON, leer como texto
-        errorText = await responseClone.text();
-        console.error('❌ Respuesta de error (no JSON):', errorText);
-        throw new Error(errorText || `Error HTTP ${res.status}: ${res.statusText}`);
-      }
-      
       console.error('❌ Error JSON recibido:', errorJson);
       
       // Verificar si hay un logout en curso antes de lanzar errores de autenticación
-      const isLoggingOut = typeof window !== 'undefined' && 
+      const isLoggingOut2 = typeof window !== 'undefined' && 
                            typeof sessionStorage !== 'undefined' && 
                            sessionStorage.getItem('__is_logging_out__') === 'true';
       
-      // Verificar si el error contiene mensaje de autenticación
-      if (isAuthError({ message: errorJson.message })) {
+      // Verificar si el error contiene mensaje de autenticación (solo si NO es 401/403 ya procesado)
+      if (!isAuthStatusCode(res.status) && isAuthError({ message: errorJson.message })) {
         // Si hay un logout en curso, no lanzar error
-        if (isLoggingOut) {
+        if (isLoggingOut2) {
           console.log('ℹ️ Logout en curso: ignorando error de autenticación');
           return res; // Retornar la respuesta sin lanzar error
         }
@@ -138,7 +155,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       }
       
       // Priorizar userMessage sobre message para mostrar errores en formato natural
-      const finalErrorMessage = errorJson.userMessage || errorJson.message || `Error HTTP ${res.status}: ${res.statusText}`;
+      const finalErrorMessage = errorJson.userMessage || errorJson.message || errorText || `Error HTTP ${res.status}: ${res.statusText}`;
       
       // Crear un error que preserve la información completa del error
       const error = new Error(finalErrorMessage);

@@ -23,11 +23,13 @@ import { Badge } from "@/components/ui/badge";
 import { useOrderContext } from "@/context/OrderContext";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 
 const OrderDocuments = () => {
 
     const { order, sendDocuments } = useOrderContext();
+    const isMobile = useIsMobile();
 
     const [selectedDocs, setSelectedDocs] = useState({
         customer: [],
@@ -224,21 +226,58 @@ const OrderDocuments = () => {
         });
     }
 
-    return (
-        <div className='h-full pb-2'>
-            <Card className='h-full flex flex-col bg-transparent'>
-                <CardContent className="flex-1 overflow-y-auto py-6 ">
-                    <div className="space-y-6 ">
-                        <div>
-                            <Card className="border  shadow-sm bg-transparent" >
-                                <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-lg">
-                                        Envío Personalizado de Documentos
-                                    </CardTitle>
-                                    <p className="text-neutral-500 text-sm">
-                                        Haz una selección personalizada de los documentos a enviar
-                                    </p>
-                                </CardHeader>
+    // Sección: Envío Automático Estándar
+    const standardSection = (
+        <Card className="border  bg-foreground-50 h-full shadow-sm flex flex-col">
+            <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-lg">Envío Automático Estándar</CardTitle>
+                <CardDescription>Envia automaticamente</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 flex-1 flex flex-col justify-center">
+                <ul className="text-sm space-y-1 mb-4">
+                    <li className="flex items-center">
+                        <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
+                        <span>Nota de carga ➜ Cliente</span>
+                    </li>
+                    <li className="flex items-center">
+                        <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
+                        <span>Paacking list ➜ Cliente</span>
+                    </li>
+                    <li className="flex items-center">
+                        <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
+                        <span>Documento de transporte (CMR) ➜ Transporte</span>
+                    </li>
+                    <li className="flex items-center">
+                        <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
+                        <span>Nota de carga ➜ Comercial</span>
+                    </li>
+                    <li className="flex items-center">
+                        <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
+                        <span>Packing list ➜ Comercial</span>
+                    </li>
+                </ul>
+            </CardContent>
+            <CardFooter className="p-4 pt-0">
+                <Button onClick={handleOnClickSendStandarDocuments} className="w-full">
+                    <Send className="h-3.5 w-3.5 mr-1" />
+                    Enviar Estándar
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+
+    // Sección: Envío Personalizado de Documentos
+    const customSection = (
+        <div>
+            <Card className="border  shadow-sm bg-transparent" >
+                <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-lg">
+                        Envío Personalizado de Documentos
+                    </CardTitle>
+                    <p className="text-neutral-500 text-sm">
+                        Haz una selección personalizada de los documentos a enviar
+                    </p>
+                </CardHeader>
                                 <CardContent className="p-4 pt-2 flex w-full">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {recipients.map((recipient) => (
@@ -310,142 +349,163 @@ const OrderDocuments = () => {
                                         ))}
                                     </div>
                                 </CardContent>
-                            </Card>
-                            <div className="mt-4 flex items-center justify-between">
-                                <p className="text-sm font-medium">
-                                    {numberOfSelectedDocuments} documentos seleccionados
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    {numberOfSelectedDocuments > 0 &&
-                                        <Button
-                                            variant="outline"
-                                            onClick={handleOnClickResetSelectedDocs}
-                                            className='animate-pulse'
-                                        >
-                                            <Ban className="h-4 w-4 mr-2" />
-                                            Cancelar selección
-                                        </Button>
-                                    }
-                                    <Button onClick={handleOnClickSendSelectedDocuments}>
-                                        <Send className="h-4 w-4 mr-2" />
-                                        Enviar selección
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                        <Separator />
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-2">
-                                <Card className="border  shadow-sm bg-transparent">
-                                    <CardHeader className="p-4 pb-2">
-                                        <CardTitle className="text-lg">
-                                            Envío Múltiple Destinatario
-                                        </CardTitle>
-                                        <p className="text-neutral-500 text-sm">
-                                            Seleccione un documento para enviarlo a múltiples destinatarios
+                                <CardFooter className={`p-4 pt-4 border-t ${isMobile ? 'flex-col gap-3' : 'flex items-center justify-between'}`}>
+                                    <div className={`flex items-center ${isMobile ? 'w-full justify-between' : ''}`}>
+                                        <p className="text-sm font-medium">
+                                            {numberOfSelectedDocuments} {numberOfSelectedDocuments === 1 ? 'documento seleccionado' : 'documentos seleccionados'}
                                         </p>
-                                    </CardHeader>
-                                    <CardContent className="p-4 pt-2">
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="text-sm font-medium mb-2 block">
-                                                    Documento a enviar:
-                                                </label>
-                                                <Select value={selectedDocument} onValueChange={setSelectedDocument}>
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Seleccione un documento" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {availableDocuments.map((doc) => (
-                                                            <SelectItem key={doc.id} value={doc.id}>
-                                                                {doc.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div>
-                                                <label className="text-sm font-medium mb-2 block">
-                                                    Destinatarios:
-                                                </label>
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                                    {recipients.map((recipient) => (
-                                                        <div
-                                                            key={recipient.name}
-                                                            className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.name]
-                                                                ? " bg-primary/20"
-                                                                : ""
-                                                                }`}
-                                                            onClick={() => toggleRecipientSelection(recipient.name)}
-                                                        >
-                                                            <div
-                                                                className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.name]
-                                                                    ? ""
-                                                                    : ""
-                                                                    }`}
-                                                            >
-                                                                {recipient.icon}
-                                                            </div>
-                                                            <span className="text-sm font-medium">
-                                                                {recipient.label}
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="p-4 pt-0">
-                                        <Button onClick={handleOnClickSendMultiple}>
+                                        {numberOfSelectedDocuments > 0 && isMobile && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleOnClickResetSelectedDocs}
+                                                className='animate-pulse'
+                                            >
+                                                <Ban className="h-4 w-4 mr-2" />
+                                                Cancelar
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
+                                        {numberOfSelectedDocuments > 0 && !isMobile && (
+                                            <Button
+                                                variant="outline"
+                                                onClick={handleOnClickResetSelectedDocs}
+                                                className='animate-pulse'
+                                            >
+                                                <Ban className="h-4 w-4 mr-2" />
+                                                Cancelar selección
+                                            </Button>
+                                        )}
+                                        <Button 
+                                            onClick={handleOnClickSendSelectedDocuments}
+                                            className={isMobile ? 'w-full' : ''}
+                                            disabled={numberOfSelectedDocuments === 0}
+                                        >
                                             <Send className="h-4 w-4 mr-2" />
-                                            Enviar documento
+                                            Enviar selección
                                         </Button>
-                                    </CardFooter>
-                                </Card>
-                            </div>
-                            <div className="md:col-span-1">
-                                <Card className="border  bg-foreground-50 h-full shadow-sm flex flex-col">
-                                    <CardHeader className="p-4 pb-2">
-                                        <CardTitle className="text-lg">Envío Automático Estándar</CardTitle>
-                                        <CardDescription>Envia automaticamente</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="p-4 pt-0 flex-1 flex flex-col justify-center">
-                                        <ul className="text-sm space-y-1 mb-4">
-                                            <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
-                                                <span>Nota de carga ➜ Cliente</span>
-                                            </li>
-                                            <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
-                                                <span>Paacking list ➜ Cliente</span>
-                                            </li>
-                                            <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
-                                                <span>Documento de transporte (CMR) ➜ Transporte</span>
-                                            </li>
-                                            <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
-                                                <span>Nota de carga ➜ Comercial</span>
-                                            </li>
-                                            <li className="flex items-center">
-                                                <div className="w-1 h-1 bg-neutral-400 rounded-full mr-1.5"></div>
-                                                <span>Packing list ➜ Comercial</span>
-                                            </li>
-                                        </ul>
-                                    </CardContent>
-                                    <CardFooter className="p-4 pt-0">
-                                        <Button onClick={handleOnClickSendStandarDocuments} className="w-full">
-                                            <Send className="h-3.5 w-3.5 mr-1" />
-                                            Enviar Estándar
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            </div>
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        </div>
+    );
+
+    // Sección: Envío Múltiple Destinatario
+    const multipleSection = (
+        <Card className="border  shadow-sm bg-transparent">
+            <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-lg">
+                    Envío Múltiple Destinatario
+                </CardTitle>
+                <p className="text-neutral-500 text-sm">
+                    Seleccione un documento para enviarlo a múltiples destinatarios
+                </p>
+            </CardHeader>
+            <CardContent className="p-4 pt-2">
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium mb-2 block">
+                            Documento a enviar:
+                        </label>
+                        <Select value={selectedDocument} onValueChange={setSelectedDocument}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Seleccione un documento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableDocuments.map((doc) => (
+                                    <SelectItem key={doc.id} value={doc.id}>
+                                        {doc.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium mb-2 block">
+                            Destinatarios:
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {recipients.map((recipient) => (
+                                <div
+                                    key={recipient.name}
+                                    className={`flex items-center p-1 px-2 rounded-md cursor-pointer border transition-colors shadow-sm ${selectedRecipients[recipient.name]
+                                        ? " bg-primary/20"
+                                        : ""
+                                        }`}
+                                    onClick={() => toggleRecipientSelection(recipient.name)}
+                                >
+                                    <div
+                                        className={`p-1 rounded-full mr-2 ${selectedRecipients[recipient.name]
+                                            ? ""
+                                            : ""
+                                            }`}
+                                    >
+                                        {recipient.icon}
+                                    </div>
+                                    <span className="text-sm font-medium">
+                                        {recipient.label}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </CardContent>
+            <CardFooter className="p-4 pt-0">
+                <Button onClick={handleOnClickSendMultiple}>
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar documento
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+
+    const content = (
+        <div className="space-y-6">
+            {isMobile ? (
+                // Orden para mobile: Estándar primero
+                <>
+                    {standardSection}
+                    <Separator />
+                    {customSection}
+                    <Separator />
+                    {multipleSection}
+                </>
+            ) : (
+                // Orden para desktop: Personalizado primero
+                <>
+                    {customSection}
+                    <Separator />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="md:col-span-2">
+                            {multipleSection}
+                        </div>
+                        <div className="md:col-span-1">
+                            {standardSection}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+
+    return (
+        <div className='h-full pb-2'>
+            {isMobile ? (
+                <div className='h-full flex flex-col'>
+                    <div className="flex-1 overflow-y-auto py-6">
+                        {content}
+                    </div>
+                </div>
+            ) : (
+                <Card className='h-full flex flex-col bg-transparent'>
+                    <CardContent className="flex-1 overflow-y-auto py-6">
+                        {content}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };

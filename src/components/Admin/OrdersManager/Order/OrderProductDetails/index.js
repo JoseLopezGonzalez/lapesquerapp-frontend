@@ -6,10 +6,12 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const OrderProductDetails = () => {
 
     const { order } = useOrderContext();
+    const isMobile = useIsMobile();
 
     // Memoizar el cálculo de totales para evitar recálculos innecesarios
     const totals = useMemo(() => {
@@ -38,9 +40,11 @@ const OrderProductDetails = () => {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-lg font-medium">Detalle de productos</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Desglose de productos con precio y cantidad
-                        </p>
+                        {!isMobile && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Desglose de productos con precio y cantidad
+                            </p>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
@@ -59,7 +63,80 @@ const OrderProductDetails = () => {
                                 </TableBody>
                             </Table>
                         </div>
+                    ) : isMobile ? (
+                        /* Vista Mobile: Cards */
+                        <div className="space-y-4">
+                            {order.productDetails.map((detail) => (
+                                <Card key={detail.id || `${detail.product?.id}-${detail.product?.name}`} className="border">
+                                    <CardContent className="p-4 space-y-3">
+                                        {/* Nombre del producto */}
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Artículo</p>
+                                            <p className="text-sm font-semibold">{detail.product.name}</p>
+                                        </div>
+
+                                        {/* Información en grid */}
+                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cajas</p>
+                                                <p className="text-sm font-semibold">{formatInteger(detail.boxes)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cantidad</p>
+                                                <p className="text-sm font-semibold">{formatDecimalWeight(detail.netWeight)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Precio</p>
+                                                <p className="text-sm font-semibold">{formatDecimalCurrency(detail.unitPrice)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Impuesto</p>
+                                                <p className="text-sm font-semibold">{`${detail.tax.rate}%`}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Subtotal</p>
+                                                <p className="text-sm font-semibold">{formatDecimalCurrency(detail.subtotal)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
+                                                <p className="text-sm font-semibold">{formatDecimalCurrency(detail.total)}</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+
+                            {/* Totales */}
+                            <Card className="border-2 bg-muted/30">
+                                <CardContent className="p-4">
+                                    <p className="text-base font-semibold text-foreground mb-4">Totales</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cajas</p>
+                                            <p className="text-base font-semibold">{formatInteger(totals.boxes)}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cantidad</p>
+                                            <p className="text-base font-semibold">{formatDecimalWeight(totals.netWeight)}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Precio promedio</p>
+                                            <p className="text-base font-semibold">{formatDecimalCurrency(totals.averagePrice)}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Subtotal</p>
+                                            <p className="text-base font-semibold">{formatDecimalCurrency(totals.subtotal)}</p>
+                                        </div>
+                                        <div className="space-y-1 col-span-2">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
+                                            <p className="text-base font-semibold">{formatDecimalCurrency(totals.total)}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     ) : (
+                        /* Vista Desktop: Tabla */
                         <div className="rounded-md border">
                             <Table>
                                 <TableHeader>
@@ -112,7 +189,8 @@ const OrderProductDetails = () => {
                                     </TableRow>
                                 </TableFooter>
                             </Table>
-                        </div>)}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
