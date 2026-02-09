@@ -744,20 +744,20 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
         <Card className="w-full h-full shadow-lg flex flex-col">
           <CardHeader className="flex-shrink-0 pb-3 pt-2 sm:pt-3">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+              <CardTitle className="text-4xl sm:text-5xl lg:text-6xl font-bold">
                 {currentProduct.name}
               </CardTitle>
               
               {/* Totales usando Badges de shadcn - en fila horizontal */}
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                <Badge variant="default" className="gap-2 px-6 py-4 text-xl sm:text-2xl font-bold">
-                  <Package className="h-6 w-6" />
+                <Badge variant="default" className="gap-2 px-6 py-4 text-3xl sm:text-4xl font-bold">
+                  <Package className="h-8 w-8" />
                   <span>{formatInteger(totalBoxes)} cajas</span> 
                 </Badge>
-                <Badge variant="default" className="px-6 py-4 text-xl sm:text-2xl font-bold">
+                <Badge variant="default" className="px-6 py-4 text-3xl sm:text-4xl font-bold">
                   <span>{formatDecimalWeight(totalQuantity)}</span>
                 </Badge>
-                <Badge variant="secondary" className="px-6 py-4 text-xl sm:text-2xl font-bold">
+                <Badge variant="secondary" className="px-6 py-4 text-3xl sm:text-4xl font-bold">
                   {currentProduct.orders.length} pedido{currentProduct.orders.length !== 1 ? 's' : ''}
                 </Badge>
               </div>
@@ -795,7 +795,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* ID del pedido centrado */}
                               <div className="flex items-center justify-center py-2">
                                 <div className="flex items-center justify-center min-w-[100px] h-14 rounded-lg">
-                                  <span className="text-2xl sm:text-3xl font-black text-primary tracking-tight">
+                                  <span className="text-5xl sm:text-6xl font-black text-primary tracking-tight">
                                     #{orderItem.orderId.toString().padStart(5, '0')}
                                   </span>
                                 </div>
@@ -804,27 +804,21 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* Separador */}
                               <Separator className="opacity-40" />
 
-                              {/* Tres bloques de cantidades: Pedido, Completado, Restante */}
-                              <div className="space-y-2">
+                              {/* Tres bloques de cantidades en horizontal: Pedido, Completado, Restante */}
+                              <div className="flex items-start gap-2 sm:gap-3 flex-wrap justify-center">
                                 {/* Bloque 1: Pedido (Planificado) */}
-                                <div className="text-center py-1.5">
-                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pedido</p>
-                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-background/80 to-background/60 dark:from-background/60 dark:to-background/40 border border-border/60">
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-primary/10 border border-primary/20">
-                                        <Box className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
-                                        <span className="text-primary">{formatInteger(orderItem.boxes)}</span>
-                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                <div className="text-center flex-1 min-w-[140px]">
+                                  <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pedido</p>
+                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-foreground">{formatInteger(orderItem.boxes)}</span>
+                                        <span className="text-muted-foreground text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator orientation="vertical" className="h-6 opacity-40" />
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-foreground/5 border border-border/40">
-                                        <Weight className="h-3.5 w-3.5 text-foreground/80 flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                    <Separator className="w-full opacity-30" />
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         {formatDecimalWeight(orderItem.quantity)}
                                       </p>
                                     </div>
@@ -832,24 +826,18 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                 </div>
 
                                 {/* Bloque 2: Completado */}
-                                <div className="text-center py-1.5">
-                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
-                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10 border border-green-200/60 dark:border-green-800/40">
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
-                                        <Box className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
-                                        <span className="text-green-600 dark:text-green-400">{formatInteger(orderItem.completedBoxes || 0)}</span>
-                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                <div className="text-center flex-1 min-w-[140px]">
+                                  <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
+                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-foreground">{formatInteger(orderItem.completedBoxes || 0)}</span>
+                                        <span className="text-muted-foreground text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator orientation="vertical" className="h-6 opacity-40" />
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
-                                        <Weight className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                    <Separator className="w-full opacity-30" />
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         {formatDecimalWeight(orderItem.completedQuantity || 0)}
                                       </p>
                                     </div>
@@ -857,24 +845,18 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                 </div>
 
                                 {/* Bloque 3: Restante */}
-                                <div className="text-center py-1.5">
-                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Restante</p>
-                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-orange-900/10 border border-orange-200/60 dark:border-orange-800/40">
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
-                                        <Box className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
-                                        <span className="text-orange-600 dark:text-orange-400">{formatInteger(orderItem.remainingBoxes || 0)}</span>
-                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                <div className="text-center flex-1 min-w-[140px]">
+                                  <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Restante</p>
+                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-foreground">{formatInteger(orderItem.remainingBoxes || 0)}</span>
+                                        <span className="text-muted-foreground text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator orientation="vertical" className="h-6 opacity-40" />
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="p-1 rounded-md bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
-                                        <Weight className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                                      </div>
-                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                    <Separator className="w-full opacity-30" />
+                                    <div className="flex items-center justify-center">
+                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         {formatDecimalWeight(orderItem.remainingQuantity || 0)}
                                       </p>
                                     </div>
