@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft } from 'lucide-react';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import OrderDetails from './OrderDetails';
@@ -89,6 +88,7 @@ const getTransportImage = (transportName) => {
 const OrderContent = ({ onLoading, onClose }) => {
   const isMobile = useIsMobile();
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
+  const [activeSection, setActiveSection] = useState(null);
   
   // Ocultar bottom navbar en esta pantalla (solo en mobile)
   useHideBottomNav(isMobile);
@@ -177,197 +177,220 @@ const OrderContent = ({ onLoading, onClose }) => {
         </div>
       ) : (
         <div className="w-full h-full flex flex-col relative">
-          {/* Header mobile: botón back + título (ID del pedido) */}
-          {isMobile && onClose && (
-            <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
-              <div className="relative flex items-center justify-center px-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
-                  aria-label="Volver"
-                >
-                  <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <h2 className="text-xl font-normal dark:text-white text-center">
-                  #{order.id}
-                </h2>
-                <div className="absolute right-4 w-12 h-12" />
-              </div>
-            </div>
-          )}
-          
-          {/* Botones móviles - sticky bottom bar */}
-          {isMobile && onClose && (
-            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
-              <OrderEditSheet />
-              <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
-                <Printer className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          {isMobile ? (
+            activeSection === null ? (
+              <>
+                {/* Header mobile: botón back + título (ID del pedido) - Solo en vista principal */}
+                {onClose && (
+                  <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+                    <div className="relative flex items-center justify-center px-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                        aria-label="Volver"
+                      >
+                        <ArrowLeft className="h-6 w-6" />
+                      </Button>
+                      <h2 className="text-xl font-normal dark:text-white text-center">
+                        #{order.id}
+                      </h2>
+                      <div className="absolute right-4 w-12 h-12" />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Botones móviles - sticky bottom bar - Solo en vista principal */}
+                {onClose && (
+                  <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+                    <OrderEditSheet />
+                    <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : null
+          ) : null}
           
           {isMobile ? (
-            <div className="h-full flex flex-col w-full pb-24">
-              {/* Vista Mobile: Cabecera centrada y mobile-friendly */}
-              <div className='space-y-5 px-4 pt-6 text-center'>
-                {/* Nombre del cliente */}
-                <div>
-                  <p className='text-xl font-semibold'>{order.customer.name}</p>
-                  <p className='text-base text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
-                </div>
-                
-                {/* Badge de estado */}
-                <div className='flex justify-center'>
-                  {order && renderStatusBadge(order.status)}
-                </div>
-                
-                {/* Fecha de Carga y Temperatura en fila */}
-                <div className='flex items-center justify-center gap-6 flex-wrap'>
+            activeSection === null ? (
+              /* Vista principal del pedido con lista de secciones */
+              <div className="h-full flex flex-col w-full pb-24 min-h-0">
+                {/* Vista Mobile: Cabecera centrada y mobile-friendly */}
+                <div className='space-y-5 px-4 pt-6 text-center flex-shrink-0'>
+                  {/* Nombre del cliente */}
                   <div>
-                    <p className='text-sm text-muted-foreground mb-1'>Fecha de Carga</p>
-                    <p className='text-lg font-semibold'>{formatDate(order.loadDate)}</p>
+                    <p className='text-xl font-semibold'>{order.customer.name}</p>
+                    <p className='text-base text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
                   </div>
-                  <div>
-                    <p className='text-sm text-muted-foreground mb-1'>Temperatura</p>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="focus:outline-none">
-                        <span className='text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
-                          <ThermometerSnowflake className='h-5 w-5' />
-                          {order.temperature || '0'} ºC
-                        </span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
-                          0 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
-                          4 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
-                          - 18 ºC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
-                          - 23 ºC
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  
+                  {/* Badge de estado */}
+                  <div className='flex justify-center'>
+                    {order && renderStatusBadge(order.status)}
+                  </div>
+                  
+                  {/* Fecha de Carga y Temperatura en fila */}
+                  <div className='flex items-center justify-center gap-6 flex-wrap'>
+                    <div>
+                      <p className='text-sm text-muted-foreground mb-1'>Fecha de Carga</p>
+                      <p className='text-lg font-semibold'>{formatDate(order.loadDate)}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-muted-foreground mb-1'>Temperatura</p>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="focus:outline-none">
+                          <span className='text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
+                            <ThermometerSnowflake className='h-5 w-5' />
+                            {order.temperature || '0'} ºC
+                          </span>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
+                            0 ºC
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
+                            4 ºC
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
+                            - 18 ºC
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
+                            - 23 ºC
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  
+                  {/* Transporte */}
+                  <div className='flex flex-col items-center justify-center gap-2 pt-3 border-t mb-4'>
+                    <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                    <p className='text-lg font-medium'>{order.transport.name}</p>
                   </div>
                 </div>
-                
-                {/* Transporte */}
-                <div className='flex flex-col items-center justify-center gap-2 pt-3 border-t'>
-                  <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                  <p className='text-lg font-medium'>{order.transport.name}</p>
+                {/* Lista de secciones */}
+                <div className='flex-1 w-full overflow-hidden min-h-0'>
+                  <ScrollArea className="h-full w-full">
+                    <div className="px-4 pt-6 pb-2 space-y-2">
+                      {[
+                        { id: 'details', title: 'Detalles', component: OrderDetails },
+                        { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true },
+                        { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true },
+                        { id: 'production', title: 'Producción', component: OrderProduction, lazy: true },
+                        { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true },
+                        { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true },
+                        { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true },
+                        { id: 'export', title: 'Exportar', component: OrderExport, lazy: true },
+                        { id: 'map', title: 'Mapa', component: OrderMap, lazy: true },
+                        { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true },
+                        { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true },
+                      ].map((section) => (
+                        <button
+                          key={section.id}
+                          className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left group"
+                          onClick={() => setActiveSection(section.id)}
+                        >
+                          <span className="text-sm font-medium text-foreground">{section.title}</span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
               </div>
-              <div className='flex-1 w-full overflow-y-hidden '>
-                {/* Vista Mobile: Acordeones */}
-                <ScrollArea className="h-full w-full" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
-                  <div className="px-4 py-4 space-y-2">
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="details">
-                        <AccordionTrigger className="text-base font-medium">Detalles</AccordionTrigger>
-                        <AccordionContent>
-                          <OrderDetails />
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="products">
-                        <AccordionTrigger className="text-base font-medium">Previsión</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderPlannedProductDetails />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="productDetails">
-                        <AccordionTrigger className="text-base font-medium">Detalle productos</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderProductDetails />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="production">
-                        <AccordionTrigger className="text-base font-medium">Producción</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderProduction />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="pallets">
-                        <AccordionTrigger className="text-base font-medium">Palets</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderPallets />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="labels">
-                        <AccordionTrigger className="text-base font-medium">Etiquetas</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderLabels />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="documents">
-                        <AccordionTrigger className="text-base font-medium">Envío de Documentos</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderDocuments />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="export">
-                        <AccordionTrigger className="text-base font-medium">Exportar</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderExport />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="map">
-                        <AccordionTrigger className="text-base font-medium">Mapa</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderMap />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="incident">
-                        <AccordionTrigger className="text-base font-medium">Incidencia</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderIncident />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="customer-history">
-                        <AccordionTrigger className="text-base font-medium">Histórico</AccordionTrigger>
-                        <AccordionContent>
-                          <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                            <OrderCustomerHistory />
-                          </Suspense>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
+            ) : (
+              /* Vista de sección individual - pantalla completa */
+              <div className="h-full flex flex-col w-full">
+                {/* Header de sección */}
+                <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+                  <div className="relative flex items-center justify-center px-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setActiveSection(null)}
+                      className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                      aria-label="Volver"
+                    >
+                      <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <h2 className="text-xl font-normal dark:text-white text-center">
+                      {[
+                        { id: 'details', title: 'Detalles' },
+                        { id: 'products', title: 'Previsión' },
+                        { id: 'productDetails', title: 'Detalle productos' },
+                        { id: 'production', title: 'Producción' },
+                        { id: 'pallets', title: 'Palets' },
+                        { id: 'labels', title: 'Etiquetas' },
+                        { id: 'documents', title: 'Envío de Documentos' },
+                        { id: 'export', title: 'Exportar' },
+                        { id: 'map', title: 'Mapa' },
+                        { id: 'incident', title: 'Incidencia' },
+                        { id: 'customer-history', title: 'Histórico' },
+                      ].find(s => s.id === activeSection)?.title || 'Sección'}
+                    </h2>
+                    <div className="absolute right-4 w-12 h-12" />
+                  </div>
+                </div>
+                {/* Contenido de la sección */}
+                <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
+                  <div className="px-4 py-4">
+                    {activeSection === 'details' && <OrderDetails />}
+                    {activeSection === 'products' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderPlannedProductDetails />
+                      </Suspense>
+                    )}
+                    {activeSection === 'productDetails' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderProductDetails />
+                      </Suspense>
+                    )}
+                    {activeSection === 'production' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderProduction />
+                      </Suspense>
+                    )}
+                    {activeSection === 'pallets' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderPallets />
+                      </Suspense>
+                    )}
+                    {activeSection === 'labels' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderLabels />
+                      </Suspense>
+                    )}
+                    {activeSection === 'documents' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderDocuments />
+                      </Suspense>
+                    )}
+                    {activeSection === 'export' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderExport />
+                      </Suspense>
+                    )}
+                    {activeSection === 'map' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderMap />
+                      </Suspense>
+                    )}
+                    {activeSection === 'incident' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderIncident />
+                      </Suspense>
+                    )}
+                    {activeSection === 'customer-history' && (
+                      <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                        <OrderCustomerHistory />
+                      </Suspense>
+                    )}
                   </div>
                 </ScrollArea>
               </div>
-            </div>
+            )
           ) : (
             <Card className="h-full w-full relative p-4 sm:p-6 lg:p-9">
               <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
