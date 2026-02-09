@@ -189,18 +189,14 @@ const OrderContent = ({ onLoading, onClose }) => {
           
           {/* Botones móviles - sticky bottom bar */}
           {isMobile && onClose && (
-            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg pb-[env(safe-area-inset-bottom)]">
-              <Button variant="outline" onClick={onClose} className="flex-1 min-h-[44px]">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
               <OrderEditSheet />
-              <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="min-h-[44px] min-w-[44px]">
+              <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
                 <Printer className="h-4 w-4" />
               </Button>
             </div>
           )}
-          <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-20' : 'pb-16 lg:pb-0'}`}>
+          <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-24' : 'pb-16 lg:pb-0'}`}>
             <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
               <div className='space-y-1 flex-1'>
                 {order && renderStatusBadge(order.status)}
@@ -300,7 +296,7 @@ const OrderContent = ({ onLoading, onClose }) => {
             <div className='flex-1 w-full overflow-y-hidden '>
               {isMobile ? (
                 /* Vista Mobile: Acordeones */
-                <ScrollArea className="h-full w-full pb-20">
+                <ScrollArea className="h-full w-full" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
                   <div className="px-4 py-4 space-y-2">
                     <Accordion type="single" collapsible className="w-full">
                       <AccordionItem value="details">

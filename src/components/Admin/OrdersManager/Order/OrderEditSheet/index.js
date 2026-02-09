@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Edit, Save, Loader2, AlertTriangle } from 'lucide-react';
+import { Edit, Check, Loader2, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderContext } from '@/context/OrderContext';
@@ -109,7 +109,10 @@ const OrderEditSheet = () => {
         try {
             await updateOrderData(payload);
             toast.success('Pedido actualizado correctamente', { id: toastId });
+            // Pequeño retardo para que se pueda apreciar el estado del botón antes de cerrar
+            await new Promise(resolve => setTimeout(resolve, 600));
             // Cerrar el Sheet solo después de que se complete exitosamente el guardado
+            setSaving(false);
             setOpen(false);
             reset(defaultValues);
             setInitialValues(null);
@@ -128,7 +131,6 @@ const OrderEditSheet = () => {
                     }
                 });
             }
-        } finally {
             setSaving(false);
         }
     };
@@ -246,24 +248,55 @@ const OrderEditSheet = () => {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" className=''>
+                <Button variant={isMobile ? "default" : "outline"} className={isMobile ? 'flex-1 min-h-[44px]' : ''}>
                     <Edit className="h-4 w-4 mr-2" />
-                    Editar Pedido
+                    Editar
                 </Button>
             </SheetTrigger>
             <SheetContent 
                 side={isMobile ? "bottom" : "right"}
                 className={isMobile 
-                    ? "max-h-[90vh] px-4 py-4 pb-[env(safe-area-inset-bottom)] rounded-t-3xl"
+                    ? "max-h-[90vh] h-[90vh] px-4 py-4 pb-[env(safe-area-inset-bottom)] rounded-t-3xl flex flex-col overflow-hidden"
                     : "w-[400px] sm:w-[900px] sm:min-w-[600px] px-7 py-7 pb-14 rounded-lg"
                 }
             >
-                <SheetHeader className={isMobile ? "pb-3" : ""}>
+                <SheetHeader className={isMobile ? "pb-3 flex-shrink-0" : ""}>
                     <SheetTitle className={isMobile ? "text-lg" : ""}>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
                 </SheetHeader>
-                <form onSubmit={handleFormSubmit} className="h-full flex flex-col w-full" noValidate>
-                    <ScrollArea className={`grow ${isMobile ? 'pr-2' : ''}`}>
-                        <div className={`grid gap-6 ${isMobile ? 'py-2' : 'py-4 px-5'}`}>
+                <form onSubmit={handleFormSubmit} className={`flex flex-col w-full ${isMobile ? 'flex-1 min-h-0' : 'h-full'}`} noValidate>
+                    {isMobile ? (
+                        <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+                            <div className="grid gap-6 py-2 pb-4">
+                                {formGroups.map((group) => (
+                                    <div key={group.group} className="w-full">
+                                        <h3 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{group.group}</h3>
+                                        <Separator className="my-2" />
+                                        <div className={`grid py-4 w-full ${isMobile ? 'grid-cols-1 gap-4' : group.grid || 'grid-cols-1 gap-4'}`}>
+                                            {group.fields.map((field) => {
+                                                const hasError = errors[field.name];
+                                                return (
+                                                    <div key={field.name} className={`grid gap-2 w-full ${isMobile ? '' : field.colSpan}`}>
+                                                        <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>{field.label}</Label>
+                                                        <div className={hasError ? 'border-red-300 rounded-md' : ''}>
+                                                            {renderField(field)}
+                                                        </div>
+                                                        {hasError && (
+                                                            <p className="text-red-500 text-sm flex items-center gap-1">
+                                                                <AlertTriangle className="h-3 w-3" />
+                                                                {errors[field.name].message}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <ScrollArea className="grow">
+                            <div className="grid gap-6 py-4 px-5">
                             {formGroups.map((group) => (
                                 <div key={group.group} className="w-full">
                                     <h3 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{group.group}</h3>
@@ -289,32 +322,29 @@ const OrderEditSheet = () => {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </ScrollArea>
-                    <div className={`flex ${isMobile ? 'flex-col-reverse gap-2 sticky bottom-0 bg-background border-t pt-4 pb-2' : 'justify-end gap-4 pt-4'}`}>
-                        <SheetClose asChild>
-                            <Button
-                                onClick={onCloseSheet}
-                                variant="outline" 
-                                type="button"
-                                disabled={saving}
-                                className={isMobile ? 'w-full min-h-[44px]' : ''}>
-                                Cancelar
-                            </Button>
-                        </SheetClose>
+                            </div>
+                        </ScrollArea>
+                    )}
+                    <div className={`flex flex-shrink-0 ${isMobile ? 'pt-4 pb-2 border-t bg-background' : 'justify-end gap-4 pt-4'}`}>
                         <Button 
                             type="submit"
-                            disabled={saving || Object.keys(errors).length > 0}
-                            className={isMobile ? 'w-full min-h-[44px]' : ''}>
+                            disabled={saving || !isDirty || Object.keys(errors).length > 0}
+                            className={isMobile ? 'w-full min-h-[44px]' : ''}
+                            onClick={() => {
+                                // Asegurar que el estado saving se active inmediatamente al hacer clic
+                                if (!saving && isDirty && Object.keys(errors).length === 0) {
+                                    // El estado se manejará en onSubmit, pero esto asegura feedback inmediato
+                                }
+                            }}>
                             {saving ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Guardando...
+                                    <Loader2 className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2 animate-spin`} />
+                                    <span>{isMobile ? 'Guardando...' : 'Guardando...'}</span>
                                 </>
                             ) : (
                                 <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Guardar cambios
+                                    <Check className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />
+                                    <span>Guardar</span>
                                 </>
                             )}
                         </Button>
