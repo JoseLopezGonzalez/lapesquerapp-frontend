@@ -835,7 +835,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                 {lineStatusConfig.color !== 'green' && (
                                   <div className="text-center flex-1 min-w-[140px]">
                                     <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
-                                    <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle} animate-pulse`}>
+                                    <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle}`}>
                                       <div className="flex items-center justify-center">
                                         <p className="text-2xl sm:text-3xl font-extrabold text-muted-foreground whitespace-nowrap">
                                           <span className="text-muted-foreground">{formatInteger(orderItem.completedBoxes || 0)}</span>
