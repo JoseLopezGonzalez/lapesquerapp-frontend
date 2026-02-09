@@ -835,6 +835,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                 {lineStatusConfig.color !== 'green' && (
                                   <div className="text-center flex-1 min-w-[140px]">
                                     <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
+                                    {/* Tema original comentado:
                                     <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle}`}>
                                       <div className="flex items-center justify-center">
                                         <p className="text-2xl sm:text-3xl font-extrabold text-muted-foreground whitespace-nowrap">
@@ -845,6 +846,22 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                       <Separator className="w-full opacity-60" />
                                       <div className="flex items-center justify-center">
                                         <p className="text-2xl sm:text-3xl font-extrabold text-muted-foreground whitespace-nowrap">
+                                          {formatDecimalWeight(orderItem.completedQuantity || 0)}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    */}
+                                    {/* Tema temporal: fondo gris y letras negras */}
+                                    <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700">
+                                      <div className="flex items-center justify-center">
+                                        <p className="text-2xl sm:text-3xl font-extrabold text-black dark:text-white whitespace-nowrap">
+                                          <span className="text-black dark:text-white">{formatInteger(orderItem.completedBoxes || 0)}</span>
+                                          <span className="text-black/70 dark:text-white/70 text-lg font-semibold">/c</span>
+                                        </p>
+                                      </div>
+                                      <div className="w-full h-[1px] bg-gray-400/80 dark:bg-gray-600/80" />
+                                      <div className="flex items-center justify-center">
+                                        <p className="text-2xl sm:text-3xl font-extrabold text-black dark:text-white whitespace-nowrap">
                                           {formatDecimalWeight(orderItem.completedQuantity || 0)}
                                         </p>
                                       </div>
