@@ -358,15 +358,16 @@ const OrderContent = ({ onLoading, onClose }) => {
                       <OrderPallets />
                     </Suspense>
                   </div>
+                ) : activeSection === 'products' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                      <OrderPlannedProductDetails />
+                    </Suspense>
+                  </div>
                 ) : (
                   <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
                     <div className="px-4 py-4">
                       {activeSection === 'details' && <OrderDetails />}
-                      {activeSection === 'products' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderPlannedProductDetails />
-                        </Suspense>
-                      )}
                       {activeSection === 'productDetails' && (
                         <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
                           <OrderProductDetails />

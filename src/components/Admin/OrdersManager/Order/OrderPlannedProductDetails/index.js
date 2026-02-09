@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
-import { GitBranchPlus, Plus, X, Check, Edit2, Trash2 } from 'lucide-react';
+import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const OrderPlannedProductDetails = () => {
     const isMobile = useIsMobile();
@@ -215,60 +217,24 @@ const OrderPlannedProductDetails = () => {
     totals.averageUnitPrice = totals.quantity ? (totals.totalAmount / totals.quantity) : 0;
 
     return (
-        <div className="h-full pb-2">
-            <Card className='h-full flex flex-col bg-transparent'>
-                <CardHeader className={isMobile ? "space-y-4" : "flex flex-row items-center justify-between"}>
-                    <div>
-                        <CardTitle className={isMobile ? "text-base font-medium" : "text-lg font-medium"}>Previsión de productos</CardTitle>
-                        {!isMobile && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Tabla con los productos previstos en el pedido
-                            </p>
-                        )}
-                    </div>
-                    <div className={isMobile ? "flex flex-col gap-2" : "space-x-2"}>
-                        <Button onClick={handleOnClickAddLine} size={isMobile ? "sm" : "default"} className={isMobile ? "w-full" : ""}>
-                            <Plus size={16} className={isMobile ? "mr-2" : ""} />
-                            Añadir línea
-                        </Button>
-                        {isSomeProductDetected && (
-                            <Button variant="secondary" className={`animate-pulse ${isMobile ? "w-full" : ""}`} onClick={handleOnClickAddDetectedProducts} size={isMobile ? "sm" : "default"}>
-                                <GitBranchPlus size={16} className={isMobile ? "mr-2" : ""} />
-                                Añadir productos detectados
-                            </Button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                    {details.length === 0 ? (
-                        <div className="rounded-md border">
-                            {isMobile ? (
-                                <div className="py-14 px-4">
-                                    <EmptyState
-                                        title={'No existen productos previstos'}
-                                        description={'Añade productos a la previsión del pedido'}
-                                    />
+        <div className="flex-1 flex flex-col min-h-0">
+            {isMobile ? (
+                <div className="flex-1 flex flex-col min-h-0">
+                    <ScrollArea className="flex-1 min-h-0">
+                        <div className="pb-20 space-y-6">
+                            {details.length === 0 ? (
+                                <div className="rounded-md border">
+                                    <div className="py-14 px-4">
+                                        <EmptyState
+                                            title={'No existen productos previstos'}
+                                            description={'Añade productos a la previsión del pedido'}
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <Table>
-                                    <TableBody>
-                                        <TableRow className='text-nowrap'>
-                                            <TableCell className='py-14'>
-                                                <EmptyState
-                                                    title={'No existen productos previstos'}
-                                                    description={'Añade productos a la previsión del pedido'}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            {isMobile ? (
-                                /* Vista Mobile: Cards */
-                                <div className="space-y-3">
+                                <>
+                                    {/* Vista Mobile: Cards */}
+                                    <div className="space-y-3">
                                     {details.map((detail, index) => (
                                         <Card key={detail.id || detail.tempId} className="p-4">
                                             <div className="space-y-3">
@@ -398,23 +364,107 @@ const OrderPlannedProductDetails = () => {
                                         </div>
                                     </Card>
                                 </div>
-                            ) : (
-                                /* Vista Desktop: Tabla */
-                                <div className="rounded-md border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className='text-nowrap'>
-                                                <TableHead>Artículo</TableHead>
-                                                <TableHead>Cajas</TableHead>
-                                                <TableHead>Cantidad</TableHead>
-                                                <TableHead>Precio</TableHead>
-                                                <TableHead>Impuesto (%)</TableHead>
-                                                <TableHead className='w-[150px] text-center'>Acciones</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {details.map((detail, index) => (
-                                                <TableRow key={detail.id || detail.tempId} className='text-nowrap'>
+                        </>
+                            )}
+                        </div>
+                    </ScrollArea>
+                    {/* Footer con botones */}
+                    <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+                        <Button 
+                            onClick={handleOnClickAddLine} 
+                            size="sm"
+                            className="flex-1 min-h-[44px]"
+                        >
+                            <Plus size={16} className="mr-2" />
+                            Añadir línea
+                        </Button>
+                        {isSomeProductDetected && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button 
+                                        variant="outline"
+                                        size="icon"
+                                        className="min-h-[44px] min-w-[44px]"
+                                    >
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        onClick={handleOnClickAddDetectedProducts}
+                                        className="animate-pulse"
+                                    >
+                                        <GitBranchPlus size={16} className="mr-2" />
+                                        Añadir productos detectados
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <Card className='h-full flex flex-col bg-transparent'>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Tabla con los productos previstos en el pedido
+                            </p>
+                        </div>
+                        <div className="space-x-2">
+                            <Button onClick={handleOnClickAddLine} size="default">
+                                <Plus size={16} className="mr-2" />
+                                Añadir línea
+                            </Button>
+                            {isSomeProductDetected && (
+                                <Button variant="secondary" className="animate-pulse" onClick={handleOnClickAddDetectedProducts} size="default">
+                                    <GitBranchPlus size={16} className="mr-2" />
+                                    Añadir productos detectados
+                                </Button>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6 flex-1 overflow-y-auto">
+                        {details.length === 0 ? (
+                            <div className="rounded-md border">
+                                <Table>
+                                    <TableBody>
+                                        <TableRow className='text-nowrap'>
+                                            <TableCell className='py-14'>
+                                                <EmptyState
+                                                    title={'No existen productos previstos'}
+                                                    description={'Añade productos a la previsión del pedido'}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <div className="border rounded-md max-h-[500px] overflow-y-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Artículo</TableHead>
+                                            <TableHead className="text-right">Cajas</TableHead>
+                                            <TableHead className="text-right">Cantidad</TableHead>
+                                            <TableHead className="text-right">Precio Unitario</TableHead>
+                                            <TableHead className="text-right">Impuesto</TableHead>
+                                            <TableHead className="text-right">Subtotal</TableHead>
+                                            <TableHead className="text-right">Total</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {details.map((detail, index) => {
+                                            const quantity = Number(detail.quantity);
+                                            const unitPrice = Number(detail.unitPrice);
+                                            const subtotal = quantity * unitPrice;
+                                            const taxRate = Number(detail.tax.rate) || 0;
+                                            const total = subtotal * (1 + taxRate / 100);
+
+                                            return (
+                                                <TableRow key={detail.id || detail.tempId}>
                                                     <TableCell>
                                                         {editIndex === index ? (
                                                             <Combobox
@@ -423,86 +473,101 @@ const OrderPlannedProductDetails = () => {
                                                                 onChange={(e) => handleInputChange(index, 'product', e)}
                                                                 loading={optionsLoading}
                                                             />
-                                                        ) : detail.product.name}
+                                                        ) : (
+                                                            detail.product.name || 'Sin producto'
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right">
                                                         {editIndex === index ? (
                                                             <Input
                                                                 type="number"
                                                                 value={detail.boxes}
                                                                 onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
+                                                                className="w-20 text-right"
                                                             />
-                                                        ) : formatInteger(detail.boxes)}
+                                                        ) : (
+                                                            formatInteger(detail.boxes)
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right">
                                                         {editIndex === index ? (
                                                             <Input
                                                                 type="number"
                                                                 value={detail.quantity}
                                                                 onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
+                                                                className="w-24 text-right"
                                                             />
-                                                        ) : formatDecimalWeight(detail.quantity)}
+                                                        ) : (
+                                                            formatDecimalWeight(detail.quantity)
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right">
                                                         {editIndex === index ? (
                                                             <Input
                                                                 type="number"
                                                                 value={detail.unitPrice}
                                                                 onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
+                                                                className="w-24 text-right"
                                                             />
-                                                        ) : formatDecimalCurrency(detail.unitPrice)}
+                                                        ) : (
+                                                            formatDecimalCurrency(detail.unitPrice)
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="text-right">
                                                         {editIndex === index ? (
                                                             <Combobox
                                                                 options={taxOptions}
                                                                 value={detail.tax.id}
-                                                                onChange={(value) => handleInputChange(index, 'tax', value)}
+                                                                onChange={(e) => handleInputChange(index, 'tax', e)}
                                                                 loading={optionsLoading}
                                                             />
-                                                        ) : `${detail.tax.rate}%`}
+                                                        ) : (
+                                                            `${taxRate}%`
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell className="flex gap-2 justify-center">
+                                                    <TableCell className="text-right">{formatDecimalCurrency(subtotal)}</TableCell>
+                                                    <TableCell className="text-right">{formatDecimalCurrency(total)}</TableCell>
+                                                    <TableCell className="text-right">
                                                         {editIndex === index ? (
-                                                            <>
-                                                                <Button onClick={handleOnClickSaveLine} size='icon'>
+                                                            <div className="flex justify-end gap-1">
+                                                                <Button onClick={handleOnClickSaveLine} size="sm">
                                                                     <Check size={16} />
                                                                 </Button>
-                                                                <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size='icon'>
+                                                                <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm">
                                                                     <X size={16} />
                                                                 </Button>
-                                                            </>
+                                                            </div>
                                                         ) : (
-                                                            <>
-                                                                <Button onClick={() => setEditIndex(index)} size='icon' variant="outline">
+                                                            <div className="flex justify-end gap-1">
+                                                                <Button onClick={() => setEditIndex(index)} size="sm" variant="outline">
                                                                     <Edit2 size={16} />
                                                                 </Button>
-                                                                <Button variant="secondary" onClick={() => handleOnClickDeleteLine(detail.id)} size='icon'>
+                                                                <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="outline" className="text-destructive hover:text-destructive">
                                                                     <Trash2 size={16} />
                                                                 </Button>
-                                                            </>
+                                                            </div>
                                                         )}
                                                     </TableCell>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                        <TableFooter>
-                                            <TableRow>
-                                                <TableCell>Total</TableCell>
-                                                <TableCell>{formatInteger(totals.boxes)}</TableCell>
-                                                <TableCell>{formatDecimalWeight(totals.quantity)}</TableCell>
-                                                <TableCell>{formatDecimalCurrency(totals.averageUnitPrice)}</TableCell>
-                                                <TableCell></TableCell>
-                                                <TableCell></TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                                            );
+                                        })}
+                                    </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell colSpan={2} className="text-right font-semibold">Totales</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatInteger(totals.boxes)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimalWeight(totals.quantity)}</TableCell>
+                                            <TableCell colSpan={2}></TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.averageUnitPrice)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.totalAmount)}</TableCell>
+                                        </TableRow>
+                                    </TableFooter>
+                                </Table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };
