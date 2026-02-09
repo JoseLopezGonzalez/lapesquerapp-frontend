@@ -9,7 +9,7 @@ import OrderCard from './OrderCard';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Download, Plus } from 'lucide-react';
+import { Download, Plus, LayoutGrid } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { API_URL_V2 } from '@/configs/config';
 import toast from 'react-hot-toast';
@@ -28,7 +28,7 @@ import {
 
 
 
-const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId }) => {
+const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode }) => {
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
@@ -157,6 +157,20 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     <Tooltip>
                         <TooltipTrigger asChild>
                                     <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={onToggleViewMode}
+                                    >
+                                        <LayoutGrid className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                                    <p>Vista de Cocina</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                                    <Button
                                         variant="default"
                                         size="icon"
                                         onClick={onClickAddNewOrder}
@@ -221,24 +235,42 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                     )}
                                 </button>
                             </div>
-                            {/* Botón crear solo icono en mobile - al lado del buscador */}
+                            {/* Botones de acción en mobile - al lado del buscador */}
                             {isMobile && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="default"
-                                            size="icon"
-                                            onClick={onClickAddNewOrder}
-                                            className="h-12 w-12 flex-shrink-0"
-                                            aria-label="Crear nuevo pedido"
-                                        >
-                                            <Plus className="h-5 w-5" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Crear nuevo pedido</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={onToggleViewMode}
+                                                className="h-12 w-12 flex-shrink-0"
+                                                aria-label="Vista de Cocina"
+                                            >
+                                                <LayoutGrid className="h-5 w-5" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Vista de Cocina</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="default"
+                                                size="icon"
+                                                onClick={onClickAddNewOrder}
+                                                className="h-12 w-12 flex-shrink-0"
+                                                aria-label="Crear nuevo pedido"
+                                            >
+                                                <Plus className="h-5 w-5" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Crear nuevo pedido</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </>
                             )}
                         </div>
 
@@ -422,6 +454,8 @@ export default memo(OrdersList, (prevProps, nextProps) => {
         prevProps.onClickCategory === nextProps.onClickCategory &&
         prevProps.onChangeSearch === nextProps.onChangeSearch &&
         prevProps.onClickAddNewOrder === nextProps.onClickAddNewOrder &&
-        prevProps.onRetry === nextProps.onRetry
+        prevProps.onRetry === nextProps.onRetry &&
+        prevProps.viewMode === nextProps.viewMode &&
+        prevProps.onToggleViewMode === nextProps.onToggleViewMode
     );
 });

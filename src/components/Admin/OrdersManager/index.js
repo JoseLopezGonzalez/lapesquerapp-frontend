@@ -6,11 +6,12 @@ import OrdersList from './OrdersList';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
 import { getActiveOrders } from '@/services/orderService';
-import { Loader2, Package, PlusCircle, Plus, Download } from 'lucide-react';
+import { Loader2, Package, PlusCircle, Plus, Download, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
+import KitchenView from './KitchenView';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -53,6 +54,7 @@ export default function OrdersManager() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [reloadCounter, setReloadCounter] = useState(0);
+    const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'kitchen'
 
     // Debouncing de búsqueda para mejorar rendimiento
     const debouncedSearchText = useDebounce(searchText, 300);
@@ -151,15 +153,29 @@ export default function OrdersManager() {
         });
     }, [orders, debouncedSearchText, activeCategory]);
 
+    // Toggle entre vista normal y vista cocina
+    const toggleViewMode = useCallback(() => {
+        setViewMode(prev => prev === 'normal' ? 'kitchen' : 'normal');
+        // Al cambiar a vista cocina, cerrar el detalle del pedido si está abierto
+        if (viewMode === 'normal') {
+            setSelectedOrder(null);
+            setOnCreatingNewOrder(false);
+        }
+    }, [viewMode]);
+
     const handleOnClickOrderCard = useCallback((orderId) => {
         setOnCreatingNewOrder(false);
+        // Si estamos en vista cocina, cambiar a vista normal
+        if (viewMode === 'kitchen') {
+            setViewMode('normal');
+        }
         setSelectedOrder(prevSelectedOrder => {
             if (prevSelectedOrder === orderId) {
                 return null;
             }
             return orderId;
         });
-    }, []);
+    }, [viewMode]);
 
     const handleOnClickCategory = useCallback((categoryName) => {
         setSelectedOrder(null);
@@ -243,8 +259,10 @@ export default function OrdersManager() {
             error={error}
             onRetry={reloadOrders}
             selectedOrderId={selectedOrder}
+            viewMode={viewMode}
+            onToggleViewMode={toggleViewMode}
         />
-    ), [sortedOrders, categories, searchText, isOrderLoading, error, selectedOrder, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
+    ), [sortedOrders, categories, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
 
     // Memoizar la función onLoading para evitar re-renders infinitos
     const handleOrderLoading = useCallback((value) => {
@@ -297,7 +315,20 @@ export default function OrdersManager() {
             ) : (
                 /* Vista - layout adaptativo: lista siempre visible, detalle se muestra cuando se selecciona */
                 <div className="h-full flex flex-col">
-                    {isMobile ? (
+                    {viewMode === 'kitchen' ? (
+                        /* Vista de cocina - pantalla completa */
+                        <div className="h-full flex flex-col overflow-hidden">
+                            {/* Contenido de vista cocina - ocupa todo el espacio */}
+                            <div className="h-full min-h-0 overflow-hidden">
+                                <KitchenView
+                                    orders={sortedOrders}
+                                    onClickOrder={handleOnClickOrderCard}
+                                    useMockData={sortedOrders.length === 0}
+                                    onToggleViewMode={toggleViewMode}
+                                />
+                            </div>
+                        </div>
+                    ) : isMobile ? (
                         /* Vista móvil: lista o detalle según selección */
                         <div className="h-full flex flex-col min-h-0">
                             {selectedOrder || onCreatingNewOrder ? (
