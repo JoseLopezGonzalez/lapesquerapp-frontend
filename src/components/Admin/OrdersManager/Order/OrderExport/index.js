@@ -45,11 +45,11 @@ const OrderExport = () => {
 
     const content = (
         <div className={isMobile ? "space-y-6" : "grid md:grid-cols-2 gap-6"}>
-            {/* Exportación rápida */}
+            {/* Descarga rápida */}
             <div className="space-y-4">
                 <div className={isMobile ? "text-center" : ""}>
-                    <h3 className="text-base font-semibold mb-1">Exportación rápida</h3>
-                    <p className="text-sm text-muted-foreground">Exporta documentos comunes con un solo clic</p>
+                    <h3 className="text-base font-semibold mb-1">Descarga rápida</h3>
+                    <p className="text-sm text-muted-foreground">Descarga documentos comunes con un solo clic</p>
                 </div>
                         <div className="border rounded-lg p-4 space-y-3">
                             <div className="grid gap-2">
@@ -70,7 +70,7 @@ const OrderExport = () => {
                             </div>
                             <Button className="w-full" onClick={handleOnClickExportAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                                Exportar todos
+                                Descargar todos
                             </Button>
                         </div>
             </div>
@@ -78,11 +78,11 @@ const OrderExport = () => {
             {/* Separador en mobile */}
             {isMobile && <Separator />}
 
-            {/* Exportación por selección */}
+            {/* Descarga por selección */}
                         <div className="space-y-4">
                 <div className={isMobile ? "text-center" : ""}>
-                    <h3 className="text-base font-semibold mb-1">Exportación por selección</h3>
-                    <p className="text-sm text-muted-foreground">Selecciona un documento específico para exportar</p>
+                    <h3 className="text-base font-semibold mb-1">Descarga por selección</h3>
+                    <p className="text-sm text-muted-foreground">Selecciona un documento específico para descargar</p>
                 </div>
                 <div className="border rounded-lg p-4 space-y-4">
                             <div className="flex items-center gap-4">
@@ -124,7 +124,7 @@ const OrderExport = () => {
                     )}
                             <Button className="w-full" onClick={handleOnClickSelectExport}>
                         <Download className="h-4 w-4 mr-2" />
-                                Exportar selección
+                                Descargar selección
                             </Button>
                         </div>
                     </div>

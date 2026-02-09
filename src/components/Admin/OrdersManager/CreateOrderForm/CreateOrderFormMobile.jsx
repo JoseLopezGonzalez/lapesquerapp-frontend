@@ -14,6 +14,7 @@ import { pageTransition } from '@/lib/motion-presets';
 import { cn } from '@/lib/utils';
 import { useHideBottomNav } from '@/context/BottomNavContext';
 import Loader from '@/components/Utilities/Loader';
+import { useBackButton } from '@/hooks/use-back-button';
 
 // Componente especial que muestra las opciones directamente en el layout (sin popover)
 const ExpandedCombobox = ({ field, value, onChange, onBlur, loading }) => {
@@ -131,6 +132,15 @@ const CreateOrderFormMobile = ({
     
     // Ocultar bottom navbar en esta pantalla
     useHideBottomNav(true);
+
+    // Interceptar botón back del navegador/dispositivo
+    useBackButton(() => {
+        if (onClose) {
+            onClose();
+        } else {
+            router.back();
+        }
+    }, true);
     
     // Descripciones breves para cada sección
     const sectionDescriptions = {

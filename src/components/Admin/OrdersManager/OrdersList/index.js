@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { useSession } from 'next-auth/react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useBackButton } from '@/hooks/use-back-button';
 
 import {
     Tooltip,
@@ -37,6 +38,11 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
     const scrollPositionRef = React.useRef(0);
     const prevSelectedOrderIdRef = React.useRef(selectedOrderId);
     const prevOrdersLengthRef = React.useRef(orders?.length || 0);
+
+    // Interceptar botón back del navegador/dispositivo
+    useBackButton(() => {
+        router.back();
+    }, isMobile);
 
     const activeTab = categories.find((category) => category.current)?.name || 'all';
 

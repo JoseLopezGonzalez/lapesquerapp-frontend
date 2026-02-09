@@ -57,6 +57,7 @@ import { getCustomerOrderHistory } from "@/services/customerService"
 import toast from "react-hot-toast"
 import { getToastTheme } from "@/customs/reactHotToast"
 import Loader from "@/components/Utilities/Loader"
+import { EmptyState } from "@/components/Utilities/EmptyState"
 import { subMonths, subYears, startOfMonth, endOfMonth, format as formatDate, parseISO, isWithinInterval, differenceInDays, startOfYear, endOfYear } from "date-fns"
 import { es } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -395,10 +396,22 @@ export default function OrderCustomerHistory() {
     if (initialLoading) {
         return (
             <TooltipProvider>
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 flex items-center justify-center min-h-0">
-                        <Loader />
-                    </div>
+                <div className="h-full flex flex-col">
+                    {isMobile ? (
+                        <div className="flex-1 flex items-center justify-center min-h-0">
+                            <Loader />
+                        </div>
+                    ) : (
+                        <Card className="h-full flex flex-col bg-transparent">
+                            <CardHeader className="pb-2 flex-shrink-0">
+                                <CardTitle className="text-base font-medium">Histórico de Pedidos</CardTitle>
+                                <CardDescription className="text-xs">Análisis completo del historial de compras del cliente</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1 flex items-center justify-center min-h-0">
+                                <Loader />
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </TooltipProvider>
         )
@@ -442,10 +455,11 @@ export default function OrderCustomerHistory() {
                 {isMobile ? (
                     <div className="h-full flex flex-col">
                         <div className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
-                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                <Calendar className="h-8 w-8" />
-                                <p className="text-sm">No hay historial de pedidos para este cliente</p>
-                            </div>
+                            <EmptyState
+                                icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                title="No hay historial de pedidos"
+                                description="Este cliente aún no tiene pedidos registrados en el período seleccionado."
+                            />
                         </div>
                     </div>
                 ) : (
@@ -455,10 +469,11 @@ export default function OrderCustomerHistory() {
                         <CardDescription>Histórico de productos del cliente</CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                            <Calendar className="h-8 w-8" />
-                            <p className="text-sm">No hay historial de pedidos para este cliente</p>
-                        </div>
+                        <EmptyState
+                            icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                            title="No hay historial de pedidos"
+                            description="Este cliente aún no tiene pedidos registrados en el período seleccionado."
+                        />
                     </CardContent>
                 </Card>
                 )}
@@ -979,7 +994,7 @@ export default function OrderCustomerHistory() {
 
     return (
         <TooltipProvider>
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="h-full flex flex-col">
                 {isMobile ? (
                     <div className="flex-1 flex flex-col min-h-0">
                         <div className="mb-4 flex-shrink-0">
@@ -988,12 +1003,12 @@ export default function OrderCustomerHistory() {
                         {mainContent}
                     </div>
                 ) : (
-                    <Card className="h-full flex flex-col bg-transparent">
-                        <CardHeader className="pb-2">
+                        <Card className="h-full flex flex-col bg-transparent">
+                        <CardHeader className="pb-2 flex-shrink-0">
                             {headerContent}
                         </CardHeader>
-                        {generalMetrics && (
-                            <CardContent className="pb-3 pt-0">
+                        {generalMetrics && !loadingData && (
+                            <CardContent className="pb-3 pt-0 flex-shrink-0">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                     <Card className="p-3">
                                         <div className="flex items-center gap-1.5 mb-1">
@@ -1030,11 +1045,9 @@ export default function OrderCustomerHistory() {
                                 </div>
                             </CardContent>
                         )}
-                        <CardContent className="flex-1 overflow-y-auto py-2">
+                        <CardContent className={`flex-1 py-2 min-h-0 ${loadingData ? 'flex items-center justify-center' : 'overflow-y-auto'}`}>
                             {loadingData ? (
-                                <div className="h-full flex items-center justify-center">
-                                    <Loader />
-                                </div>
+                                <Loader />
                             ) : (
                                 <>
                                     {filteredHistory.length > maxProductsToShow && (

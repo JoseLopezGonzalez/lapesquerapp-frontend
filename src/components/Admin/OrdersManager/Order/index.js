@@ -18,6 +18,7 @@ import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
+import { useBackButton } from '@/hooks/use-back-button';
 
 // Lazy load de componentes pesados para mejorar el rendimiento inicial
 const OrderPallets = lazy(() => import('./OrderPallets'));
@@ -93,6 +94,17 @@ const OrderContent = ({ onLoading, onClose }) => {
   
   // Ocultar bottom navbar en esta pantalla (solo en mobile)
   useHideBottomNav(isMobile);
+
+  // Interceptar botón back del navegador/dispositivo
+  // Si estamos en una sección, volver a la vista principal
+  // Si estamos en la vista principal y hay onClose, ejecutar onClose
+  useBackButton(() => {
+    if (activeSection !== null) {
+      setActiveSection(null);
+    } else if (onClose) {
+      onClose();
+    }
+  }, isMobile && (activeSection !== null || onClose));
 
   useEffect(() => {
     if (!onLoading) return;
