@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import Loader from '@/components/Utilities/Loader';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
 import { getPallet, getAvailablePalletsForOrder } from '@/services/palletService';
@@ -438,58 +439,12 @@ const OrderPallets = () => {
 
     // console.log('pallets ahiiiiii', pallets);
     return (
-        <div className='h-full pb-2'>
-            <Card className='h-full flex flex-col bg-transparent'>
-                <CardHeader className={isMobile ? "space-y-4" : "flex flex-row items-center justify-between"}>
-                    <div>
-                        <CardTitle className={isMobile ? "text-base font-medium" : "text-lg font-medium"}>Gestión de Palets</CardTitle>
-                        {!isMobile && (
-                            <CardDescription>Modifica los palets de la orden</CardDescription>
-                        )}
-                    </div>
-                    <div className={isMobile ? "flex flex-col gap-2" : "flex gap-2"}>
-                        {pallets && pallets.length > 0 && (
-                            <Button 
-                                variant="outline" 
-                                onClick={handleUnlinkAllPallets}
-                                disabled={isUnlinkingAll}
-                                size={isMobile ? "sm" : "default"}
-                                className={isMobile ? "w-full" : ""}
-                            >
-                                {isUnlinkingAll ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Desvinculando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Unlink className="h-4 w-4 mr-2" />
-                                        Desvincular todos
-                                    </>
-                                )}
-                            </Button>
-                        )}
-                        <Button 
-                            variant="outline" 
-                            onClick={handleOpenLinkPalletsDialog}
-                            size={isMobile ? "sm" : "default"}
-                            className={isMobile ? "w-full" : ""}
-                        >
-                            <Link2 className="h-4 w-4 mr-2" />
-                            Vincular palets existentes
-                        </Button>
-                        <Button 
-                            onClick={handleOpenNewPallet}
-                            size={isMobile ? "sm" : "default"}
-                            className={isMobile ? "w-full" : ""}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Crear palet
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-auto">
-                    {pallets.length === 0 ? (
+        <div className='flex-1 flex flex-col min-h-0'>
+            {isMobile ? (
+                <div className='flex-1 flex flex-col min-h-0'>
+                    <ScrollArea className="flex-1 min-h-0">
+                        <div className="pb-20">
+                            {pallets.length === 0 ? (
                         <div className="flex items-center justify-center min-h-[400px]">
                             <EmptyState
                                 title={'No existen palets vinculados'}
@@ -727,8 +682,228 @@ const OrderPallets = () => {
                             )}
                         </>
                     )}
-                </CardContent>
-            </Card>
+                        </div>
+                    </ScrollArea>
+                    {/* Footer con botones */}
+                    <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+                        <Button 
+                            variant="outline" 
+                            onClick={handleOpenLinkPalletsDialog}
+                            size="sm"
+                            className="flex-1 min-h-[44px]"
+                        >
+                            <Link2 className="h-4 w-4 mr-2" />
+                            Vincular
+                        </Button>
+                        <Button 
+                            onClick={handleOpenNewPallet}
+                            size="sm"
+                            className="flex-1 min-h-[44px]"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Crear
+                        </Button>
+                        {pallets && pallets.length > 0 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button 
+                                        variant="outline"
+                                        size="icon"
+                                        className="min-h-[44px] min-w-[44px]"
+                                    >
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        onClick={handleUnlinkAllPallets}
+                                        disabled={isUnlinkingAll}
+                                    >
+                                        {isUnlinkingAll ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                Desvinculando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Unlink className="h-4 w-4 mr-2" />
+                                                Desvincular todos
+                                            </>
+                                        )}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <Card className='h-full flex flex-col bg-transparent'>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle className="text-lg font-medium">Gestión de Palets</CardTitle>
+                            <CardDescription>Modifica los palets de la orden</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                            {pallets && pallets.length > 0 && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleUnlinkAllPallets}
+                                    disabled={isUnlinkingAll}
+                                >
+                                    {isUnlinkingAll ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            Desvinculando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Unlink className="h-4 w-4 mr-2" />
+                                            Desvincular todos
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+                            <Button 
+                                variant="outline" 
+                                onClick={handleOpenLinkPalletsDialog}
+                            >
+                                <Link2 className="h-4 w-4 mr-2" />
+                                Vincular palets existentes
+                            </Button>
+                            <Button 
+                                onClick={handleOpenNewPallet}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Crear palet
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-auto">
+                        {pallets.length === 0 ? (
+                            <div className="flex items-center justify-center min-h-[400px]">
+                                <EmptyState
+                                    title={'No existen palets vinculados'}
+                                    description={'No se han añadido palets a este pedido'}
+                                />
+                            </div>
+                        ) : (
+                            <div className="border rounded-md max-h-[500px] overflow-y-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>ID</TableHead>
+                                            <TableHead>Productos</TableHead>
+                                            <TableHead>Lotes</TableHead>
+                                            <TableHead>Observaciones</TableHead>
+                                            <TableHead className="text-right">Cajas</TableHead>
+                                            <TableHead className="text-right">Peso Neto</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pallets.map((pallet) => {
+                                            const productNames = pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
+                                                ? pallet.productsNames.join('\n')
+                                                : '';
+                                            const lots = pallet.lots && Array.isArray(pallet.lots) && pallet.lots.length > 0
+                                                ? pallet.lots.join(', ')
+                                                : '';
+                                            const observations = pallet.observations || '';
+                                            const belongsToReception = pallet?.receptionId !== null && pallet?.receptionId !== undefined;
+
+                                            return (
+                                                <TableRow key={pallet.id} className="border-b border-muted last:border-0 hover:bg-muted/20">
+                                                    <TableCell className="px-4 py-3">{pallet.id}</TableCell>
+                                                    <TableCell className="px-4 py-3 whitespace-pre-wrap">{productNames || '-'}</TableCell>
+                                                    <TableCell className="px-4 py-3 max-w-[150px] truncate" title={lots}>
+                                                        {lots || '-'}
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-3 max-w-[200px] truncate" title={observations}>
+                                                        {observations || '-'}
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-right text-nowrap">
+                                                        {formatDecimalWeight(pallet.netWeight || 0)}
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-3">
+                                                        <div className="flex justify-end gap-1">
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => handleOpenEditPallet(pallet.id)}
+                                                                        title={belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{belongsToReception ? "Ver palet" : "Editar palet"}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => handleClonePallet(pallet.id)}
+                                                                        disabled={belongsToReception || isCloning}
+                                                                    >
+                                                                        <Copy className="h-4 w-4" />
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Clonar palet</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => handleUnlinkPallet(pallet.id)}
+                                                                        disabled={unlinkingPalletId === pallet.id}
+                                                                    >
+                                                                        {unlinkingPalletId === pallet.id ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <Unlink className="h-4 w-4" />
+                                                                        )}
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Desvincular palet</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        onClick={() => handleDeletePallet(pallet.id)}
+                                                                        disabled={belongsToReception}
+                                                                        className="text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Eliminar palet</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Store Selection Modal */}
             <Dialog open={isStoreSelectionOpen} onOpenChange={handleCloseStoreSelection}>
