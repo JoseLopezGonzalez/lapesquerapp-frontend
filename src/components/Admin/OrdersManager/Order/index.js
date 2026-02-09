@@ -176,14 +176,25 @@ const OrderContent = ({ onLoading, onClose }) => {
           <Loader />
         </div>
       ) : (
-        <Card className='p-4 sm:p-6 lg:p-9 h-full w-full relative'>
-          {/* Header sticky para mobile con botón volver */}
+        <div className="w-full h-full flex flex-col relative">
+          {/* Header mobile: botón back + título (ID del pedido) */}
           {isMobile && onClose && (
-            <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 mb-4">
-              <Button variant="ghost" onClick={onClose} className="p-0 h-auto">
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                <span className="text-base font-medium">Volver</span>
-              </Button>
+            <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+              <div className="relative flex items-center justify-center px-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                  aria-label="Volver"
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </Button>
+                <h2 className="text-xl font-normal dark:text-white text-center">
+                  #{order.id}
+                </h2>
+                <div className="absolute right-4 w-12 h-12" />
+              </div>
             </div>
           )}
           
@@ -196,103 +207,134 @@ const OrderContent = ({ onLoading, onClose }) => {
               </Button>
             </div>
           )}
-          <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-24' : 'pb-16 lg:pb-0'}`}>
-            <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
-              <div className='space-y-1 flex-1'>
-                {order && renderStatusBadge(order.status)}
-
-                {/* {order.status === 'pending' && (
-                  <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-900 dark:text-orange-300 dark:border-orange-300 border-2">
-                    <span className="me-1 relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                    </span>
-                    En producción
-                  </span>)
-                }
-                {order.status === 'finished' && (
-                  <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:border-green-500 border-2 dark:text-green-300">
-                    <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
-                    Terminado
-                  </span>)
-                } */}
-                <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
-                <div className=''>
-                  <p className=''>
-                    <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
-                    <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
-                  </p>
+          
+          <Card className={`h-full w-full relative ${isMobile ? 'p-0' : 'p-4 sm:p-6 lg:p-9'}`}>
+            <div className={`h-full flex flex-col w-full ${isMobile ? 'pb-24' : 'pb-16 lg:pb-0'}`}>
+            {isMobile ? (
+              /* Vista Mobile: Cabecera centrada y mobile-friendly */
+              <div className='space-y-5 px-4 pt-6 text-center'>
+                {/* Badge de estado */}
+                <div className='flex justify-center'>
+                  {order && renderStatusBadge(order.status)}
                 </div>
-                <div className=''>
-                  <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
-                  <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
+                
+                {/* Nombre del cliente */}
+                <div>
+                  <p className='text-lg font-semibold'>{order.customer.name}</p>
+                  <p className='text-sm text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
                 </div>
-                <div className=''>
-                  <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="focus:outline-none">
-                      <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
-                        <ThermometerSnowflake className='h-5 w-5 inline-block' />
-                        {order.temperature || '0'} ºC
-
-                      </span>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className=' '>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
-                        0 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
-                        4 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
-                        - 18 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
-                        - 23 ºC
-                      </DropdownMenuItem>
-
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                </div>
-              </div>
-              {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
-              <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
-                <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
-                  <div className="flex gap-2">
-                    <OrderEditSheet />
-                    <Button variant="outline" onClick={handleOnClickPrint} >
-                      <Printer className="h-4 w-4 mr-2" />
-                      Imprimir
-                    </Button>
+                
+                {/* Fecha de Carga y Temperatura en fila */}
+                <div className='flex items-center justify-center gap-6 flex-wrap'>
+                  <div>
+                    <p className='text-xs text-muted-foreground mb-1'>Fecha de Carga</p>
+                    <p className='text-base font-semibold'>{formatDate(order.loadDate)}</p>
+                  </div>
+                  <div>
+                    <p className='text-xs text-muted-foreground mb-1'>Temperatura</p>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <span className='text-base font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
+                          <ThermometerSnowflake className='h-4 w-4' />
+                          {order.temperature || '0'} ºC
+                        </span>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
-                        <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
+                          0 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
+                          4 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
+                          - 18 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
+                          - 23 ºC
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className='flex flex-col items-end justify-center'>
-                    <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <h3 className='text-3xl font-light'>{order.transport.name}</h3>
+                </div>
+                
+                {/* Transporte */}
+                <div className='flex flex-col items-center justify-center gap-2 pt-3 border-t'>
+                  <img className="max-w-[140px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                  <p className='text-base font-medium'>{order.transport.name}</p>
+                </div>
+              </div>
+            ) : (
+              /* Vista Desktop: Estructura original */
+              <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
+                <div className='space-y-1 flex-1'>
+                  {order && renderStatusBadge(order.status)}
+                  <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
+                  <div className=''>
+                    <p className=''>
+                      <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
+                      <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
+                    </p>
+                  </div>
+                  <div className=''>
+                    <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
+                    <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
+                  </div>
+                  <div className=''>
+                    <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none">
+                        <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
+                          <ThermometerSnowflake className='h-5 w-5 inline-block' />
+                          {order.temperature || '0'} ºC
+                        </span>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className=' '>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
+                          0 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
+                          4 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
+                          - 18 ºC
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
+                          - 23 ºC
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+                {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
+                <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
+                  <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
+                    <div className="flex gap-2">
+                      <OrderEditSheet />
+                      <Button variant="outline" onClick={handleOnClickPrint} >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Imprimir
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
+                          <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className='flex flex-col items-end justify-center'>
+                      <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                      <h3 className='text-3xl font-light'>{order.transport.name}</h3>
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              {/* Imagen de transporte en móvil (opcional, más compacta) */}
-              {isMobile && (
-                <div className='flex flex-col items-start sm:items-end justify-center mt-2 sm:mt-0'>
-                  <img className="max-w-[100px] sm:max-w-[120px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                  <h3 className='text-lg sm:text-xl font-light'>{order.transport.name}</h3>
-                </div>
-              )}
-            </div>
+            )}
             <div className='flex-1 w-full overflow-y-hidden '>
               {isMobile ? (
                 /* Vista Mobile: Acordeones */
@@ -490,7 +532,8 @@ const OrderContent = ({ onLoading, onClose }) => {
               )}
             </div>
           </div>
-        </Card>
+          </Card>
+        </div>
       )}
     </>
   )
