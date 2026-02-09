@@ -22,7 +22,30 @@ const OrderPlannedProductDetails = () => {
     const { options, plannedProductDetailActions, plannedProductDetails, order, mergedProductDetails } = useOrderContext();
     const scrollAreaRef = useRef(null);
 
-    const { productOptions, taxOptions, loading: optionsLoading } = options;
+    const { productOptions: rawProductOptions, taxOptions: rawTaxOptions, loading: optionsLoading } = options || {};
+
+    // Asegurar que siempre sean arrays válidos
+    const productOptions = useMemo(() => {
+        if (!Array.isArray(rawProductOptions)) return [];
+        return rawProductOptions.map(opt => {
+            if (!opt || typeof opt !== 'object') return null;
+            return {
+                value: String(opt.value || ''), // Asegurar que value sea siempre string
+                label: String(opt.label || '')
+            };
+        }).filter(Boolean); // Filtrar opciones nulas
+    }, [rawProductOptions]);
+
+    const taxOptions = useMemo(() => {
+        if (!Array.isArray(rawTaxOptions)) return [];
+        return rawTaxOptions.map(opt => {
+            if (!opt || typeof opt !== 'object') return null;
+            return {
+                value: opt.value, // Mantener como número para impuestos
+                label: String(opt.label || '')
+            };
+        }).filter(Boolean); // Filtrar opciones nulas
+    }, [rawTaxOptions]);
 
     const [details, setDetails] = useState([]);
     const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
@@ -86,12 +109,40 @@ const OrderPlannedProductDetails = () => {
         }
     };
 
+    const handleEditLine = (index) => {
+        setEditIndex(index);
+        
+        // Hacer scroll hasta la línea que se está editando para que quede visible arriba
+        if (isMobile && scrollAreaRef.current) {
+            setTimeout(() => {
+                const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+                if (viewport) {
+                    // Buscar la card correspondiente al índice
+                    const cards = viewport.querySelectorAll('[data-card-index]');
+                    const targetCard = Array.from(cards).find(card => {
+                        const cardIndex = parseInt(card.getAttribute('data-card-index'));
+                        return cardIndex === index;
+                    });
+                    
+                    if (targetCard) {
+                        targetCard.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            }, 100);
+        }
+    };
+
     const handleInputChange = useCallback((index, field, value) => {
         const updatedDetails = [...details];
         if (field.includes("product")) {
-            updatedDetails[index].product.id = value;
+            // Asegurar que el valor sea string para productos
+            const productValue = value ? String(value) : null;
+            updatedDetails[index].product.id = productValue;
             // Usar Map para búsqueda O(1) en lugar de find O(n)
-            updatedDetails[index].product.name = productOptionsMap.get(value) || '';
+            updatedDetails[index].product.name = productOptionsMap.get(productValue) || '';
         } else if (field.includes("tax")) {
             updatedDetails[index].tax.id = Number(value);
             // Usar Map para búsqueda O(1) en lugar de find O(n)
@@ -252,17 +303,20 @@ const OrderPlannedProductDetails = () => {
                                     {/* Vista Mobile: Cards */}
                                     <div className="space-y-3">
                                     {details.map((detail, index) => (
-                                        <Card key={detail.id || detail.tempId} className="p-4">
+                                        <Card key={detail.id || detail.tempId} data-card-index={index} className="p-4">
                                             <div className="space-y-3">
                                                 {/* Artículo */}
                                                 <div>
                                                     {editIndex === index ? (
                                                         <div className="[&_button]:!h-9">
                                                             <Combobox
-                                                                options={productOptions}
-                                                                value={detail.product.id}
+                                                                options={productOptions || []}
+                                                                value={detail.product.id ? String(detail.product.id) : null}
                                                                 onChange={(e) => handleInputChange(index, 'product', e)}
                                                                 loading={optionsLoading}
+                                                                placeholder="Seleccionar producto..."
+                                                                searchPlaceholder="Buscar producto..."
+                                                                notFoundMessage="No se encontraron productos"
                                                             />
                                                         </div>
                                                     ) : (
@@ -316,10 +370,13 @@ const OrderPlannedProductDetails = () => {
                                                         {editIndex === index ? (
                                                             <div className="[&_button]:!h-9">
                                                                 <Combobox
-                                                                    options={taxOptions}
-                                                                    value={detail.tax.id}
+                                                                    options={taxOptions || []}
+                                                                    value={detail.tax.id || null}
                                                                     onChange={(value) => handleInputChange(index, 'tax', value)}
                                                                     loading={optionsLoading}
+                                                                    placeholder="Seleccionar impuesto..."
+                                                                    searchPlaceholder="Buscar impuesto..."
+                                                                    notFoundMessage="No se encontraron impuestos"
                                                                 />
                                                             </div>
                                                         ) : (
@@ -343,7 +400,7 @@ const OrderPlannedProductDetails = () => {
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Button onClick={() => setEditIndex(index)} size="sm" variant="outline" className="flex-1">
+                                                            <Button onClick={() => handleEditLine(index)} size="sm" variant="outline" className="flex-1">
                                                                 <Edit2 size={16} className="mr-2" />
                                                                 Editar
                                                             </Button>
@@ -498,10 +555,13 @@ const OrderPlannedProductDetails = () => {
                                             <TableCell>
                                                 {editIndex === index ? (
                                                     <Combobox
-                                                        options={productOptions}
-                                                        value={detail.product.id}
+                                                        options={productOptions || []}
+                                                        value={detail.product.id ? String(detail.product.id) : null}
                                                         onChange={(e) => handleInputChange(index, 'product', e)}
                                                         loading={optionsLoading}
+                                                        placeholder="Seleccionar producto..."
+                                                        searchPlaceholder="Buscar producto..."
+                                                        notFoundMessage="No se encontraron productos"
                                                     />
                                                         ) : (
                                                             detail.product.name || 'Sin producto'
@@ -546,10 +606,13 @@ const OrderPlannedProductDetails = () => {
                                                     <TableCell className="text-right">
                                                 {editIndex === index ? (
                                                     <Combobox
-                                                        options={taxOptions}
-                                                        value={detail.tax.id}
+                                                        options={taxOptions || []}
+                                                        value={detail.tax.id || null}
                                                                 onChange={(e) => handleInputChange(index, 'tax', e)}
                                                         loading={optionsLoading}
+                                                        placeholder="Seleccionar impuesto..."
+                                                        searchPlaceholder="Buscar impuesto..."
+                                                        notFoundMessage="No se encontraron impuestos"
                                                     />
                                                         ) : (
                                                             `${taxRate}%`
@@ -569,7 +632,7 @@ const OrderPlannedProductDetails = () => {
                                                             </div>
                                                 ) : (
                                                             <div className="flex justify-end gap-1">
-                                                                <Button onClick={() => setEditIndex(index)} size="sm" variant="outline">
+                                                                <Button onClick={() => handleEditLine(index)} size="sm" variant="outline">
                                                                     <Edit2 size={16} />
                                                         </Button>
                                                                 <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="outline" className="text-destructive hover:text-destructive">

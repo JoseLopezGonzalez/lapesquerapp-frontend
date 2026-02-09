@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
+import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -226,12 +227,18 @@ const OrderContent = ({ onLoading, onClose }) => {
                     <p className='text-base text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
                   </div>
                   
+                  {/* Transporte */}
+                  <div className='flex flex-col items-center justify-center gap-2'>
+                    <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
+                    <p className='text-lg font-medium'>{order.transport.name}</p>
+                  </div>
+                  
                   {/* Badge de estado */}
                   <div className='flex justify-center'>
                     {order && renderStatusBadge(order.status)}
                   </div>
                   
-                  {/* Fecha de Carga y Temperatura en fila */}
+                  {/* Fecha de Carga y Temperatura en primera fila */}
                   <div className='flex items-center justify-center gap-6 flex-wrap'>
                     <div>
                       <p className='text-sm text-muted-foreground mb-1'>Fecha de Carga</p>
@@ -264,10 +271,16 @@ const OrderContent = ({ onLoading, onClose }) => {
                     </div>
                   </div>
                   
-                  {/* Transporte */}
-                  <div className='flex flex-col items-center justify-center gap-2 pt-3 border-t mb-4'>
-                    <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <p className='text-lg font-medium'>{order.transport.name}</p>
+                  {/* Palets e Importe en segunda fila */}
+                  <div className='flex items-center justify-center gap-6 flex-wrap'>
+                    <div>
+                      <p className='text-sm text-muted-foreground mb-1'>Palets</p>
+                      <p className='text-lg font-semibold'>{order.numberOfPallets ? formatInteger(order.numberOfPallets) : '-'}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-muted-foreground mb-1'>Importe</p>
+                      <p className='text-lg font-semibold'>{order.totalAmount ? formatDecimalCurrency(order.totalAmount) : '-'}</p>
+                    </div>
                   </div>
                 </div>
                 {/* Lista de secciones */}

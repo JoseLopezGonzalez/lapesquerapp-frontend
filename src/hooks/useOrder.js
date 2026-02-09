@@ -95,8 +95,11 @@ export function useOrder(orderId, onChange) {
             setTaxOptions(ordersManagerOptions.taxOptions);
             setOptionsLoaded(true);
             setOptionsLoading(false);
+        } else if (ordersManagerOptions.productsLoading || ordersManagerOptions.taxOptionsLoading) {
+            // Si las opciones están cargando, actualizar el estado de loading
+            setOptionsLoading(true);
         }
-    }, [ordersManagerOptions?.productOptions, ordersManagerOptions?.taxOptions]);
+    }, [ordersManagerOptions?.productOptions, ordersManagerOptions?.taxOptions, ordersManagerOptions?.productsLoading, ordersManagerOptions?.taxOptionsLoading]);
 
     // Cargar opciones de productos e impuestos solo cuando se necesiten (lazy loading) y no vengan del contexto
     const loadOptions = useCallback(async () => {
@@ -205,6 +208,25 @@ export function useOrder(orderId, onChange) {
             loadOptions();
         }
     }, [activeTab, optionsLoaded, accessToken, loadOptions, ordersManagerOptions?.productOptions?.length]);
+
+    // Cargar opciones cuando el componente se monte si no están disponibles del contexto
+    // Esto es necesario para mobile donde el componente se renderiza directamente
+    useEffect(() => {
+        if (optionsLoaded || !accessToken) return;
+        
+        // Si las opciones del contexto están cargando, esperar
+        if (ordersManagerOptions?.productsLoading || ordersManagerOptions?.taxOptionsLoading) {
+            return;
+        }
+        
+        // Si no hay opciones del contexto después de un tiempo, cargar directamente
+        const timeoutId = setTimeout(() => {
+            if (!optionsLoaded && !ordersManagerOptions?.productOptions?.length) {
+                loadOptions();
+            }
+        }, 1000); // Dar tiempo suficiente para que el contexto cargue
+        return () => clearTimeout(timeoutId);
+    }, [optionsLoaded, accessToken, loadOptions, ordersManagerOptions?.productOptions?.length, ordersManagerOptions?.productsLoading, ordersManagerOptions?.taxOptionsLoading]);
 
     const reload = useCallback(async () => {
         const token = session?.user?.accessToken;
