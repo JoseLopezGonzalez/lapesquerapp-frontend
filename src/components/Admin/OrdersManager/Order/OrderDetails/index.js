@@ -122,9 +122,9 @@ const OrderDetails = () => {
                         </div>
                         <div className="text-center">
                             <div className="text-base font-semibold mb-1.5">Transporte</div>
-                            <div className="text-sm">{order.transport.name}</div>
+                            <div className="text-sm font-medium mb-2">{order.transport.name}</div>
                             <div className="text-sm text-muted-foreground whitespace-pre-line mt-2">
-                                <ul className="list-disc px-5 pl-8 text-left inline-block">
+                                <ul className="list-none flex flex-col items-center gap-1">
                                     {order.transport.emails.map((email) => (
                                         <li key={email} className="text-xs font-medium">
                                             <a href={`mailto:${email}`} className="hover:underline">

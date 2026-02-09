@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets } from 'lucide-react';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets, ListCollapse } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -276,7 +276,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                         {[
                           { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
                           { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
-                          { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: Boxes },
+                          { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: ListCollapse },
                           { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
                           { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
                           { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
