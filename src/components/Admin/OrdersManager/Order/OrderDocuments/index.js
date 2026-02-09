@@ -24,6 +24,7 @@ import { useOrderContext } from "@/context/OrderContext";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const OrderDocuments = () => {
@@ -492,12 +493,14 @@ const OrderDocuments = () => {
     );
 
     return (
-        <div className='h-full pb-2'>
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
             {isMobile ? (
-                <div className='h-full flex flex-col'>
-                    <div className="flex-1 overflow-y-auto py-6">
-                        {content}
-                    </div>
+                <div className="flex-1 flex flex-col min-h-0">
+                    <ScrollArea className="flex-1 min-h-0">
+                        <div className="py-6">
+                            {content}
+                        </div>
+                    </ScrollArea>
                 </div>
             ) : (
                 <Card className='h-full flex flex-col bg-transparent'>
