@@ -822,7 +822,7 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                         <span className="text-muted-foreground text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator className="w-full opacity-60" />
+                                    <div className="w-full h-[1px] bg-border opacity-80" />
                                     <div className="flex items-center justify-center">
                                       <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         {formatDecimalWeight(orderItem.quantity)}
@@ -869,23 +869,47 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                   </div>
                                 )}
 
-                                {/* Bloque 3: Restante - usa fondo destacado y color de texto del estado del card */}
+                                {/* Bloque 3: Sobrante/Restante/Diferencia - usa fondo destacado y color de texto del estado del card */}
                                 <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
-                                  <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Restante</p>
-                                  <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
-                                    <div className="flex items-center justify-center">
-                                      <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
-                                        <span>{formatInteger(orderItem.remainingBoxes || 0)}</span>
-                                        <span className="opacity-70 text-lg font-semibold">/c</span>
-                                      </p>
-                                    </div>
-                                    <Separator className="w-full opacity-60" />
-                                    <div className="flex items-center justify-center">
-                                      <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
-                                        {formatDecimalWeight(orderItem.remainingQuantity || 0)}
-                                      </p>
-                                    </div>
-                                  </div>
+                                  {(() => {
+                                    const completed = orderItem.completedQuantity || 0
+                                    const planned = orderItem.quantity || 0
+                                    let blockTitle = 'Restante'
+                                    
+                                    if (completed > planned) {
+                                      blockTitle = 'Sobrante'
+                                    } else if (Math.abs(completed - planned) < 0.01 || (orderItem.remainingQuantity || 0) <= 0) {
+                                      blockTitle = 'Diferencia'
+                                    }
+                                    
+                                    return (
+                                      <>
+                                        <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">{blockTitle}</p>
+                                        <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
+                                          <div className="flex items-center justify-center">
+                                            <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                              <span>
+                                                {completed > planned
+                                                  ? formatInteger(Math.abs(orderItem.remainingBoxes || 0))
+                                                  : formatInteger(orderItem.remainingBoxes || 0)
+                                                }
+                                              </span>
+                                              <span className="opacity-70 text-lg font-semibold">/c</span>
+                                            </p>
+                                          </div>
+                                          <div className={`w-full h-[1px] ${lineStatusConfig.borderColor.replace('border-', 'bg-')} opacity-80`} />
+                                          <div className="flex items-center justify-center">
+                                            <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                              {completed > planned
+                                                ? formatDecimalWeight(Math.abs(orderItem.remainingQuantity || 0))
+                                                : formatDecimalWeight(orderItem.remainingQuantity || 0)
+                                              }
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </>
+                                    )
+                                  })()}
                                 </div>
                               </div>
                             </div>
