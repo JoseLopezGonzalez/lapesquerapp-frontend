@@ -340,6 +340,12 @@ const OrderContent = ({ onLoading, onClose }) => {
                       <OrderMap />
                     </Suspense>
                   </div>
+                ) : activeSection === 'customer-history' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                      <OrderCustomerHistory />
+                    </Suspense>
+                  </div>
                 ) : (
                   <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
                     <div className="px-4 py-4">
@@ -387,11 +393,6 @@ const OrderContent = ({ onLoading, onClose }) => {
                       {activeSection === 'incident' && (
                         <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
                           <OrderIncident />
-                        </Suspense>
-                      )}
-                      {activeSection === 'customer-history' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderCustomerHistory />
                         </Suspense>
                       )}
                     </div>
