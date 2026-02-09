@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatDate } from '@/helpers/formats/dates/formatDates'
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers'
-import { ThermometerSnowflake, Package, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Play, Pause, Box, Weight, List } from 'lucide-react'
+import { ThermometerSnowflake, Package, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Play, Pause, Box, Weight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 // Datos de prueba - simulan la estructura real de pedidos con productos planificados
@@ -545,11 +545,48 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
         }
 
         const productGroup = productMap.get(productId)
+        
+        // Calcular datos de producción (completado y restante) - datos de prueba
+        const plannedQuantity = product.quantity || 0
+        const plannedBoxes = product.boxes || 0
+        
+        // Simular diferentes estados de producción para pruebas
+        // Usar el ID del pedido para generar estados consistentes
+        const orderIdMod = order.id % 3
+        let completedQuantity, completedBoxes
+        
+        if (orderIdMod === 0) {
+          // Verde: Completado = Planificado (100%)
+          completedQuantity = plannedQuantity
+          completedBoxes = plannedBoxes
+        } else if (orderIdMod === 1) {
+          // Naranja: Falta por terminar (70-90% del planificado)
+          const completedPercentage = 0.7 + (order.id % 3) * 0.1 // Entre 70% y 90%
+          completedQuantity = plannedQuantity * completedPercentage
+          completedBoxes = Math.round(plannedBoxes * completedPercentage)
+        } else {
+          // Rojo: Se ha pasado (110-120% del planificado)
+          const overPercentage = 1.1 + (order.id % 2) * 0.1 // Entre 110% y 120%
+          completedQuantity = plannedQuantity * overPercentage
+          completedBoxes = Math.round(plannedBoxes * overPercentage)
+        }
+        
+        // Restante = planificado - completado (puede ser negativo si se pasó)
+        const remainingQuantity = plannedQuantity - completedQuantity
+        const remainingBoxes = plannedBoxes - completedBoxes
+        
         productGroup.orders.push({
           orderId: order.id,
           order: order,
-          quantity: product.quantity || 0,
-          boxes: product.boxes || 0,
+          // Pedido (planificado)
+          quantity: plannedQuantity,
+          boxes: plannedBoxes,
+          // Completado
+          completedQuantity: completedQuantity,
+          completedBoxes: completedBoxes,
+          // Restante
+          remainingQuantity: remainingQuantity,
+          remainingBoxes: remainingBoxes,
           loadDate: order.loadDate,
           customer: order.customer,
           status: order.status,
@@ -611,51 +648,58 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
       } else if (e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault()
         setIsAutoPlay(prev => !prev)
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        // Enter para pausar/reanudar auto-play
+        setIsAutoPlay(prev => !prev)
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        // Escape para cambiar a vista normal
+        if (onToggleViewMode) {
+          onToggleViewMode()
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goToPrevious, goToNext])
+  }, [goToPrevious, goToNext, onToggleViewMode])
 
-  const getStatusConfig = (status) => {
-    switch (status) {
-      case 'pending':
-        return {
-          label: 'En producción',
-          color: 'orange',
-          bgColor: 'bg-orange-50 dark:bg-orange-950/20',
-          borderColor: 'border-orange-500',
-          textColor: 'text-orange-700 dark:text-orange-300',
-          icon: Clock
-        }
-      case 'finished':
-        return {
-          label: 'Terminado',
-          color: 'green',
-          bgColor: 'bg-green-50 dark:bg-green-950/20',
-          borderColor: 'border-green-500',
-          textColor: 'text-green-700 dark:text-green-300',
-          icon: CheckCircle2
-        }
-      case 'incident':
-        return {
-          label: 'Incidencia',
-          color: 'red',
-          bgColor: 'bg-red-50 dark:bg-red-950/20',
-          borderColor: 'border-red-500',
-          textColor: 'text-red-700 dark:text-red-300',
-          icon: AlertCircle
-        }
-      default:
-        return {
-          label: 'Desconocido',
-          color: 'gray',
-          bgColor: 'bg-gray-50 dark:bg-gray-950/20',
-          borderColor: 'border-gray-500',
-          textColor: 'text-gray-700 dark:text-gray-300',
-          icon: Clock
-        }
+  // Determinar el estado de la línea basado en las cantidades
+  const getLineStatusConfig = (orderItem) => {
+    const planned = orderItem.quantity || 0
+    const completed = orderItem.completedQuantity || 0
+    const remaining = orderItem.remainingQuantity || 0
+    
+    // Rojo: se ha pasado de la cantidad prevista (completado > planificado)
+    if (completed > planned) {
+      return {
+        color: 'red',
+        bgColor: 'bg-red-50 dark:bg-red-950/20',
+        borderColor: 'border-red-500',
+        textColor: 'text-red-700 dark:text-red-300',
+        icon: AlertCircle
+      }
+    }
+    
+    // Verde: está terminada esa línea (completado = planificado, o restante <= 0)
+    if (remaining <= 0 || Math.abs(completed - planned) < 0.01) {
+      return {
+        color: 'green',
+        bgColor: 'bg-green-50 dark:bg-green-950/20',
+        borderColor: 'border-green-500',
+        textColor: 'text-green-700 dark:text-green-300',
+        icon: CheckCircle2
+      }
+    }
+    
+    // Naranja: falta por terminar (completado < planificado y restante > 0)
+    return {
+      color: 'orange',
+      bgColor: 'bg-orange-50 dark:bg-orange-950/20',
+      borderColor: 'border-orange-500',
+      textColor: 'text-orange-700 dark:text-orange-300',
+      icon: Clock
     }
   }
 
@@ -696,9 +740,9 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
   return (
     <div className="h-full flex flex-col overflow-hidden relative">
       {/* Card principal - usando componentes shadcn nativos */}
-      <div className="flex-1 flex items-center justify-center p-3 sm:p-4">
+      <div className="flex-1 flex items-center justify-center px-3 sm:px-4 pt-0 pb-3 sm:pb-4">
         <Card className="w-full h-full shadow-lg flex flex-col">
-          <CardHeader className="flex-shrink-0 pb-3">
+          <CardHeader className="flex-shrink-0 pb-3 pt-2 sm:pt-3">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <CardTitle className="text-2xl sm:text-3xl lg:text-4xl font-bold">
                 {currentProduct.name}
@@ -706,14 +750,14 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
               
               {/* Totales usando Badges de shadcn - en fila horizontal */}
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                <Badge variant="default" className="gap-2 px-4 py-2 text-base font-bold">
-                  <Package className="h-4 w-4" />
+                <Badge variant="default" className="gap-2 px-6 py-4 text-xl sm:text-2xl font-bold">
+                  <Package className="h-6 w-6" />
                   <span>{formatInteger(totalBoxes)} cajas</span>
                 </Badge>
-                <Badge variant="default" className="px-4 py-2 text-base font-bold">
+                <Badge variant="default" className="px-6 py-4 text-xl sm:text-2xl font-bold">
                   <span>{formatDecimalWeight(totalQuantity)}</span>
                 </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-base font-bold">
+                <Badge variant="secondary" className="px-6 py-4 text-xl sm:text-2xl font-bold">
                   {currentProduct.orders.length} pedido{currentProduct.orders.length !== 1 ? 's' : ''}
                 </Badge>
               </div>
@@ -729,31 +773,28 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                 <div className="pr-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 auto-rows-max">
                     {sortedOrders.map((orderItem, index) => {
-                      const orderStatusConfig = getStatusConfig(orderItem.status)
+                      const lineStatusConfig = getLineStatusConfig(orderItem)
                       
                       return (
                         <Card
                           key={`${orderItem.orderId}-${index}`}
                           className={`
-                            transition-all h-fit group
-                            ${orderStatusConfig.bgColor}
-                            border-2 ${orderStatusConfig.borderColor}
-                            ${onClickOrder ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:border-opacity-100' : ''}
+                            h-fit
+                            ${lineStatusConfig.bgColor}
+                            border-2 ${lineStatusConfig.borderColor}
+                            ${onClickOrder ? 'cursor-pointer' : ''}
                             overflow-hidden relative
-
-
-                            
                           `}
                           onClick={() => onClickOrder && onClickOrder(orderItem.orderId)}
                         >
-                          {/* Barra de color superior - identificación por color */}
-                          <div className={`h-2 w-full ${orderStatusConfig.borderColor.replace('border-', 'bg-')}`} />
+                          {/* Barra de color superior - identificación por estado de línea */}
+                          <div className={`h-2 w-full ${lineStatusConfig.borderColor.replace('border-', 'bg-')}`} />
                           
                           <CardContent className="p-3 sm:p-4">
                             <div className="flex flex-col gap-3">
                               {/* ID del pedido centrado */}
                               <div className="flex items-center justify-center py-2">
-                                <div className="flex items-center justify-center min-w-[100px] h-14 rounded-lg    transition-all">
+                                <div className="flex items-center justify-center min-w-[100px] h-14 rounded-lg">
                                   <span className="text-2xl sm:text-3xl font-black text-primary tracking-tight">
                                     #{orderItem.orderId.toString().padStart(5, '0')}
                                   </span>
@@ -763,31 +804,80 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* Separador */}
                               <Separator className="opacity-40" />
 
-                              {/* Cantidades destacadas con iconos */}
-                              <div className="text-center py-2">
-                                <div className="inline-flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gradient-to-br from-background/80 to-background/60 dark:from-background/60 dark:to-background/40 border border-border/60">
-                                  {/* Cajas con icono */}
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="p-1 rounded-md bg-primary/10 border border-primary/20">
-                                      <Box className="h-4 w-4 text-primary flex-shrink-0" />
+                              {/* Tres bloques de cantidades: Pedido, Completado, Restante */}
+                              <div className="space-y-2">
+                                {/* Bloque 1: Pedido (Planificado) */}
+                                <div className="text-center py-1.5">
+                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pedido</p>
+                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-background/80 to-background/60 dark:from-background/60 dark:to-background/40 border border-border/60">
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-primary/10 border border-primary/20">
+                                        <Box className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-primary">{formatInteger(orderItem.boxes)}</span>
+                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                      </p>
                                     </div>
-                                    <p className="text-xl sm:text-2xl font-extrabold text-foreground whitespace-nowrap">
-                                      <span className="text-primary">{formatInteger(orderItem.boxes)}</span>
-                                      <span className="text-muted-foreground text-base font-semibold">/c</span>
-                                    </p>
+                                    <Separator orientation="vertical" className="h-6 opacity-40" />
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-foreground/5 border border-border/40">
+                                        <Weight className="h-3.5 w-3.5 text-foreground/80 flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        {formatDecimalWeight(orderItem.quantity)}
+                                      </p>
+                                    </div>
                                   </div>
-                                  
-                                  {/* Separador */}
-                                  <Separator orientation="vertical" className="h-8 opacity-40" />
-                                  
-                                  {/* Cantidad con icono */}
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="p-1 rounded-md bg-foreground/5 border border-border/40">
-                                      <Weight className="h-4 w-4 text-foreground/80 flex-shrink-0" />
+                                </div>
+
+                                {/* Bloque 2: Completado */}
+                                <div className="text-center py-1.5">
+                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
+                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10 border border-green-200/60 dark:border-green-800/40">
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
+                                        <Box className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-green-600 dark:text-green-400">{formatInteger(orderItem.completedBoxes || 0)}</span>
+                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                      </p>
                                     </div>
-                                    <p className="text-xl sm:text-2xl font-extrabold text-foreground whitespace-nowrap">
-                                      {formatDecimalWeight(orderItem.quantity)}
-                                    </p>
+                                    <Separator orientation="vertical" className="h-6 opacity-40" />
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700">
+                                        <Weight className="h-3.5 w-3.5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        {formatDecimalWeight(orderItem.completedQuantity || 0)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Bloque 3: Restante */}
+                                <div className="text-center py-1.5">
+                                  <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Restante</p>
+                                  <div className="inline-flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-orange-900/10 border border-orange-200/60 dark:border-orange-800/40">
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
+                                        <Box className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        <span className="text-orange-600 dark:text-orange-400">{formatInteger(orderItem.remainingBoxes || 0)}</span>
+                                        <span className="text-muted-foreground text-sm font-semibold">/c</span>
+                                      </p>
+                                    </div>
+                                    <Separator orientation="vertical" className="h-6 opacity-40" />
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="p-1 rounded-md bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
+                                        <Weight className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                                      </div>
+                                      <p className="text-lg sm:text-xl font-extrabold text-foreground whitespace-nowrap">
+                                        {formatDecimalWeight(orderItem.remainingQuantity || 0)}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -813,92 +903,6 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
         </Card>
       </div>
 
-      {/* Controles de navegación - compactos */}
-      <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t p-2 sm:p-3">
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Botón anterior */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToPrevious}
-            disabled={productsGrouped.length <= 1}
-            className="h-8 w-8 sm:h-10 sm:w-10"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          {/* Indicadores y controles - compactos */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-center">
-            {/* Indicador de posición */}
-            <div className="text-xs sm:text-sm font-medium text-foreground">
-              {currentIndex + 1} / {productsGrouped.length}
-            </div>
-
-            {/* Botón play/pause */}
-            {productsGrouped.length > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsAutoPlay(!isAutoPlay)}
-                className="h-8 w-8 sm:h-9 sm:w-9"
-              >
-                {isAutoPlay ? (
-                  <Pause className="h-3.5 w-3.5" />
-                ) : (
-                  <Play className="h-3.5 w-3.5" />
-                )}
-              </Button>
-            )}
-
-            {/* Indicadores de puntos - solo si hay pocos productos */}
-            {!isMobile && productsGrouped.length <= 8 && (
-              <div className="flex items-center gap-1">
-                {productsGrouped.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToIndex(index)}
-                    className={`
-                      h-1.5 w-1.5 rounded-full transition-all
-                      ${index === currentIndex 
-                        ? 'bg-primary w-6' 
-                        : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                      }
-                    `}
-                    aria-label={`Ir al producto ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Botón siguiente */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToNext}
-            disabled={productsGrouped.length <= 1}
-            className="h-8 w-8 sm:h-10 sm:w-10"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          {/* Botón Vista Normal */}
-          {onToggleViewMode && (
-            <>
-              <Separator orientation="vertical" className="h-8 opacity-30" />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onToggleViewMode}
-                className="h-8 sm:h-10 flex items-center gap-2"
-              >
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">Vista Normal</span>
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
