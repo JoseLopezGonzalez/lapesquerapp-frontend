@@ -676,8 +676,10 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
       return {
         color: 'red',
         bgColor: 'bg-red-50 dark:bg-red-950/20',
+        bgColorHighlight: 'bg-red-200 dark:bg-red-950/60',
         borderColor: 'border-red-500',
-        textColor: 'text-red-700 dark:text-red-300',
+        borderColorSubtle: 'border-red-200 dark:border-red-800/40',
+        textColor: 'text-red-900 dark:text-red-100',
         icon: AlertCircle
       }
     }
@@ -687,8 +689,10 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
       return {
         color: 'green',
         bgColor: 'bg-green-50 dark:bg-green-950/20',
+        bgColorHighlight: 'bg-green-200 dark:bg-green-950/60',
         borderColor: 'border-green-500',
-        textColor: 'text-green-700 dark:text-green-300',
+        borderColorSubtle: 'border-green-200 dark:border-green-800/40',
+        textColor: 'text-green-900 dark:text-green-100',
         icon: CheckCircle2
       }
     }
@@ -697,8 +701,10 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
     return {
       color: 'orange',
       bgColor: 'bg-orange-50 dark:bg-orange-950/20',
+      bgColorHighlight: 'bg-orange-200 dark:bg-orange-950/60',
       borderColor: 'border-orange-500',
-      textColor: 'text-orange-700 dark:text-orange-300',
+      borderColorSubtle: 'border-orange-200 dark:border-orange-800/40',
+      textColor: 'text-orange-900 dark:text-orange-100',
       icon: Clock
     }
   }
@@ -804,19 +810,19 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                               {/* Separador */}
                               <Separator className="opacity-40" />
 
-                              {/* Tres bloques de cantidades en horizontal: Pedido, Completado, Restante */}
-                              <div className="flex items-start gap-2 sm:gap-3 flex-wrap justify-center">
+                              {/* Tres bloques de cantidades: horizontal si hay completado, vertical si está completado */}
+                              <div className={`flex items-start gap-2 sm:gap-3 flex-wrap justify-center ${lineStatusConfig.color === 'green' ? 'flex-col' : ''}`}>
                                 {/* Bloque 1: Pedido (Planificado) */}
-                                <div className="text-center flex-1 min-w-[140px]">
+                                <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
                                   <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pedido</p>
-                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
+                                  <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle}`}>
                                     <div className="flex items-center justify-center">
                                       <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         <span className="text-foreground">{formatInteger(orderItem.boxes)}</span>
                                         <span className="text-muted-foreground text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator className="w-full opacity-30" />
+                                    <Separator className="w-full opacity-60" />
                                     <div className="flex items-center justify-center">
                                       <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
                                         {formatDecimalWeight(orderItem.quantity)}
@@ -825,38 +831,40 @@ const KitchenView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useM
                                   </div>
                                 </div>
 
-                                {/* Bloque 2: Completado */}
-                                <div className="text-center flex-1 min-w-[140px]">
-                                  <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
-                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
-                                    <div className="flex items-center justify-center">
-                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
-                                        <span className="text-foreground">{formatInteger(orderItem.completedBoxes || 0)}</span>
-                                        <span className="text-muted-foreground text-lg font-semibold">/c</span>
-                                      </p>
-                                    </div>
-                                    <Separator className="w-full opacity-30" />
-                                    <div className="flex items-center justify-center">
-                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
-                                        {formatDecimalWeight(orderItem.completedQuantity || 0)}
-                                      </p>
+                                {/* Bloque 2: Completado - solo se muestra si NO está completado */}
+                                {lineStatusConfig.color !== 'green' && (
+                                  <div className="text-center flex-1 min-w-[140px]">
+                                    <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Completado</p>
+                                    <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border ${lineStatusConfig.borderColorSubtle} animate-pulse`}>
+                                      <div className="flex items-center justify-center">
+                                        <p className="text-2xl sm:text-3xl font-extrabold text-muted-foreground whitespace-nowrap">
+                                          <span className="text-muted-foreground">{formatInteger(orderItem.completedBoxes || 0)}</span>
+                                          <span className="text-muted-foreground/70 text-lg font-semibold">/c</span>
+                                        </p>
+                                      </div>
+                                      <Separator className="w-full opacity-60" />
+                                      <div className="flex items-center justify-center">
+                                        <p className="text-2xl sm:text-3xl font-extrabold text-muted-foreground whitespace-nowrap">
+                                          {formatDecimalWeight(orderItem.completedQuantity || 0)}
+                                        </p>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
+                                )}
 
-                                {/* Bloque 3: Restante */}
-                                <div className="text-center flex-1 min-w-[140px]">
+                                {/* Bloque 3: Restante - usa fondo destacado y color de texto del estado del card */}
+                                <div className={`text-center ${lineStatusConfig.color === 'green' ? 'w-full' : 'flex-1 min-w-[140px]'}`}>
                                   <p className="text-lg text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Restante</p>
-                                  <div className="flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg bg-background border border-border/50">
+                                  <div className={`flex flex-col items-center gap-2 px-2.5 py-2 rounded-lg ${lineStatusConfig.bgColorHighlight} border-2 ${lineStatusConfig.borderColor}`}>
                                     <div className="flex items-center justify-center">
-                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
-                                        <span className="text-foreground">{formatInteger(orderItem.remainingBoxes || 0)}</span>
-                                        <span className="text-muted-foreground text-lg font-semibold">/c</span>
+                                      <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
+                                        <span>{formatInteger(orderItem.remainingBoxes || 0)}</span>
+                                        <span className="opacity-70 text-lg font-semibold">/c</span>
                                       </p>
                                     </div>
-                                    <Separator className="w-full opacity-30" />
+                                    <Separator className="w-full opacity-60" />
                                     <div className="flex items-center justify-center">
-                                      <p className="text-2xl sm:text-3xl font-extrabold text-foreground whitespace-nowrap">
+                                      <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${lineStatusConfig.textColor}`}>
                                         {formatDecimalWeight(orderItem.remainingQuantity || 0)}
                                       </p>
                                     </div>
