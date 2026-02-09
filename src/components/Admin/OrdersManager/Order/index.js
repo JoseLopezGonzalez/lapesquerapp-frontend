@@ -351,8 +351,8 @@ const OrderContent = ({ onLoading, onClose }) => {
                 </div>
                 {/* Contenido de la sección */}
                 {activeSection === 'map' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
                       <OrderMap />
                     </Suspense>
                   </div>
@@ -391,6 +391,30 @@ const OrderContent = ({ onLoading, onClose }) => {
                     <ScrollArea className="flex-1 min-h-0">
                       <OrderDetails />
                     </ScrollArea>
+                  </div>
+                ) : activeSection === 'productDetails' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                      <OrderProductDetails />
+                    </Suspense>
+                  </div>
+                ) : activeSection === 'production' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                      <OrderProduction />
+                    </Suspense>
+                  </div>
+                ) : activeSection === 'labels' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                      <OrderLabels />
+                    </Suspense>
+                  </div>
+                ) : activeSection === 'export' && isMobile ? (
+                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
+                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+                      <OrderExport />
+                    </Suspense>
                   </div>
                 ) : (
                   <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>

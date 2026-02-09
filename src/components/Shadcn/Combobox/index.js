@@ -33,6 +33,7 @@ export function Combobox({
   disabled = false,
   onBlur,
   defaultOpen = false,
+  onOpenChange: externalOnOpenChange,
 }) {
   const [open, setOpen] = React.useState(defaultOpen)
   const isDisabled = disabled || loading
@@ -46,6 +47,10 @@ export function Combobox({
   // Manejar el cierre del popover para llamar onBlur si está definido
   const handleOpenChange = React.useCallback((newOpen) => {
     setOpen(newOpen)
+    // Notificar al componente padre si hay un callback
+    if (externalOnOpenChange) {
+      externalOnOpenChange(newOpen)
+    }
     // Si se está cerrando y hay onBlur, llamarlo
     if (!newOpen && onBlur) {
       // Usar setTimeout para asegurar que se ejecute después del cambio de estado
@@ -53,7 +58,7 @@ export function Combobox({
         onBlur()
       }, 0)
     }
-  }, [onBlur])
+  }, [onBlur, externalOnOpenChange])
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange} className={className || ""}>
@@ -93,7 +98,7 @@ export function Combobox({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[100]">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[9999]">
         <Command>
           <CommandInput placeholder={searchPlaceholder} disabled={loading} />
           <CommandList

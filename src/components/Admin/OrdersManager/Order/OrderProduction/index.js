@@ -37,30 +37,28 @@ const OrderProduction = () => {
         <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                    <ScrollArea className="flex-1 min-h-0">
-                        <div className="space-y-3">
-                            {hasDiscrepancy && (
-                                <Alert className='animate-pulse'>
-                                    <AlertTriangle className="h-4 w-4" />
-                                    <AlertTitle>Discrepancia detectada</AlertTitle>
-                                    <AlertDescription>
-                                        Se han encontrado diferencias entre los productos registrados y los paletizados.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
+                    {mergedProductDetails.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center min-h-0">
+                            <EmptyState
+                                title={'No existen productos'}
+                                description={'No se han añadido productos a este pedido'}
+                            />
+                        </div>
+                    ) : (
+                        <ScrollArea className="flex-1 min-h-0">
+                            <div className="pb-0 space-y-4">
+                                {hasDiscrepancy && (
+                                    <Alert className='animate-pulse'>
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle>Discrepancia detectada</AlertTitle>
+                                        <AlertDescription>
+                                            Se han encontrado diferencias entre los productos registrados y los paletizados.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
 
-                            {mergedProductDetails.length === 0 ? (
-                                <div className="rounded-md border">
-                                    <div className="py-14 px-4">
-                                        <EmptyState
-                                            title={'No existen productos'}
-                                            description={'No se han añadido productos a este pedido'}
-                                        />
-                                    </div>
-                                </div>
-                            ) : (
-                                /* Vista Mobile: Cards */
-                                mergedProductDetails.map((detail) => (
+                                {/* Vista Mobile: Cards */}
+                                {mergedProductDetails.map((detail) => (
                                     <Card key={`${detail.product.id}-${detail.status}`} className="p-4">
                                         <div className="space-y-3">
                                             {/* Artículo y Estado */}
@@ -124,10 +122,10 @@ const OrderProduction = () => {
 
                                         </div>
                                     </Card>
-                                ))
-                            )}
-                        </div>
-                    </ScrollArea>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    )}
                     
                     {/* Footer con botón de totales */}
                     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
@@ -192,18 +190,12 @@ const OrderProduction = () => {
 
                         {mergedProductDetails.length === 0 ? (
                             <div className="rounded-md border">
-                                <Table>
-                                    <TableBody>
-                                        <TableRow className='text-nowrap'>
-                                            <TableCell className='py-14'>
-                                                <EmptyState
-                                                    title={'No existen productos'}
-                                                    description={'No se han añadido productos a este pedido'}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
+                                <div className="h-full flex items-center justify-center">
+                                    <EmptyState
+                                        title={'No existen productos'}
+                                        description={'No se han añadido productos a este pedido'}
+                                    />
+                                </div>
                             </div>
                         ) : (
                             /* Vista Desktop: Tabla */

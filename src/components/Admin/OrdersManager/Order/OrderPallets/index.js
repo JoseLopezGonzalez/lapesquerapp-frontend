@@ -442,16 +442,16 @@ const OrderPallets = () => {
         <div className='flex-1 flex flex-col min-h-0'>
             {isMobile ? (
                 <div className='flex-1 flex flex-col min-h-0'>
-                    <ScrollArea className="flex-1 min-h-0">
-                        <div className="pb-20">
-                            {pallets.length === 0 ? (
-                        <div className="flex items-center justify-center min-h-[400px]">
+                    {pallets.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center min-h-0">
                             <EmptyState
                                 title={'No existen palets vinculados'}
                                 description={'No se han añadido palets a este pedido'}
                             />
                         </div>
                     ) : (
+                        <ScrollArea className="flex-1 min-h-0">
+                            <div className="pb-20">
                         <>
                             {isMobile ? (
                                 /* Vista Mobile: Cards */
@@ -681,9 +681,9 @@ const OrderPallets = () => {
                                 </div>
                             )}
                         </>
+                            </div>
+                        </ScrollArea>
                     )}
-                        </div>
-                    </ScrollArea>
                     {/* Footer con botones */}
                     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
                         <Button 
@@ -780,7 +780,7 @@ const OrderPallets = () => {
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto">
                     {pallets.length === 0 ? (
-                        <div className="flex items-center justify-center min-h-[400px]">
+                        <div className="h-full flex items-center justify-center">
                             <EmptyState
                                 title={'No existen palets vinculados'}
                                 description={'No se han añadido palets a este pedido'}

@@ -189,30 +189,51 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                     {/* Filtro */}
                     <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-4 pt-6' : 'mb-5 pt-4'}`}>
                         {/* input search - mobile-friendly */}
-                        <div className={`relative ${isMobile ? 'w-full max-w-full mx-auto' : 'w-full'}`}>
-                            <Input 
-                                onChange={(e) => onChangeSearch(e.target.value)} 
-                                value={searchText}
-                                type="text" 
-                                placeholder='Buscar por id o cliente' 
-                                className={`w-full ${isMobile 
-                                    ? 'h-12 text-base px-4 pr-12 rounded-lg' 
-                                    : 'py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base rounded-md'
-                                }`}
-                            />
-                            <button 
-                                className={`absolute right-0 top-0 h-full flex items-center justify-center touch-manipulation ${
-                                    isMobile ? 'w-12' : 'w-10 sm:w-12'
-                                }`}
-                                onClick={() => searchText.length > 0 && onChangeSearch('')}
-                                aria-label={searchText.length > 0 ? 'Limpiar búsqueda' : 'Buscar'}
-                            >
-                                {searchText.length > 0 ? (
-                                    <XMarkIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground hover:text-foreground`} />
-                                ) : (
-                                    <MagnifyingGlassIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground`} />
-                                )}
-                            </button>
+                        <div className={`${isMobile ? 'flex items-center gap-2' : ''}`}>
+                            <div className={`relative ${isMobile ? 'flex-1' : 'w-full'}`}>
+                                <Input 
+                                    onChange={(e) => onChangeSearch(e.target.value)} 
+                                    value={searchText}
+                                    type="text" 
+                                    placeholder='Buscar por id o cliente' 
+                                    className={`w-full ${isMobile 
+                                        ? 'h-12 text-base px-4 pr-12 rounded-lg' 
+                                        : 'py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base rounded-md'
+                                    }`}
+                                />
+                                <button 
+                                    className={`absolute right-0 top-0 h-full flex items-center justify-center touch-manipulation ${
+                                        isMobile ? 'w-12' : 'w-10 sm:w-12'
+                                    }`}
+                                    onClick={() => searchText.length > 0 && onChangeSearch('')}
+                                    aria-label={searchText.length > 0 ? 'Limpiar búsqueda' : 'Buscar'}
+                                >
+                                    {searchText.length > 0 ? (
+                                        <XMarkIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground hover:text-foreground`} />
+                                    ) : (
+                                        <MagnifyingGlassIcon className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5'} text-muted-foreground`} />
+                                    )}
+                                </button>
+                            </div>
+                            {/* Botón crear solo icono en mobile - al lado del buscador */}
+                            {isMobile && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="default"
+                                            size="icon"
+                                            onClick={onClickAddNewOrder}
+                                            className="h-12 w-12 flex-shrink-0"
+                                            aria-label="Crear nuevo pedido"
+                                        >
+                                            <Plus className="h-5 w-5" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Crear nuevo pedido</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
                         </div>
 
                         {/* Tab Shadcn categories - Mobile-friendly style */}
@@ -233,23 +254,17 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                                     {category.label}
                                                 </TabsTrigger>
                                             )}
-                                            {/* Botones como badges adicionales - Solo en mobile */}
-                                            <button
-                                                onClick={onClickAddNewOrder}
-                                                className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5 min-h-[32px] flex-shrink-0"
-                                                aria-label="Crear nuevo pedido"
-                                            >
-                                                <Plus className="h-3.5 w-3.5" />
-                                                <span>Nuevo</span>
-                                            </button>
-                                            <button
-                                                onClick={handleExportActivePlannedProducts}
-                                                className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5 min-h-[32px] flex-shrink-0"
-                                                aria-label="Descargar reporte excel"
-                                            >
-                                                <Download className="h-3.5 w-3.5" />
-                                                <span>Exportar</span>
-                                            </button>
+                                            {/* Botón descargar como badge - Solo en mobile */}
+                                            {isMobile && (
+                                                <button
+                                                    onClick={handleExportActivePlannedProducts}
+                                                    className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5 min-h-[32px] flex-shrink-0"
+                                                    aria-label="Descargar reporte excel"
+                                                >
+                                                    <Download className="h-3.5 w-3.5" />
+                                                    <span>Exportar</span>
+                                                </button>
+                                            )}
                                         </TabsList>
                                     </div>
                                 </div>

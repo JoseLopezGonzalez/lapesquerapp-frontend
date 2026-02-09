@@ -127,6 +127,7 @@ const CreateOrderFormMobile = ({
     const router = useRouter();
     const prefersReducedMotion = useReducedMotion();
     const [currentStep, setCurrentStep] = useState(0);
+    const [isComboboxOpen, setIsComboboxOpen] = useState(false);
     
     // Ocultar bottom navbar en esta pantalla
     useHideBottomNav(true);
@@ -407,6 +408,7 @@ const CreateOrderFormMobile = ({
                                                                     onChange={onChange}
                                                                     placeholder="Selecciona un producto"
                                                                     loading={productsLoading}
+                                                                    onOpenChange={setIsComboboxOpen}
                                                                 />
                                                             )}
                                                         />
@@ -486,20 +488,37 @@ const CreateOrderFormMobile = ({
                                                                 control={control}
                                                                 name={`plannedProducts.${index}.tax`}
                                                                 rules={{ required: 'IVA es requerido' }}
-                                                                render={({ field: { onChange, value } }) => (
-                                                                    <Select value={value} onValueChange={onChange}>
-                                                                        <SelectTrigger loading={taxLoading} className="h-12 text-base">
-                                                                            <SelectValue placeholder="IVA" loading={taxLoading} />
-                                                                        </SelectTrigger>
-                                                                        <SelectContent loading={taxLoading}>
-                                                                            {taxOptions.map((tax) => (
-                                                                                <SelectItem key={tax.value} value={tax.value}>
-                                                                                    {tax.label}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                )}
+                                                                render={({ field }) => {
+                                                                    const currentValue = field.value ? String(field.value) : "";
+                                                                    
+                                                                    const handleValueChange = (newValue) => {
+                                                                        // Convertir a número si las opciones usan números
+                                                                        const taxOption = taxOptions.find(t => String(t.value) === String(newValue));
+                                                                        const finalValue = taxOption ? taxOption.value : newValue;
+                                                                        field.onChange(finalValue);
+                                                                    };
+                                                                    
+                                                                    return (
+                                                                        <Select 
+                                                                            value={currentValue}
+                                                                            onValueChange={handleValueChange}
+                                                                        >
+                                                                            <SelectTrigger loading={taxLoading} className="h-12 text-base">
+                                                                                <SelectValue placeholder="IVA" loading={taxLoading} />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent loading={taxLoading} className="z-[9999]">
+                                                                                {taxOptions.map((tax) => (
+                                                                                    <SelectItem 
+                                                                                        key={tax.value} 
+                                                                                        value={String(tax.value)}
+                                                                                    >
+                                                                                        {tax.label}
+                                                                                    </SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    );
+                                                                }}
                                                             />
                                                             {errors.plannedProducts?.[index]?.tax && (
                                                                 <p className="text-red-500 text-sm font-medium">
@@ -516,6 +535,7 @@ const CreateOrderFormMobile = ({
                                             variant="outline"
                                             onClick={() => append({ product: '', quantity: '', boxes: '', unitPrice: '', tax: '' })}
                                             className="h-12 text-base w-full border-dashed hover:border-solid"
+                                            style={{ pointerEvents: isComboboxOpen ? 'none' : 'auto' }}
                                         >
                                             <PlusCircle className="h-5 w-5 mr-2" />
                                             Añadir producto

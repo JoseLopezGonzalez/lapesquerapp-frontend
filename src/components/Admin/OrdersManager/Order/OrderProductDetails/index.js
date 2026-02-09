@@ -43,26 +43,18 @@ const OrderProductDetails = () => {
         <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                    <ScrollArea className="flex-1 min-h-0">
-                        <div className="pb-3 space-y-4">
-                            {!order?.productDetails || order.productDetails.length === 0 ? (
-                                <div className="rounded-md border">
-                                    <Table>
-                                        <TableBody>
-                                            <TableRow className='text-nowrap'>
-                                                <TableCell className='py-14'>
-                                                    <EmptyState
-                                                        title={'No existen detalles'}
-                                                        description={'No se ha producido actualmente nada para este pedido'}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            ) : (
-                                /* Vista Mobile: Cards */
-                                order.productDetails.map((detail) => (
+                    {!order?.productDetails || order.productDetails.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center min-h-0">
+                            <EmptyState
+                                title={'No existen detalles'}
+                                description={'No se ha producido actualmente nada para este pedido'}
+                            />
+                        </div>
+                    ) : (
+                        <ScrollArea className="flex-1 min-h-0">
+                            <div className="pb-3 space-y-4">
+                                {/* Vista Mobile: Cards */}
+                                {order.productDetails.map((detail) => (
                                     <Card key={detail.id || `${detail.product?.id}-${detail.product?.name}`} className="border">
                                         <CardContent className="p-4 space-y-3">
                                             {/* Nombre del producto */}
@@ -99,10 +91,10 @@ const OrderProductDetails = () => {
                                             </div>
                                         </CardContent>
                                     </Card>
-                                ))
-                            )}
-                        </div>
-                    </ScrollArea>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    )}
                     
                     {/* Footer con botón de totales */}
                     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
@@ -163,21 +155,13 @@ const OrderProductDetails = () => {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6 flex-1 overflow-y-auto">
-                        {!order?.productDetails || order.productDetails.length === 0 ? (
-                            <div className="rounded-md border">
-                                <Table>
-                                    <TableBody>
-                                        <TableRow className='text-nowrap'>
-                                            <TableCell className='py-14'>
-                                                <EmptyState
-                                                    title={'No existen detalles'}
-                                                    description={'No se ha producido actualmente nada para este pedido'}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </div>
+                            {!order?.productDetails || order.productDetails.length === 0 ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <EmptyState
+                                        title={'No existen detalles'}
+                                        description={'No se ha producido actualmente nada para este pedido'}
+                                    />
+                                </div>
                         ) : (
                             /* Vista Desktop: Tabla */
                             <div className="rounded-md border">

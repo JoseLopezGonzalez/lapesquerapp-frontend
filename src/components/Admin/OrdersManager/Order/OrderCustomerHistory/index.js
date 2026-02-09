@@ -394,7 +394,7 @@ export default function OrderCustomerHistory() {
     // Mostrar loader solo en la primera carga
     if (initialLoading) {
         return (
-            <div className="h-full pb-2 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center min-h-0">
                 <Loader />
             </div>
         )
@@ -635,13 +635,13 @@ export default function OrderCustomerHistory() {
                 )}
 
             <ScrollArea className="flex-1 min-h-0">
-                <div className="py-2">
-                    {loadingData && (
-                        <div className="flex h-full items-center justify-center py-4">
-                            <Loader />
-                        </div>
-                    )}
-                    {!loadingData && filteredHistory.length > maxProductsToShow && (
+                {loadingData ? (
+                    <div className="h-full flex items-center justify-center">
+                        <Loader />
+                    </div>
+                ) : (
+                    <div className="py-2">
+                    {filteredHistory.length > maxProductsToShow && (
                         <div className="mb-3 flex items-center justify-between p-2 bg-muted/50 rounded-lg">
                             <p className="text-xs text-muted-foreground">
                                 Mostrando {maxProductsToShow} de {filteredHistory.length} productos
@@ -656,8 +656,7 @@ export default function OrderCustomerHistory() {
                             </Button>
                         </div>
                     )}
-                    {!loadingData && (
-                        <div className="space-y-4">
+                    <div className="space-y-4">
                             {filteredHistory.slice(0, maxProductsToShow).map((product) => {
                                     const chartData = getChartDataByProduct(product)
                                     const trend = product.trend || calculateTrend(product)
@@ -774,9 +773,9 @@ export default function OrderCustomerHistory() {
                                         </Card>
                                     )
                                 })}
-                        </div>
-                    )}
+                    </div>
                 </div>
+                )}
             </ScrollArea>
         </div>
     ) : (
@@ -1028,28 +1027,28 @@ export default function OrderCustomerHistory() {
                             </CardContent>
                         )}
                         <CardContent className="flex-1 overflow-y-auto py-2">
-                            {loadingData && (
-                                <div className="flex h-full items-center justify-center py-4">
+                            {loadingData ? (
+                                <div className="h-full flex items-center justify-center">
                                     <Loader />
                                 </div>
-                            )}
-                            {!loadingData && filteredHistory.length > maxProductsToShow && (
-                                <div className="mb-3 flex items-center justify-between p-2 bg-muted/50 rounded-lg">
-                                    <p className="text-xs text-muted-foreground">
-                                        Mostrando {maxProductsToShow} de {filteredHistory.length} productos
-                                    </p>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setMaxProductsToShow(prev => prev + 10)}
-                                        className="h-7 text-xs"
-                                    >
-                                        Mostrar más (+10)
-                                    </Button>
-                                </div>
-                            )}
-                            {!loadingData && (
-                                <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="space-y-3">
+                            ) : (
+                                <>
+                                    {filteredHistory.length > maxProductsToShow && (
+                                        <div className="mb-3 flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                                            <p className="text-xs text-muted-foreground">
+                                                Mostrando {maxProductsToShow} de {filteredHistory.length} productos
+                                            </p>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setMaxProductsToShow(prev => prev + 10)}
+                                                className="h-7 text-xs"
+                                            >
+                                                Mostrar más (+10)
+                                            </Button>
+                                        </div>
+                                    )}
+                                    <Accordion type="multiple" value={expandedItems} onValueChange={setExpandedItems} className="space-y-3">
                                 {filteredHistory.slice(0, maxProductsToShow).map((product) => {
                                     const chartData = getChartDataByProduct(product)
                                     // Usar trend del backend si está disponible, sino calcularlo
@@ -1197,7 +1196,8 @@ export default function OrderCustomerHistory() {
                                         </AccordionItem>
                                     )
                                 })}
-                            </Accordion>
+                                    </Accordion>
+                                </>
                             )}
                         </CardContent>
                     </Card>

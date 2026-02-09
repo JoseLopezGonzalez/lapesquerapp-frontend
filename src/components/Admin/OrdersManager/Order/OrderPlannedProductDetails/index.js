@@ -287,21 +287,18 @@ const OrderPlannedProductDetails = () => {
         <div className="flex-1 flex flex-col min-h-0">
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                    <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0">
-                        <div className="pb-20 space-y-6">
-                            {details.length === 0 ? (
-                                <div className="rounded-md border">
-                                    <div className="py-14 px-4">
-                                        <EmptyState
-                                            title={'No existen productos previstos'}
-                                            description={'Añade productos a la previsión del pedido'}
-                                        />
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    {/* Vista Mobile: Cards */}
-                                    <div className="space-y-3">
+                    {details.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center min-h-0">
+                            <EmptyState
+                                title={'No existen productos previstos'}
+                                description={'Añade productos a la previsión del pedido'}
+                            />
+                        </div>
+                    ) : (
+                        <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0">
+                            <div className="pb-20 space-y-6">
+                                {/* Vista Mobile: Cards */}
+                                <div className="space-y-3">
                                     {details.map((detail, index) => (
                                         <Card key={detail.id || detail.tempId} data-card-index={index} className="p-4">
                                             <div className="space-y-3">
@@ -414,12 +411,10 @@ const OrderPlannedProductDetails = () => {
                                             </div>
                                         </Card>
                                     ))}
-                                    
                                 </div>
-                        </>
-                            )}
-                        </div>
-                    </ScrollArea>
+                            </div>
+                        </ScrollArea>
+                    )}
                     {/* Footer con botones */}
                     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
                         <Button 
@@ -513,19 +508,11 @@ const OrderPlannedProductDetails = () => {
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 overflow-y-auto">
                     {details.length === 0 ? (
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableBody>
-                                    <TableRow className='text-nowrap'>
-                                        <TableCell className='py-14'>
-                                            <EmptyState
-                                                title={'No existen productos previstos'}
-                                                description={'Añade productos a la previsión del pedido'}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
+                        <div className="h-full flex items-center justify-center">
+                            <EmptyState
+                                title={'No existen productos previstos'}
+                                description={'Añade productos a la previsión del pedido'}
+                            />
                         </div>
                     ) : (
                             <div className="border rounded-md max-h-[500px] overflow-y-auto">
