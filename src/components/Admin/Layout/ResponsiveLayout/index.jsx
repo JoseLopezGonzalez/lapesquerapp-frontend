@@ -24,6 +24,7 @@ import { BottomNav } from "@/components/Admin/Layout/BottomNav";
 import { FloatingUserMenu } from "@/components/Admin/Layout/FloatingUserMenu";
 import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { BottomNavProvider, useBottomNav } from "@/context/BottomNavContext";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,7 +36,7 @@ import { cn } from "@/lib/utils";
  * @param {object} props.user - Objeto usuario para TopBar y Sidebar
  * @param {Function} props.onMenuClick - Callback cuando se clickea menú en TopBar
  */
-export function ResponsiveLayout({ 
+function ResponsiveLayoutContent({ 
   children, 
   bottomNavItems = [],
   user,
@@ -50,6 +51,7 @@ export function ResponsiveLayout({
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const pathname = usePathname();
   const mainRef = React.useRef(null); // Mover ref fuera del bloque condicional
+  const { hideBottomNav } = useBottomNav(); // Obtener estado del context
 
   // Cerrar Sheet automáticamente al navegar
   React.useEffect(() => {
@@ -125,10 +127,10 @@ export function ResponsiveLayout({
             className={cn(
               "overflow-hidden", // overflow-hidden para que cada componente gestione su scroll
               "w-full relative", // relative para posicionar el avatar
-              // Altura ajustada restando el bottom nav si existe
+              // Altura ajustada restando el bottom nav si existe y no está oculto
               // Bottom nav: pt-3 (12px) + contenido min-h-[44px] + pb-4 (16px) + safe area ≈ 72px + safe area
               // Usamos 5rem (80px) para dar margen extra y evitar que se corte el contenido
-              bottomNavItems && bottomNavItems.length > 0 
+              bottomNavItems && bottomNavItems.length > 0 && !hideBottomNav
                 ? "h-[calc(100vh-5rem-env(safe-area-inset-bottom))]" 
                 : "flex-1 min-h-0"
             )}
@@ -149,8 +151,8 @@ export function ResponsiveLayout({
             </div>
           </main>
 
-      {/* BottomNav */}
-      {bottomNavItems && bottomNavItems.length > 0 && (
+      {/* BottomNav - Solo mostrar si no está oculto por el context */}
+      {bottomNavItems && bottomNavItems.length > 0 && !hideBottomNav && (
         <BottomNav 
           items={bottomNavItems}
           sheetOpen={sheetOpen}
@@ -171,3 +173,19 @@ export function ResponsiveLayout({
   );
 }
 
+/**
+ * ResponsiveLayout - Componente wrapper responsive con BottomNavProvider
+ * 
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Contenido a renderizar
+ * @param {Array} props.bottomNavItems - Items para BottomNav (solo mobile)
+ * @param {object} props.user - Objeto usuario para TopBar y Sidebar
+ * @param {Function} props.onMenuClick - Callback cuando se clickea menú en TopBar
+ */
+export function ResponsiveLayout(props) {
+  return (
+    <BottomNavProvider>
+      <ResponsiveLayoutContent {...props} />
+    </BottomNavProvider>
+  );
+}

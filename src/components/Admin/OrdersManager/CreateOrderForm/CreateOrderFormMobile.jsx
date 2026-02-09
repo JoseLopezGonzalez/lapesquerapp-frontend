@@ -12,18 +12,22 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, PlusCircle, Check, 
 import { useRouter } from 'next/navigation';
 import { pageTransition } from '@/lib/motion-presets';
 import { cn } from '@/lib/utils';
+import { useHideBottomNav } from '@/context/BottomNavContext';
+import Loader from '@/components/Utilities/Loader';
 
 // Componente especial que muestra las opciones directamente en el layout (sin popover)
 const ExpandedCombobox = ({ field, value, onChange, onBlur, loading }) => {
     const [searchQuery, setSearchQuery] = useState('');
     
+    // Si está cargando, no filtrar opciones aún
     const filteredOptions = useMemo(() => {
+        if (loading) return [];
         if (!field.options || !Array.isArray(field.options)) return [];
         if (!searchQuery) return field.options;
         return field.options.filter(option =>
             option.label.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [field.options, searchQuery]);
+    }, [field.options, searchQuery, loading]);
 
     const selectedOption = useMemo(() => {
         if (!value) return null;
@@ -61,10 +65,10 @@ const ExpandedCombobox = ({ field, value, onChange, onBlur, loading }) => {
             
             {/* Lista de opciones siempre visible */}
             <div className="border rounded-lg bg-card overflow-hidden">
-                {loading ? (
-                    <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-sm text-muted-foreground">Cargando opciones...</span>
+                {loading || (!field.options || field.options.length === 0) ? (
+                    <div className="flex flex-col items-center justify-center py-12 min-h-[200px] gap-2 w-full">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary stroke-2" />
+                        <p className="text-sm text-muted-foreground">Cargando</p>
                     </div>
                 ) : filteredOptions.length === 0 ? (
                     <div className="py-6 text-center text-sm text-muted-foreground">
@@ -123,6 +127,9 @@ const CreateOrderFormMobile = ({
     const router = useRouter();
     const prefersReducedMotion = useReducedMotion();
     const [currentStep, setCurrentStep] = useState(0);
+    
+    // Ocultar bottom navbar en esta pantalla
+    useHideBottomNav(true);
     
     // Descripciones breves para cada sección
     const sectionDescriptions = {
@@ -186,7 +193,7 @@ const CreateOrderFormMobile = ({
             </div>
 
             {/* Stepper Indicator - Mejorado según best practices mobile */}
-            <div className="bg-background flex-shrink-0 px-5 py-6 border-b border-border/50">
+            <div className="flex-shrink-0 px-5 py-6">
                 <div className="flex flex-col items-center justify-center gap-3">
                     {/* Indicador de progreso compacto circular - Centrado con motion moderno */}
                     <div className="flex-shrink-0">
@@ -274,7 +281,7 @@ const CreateOrderFormMobile = ({
             </div>
 
             {/* Form Content */}
-            <div className="flex-1 overflow-y-auto px-5 pt-6 pb-20">
+            <div className="flex-1 overflow-y-auto px-5 pt-6 pb-28">
                 {loading ? (
                     <div className='w-full h-full flex items-center justify-center'>
                         <div className="text-muted-foreground">Cargando...</div>
@@ -521,7 +528,7 @@ const CreateOrderFormMobile = ({
                     </div>
 
                     {/* Navigation Buttons - Absolute en la parte inferior del contenedor, justo encima del BottomNav */}
-                    <div className="absolute bottom-0 left-0 right-0 z-[60] bg-background/95 backdrop-blur-sm border-t border-border/50 pt-3 pb-4 px-5">
+                    <div className="absolute bottom-0 left-0 right-0 z-[60] pt-3 pb-4 px-5">
                         <div className="flex items-center justify-between gap-3">
                             {!isFirstStep && (
                                 <Button
@@ -543,7 +550,12 @@ const CreateOrderFormMobile = ({
                                     className={`h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 active:scale-95 transition-transform ${isFirstStep ? 'ml-auto' : ''}`}
                                     aria-label="Siguiente paso"
                                 >
-                                    <ChevronRight className="h-5 w-5 text-primary-foreground" />
+                                    <motion.div
+                                        whileTap={{ scale: 0.8, x: 4 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                    >
+                                        <ChevronRight className="h-5 w-5 text-primary-foreground" />
+                                    </motion.div>
                                 </Button>
                             ) : (
                                 <Button

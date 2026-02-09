@@ -12,7 +12,7 @@ const today = new Date();
 const initialDefaultValues = {
     customer: '',
     entryDate: today, // Cambiado de string a objeto Date
-    loadDate: null, // Cambiado de '' a null
+    loadDate: today, // Fecha de carga por defecto: fecha actual
     salesperson: '',
     payment: '',
     incoterm: '',

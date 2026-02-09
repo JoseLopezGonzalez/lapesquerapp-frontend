@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 
 // Lazy load de componentes pesados para mejorar el rendimiento inicial
 const OrderPallets = lazy(() => import('./OrderPallets'));
@@ -88,6 +89,9 @@ const getTransportImage = (transportName) => {
 const OrderContent = ({ onLoading, onClose }) => {
   const isMobile = useIsMobile();
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
+  
+  // Ocultar bottom navbar en esta pantalla (solo en mobile)
+  useHideBottomNav(isMobile);
 
   useEffect(() => {
     if (!onLoading) return;
