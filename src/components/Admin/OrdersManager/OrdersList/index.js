@@ -146,6 +146,37 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
                                 </p>
                             )}
                         </div>
+                        {/* Botones de acción en desktop */}
+                        <div className="flex items-center gap-2">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="default"
+                                        size="icon"
+                                        onClick={onClickAddNewOrder}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Crear nuevo pedido</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={handleExportActivePlannedProducts}
+                                    >
+                                        <Download className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Exportar productos planificados activos</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
                     </div>
                 )}
             </div>
@@ -186,65 +217,55 @@ const OrdersList = ({ orders, categories, onClickCategory, onChangeSearch, searc
 
                         {/* Tab Shadcn categories - Mobile-friendly style */}
                         <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-4 mb-4' : 'mt-5 mb-5'}>
-                            <div className="relative -mx-4 sm:mx-0 px-4 sm:px-0">
-                                {/* Fade gradients para los extremos */}
-                                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 sm:hidden" />
-                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 sm:hidden" />
-                                <div className="overflow-x-auto scrollbar-hide">
-                                    <TabsList className={`w-max min-w-full sm:min-w-0 flex gap-1.5 ${isMobile ? 'bg-transparent p-0 h-auto' : 'bg-muted p-1 h-9'}`}>
+                            {isMobile ? (
+                                <div className="relative -mx-4 px-4">
+                                    {/* Fade gradients para los extremos */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
+                                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
+                                    <div className="overflow-x-auto scrollbar-hide">
+                                        <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto">
+                                            {categories.map((category) =>
+                                                <TabsTrigger 
+                                                    key={category.name} 
+                                                    value={category.name} 
+                                                    className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-foreground/70 data-[state=inactive]:hover:bg-muted data-[state=inactive]:hover:text-foreground min-h-[32px] flex-shrink-0"
+                                                >
+                                                    {category.label}
+                                                </TabsTrigger>
+                                            )}
+                                            {/* Botones como badges adicionales - Solo en mobile */}
+                                            <button
+                                                onClick={onClickAddNewOrder}
+                                                className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5 min-h-[32px] flex-shrink-0"
+                                                aria-label="Crear nuevo pedido"
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                                <span>Nuevo</span>
+                                            </button>
+                                            <button
+                                                onClick={handleExportActivePlannedProducts}
+                                                className="whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5 min-h-[32px] flex-shrink-0"
+                                                aria-label="Descargar reporte excel"
+                                            >
+                                                <Download className="h-3.5 w-3.5" />
+                                                <span>Exportar</span>
+                                            </button>
+                                        </TabsList>
+                                    </div>
+                                </div>
+                            ) : (
+                                <TabsList className="w-fit inline-flex bg-muted p-1 h-9">
                                     {categories.map((category) =>
                                         <TabsTrigger 
                                             key={category.name} 
                                             value={category.name} 
-                                            className={`
-                                                whitespace-nowrap 
-                                                ${isMobile 
-                                                    ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-foreground/70 data-[state=inactive]:hover:bg-muted data-[state=inactive]:hover:text-foreground' 
-                                                    : 'px-3 py-1 text-sm rounded-md'
-                                                }
-                                                min-h-[32px] sm:min-h-0
-                                                flex-shrink-0
-                                            `}
+                                            className="whitespace-nowrap px-3 py-1 text-sm rounded-md"
                                         >
                                             {category.label}
                                         </TabsTrigger>
                                     )}
-                                    {/* Botones como badges adicionales */}
-                                    <button
-                                        onClick={onClickAddNewOrder}
-                                        className={`
-                                            whitespace-nowrap 
-                                            ${isMobile 
-                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
-                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
-                                            }
-                                            min-h-[32px] sm:min-h-0
-                                            flex-shrink-0
-                                        `}
-                                        aria-label="Crear nuevo pedido"
-                                    >
-                                        <Plus className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
-                                        <span>Nuevo</span>
-                                    </button>
-                                    <button
-                                        onClick={handleExportActivePlannedProducts}
-                                        className={`
-                                            whitespace-nowrap 
-                                            ${isMobile 
-                                                ? 'px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5' 
-                                                : 'px-3 py-1 text-sm rounded-md bg-accent/60 text-foreground/80 hover:bg-accent hover:text-foreground flex items-center gap-1.5'
-                                            }
-                                            min-h-[32px] sm:min-h-0
-                                            flex-shrink-0
-                                        `}
-                                        aria-label="Descargar reporte excel"
-                                    >
-                                        <Download className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
-                                        <span>Exportar</span>
-                                    </button>
-                                    </TabsList>
-                                </div>
-                            </div>
+                                </TabsList>
+                            )}
                         </Tabs>
                     </div>
 

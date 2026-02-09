@@ -74,7 +74,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
 
     return (
         <div
-            className={`${baseClass} ${statusClass} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} shadow-sm hover:shadow-md transition-shadow`}
+            className={`${baseClass} ${statusClass} ${disabled ? (isMobile ? 'cursor-not-allowed opacity-50' : 'cursor-not-allowed pointer-events-none') : 'cursor-pointer'} shadow-sm hover:shadow-md transition-shadow`}
             onClick={() => !disabled && onClick()}
             role="button"
             tabIndex={disabled ? -1 : 0}
@@ -111,7 +111,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 </div>
                 <div className={`flex items-center ${isMobile ? 'gap-6' : 'gap-4'} flex-wrap`}>
                     <div>
-                        <p className={`text-muted-foreground mb-1 ${isMobile ? 'text-xs font-medium' : 'text-xs'}`}>Fecha de Carga</p>
+                        <p className={`${isSelected ? 'text-foreground/80' : 'text-muted-foreground'} mb-1 ${isMobile ? 'text-xs font-medium' : 'text-xs'}`}>Fecha de Carga</p>
                         <p className={`font-semibold ${isMobile ? 'text-base' : 'text-base sm:text-lg font-medium'}`}>
                             {loadDate}
                         </p>
