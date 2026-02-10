@@ -73,11 +73,10 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 'p-4 sm:p-5',
                 borderLClass,
                 selectedClass,
-                disabled && 'cursor-not-allowed opacity-50 pointer-events-none',
+                disabled && 'cursor-not-allowed pointer-events-none',
                 !disabled && [
                     'cursor-pointer',
-                    'hover:bg-accent/50 hover:border-accent',
-                    'active:bg-accent/70 active:scale-[0.99]',
+                    isMobile && 'hover:bg-accent/50 hover:border-accent active:bg-accent/70 active:scale-[0.99]',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 ]
             )}
