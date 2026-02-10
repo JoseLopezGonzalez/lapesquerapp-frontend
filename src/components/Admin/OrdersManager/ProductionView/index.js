@@ -490,7 +490,9 @@ const MOCK_ORDERS = [
   }
 ]
 
-const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, useMockData = false, onToggleViewMode }) => {
+const POLLING_INTERVAL_MS = 3 * 60 * 1000 // 3 minutos
+
+const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 30000, useMockData = false, onToggleViewMode }) => {
   const isMobile = useIsMobile()
   const { data: session } = useSession()
   const token = session?.user?.accessToken
@@ -500,33 +502,51 @@ const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 10000, u
   const [error, setError] = useState(null)
   const [productionData, setProductionData] = useState([])
 
-  // Cargar datos de producción desde la API
+  const fetchProductionData = useCallback((silent = false) => {
+    if (!token) return
+    if (!silent) {
+      setLoading(true)
+      setError(null)
+    }
+    getProductionViewData(token)
+      .then((data) => {
+        setProductionData(Array.isArray(data) ? data : [])
+        if (!silent) {
+          console.log('ProductionView: Datos obtenidos:', data)
+          setLoading(false)
+          setError(null)
+        }
+      })
+      .catch((err) => {
+        const errorMessage = err?.message || 'Error al obtener los datos de producción'
+        if (!silent) {
+          console.error('ProductionView: Error al obtener datos:', err)
+          setError(errorMessage)
+          toast.error(errorMessage, getToastTheme())
+          setLoading(false)
+          setProductionData([])
+        }
+      })
+  }, [token])
+
+  // Carga inicial de datos
   useEffect(() => {
     if (!token) {
       setLoading(false)
       setError('No hay sesión autenticada')
       return
     }
+    fetchProductionData(false)
+  }, [token, fetchProductionData])
 
-    setLoading(true)
-    setError(null)
-
-    getProductionViewData(token)
-      .then((data) => {
-        console.log('ProductionView: Datos obtenidos:', data)
-        setProductionData(Array.isArray(data) ? data : [])
-        setLoading(false)
-        setError(null)
-      })
-      .catch((error) => {
-        const errorMessage = error?.message || 'Error al obtener los datos de producción'
-        console.error('ProductionView: Error al obtener datos:', error)
-        setError(errorMessage)
-        toast.error(errorMessage, getToastTheme())
-        setLoading(false)
-        setProductionData([])
-      })
-  }, [token])
+  // Polling: recarga silenciosa cada 3 minutos
+  useEffect(() => {
+    if (!token) return
+    const pollInterval = setInterval(() => {
+      fetchProductionData(true)
+    }, POLLING_INTERVAL_MS)
+    return () => clearInterval(pollInterval)
+  }, [token, fetchProductionData])
 
   // Los datos ya vienen agrupados por producto del backend
   const productsGrouped = useMemo(() => {
