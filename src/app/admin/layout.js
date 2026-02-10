@@ -84,8 +84,8 @@ export default function AdminLayout({ children }) {
       icon: MessageSquare,
       href: null, // No es una ruta, es una acción
     };
-    
-    // Construir array final, filtrando items que no existen
+
+    // Construir array final, filtrando items que no existen (Cuenta va en el sheet del menú)
     const items = [
       inicioItem,
       gestorPedidosItem,

@@ -1,5 +1,8 @@
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ChevronRight } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
     const isMobile = useIsMobile();
@@ -7,35 +10,24 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
     const orderId = order.id.toString().padStart(5, '0');
     const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 
-    const today = new Date();
     const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-    const isToday = loadDateObj && today.toDateString() === loadDateObj.toDateString();
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const isTomorrow = loadDateObj && tomorrow.toDateString() === loadDateObj.toDateString();
+    // Borde izquierdo por estado (sin cambiar fondo base)
+    const borderLClass =
+        order.status === 'incident'
+            ? 'border-l-red-500'
+            : order.status === 'finished'
+                ? 'border-l-green-500'
+                : 'border-l-orange-500';
 
-    // Mobile: padding más generoso, altura mínima para touch target
-    const baseClass = isMobile 
-        ? "relative flex rounded-2xl p-5 border-l-4 min-h-[130px] active:scale-[0.98] transition-all"
-        : "relative flex rounded-xl p-4 sm:p-5 border-l-4"
-
-    let statusClass = ''
-
-    // Resaltar pedido seleccionado
-    if (isSelected && order.status === 'finished') {
-        statusClass = 'border-green-500 bg-green-400/70 hover:bg-green-400/80'
-    } else if (isSelected && order.status === 'pending') {
-        statusClass = 'border-orange-500 bg-orange-400/90 hover:bg-orange-400'
-    } else if (isSelected && order.status === 'incident') {
-        statusClass = 'border-red-900 bg-red-500 hover:bg-red-500/80'
-    } else if (order.status === 'incident') {
-        statusClass = 'border-red-500 bg-foreground-50 hover:foreground-100'
-    } else if (order.status === 'finished') {
-        statusClass = 'border-green-500 bg-foreground-50 hover:foreground-100'
-    } else {
-        statusClass = 'border-orange-500 bg-foreground-50 hover:foreground-100'
-    }
+    // Resaltar pedido seleccionado (fondo más marcado)
+    const selectedClass = isSelected
+        ? order.status === 'incident'
+            ? 'bg-red-500/10 border-red-500/50'
+            : order.status === 'finished'
+                ? 'bg-green-500/10 border-green-500/50'
+                : 'bg-orange-500/10 border-orange-500/50'
+        : '';
 
     const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
         const colorVariants = {
@@ -72,9 +64,23 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
         );
     };
 
+    const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente';
+
     return (
-        <div
-            className={`${baseClass} ${statusClass} ${disabled ? (isMobile ? 'cursor-not-allowed opacity-50' : 'cursor-not-allowed pointer-events-none') : 'cursor-pointer'} shadow-sm hover:shadow-md transition-shadow`}
+        <Card
+            className={cn(
+                'relative flex border-l-4 min-h-[120px] transition-colors duration-150',
+                isMobile ? 'p-4 sm:p-5' : 'p-4 sm:p-5',
+                borderLClass,
+                selectedClass,
+                disabled && 'cursor-not-allowed opacity-50 pointer-events-none',
+                !disabled && [
+                    'cursor-pointer',
+                    'hover:bg-accent/50 hover:border-accent',
+                    'active:bg-accent/70 active:scale-[0.99]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                ]
+            )}
             onClick={() => !disabled && onClick()}
             role="button"
             tabIndex={disabled ? -1 : 0}
@@ -86,46 +92,53 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 }
             }}
         >
-            {isToday && (
-                <span className={`absolute ${isMobile ? 'top-4 right-4' : 'top-3 right-3'} text-xs font-semibold animate-pulse bg-primary/20 text-primary ${isMobile ? 'px-3 py-1.5' : 'px-2.5 py-1'} rounded-full z-10 border border-primary/30`}>
-                    Hoy
-                </span>)}
-
-            {isTomorrow && (
-                <span className={`absolute ${isMobile ? 'top-4 right-4' : 'top-3 right-3'} text-xs font-semibold animate-pulse bg-primary/20 text-primary ${isMobile ? 'px-3 py-1.5' : 'px-2.5 py-1'} rounded-full z-10 border border-primary/30`}>
-                    Mañana
-                </span>)}
-
-            <div className={`grow w-full max-w-xs xl:max-w-none ${isMobile ? 'space-y-3' : 'space-y-2 sm:space-y-2'}`}>
-                <div className="flex items-center gap-2 flex-wrap">
-                <StatusBadge
-                    color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
-                    label={order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente'}
-                />
-                </div>
-                <h3 className={`font-bold ${isMobile ? 'text-xl' : 'text-base sm:text-lg font-semibold'}`}>#{orderId}</h3>
-                <div>
-                    <p className={`font-semibold truncate ${isMobile ? 'text-lg' : 'text-base sm:text-lg font-medium'}`} title={order.customer.name}>
-                        {order.customer.name}
-                    </p>
-                </div>
-                <div className={`flex items-center ${isMobile ? 'gap-6' : 'gap-4'} flex-wrap`}>
-                    <div>
-                        <p className={`${isSelected ? 'text-foreground/80' : 'text-muted-foreground'} mb-1 ${isMobile ? 'text-xs font-medium' : 'text-xs'}`}>Fecha de Carga</p>
-                        <p className={`font-semibold ${isMobile ? 'text-base' : 'text-base sm:text-lg font-medium'}`}>
-                        {loadDate}
-                    </p>
-                    </div>
-                    {/* Información adicional en mobile si está disponible */}
-                    {isMobile && order.numberOfBoxes && (
-                        <div>
-                            <p className='text-xs text-muted-foreground mb-1 font-medium'>Cajas</p>
-                            <p className='font-semibold text-base'>{order.numberOfBoxes}</p>
+            {isMobile ? (
+                /* Mobile: cola de trabajo – Cliente protagonista, ID como meta a la derecha */
+                <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-medium text-muted-foreground/90">{statusLabel}</span>
+                            <span className="text-[10px] text-muted-foreground/80 tabular-nums shrink-0">#{orderId}</span>
                         </div>
-                    )}
+                        <p className="font-semibold text-lg truncate" title={order.customer.name}>
+                            {order.customer.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {loadDate}
+                            {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
+                        </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
                 </div>
-            </div>
-        </div>
+            ) : (
+                <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <StatusBadge
+                            color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
+                            label={statusLabel}
+                        />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
+                    <div>
+                        <p className="font-semibold truncate text-base sm:text-lg font-medium" title={order.customer.name}>
+                            {order.customer.name}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <div>
+                            <p className={`${isSelected ? 'text-foreground/80' : 'text-muted-foreground'} mb-1 text-xs`}>Fecha de Carga</p>
+                            <p className="font-semibold text-base sm:text-lg font-medium">{loadDate}</p>
+                        </div>
+                        {order.numberOfBoxes != null && (
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-1">Cajas</p>
+                                <p className="font-semibold text-base">{order.numberOfBoxes}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </Card>
     )
 }
 

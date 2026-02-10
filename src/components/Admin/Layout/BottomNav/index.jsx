@@ -141,6 +141,10 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
     return items.slice(0, 5);
   }, [items]);
 
+  // 4 items + botón central = 5 columnas
+  const gridCols = "grid-cols-5";
+  const columnCount = displayItems.length + 1;
+
   // Early return DESPUÉS de los hooks
   if (!displayItems || displayItems.length === 0) {
     return null;
@@ -159,94 +163,43 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
     >
       <div className={cn(
         "container mx-auto",
-        "grid grid-cols-5 items-end",
+        "grid items-end",
+        gridCols,
         "px-6 pt-3 pb-4",
         "max-w-md mx-auto",
         "gap-0"
       )}>
-        {/* Item 1 */}
-        <div className="flex items-center justify-center">
-          {displayItems.slice(0, 1).map((item, index) => {
-            if (item.name === 'Chat IA' && !item.href) {
-              return <ChatNavItem key="chat-ai" index={index} />;
-            }
-            const itemHref = item.href || item.childrens?.[0]?.href || '#';
-            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+        {/* Columnas: [item0, item1, center, item2, item3, item4?] */}
+        {Array.from({ length: columnCount }, (_, i) => i).map((colIndex) => {
+          const itemIndex = colIndex < 2 ? colIndex : colIndex - 1; // 2 es centro
+          const item = displayItems[itemIndex];
+          if (colIndex === 2) {
             return (
+              <div key="center" className="flex items-center justify-center">
+                <CenterActionButton onOpenSheet={onSheetOpenChange} />
+              </div>
+            );
+          }
+          if (!item) return <div key={`empty-${colIndex}`} />;
+          if (item.name === 'Chat IA' && !item.href) {
+            return (
+              <div key="chat-ai" className="flex items-center justify-center">
+                <ChatNavItem index={colIndex} />
+              </div>
+            );
+          }
+          const itemHref = item.href || item.childrens?.[0]?.href || '#';
+          const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+          return (
+            <div key={itemHref || item.name || `item-${colIndex}`} className="flex items-center justify-center">
               <BottomNavItem
-                key={itemHref || item.name || `item-${index}`}
                 item={{ ...item, href: itemHref }}
                 isActive={isActive}
-                index={index}
+                index={colIndex}
               />
-            );
-          })}
-        </div>
-        
-        {/* Item 2 */}
-        <div className="flex items-center justify-center">
-          {displayItems.slice(1, 2).map((item, index) => {
-            const actualIndex = index + 1;
-            if (item.name === 'Chat IA' && !item.href) {
-              return <ChatNavItem key="chat-ai" index={actualIndex} />;
-            }
-            const itemHref = item.href || item.childrens?.[0]?.href || '#';
-            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-            return (
-              <BottomNavItem
-                key={itemHref || item.name || `item-${actualIndex}`}
-                item={{ ...item, href: itemHref }}
-                isActive={isActive}
-                index={actualIndex}
-              />
-            );
-          })}
-        </div>
-        
-        {/* Botón central de acción - Columna 3 */}
-        <div className="flex items-center justify-center">
-          <CenterActionButton onOpenSheet={onSheetOpenChange} />
-        </div>
-        
-        {/* Item 3 */}
-        <div className="flex items-center justify-center">
-          {displayItems.slice(2, 3).map((item, index) => {
-            const actualIndex = index + 2;
-            if (item.name === 'Chat IA' && !item.href) {
-              return <ChatNavItem key="chat-ai" index={actualIndex} />;
-            }
-            const itemHref = item.href || item.childrens?.[0]?.href || '#';
-            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-            return (
-              <BottomNavItem
-                key={itemHref || item.name || `item-${actualIndex}`}
-                item={{ ...item, href: itemHref }}
-                isActive={isActive}
-                index={actualIndex}
-              />
-            );
-          })}
-        </div>
-        
-        {/* Item 4 */}
-        <div className="flex items-center justify-center">
-          {displayItems.slice(3).map((item, index) => {
-            const actualIndex = index + 3;
-            if (item.name === 'Chat IA' && !item.href) {
-              return <ChatNavItem key="chat-ai" index={actualIndex} />;
-            }
-            const itemHref = item.href || item.childrens?.[0]?.href || '#';
-            const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
-            return (
-              <BottomNavItem
-                key={itemHref || item.name || `item-${actualIndex}`}
-                item={{ ...item, href: itemHref }}
-                isActive={isActive}
-                index={actualIndex}
-              />
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </nav>
   );

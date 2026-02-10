@@ -37,13 +37,13 @@ export function CenterActionButton({ onOpenSheet }) {
         onClick={() => onOpenSheet?.(true)}
         className={cn(
           "relative flex items-center justify-center",
-          "w-14 h-14 rounded-full",
+          "w-14 h-14 rounded-md",
           "bg-primary text-primary-foreground",
-          "shadow-lg shadow-primary/50",
+          "shadow-md",
           "transition-all duration-200",
           "touch-none",
           "hover:bg-primary/90 active:bg-primary/80",
-          "hover:scale-105 active:scale-95"
+          "hover:scale-[1.02] active:scale-[0.98]"
         )}
         aria-label="Abrir menú de navegación"
       >

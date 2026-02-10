@@ -21,7 +21,7 @@ import { usePathname } from "next/navigation";
 import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { AppSidebar } from "@/components/Admin/Layout/SideBar";
 import { BottomNav } from "@/components/Admin/Layout/BottomNav";
-import { FloatingUserMenu } from "@/components/Admin/Layout/FloatingUserMenu";
+import { UserMenuDialog } from "@/components/Admin/Layout/FloatingUserMenu";
 import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { BottomNavProvider, useBottomNav } from "@/context/BottomNavContext";
@@ -52,6 +52,7 @@ function ResponsiveLayoutContent({
   const pathname = usePathname();
   const mainRef = React.useRef(null); // Mover ref fuera del bloque condicional
   const { hideBottomNav } = useBottomNav(); // Obtener estado del context
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
   // Cerrar Sheet automáticamente al navegar
   React.useEffect(() => {
@@ -135,19 +136,9 @@ function ResponsiveLayoutContent({
                 : "flex-1 min-h-0"
             )}
           >
-            {/* Wrapper del contenido con padding superior para el avatar */}
-            <div className="relative w-full h-full">
-              {/* Avatar de usuario flotante - Se mueve con el scroll */}
-              {user && (
-                <div className="absolute top-4 right-4 z-50 w-fit">
-                  <FloatingUserMenu user={user} scrollContainerRef={mainRef} />
-                </div>
-              )}
-              
-              {/* Contenido principal - altura completa para que los hijos puedan usar h-full */}
-              <div className="h-full w-full">
-                {children}
-              </div>
+            {/* Contenido principal - usuario en BottomNav, sin botón flotante */}
+            <div className="h-full w-full">
+              {children}
             </div>
           </main>
 
@@ -160,7 +151,12 @@ function ResponsiveLayoutContent({
         />
       )}
 
-      {/* NavigationSheet - Sheet con navegación completa */}
+      {/* Menú de usuario (cuenta, configuración, cerrar sesión) - abierto desde el sheet del menú */}
+      {user && (
+        <UserMenuDialog open={userMenuOpen} onOpenChange={setUserMenuOpen} user={user} />
+      )}
+
+      {/* NavigationSheet - Sheet con navegación completa (incl. Cuenta / menú usuario) */}
       <NavigationSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
@@ -168,6 +164,8 @@ function ResponsiveLayoutContent({
         navigationManagersItems={navigationManagersItems}
         apps={apps}
         loading={loading}
+        user={user}
+        onUserMenuOpen={user ? () => { setSheetOpen(false); setUserMenuOpen(true); } : undefined}
       />
     </div>
   );

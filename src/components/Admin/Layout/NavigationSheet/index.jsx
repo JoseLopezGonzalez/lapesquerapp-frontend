@@ -4,15 +4,22 @@
  * NavigationSheet - Sheet con navegación completa para mobile
  * 
  * Implementado con vaul (compatible con React 19)
+ * Incluye entrada "Cuenta" que abre el menú de usuario (perfil, configuración, cerrar sesión).
  * Documentación: https://vaul.emilkowalski.dev/
  */
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { Drawer } from "vaul";
+import { User } from "lucide-react";
 import { NavMain } from "@/components/Admin/Layout/SideBar/nav-main";
 import { NavManagers } from "@/components/Admin/Layout/SideBar/nav-managers";
 import { AppSwitcher } from "@/components/Admin/Layout/SideBar/app-switcher";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import {
   SidebarGroupLabel,
   SidebarProvider,
@@ -28,6 +35,8 @@ export function NavigationSheet({
   navigationManagersItems = [],
   apps = [],
   loading = false,
+  user = null,
+  onUserMenuOpen,
 }) {
   const pathname = usePathname();
 
@@ -110,10 +119,42 @@ export function NavigationSheet({
                           Navegación
                         </SidebarGroupLabel>
                       </div>
-                      <div className="px-2 pb-24 mb-8 w-full">
+                      <div className="px-2 pb-4 w-full">
                         <NavMain items={activeNavigationItems} />
                       </div>
                     </>
+                  )}
+
+                  {/* Cuenta / Menú de usuario - abre el diálogo de usuario */}
+                  {user && onUserMenuOpen && (
+                    <div className="border-t px-4 py-3 w-full flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={onUserMenuOpen}
+                        className={cn(
+                          "flex items-center gap-3 w-full",
+                          "min-h-[56px] px-4 py-3 rounded-lg",
+                          "text-base text-left font-medium",
+                          "hover:bg-accent active:bg-accent/80",
+                          "transition-colors duration-150"
+                        )}
+                        aria-label="Cuenta y menú de usuario"
+                      >
+                        <Avatar className="h-10 w-10 rounded-lg shrink-0">
+                          <AvatarImage src={user?.avatar} alt={user?.name} />
+                          <AvatarFallback className="rounded-lg text-sm font-semibold">
+                            {user?.name
+                              ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+                              : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col flex-1 min-w-0 text-left">
+                          <span className="truncate font-medium">{user?.name || "Usuario"}</span>
+                          <span className="truncate text-sm text-muted-foreground">{user?.email || ""}</span>
+                        </div>
+                        <User className="h-5 w-5 text-muted-foreground shrink-0" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

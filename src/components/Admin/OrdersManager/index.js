@@ -21,22 +21,11 @@ import { API_URL_V2 } from '@/configs/config';
 
 
 const initialCategories = [
-    {
-        label: 'Todos',
-        name: 'all',
-        current: true,
-    },
-    {
-        label: 'En producción',
-        name: 'pending',
-        current: false,
-    },
-    {
-        label: 'Terminados',
-        name: 'finished',
-        current: false,
-    },
-
+    { label: 'Todos', name: 'all', current: true },
+    { label: 'En producción', name: 'pending', current: false },
+    { label: 'Terminados', name: 'finished', current: false },
+    { label: 'Hoy', name: 'today', current: false },
+    { label: 'Mañana', name: 'tomorrow', current: false },
 ]
 
 export default function OrdersManager() {
@@ -118,6 +107,41 @@ export default function OrdersManager() {
         return categories.find((category) => category.current) || categories[0];
     }, [categories]);
 
+    // Categorías visibles: Hoy y Mañana solo si hay pedidos para esa fecha; orden: Hoy, Mañana, Todos, En producción, Terminados
+    const visibleCategories = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const hasOrdersToday = orders.some((order) => {
+            const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+            const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+            return loadDateOnly && loadDateOnly.getTime() === today.getTime();
+        });
+        const hasOrdersTomorrow = orders.some((order) => {
+            const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+            const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+            return loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
+        });
+
+        const result = [{ label: 'Todos', name: 'all' }];
+        if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today' });
+        if (hasOrdersTomorrow) result.push({ label: 'Mañana', name: 'tomorrow' });
+        result.push({ label: 'En producción', name: 'pending' }, { label: 'Terminados', name: 'finished' });
+        return result;
+    }, [orders]);
+
+    // Si la categoría activa ya no está visible (ej. era "Hoy" y ya no hay pedidos para hoy), volver a "Todos"
+    useEffect(() => {
+        const currentName = activeCategory.name;
+        if ((currentName === 'today' || currentName === 'tomorrow') && !visibleCategories.some((c) => c.name === currentName)) {
+            setCategories((prev) =>
+                prev.map((cat) => ({ ...cat, current: cat.name === 'all' }))
+            );
+        }
+    }, [visibleCategories, activeCategory.name]);
+
     // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
     // No incluimos selectedOrder en las dependencias para evitar re-renders innecesarios
     // isSelected se calculará en OrderCard basándose en selectedOrderId prop
@@ -127,23 +151,32 @@ export default function OrdersManager() {
         today.setHours(0, 0, 0, 0); // Resetear horas para comparación de fechas
         
         // Filtrar sin mutar los objetos originales
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
         const filtered = orders
             .filter((order) => {
+                const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+                const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+
                 // Filtro de búsqueda
                 const matchesSearch = order.customer?.name?.toLowerCase().includes(searchLower) ||
                     order.id.toString().includes(debouncedSearchText);
-                
-                // Filtro de categoría
-                const matchesCategory = activeCategory.name === 'all' ||
-                    activeCategory.name === order.status;
-                
-                // Lógica de negocio: Si el pedido está "finished" (enviado) y es más antiguo que hoy,
-                // no mostrarlo en la lista (solo mostrar finished del día actual o futuros)
-                const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-                const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+
+                // Filtro de categoría: estado (all/pending/finished) o fecha (today/tomorrow)
+                let matchesCategory = true;
+                if (activeCategory.name === 'today') {
+                    matchesCategory = loadDateOnly && loadDateOnly.getTime() === today.getTime();
+                } else if (activeCategory.name === 'tomorrow') {
+                    matchesCategory = loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
+                } else if (activeCategory.name !== 'all') {
+                    matchesCategory = activeCategory.name === order.status;
+                }
+
+                // Lógica de negocio: no mostrar finished antiguos (solo hoy o futuros)
                 const isOldFinishedOrder = order.status === 'finished' && loadDateOnly && loadDateOnly < today;
                 const matchesBusinessLogic = !isOldFinishedOrder;
-                
+
                 return matchesSearch && matchesCategory && matchesBusinessLogic;
             });
 
@@ -252,6 +285,7 @@ export default function OrdersManager() {
             onClickOrderCard={handleOnClickOrderCard}
             orders={sortedOrders}
             categories={categories}
+            visibleCategories={visibleCategories}
             onClickCategory={handleOnClickCategory}
             onChangeSearch={handleOnChangeSearch}
             searchText={searchText}
@@ -262,7 +296,7 @@ export default function OrdersManager() {
             viewMode={viewMode}
             onToggleViewMode={toggleViewMode}
         />
-    ), [sortedOrders, categories, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
+    ), [sortedOrders, categories, visibleCategories, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
 
     // Memoizar la función onLoading para evitar re-renders infinitos
     const handleOrderLoading = useCallback((value) => {
