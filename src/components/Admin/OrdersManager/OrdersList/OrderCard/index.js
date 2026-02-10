@@ -21,8 +21,8 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
             ? 'Hoy'
             : loadDateOnly.getTime() === tomorrow.getTime()
                 ? 'Mañana'
-                : loadDate
-        : 'N/A';
+                : null
+        : null;
 
     // Borde izquierdo por estado (sin cambiar fondo base)
     const borderLClass =
@@ -137,14 +137,16 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 </div>
             ) : (
                 <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className={cn('flex items-center gap-2 flex-wrap', dateLabel && 'justify-between')}>
                         <StatusBadge
                             color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                             label={statusLabel}
                         />
-                        <span className="text-xs font-medium text-muted-foreground tabular-nums" title={loadDate}>
-                            {dateLabel}
-                        </span>
+                        {dateLabel && (
+                            <span className="text-xs font-medium text-muted-foreground tabular-nums" title={loadDate}>
+                                {dateLabel}
+                            </span>
+                        )}
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
                     <div>

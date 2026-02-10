@@ -120,7 +120,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
     return (
         <div className={`flex flex-col h-full relative overflow-hidden`}>
             {/* Header */}
-            <div className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-8 pb-3' : 'pt-4 sm:pt-5 px-4 sm:px-7 pb-3'}`}>
+            <div className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-4 pb-3' : 'pt-2 sm:pt-3 px-4 sm:px-7 pb-3'}`}>
                 {isMobile ? (
                     /* Layout mobile: Back + título + Crear (un solo punto de entrada a filtros = fila "Filtrar") */
                     <div className="relative flex items-center justify-between px-2 gap-2">
@@ -214,7 +214,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
             ) : (
                 <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
                     {/* Barra de búsqueda (siempre visible) + tabs con efecto badge y scroll con fade */}
-                    <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-3 pt-3 space-y-4' : 'mb-5 pt-4'}`}>
+                    <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-3 pt-1 space-y-4' : 'mb-5 pt-2'}`}>
                         <div className="relative w-full">
                             <Input
                                 onChange={(e) => onChangeSearch(e.target.value)}
@@ -304,7 +304,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                                 ref={scrollAreaRef}
                                 className="h-full w-full"
                             >
-                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-4 pb-6' : 'gap-3 pt-4 pr-2 pb-4'}`}>
+                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-2 pb-6' : 'gap-3 pt-2 pr-2 pb-4'}`}>
                                 {orders.map((order) => (
                                         <div key={order.id}>
                                         <OrderCard
