@@ -248,7 +248,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                                     <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
                                     <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
                                     <div className="overflow-x-auto scrollbar-hide">
-                                        <TabsList className="w-max min-w-full inline-flex gap-2 bg-transparent p-0 h-auto">
+                                        <TabsList className="w-max min-w-full inline-flex gap-2 bg-transparent p-0 h-auto pl-3 pr-3">
                                             {visibleCategories.map((category) => (
                                                 <TabsTrigger
                                                     key={category.name}
@@ -304,7 +304,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                                 ref={scrollAreaRef}
                                 className="h-full w-full"
                             >
-                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-2 pb-6' : 'gap-3 pr-2 pb-4'}`}>
+                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-4 pb-6' : 'gap-3 pt-4 pr-2 pb-4'}`}>
                                 {orders.map((order) => (
                                         <div key={order.id}>
                                         <OrderCard
