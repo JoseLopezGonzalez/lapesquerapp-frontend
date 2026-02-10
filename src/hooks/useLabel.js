@@ -1,10 +1,28 @@
-// useLabelEditor.js
+// useLabel.js
 
 import { getLabel, getLabelsOptions } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
+export const formatDate = (date) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+};
 
+export const addDays = (date, days) => {
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + (days || 0));
+    return d;
+};
+
+export const parseDate = (str) => {
+    if (!str || typeof str !== "string") return null;
+    const parsed = new Date(str);
+    return isNaN(parsed.getTime()) ? null : parsed;
+};
 
 const extractPlaceholders = (text) => {
     const matches = text?.match(/{{([^}]+)}}/g) || [];
@@ -49,14 +67,22 @@ export const extractManualFieldsFromLabel = (elements) => {
             result[el.key] = firstOption;
             seen.add(el.key);
         }
+        if (el.type === 'checkboxField' && el.key && !seen.has(el.key)) {
+            result[el.key] = ''; // sin marcar por defecto
+            seen.add(el.key);
+        }
+        if (el.type === 'dateField' && el.key && !seen.has(el.key)) {
+            result[el.key] = el.dateMode === 'manual' ? formatDate(new Date()) : ''; // manual: hoy por defecto; el resto se computa
+            seen.add(el.key);
+        }
     });
 
     return result;
 };
 
 /**
- * Metadatos de campos que requieren entrada al imprimir (manual vs select con opciones).
- * @returns { Record<string, { type: 'manual' | 'select', options?: string[] }> }
+ * Metadatos de campos que requieren entrada al imprimir (manual, select, checkbox, date).
+ * @returns { Record<string, { type: string, dateMode?: string, systemOffsetDays?: number, fieldRef?: string, fieldOffsetDays?: number, ... }> }
  */
 export const extractFieldMetadataFromLabel = (elements) => {
     const result = {};
@@ -69,6 +95,21 @@ export const extractFieldMetadataFromLabel = (elements) => {
             result[el.key] = {
                 type: 'select',
                 options: opts.length > 0 ? opts : ['Opción 1', 'Opción 2'],
+            };
+        }
+        if (el.type === 'checkboxField' && el.key) {
+            result[el.key] = {
+                type: 'checkbox',
+                content: el.content || '',
+            };
+        }
+        if (el.type === 'dateField' && el.key) {
+            result[el.key] = {
+                type: 'date',
+                dateMode: el.dateMode || 'system',
+                systemOffsetDays: el.systemOffsetDays ?? 0,
+                fieldRef: el.fieldRef || '',
+                fieldOffsetDays: el.fieldOffsetDays ?? 0,
             };
         }
     });
@@ -244,16 +285,63 @@ export function useLabel({ boxes = [], open }) {
         }));
     }
 
-    /* Unir  manual Values a cada elemento de fields en variable Values*/
-    /* Los campos manuales tienen prioridad sobre los campos automáticos */
+    /* Unir manual values y computar fechas (system / systemOffset / fieldOffset). Si no hay filas pero sí hay label, una fila para preimpresión con fechas calculadas. */
     const values = useMemo(() => {
-        return fields.map(field => ({
-            ...field,
-            ...manualFields, // Los campos manuales sobrescriben los automáticos
-        }));
-    }, [fields, manualFields]);
+        const elements = label?.format?.elements || [];
+        const dateElements = elements.filter(el => el.type === 'dateField' && el.key);
 
-    const isSomeManualFieldEmpty = Object.values(manualFields).some(value => value === '');
+        let base = fields.map(field => ({
+            ...field,
+            ...manualFields,
+        }));
+
+        if (base.length === 0 && label?.format?.elements?.length) {
+            base = [{ ...manualFields }];
+        }
+
+        if (dateElements.length === 0) return base;
+
+        const today = new Date();
+
+        return base.map((row) => {
+            const computed = { ...row };
+
+            for (let pass = 0; pass < 15; pass++) {
+                let changed = false;
+                for (const el of dateElements) {
+                    const key = el.key;
+                    if (el.dateMode === 'manual') continue; // ya viene de manualFields
+
+                    if (el.dateMode === 'system' || el.dateMode === 'systemOffset') {
+                        const d = addDays(today, el.systemOffsetDays ?? 0);
+                        computed[key] = formatDate(d);
+                        continue;
+                    }
+                    if (el.dateMode === 'fieldOffset' && el.fieldRef) {
+                        const refVal = computed[el.fieldRef];
+                        if (refVal) {
+                            const refDate = parseDate(refVal);
+                            if (refDate) {
+                                computed[key] = formatDate(addDays(refDate, el.fieldOffsetDays ?? 0));
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+                if (!changed) break;
+            }
+            return computed;
+        });
+    }, [fields, manualFields, label?.format?.elements]);
+
+    const isSomeManualFieldEmpty = useMemo(() => {
+        return Object.entries(manualFields).some(([key, value]) => {
+            const meta = fieldMetadata[key];
+            if (meta?.type === 'checkbox') return false; // checkbox vacío (desmarcado) es válido
+            if (meta?.type === 'date' && meta?.dateMode !== 'manual') return false; // fecha computada no requiere valor
+            return value === '';
+        });
+    }, [manualFields, fieldMetadata]);
 
     const disabledPrintButton = isLoading || isSomeManualFieldEmpty || !label;
 

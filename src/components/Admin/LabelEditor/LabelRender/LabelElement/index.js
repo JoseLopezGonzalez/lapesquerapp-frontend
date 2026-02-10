@@ -71,7 +71,13 @@ const formatNetWeightField = (value, fieldName) => {
     return value;
 };
 
+const USER_FIELD_TYPES = ["manualField", "selectField", "checkboxField", "dateField"];
+
 export default function LabelElement({ element, values = {} }) {
+    if (USER_FIELD_TYPES.includes(element.type) && element.visibleOnLabel === false) {
+        return null;
+    }
+
     const commonStyle = {
         fontSize: `${element.fontSize}mm`,
         fontWeight: element.fontWeight,
@@ -115,6 +121,12 @@ export default function LabelElement({ element, values = {} }) {
             return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
 
         case "selectField":
+            return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
+
+        case "checkboxField":
+            return <span style={commonStyle}>{getValue(element.key)}</span>;
+
+        case "dateField":
             return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
 
         case "sanitaryRegister":

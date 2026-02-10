@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { usePrintElement } from "@/hooks/usePrintElement";
 import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
+import { formatDate, addDays, parseDate } from "@/hooks/useLabel";
 
 // labelFields.js
 
@@ -161,6 +162,39 @@ const normalizeElements = (elements) => {
     return elements.map(normalizeElement);
 };
 
+/** Calcula la fecha de vista previa para un dateField (system con offset opcional, fieldOffset). Evita referencias circulares. */
+function getDateFieldPreviewValue(el, elementsList, visited = new Set(), valuesCache = null) {
+    if (!el || el.type !== 'dateField' || !el.key) return '';
+    const key = el.key;
+    if (visited.has(key)) return '';
+    if (valuesCache && valuesCache[key] !== undefined) return valuesCache[key];
+    const mode = el.dateMode || 'system';
+    if (mode === 'manual') {
+        const v = el.sample || '';
+        if (valuesCache) valuesCache[key] = v;
+        return v;
+    }
+    visited.add(key);
+    const today = new Date();
+    if (mode === 'system' || mode === 'systemOffset') {
+        const v = formatDate(addDays(today, el.systemOffsetDays ?? 0));
+        if (valuesCache) valuesCache[key] = v;
+        return v;
+    }
+    if (mode === 'fieldOffset' && el.fieldRef) {
+        const refKey = String(el.fieldRef).trim();
+        const refEl = elementsList.find((e) => e.type === 'dateField' && String(e.key || '').trim() === refKey);
+        let refStr = (valuesCache && valuesCache[refEl?.key] !== undefined) ? valuesCache[refEl.key] : (refEl ? getDateFieldPreviewValue(refEl, elementsList, visited, valuesCache) : '');
+        if (!refStr && refEl?.dateMode === 'manual') refStr = formatDate(today);
+        const refDate = parseDate(refStr);
+        const v = refDate ? formatDate(addDays(refDate, el.fieldOffsetDays ?? 0)) : (refStr || '');
+        if (valuesCache) valuesCache[key] = v;
+        return v;
+    }
+    if (valuesCache) valuesCache[key] = '';
+    return '';
+}
+
 export function useLabelEditor(dataContext = defaultDataContext) {
     const [selectedLabel, setSelectedLabel] = useState(null);
     const [elements, setElements] = useState([]);
@@ -209,7 +243,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         () => {
             const seen = new Set();
             return elements
-                .filter(el => el.type === 'manualField')
+                .filter(el => (el.type === 'manualField' || el.type === 'selectField' || el.type === 'checkboxField' || el.type === 'dateField') && el.key)
                 .filter(el => {
                     if (seen.has(el.key)) return false;
                     seen.add(el.key);
@@ -266,6 +300,18 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 seenFields.add(el.key);
             }
 
+            // 🔹 Campos checkbox tipo "checkboxField" (en editor mostramos el contenido; al imprimir depende del check)
+            if (el.type === 'checkboxField' && el.key && !seenFields.has(el.key)) {
+                values[el.key] = el.content || '';
+                seenFields.add(el.key);
+            }
+
+            // 🔹 Campos fecha tipo "dateField" (manual → sample; resto → calculado para vista previa; fieldOffset usa cache)
+            if (el.type === 'dateField' && el.key && !seenFields.has(el.key)) {
+                values[el.key] = (el.dateMode === 'manual' ? (el.sample || '') : getDateFieldPreviewValue(el, elements, new Set(), values)) || '';
+                seenFields.add(el.key);
+            }
+
             // 🔹 Campos usados como {{placeholders}} en QR, Barcode, Parrafos ricos...
             const contents = [el.html, el.qrContent, el.barcodeContent];
             contents.forEach(content => {
@@ -295,10 +341,27 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return null;
     };
 
+    const KEY_FIELD_TYPES = ['manualField', 'selectField', 'checkboxField', 'dateField'];
+    const hasDuplicateFieldKeys = (elementsList) => {
+        const keys = new Set();
+        for (const el of elementsList || []) {
+            if (!KEY_FIELD_TYPES.includes(el.type)) continue;
+            const k = String(el.key || '').trim();
+            if (!k) continue;
+            if (keys.has(k)) return true;
+            keys.add(k);
+        }
+        return false;
+    };
+
     const handleSave = async () => {
         const validationError = validateLabelName(labelName);
         if (validationError) {
             toast.error(validationError, getToastTheme());
+            return;
+        }
+        if (hasDuplicateFieldKeys(elements)) {
+            toast.error('Error: hay campos con el mismo nombre.', getToastTheme());
             return;
         }
         const token = session?.user?.accessToken;
@@ -372,12 +435,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             y: 50,
             width: type === "line" 
                 ? 30 
-                : ["text", "field", "manualField", "selectField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
+                : ["text", "field", "manualField", "selectField", "checkboxField", "dateField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
             height: type === "line"
                 ? 1
                 : type === "richParagraph"
                     ? 15
-                    : ["text", "field", "manualField", "selectField", "sanitaryRegister"].includes(type)
+                    : ["text", "field", "manualField", "selectField", "checkboxField", "dateField", "sanitaryRegister"].includes(type)
                         ? 10
                         : 10,
             fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
@@ -393,8 +456,14 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             approvalNumber: type === "sanitaryRegister" ? "12.021462/H" : undefined,
             suffix: type === "sanitaryRegister" ? "C.E." : undefined,
             field: type === "field" ? "product.name" : undefined,
-            key: type === "manualField" ? "Campo" : type === "selectField" ? "Destino" : undefined,
-            sample: type === "manualField" ? "Valor" : type === "selectField" ? "Nacional" : undefined,
+            key: type === "manualField" ? "Campo" : type === "selectField" ? "Destino" : type === "checkboxField" ? "Marcar" : type === "dateField" ? "Fecha" : undefined,
+            sample: type === "manualField" ? "Valor" : type === "selectField" ? "Nacional" : type === "dateField" ? (() => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })() : undefined,
+            content: type === "checkboxField" ? "Texto cuando está marcado" : undefined,
+            dateMode: type === "dateField" ? "system" : undefined,
+            systemOffsetDays: type === "dateField" ? 0 : undefined,
+            fieldRef: type === "dateField" ? "" : undefined,
+            fieldOffsetDays: type === "dateField" ? 0 : undefined,
+            visibleOnLabel: ["manualField", "selectField", "checkboxField", "dateField"].includes(type) ? true : undefined,
             options: type === "selectField" ? ["Nacional", "Exportación", "Otro"] : undefined,
             qrContent: type === "qr" ? "" : undefined,
             barcodeContent: type === "barcode" ? "" : undefined,

@@ -1,5 +1,6 @@
 // components/LabelRender.js
 
+import React from "react";
 import LabelElement from "./LabelElement";
 
 export default function LabelRender({
@@ -25,6 +26,9 @@ export default function LabelRender({
       }}
     >
       {elements.map((el) => {
+        if (["manualField", "selectField", "checkboxField", "dateField"].includes(el.type) && el.visibleOnLabel === false) {
+          return <React.Fragment key={el.id} />;
+        }
         const rotated = (el.rotation || 0) % 180 !== 0;
         const w = rotated ? el.height : el.width;
         const h = rotated ? el.width : el.height;

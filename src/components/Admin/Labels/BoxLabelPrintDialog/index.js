@@ -169,10 +169,42 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                                 {Object.entries(manualFields).map(([key, value]) => {
                                     const meta = fieldMetadata[key];
                                     const isSelect = meta?.type === 'select' && Array.isArray(meta?.options) && meta.options.length > 0;
+                                    const isCheckbox = meta?.type === 'checkbox';
+                                    const isDate = meta?.type === 'date';
+                                    const isDateManual = isDate && meta?.dateMode === 'manual';
+                                    const dateDescription = isDate && !isDateManual && ((meta.dateMode === 'system' || meta.dateMode === 'systemOffset')
+                                        ? (meta.systemOffsetDays === 0 || meta.systemOffsetDays == null)
+                                            ? 'Fecha actual del sistema'
+                                            : `Fecha actual ${(meta.systemOffsetDays ?? 0) >= 0 ? '+' : ''}${meta.systemOffsetDays ?? 0} días`
+                                        : meta.dateMode === 'fieldOffset' && meta.fieldRef
+                                            ? `Relativo a otra fecha (${meta.fieldRef}${(meta.fieldOffsetDays ?? 0) !== 0 ? ` ${(meta.fieldOffsetDays ?? 0) >= 0 ? '+' : ''}${meta.fieldOffsetDays ?? 0} días` : ''})`
+                                            : '');
                                     return (
                                         <div key={key} className="flex flex-col gap-1">
                                             <Label className="text-sm">{key}</Label>
-                                            {isSelect ? (
+                                            {isCheckbox ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`field-${key}`}
+                                                        checked={value === (meta?.content ?? '')}
+                                                        onCheckedChange={(checked) => handleOnChangeManualField(key, checked ? (meta?.content ?? '') : '')}
+                                                    />
+                                                    <Label
+                                                        htmlFor={`field-${key}`}
+                                                        className="text-sm font-normal cursor-pointer text-muted-foreground"
+                                                    >
+                                                        {meta?.content ? `Mostrar: "${meta.content}"` : 'Mostrar en etiqueta'}
+                                                    </Label>
+                                                </div>
+                                            ) : isDateManual ? (
+                                                <Input
+                                                    type="date"
+                                                    value={value || ''}
+                                                    onChange={(e) => handleOnChangeManualField(key, e.target.value)}
+                                                />
+                                            ) : isDate && dateDescription ? (
+                                                <p className="text-sm text-muted-foreground py-2">{dateDescription}</p>
+                                            ) : isSelect ? (
                                                 <Select
                                                     value={value || ''}
                                                     onValueChange={(val) => handleOnChangeManualField(key, val)}

@@ -29,7 +29,12 @@ export default function LabelEditorPreview({
                 transformOrigin: isZoomed ? "center center" : "top left",
             }}
         >
-            {elements.map((element) => {
+            {elements.filter((element) => {
+                if (["manualField", "selectField", "checkboxField", "dateField"].includes(element.type)) {
+                    return element.visibleOnLabel !== false;
+                }
+                return true;
+            }).map((element) => {
                 const rotated = (element.rotation || 0) % 180 !== 0;
                 const width = rotated ? element.height : element.width;
                 const height = rotated ? element.width : element.height;

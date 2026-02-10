@@ -1,7 +1,7 @@
 // LabelEditor.js (Versión convertida a JavaScript desde TSX)
 "use client"
 
-import React, { useRef, useEffect, useState, useCallback } from "react"
+import React, { useRef, useEffect, useState, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import QRConfigPanel from "./QRConfigPanel"
 import BarcodeConfigPanel from "./BarcodeConfigPanel"
@@ -54,11 +55,14 @@ import {
     Keyboard,
     Minus,
     ListChecks,
+    CheckSquare,
+    Calendar,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
+import { formatDate, addDays, parseDate } from "@/hooks/useLabel";
 import LabelSelectorSheet from "./LabelSelectorSheet";
 import LabelEditorPreview from "./LabelEditorPreview";
 import FieldExamplesDialog from "./FieldExamplesDialog";
@@ -137,10 +141,35 @@ export default function LabelEditor() {
     const scrollAreaRef = useRef(null);
     const elementRefs = useRef({});
     const isClickingFromListRef = useRef(false);
-    const keyInputRef = useRef(null);
-    const keyCursorRef = useRef(null);
-
     const capitalizeFirst = (s) => (s && s.length > 0) ? s.charAt(0).toUpperCase() + s.slice(1) : (s || '');
+
+    /** Solo letras, números y espacios; mayúscula en la primera letra. Sin trim para no romper espacios al escribir. */
+    const normalizeFieldKey = (raw) => {
+        const filtered = String(raw || '').replace(/[^a-zA-Z0-9 ]/g, '');
+        const i = filtered.search(/[a-zA-Z]/);
+        if (i < 0) return filtered;
+        return filtered.slice(0, i) + filtered[i].toUpperCase() + filtered.slice(i + 1);
+    };
+
+    /** Vista previa de fecha para dateField: manual → sample; system (con offset opcional) / fieldOffset → calculado. */
+    const getDateFieldPreview = (el, elementsList, visited = new Set()) => {
+        if (!el || el.type !== 'dateField' || !el.key) return '';
+        if (visited.has(el.key)) return '';
+        const mode = el.dateMode || 'system';
+        if (mode === 'manual') return el.sample || '';
+        visited.add(el.key);
+        const today = new Date();
+        if (mode === 'system' || mode === 'systemOffset') return formatDate(addDays(today, el.systemOffsetDays ?? 0));
+        if (mode === 'fieldOffset' && el.fieldRef) {
+            const refKey = String(el.fieldRef).trim();
+            const refEl = elementsList.find(e => e.type === 'dateField' && String(e.key || '').trim() === refKey);
+            let refStr = refEl ? getDateFieldPreview(refEl, elementsList, visited) : '';
+            if (!refStr && refEl?.dateMode === 'manual') refStr = formatDate(today);
+            const refDate = parseDate(refStr);
+            return refDate ? formatDate(addDays(refDate, el.fieldOffsetDays ?? 0)) : (refStr || '');
+        }
+        return '';
+    };
 
     // Estado local del panel de propiedades (snapshot editable)
     // Este es la única fuente de verdad para los controles del panel
@@ -160,28 +189,22 @@ export default function LabelEditor() {
         }
     }, [selectedElement]); // Solo cuando cambia el ID del elemento seleccionado
 
-    // Restaurar posición del cursor en el input "Nombre del campo" tras capitalizar
-    useEffect(() => {
-        if (keyCursorRef.current && keyInputRef.current) {
-            const { start, end } = keyCursorRef.current;
-            keyInputRef.current.setSelectionRange(start, end);
-            keyCursorRef.current = null;
-        }
-    }, [activeElementState?.key]);
-
     // Función para actualizar el estado local y sincronizar con el canvas
     const updateActiveElement = useCallback((updates) => {
         if (!activeElementState) return;
-        
-        // Actualizar estado local primero (para UI inmediata)
-        setActiveElementState((prev) => {
-            if (!prev) return null;
-            const updated = { ...prev, ...updates };
-            // Sincronizar inmediatamente con el canvas
-            updateElement(prev.id, updates);
-            return updated;
-        });
+        const id = activeElementState.id;
+        setActiveElementState((prev) => (prev ? { ...prev, ...updates } : null));
+        updateElement(id, updates);
     }, [activeElementState, updateElement]);
+
+    const keyFieldTypes = ['manualField', 'selectField', 'checkboxField', 'dateField'];
+    const hasDuplicateKey = useMemo(() => {
+        if (!activeElementState?.key || !String(activeElementState.key).trim()) return false;
+        const currentKey = String(activeElementState.key).trim();
+        return elements.some((el) =>
+            keyFieldTypes.includes(el.type) && el.id !== activeElementState.id && String(el.key || '').trim() === currentKey
+        );
+    }, [activeElementState?.id, activeElementState?.key, elements]);
 
     const handleOnClickElementCard = (elementId) => {
         isClickingFromListRef.current = true;
@@ -406,6 +429,26 @@ export default function LabelEditor() {
                                     <Button 
                                         variant="outline" 
                                         className="justify-start gap-2" 
+                                        onClick={() => addElement("checkboxField")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
+                                        <CheckSquare className="w-4 h-4" />
+                                        Campo Checkbox
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
+                                        onClick={() => addElement("dateField")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Campo Fecha
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
                                         onClick={() => addElement("sanitaryRegister")}
                                         disabled={!selectedLabel}
                                         title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
@@ -525,6 +568,9 @@ export default function LabelEditor() {
                                                                             <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || `{{${element.key}}}`}</span>
                                                                             </div>
+                                                                            {element.visibleOnLabel === false && (
+                                                                                <span className="self-start text-[10px] text-muted-foreground bg-muted/80 rounded px-1.5 py-0.5">No visible</span>
+                                                                            )}
                                                                         </div>)}
                                                                     {element.type === "selectField" && (
                                                                         <div className="flex flex-col items-center gap-1 w-full">
@@ -535,6 +581,37 @@ export default function LabelEditor() {
                                                                             <div className="flex items-center bg-muted rounded-md p-2 w-full">
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || element.key || (Array.isArray(element.options) && element.options[0]) || ''}</span>
                                                                             </div>
+                                                                            {element.visibleOnLabel === false && (
+                                                                                <span className="self-start text-[10px] text-muted-foreground bg-muted/80 rounded px-1.5 py-0.5">No visible</span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {element.type === "checkboxField" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <CheckSquare className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Campo Checkbox</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.content || element.key || ''}</span>
+                                                                            </div>
+                                                                            {element.visibleOnLabel === false && (
+                                                                                <span className="self-start text-[10px] text-muted-foreground bg-muted/80 rounded px-1.5 py-0.5">No visible</span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {element.type === "dateField" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <Calendar className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Campo Fecha</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || element.key || ''}</span>
+                                                                            </div>
+                                                                            {element.visibleOnLabel === false && (
+                                                                                <span className="self-start text-[10px] text-muted-foreground bg-muted/80 rounded px-1.5 py-0.5">No visible</span>
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                     {element.type === "sanitaryRegister" && (
@@ -847,6 +924,18 @@ export default function LabelEditor() {
                                                 <h4 className="capitalize text-xl font-normal">Campo Select</h4>
                                             </div>
                                         )}
+                                        {activeElementState.type === "checkboxField" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <CheckSquare className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Campo Checkbox</h4>
+                                            </div>
+                                        )}
+                                        {activeElementState.type === "dateField" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <Calendar className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Campo Fecha</h4>
+                                            </div>
+                                        )}
                                         {activeElementState.type === "sanitaryRegister" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Stamp className="w-4 h-4" />
@@ -926,64 +1015,11 @@ export default function LabelEditor() {
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
                                                 <Input
-                                                    ref={keyInputRef}
-                                                    value={activeElementState.key}
-                                                    onChange={(e) => {
-                                                        const oldValue = activeElementState.key || ''
-                                                        const newValue = e.target.value
-                                                        
-                                                        // Filtrar solo letras
-                                                        const filteredValue = newValue.replace(/[^a-zA-Z]/g, '')
-                                                        const capitalizedValue = capitalizeFirst(filteredValue)
-                                                        
-                                                        // Si el valor filtrado es diferente al nuevo valor, hay caracteres inválidos
-                                                        if (filteredValue !== newValue) {
-                                                            // Encontrar los caracteres que se eliminaron
-                                                            const invalidChars = newValue.split('').filter(char => !/[a-zA-Z]/.test(char))
-                                                            
-                                                            // Agrupar por tipo de carácter
-                                                            const charTypes = {
-                                                                espacios: invalidChars.filter(c => c === ' ').length > 0,
-                                                                numeros: invalidChars.some(c => /[0-9]/.test(c)),
-                                                                tildes: invalidChars.some(c => /[áéíóúñÁÉÍÓÚÑ]/.test(c)),
-                                                                guiones: invalidChars.some(c => c === '-'),
-                                                                guionesBajos: invalidChars.some(c => c === '_'),
-                                                                puntos: invalidChars.some(c => c === '.'),
-                                                                comas: invalidChars.some(c => c === ','),
-                                                                dosPuntos: invalidChars.some(c => c === ':'),
-                                                                otros: invalidChars.filter(c => 
-                                                                    c !== ' ' && 
-                                                                    !/[0-9]/.test(c) && 
-                                                                    !/[áéíóúñÁÉÍÓÚÑ]/.test(c) &&
-                                                                    c !== '-' && c !== '_' && c !== '.' && c !== ',' && c !== ':'
-                                                                )
-                                                            }
-                                                            
-                                                            const messages = []
-                                                            if (charTypes.espacios) messages.push('espacios')
-                                                            if (charTypes.numeros) messages.push('números')
-                                                            if (charTypes.tildes) messages.push('letras con tilde (á, é, í, ó, ú, ñ)')
-                                                            if (charTypes.guiones) messages.push('guiones (-)')
-                                                            if (charTypes.guionesBajos) messages.push('guiones bajos (_)')
-                                                            if (charTypes.puntos) messages.push('puntos (.)')
-                                                            if (charTypes.comas) messages.push('comas (,)')
-                                                            if (charTypes.dosPuntos) messages.push('dos puntos (:)')
-                                                            if (charTypes.otros.length > 0) {
-                                                                const otrosChars = [...new Set(charTypes.otros)].map(c => `"${c}"`).join(', ')
-                                                                messages.push(`otros caracteres (${otrosChars})`)
-                                                            }
-                                                            
-                                                            toast.error(
-                                                                `Solo se permiten letras (a-z, A-Z). No se permiten: ${messages.join(', ')}`,
-                                                                getToastTheme()
-                                                            )
-                                                        }
-                                                        
-                                                        keyCursorRef.current = { start: e.target.selectionStart, end: e.target.selectionEnd };
-                                                        updateActiveElement({ key: capitalizedValue });
-                                                    }}
-                                                    placeholder="Solo letras"
+                                                    value={activeElementState.key || ''}
+                                                    onChange={(e) => updateActiveElement({ key: normalizeFieldKey(e.target.value) })}
+                                                    placeholder="Nombre del campo"
                                                 />
+                                                {hasDuplicateKey && <p className="text-xs text-red-600 mt-1">Ya hay otro campo con el mismo nombre.</p>}
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Valor de prueba</h4>
@@ -1000,19 +1036,11 @@ export default function LabelEditor() {
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
                                                 <Input
-                                                    ref={keyInputRef}
                                                     value={activeElementState.key || ''}
-                                                    onChange={(e) => {
-                                                        const newValue = e.target.value.replace(/[^a-zA-Z]/g, '');
-                                                        const capitalizedValue = capitalizeFirst(newValue);
-                                                        if (newValue !== e.target.value && e.target.value.length > 0) {
-                                                            toast.error('Solo se permiten letras (a-z, A-Z).', getToastTheme());
-                                                        }
-                                                        keyCursorRef.current = { start: e.target.selectionStart, end: e.target.selectionEnd };
-                                                        updateActiveElement({ key: capitalizedValue });
-                                                    }}
-                                                    placeholder="Solo letras (ej: Destino)"
+                                                    onChange={(e) => updateActiveElement({ key: normalizeFieldKey(e.target.value) })}
+                                                    placeholder="Nombre del campo"
                                                 />
+                                                {hasDuplicateKey && <p className="text-xs text-red-600 mt-1">Ya hay otro campo con el mismo nombre.</p>}
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Opciones</h4>
@@ -1065,7 +1093,7 @@ export default function LabelEditor() {
                                                 <p className="text-xs text-muted-foreground mt-1">Estas opciones se mostrarán al imprimir</p>
                                             </div>
                                             <div>
-                                                <h4 className="text-sm font-medium mb-2">Valor de prueba (vista previa)</h4>
+                                                <h4 className="text-sm font-medium mb-2">Valor vista previa</h4>
                                                 {(() => {
                                                     const opts = (activeElementState.options || []).filter(Boolean);
                                                     const currentSample = activeElementState.sample || '';
@@ -1093,6 +1121,117 @@ export default function LabelEditor() {
                                                         </Select>
                                                     );
                                                 })()}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeElementState.type === "checkboxField" && (
+                                        <div className="space-y-2">
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
+                                                <Input
+                                                    value={activeElementState.key || ''}
+                                                    onChange={(e) => updateActiveElement({ key: normalizeFieldKey(e.target.value) })}
+                                                    placeholder="Nombre del campo"
+                                                />
+                                                {hasDuplicateKey && <p className="text-xs text-red-600 mt-1">Ya hay otro campo con el mismo nombre.</p>}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Contenido cuando está marcado</h4>
+                                                <Input
+                                                    value={activeElementState.content || ''}
+                                                    onChange={(e) => updateActiveElement({ content: e.target.value })}
+                                                    placeholder="Texto que se mostrará al marcar el checkbox"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeElementState.type === "dateField" && (
+                                        <div className="space-y-2">
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
+                                                <Input
+                                                    value={activeElementState.key || ''}
+                                                    onChange={(e) => updateActiveElement({ key: normalizeFieldKey(e.target.value) })}
+                                                    placeholder="Nombre del campo"
+                                                />
+                                                {hasDuplicateKey && <p className="text-xs text-red-600 mt-1">Ya hay otro campo con el mismo nombre.</p>}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Origen de la fecha al imprimir</h4>
+                                                <Select
+                                                    value={activeElementState.dateMode || 'system'}
+                                                    onValueChange={(val) => updateActiveElement({ dateMode: val })}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="manual">Manual</SelectItem>
+                                                        <SelectItem value="system">Fecha actual del sistema</SelectItem>
+                                                        <SelectItem value="fieldOffset">Relativo a otra fecha</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            {(activeElementState.dateMode === 'system') && (
+                                                <div>
+                                                    <h4 className="text-sm font-medium mb-2">Desplazamiento (días, opcional)</h4>
+                                                    <Input
+                                                        type="number"
+                                                        value={activeElementState.systemOffsetDays ?? 0}
+                                                        onChange={(e) => updateActiveElement({ systemOffsetDays: parseInt(e.target.value, 10) || 0 })}
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                            )}
+                                            {(activeElementState.dateMode === 'fieldOffset') && (
+                                                <>
+                                                    <div>
+                                                        <h4 className="text-sm font-medium mb-2">Campo fecha de referencia</h4>
+                                                        <Select
+                                                            value={activeElementState.fieldRef || ''}
+                                                            onValueChange={(val) => updateActiveElement({ fieldRef: val })}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Selecciona un campo fecha" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {elements.filter(el => el.type === 'dateField' && el.key && el.id !== activeElementState.id).map((el) => (
+                                                                    <SelectItem key={el.id} value={el.key}>
+                                                                        {el.key}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-medium mb-2">Desplazamiento (días, opcional)</h4>
+                                                        <Input
+                                                            type="number"
+                                                            value={activeElementState.fieldOffsetDays ?? 0}
+                                                            onChange={(e) => updateActiveElement({ fieldOffsetDays: parseInt(e.target.value, 10) || 0 })}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Vista previa</h4>
+                                                {activeElementState.dateMode === 'manual' ? (
+                                                    <>
+                                                        <Input
+                                                            type="date"
+                                                            value={activeElementState.sample || ''}
+                                                            onChange={(e) => updateActiveElement({ sample: e.target.value })}
+                                                        />
+                                                        <p className="text-xs text-muted-foreground mt-1">Valor vista previa</p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-sm py-2 text-muted-foreground">
+                                                        {getDateFieldPreview(activeElementState, elements) || '—'}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -1290,7 +1429,7 @@ export default function LabelEditor() {
                                         </div>
                                     )}
 
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "qr" || activeElementState.type === "barcode" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "checkboxField" || activeElementState.type === "dateField" || activeElementState.type === "qr" || activeElementState.type === "barcode" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
@@ -1339,7 +1478,7 @@ export default function LabelEditor() {
                                                 </div>
 
                                             </div>
-                                            {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "richParagraph" || activeElementState.type === "sanitaryRegister") && (
+                                            {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "checkboxField" || activeElementState.type === "dateField" || activeElementState.type === "richParagraph" || activeElementState.type === "sanitaryRegister") && (
                                                 <div className="flex w-full gap-2 items-center justify-between">
                                                     <span className="text-xs text-muted-foreground">
                                                         Ajustar al contenido
@@ -1452,12 +1591,12 @@ export default function LabelEditor() {
 
 
 
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "checkboxField" || activeElementState.type === "dateField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
                                     {/* Text properties */}
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph" || activeElementState.type === "barcode"
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "checkboxField" || activeElementState.type === "dateField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph" || activeElementState.type === "barcode"
 
                                     ) && (
                                             <div>
@@ -1644,6 +1783,22 @@ export default function LabelEditor() {
                                                 </div>
                                             </div>
                                         )}
+
+                                    {(activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "checkboxField" || activeElementState.type === "dateField") && (
+                                        <>
+                                            <Separator />
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="visible-on-label"
+                                                    checked={activeElementState.visibleOnLabel !== false}
+                                                    onCheckedChange={(checked) => updateActiveElement({ visibleOnLabel: !!checked })}
+                                                />
+                                                <Label htmlFor="visible-on-label" className="text-sm font-normal cursor-pointer">
+                                                    Visible
+                                                </Label>
+                                            </div>
+                                        </>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
