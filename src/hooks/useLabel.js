@@ -84,6 +84,56 @@ export const extractManualFieldsFromLabel = (elements) => {
  * Metadatos de campos que requieren entrada al imprimir (manual, select, checkbox, date).
  * @returns { Record<string, { type: string, dateMode?: string, systemOffsetDays?: number, fieldRef?: string, fieldOffsetDays?: number, ... }> }
  */
+/** Clave localStorage para datos de preimpresión: etiqueta + producto (una entrada por cada producto distinto). */
+const LABEL_PRINT_STORAGE_PREFIX = 'brisapp-label-print';
+
+function getProductKeyFromBox(box) {
+    if (!box) return 'default';
+    return box?.product?.id ?? box?.productId ?? box?.id ?? 'default';
+}
+
+function getLabelPrintStorageKey(labelId, productKey) {
+    if (!labelId) return null;
+    return `${LABEL_PRINT_STORAGE_PREFIX}:${labelId}:${String(productKey)}`;
+}
+
+/** Obtiene las claves de producto distintas en las cajas (una por producto para guardar en varias entradas). */
+function getDistinctProductKeys(boxes = []) {
+    if (boxes.length === 0) return ['preview'];
+    const seen = new Set();
+    return boxes.map(b => getProductKeyFromBox(b)).filter(k => {
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+    });
+}
+
+function loadLabelPrintData(labelId, boxes) {
+    const productKey = boxes.length > 0 ? getProductKeyFromBox(boxes[0]) : 'preview';
+    const key = getLabelPrintStorageKey(labelId, productKey);
+    if (!key || typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+/** Guarda los mismos datos bajo una clave por cada producto distinto en boxes. */
+function saveLabelPrintData(labelId, boxes, data) {
+    if (!data || typeof window === 'undefined' || !window.localStorage) return;
+    const productKeys = getDistinctProductKeys(boxes);
+    try {
+        productKeys.forEach(productKey => {
+            const key = getLabelPrintStorageKey(labelId, productKey);
+            if (key) window.localStorage.setItem(key, JSON.stringify(data));
+        });
+    } catch {}
+}
+
 export const extractFieldMetadataFromLabel = (elements) => {
     const result = {};
     elements.forEach(el => {
@@ -172,7 +222,15 @@ export function useLabel({ boxes = [], open }) {
             .then((data) => {
                 setLabel(data);
                 const updatedManualFields = extractManualFieldsFromLabel(data.format.elements);
-                setManualFields(updatedManualFields);
+                const stored = loadLabelPrintData(labelId, boxes);
+                let mergedManualFields = updatedManualFields;
+                if (stored && typeof stored === 'object') {
+                    mergedManualFields = { ...updatedManualFields };
+                    Object.keys(stored).forEach(k => {
+                        if (k in updatedManualFields) mergedManualFields[k] = stored[k];
+                    });
+                }
+                setManualFields(mergedManualFields);
                 const updatedFieldMetadata = extractFieldMetadataFromLabel(data.format.elements);
                 setFieldMetadata(updatedFieldMetadata);
                 const updatedFields = extractFieldsFromLabel(data.format.elements);
@@ -278,12 +336,13 @@ export function useLabel({ boxes = [], open }) {
             });
     }
 
-    const changeManualField = (key, value) => {
-        setManualFields(prev => ({
-            ...prev,
-            [key]: value
-        }));
-    }
+    const changeManualField = useCallback((key, value) => {
+        setManualFields(prev => {
+            const next = { ...prev, [key]: value };
+            saveLabelPrintData(selectedLabelId, boxes, next);
+            return next;
+        });
+    }, [selectedLabelId, boxes]);
 
     /* Unir manual values y computar fechas (system / systemOffset / fieldOffset). Si no hay filas pero sí hay label, una fila para preimpresión con fechas calculadas. */
     const values = useMemo(() => {
@@ -311,6 +370,7 @@ export function useLabel({ boxes = [], open }) {
                 for (const el of dateElements) {
                     const key = el.key;
                     if (el.dateMode === 'manual') continue; // ya viene de manualFields
+                    if (computed[key]) continue; // respetar override manual del usuario en fechas calculadas
 
                     if (el.dateMode === 'system' || el.dateMode === 'systemOffset') {
                         const d = addDays(today, el.systemOffsetDays ?? 0);

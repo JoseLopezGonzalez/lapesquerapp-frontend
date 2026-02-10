@@ -172,13 +172,8 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                                     const isCheckbox = meta?.type === 'checkbox';
                                     const isDate = meta?.type === 'date';
                                     const isDateManual = isDate && meta?.dateMode === 'manual';
-                                    const dateDescription = isDate && !isDateManual && ((meta.dateMode === 'system' || meta.dateMode === 'systemOffset')
-                                        ? (meta.systemOffsetDays === 0 || meta.systemOffsetDays == null)
-                                            ? 'Fecha actual del sistema'
-                                            : `Fecha actual ${(meta.systemOffsetDays ?? 0) >= 0 ? '+' : ''}${meta.systemOffsetDays ?? 0} días`
-                                        : meta.dateMode === 'fieldOffset' && meta.fieldRef
-                                            ? `Relativo a otra fecha (${meta.fieldRef}${(meta.fieldOffsetDays ?? 0) !== 0 ? ` ${(meta.fieldOffsetDays ?? 0) >= 0 ? '+' : ''}${meta.fieldOffsetDays ?? 0} días` : ''})`
-                                            : '');
+                                    const isDateComputed = isDate && !isDateManual;
+                                    const dateValue = value || (values[0]?.[key] ?? '');
                                     return (
                                         <div key={key} className="flex flex-col gap-1">
                                             <Label className="text-sm">{key}</Label>
@@ -196,14 +191,12 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                                                         {meta?.content ? `Mostrar: "${meta.content}"` : 'Mostrar en etiqueta'}
                                                     </Label>
                                                 </div>
-                                            ) : isDateManual ? (
+                                            ) : (isDateManual || isDateComputed) ? (
                                                 <Input
                                                     type="date"
-                                                    value={value || ''}
+                                                    value={dateValue}
                                                     onChange={(e) => handleOnChangeManualField(key, e.target.value)}
                                                 />
-                                            ) : isDate && dateDescription ? (
-                                                <p className="text-sm text-muted-foreground py-2">{dateDescription}</p>
                                             ) : isSelect ? (
                                                 <Select
                                                     value={value || ''}
