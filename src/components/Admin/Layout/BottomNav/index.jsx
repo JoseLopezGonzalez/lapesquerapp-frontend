@@ -133,22 +133,19 @@ function BottomNavItem({ item, isActive, index }) {
 export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
   const pathname = usePathname();
 
-  // Limitar a 5 items máximo - calcular siempre, incluso si está vacío
+  // 4 items para los lados (2 izquierda + 2 derecha) + 1 centro = 5 slots fijos
   const displayItems = React.useMemo(() => {
-    if (!items || items.length === 0) {
-      return [];
-    }
-    return items.slice(0, 5);
+    if (!items || items.length === 0) return [];
+    return items.slice(0, 4);
   }, [items]);
-
-  // 4 items + botón central = 5 columnas
-  const gridCols = "grid-cols-5";
-  const columnCount = displayItems.length + 1;
 
   // Early return DESPUÉS de los hooks
   if (!displayItems || displayItems.length === 0) {
     return null;
   }
+
+  const SLOT_COUNT = 5;
+  const CENTER_SLOT_INDEX = 2;
 
   return (
     <nav
@@ -161,37 +158,48 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
         "animate-in slide-in-from-bottom duration-300"
       )}
     >
-      <div className={cn(
-        "container mx-auto",
-        "grid items-end",
-        gridCols,
-        "px-6 pt-3 pb-4",
-        "max-w-md mx-auto",
-        "gap-0"
-      )}>
-        {/* Columnas: [item0, item1, center, item2, item3, item4?] */}
-        {Array.from({ length: columnCount }, (_, i) => i).map((colIndex) => {
-          const itemIndex = colIndex < 2 ? colIndex : colIndex - 1; // 2 es centro
-          const item = displayItems[itemIndex];
-          if (colIndex === 2) {
+      <div
+        className={cn(
+          "flex items-center justify-stretch",
+          "w-full max-w-md mx-auto",
+          "px-4 pt-3 pb-4",
+          "gap-0"
+        )}
+      >
+        {Array.from({ length: SLOT_COUNT }, (_, colIndex) => {
+          if (colIndex === CENTER_SLOT_INDEX) {
             return (
-              <div key="center" className="flex items-center justify-center">
+              <div
+                key="center"
+                className="flex flex-1 min-w-0 items-center justify-center"
+              >
                 <CenterActionButton onOpenSheet={onSheetOpenChange} />
               </div>
             );
           }
-          if (!item) return <div key={`empty-${colIndex}`} />;
-          if (item.name === 'Chat IA' && !item.href) {
+          const itemIndex = colIndex < CENTER_SLOT_INDEX ? colIndex : colIndex - 1;
+          const item = displayItems[itemIndex];
+          if (!item) {
+            return <div key={`empty-${colIndex}`} className="flex-1 min-w-0" />;
+          }
+          if (item.name === "Chat IA" && !item.href) {
             return (
-              <div key="chat-ai" className="flex items-center justify-center">
+              <div
+                key="chat-ai"
+                className="flex flex-1 min-w-0 items-center justify-center"
+              >
                 <ChatNavItem index={colIndex} />
               </div>
             );
           }
-          const itemHref = item.href || item.childrens?.[0]?.href || '#';
-          const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
+          const itemHref = item.href || item.childrens?.[0]?.href || "#";
+          const isActive =
+            itemHref !== "#" ? isActiveRoute(itemHref, pathname) : false;
           return (
-            <div key={itemHref || item.name || `item-${colIndex}`} className="flex items-center justify-center">
+            <div
+              key={itemHref || item.name || `item-${colIndex}`}
+              className="flex flex-1 min-w-0 items-center justify-center"
+            >
               <BottomNavItem
                 item={{ ...item, href: itemHref }}
                 isActive={isActive}
