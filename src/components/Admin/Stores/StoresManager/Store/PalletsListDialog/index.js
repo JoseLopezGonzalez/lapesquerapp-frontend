@@ -34,8 +34,8 @@ export function PalletsListDialog() {
 
     const storeName = store?.name ?? "";
     
-    // Verificar si el usuario es store_operator (no puede reubicar pallets)
-    const isStoreOperator = session?.user?.role?.includes('store_operator');
+    // Operario no puede reubicar pallets
+    const isStoreOperator = session?.user?.role === 'operario';
     
     // Asegurar que pallets siempre sea un array
     const safePallets = pallets || [];

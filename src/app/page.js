@@ -39,10 +39,8 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isSubdomain && status === "authenticated" && session?.user) {
-      // Normalizar roles del usuario a array
-      const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
-      // Redirección específica para store_operator
-      if (userRoles.includes("store_operator") && session.user.assignedStoreId) {
+      const userRole = session.user.role;
+      if (userRole === "operario" && session.user.assignedStoreId) {
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
       } else {
         router.replace("/admin/home");

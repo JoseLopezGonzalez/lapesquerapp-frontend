@@ -45,14 +45,22 @@ export function addFiltersToParams(queryParams, filters = {}) {
         // Manejar arrays (para autocomplete, textAccumulator, etc.)
         if (Array.isArray(value)) {
             if (value.length > 0) {
-                value.forEach((item) => {
-                    // Si el item es un objeto con id, usar el id
-                    if (item && typeof item === 'object' && 'id' in item) {
-                        queryParams.append(`${key}[]`, item.id);
-                    } else {
-                        queryParams.append(`${key}[]`, item);
+                // API de usuarios espera un solo query param "role" (string), no role[]
+                if (key === 'role') {
+                    const item = value[0];
+                    const roleValue = item && typeof item === 'object' && 'id' in item ? item.id : item;
+                    if (roleValue != null && roleValue !== '') {
+                        queryParams.append(key, String(roleValue));
                     }
-                });
+                } else {
+                    value.forEach((item) => {
+                        if (item && typeof item === 'object' && 'id' in item) {
+                            queryParams.append(`${key}[]`, item.id);
+                        } else {
+                            queryParams.append(`${key}[]`, item);
+                        }
+                    });
+                }
             }
         }
         // Manejar objetos de fecha (dateRange)

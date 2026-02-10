@@ -39,7 +39,7 @@ Authorization: Bearer {access_token}
 | id | string | Búsqueda por ID (coincidencias parciales) |
 | name | string | Búsqueda por nombre (coincidencias parciales) |
 | email | string | Búsqueda por email (coincidencias parciales) |
-| roles | array | Filtrar por nombres de roles |
+| role | string | Filtrar por rol (uno de: tecnico, administrador, direccion, administracion, comercial, operario) |
 | created_at | object | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
 | sort | string | Campo por el que ordenar (default: created_at) |
 | direction | string | Dirección de ordenamiento: `asc` o `desc` (default: desc) |
@@ -54,7 +54,7 @@ Authorization: Bearer {access_token}
       "id": 1,
       "name": "Usuario Admin",
       "email": "admin@example.com",
-      "roles": ["superuser", "admin"],
+      "role": "administrador",
       "created_at": "2024-01-15T10:00:00",
       "updated_at": "2024-01-15T10:00:00"
     }
@@ -91,7 +91,7 @@ Content-Type: application/json
   "email": "nuevo@example.com",
   "password": "contraseña123",
   "active": true,
-  "role_ids": [1, 2]
+  "role": "administracion"
 }
 ```
 
@@ -102,7 +102,7 @@ Content-Type: application/json
 | name | string | Nombre del usuario |
 | email | string | Email del usuario (único) |
 | password | string | Contraseña (mínimo 8 caracteres) |
-| role_ids | array | Array de IDs de roles (mínimo: 1) |
+| role | string | Rol del usuario: tecnico, administrador, direccion, administracion, comercial, operario |
 
 #### Campos Opcionales
 
@@ -110,7 +110,7 @@ Content-Type: application/json
 |-------|------|-------------|
 | active | boolean | Usuario activo (default: true) |
 
-**Nota:** El campo `role_ids` es un array que permite asignar múltiples roles al usuario al crearlo.
+**Nota:** El campo `role` es obligatorio y debe ser uno de los 6 valores admitidos.
 
 #### Response Exitosa (201)
 
@@ -133,9 +133,9 @@ Content-Type: application/json
 ```json
 {
   "message": "Error de validación.",
-  "userMessage": "El campo role_ids es obligatorio.",
+  "userMessage": "El campo role es obligatorio.",
   "errors": {
-    "role_ids": ["The role ids field is required."]
+    "role": ["The role field is required."]
   }
 }
 ```
@@ -207,7 +207,7 @@ Content-Type: application/json
   "email": "actualizado@example.com",
   "password": "nueva_contraseña",
   "active": true,
-  "role_ids": [1, 2]
+  "role": "administracion"
 }
 ```
 
@@ -219,12 +219,9 @@ Content-Type: application/json
 | email | string | Email del usuario (único, excepto el mismo) |
 | password | string | Contraseña (mínimo 8 caracteres) |
 | active | boolean | Usuario activo |
-| role_ids | array | Array de IDs de roles (mínimo: 1 si se proporciona) |
+| role | string | Rol (tecnico, administrador, direccion, administracion, comercial, operario) |
 
-**Nota:** 
-- Todos los campos son opcionales al actualizar.
-- Si se proporciona `role_ids`, reemplazará todos los roles actuales del usuario.
-- Si no se proporciona `role_ids`, se mantienen los roles existentes.
+**Nota:** Todos los campos son opcionales. Si se envía `role`, reemplaza el rol actual del usuario.
 
 #### Response Exitosa (200)
 
@@ -235,7 +232,7 @@ Content-Type: application/json
     "id": 1,
     "name": "Usuario Actualizado",
     "email": "actualizado@example.com",
-    "roles": ["admin", "manager"],
+    "role": "administracion",
     "created_at": "2024-01-15T10:00:00",
     "updated_at": "2024-01-15T11:00:00"
   }
@@ -247,9 +244,9 @@ Content-Type: application/json
 ```json
 {
   "message": "Error de validación.",
-  "userMessage": "El campo role_ids debe ser un array.",
+  "userMessage": "El campo role no es válido.",
   "errors": {
-    "role_ids": ["The role ids must be an array."]
+    "role": ["The selected role is invalid."]
   }
 }
 ```
@@ -314,266 +311,7 @@ Authorization: Bearer {access_token}
 
 ## Roles
 
-**Requiere rol:** `superuser`
-
-### Listar Roles
-
-```http
-GET /api/v2/roles
-```
-
-#### Response Exitosa (200)
-
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "superuser",
-      "display_name": "Super Usuario",
-      "description": "Superusuario con acceso completo al sistema",
-      "created_at": "2024-01-15T10:00:00.000000Z",
-      "updated_at": "2024-01-15T10:00:00.000000Z"
-    }
-  ]
-}
-```
-
----
-
-### Crear Rol
-
-```http
-POST /api/v2/roles
-```
-
-#### Headers
-```http
-X-Tenant: {subdomain}
-Authorization: Bearer {access_token}
-Content-Type: application/json
-```
-
-#### Request Body
-
-```json
-{
-  "name": "nuevo_rol",
-  "display_name": "Nuevo Rol",
-  "description": "Descripción del nuevo rol"
-}
-```
-
-#### Campos Requeridos
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del rol (único, máximo 255 caracteres) |
-
-#### Campos Opcionales
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| display_name | string | Nombre para mostrar del rol (máximo 255 caracteres) |
-| description | string | Descripción del rol (máximo 1000 caracteres) |
-
-#### Response Exitosa (201)
-
-```json
-{
-  "message": "Rol creado correctamente.",
-  "data": {
-    "id": 3,
-    "name": "nuevo_rol",
-    "display_name": "Nuevo Rol",
-    "description": "Descripción del nuevo rol",
-    "created_at": "2024-01-15T10:00:00.000000Z",
-    "updated_at": "2024-01-15T10:00:00.000000Z"
-  }
-}
-```
-
-#### Response Errónea (422) - Validación
-
-```json
-{
-  "message": "Error de validación.",
-  "userMessage": "El campo name es obligatorio.",
-  "errors": {
-    "name": ["The name field is required."]
-  }
-}
-```
-
-#### Response Errónea (422) - Nombre Duplicado
-
-```json
-{
-  "message": "Error de validación.",
-  "userMessage": "El nombre del rol ya existe.",
-  "errors": {
-    "name": ["The name has already been taken."]
-  }
-}
-```
-
----
-
-### Mostrar Rol
-
-```http
-GET /api/v2/roles/{id}
-```
-
-#### Headers
-```http
-X-Tenant: {subdomain}
-Authorization: Bearer {access_token}
-```
-
-#### Path Parameters
-
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del rol |
-
-#### Response Exitosa (200)
-
-```json
-{
-  "data": {
-    "id": 3,
-    "name": "admin",
-    "display_name": "Administrador",
-    "description": "Administrador con permisos limitados",
-    "created_at": "2024-01-15T10:00:00.000000Z",
-    "updated_at": "2024-01-15T10:00:00.000000Z"
-  }
-}
-```
-
-#### Response Errónea (404) - Rol No Encontrado
-
-```json
-{
-  "message": "No query results for model [App\\Models\\Role] 3",
-  "userMessage": "El rol solicitado no existe."
-}
-```
-
----
-
-### Actualizar Rol
-
-```http
-PUT /api/v2/roles/{id}
-```
-
-#### Headers
-```http
-X-Tenant: {subdomain}
-Authorization: Bearer {access_token}
-Content-Type: application/json
-```
-
-#### Path Parameters
-
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del rol |
-
-#### Request Body
-
-```json
-{
-  "name": "rol_actualizado",
-  "display_name": "Rol Actualizado",
-  "description": "Descripción actualizada"
-}
-```
-
-#### Campos Opcionales
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del rol (único, máximo 255 caracteres) |
-| display_name | string | Nombre para mostrar del rol (máximo 255 caracteres) |
-| description | string | Descripción del rol (máximo 1000 caracteres) |
-
-#### Response Exitosa (200)
-
-```json
-{
-  "message": "Rol actualizado correctamente.",
-  "data": {
-    "id": 3,
-    "name": "rol_actualizado",
-    "display_name": "Rol Actualizado",
-    "description": "Descripción actualizada",
-    "created_at": "2024-01-15T10:00:00.000000Z",
-    "updated_at": "2024-01-15T11:00:00.000000Z"
-  }
-}
-```
-
-#### Response Errónea (404) - Rol No Encontrado
-
-```json
-{
-  "message": "No query results for model [App\\Models\\Role] 3",
-  "userMessage": "El rol solicitado no existe."
-}
-```
-
----
-
-### Eliminar Rol
-
-```http
-DELETE /api/v2/roles/{id}
-```
-
-#### Headers
-```http
-X-Tenant: {subdomain}
-Authorization: Bearer {access_token}
-```
-
-#### Path Parameters
-
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del rol |
-
-#### Response Exitosa (200)
-
-```json
-{
-  "message": "Rol eliminado correctamente."
-}
-```
-
-#### Response Errónea (400) - Tiene Usuarios Asignados
-
-```json
-{
-  "message": "No se puede eliminar el rol porque tiene usuarios asignados.",
-  "userMessage": "Existen usuarios con este rol. Debe desasignarlos primero."
-}
-```
-
-#### Response Errónea (404) - Rol No Encontrado
-
-```json
-{
-  "message": "No query results for model [App\\Models\\Role] 3",
-  "userMessage": "El rol solicitado no existe."
-}
-```
-
-**Descripción:** Elimina un rol. No permite eliminar roles que tienen usuarios asignados.
-
----
+**Nota:** El CRUD de roles (listar, crear, editar, eliminar) fue eliminado. Solo existe el endpoint de opciones para rellenar el select de rol al crear/editar usuarios.
 
 ### Opciones de Roles
 
@@ -591,18 +329,16 @@ Authorization: Bearer {access_token}
 
 ```json
 [
-  {
-    "id": 1,
-    "name": "superuser"
-  },
-  {
-    "id": 2,
-    "name": "manager"
-  }
+  { "id": "tecnico", "name": "Técnico" },
+  { "id": "administrador", "name": "Administrador" },
+  { "id": "direccion", "name": "Dirección" },
+  { "id": "administracion", "name": "Administración" },
+  { "id": "comercial", "name": "Comercial" },
+  { "id": "operario", "name": "Operario" }
 ]
 ```
 
-**Descripción:** Devuelve una lista simple de roles (id y name) para usar en opciones de formularios.
+**Descripción:** Devuelve la lista fija de roles (id y name). El `id` es string y es el valor que debe enviarse en el campo `role` al crear o actualizar usuarios.
 
 ---
 

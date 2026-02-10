@@ -74,9 +74,9 @@ export const authOptions = {
       // Si el usuario está presente (inicia sesión), agregar datos al token
       if (user) {
         token.accessToken = user.accessToken;
-        // Normalizar roles a array (el backend puede devolver array o string)
-        token.role = Array.isArray(user.roles) ? user.roles : (user.role ? (Array.isArray(user.role) ? user.role : [user.role]) : []);
-        // Campos opcionales para store_operator
+        // Backend devuelve un solo rol (string)
+        token.role = user.role ?? null;
+        // Campos opcionales (ej. operario con almacén asignado)
         if (user.assignedStoreId) {
           token.assignedStoreId = user.assignedStoreId;
         }
@@ -103,9 +103,8 @@ export const authOptions = {
             const userData = await response.json();
             const currentUser = userData.data || userData;
             
-            // Actualizar token con datos frescos - normalizar roles a array
-            const rolesFromApi = currentUser.roles || currentUser.role || token.role;
-            token.role = Array.isArray(rolesFromApi) ? rolesFromApi : (rolesFromApi ? [rolesFromApi] : []);
+            // Actualizar token con datos frescos (rol único string)
+            token.role = currentUser.role ?? token.role;
             if (currentUser.assigned_store_id !== undefined) {
               token.assignedStoreId = currentUser.assigned_store_id;
             }

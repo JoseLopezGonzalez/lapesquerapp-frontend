@@ -49,8 +49,8 @@ const PositionPopover = ({ position }) => {
         'bg-green-500 text-background border-green-400 dark:border-green-600'
         : '';
 
-    // Verificar si el usuario es store_operator (no puede reubicar pallets)
-    const isStoreOperator = session?.user?.role?.includes('store_operator');
+    // Operario no puede reubicar pallets
+    const isStoreOperator = session?.user?.role === 'operario';
 
     return (
         <TooltipProvider>

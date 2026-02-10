@@ -10,13 +10,10 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   useEffect(() => {
     if (status === "authenticated") {
-      // Normalizar roles del usuario a array
-      const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
-      // Verificar si al menos uno de los roles del usuario está permitido
-      const hasAccess = userRoles.some((role) => allowedRoles.includes(role));
-      
+      const userRole = session?.user?.role;
+      const hasAccess = userRole && allowedRoles?.includes(userRole);
       if (!hasAccess) {
-        router.push("/unauthorized"); // Página de acceso denegado
+        router.push("/unauthorized");
       }
     }
 

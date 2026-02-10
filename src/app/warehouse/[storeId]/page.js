@@ -26,10 +26,8 @@ export default function WarehouseOperatorPage({ params }) {
     }
 
     if (status === "authenticated") {
-      // Normalizar roles del usuario a array
-      const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
-      // Validar que el usuario tenga el rol correcto
-      if (!userRoles.includes("store_operator") && !userRoles.includes("superuser")) {
+      const userRole = session.user.role;
+      if (userRole !== "operario" && userRole !== "administrador") {
         router.push("/unauthorized");
         return;
       }
@@ -65,10 +63,9 @@ export default function WarehouseOperatorPage({ params }) {
     );
   }
 
-  // Filtro simple: si es store_operator y no es su almacén asignado, mostrar no autorizado
+  // Si es operario y no es su almacén asignado, mostrar no autorizado
   if (status === "authenticated" && session?.user) {
-    const userRoles = Array.isArray(session.user.role) ? session.user.role : (session.user.role ? [session.user.role] : []);
-    if (userRoles.includes("store_operator") && session.user.assignedStoreId !== parseInt(storeId)) {
+    if (session.user.role === "operario" && session.user.assignedStoreId !== parseInt(storeId)) {
       const handleRedirectToCorrectStore = () => {
         router.push(`/warehouse/${session.user.assignedStoreId}`);
       };

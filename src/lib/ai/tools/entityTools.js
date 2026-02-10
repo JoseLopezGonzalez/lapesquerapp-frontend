@@ -20,7 +20,7 @@ const AVAILABLE_ENTITIES = [
   'activity-logs', 'product-categories', 'product-families', 'payment-terms',
   'species', 'transports', 'taxes', 'incoterms', 'salespeople', 'products',
   'employees', 'customers', 'stores', 'raw-material-receptions', 'orders',
-  'boxes', 'countries', 'pallets', 'productions', 'punches', 'roles',
+  'boxes', 'countries', 'pallets', 'productions', 'punches',
   'sessions', 'users'
 ];
 

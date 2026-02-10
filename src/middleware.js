@@ -139,34 +139,34 @@ export async function middleware(req) {
   const matchingRoute = matchingRoutes.sort((a, b) => b.length - a.length)[0];
   const rolesAllowed = matchingRoute ? roleConfig[matchingRoute] : [];
 
-  // Obtener los roles del usuario y asegurarse de que sean un array
-  const userRoles = Array.isArray(token.role) ? token.role : [token.role];
+  // Rol del usuario (string único desde la API)
+  const userRole = token.role;
 
   console.log("🔐 [Middleware] Ruta coincidente:", matchingRoute);
   console.log("🔐 [Middleware] Roles Permitidos:", rolesAllowed);
-  console.log("🔐 [Middleware] Roles del Usuario:", userRoles);
+  console.log("🔐 [Middleware] Rol del Usuario:", userRole);
   console.log("🔐 [Middleware] Token completo:", JSON.stringify({ role: token.role, assignedStoreId: token.assignedStoreId }, null, 2));
 
-  // Verificar si al menos uno de los roles del usuario está permitido
-  const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
+  // Verificar si el rol del usuario está permitido
+  const hasAccess = userRole && rolesAllowed.includes(userRole);
 
   console.log("🔐 [Middleware] ¿Tiene acceso?:", hasAccess);
 
-  // Excepción especial: si es store_operator intentando acceder a /admin, redirigir a su almacén
-  if (!hasAccess && userRoles.includes("store_operator") && pathname.startsWith("/admin")) {
-    console.log("🔐 [Middleware] Store_operator intentando acceder a admin, redirigiendo a su almacén");
+  // Excepción: operario intentando acceder a /admin, redirigir a su almacén
+  if (!hasAccess && userRole === "operario" && pathname.startsWith("/admin")) {
+    console.log("🔐 [Middleware] Operario intentando acceder a admin, redirigiendo a su almacén");
     if (token.assignedStoreId) {
       const warehouseUrl = new URL(`/warehouse/${token.assignedStoreId}`, req.url);
       return NextResponse.redirect(warehouseUrl);
     } else {
-      console.log("🔐 [Middleware] Store_operator sin assignedStoreId, redirigiendo a unauthorized");
+      console.log("🔐 [Middleware] Operario sin assignedStoreId, redirigiendo a unauthorized");
       const unauthorizedUrl = new URL("/unauthorized", req.url);
       return NextResponse.redirect(unauthorizedUrl);
     }
   }
 
   if (!rolesAllowed.length || !hasAccess) {
-    console.log("🔐 [Middleware] Acceso denegado para los roles:", userRoles, "en ruta:", pathname);
+    console.log("🔐 [Middleware] Acceso denegado para el rol:", userRole, "en ruta:", pathname);
     console.log("🔐 [Middleware] Roles permitidos para esta ruta:", rolesAllowed);
     const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);

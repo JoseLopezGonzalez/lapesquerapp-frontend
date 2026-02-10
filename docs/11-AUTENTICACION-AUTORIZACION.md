@@ -119,8 +119,8 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
 ```javascript
 {
   accessToken: string,        // Token de acceso para API v2
-  role: string | string[],    // Rol(es) del usuario
-  assignedStoreId?: number,   // ID de almacén asignado (store_operator)
+  role: string,               // Rol único del usuario (tecnico, administrador, direccion, etc.)
+  assignedStoreId?: number,   // ID de almacén asignado (operario)
   companyName?: string,       // Nombre de la empresa
   companyLogoUrl?: string,    // URL del logo de la empresa
   exp: number,                // Expiración (timestamp)
@@ -514,15 +514,14 @@ if (status === "unauthenticated") {
   return;
 }
 
-// 2. Validar rol
-if (!session.user.role?.includes("store_operator") && 
-    !session.user.role?.includes("superuser")) {
+// 2. Validar rol (rol único string)
+if (session.user.role !== "operario" && session.user.role !== "administrador") {
   router.push("/unauthorized");
   return;
 }
 
-// 3. Validar que sea su almacén asignado
-if (session.user.role?.includes("store_operator") && 
+// 3. Validar que sea su almacén asignado (operario)
+if (session.user.role === "operario" && 
     session.user.assignedStoreId !== parseInt(storeId)) {
   // Redirigir a almacén correcto o mostrar error
 }

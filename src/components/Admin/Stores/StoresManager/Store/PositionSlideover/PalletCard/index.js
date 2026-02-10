@@ -71,8 +71,8 @@ export default function PalletCard({ pallet }) {
 
     const hasMultipleProducts = productsSummaryArray.length > 1
 
-    // Verificar si el usuario es store_operator (no puede reubicar pallets)
-    const isStoreOperator = session?.user?.role?.includes('store_operator');
+    // Operario no puede reubicar pallets
+    const isStoreOperator = session?.user?.role === 'operario';
 
 
     return (
