@@ -4,6 +4,7 @@ import Barcode from "react-barcode";
 import { ImageIcon } from "lucide-react";
 import { serializeBarcode } from "@/lib/barcodes";
 import { formatDecimal, formatDecimalWeight, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
+import { formatDateDisplay } from "@/hooks/useLabel";
 import SanitaryRegister from "./SanitaryRegister";
 import RichParagraph from "./RichParagraph";
 
@@ -106,7 +107,7 @@ export default function LabelElement({ element, values = {} }) {
     
     const replacePlaceholders = (str) => {
         if (!str) return '';
-        return str.replace(/{{([^}]+)}}/g, (_, field) => getValue(field));
+        return str.replace(/{{([^}]+)}}/g, (_, field) => formatDateDisplay(getValue(field)));
     };
 
 
@@ -126,8 +127,10 @@ export default function LabelElement({ element, values = {} }) {
         case "checkboxField":
             return <span style={commonStyle}>{getValue(element.key)}</span>;
 
-        case "dateField":
-            return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
+        case "dateField": {
+            const raw = getValue(element.key) || element.sample || '';
+            return <span style={commonStyle}>{formatDateDisplay(raw)}</span>;
+        }
 
         case "sanitaryRegister":
             return <SanitaryRegister element={element} />;

@@ -4,12 +4,29 @@ import { getLabel, getLabelsOptions } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 
+/** Formato interno/API e input type="date": YYYY-MM-DD */
 export const formatDate = (date) => {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "";
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
+};
+
+/** Formato visual en etiquetas: DD/MM/AAAA. Acepta Date o string YYYY-MM-DD. */
+export const formatDateDisplay = (dateOrString) => {
+    if (dateOrString == null || dateOrString === "") return "";
+    if (dateOrString instanceof Date) {
+        if (isNaN(dateOrString.getTime())) return "";
+        const d = String(dateOrString.getDate()).padStart(2, "0");
+        const m = String(dateOrString.getMonth() + 1).padStart(2, "0");
+        const y = dateOrString.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+    const s = String(dateOrString).trim();
+    const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+    return s;
 };
 
 export const addDays = (date, days) => {

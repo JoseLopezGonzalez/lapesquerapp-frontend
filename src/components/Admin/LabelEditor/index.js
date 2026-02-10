@@ -62,7 +62,7 @@ import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
-import { formatDate, addDays, parseDate } from "@/hooks/useLabel";
+import { formatDate, formatDateDisplay, addDays, parseDate } from "@/hooks/useLabel";
 import LabelSelectorSheet from "./LabelSelectorSheet";
 import LabelEditorPreview from "./LabelEditorPreview";
 import FieldExamplesDialog from "./FieldExamplesDialog";
@@ -607,7 +607,7 @@ export default function LabelEditor() {
                                                                                 <span className="text-sm font-medium capitalize">Campo Fecha</span>
                                                                             </div>
                                                                             <div className="flex items-center bg-muted rounded-md p-2 w-full">
-                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || element.key || ''}</span>
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{formatDateDisplay(element.sample || element.key || '')}</span>
                                                                             </div>
                                                                             {element.visibleOnLabel === false && (
                                                                                 <span className="self-start text-[10px] text-muted-foreground bg-muted/80 rounded px-1.5 py-0.5">No visible</span>
@@ -1229,7 +1229,7 @@ export default function LabelEditor() {
                                                     </>
                                                 ) : (
                                                     <p className="text-sm py-2 text-muted-foreground">
-                                                        {getDateFieldPreview(activeElementState, elements) || '—'}
+                                                        {formatDateDisplay(getDateFieldPreview(activeElementState, elements)) || '—'}
                                                     </p>
                                                 )}
                                             </div>
