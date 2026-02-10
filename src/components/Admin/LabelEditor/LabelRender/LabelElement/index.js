@@ -114,6 +114,9 @@ export default function LabelElement({ element, values = {} }) {
         case "manualField":
             return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
 
+        case "selectField":
+            return <span style={commonStyle}>{getValue(element.key) || element.sample}</span>;
+
         case "sanitaryRegister":
             return <SanitaryRegister element={element} />;
 

@@ -260,6 +260,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 seenFields.add(el.key);
             }
 
+            // 🔹 Campos select tipo "selectField" (se rellenan al imprimir, en editor usamos sample)
+            if (el.type === 'selectField' && el.key && !seenFields.has(el.key)) {
+                values[el.key] = el.sample || (Array.isArray(el.options) && el.options[0]) || '';
+                seenFields.add(el.key);
+            }
+
             // 🔹 Campos usados como {{placeholders}} en QR, Barcode, Parrafos ricos...
             const contents = [el.html, el.qrContent, el.barcodeContent];
             contents.forEach(content => {
@@ -366,12 +372,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             y: 50,
             width: type === "line" 
                 ? 30 
-                : ["text", "field", "manualField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
+                : ["text", "field", "manualField", "selectField", "sanitaryRegister", "richParagraph"].includes(type) ? 20 : 20,
             height: type === "line"
                 ? 1
                 : type === "richParagraph"
                     ? 15
-                    : ["text", "field", "manualField", "sanitaryRegister"].includes(type)
+                    : ["text", "field", "manualField", "selectField", "sanitaryRegister"].includes(type)
                         ? 10
                         : 10,
             fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
@@ -387,8 +393,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             approvalNumber: type === "sanitaryRegister" ? "12.021462/H" : undefined,
             suffix: type === "sanitaryRegister" ? "C.E." : undefined,
             field: type === "field" ? "product.name" : undefined,
-            key: type === "manualField" ? "campo" : undefined,
-            sample: type === "manualField" ? "Valor" : undefined,
+            key: type === "manualField" ? "Campo" : type === "selectField" ? "Destino" : undefined,
+            sample: type === "manualField" ? "Valor" : type === "selectField" ? "Nacional" : undefined,
+            options: type === "selectField" ? ["Nacional", "Exportación", "Otro"] : undefined,
             qrContent: type === "qr" ? "" : undefined,
             barcodeContent: type === "barcode" ? "" : undefined,
             barcodeType: type === "barcode" ? "ean13" : undefined,

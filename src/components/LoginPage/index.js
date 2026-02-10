@@ -22,8 +22,6 @@ import { requestAccess, verifyOtp } from "@/services/authService";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 
-const SENT_MESSAGE = "Si el correo está registrado y activo, recibirás un correo con un enlace y un código para acceder.";
-
 function safeRedirectFrom(from) {
   if (!from || typeof from !== "string") return null;
   const path = from.trim();
@@ -83,7 +81,6 @@ export default function LoginPage() {
     try {
       await requestAccess(email.trim());
       setAccessRequested(true);
-      toast.success(SENT_MESSAGE, getToastTheme());
     } catch (err) {
       const msg = err.message || "Error al solicitar acceso.";
       toast.error(msg, getToastTheme());

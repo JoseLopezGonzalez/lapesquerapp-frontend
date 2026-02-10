@@ -19,7 +19,7 @@ import { motion } from 'framer-motion';
 
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
     const [printInPairs, setPrintInPairs] = useState(false);
-    const { label, selectedLabelId, labelsOptions, selectLabel, manualFields, fields, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
+    const { label, selectedLabelId, labelsOptions, selectLabel, manualFields, fieldMetadata, changeManualField, values, disabledPrintButton, isLoading, isLoadingLabel } = useLabel({ boxes, open });
 
     const handleOnChangeLabel = (value) => {
         selectLabel(value);
@@ -163,19 +163,41 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
                             </div>
                         )}
 
-                        {/* Campos manuales */}
+                        {/* Campos manuales y select */}
                         {!isLoadingLabel && (
                             <div className="space-y-4">
-                                {Object.entries(manualFields).map(([key, value]) => (
-                                    <div key={key} className="flex flex-col gap-1">
-                                        <Label className="text-sm">{key}</Label>
-                                        <Input
-                                            placeholder={`Introduce ${key.toLowerCase()}`}
-                                            value={value}
-                                            onChange={(e) => handleOnChangeManualField(key, e.target.value)}
-                                        />
-                                    </div>
-                                ))}
+                                {Object.entries(manualFields).map(([key, value]) => {
+                                    const meta = fieldMetadata[key];
+                                    const isSelect = meta?.type === 'select' && Array.isArray(meta?.options) && meta.options.length > 0;
+                                    return (
+                                        <div key={key} className="flex flex-col gap-1">
+                                            <Label className="text-sm">{key}</Label>
+                                            {isSelect ? (
+                                                <Select
+                                                    value={value || ''}
+                                                    onValueChange={(val) => handleOnChangeManualField(key, val)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={`Selecciona ${key.toLowerCase()}`} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {meta.options.map((opt) => (
+                                                            <SelectItem key={opt} value={opt}>
+                                                                {opt}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : (
+                                                <Input
+                                                    placeholder={`Introduce ${key.toLowerCase()}`}
+                                                    value={value}
+                                                    onChange={(e) => handleOnChangeManualField(key, e.target.value)}
+                                                />
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
 

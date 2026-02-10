@@ -39,14 +39,39 @@ export const extractManualFieldsFromLabel = (elements) => {
     const result = {};
     const seen = new Set();
 
-    // Solo extraemos manualFields explícitos
     elements.forEach(el => {
         if (el.type === 'manualField' && el.key && !seen.has(el.key)) {
             result[el.key] = '';
             seen.add(el.key);
         }
+        if (el.type === 'selectField' && el.key && !seen.has(el.key)) {
+            const firstOption = Array.isArray(el.options) && el.options.length > 0 ? el.options[0] : '';
+            result[el.key] = firstOption;
+            seen.add(el.key);
+        }
     });
 
+    return result;
+};
+
+/**
+ * Metadatos de campos que requieren entrada al imprimir (manual vs select con opciones).
+ * @returns { Record<string, { type: 'manual' | 'select', options?: string[] }> }
+ */
+export const extractFieldMetadataFromLabel = (elements) => {
+    const result = {};
+    elements.forEach(el => {
+        if (el.type === 'manualField' && el.key) {
+            result[el.key] = { type: 'manual' };
+        }
+        if (el.type === 'selectField' && el.key) {
+            const opts = (Array.isArray(el.options) ? el.options : []).filter(Boolean);
+            result[el.key] = {
+                type: 'select',
+                options: opts.length > 0 ? opts : ['Opción 1', 'Opción 2'],
+            };
+        }
+    });
     return result;
 };
 
@@ -60,6 +85,7 @@ export function useLabel({ boxes = [], open }) {
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
     const [manualFields, setManualFields] = useState({});
+    const [fieldMetadata, setFieldMetadata] = useState({});
     const [fields, setFields] = useState([]);
     const [labelsOptions, setLabelsOptions] = useState([]);
 
@@ -88,6 +114,7 @@ export function useLabel({ boxes = [], open }) {
                 setLabel(null);
                 setSelectedLabelId(null);
                 setManualFields({});
+                setFieldMetadata({});
                 setFields([]);
                 setLabelsOptions([]);
                 setIsLoading(false);
@@ -105,6 +132,8 @@ export function useLabel({ boxes = [], open }) {
                 setLabel(data);
                 const updatedManualFields = extractManualFieldsFromLabel(data.format.elements);
                 setManualFields(updatedManualFields);
+                const updatedFieldMetadata = extractFieldMetadataFromLabel(data.format.elements);
+                setFieldMetadata(updatedFieldMetadata);
                 const updatedFields = extractFieldsFromLabel(data.format.elements);
                 // Rellenar cada field con el valor desde la primera caja disponible
                 // Función para acceder profundamente con path tipo 'product.species.name'
@@ -234,6 +263,7 @@ export function useLabel({ boxes = [], open }) {
         labelsOptions,
         selectLabel,
         manualFields,
+        fieldMetadata,
         fields,
         changeManualField,
         values,

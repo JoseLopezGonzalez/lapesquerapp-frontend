@@ -53,6 +53,7 @@ import {
     Maximize,
     Keyboard,
     Minus,
+    ListChecks,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -136,6 +137,10 @@ export default function LabelEditor() {
     const scrollAreaRef = useRef(null);
     const elementRefs = useRef({});
     const isClickingFromListRef = useRef(false);
+    const keyInputRef = useRef(null);
+    const keyCursorRef = useRef(null);
+
+    const capitalizeFirst = (s) => (s && s.length > 0) ? s.charAt(0).toUpperCase() + s.slice(1) : (s || '');
 
     // Estado local del panel de propiedades (snapshot editable)
     // Este es la única fuente de verdad para los controles del panel
@@ -154,6 +159,15 @@ export default function LabelEditor() {
             setActiveElementState(null);
         }
     }, [selectedElement]); // Solo cuando cambia el ID del elemento seleccionado
+
+    // Restaurar posición del cursor en el input "Nombre del campo" tras capitalizar
+    useEffect(() => {
+        if (keyCursorRef.current && keyInputRef.current) {
+            const { start, end } = keyCursorRef.current;
+            keyInputRef.current.setSelectionRange(start, end);
+            keyCursorRef.current = null;
+        }
+    }, [activeElementState?.key]);
 
     // Función para actualizar el estado local y sincronizar con el canvas
     const updateActiveElement = useCallback((updates) => {
@@ -382,6 +396,16 @@ export default function LabelEditor() {
                                     <Button 
                                         variant="outline" 
                                         className="justify-start gap-2" 
+                                        onClick={() => addElement("selectField")}
+                                        disabled={!selectedLabel}
+                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                    >
+                                        <ListChecks className="w-4 h-4" />
+                                        Campo Select
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="justify-start gap-2" 
                                         onClick={() => addElement("sanitaryRegister")}
                                         disabled={!selectedLabel}
                                         title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
@@ -502,6 +526,17 @@ export default function LabelEditor() {
                                                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || `{{${element.key}}}`}</span>
                                                                             </div>
                                                                         </div>)}
+                                                                    {element.type === "selectField" && (
+                                                                        <div className="flex flex-col items-center gap-1 w-full">
+                                                                            <div className="flex items-center gap-1 justify-start w-full">
+                                                                                <ListChecks className="w-3 h-3" />
+                                                                                <span className="text-sm font-medium capitalize">Campo Select</span>
+                                                                            </div>
+                                                                            <div className="flex items-center bg-muted rounded-md p-2 w-full">
+                                                                                <span className="text-xs text-muted-foreground truncate max-w-[200px]">{element.sample || element.key || (Array.isArray(element.options) && element.options[0]) || ''}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                     {element.type === "sanitaryRegister" && (
                                                                         <div className="flex flex-col items-center gap-1 w-full">
                                                                             <div className="flex items-center gap-1 justify-start w-full">
@@ -806,6 +841,12 @@ export default function LabelEditor() {
                                                 <h4 className="capitalize text-xl font-normal">Campo Manual</h4>
                                             </div>
                                         )}
+                                        {activeElementState.type === "selectField" && (
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <ListChecks className="w-4 h-4" />
+                                                <h4 className="capitalize text-xl font-normal">Campo Select</h4>
+                                            </div>
+                                        )}
                                         {activeElementState.type === "sanitaryRegister" && (
                                             <div className="flex items-center gap-2 justify-center">
                                                 <Stamp className="w-4 h-4" />
@@ -885,6 +926,7 @@ export default function LabelEditor() {
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
                                                 <Input
+                                                    ref={keyInputRef}
                                                     value={activeElementState.key}
                                                     onChange={(e) => {
                                                         const oldValue = activeElementState.key || ''
@@ -892,6 +934,7 @@ export default function LabelEditor() {
                                                         
                                                         // Filtrar solo letras
                                                         const filteredValue = newValue.replace(/[^a-zA-Z]/g, '')
+                                                        const capitalizedValue = capitalizeFirst(filteredValue)
                                                         
                                                         // Si el valor filtrado es diferente al nuevo valor, hay caracteres inválidos
                                                         if (filteredValue !== newValue) {
@@ -936,8 +979,8 @@ export default function LabelEditor() {
                                                             )
                                                         }
                                                         
-                                                        // Actualizar con el valor filtrado
-                                                        updateActiveElement({ key: filteredValue })
+                                                        keyCursorRef.current = { start: e.target.selectionStart, end: e.target.selectionEnd };
+                                                        updateActiveElement({ key: capitalizedValue });
                                                     }}
                                                     placeholder="Solo letras"
                                                 />
@@ -948,6 +991,108 @@ export default function LabelEditor() {
                                                     value={activeElementState.sample || ''}
                                                     onChange={(e) => updateActiveElement({ sample: e.target.value })}
                                                 />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeElementState.type === "selectField" && (
+                                        <div className="space-y-2">
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Nombre del campo</h4>
+                                                <Input
+                                                    ref={keyInputRef}
+                                                    value={activeElementState.key || ''}
+                                                    onChange={(e) => {
+                                                        const newValue = e.target.value.replace(/[^a-zA-Z]/g, '');
+                                                        const capitalizedValue = capitalizeFirst(newValue);
+                                                        if (newValue !== e.target.value && e.target.value.length > 0) {
+                                                            toast.error('Solo se permiten letras (a-z, A-Z).', getToastTheme());
+                                                        }
+                                                        keyCursorRef.current = { start: e.target.selectionStart, end: e.target.selectionEnd };
+                                                        updateActiveElement({ key: capitalizedValue });
+                                                    }}
+                                                    placeholder="Solo letras (ej: Destino)"
+                                                />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Opciones</h4>
+                                                <div className="space-y-2">
+                                                    {(Array.isArray(activeElementState.options) ? activeElementState.options : []).map((opt, index) => (
+                                                        <div key={index} className="flex gap-2 items-center">
+                                                            <Input
+                                                                value={opt}
+                                                                onChange={(e) => {
+                                                                    const next = [...(activeElementState.options || [])];
+                                                                    next[index] = e.target.value;
+                                                                    const validOpts = next.filter(Boolean);
+                                                                    const sample = validOpts.includes(activeElementState.sample) ? activeElementState.sample : (validOpts[0] ?? '');
+                                                                    updateActiveElement({ options: next, sample });
+                                                                }}
+                                                                placeholder={`Opción ${index + 1}`}
+                                                                className="flex-1"
+                                                            />
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="shrink-0 text-muted-foreground hover:text-destructive"
+                                                                onClick={() => {
+                                                                    const next = (activeElementState.options || []).filter((_, i) => i !== index);
+                                                                    const validOpts = next.filter(Boolean);
+                                                                    const sample = validOpts.includes(activeElementState.sample) ? activeElementState.sample : (validOpts[0] ?? '');
+                                                                    updateActiveElement({ options: next, sample });
+                                                                }}
+                                                                title="Quitar opción"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-full gap-2"
+                                                        onClick={() => {
+                                                            const current = activeElementState.options || [];
+                                                            updateActiveElement({ options: [...current, ""] });
+                                                        }}
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                        Añadir opción
+                                                    </Button>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground mt-1">Estas opciones se mostrarán al imprimir</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-medium mb-2">Valor de prueba (vista previa)</h4>
+                                                {(() => {
+                                                    const opts = (activeElementState.options || []).filter(Boolean);
+                                                    const currentSample = activeElementState.sample || '';
+                                                    const valueInOptions = opts.includes(currentSample) ? currentSample : (opts[0] ?? '');
+                                                    if (opts.length === 0) {
+                                                        return (
+                                                            <p className="text-sm text-muted-foreground">Añade opciones arriba para elegir el valor de vista previa.</p>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <Select
+                                                            value={valueInOptions}
+                                                            onValueChange={(val) => updateActiveElement({ sample: val })}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Selecciona opción para vista previa" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {opts.map((opt) => (
+                                                                    <SelectItem key={opt} value={opt}>
+                                                                        {opt}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
                                     )}
@@ -1145,7 +1290,7 @@ export default function LabelEditor() {
                                         </div>
                                     )}
 
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "qr" || activeElementState.type === "barcode" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "qr" || activeElementState.type === "barcode" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
@@ -1194,7 +1339,7 @@ export default function LabelEditor() {
                                                 </div>
 
                                             </div>
-                                            {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "richParagraph" || activeElementState.type === "sanitaryRegister") && (
+                                            {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "richParagraph" || activeElementState.type === "sanitaryRegister") && (
                                                 <div className="flex w-full gap-2 items-center justify-between">
                                                     <span className="text-xs text-muted-foreground">
                                                         Ajustar al contenido
@@ -1307,12 +1452,12 @@ export default function LabelEditor() {
 
 
 
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph") && (
                                         <Separator className="my-4" />
                                     )}
 
                                     {/* Text properties */}
-                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph" || activeElementState.type === "barcode"
+                                    {(activeElementState.type === "text" || activeElementState.type === "field" || activeElementState.type === "manualField" || activeElementState.type === "selectField" || activeElementState.type === "sanitaryRegister" || activeElementState.type === "richParagraph" || activeElementState.type === "barcode"
 
                                     ) && (
                                             <div>
