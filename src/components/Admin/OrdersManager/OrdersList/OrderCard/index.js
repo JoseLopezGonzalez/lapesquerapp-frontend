@@ -70,7 +70,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
         <Card
             className={cn(
                 'relative flex border-l-4 min-h-[120px] transition-colors duration-150',
-                isMobile ? 'p-4 sm:p-5' : 'p-4 sm:p-5',
+                'p-4 sm:p-5',
                 borderLClass,
                 selectedClass,
                 disabled && 'cursor-not-allowed opacity-50 pointer-events-none',
@@ -93,20 +93,34 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
             }}
         >
             {isMobile ? (
-                /* Mobile: cola de trabajo – Cliente protagonista, ID como meta a la derecha */
+                /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
                 <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                        <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-medium text-muted-foreground/90">{statusLabel}</span>
-                            <span className="text-[10px] text-muted-foreground/80 tabular-nums shrink-0">#{orderId}</span>
-                        </div>
-                        <p className="font-semibold text-lg truncate" title={order.customer.name}>
+                    <div className="flex-1 min-w-0 space-y-1">
+                        <p className="font-semibold text-lg truncate leading-tight" title={order.customer.name}>
                             {order.customer.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                            {loadDate}
+                        <p className="text-sm text-muted-foreground tabular-nums">
+                            #{orderId} · {loadDate}
                             {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
                         </p>
+                        <span
+                            className={cn(
+                                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                                order.status === 'pending' && 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                                order.status === 'finished' && 'bg-green-500/15 text-green-700 dark:text-green-300',
+                                order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                            )}
+                        >
+                            <span
+                                className={cn(
+                                    'h-1.5 w-1.5 rounded-full',
+                                    order.status === 'pending' && 'bg-orange-500',
+                                    order.status === 'finished' && 'bg-green-500',
+                                    order.status === 'incident' && 'bg-red-500'
+                                )}
+                            />
+                            {statusLabel}
+                        </span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
                 </div>
