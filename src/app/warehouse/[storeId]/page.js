@@ -27,7 +27,7 @@ export default function WarehouseOperatorPage({ params }) {
 
     if (status === "authenticated") {
       const userRole = session.user.role;
-      if (userRole !== "operario" && userRole !== "administrador") {
+      if (userRole !== "operario" && userRole !== "administrador" && userRole !== "tecnico") {
         router.push("/unauthorized");
         return;
       }
