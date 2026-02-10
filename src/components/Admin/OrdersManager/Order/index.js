@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets, ListCollapse } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets, ListCollapse, Pencil } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
@@ -31,6 +31,23 @@ const OrderProductDetails = lazy(() => import('./OrderProductDetails'));
 const OrderPlannedProductDetails = lazy(() => import('./OrderPlannedProductDetails'));
 const OrderIncident = lazy(() => import('./OrderIncident'));
 const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
+
+// Configuración de secciones: primarias (visibles como cards en mobile) vs overflow (menú ⋮)
+// Ref: docs/mobile-app/analisis/02-ANALISIS-EDITOR-PEDIDO-MOBILE.md
+const SECTIONS_CONFIG = [
+  { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
+  { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
+  { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: ListCollapse },
+  { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
+  { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
+  { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
+  { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true, icon: FileCheck },
+  { id: 'export', title: 'Descargas', component: OrderExport, lazy: true, icon: Download },
+  { id: 'map', title: 'Ruta', component: OrderMap, lazy: true, icon: Map },
+  { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true, icon: AlertTriangle },
+  { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
+];
+const PRIMARY_SECTION_IDS_MOBILE = ['products', 'production', 'documents'];
 
 // Badge reutilizable - movido fuera del componente para evitar recreación
 const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
@@ -91,6 +108,7 @@ const OrderContent = ({ onLoading, onClose }) => {
   const isMobile = useIsMobile();
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
   const [activeSection, setActiveSection] = useState(null);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   
   // Ocultar bottom navbar en esta pantalla (solo en mobile)
   useHideBottomNav(isMobile);
@@ -201,15 +219,46 @@ const OrderContent = ({ onLoading, onClose }) => {
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted"
+                        className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
                         aria-label="Volver"
                       >
                         <ArrowLeft className="h-6 w-6" />
-              </Button>
+                      </Button>
                       <h2 className="text-xl font-normal dark:text-white text-center">
                         #{order.id}
                       </h2>
-                      <div className="absolute right-4 w-12 h-12" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
+                            aria-label="Más opciones"
+                          >
+                            <MoreVertical className="h-6 w-6" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          {SECTIONS_CONFIG.filter(s => !PRIMARY_SECTION_IDS_MOBILE.includes(s.id)).map((section) => {
+                            const Icon = section.icon;
+                            return (
+                              <DropdownMenuItem key={section.id} onClick={() => setActiveSection(section.id)}>
+                                <Icon className="h-4 w-4 mr-2" />
+                                {section.title}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setEditSheetOpen(true)}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar pedido
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleOnClickPrint}>
+                            <Printer className="h-4 w-4 mr-2" />
+                            Imprimir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 )}
@@ -280,52 +329,44 @@ const OrderContent = ({ onLoading, onClose }) => {
                     </div>
                   </div>
                 </div>
-                {/* Lista de secciones */}
+                {/* Lista de secciones principales (centrada, estrecha, en card) */}
                 <div className='flex-1 w-full overflow-hidden min-h-0'>
                   <ScrollArea className="h-full w-full">
-                    <div className={`px-4 pt-6 ${onClose ? 'pb-24' : 'pb-2'}`} style={onClose ? { paddingBottom: `calc(6rem + env(safe-area-inset-bottom))` } : {}}>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
-                          { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
-                          { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: ListCollapse },
-                          { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
-                          { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
-                          { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
-                          { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true, icon: FileCheck },
-                          { id: 'export', title: 'Descargas', component: OrderExport, lazy: true, icon: Download },
-                          { id: 'map', title: 'Ruta', component: OrderMap, lazy: true, icon: Map },
-                          { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true, icon: AlertTriangle },
-                          { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
-                        ].map((section) => {
-                          const Icon = section.icon;
-                          return (
-                            <Card
-                              key={section.id}
-                              className="cursor-pointer hover:bg-muted/50 transition-colors border"
-                              onClick={() => setActiveSection(section.id)}
-                            >
-                              <CardContent className="p-4 flex flex-col items-center justify-center gap-2">
-                                <Icon className="h-5 w-5 text-primary" />
-                                <span className="text-sm font-medium text-foreground text-center">{section.title}</span>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
+                    <div className={`px-4 pt-8 flex justify-center ${onClose ? 'pb-8' : 'pb-2'}`} style={onClose ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}>
+                      <Card className="w-full max-w-[280px] overflow-hidden">
+                        <CardContent className="p-0">
+                          <div className="divide-y divide-border/60">
+                            {(() => {
+                              const primarySections = SECTIONS_CONFIG.filter(s => PRIMARY_SECTION_IDS_MOBILE.includes(s.id));
+                              return primarySections.map((section) => {
+                                const Icon = section.icon;
+                                return (
+                                  <button
+                                    key={section.id}
+                                    type="button"
+                                    onClick={() => setActiveSection(section.id)}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] text-left hover:bg-muted/40 active:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                                  >
+                                    <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <span className="flex-1 text-sm text-foreground">
+                                      {section.title}
+                                    </span>
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground/70 shrink-0" />
+                                  </button>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </ScrollArea>
                 </div>
                 </div>
-                
-                {/* Botones móviles - sticky bottom bar - Solo en vista principal */}
+
+                {/* Sheet de edición controlado desde menú ⋮ (mobile): sin barra inferior para pantalla más limpia */}
                 {onClose && (
-                  <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex gap-2 z-50 lg:hidden shadow-lg" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
-                    <OrderEditSheet />
-                    <Button variant="outline" onClick={handleOnClickPrint} size="icon" className="w-fit min-h-[44px] min-w-[44px]">
-                      <Printer className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <OrderEditSheet open={editSheetOpen} onOpenChange={setEditSheetOpen} />
                 )}
               </>
             ) : (
@@ -344,19 +385,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                       <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <h2 className="text-xl font-normal dark:text-white text-center">
-                      {[
-                        { id: 'details', title: 'Información' },
-                        { id: 'products', title: 'Previsión' },
-                        { id: 'productDetails', title: 'Detalle productos' },
-                        { id: 'production', title: 'Producción' },
-                        { id: 'pallets', title: 'Palets' },
-                        { id: 'labels', title: 'Etiquetas' },
-                        { id: 'documents', title: 'Envío de Documentos' },
-                        { id: 'export', title: 'Descargas' },
-                        { id: 'map', title: 'Ruta' },
-                        { id: 'incident', title: 'Incidencia' },
-                        { id: 'customer-history', title: 'Histórico' },
-                      ].find(s => s.id === activeSection)?.title || 'Sección'}
+                      {SECTIONS_CONFIG.find(s => s.id === activeSection)?.title || 'Sección'}
                     </h2>
                     <div className="absolute right-4 w-12 h-12" />
                   </div>

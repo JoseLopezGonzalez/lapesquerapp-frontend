@@ -21,11 +21,14 @@ import { format } from "date-fns"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const OrderEditSheet = () => {
+const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange }) => {
     const { order, updateOrderData } = useOrderContext()
     const { formGroups, defaultValues, loading, loadingProgress } = useOrderFormConfig({ orderData: order });
     const isMobile = useIsMobile();
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isControlled = controlledOpen !== undefined && typeof controlledOnOpenChange === 'function';
+    const open = isControlled ? controlledOpen : internalOpen;
+    const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen;
     const [saving, setSaving] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [initialValues, setInitialValues] = useState(null);
@@ -247,12 +250,14 @@ const OrderEditSheet = () => {
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-                <Button variant={isMobile ? "default" : "outline"} className={isMobile ? 'flex-1 min-h-[44px]' : ''}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                </Button>
-            </SheetTrigger>
+            {!isControlled && (
+                <SheetTrigger asChild>
+                    <Button variant={isMobile ? "default" : "outline"} className={isMobile ? 'flex-1 min-h-[44px]' : ''}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                    </Button>
+                </SheetTrigger>
+            )}
             <SheetContent 
                 side={isMobile ? "bottom" : "right"}
                 className={isMobile 

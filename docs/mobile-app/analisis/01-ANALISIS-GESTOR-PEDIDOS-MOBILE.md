@@ -978,3 +978,4 @@ Estas mejoras deberían aplicarse **sin romper desktop**, utilizando:
 - las tipologías definidas en `02-TIPOLOGIAS-PANTALLAS-ENTIDADES-VS-GESTORES.md`,  
 - y los pilares de `01-PILARES-UI-NATIVA-MOBILE.md`.
 
+
