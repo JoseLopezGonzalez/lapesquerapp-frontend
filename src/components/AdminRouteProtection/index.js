@@ -16,8 +16,8 @@ export default function AdminRouteProtection({ children }) {
   // ✅ Todos los useEffect también deben estar antes de cualquier return
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      const userRole = session.user.role;
-      // Si es operario, redirigir a su almacén asignado
+      const rawRole = session.user.role;
+      const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       if (userRole === "operario" && session.user.assignedStoreId) {
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
         return;
@@ -40,8 +40,8 @@ export default function AdminRouteProtection({ children }) {
     );
   }
 
-  // Si es operario, mostrar loader mientras redirige
-  if (status === "authenticated" && session?.user?.role === "operario") {
+  const role = session?.user?.role != null ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role) : null;
+  if (status === "authenticated" && role === "operario") {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />

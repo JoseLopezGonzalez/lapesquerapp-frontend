@@ -14,8 +14,8 @@ import { MessageSquare } from "lucide-react";
 
 export default function AdminLayout({ children }) {
   const { data: session } = useSession();
-  const userRoles = session?.user?.role || [];
-  const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+  const rawRole = session?.user?.role;
+  const roles = Array.isArray(rawRole) ? rawRole.filter(Boolean) : (rawRole ? [rawRole] : []);
   
   const username = session?.user?.name || 'Desconocido';
   const email = session?.user?.email || 'Desconocido';

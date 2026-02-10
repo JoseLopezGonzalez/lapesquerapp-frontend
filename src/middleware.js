@@ -139,8 +139,8 @@ export async function middleware(req) {
   const matchingRoute = matchingRoutes.sort((a, b) => b.length - a.length)[0];
   const rolesAllowed = matchingRoute ? roleConfig[matchingRoute] : [];
 
-  // Rol del usuario (string único desde la API)
-  const userRole = token.role;
+  // Rol del usuario (normalizar: API/token a veces devuelve array)
+  const userRole = Array.isArray(token.role) ? token.role[0] : token.role;
 
   console.log("🔐 [Middleware] Ruta coincidente:", matchingRoute);
   console.log("🔐 [Middleware] Roles Permitidos:", rolesAllowed);

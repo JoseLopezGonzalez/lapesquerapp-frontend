@@ -15,8 +15,8 @@ import { getToastTheme } from "@/customs/reactHotToast";
 export default function Navbar() {
     const currentPath = usePathname();
     const { data: session } = useSession();
-    const userRoles = session?.user?.role || []; // Roles del usuario actual
-    const roles = Array.isArray(userRoles) ? userRoles : [userRoles]; // Normalizar roles como array
+    const rawRole = session?.user?.role;
+    const roles = Array.isArray(rawRole) ? rawRole.filter(Boolean) : (rawRole ? [rawRole] : []);
 
     const username = session?.user?.name || 'Desconocido'; // Nombre del usuario actual
 

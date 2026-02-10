@@ -10,7 +10,8 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const userRole = session?.user?.role;
+      const rawRole = session?.user?.role;
+      const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       const hasAccess = userRole && allowedRoles?.includes(userRole);
       if (!hasAccess) {
         router.push("/unauthorized");

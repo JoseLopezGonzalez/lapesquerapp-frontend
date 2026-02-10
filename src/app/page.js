@@ -39,7 +39,8 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isSubdomain && status === "authenticated" && session?.user) {
-      const userRole = session.user.role;
+      const rawRole = session.user.role;
+      const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       if (userRole === "operario" && session.user.assignedStoreId) {
         router.replace(`/warehouse/${session.user.assignedStoreId}`);
       } else {

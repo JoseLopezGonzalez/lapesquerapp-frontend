@@ -74,8 +74,8 @@ export const authOptions = {
       // Si el usuario está presente (inicia sesión), agregar datos al token
       if (user) {
         token.accessToken = user.accessToken;
-        // Backend devuelve un solo rol (string)
-        token.role = user.role ?? null;
+        // Normalizar rol a string (el backend a veces devuelve array)
+        token.role = Array.isArray(user.role) ? (user.role[0] ?? null) : (user.role ?? null);
         // Campos opcionales (ej. operario con almacén asignado)
         if (user.assignedStoreId) {
           token.assignedStoreId = user.assignedStoreId;
@@ -103,8 +103,9 @@ export const authOptions = {
             const userData = await response.json();
             const currentUser = userData.data || userData;
             
-            // Actualizar token con datos frescos (rol único string)
-            token.role = currentUser.role ?? token.role;
+            // Actualizar token con datos frescos (rol siempre string)
+            const rawRole = currentUser.role ?? token.role;
+            token.role = Array.isArray(rawRole) ? (rawRole[0] ?? null) : rawRole;
             if (currentUser.assigned_store_id !== undefined) {
               token.assignedStoreId = currentUser.assigned_store_id;
             }
@@ -132,11 +133,12 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Si no hay token (por ejemplo, expiró), cerrar sesión automáticamente
       if (!token) {
         return null;
       }
-      session.user = token;
+      // Asegurar que session.user.role sea siempre string (por si el token tenía array)
+      const role = Array.isArray(token.role) ? (token.role[0] ?? null) : token.role;
+      session.user = { ...token, role };
       return session;
     },
   },

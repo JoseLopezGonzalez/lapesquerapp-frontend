@@ -26,7 +26,8 @@ export default function WarehouseOperatorPage({ params }) {
     }
 
     if (status === "authenticated") {
-      const userRole = session.user.role;
+      const rawRole = session.user.role;
+      const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       if (userRole !== "operario" && userRole !== "administrador" && userRole !== "tecnico") {
         router.push("/unauthorized");
         return;
@@ -65,7 +66,8 @@ export default function WarehouseOperatorPage({ params }) {
 
   // Si es operario y no es su almacén asignado, mostrar no autorizado
   if (status === "authenticated" && session?.user) {
-    if (session.user.role === "operario" && session.user.assignedStoreId !== parseInt(storeId)) {
+    const role = Array.isArray(session.user.role) ? session.user.role[0] : session.user.role;
+    if (role === "operario" && session.user.assignedStoreId !== parseInt(storeId)) {
       const handleRedirectToCorrectStore = () => {
         router.push(`/warehouse/${session.user.assignedStoreId}`);
       };
