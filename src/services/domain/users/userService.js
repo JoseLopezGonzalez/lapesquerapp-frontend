@@ -6,10 +6,10 @@
 
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { 
     fetchEntitiesGeneric, 
-    deleteEntityGeneric, 
-    performActionGeneric
+    deleteEntityGeneric
 } from '@/services/generic/entityService';
 import { 
     createEntityGeneric 
@@ -85,6 +85,31 @@ export const userService = {
         const token = await getAuthToken();
         const url = `${API_URL_V2}${ENDPOINT}/options`;
         return fetchAutocompleteOptionsGeneric(url, token);
+    },
+
+    /**
+     * Reenvía el magic link de invitación al correo del usuario.
+     * @param {number} id - ID del usuario
+     * @returns {Promise<{ message: string }>}
+     */
+    async resendInvitation(id) {
+        const token = await getAuthToken();
+        const url = `${API_URL_V2}${ENDPOINT}/${id}/resend-invitation`;
+        const response = await fetchWithTenant(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const err = new Error(data.message || data.userMessage || 'Error al reenviar la invitación.');
+            err.status = response.status;
+            err.data = data;
+            throw err;
+        }
+        return response.json().catch(() => ({ message: 'Se ha enviado un enlace de acceso al correo del usuario.' }));
     },
 };
 

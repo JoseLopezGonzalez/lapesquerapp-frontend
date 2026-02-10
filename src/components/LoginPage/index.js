@@ -13,23 +13,34 @@ import Link from "next/link";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { API_URL_V2 } from "@/configs/config";
 import Loader from "../Utilities/Loader";
-import { AlertCircleIcon, ArrowLeft, ArrowRight } from "lucide-react";
+import { AlertCircleIcon, ArrowLeft, ArrowRight, KeyRound, Mail } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { pageTransition } from "@/lib/motion-presets";
+import { requestAccess, verifyOtp } from "@/services/authService";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+
+const SENT_MESSAGE = "Si el correo está registrado y activo, recibirás un correo con un enlace y un código para acceder.";
+
+function safeRedirectFrom(from) {
+  if (!from || typeof from !== "string") return null;
+  const path = from.trim();
+  if (path === "" || !path.startsWith("/") || path.includes("//") || /^https?:\/\//i.test(path)) return null;
+  return path;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [tenantActive, setTenantActive] = useState(true);
   const [brandingImageUrl, setBrandingImageUrl] = useState("");
   const [tenantChecked, setTenantChecked] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [accessRequested, setAccessRequested] = useState(false);
   const { isMobile } = useIsMobileSafe();
 
   useEffect(() => {
@@ -38,7 +49,6 @@ export default function LoginPage() {
 
     if (subdomain === "test") {
       setEmail("admin@lapesquerapp.es");
-      setPassword("admin");
       setIsDemo(true);
     }
 
@@ -56,45 +66,91 @@ export default function LoginPage() {
       .finally(() => setTenantChecked(true));
   }, []);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    if (!tenantActive) {
-      toast.error("La suscripción está caducada o no ha sido renovada", getToastTheme());
-      return;
+  const getRedirectUrl = (user) => {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+    const safeFrom = safeRedirectFrom(from);
+    if (user?.role === "operario" && user?.assignedStoreId) {
+      return `/warehouse/${user.assignedStoreId}`;
     }
+    return safeFrom || "/admin/home";
+  };
 
+  const handleAcceder = async (e) => {
+    e.preventDefault();
+    if (!tenantActive || !email?.trim()) return;
     setLoading(true);
     try {
-      const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get("from") || "/admin/home";
-
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
-
-      if (!result || result.error) {
-        setEmail("");
-        setPassword("");
-        throw new Error(
-          result?.error === "CredentialsSignin"
-            ? "Datos de acceso incorrectos"
-            : result?.error || "Error al iniciar sesión"
-        );
-      }
-
-      toast.success("Inicio de sesión exitoso", getToastTheme());
-      window.location.href = redirectTo;
+      await requestAccess(email.trim());
+      setAccessRequested(true);
+      toast.success(SENT_MESSAGE, getToastTheme());
     } catch (err) {
-      // Priorizar userMessage sobre message para mostrar errores en formato natural
-      const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al iniciar sesión';
-      toast.error(errorMessage, getToastTheme());
+      const msg = err.message || "Error al solicitar acceso.";
+      toast.error(msg, getToastTheme());
     } finally {
       setLoading(false);
     }
   };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!tenantActive || !email?.trim() || !code?.trim()) return;
+    setLoading(true);
+    try {
+      const data = await verifyOtp(email.trim(), code.trim());
+      if (!data?.access_token || !data?.user) {
+        throw new Error("Respuesta inválida del servidor.");
+      }
+      const result = await signIn("credentials", {
+        redirect: false,
+        accessToken: data.access_token,
+        user: JSON.stringify(data.user),
+      });
+      if (!result || result.error) {
+        throw new Error(result?.error || "Error al iniciar sesión.");
+      }
+      toast.success("Inicio de sesión exitoso", getToastTheme());
+      window.location.href = getRedirectUrl(data.user);
+    } catch (err) {
+      const msg = err.message || err.data?.userMessage || err.data?.message || "Error al verificar el código.";
+      toast.error(msg, getToastTheme());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const backToEmail = () => {
+    setAccessRequested(false);
+    setCode("");
+  };
+
+  const handleOtpPaste = (e) => {
+    const text = (e.clipboardData?.getData("text/plain") || "").trim();
+    const digits = text.replace(/\D/g, "").slice(0, 6);
+    if (digits.length === 6) {
+      setCode(digits);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  // Al volver el foco a la pestaña, si el portapapeles tiene 6 dígitos, rellenar el OTP
+  useEffect(() => {
+    const tryFillFromClipboard = () => {
+      if (document.visibilityState !== "visible" || !accessRequested) return;
+      if (typeof navigator?.clipboard?.readText !== "function") return;
+      navigator.clipboard
+        .readText()
+        .then((text) => {
+          const digits = (text || "").trim().replace(/\D/g, "").slice(0, 6);
+          if (digits.length === 6) setCode(digits);
+        })
+        .catch(() => {});
+    };
+
+    document.addEventListener("visibilitychange", tryFillFromClipboard);
+    return () => document.removeEventListener("visibilitychange", tryFillFromClipboard);
+  }, [accessRequested]);
 
   // Mostrar loader mientras se verifica el tenant
   if (!tenantChecked) {
@@ -269,10 +325,7 @@ export default function LoginPage() {
 
                 {/* Panel derecho con formulario (desktop) */}
                 <div className="flex w-full flex-col items-center justify-center p-8 lg:p-12">
-                  <form
-                    onSubmit={handleLogin}
-                    className="mx-auto w-full max-w-xs space-y-8 py-20"
-                  >
+                  <div className="mx-auto w-full max-w-xs space-y-8 py-20">
                     <div className="text-center flex flex-col gap-3">
                       <h2 className="text-2xl lg:text-3xl xl:text-[2.5rem] font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
                         La PesquerApp
@@ -295,54 +348,84 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="ejemplo@lapesquerapp.es"
-                          required
-                          disabled={!tenantActive}
-                        />
-                      </div>
-
-                      <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="password">Contraseña</Label>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            id="password"
-                            name="password"
-                            autoComplete="off"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="*******"
-                            required
-                            disabled={!tenantActive}
-                            className="pr-10"
-                          />
-                          <button
+                      {!accessRequested ? (
+                        <>
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                              type="email"
+                              id="email"
+                              name="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="ejemplo@lapesquerapp.es"
+                              required
+                              disabled={!tenantActive}
+                            />
+                          </div>
+                          <Button
+                            className="w-full"
                             type="button"
-                            tabIndex={-1}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary focus:outline-none"
-                            onClick={() => setShowPassword((v) => !v)}
-                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                            disabled={loading || !tenantActive || !email?.trim()}
+                            onClick={handleAcceder}
                           >
-                            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <Button 
-                        className="w-full" 
-                        type="submit" 
-                        disabled={loading || !tenantActive}
-                      >
-                        {loading ? "Entrando..." : "Login"}
-                      </Button>
+                            {loading ? "Enviando..." : "Acceder"}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex flex-col gap-1">
+                            <Alert className="max-w-sm">
+                              <Mail className="h-4 w-4" />
+                              <AlertTitle>Revisa tu correo</AlertTitle>
+                              <AlertDescription>
+                                Te hemos enviado un enlace para acceder.
+                              </AlertDescription>
+                            </Alert>
+                            <Alert className="max-w-sm">
+                              <KeyRound className="h-4 w-4" />
+                              <AlertDescription>
+                                O bien introduce aquí el código de 6 dígitos que aparece en el correo.
+                              </AlertDescription>
+                            </Alert>
+                          </div>
+                          <div
+                            className="flex flex-col items-center gap-1.5 w-full max-w-sm"
+                            onPasteCapture={handleOtpPaste}
+                          >
+                            <Label className="text-center w-full">Código de 6 dígitos</Label>
+                            <InputOTP
+                              maxLength={6}
+                              pattern={REGEXP_ONLY_DIGITS}
+                              value={code}
+                              onChange={(value) => setCode(value)}
+                              disabled={!tenantActive}
+                            >
+                              <InputOTPGroup className="gap-2">
+                                <InputOTPSlot index={0} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                                <InputOTPSlot index={1} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                                <InputOTPSlot index={2} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                                <InputOTPSlot index={3} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                                <InputOTPSlot index={4} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                                <InputOTPSlot index={5} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10" />
+                              </InputOTPGroup>
+                            </InputOTP>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              className="w-full"
+                              type="button"
+                              disabled={loading || !tenantActive || code.length !== 6}
+                              onClick={handleVerifyOtp}
+                            >
+                              {loading ? "Verificando..." : "Verificar código"}
+                            </Button>
+                            <Button variant="ghost" type="button" onClick={backToEmail}>
+                              Volver
+                            </Button>
+                          </div>
+                        </>
+                      )}
 
                       <p className="text-center text-sm text-muted-foreground">
                         ¿Algún problema?{" "}
@@ -354,7 +437,7 @@ export default function LoginPage() {
                         </Link>
                       </p>
                     </div>
-                  </form>
+                  </div>
                 </div>
               </Card>
             </div>
@@ -395,10 +478,7 @@ export default function LoginPage() {
 
               {/* Contenido del formulario distribuido verticalmente */}
               <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto py-12">
-                <form
-                  onSubmit={handleLogin}
-                  className="w-full space-y-8"
-                >
+                <div className="w-full space-y-8">
                   <div className="text-center flex flex-col gap-4">
                     <h2 className="text-4xl font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
                       La PesquerApp
@@ -421,55 +501,85 @@ export default function LoginPage() {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="grid w-full items-center gap-2">
-                      <Label htmlFor="email-mobile" className="text-base">Email</Label>
-                      <Input
-                        type="email"
-                        id="email-mobile"
-                        name="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="ejemplo@lapesquerapp.es"
-                        required
-                        disabled={!tenantActive}
-                        className="h-12 text-base"
-                      />
-                    </div>
-
-                    <div className="grid w-full items-center gap-2">
-                      <Label htmlFor="password-mobile" className="text-base">Contraseña</Label>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          id="password-mobile"
-                          name="password"
-                          autoComplete="off"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="*******"
-                          required
-                          disabled={!tenantActive}
-                          className="h-12 text-base pr-12"
-                        />
-                        <button
+                    {!accessRequested ? (
+                      <>
+                        <div className="grid w-full items-center gap-2">
+                          <Label htmlFor="email-mobile" className="text-base">Email</Label>
+                          <Input
+                            type="email"
+                            id="email-mobile"
+                            name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="ejemplo@lapesquerapp.es"
+                            required
+                            disabled={!tenantActive}
+                            className="h-12 text-base"
+                          />
+                        </div>
+                        <Button
+                          className="w-full h-14 text-base font-semibold"
                           type="button"
-                          tabIndex={-1}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-primary focus:outline-none"
-                          onClick={() => setShowPassword((v) => !v)}
-                          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          disabled={loading || !tenantActive || !email?.trim()}
+                          onClick={handleAcceder}
                         >
-                          {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <Button 
-                      className="w-full h-14 text-base font-semibold" 
-                      type="submit" 
-                      disabled={loading || !tenantActive}
-                    >
-                      {loading ? "Entrando..." : "Iniciar sesión"}
-                    </Button>
+                          {loading ? "Enviando..." : "Acceder"}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex flex-col gap-1">
+                          <Alert className="max-w-sm">
+                            <Mail className="h-4 w-4" />
+                            <AlertTitle>Revisa tu correo</AlertTitle>
+                            <AlertDescription>
+                              Te hemos enviado un enlace para acceder.
+                            </AlertDescription>
+                          </Alert>
+                          <Alert className="max-w-sm">
+                            <KeyRound className="h-4 w-4" />
+                            <AlertDescription>
+                              O bien introduce aquí el código de 6 dígitos que aparece en el correo.
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+                        <div
+                          className="flex flex-col items-center gap-2 w-full"
+                          onPasteCapture={handleOtpPaste}
+                        >
+                          <Label className="text-base text-center w-full">Código de 6 dígitos</Label>
+                          <InputOTP
+                            maxLength={6}
+                            pattern={REGEXP_ONLY_DIGITS}
+                            value={code}
+                            onChange={(value) => setCode(value)}
+                            disabled={!tenantActive}
+                          >
+                            <InputOTPGroup className="gap-2">
+                              <InputOTPSlot index={0} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                              <InputOTPSlot index={1} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                              <InputOTPSlot index={2} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                              <InputOTPSlot index={3} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                              <InputOTPSlot index={4} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                              <InputOTPSlot index={5} className="rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-12 w-11 text-lg" />
+                            </InputOTPGroup>
+                          </InputOTP>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            className="w-full h-14 text-base font-semibold"
+                            type="button"
+                            disabled={loading || !tenantActive || code.length !== 6}
+                            onClick={handleVerifyOtp}
+                          >
+                            {loading ? "Verificando..." : "Verificar código"}
+                          </Button>
+                          <Button variant="ghost" type="button" onClick={backToEmail}>
+                            Volver
+                          </Button>
+                        </div>
+                      </>
+                    )}
 
                     <p className="text-center text-sm text-muted-foreground pt-2">
                       ¿Algún problema?{" "}
@@ -481,7 +591,7 @@ export default function LoginPage() {
                       </Link>
                     </p>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           </motion.div>

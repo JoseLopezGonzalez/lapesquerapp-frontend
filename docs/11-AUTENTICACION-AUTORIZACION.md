@@ -9,7 +9,11 @@
 
 ## 📋 Introducción
 
-La aplicación utiliza **NextAuth.js 4.24.11** para la gestión de autenticación y sesiones. El sistema implementa protección de rutas basada en roles mediante middleware de Next.js y componentes de protección adicionales.
+La aplicación utiliza **NextAuth.js** para la gestión de autenticación y sesiones. **El acceso es solo por Magic Link o código OTP** enviado por correo; no se usa contraseña en login ni al crear/editar usuarios.
+
+- **Login:** El usuario introduce su email y elige "Enviar enlace" o "Enviar código". Tras canjear el enlace (ruta `/auth/verify?token=xxx`) o el código OTP, se establece la sesión con el token devuelto por la API.
+- **NextAuth** solo acepta credenciales `accessToken` + `user` (tras canjear magic link u OTP en el cliente); no se llama a `POST /v2/login`.
+- **Usuarios:** Creación sin campo contraseña; "Reenviar invitación" envía el magic link al correo del usuario (`POST /v2/users/{id}/resend-invitation`).
 
 **Archivos principales**:
 - `/src/app/api/auth/[...nextauth]/route.js` - Configuración de NextAuth
@@ -57,39 +61,34 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
 
 **Limitación**: El rate limiting es en memoria, se resetea al reiniciar el servidor.
 
-### Flujo de Autenticación
+### Flujo de Autenticación (Magic Link y OTP)
 
-1. **Usuario envía credenciales**
+1. **Pantalla de login** (`/`): el usuario introduce **email** y pulsa **"Acceder"**:
+   - Se llama a `POST /v2/auth/request-access` con body `{ email }` (un solo correo con enlace + código).
+   - Mensaje: "Si el correo está registrado y activo, recibirás un correo con un enlace y un código para acceder."
+   - Se muestra un campo para el código de 6 dígitos (por si abre el correo en otro dispositivo). Al enviar el código → `POST /v2/auth/otp/verify` con `{ email, code }`.
+   - El correo también lleva un enlace a `/auth/verify?token=xxx` para canjear desde el mismo dispositivo.
+
+2. **Tras canjear enlace o código**, el cliente recibe `access_token` y `user`. Entonces se llama a NextAuth:
    ```javascript
-   // LoginPage
-   const result = await signIn("credentials", {
+   await signIn("credentials", {
      redirect: false,
-     email,
-     password,
+     accessToken: data.access_token,
+     user: JSON.stringify(data.user),
    });
    ```
 
-2. **NextAuth llama a `authorize`**
+3. **NextAuth `authorize`** solo acepta credenciales token+user (no email/password ni `POST /v2/login`):
    ```javascript
-   async authorize(credentials, req) {
-     // Rate limiting
-     // Validar IP y intentos
-     
-     // Llamar a API v2
-     const res = await fetchWithTenant(`${API_URL_V2}login`, {
-       method: 'POST',
-       body: JSON.stringify(credentials),
-     });
-     
-     const data = await res.json();
-     
-     if (res.ok && data.access_token) {
-       return { ...data.user, accessToken: data.access_token };
-     }
-     
-     throw new Error(data.message || 'Error al iniciar sesión');
+   if (credentials?.accessToken && credentials?.user) {
+     const user = JSON.parse(credentials.user);
+     return { ...user, accessToken: credentials.accessToken };
+   }
+   return null;
    }
    ```
+
+4. **Página `/auth/verify`:** Lee `token` de la URL, llama a `POST /v2/auth/magic-link/verify`, y tras éxito hace `signIn` con el token y user y redirige (operario → `/warehouse/{id}`, resto → `from` o `/admin/home`). Si la API devuelve 400/403, se muestra mensaje y opción de volver al login.
 
 3. **Callback JWT**
    ```javascript
@@ -341,55 +340,29 @@ export default function AdminLayout({ children }) {
 **Archivo**: `/src/components/LoginPage/index.js`
 
 **Características**:
-- Validación de tenant activo
-- Detección de subdominio para branding
-- Modo demo (subdominio "test")
-- Toggle de mostrar/ocultar contraseña
-- Redirección después de login exitoso
+- Validación de tenant activo y detección de subdominio para branding
+- Modo demo (subdominio "test"): solo se rellena el email
+- **Sin contraseña:** solo campo email y un botón **"Acceder"** que llama a `authService.requestAccess(email)` → `POST /v2/auth/request-access`. Tras enviar, se muestra mensaje y campo para el código de 6 dígitos; al verificar el código, `authService.verifyOtp(email, code)` y después `signIn("credentials", { accessToken, user })` y redirección
+- Redirección tras OTP exitoso: operario → `/warehouse/{assignedStoreId}`, resto → parámetro `from` (validado) o `/admin/home`
 
-### Flujo Completo
+### Ruta `/auth/verify`
 
-1. **Usuario accede a `/`**
-   - Si está autenticado: redirige según rol
-   - Si no está autenticado: muestra LoginPage
+**Archivo**: `/src/app/auth/verify/page.js`
 
-2. **Usuario ingresa credenciales**
-   ```javascript
-   const result = await signIn("credentials", {
-     redirect: false,
-     email,
-     password,
-   });
-   ```
+- El enlace del correo (magic link) apunta al frontend: `.../auth/verify?token=xxx`
+- Lee `token`, llama a `authService.verifyMagicLinkToken(token)`, luego `signIn` con el token y user y redirige con la misma lógica que el login
+- Si el enlace es inválido o expirado (400) o usuario desactivado (403), muestra mensaje y enlaces para volver o solicitar nuevo enlace
 
-3. **Validación de tenant**
-   ```javascript
-   // Verificar que el tenant esté activo
-   fetch(`${API_URL_V2}public/tenant/${subdomain}`)
-     .then(data => {
-       if (!data || data.active === false) {
-         setTenantActive(false);
-       }
-     });
-   ```
+### Endpoints de auth (API v2)
 
-4. **Redirección después de login**
-   ```javascript
-   const params = new URLSearchParams(window.location.search);
-   const redirectTo = params.get("from") || "/admin/home";
-   window.location.href = redirectTo;
-   ```
+- `POST /v2/auth/request-access` — solicitar acceso: un solo email, el correo incluye enlace + código (body: `{ email }`)
+- `POST /v2/auth/magic-link/verify` — canjear token del enlace (body: `{ token }`) → `access_token` y `user`
+- `POST /v2/auth/otp/verify` — canjear código (body: `{ email, code }`) → `access_token` y `user`
+- `POST /v2/login` — **ya no se usa** para acceso (la API devuelve 400)
 
-### Modo Demo
+### Throttle (429)
 
-Si el subdominio es "test", se auto-rellenan credenciales:
-```javascript
-if (subdomain === "test") {
-  setEmail("admin@lapesquerapp.es");
-  setPassword("admin");
-  setIsDemo(true);
-}
-```
+Si se supera el límite de peticiones por IP, la API devuelve **429**. El frontend muestra: "Demasiados intentos; espera un momento antes de volver a intentar."
 
 ---
 

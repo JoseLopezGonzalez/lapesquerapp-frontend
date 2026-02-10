@@ -1,18 +1,16 @@
 import { API_URL_V2 } from '@/configs/config';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
-import { getErrorMessage } from '@/lib/api/apiHelpers';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-// --- Rate limiting simple en memoria ---
+// --- Rate limiting simple en memoria (para intentos de authorize por IP) ---
 const loginAttempts = {};
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+const MAX_ATTEMPTS = 10;
+const WINDOW_MS = 60 * 1000; // 1 minuto
 
 function getClientIp(req) {
-  // Next.js API routes: req.headers['x-forwarded-for'] o req.socket.remoteAddress
   return (
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
     req.socket?.remoteAddress ||
     "unknown"
   );
@@ -24,41 +22,30 @@ export const authOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        accessToken: { label: 'Access Token', type: 'text' },
+        user: { label: 'User', type: 'text' },
       },
       async authorize(credentials, req) {
-        // --- Rate limiting por IP ---
         const ip = getClientIp(req);
         const now = Date.now();
-        if (!loginAttempts[ip]) {
-          loginAttempts[ip] = [];
-        }
-        // Eliminar intentos viejos
+        if (!loginAttempts[ip]) loginAttempts[ip] = [];
         loginAttempts[ip] = loginAttempts[ip].filter((ts) => now - ts < WINDOW_MS);
         if (loginAttempts[ip].length >= MAX_ATTEMPTS) {
-          throw new Error("Demasiados intentos de inicio de sesión. Intenta de nuevo más tarde.");
+          throw new Error("Demasiados intentos. Intenta de nuevo más tarde.");
         }
         loginAttempts[ip].push(now);
-        // --- Fin rate limiting ---
+
+        // Solo flujo token+user (tras canjear magic link u OTP en el cliente)
+        if (!credentials?.accessToken || !credentials?.user) {
+          return null;
+        }
         try {
-          const res = await fetchWithTenant(`${API_URL_V2}login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials),
-          });
-
-          // console.log('Response from login:', res);
-
-          const data = await res.json();
-
-          if (res.ok && data.access_token) {
-            return { ...data.user, accessToken: data.access_token };
-          }
-
-          throw new Error(getErrorMessage(data) || 'Error al iniciar sesión');
+          const user = typeof credentials.user === 'string' ? JSON.parse(credentials.user) : credentials.user;
+          const accessToken = credentials.accessToken;
+          if (!accessToken || !user) return null;
+          return { ...user, accessToken };
         } catch (err) {
-          console.error('Error al autenticar:', err);
+          console.error('Error al parsear credenciales:', err);
           return null;
         }
       },

@@ -493,10 +493,25 @@ export default function EntityClient({ config }) {
         }
     };
 
+    // Reenviar invitación (solo usuarios)
+    const handleResendInvitation = useCallback(async (id) => {
+        const entityService = getEntityService(config.endpoint);
+        if (!entityService?.resendInvitation) return;
+        try {
+            await entityService.resendInvitation(id);
+            toast.success('Se ha enviado un enlace de acceso al correo del usuario.', getToastTheme());
+            fetchData(currentPage, filters);
+        } catch (err) {
+            const errorMessage = err?.data?.userMessage || err?.message || 'Error al reenviar la invitación.';
+            toast.error(errorMessage, getToastTheme());
+        }
+    }, [config.endpoint, currentPage, filters]);
+
     // Preparar columns y rows para EntityTable
     const columns = generateColumns2(config.table.headers, { 
       onEdit: handleOpenEdit, 
       onView: handleOpenView,
+      onResendInvitation: config.endpoint === 'users' ? handleResendInvitation : undefined,
       config: config 
     });
     const rows = data.rows;

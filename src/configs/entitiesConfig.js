@@ -721,28 +721,6 @@ export const configs = {
           }
         },
         {
-          name: "password",
-          label: "Contraseña",
-          type: "text",
-          validation: {
-            required: "La contraseña es obligatoria",
-            minLength: {
-              value: 6,
-              message: "La contraseña debe tener al menos 6 caracteres"
-            },
-            maxLength: {
-              value: 20,
-              message: "La contraseña no puede tener más de 20 caracteres"
-            }
-          },
-          cols: {
-            sm: 3,
-            md: 3,
-            lg: 3,
-            xl: 3,
-          }
-        },
-        {
           name: "role",
           label: "Rol",
           type: "Autocomplete",

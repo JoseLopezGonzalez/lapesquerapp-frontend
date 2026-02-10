@@ -1,12 +1,14 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { buildLoginUrl } from "@/configs/authConfig";
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -19,9 +21,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     }
 
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push(buildLoginUrl(pathname || ""));
     }
-  }, [session, status, allowedRoles, router]);
+  }, [session, status, allowedRoles, router, pathname]);
 
   if (status === "loading") {
     return <div>Cargando...</div>; // O un loader personalizado

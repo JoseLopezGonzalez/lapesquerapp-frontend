@@ -21,8 +21,9 @@ export default function AuthErrorInterceptor() {
         return;
       }
       
-      // Si ya estamos en la página de login, no hacer nada
-      if (window.location.pathname === '/') {
+      // Si ya estamos en la página de login o en verify (flujo de magic link), no redirigir
+      const pathname = window.location.pathname;
+      if (pathname === '/' || pathname === '/auth/verify') {
         return;
       }
       

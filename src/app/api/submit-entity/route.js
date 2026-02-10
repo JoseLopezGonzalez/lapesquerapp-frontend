@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { API_URL_V2 } from '@/configs/config';
 import { fetchWithTenant } from "@lib/fetchWithTenant";
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 
 export async function POST(req) {
     try {
