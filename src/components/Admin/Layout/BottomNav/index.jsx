@@ -171,7 +171,7 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
             return (
               <div
                 key="center"
-                className="flex flex-1 min-w-0 items-center justify-center"
+                className="flex flex-1 min-w-0 items-center justify-center mx-4"
               >
                 <CenterActionButton onOpenSheet={onSheetOpenChange} />
               </div>
