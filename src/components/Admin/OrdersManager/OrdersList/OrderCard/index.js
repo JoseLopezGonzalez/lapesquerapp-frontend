@@ -11,6 +11,18 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
     const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 
     const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
+    const dateLabel = loadDateOnly
+        ? loadDateOnly.getTime() === today.getTime()
+            ? 'Hoy'
+            : loadDateOnly.getTime() === tomorrow.getTime()
+                ? 'Mañana'
+                : loadDate
+        : 'N/A';
 
     // Borde izquierdo por estado (sin cambiar fondo base)
     const borderLClass =
@@ -125,11 +137,14 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 </div>
             ) : (
                 <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                         <StatusBadge
                             color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
                             label={statusLabel}
                         />
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums" title={loadDate}>
+                            {dateLabel}
+                        </span>
                     </div>
                     <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
                     <div>

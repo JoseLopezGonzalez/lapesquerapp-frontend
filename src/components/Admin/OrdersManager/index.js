@@ -142,6 +142,21 @@ export default function OrdersManager() {
         }
     }, [visibleCategories, activeCategory.name]);
 
+    // En desktop no mostramos tabs Hoy/Mañana; si estaba seleccionado uno, volver a "Todos"
+    useEffect(() => {
+        if (!isMobile && (activeCategory.name === 'today' || activeCategory.name === 'tomorrow')) {
+            setCategories((prev) =>
+                prev.map((cat) => ({ ...cat, current: cat.name === 'all' }))
+            );
+        }
+    }, [isMobile, activeCategory.name]);
+
+    // Tabs visibles: en mobile incluyen Hoy/Mañana; en desktop solo Todos, En producción, Terminados
+    const visibleCategoriesForTabs = useMemo(() => {
+        if (isMobile) return visibleCategories;
+        return visibleCategories.filter((c) => c.name !== 'today' && c.name !== 'tomorrow');
+    }, [isMobile, visibleCategories]);
+
     // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
     // No incluimos selectedOrder en las dependencias para evitar re-renders innecesarios
     // isSelected se calculará en OrderCard basándose en selectedOrderId prop
@@ -285,7 +300,7 @@ export default function OrdersManager() {
             onClickOrderCard={handleOnClickOrderCard}
             orders={sortedOrders}
             categories={categories}
-            visibleCategories={visibleCategories}
+            visibleCategories={visibleCategoriesForTabs}
             onClickCategory={handleOnClickCategory}
             onChangeSearch={handleOnChangeSearch}
             searchText={searchText}
@@ -296,7 +311,7 @@ export default function OrdersManager() {
             viewMode={viewMode}
             onToggleViewMode={toggleViewMode}
         />
-    ), [sortedOrders, categories, visibleCategories, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
+    ), [sortedOrders, categories, visibleCategoriesForTabs, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
 
     // Memoizar la función onLoading para evitar re-renders infinitos
     const handleOrderLoading = useCallback((value) => {
