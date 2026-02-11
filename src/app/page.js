@@ -41,8 +41,8 @@ export default function HomePage() {
     if (isSubdomain && status === "authenticated" && session?.user) {
       const rawRole = session.user.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
-      if (userRole === "operario" && session.user.assignedStoreId) {
-        router.replace(`/warehouse/${session.user.assignedStoreId}`);
+      if (userRole === "operario") {
+        router.replace("/admin/home");
       } else {
         router.replace("/admin/home");
       }

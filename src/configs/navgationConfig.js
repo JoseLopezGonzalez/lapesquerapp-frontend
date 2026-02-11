@@ -14,7 +14,7 @@ export const navigationConfig = [
         name: 'Inicio',
         icon: HomeIcon,
         href: '/admin/home',
-        allowedRoles: ["administrador", "direccion", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
     },
     {
         name: 'Almacenes',
@@ -234,7 +234,7 @@ export const navigationManagerConfig = [
     {
         name: 'Preparación de pedidos',
         icon: LayoutDashboard,
-        allowedRoles: ["administrador", "direccion", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
         href: '/admin/orquestador',
     },
     {
@@ -246,7 +246,7 @@ export const navigationManagerConfig = [
     {
         name: 'Almacenes interactivos',
         icon: LandPlot,
-        allowedRoles: ["administrador", "direccion", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
         href: '/admin/stores-manager',
     },
 
@@ -271,7 +271,7 @@ export const navigationManagerConfig = [
     {
         name: 'Fichaje Automático NFC',
         icon: Radio,
-        allowedRoles: ["administrador", "direccion", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
         href: '/admin/nfc-punch-manager',
     },
     /* {

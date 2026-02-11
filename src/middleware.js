@@ -152,17 +152,11 @@ export async function middleware(req) {
 
   console.log("🔐 [Middleware] ¿Tiene acceso?:", hasAccess);
 
-  // Excepción: operario intentando acceder a /admin, redirigir a su almacén
+  // Operario (rol de nivel): solo puede acceder a rutas que incluyan "operario" en roleConfig.
+  // Si intenta otra ruta bajo /admin, redirigir al dashboard operario en lugar de unauthorized.
   if (!hasAccess && userRole === "operario" && pathname.startsWith("/admin")) {
-    console.log("🔐 [Middleware] Operario intentando acceder a admin, redirigiendo a su almacén");
-    if (token.assignedStoreId) {
-      const warehouseUrl = new URL(`/warehouse/${token.assignedStoreId}`, req.url);
-      return NextResponse.redirect(warehouseUrl);
-    } else {
-      console.log("🔐 [Middleware] Operario sin assignedStoreId, redirigiendo a unauthorized");
-      const unauthorizedUrl = new URL("/unauthorized", req.url);
-      return NextResponse.redirect(unauthorizedUrl);
-    }
+    const homeUrl = new URL("/admin/home", req.url);
+    return NextResponse.redirect(homeUrl);
   }
 
   if (!rolesAllowed.length || !hasAccess) {

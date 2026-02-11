@@ -1,37 +1,47 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useIsLoggingOut } from "@/hooks/useIsLoggingOut";
 import { LogoutDialog } from "@/components/Utilities/LogoutDialog";
 import Loader from "@/components/Utilities/Loader";
 
+const OPERARIO_ALLOWED_PATHS = [
+  "/admin/home",
+  "/admin/raw-material-receptions",
+  "/admin/cebo-dispatches",
+  "/admin/orquestador",
+  "/admin/stores-manager",
+  "/admin/nfc-punch-manager",
+];
+
+function isOperarioAllowedPath(pathname) {
+  if (!pathname) return false;
+  return OPERARIO_ALLOWED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export default function AdminRouteProtection({ children }) {
-  // ✅ CRÍTICO: Todos los hooks DEBEN ejecutarse ANTES de cualquier return condicional
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const isLoggingOut = useIsLoggingOut();
 
-  // ✅ Todos los useEffect también deben estar antes de cualquier return
+  // Operario (rol de nivel): solo puede permanecer en rutas permitidas (home, orquestador, stores-manager, etc.)
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       const rawRole = session.user.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
-      if (userRole === "operario" && session.user.assignedStoreId) {
-        router.replace(`/warehouse/${session.user.assignedStoreId}`);
-        return;
+      if (userRole === "operario" && !isOperarioAllowedPath(pathname)) {
+        router.replace("/admin/home");
       }
     }
-  }, [status, session, router]);
+  }, [status, session, pathname, router]);
 
-  // ✅ AHORA SÍ: Después de todos los hooks, podemos hacer returns condicionales
-  // Si hay logout en curso, mostrar solo el diálogo
   if (isLoggingOut) {
     return <LogoutDialog open={true} />;
   }
 
-  // ✅ Verificar logout también en estados de loading
   if (status === "loading") {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -41,7 +51,7 @@ export default function AdminRouteProtection({ children }) {
   }
 
   const role = session?.user?.role != null ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role) : null;
-  if (status === "authenticated" && role === "operario") {
+  if (status === "authenticated" && role === "operario" && !isOperarioAllowedPath(pathname)) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />
@@ -49,6 +59,5 @@ export default function AdminRouteProtection({ children }) {
     );
   }
 
-  // Para otros usuarios, mostrar el contenido normal
   return children;
 }

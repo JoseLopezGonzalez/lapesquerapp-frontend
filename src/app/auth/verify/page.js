@@ -20,8 +20,8 @@ function safeRedirectFrom(from) {
 function getRedirectUrl(user, searchParams) {
   const from = searchParams.get("from");
   const safeFrom = safeRedirectFrom(from);
-  if (user?.role === "operario" && user?.assignedStoreId) {
-    return `/warehouse/${user.assignedStoreId}`;
+  if (user?.role === "operario") {
+    return "/admin/home";
   }
   return safeFrom || "/admin/home";
 }

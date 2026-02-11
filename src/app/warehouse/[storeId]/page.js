@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, use } from "react";
 import { Store } from "@/components/Admin/Stores/StoresManager/Store";
 import WarehouseOperatorLayout from "@/components/WarehouseOperatorLayout";
+import OperarioDashboard from "@/components/Warehouse/OperarioDashboard";
 import Loader from "@/components/Utilities/Loader";
 import { getStore } from "@/services/storeService";
 import { Button } from "@/components/ui/button";
@@ -64,13 +65,20 @@ export default function WarehouseOperatorPage({ params }) {
     );
   }
 
-  // Si es operario y no es su almacén asignado, mostrar no autorizado
+  // Si es operario y no es su almacén asignado, mostrar no autorizado (o /unauthorized si no tiene almacén)
   if (status === "authenticated" && session?.user) {
     const role = Array.isArray(session.user.role) ? session.user.role[0] : session.user.role;
-    if (role === "operario" && session.user.assignedStoreId !== parseInt(storeId)) {
-      const handleRedirectToCorrectStore = () => {
-        router.push(`/warehouse/${session.user.assignedStoreId}`);
-      };
+    const assignedId = session.user.assignedStoreId != null ? Number(session.user.assignedStoreId) : null;
+    const currentStoreIdNum = Number(storeId);
+    if (role === "operario") {
+      if (!assignedId) {
+        router.replace("/unauthorized");
+        return null;
+      }
+      if (assignedId !== currentStoreIdNum) {
+        const handleRedirectToCorrectStore = () => {
+          router.push(`/warehouse/${assignedId}`);
+        };
 
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
@@ -118,6 +126,7 @@ export default function WarehouseOperatorPage({ params }) {
           </div>
         </div>
       );
+      }
     }
   }
 
@@ -136,15 +145,21 @@ export default function WarehouseOperatorPage({ params }) {
     );
   }
 
+  const role = Array.isArray(session?.user?.role) ? session.user.role[0] : session?.user?.role;
+  const isOperario = role === "operario";
+
   return (
     <WarehouseOperatorLayout storeName={storeData.name}>
-      {/* Reutilizar TODO el componente Store existente */}
-      <Store
-        storeId={parseInt(storeId)}
-        onUpdateCurrentStoreTotalNetWeight={() => { }}
-        onAddNetWeightToStore={() => { }}
-        setIsStoreLoading={() => { }}
-      />
+      {isOperario ? (
+        <OperarioDashboard storeId={storeId} />
+      ) : (
+        <Store
+          storeId={parseInt(storeId)}
+          onUpdateCurrentStoreTotalNetWeight={() => { }}
+          onAddNetWeightToStore={() => { }}
+          setIsStoreLoading={() => { }}
+        />
+      )}
     </WarehouseOperatorLayout>
   );
 }

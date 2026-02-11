@@ -68,8 +68,8 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const from = params.get("from");
     const safeFrom = safeRedirectFrom(from);
-    if (user?.role === "operario" && user?.assignedStoreId) {
-      return `/warehouse/${user.assignedStoreId}`;
+    if (user?.role === "operario") {
+      return "/admin/home";
     }
     return safeFrom || "/admin/home";
   };
