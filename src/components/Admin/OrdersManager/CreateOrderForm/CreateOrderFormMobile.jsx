@@ -590,7 +590,7 @@ const CreateOrderFormMobile = ({
                             ) : (
                                 <Button
                                     type="submit"
-                                    disabled={isSubmitting || !isValid || fields.length === 0}
+                                    disabled={isSubmitting || !isValid}
                                     className={`h-11 px-6 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform ${isFirstStep ? 'ml-auto' : ''}`}
                                 >
                                     <Plus className="h-5 w-5 mr-2" />

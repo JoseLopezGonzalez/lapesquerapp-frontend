@@ -468,7 +468,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     <div className={`flex justify-end gap-4 ${isMobile ? 'sticky bottom-0 bg-background pt-4 pb-4 border-t mt-6 -mx-4 px-4' : 'pt-4'}`}>
                         <Button 
                             type="submit" 
-                            disabled={isSubmitting || !isValid || fields.length === 0}
+                            disabled={isSubmitting || !isValid}
                             className={isMobile ? 'h-12 text-base w-full' : ''}
                         >
                             <Plus className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />

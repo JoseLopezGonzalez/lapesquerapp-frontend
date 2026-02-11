@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover"
 
 function formatDate(date, formatStyle = "long") {
-  if (!date) return ""
+  if (!date || !isValidDate(date)) return ""
 
   if (formatStyle === "short") {
     const day = String(date.getDate()).padStart(2, "0")
@@ -47,14 +47,15 @@ function parseShortDate(input) {
 }
 
 export function DatePicker({ date, onChange, formatStyle = "short" }) {
+  const safeDate = date && isValidDate(date) ? date : null
   const [open, setOpen] = React.useState(false)
-  const [month, setMonth] = React.useState(date || new Date())
+  const [month, setMonth] = React.useState(safeDate || new Date())
   const [value, setValue] = React.useState(formatDate(date, formatStyle))
 
-  // Actualizar month cuando cambie date
+  // Actualizar month cuando cambie date (solo si es válida)
   React.useEffect(() => {
-    setMonth(date || new Date())
-  }, [date])
+    setMonth(safeDate || new Date())
+  }, [safeDate])
 
   // Actualizar value cuando cambie date
   React.useEffect(() => {
@@ -92,10 +93,16 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
   }
 
   const handleSelect = (newDate) => {
-    // Crear una fecha con la zona horaria correcta (mediodía para evitar problemas de UTC)
+    // En modo "single", al hacer clic en la fecha ya seleccionada el Calendar llama onSelect(undefined).
+    // No propagar eso para evitar Invalid Date y NaN/NaN/NaN en el input.
+    if (!newDate) {
+      setOpen(false)
+      return
+    }
     const localDate = new Date(newDate)
+    if (!isValidDate(localDate)) return
     localDate.setHours(12, 0, 0, 0)
-    
+
     onChange(localDate)
     setMonth(localDate)
     setValue(formatDate(localDate, formatStyle))
@@ -132,7 +139,7 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
           >
             <Calendar
               mode="single"
-              selected={date}
+              selected={safeDate ?? undefined}
               captionLayout="dropdown"
               month={month}
               onMonthChange={setMonth}
