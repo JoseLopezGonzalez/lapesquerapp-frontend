@@ -130,16 +130,17 @@ export function SettingsProvider({ children }) {
       .catch((err) => {
         console.error(`[SettingsProvider] Error al obtener settings para tenant ${currentTenant}:`, err);
         
-        // Para errores de autenticación, el AuthErrorInterceptor se encargará de la redirección
-        // Para otros errores (incluyendo 500), establecer settings vacío y marcar error
-        if (!isAuthError(err)) {
-          setSettings({});
-          // Marcar que hubo un error para prevenir reintentos infinitos
-          // Solo marcar error si es un error del servidor (5xx) o de red
-          const isServerError = err?.status >= 500 || err?.status === undefined;
-          if (isServerError) {
-            hasErrorRef.current = true;
-          }
+        // Siempre dejar estado definido para no bloquear la UI (evita loader infinito)
+        setSettings({});
+        if (isAuthError(err)) {
+          // El AuthErrorInterceptor redirigirá al login; no marcar error para no bloquear reintentos tras login
+          hasErrorRef.current = false;
+          return;
+        }
+        // Para otros errores (5xx, red), marcar error para prevenir reintentos infinitos
+        const isServerError = err?.status >= 500 || err?.status === undefined;
+        if (isServerError) {
+          hasErrorRef.current = true;
         }
       })
       .finally(() => {

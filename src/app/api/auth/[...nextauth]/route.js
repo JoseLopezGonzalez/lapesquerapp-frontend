@@ -86,6 +86,12 @@ export const authOptions = {
             },
           });
 
+          // Token revocado o inválido (ej. personal token eliminado en BD) → invalidar sesión
+          if (response.status === 401 || response.status === 403) {
+            console.warn('[NextAuth] Token rechazado por el backend (401/403), invalidando sesión');
+            return null;
+          }
+
           if (response.ok) {
             const userData = await response.json();
             const currentUser = userData.data || userData;
