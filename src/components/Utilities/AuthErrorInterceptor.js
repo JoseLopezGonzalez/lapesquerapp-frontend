@@ -21,26 +21,32 @@ export default function AuthErrorInterceptor() {
         return;
       }
       
-      // Si ya estamos en la página de login o en verify (flujo de magic link), no redirigir
       const pathname = window.location.pathname;
-      if (pathname === '/' || pathname === '/auth/verify') {
-        return;
-      }
+      const alreadyOnLogin = pathname === '/' || pathname === '/auth/verify';
       
       isRedirecting = true;
       
-      // Mostrar notificación al usuario (solo una vez)
-      toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
-      
-      // Cerrar sesión y redirigir después de un breve delay
-      setTimeout(async () => {
+      // Siempre cerrar sesión en cliente para que useSession() pase a "unauthenticated".
+      // Si no hacemos signOut cuando estamos en /, la home sigue viendo "authenticated" y muestra Loader infinito.
+      const clearSession = async () => {
         try {
           await signOut({ redirect: false });
         } catch (err) {
           console.error('Error en signOut desde interceptor:', err);
         }
-        const currentPath = window.location.pathname;
-        const loginUrl = buildLoginUrl(currentPath);
+      };
+      
+      if (alreadyOnLogin) {
+        // Ya estamos en login: solo limpiar sesión (evita loader infinito en página de login)
+        clearSession();
+        return;
+      }
+      
+      // En otras rutas: notificar y redirigir al login
+      toast.error('Sesión expirada. Redirigiendo al login...', getToastTheme());
+      setTimeout(async () => {
+        await clearSession();
+        const loginUrl = buildLoginUrl(window.location.pathname);
         window.location.href = loginUrl;
       }, AUTH_ERROR_CONFIG.REDIRECT_DELAY);
     };

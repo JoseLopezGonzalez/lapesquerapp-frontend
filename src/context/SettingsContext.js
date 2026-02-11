@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from "r
 import { getSettings } from "@/services/settingsService";
 import { invalidateSettingsCache } from "@/helpers/getSettingValue";
 import { isAuthError } from "@/configs/authConfig";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { getCurrentTenant } from "@/lib/utils/getCurrentTenant";
 
 const SettingsContext = createContext();
@@ -133,8 +133,9 @@ export function SettingsProvider({ children }) {
         // Siempre dejar estado definido para no bloquear la UI (evita loader infinito)
         setSettings({});
         if (isAuthError(err)) {
-          // El AuthErrorInterceptor redirigirá al login; no marcar error para no bloquear reintentos tras login
           hasErrorRef.current = false;
+          // Forzar signOut en cliente para que useSession() pase a "unauthenticated" y la home muestre login en vez de loader
+          signOut({ redirect: false }).catch((e) => console.warn('[SettingsProvider] signOut:', e));
           return;
         }
         // Para otros errores (5xx, red), marcar error para prevenir reintentos infinitos

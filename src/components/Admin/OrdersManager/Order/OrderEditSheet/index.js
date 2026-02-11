@@ -20,6 +20,7 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange }) => {
     const { order, updateOrderData } = useOrderContext()
@@ -34,7 +35,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
     const [initialValues, setInitialValues] = useState(null);
 
 
-    const { register, handleSubmit, reset, control, formState: { errors, isDirty, dirtyFields } } = useForm({
+    const { register, handleSubmit, reset, control, setError, formState: { errors, isDirty, dirtyFields } } = useForm({
         defaultValues,
         mode: 'onChange',
     });
@@ -120,19 +121,10 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
             reset(defaultValues);
             setInitialValues(null);
         } catch (error) {
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
             toast.error(errorMessage, { id: toastId });
-            
-            // Si hay errores de validación por campo, mostrarlos
-            if (error?.response?.data?.errors) {
-                const fieldErrors = error.response.data.errors;
-                Object.keys(fieldErrors).forEach((field) => {
-                    const fieldError = fieldErrors[field];
-                    if (Array.isArray(fieldError) && fieldError.length > 0) {
-                        toast.error(`${field}: ${fieldError[0]}`, getToastTheme());
-                    }
-                });
+            if (error?.status === 422 && error?.data?.errors) {
+                setErrorsFrom422(setError, error.data.errors);
             }
             setSaving(false);
         }
@@ -333,14 +325,9 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                     <div className={`flex flex-shrink-0 ${isMobile ? 'pt-4 pb-2 border-t bg-background' : 'justify-end gap-4 pt-4'}`}>
                         <Button 
                             type="submit"
-                            disabled={saving || !isDirty || Object.keys(errors).length > 0}
+                            disabled={saving || !isDirty}
                             className={isMobile ? 'w-full min-h-[44px]' : ''}
-                            onClick={() => {
-                                // Asegurar que el estado saving se active inmediatamente al hacer clic
-                                if (!saving && isDirty && Object.keys(errors).length === 0) {
-                                    // El estado se manejará en onSubmit, pero esto asegura feedback inmediato
-                                }
-                            }}>
+>
                             {saving ? (
                                 <>
                                     <Loader2 className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2 animate-spin`} />

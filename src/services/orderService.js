@@ -2,7 +2,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V1, API_URL_V2 } from "@/configs/config";
 import { getSession } from "next-auth/react";
-import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
+import { getErrorMessage, handleServiceResponse, ApiError } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -58,11 +58,14 @@ export function updateOrder(orderId, orderData, token) {
         },
         body: JSON.stringify(orderData),
     })
-        .then((response) => {
+        .then(async (response) => {
             if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el pedido');
-                });
+                const errorData = await response.json();
+                throw new ApiError(
+                    getErrorMessage(errorData) || 'Error al actualizar el pedido',
+                    response.status,
+                    errorData
+                );
             }
             return response.json();
         })
@@ -70,7 +73,6 @@ export function updateOrder(orderId, orderData, token) {
             return data.data;
         })
         .catch((error) => {
-            // Manejo adicional de errores, si lo requieres
             throw error;
         })
         .finally(() => {
@@ -692,8 +694,11 @@ export const createOrder = async (orderPayload) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            // Lanza un error con el mensaje del backend si está disponible
-            throw new Error(getErrorMessage(errorData) || `Error ${response.status}: Error al crear el pedido.`);
+            throw new ApiError(
+                getErrorMessage(errorData) || `Error ${response.status}: Error al crear el pedido.`,
+                response.status,
+                errorData
+            );
         }
 
         const data = await response.json();

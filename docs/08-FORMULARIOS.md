@@ -593,6 +593,42 @@ function prepareValidations(fields) {
 }
 ```
 
+### Validación y mensajes de error (inline + backend 422)
+
+En el proyecto se usa un **mismo criterio** en todos los formularios que envían datos al API (OrderEditSheet, CreateOrderForm, CreateEntityForm, EditEntityForm):
+
+1. **Errores inline**: cada campo muestra su error debajo del input (`errors[fieldName].message`).
+2. **Toast al enviar**: si la validación falla (cliente o servidor), se muestra un toast con un mensaje resumen (p. ej. "Por favor, corrige los errores en el formulario" o el `userMessage` del 422).
+3. **Botón de envío siempre pulsable** (salvo mientras se envía): el botón no se deshabilita por tener errores de validación, para que el usuario pueda pulsar "Guardar" / "Crear" y ver los mensajes inline y el toast.
+
+**Validación en cliente (React Hook Form)**  
+Las reglas (`rules` / `validation`) se ejecutan al hacer submit. Si fallan, `handleSubmit` llama al segundo callback con `formErrors` y los errores quedan en `formState.errors`, por lo que se muestran inline y se puede mostrar un toast.
+
+**Validación en servidor (HTTP 422)**  
+Cuando el backend devuelve **422 Unprocessable Entity** con un cuerpo de errores por campo, ese objeto se mapea al estado de React Hook Form para mostrarlo **inline** en los mismos campos.
+
+- **Formato del backend** (contrato con el API):
+  - Cuerpo: `{ message, userMessage, errors }`.
+  - `errors` es un objeto: clave = nombre del campo en **camelCase**, valor = array de mensajes.
+  - Arrays: notación de punto con índice, p. ej. `plannedProducts.0.product`, `emails.0`.
+
+- **Helper en el frontend**: `setErrorsFrom422(setError, errors)`  
+  - Ubicación: `/src/lib/validation/setErrorsFrom422.js`.  
+  - Recorre `errors` y llama a `setError(key, { type: 'server', message: messages[0] })` para cada clave.
+
+**Uso en formularios**  
+En el `catch` del submit:
+
+- Si el error es **ApiError** (pedidos) con `status === 422` y `error.data.errors`, se llama a `setErrorsFrom422(setError, error.data.errors)` y se muestra un toast con `error.data.userMessage` (o equivalente).
+- Si el error es la **Response** (formularios genéricos) con `status === 422`, se hace `await response.json()`, se llama a `setErrorsFrom422(setError, data.errors)` y se muestra un toast con `data.userMessage`.
+
+Los servicios de pedidos (`orderService.createOrder`, `orderService.updateOrder`) en 422 lanzan `ApiError(message, status, errorData)` para que los componentes puedan leer `error.data.errors`. Los servicios genéricos de entidades lanzan la `Response` cuando `!response.ok`, y el formulario comprueba `err.status === 422` y parsea el cuerpo.
+
+**Resumen**  
+- Errores **siempre inline** (debajo del campo), tanto los de validación cliente como los del 422.  
+- **Toast** en submit cuando hay errores (cliente o 422).  
+- **Botón** deshabilitado solo durante el envío (`isSubmitting` / `saving`), no por tener errores, para que el usuario pueda pulsar y ver validación y mensajes.
+
 ---
 
 ## 🔄 Arrays Dinámicos (useFieldArray)

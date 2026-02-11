@@ -27,6 +27,7 @@ import { Loader2 } from "lucide-react";
 import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { getToastTheme } from "@/customs/reactHotToast";
 import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 
 function prepareValidations(fields) {
@@ -60,6 +61,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
         handleSubmit,
         control,
         reset,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm({ mode: "onChange" });
 
@@ -176,18 +178,19 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 }
             } catch (createError) {
                 let userErrorMessage = errorMessage || "Error al crear la entidad";
-                
                 if (createError instanceof Response) {
                     try {
                         const errorData = await createError.json();
                         userErrorMessage = getErrorMessage(errorData) || userErrorMessage;
+                        if (createError.status === 422 && errorData?.errors) {
+                            setErrorsFrom422(setError, errorData.errors);
+                        }
                     } catch (parseError) {
                         console.error("Error parsing error response:", parseError);
                     }
                 } else if (createError instanceof Error) {
                     userErrorMessage = createError.userMessage || createError.message || userErrorMessage;
                 }
-                
                 toast.error(userErrorMessage, getToastTheme());
             }
         } catch (error) {
@@ -333,25 +336,31 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     ))}
                 </form>
             </ScrollArea>
-            <div className="sm:col-span-6 justify-end p-4 flex gap-2 border-t bg-background">
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="ml-2"
-                    onClick={onCancel ? onCancel : () => reset()}
-                >
-                    Cancelar
-                </Button>
-                <Button type="submit" form="entity-form" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creando...
-                        </>
-                    ) : (
-                        'Crear'
-                    )}
-                </Button>
+            <div className="sm:col-span-6 p-4 flex justify-end gap-2 border-t bg-background">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="ml-2"
+                        onClick={onCancel ? onCancel : () => reset()}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="entity-form"
+                        disabled={isSubmitting}
+                        title={Object.keys(errors).length > 0 ? 'Hay errores. Pulsa para verlos junto a cada campo.' : undefined}
+                        aria-label={Object.keys(errors).length > 0 ? 'Hay errores: pulsa para ver los detalles' : undefined}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creando...
+                            </>
+                        ) : (
+                            'Crear'
+                        )}
+                    </Button>
             </div>
         </div>
     );

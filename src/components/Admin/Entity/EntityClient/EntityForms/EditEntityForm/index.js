@@ -22,6 +22,7 @@ import get from "lodash.get";
 import { getToastTheme } from "@/customs/reactHotToast";
 import Loader from "@/components/Utilities/Loader";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 // Import domain services and mapper
 import { getEntityService } from '@/services/domain/entityServiceMapper';
@@ -78,7 +79,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const fields = config.fields;
 
     const {
-        register, handleSubmit, control, reset,
+        register, handleSubmit, control, reset, setError,
         formState: { errors, isSubmitting },
     } = useForm({ mode: "onChange" });
 
@@ -223,9 +224,10 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
             if (err instanceof Response) {
                 if (err.status === 401) userMessage = "No autorizado. Por favor, inicie sesión.";
                 else if (err.status === 403) userMessage = "Permiso denegado.";
-                else if (err.status === 422) { // Unprocessable Entity - often for validation errors
+                else if (err.status === 422) {
                     const errorBody = await err.json();
                     userMessage = errorBody.userMessage || errorBody.message || userMessage;
+                    if (errorBody?.errors) setErrorsFrom422(setError, errorBody.errors);
                 }
             } else if (err instanceof Error) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
@@ -367,20 +369,26 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     ))}
                 </form>
             </ScrollArea>
-            <div className="sm:col-span-6 justify-end p-4 flex gap-2 border-t bg-background">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                    Cancelar
-                </Button>
-                <Button type="submit" form="entity-form" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Guardando...
-                        </>
-                    ) : (
-                        'Guardar'
-                    )}
-                </Button>
+            <div className="sm:col-span-6 p-4 flex justify-end gap-2 border-t bg-background">
+                    <Button type="button" variant="outline" onClick={onCancel}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="entity-form"
+                        disabled={isSubmitting}
+                        title={Object.keys(errors).length > 0 ? 'Hay errores. Pulsa para verlos junto a cada campo.' : undefined}
+                        aria-label={Object.keys(errors).length > 0 ? 'Hay errores: pulsa para ver los detalles' : undefined}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Guardando...
+                            </>
+                        ) : (
+                            'Guardar'
+                        )}
+                    </Button>
             </div>
         </div>
     );

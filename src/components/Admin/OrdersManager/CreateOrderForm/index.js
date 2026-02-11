@@ -30,6 +30,7 @@ import { format } from "date-fns"
 import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CreateOrderFormMobile from './CreateOrderFormMobile';
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 const CreateOrderForm = ({ onCreate, onClose }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
@@ -54,7 +55,8 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         handleSubmit,
         control,
         reset,
-        formState: { errors, isSubmitting, isValid }, // Añadido isSubmitting e isValid para controlar el estado del botón
+        setError,
+        formState: { errors, isSubmitting, isValid },
         watch,
         setValue
     } = useForm({
@@ -164,9 +166,11 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
         } catch (error) {
             console.error('Error al crear el pedido:', error);
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido al crear el pedido';
             toast.error(errorMessage, { id: toastId });
+            if (error?.status === 422 && error?.data?.errors) {
+                setErrorsFrom422(setError, error.data.errors);
+            }
         }
     };
 
@@ -466,14 +470,16 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
                     {/* Botón de guardar - sticky en mobile */}
                     <div className={`flex justify-end gap-4 ${isMobile ? 'sticky bottom-0 bg-background pt-4 pb-4 border-t mt-6 -mx-4 px-4' : 'pt-4'}`}>
-                        <Button 
-                            type="submit" 
-                            disabled={isSubmitting || !isValid}
-                            className={isMobile ? 'h-12 text-base w-full' : ''}
-                        >
-                            <Plus className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />
-                            {isSubmitting ? 'Creando...' : 'Crear Pedido'}
-                        </Button>
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting}
+                                className={isMobile ? 'h-12 text-base w-full' : ''}
+                                title={Object.keys(errors).length > 0 ? 'Hay errores en el formulario. Puedes pulsar para verlos junto a cada campo.' : undefined}
+                                aria-label={Object.keys(errors).length > 0 ? 'Hay errores: pulsa para ver los detalles junto a cada campo' : undefined}
+                            >
+                                <Plus className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />
+                                {isSubmitting ? 'Creando...' : 'Crear Pedido'}
+                            </Button>
                     </div>
                 </form>
             )}
