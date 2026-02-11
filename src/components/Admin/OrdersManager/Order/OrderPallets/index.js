@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, ChevronLeft, ChevronRight, CornerDownLeft, Copy, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, CornerDownLeft, Copy, MoreVertical } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { useOrderContext } from '@/context/OrderContext';
@@ -24,6 +25,7 @@ import { getPallet, getAvailablePalletsForOrder } from '@/services/palletService
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
+import { cn } from '@/lib/utils';
 import SearchPalletCard from './SearchPalletCard';
 import Masonry from 'react-masonry-css';
 
@@ -1155,47 +1157,66 @@ const OrderPallets = () => {
                                 </p>
                             </div>
                         )}
-
-                        {/* Paginación */}
-                        {paginationMeta && paginationMeta.last_page > 1 && (
-                            <div className="flex items-center justify-end gap-2 border-t pt-4">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleSearchPallets(currentPage - 1)}
-                                    disabled={currentPage === 1 || isSearching}
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <span className="text-sm text-muted-foreground">
-                                    {paginationMeta.current_page} / {paginationMeta.last_page}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleSearchPallets(currentPage + 1)}
-                                    disabled={currentPage >= paginationMeta.last_page || isSearching}
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        )}
                         </div>
                     )}
-                    <DialogFooter className="flex flex-row gap-2">
-                        <Button 
-                            variant="outline" 
-                            onClick={handleCloseLinkPalletsDialog} 
-                            disabled={isLinking}
-                            className={isMobile ? "flex-1" : ""}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleLinkSelectedPallets}
-                            disabled={selectedPalletIds.length === 0 || isLinking}
-                            className={isMobile ? "flex-1" : ""}
-                        >
+                    <DialogFooter className="flex flex-row flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2 mr-auto">
+                            {paginationMeta && paginationMeta.last_page > 1 && (() => {
+                                const totalPages = paginationMeta.last_page;
+                                const page = paginationMeta.current_page;
+                                const prevDisabled = page === 1 || isSearching;
+                                const nextDisabled = page === totalPages || isSearching;
+                                const handlePrev = (e) => {
+                                    e.preventDefault();
+                                    if (!prevDisabled) handleSearchPallets(page - 1);
+                                };
+                                const handleNext = (e) => {
+                                    e.preventDefault();
+                                    if (!nextDisabled) handleSearchPallets(page + 1);
+                                };
+                                return (
+                                    <>
+                                        <Pagination className="justify-start">
+                                            <PaginationContent className="gap-0 divide-x overflow-hidden rounded-lg border">
+                                                <PaginationItem>
+                                                    <PaginationPrevious
+                                                        size="icon-sm"
+                                                        href="#"
+                                                        onClick={handlePrev}
+                                                        className={cn("rounded-none border-0", prevDisabled && "pointer-events-none opacity-50")}
+                                                    />
+                                                </PaginationItem>
+                                                <PaginationItem>
+                                                    <PaginationNext
+                                                        size="icon-sm"
+                                                        href="#"
+                                                        onClick={handleNext}
+                                                        className={cn("rounded-none border-0", nextDisabled && "pointer-events-none opacity-50")}
+                                                    />
+                                                </PaginationItem>
+                                            </PaginationContent>
+                                        </Pagination>
+                                        <span className="whitespace-nowrap text-sm text-muted-foreground">
+                                            Página {page} de {totalPages}
+                                        </span>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                        <div className="flex flex-row gap-2 flex-1 sm:flex-initial justify-end">
+                            <Button 
+                                variant="outline" 
+                                onClick={handleCloseLinkPalletsDialog} 
+                                disabled={isLinking}
+                                className={isMobile ? "flex-1" : ""}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleLinkSelectedPallets}
+                                disabled={selectedPalletIds.length === 0 || isLinking}
+                                className={isMobile ? "flex-1" : ""}
+                            >
                             {isLinking ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1208,6 +1229,7 @@ const OrderPallets = () => {
                                 </>
                             )}
                         </Button>
+                        </div>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

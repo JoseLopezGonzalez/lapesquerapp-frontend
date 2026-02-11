@@ -407,21 +407,25 @@ const CreateOrderFormMobile = ({
                                                 <div className="grid gap-4">
                                                     <div className="grid gap-2.5">
                                                         <Label className="text-sm font-semibold text-foreground">Producto</Label>
-                                                        <Controller
-                                                            control={control}
-                                                            name={`plannedProducts.${index}.product`}
-                                                            rules={{ required: 'Producto es requerido' }}
-                                                            render={({ field: { onChange, value } }) => (
-                                                                <Combobox
-                                                                    options={productOptions}
-                                                                    value={value}
-                                                                    onChange={onChange}
-                                                                    placeholder="Selecciona un producto"
-                                                                    loading={productsLoading}
-                                                                    onOpenChange={setIsComboboxOpen}
-                                                                />
-                                                            )}
-                                                        />
+                                                        <div className="[&_button]:!h-12">
+                                                            <Controller
+                                                                control={control}
+                                                                name={`plannedProducts.${index}.product`}
+                                                                rules={{ required: 'Producto es requerido' }}
+                                                                render={({ field: { onChange, value } }) => (
+                                                                    <Combobox
+                                                                        options={productOptions}
+                                                                        value={value}
+                                                                        onChange={onChange}
+                                                                        placeholder="Selecciona un producto"
+                                                                        searchPlaceholder="Buscar producto..."
+                                                                        notFoundMessage="No se encontraron productos"
+                                                                        loading={productsLoading}
+                                                                        onOpenChange={setIsComboboxOpen}
+                                                                    />
+                                                                )}
+                                                            />
+                                                        </div>
                                                         {errors.plannedProducts?.[index]?.product && (
                                                             <p className="text-red-500 text-sm font-medium">
                                                                 {errors.plannedProducts[index].product.message}

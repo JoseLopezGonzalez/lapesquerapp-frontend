@@ -880,6 +880,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setElements(normalizedElements);
         setLabelName(labelName || "");
         setLabelId(labelId);
+        setSelectedElement(null); // Reset panel derecho al cambiar de formato
     };
 
     /* Limpiar editor - usado cuando se elimina la etiqueta actual */
@@ -902,6 +903,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setElements([]);
         setLabelName("");
         setLabelId(null);
+        setSelectedElement(null); // Reset panel derecho
     };
 
 

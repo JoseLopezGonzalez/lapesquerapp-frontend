@@ -9,6 +9,7 @@ import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
@@ -366,15 +367,21 @@ const OrderPlannedProductDetails = () => {
                                                         <p className="text-xs text-muted-foreground mb-1.5">Impuesto (%)</p>
                                                         {editIndex === index ? (
                                                             <div className="[&_button]:!h-9">
-                                                                <Combobox
-                                                                    options={taxOptions || []}
-                                                                    value={detail.tax.id || null}
-                                                                    onChange={(value) => handleInputChange(index, 'tax', value)}
-                                                                    loading={optionsLoading}
-                                                                    placeholder="Seleccionar impuesto..."
-                                                                    searchPlaceholder="Buscar impuesto..."
-                                                                    notFoundMessage="No se encontraron impuestos"
-                                                                />
+                                                                <Select
+                                                                    value={detail.tax.id != null ? String(detail.tax.id) : ''}
+                                                                    onValueChange={(value) => handleInputChange(index, 'tax', value)}
+                                                                >
+                                                                    <SelectTrigger loading={optionsLoading} className="w-full">
+                                                                        <SelectValue placeholder="IVA" loading={optionsLoading} />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent loading={optionsLoading}>
+                                                                        {(taxOptions || []).map((tax) => (
+                                                                            <SelectItem key={tax.value} value={String(tax.value)}>
+                                                                                {tax.label}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
                                                             </div>
                                                         ) : (
                                                             <p className="text-sm font-medium py-2">{detail.tax.rate}%</p>
@@ -519,27 +526,21 @@ const OrderPlannedProductDetails = () => {
                             <Table>
                                 <TableHeader>
                                         <TableRow>
-                                        <TableHead>Artículo</TableHead>
+                                        <TableHead className="min-w-[200px]">Artículo</TableHead>
                                             <TableHead className="text-right">Cajas</TableHead>
                                             <TableHead className="text-right">Cantidad</TableHead>
                                             <TableHead className="text-right">Precio Unitario</TableHead>
-                                            <TableHead className="text-right">Impuesto</TableHead>
-                                            <TableHead className="text-right">Subtotal</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
+                                            <TableHead className="text-right whitespace-nowrap">Impuesto</TableHead>
                                             <TableHead className="text-right">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                         {details.map((detail, index) => {
-                                            const quantity = Number(detail.quantity);
-                                            const unitPrice = Number(detail.unitPrice);
-                                            const subtotal = quantity * unitPrice;
                                             const taxRate = Number(detail.tax.rate) || 0;
-                                            const total = subtotal * (1 + taxRate / 100);
 
                                             return (
                                                 <TableRow key={detail.id || detail.tempId}>
-                                            <TableCell>
+                                            <TableCell className="min-w-[500px]">
                                                 {editIndex === index ? (
                                                     <Combobox
                                                         options={productOptions || []}
@@ -549,6 +550,7 @@ const OrderPlannedProductDetails = () => {
                                                         placeholder="Seleccionar producto..."
                                                         searchPlaceholder="Buscar producto..."
                                                         notFoundMessage="No se encontraron productos"
+                                                        className="w-full"
                                                     />
                                                         ) : (
                                                             detail.product.name || 'Sin producto'
@@ -560,7 +562,7 @@ const OrderPlannedProductDetails = () => {
                                                         type="number"
                                                         value={detail.boxes}
                                                         onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
-                                                                className="w-20 text-right"
+                                                        className="w-full text-right"
                                                     />
                                                         ) : (
                                                             formatInteger(detail.boxes)
@@ -572,7 +574,7 @@ const OrderPlannedProductDetails = () => {
                                                         type="number"
                                                         value={detail.quantity}
                                                         onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
-                                                                className="w-24 text-right"
+                                                        className="w-full text-right"
                                                     />
                                                         ) : (
                                                             formatDecimalWeight(detail.quantity)
@@ -584,48 +586,52 @@ const OrderPlannedProductDetails = () => {
                                                         type="number"
                                                         value={detail.unitPrice}
                                                         onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
-                                                                className="w-24 text-right"
+                                                        className="w-full text-right"
                                                     />
                                                         ) : (
                                                             formatDecimalCurrency(detail.unitPrice)
                                                         )}
                                             </TableCell>
-                                                    <TableCell className="text-right">
+                                                    <TableCell className="text-right whitespace-nowrap">
                                                 {editIndex === index ? (
-                                                    <Combobox
-                                                        options={taxOptions || []}
-                                                        value={detail.tax.id || null}
-                                                                onChange={(e) => handleInputChange(index, 'tax', e)}
-                                                        loading={optionsLoading}
-                                                        placeholder="Seleccionar impuesto..."
-                                                        searchPlaceholder="Buscar impuesto..."
-                                                        notFoundMessage="No se encontraron impuestos"
-                                                    />
+                                                    <Select
+                                                        value={detail.tax.id != null ? String(detail.tax.id) : ''}
+                                                        onValueChange={(value) => handleInputChange(index, 'tax', value)}
+                                                    >
+                                                        <SelectTrigger loading={optionsLoading} className="w-full">
+                                                            <SelectValue placeholder="IVA" loading={optionsLoading} />
+                                                        </SelectTrigger>
+                                                        <SelectContent loading={optionsLoading}>
+                                                            {(taxOptions || []).map((tax) => (
+                                                                <SelectItem key={tax.value} value={String(tax.value)}>
+                                                                    {tax.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                         ) : (
                                                             `${taxRate}%`
                                                         )}
                                             </TableCell>
-                                                    <TableCell className="text-right">{formatDecimalCurrency(subtotal)}</TableCell>
-                                                    <TableCell className="text-right">{formatDecimalCurrency(total)}</TableCell>
-                                                    <TableCell className="text-right">
+                                                    <TableCell className="text-right whitespace-nowrap">
                                                 {editIndex === index ? (
-                                                            <div className="flex justify-end gap-1">
-                                                                <Button onClick={handleOnClickSaveLine} size="sm">
-                                                                    <Check size={16} />
+                                                    <div className="flex flex-nowrap items-center justify-end gap-2">
+                                                        <Button onClick={handleOnClickSaveLine} size="sm">
+                                                            <Check size={16} />
                                                         </Button>
-                                                                <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm">
-                                                                    <X size={16} />
+                                                        <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm">
+                                                            <X size={16} />
                                                         </Button>
-                                                            </div>
+                                                    </div>
                                                 ) : (
-                                                            <div className="flex justify-end gap-1">
-                                                                <Button onClick={() => handleEditLine(index)} size="sm" variant="outline">
-                                                                    <Edit2 size={16} />
+                                                    <div className="flex flex-nowrap items-center justify-end gap-2">
+                                                        <Button onClick={() => handleEditLine(index)} size="sm" variant="outline">
+                                                            <Edit2 size={16} />
                                                         </Button>
-                                                                <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="outline" className="text-destructive hover:text-destructive">
-                                                                    <Trash2 size={16} />
+                                                        <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="destructive">
+                                                            <Trash2 size={16} />
                                                         </Button>
-                                                            </div>
+                                                    </div>
                                                 )}
                                             </TableCell>
                                         </TableRow>
@@ -634,12 +640,10 @@ const OrderPlannedProductDetails = () => {
                                 </TableBody>
                                 <TableFooter>
                                     <TableRow>
-                                            <TableCell colSpan={2} className="text-right font-semibold">Totales</TableCell>
+                                            <TableCell className="font-semibold">Totales</TableCell>
                                             <TableCell className="text-right font-semibold">{formatInteger(totals.boxes)}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatDecimalWeight(totals.quantity)}</TableCell>
-                                            <TableCell colSpan={2}></TableCell>
-                                            <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.averageUnitPrice)}</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatDecimalCurrency(totals.totalAmount)}</TableCell>
+                                            <TableCell colSpan={3}></TableCell>
                                     </TableRow>
                                 </TableFooter>
                             </Table>

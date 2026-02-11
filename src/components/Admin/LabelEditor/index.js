@@ -64,6 +64,7 @@ import { EmptyState } from "@/components/Utilities/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLabelEditor } from "@/hooks/useLabelEditor";
 import { formatDate, formatDateDisplay, addDays, parseDate } from "@/hooks/useLabel";
+import { cn } from "@/lib/utils";
 import LabelSelectorSheet from "./LabelSelectorSheet";
 import LabelEditorPreview from "./LabelEditorPreview";
 import FieldExamplesDialog from "./FieldExamplesDialog";
@@ -422,42 +423,12 @@ export default function LabelEditor() {
                                     <Button 
                                         variant="outline" 
                                         className="justify-start gap-2" 
-                                        onClick={() => addElement("selectField")}
+                                        onClick={() => addElement("qr")}
                                         disabled={!selectedLabel}
                                         title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
                                     >
-                                        <ListChecks className="w-4 h-4" />
-                                        Campo Select
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("checkboxField")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <CheckSquare className="w-4 h-4" />
-                                        Campo Checkbox
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("dateField")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <Calendar className="w-4 h-4" />
-                                        Campo Fecha
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("sanitaryRegister")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <Stamp className="w-4 h-4" />
-                                        Registro Sanitario
+                                        <QrCode className="w-4 h-4" />
+                                        Código QR
                                     </Button>
                                     <Button 
                                         variant="outline" 
@@ -469,46 +440,49 @@ export default function LabelEditor() {
                                         <Pilcrow className="w-4 h-4" />
                                         Párrafo
                                     </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("qr")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <QrCode className="w-4 h-4" />
-                                        Código QR
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("barcode")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <Barcode3 className="w-4 h-4" />
-                                        Código de Barras
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("image")}
-                                        disabled
-                                        title="No disponible por el momento"
-                                    >
-                                        <ImageIcon className="w-4 h-4" />
-                                        Imagen
-                                    </Button>
-                                    <Button 
-                                        variant="outline" 
-                                        className="justify-start gap-2" 
-                                        onClick={() => addElement("line")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
-                                    >
-                                        <Minus className="w-4 h-4" />
-                                        Línea
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                className="justify-start gap-2" 
+                                                disabled={!selectedLabel}
+                                                title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : "Otros tipos de elemento"}
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Otros campos
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-56">
+                                            <DropdownMenuItem onClick={() => addElement("selectField")} disabled={!selectedLabel}>
+                                                <ListChecks className="w-4 h-4 mr-2" />
+                                                Campo Select
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("checkboxField")} disabled={!selectedLabel}>
+                                                <CheckSquare className="w-4 h-4 mr-2" />
+                                                Campo Checkbox
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("dateField")} disabled={!selectedLabel}>
+                                                <Calendar className="w-4 h-4 mr-2" />
+                                                Campo Fecha
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("barcode")} disabled={!selectedLabel}>
+                                                <Barcode3 className="w-4 h-4 mr-2" />
+                                                Código de Barras
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("line")} disabled={!selectedLabel}>
+                                                <Minus className="w-4 h-4 mr-2" />
+                                                Línea
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("sanitaryRegister")} disabled={!selectedLabel}>
+                                                <Stamp className="w-4 h-4 mr-2" />
+                                                Registro Sanitario
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => addElement("image")} disabled>
+                                                <ImageIcon className="w-4 h-4 mr-2" />
+                                                Imagen (no disponible)
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                                 {!selectedLabel && (
                                     <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -530,7 +504,7 @@ export default function LabelEditor() {
                                                         const hasError = hasElementValidationError(element);
                                                         const errorReason = getElementValidationErrorReason(element);
                                                         return (
-                                                        <div
+                                                        <Card
                                                             key={element.id}
                                                             ref={(el) => {
                                                                 if (el) {
@@ -539,9 +513,15 @@ export default function LabelEditor() {
                                                                     delete elementRefs.current[element.id];
                                                                 }
                                                             }}
-                                                            className={`group relative p-2 rounded border cursor-pointer transition-colors ${hasError ? "border-destructive ring-1 ring-destructive/50 bg-destructive/5 dark:bg-destructive/10" : ""} ${selectedElement === element.id && !hasError ? "ring-2 ring-primary border-primary/50 bg-primary/5 dark:bg-primary/10" : ""} ${!hasError && selectedElement !== element.id ? "border-border hover:bg-muted/50 dark:hover:bg-muted/30" : ""}`}
+                                                            className={cn(
+                                                                "group cursor-pointer transition-colors shadow-sm",
+                                                                hasError && "border-l-4 border-l-destructive border-destructive/40 bg-destructive/10 dark:bg-destructive/15",
+                                                                selectedElement === element.id && !hasError && "border-l-4 border-l-primary border-primary/40 bg-primary/10 dark:bg-primary/15",
+                                                                !hasError && selectedElement !== element.id && "border-border hover:bg-muted/50 dark:hover:bg-muted/30"
+                                                            )}
                                                             onClick={() => handleOnClickElementCard(element.id)}
                                                         >
+                                                            <CardContent className="p-2">
                                                             {hasError && (
                                                                 <div className="flex items-center gap-1 text-destructive text-xs mb-1">
                                                                     <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -686,7 +666,8 @@ export default function LabelEditor() {
                                                                     </Button>
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                            </CardContent>
+                                                        </Card>
                                                         );
                                                     })}
                                                 </div>

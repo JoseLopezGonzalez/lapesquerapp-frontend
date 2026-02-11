@@ -357,20 +357,24 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                         <div className={`flex flex-col ${isMobile ? 'gap-4' : 'gap-4'}`}>
                             {fields.map((item, index) => (
                                 <div key={item.id} className={`${isMobile ? 'flex flex-col gap-3' : 'flex items-center justify-center gap-2'}`}>
-                                    <Controller
-                                        control={control}
-                                        name={`plannedProducts.${index}.product`}
-                                        rules={{ required: 'Producto es requerido' }}
-                                        render={({ field: { onChange, value } }) => (
-                                            <Combobox
-                                                options={productOptions}
-                                                value={value}
-                                                onChange={onChange}
-                                                placeholder="Selecciona un producto"
-                                                loading={productsLoading}
-                                            />
-                                        )}
-                                    />
+                                    <div className={!isMobile ? 'min-w-[500px] flex-1 shrink-0' : undefined}>
+                                        <Controller
+                                            control={control}
+                                            name={`plannedProducts.${index}.product`}
+                                            rules={{ required: 'Producto es requerido' }}
+                                            render={({ field: { onChange, value } }) => (
+                                                <Combobox
+                                                    options={productOptions}
+                                                    value={value}
+                                                    onChange={onChange}
+                                                    placeholder="Selecciona un producto"
+                                                    searchPlaceholder="Buscar producto..."
+                                                    notFoundMessage="No se encontraron productos"
+                                                    loading={productsLoading}
+                                                />
+                                            )}
+                                        />
+                                    </div>
                                     <Input
                                         type="number"
                                         step="any"
