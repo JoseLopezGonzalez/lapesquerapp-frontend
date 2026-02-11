@@ -4,8 +4,8 @@
 |----|--------|----------|---------|--------|
 | 1 | Validaciones completas e inline en formularios (pedidos, productos, entidades genéricas) | Editor pedido (sheet), gestor pedidos (crear), forms entidades productos/pedidos | Alto | ✅ Implementada |
 | 2 | Replicar cambio de nombres de campos en editor de etiquetas a campos que los usan (QR, párrafos, etc.) | Label editor, formatos de etiqueta | Medio | ✅ Implementada |
-| 3 | Restricciones en formatos de etiquetas: campos críticos obligatorios antes de guardar | Gestor de etiquetas | Medio | ⏳ Pendiente |
-| 4 | Corregir scroll en combobox al buscar (resultado arriba, scroll en medio) | Comboboxes globales / Shadcn | Medio | ⏳ Pendiente |
+| 3 | Restricciones en formatos de etiquetas: campos críticos obligatorios antes de guardar | Gestor de etiquetas | Medio | ✅ Implementada |
+| 4 | Corregir scroll en combobox al buscar (resultado arriba, scroll en medio) | Comboboxes globales / Shadcn | Medio | ✅ Implementada |
 | 5 | Combobox producto en líneas de previsión (crear pedido): tamaño y comportamiento como en edición | Gestor pedidos, form crear pedido | Bajo | ⏳ Pendiente |
 | 6 | Paginación nativa Shadcn en dialog vincular palets (edición pedido) | Edición pedido, apartado palets | Bajo | ⏳ Pendiente |
 | 7 | Reset estado panel derecho al cambiar de formato en label editor | Label editor | Medio | ⏳ Pendiente |
@@ -33,15 +33,15 @@
 - **Descripción reinterpretada:** En el gestor de etiquetas, imponer restricciones: todos los campos críticos (nombre, valores, etc.) deben estar rellenos; si no, no se permitirá guardar el formato.
 - **Afecta a:** Gestor de etiquetas, formularios de creación/edición de formatos.
 - **Impacto estimado:** Medio (integridad de datos, evitar formatos inválidos).
-- **Estado:** ⏳ Pendiente
-- **Notas:**
+- **Estado:** ✅ Implementada
+- **Notas:** 2025-02-11. useLabelEditor: validación en handleSave (key no vacío en manual/select/checkbox/date; selectField con al menos una opción). Toast único. hasElementValidationError y getElementValidationErrorReason para UI. LabelEditor: cards del panel izquierdo muestran borde/ring destructivo e indicador "Sin nombre" o "Sin opciones" cuando el elemento tiene error. Se permite guardar con canvas vacío.
 
 ### Mejora Nº 4 – Scroll en combobox al buscar
 - **Descripción reinterpretada:** Corregir el comportamiento del scroll en los combobox al introducir texto para buscar: el resultado correcto queda arriba del cuadro de opciones pero el scroll se sitúa en medio sin sentido.
 - **Afecta a:** Componentes combobox (posiblemente Shadcn o custom).
 - **Impacto estimado:** Medio (UX en búsqueda/selector).
-- **Estado:** ⏳ Pendiente
-- **Notas:**
+- **Estado:** ✅ Implementada
+- **Notas:** 2025-02-11. Combobox (Shadcn): búsqueda controlada con estado `searchValue` en CommandInput; ref en CommandList; al cambiar `searchValue` se hace `scrollTop = 0` en la lista para que los resultados filtrados se vean desde arriba. Al cerrar el popover se resetea `searchValue`.
 
 ### Mejora Nº 5 – Combobox producto en líneas de previsión (crear pedido)
 - **Descripción reinterpretada:** El combobox de producto en las líneas de previsión del form de creación de pedido (gestor de pedidos) debe ser grande en previsión de productos con nombres largos y ajustarse igual que en el apartado de previsión de la edición de pedidos.

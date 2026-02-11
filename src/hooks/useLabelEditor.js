@@ -372,6 +372,32 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return false;
     };
 
+    /** Indica si un elemento tiene error de validación (key vacío o select sin opciones). */
+    const hasElementValidationError = (el) => {
+        if (!el) return false;
+        if (KEY_FIELD_TYPES.includes(el.type) && String(el.key || '').trim() === '') return true;
+        if (el.type === 'selectField') {
+            const opts = Array.isArray(el.options) ? el.options : [];
+            if (!opts.some((o) => String(o || '').trim() !== '')) return true;
+        }
+        return false;
+    };
+
+    /** Razón del error para mostrar en UI: 'key' | 'options' | null */
+    const getElementValidationErrorReason = (el) => {
+        if (!el) return null;
+        if (KEY_FIELD_TYPES.includes(el.type) && String(el.key || '').trim() === '') return 'key';
+        if (el.type === 'selectField') {
+            const opts = Array.isArray(el.options) ? el.options : [];
+            if (!opts.some((o) => String(o || '').trim() !== '')) return 'options';
+        }
+        return null;
+    };
+
+    const hasAnyElementValidationErrors = (elementsList) => {
+        return (elementsList || []).some((el) => hasElementValidationError(el));
+    };
+
     const handleSave = async () => {
         const validationError = validateLabelName(labelName);
         if (validationError) {
@@ -380,6 +406,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
         if (hasDuplicateFieldKeys(elements)) {
             toast.error('Error: hay campos con el mismo nombre.', getToastTheme());
+            return;
+        }
+        if (hasAnyElementValidationErrors(elements)) {
+            toast.error('Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.', getToastTheme());
             return;
         }
         const token = session?.user?.accessToken;
@@ -1095,5 +1125,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         showFieldExamplesDialog,
         setShowFieldExamplesDialog,
         autoFitToContent,
+        hasElementValidationError,
+        getElementValidationErrorReason,
     };
 }

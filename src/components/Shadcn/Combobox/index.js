@@ -36,7 +36,14 @@ export function Combobox({
   onOpenChange: externalOnOpenChange,
 }) {
   const [open, setOpen] = React.useState(defaultOpen)
+  const listRef = React.useRef(null)
+  const [searchValue, setSearchValue] = React.useState("")
   const isDisabled = disabled || loading
+
+  // Al cambiar el texto de búsqueda, scroll de la lista a arriba (evita que el resultado quede oculto)
+  React.useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = 0
+  }, [searchValue])
 
   // Intentar encontrar el label del valor actual, incluso durante el loading
   const selectedOption = React.useMemo(() => {
@@ -47,13 +54,13 @@ export function Combobox({
   // Manejar el cierre del popover para llamar onBlur si está definido
   const handleOpenChange = React.useCallback((newOpen) => {
     setOpen(newOpen)
+    if (!newOpen) setSearchValue("")
     // Notificar al componente padre si hay un callback
     if (externalOnOpenChange) {
       externalOnOpenChange(newOpen)
     }
     // Si se está cerrando y hay onBlur, llamarlo
     if (!newOpen && onBlur) {
-      // Usar setTimeout para asegurar que se ejecute después del cambio de estado
       setTimeout(() => {
         onBlur()
       }, 0)
@@ -100,8 +107,14 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[9999]">
         <Command>
-          <CommandInput placeholder={searchPlaceholder} disabled={loading} />
+          <CommandInput
+            placeholder={searchPlaceholder}
+            disabled={loading}
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
           <CommandList
+            ref={listRef}
             /* scroll con rueda de raton forzado */
             onWheel={(e) => {
               e.currentTarget.scrollBy({

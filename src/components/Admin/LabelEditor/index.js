@@ -57,6 +57,7 @@ import {
     ListChecks,
     CheckSquare,
     Calendar,
+    AlertTriangle,
 } from "lucide-react"
 import { BoldIcon } from "@heroicons/react/20/solid"
 import { EmptyState } from "@/components/Utilities/EmptyState";
@@ -135,6 +136,8 @@ export default function LabelEditor() {
         showFieldExamplesDialog,
         setShowFieldExamplesDialog,
         autoFitToContent,
+        hasElementValidationError,
+        getElementValidationErrorReason,
 
     } = useLabelEditor();
 
@@ -490,8 +493,8 @@ export default function LabelEditor() {
                                         variant="outline" 
                                         className="justify-start gap-2" 
                                         onClick={() => addElement("image")}
-                                        disabled={!selectedLabel}
-                                        title={!selectedLabel ? "Selecciona una etiqueta para añadir elementos" : ""}
+                                        disabled
+                                        title="No disponible por el momento"
                                     >
                                         <ImageIcon className="w-4 h-4" />
                                         Imagen
@@ -523,7 +526,10 @@ export default function LabelEditor() {
                                             <ScrollArea ref={scrollAreaRef} className="flex-1 h-full pr-3">
                                                 <div className="flex flex-col gap-2 p-2"> {/* aquí sí el gap y padding-bottom para evitar cortar por el scroll */}
 
-                                                    {elements.map((element) => (
+                                                    {elements.map((element) => {
+                                                        const hasError = hasElementValidationError(element);
+                                                        const errorReason = getElementValidationErrorReason(element);
+                                                        return (
                                                         <div
                                                             key={element.id}
                                                             ref={(el) => {
@@ -533,10 +539,15 @@ export default function LabelEditor() {
                                                                     delete elementRefs.current[element.id];
                                                                 }
                                                             }}
-                                                            className={`group relative p-2 rounded border cursor-pointer transition-colors ${selectedElement === element.id ? "ring-2 ring-primary border-primary/50 bg-primary/5 dark:bg-primary/10" : "border-border hover:bg-muted/50 dark:hover:bg-muted/30"
-                                                                }`}
+                                                            className={`group relative p-2 rounded border cursor-pointer transition-colors ${hasError ? "border-destructive ring-1 ring-destructive/50 bg-destructive/5 dark:bg-destructive/10" : ""} ${selectedElement === element.id && !hasError ? "ring-2 ring-primary border-primary/50 bg-primary/5 dark:bg-primary/10" : ""} ${!hasError && selectedElement !== element.id ? "border-border hover:bg-muted/50 dark:hover:bg-muted/30" : ""}`}
                                                             onClick={() => handleOnClickElementCard(element.id)}
                                                         >
+                                                            {hasError && (
+                                                                <div className="flex items-center gap-1 text-destructive text-xs mb-1">
+                                                                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                                                                    <span>{errorReason === 'options' ? 'Sin opciones' : 'Sin nombre'}</span>
+                                                                </div>
+                                                            )}
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-2 w-full">
                                                                     {element.type === "text" && (
@@ -676,7 +687,8 @@ export default function LabelEditor() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </ScrollArea>
                                         </div>
