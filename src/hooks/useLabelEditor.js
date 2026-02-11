@@ -45,6 +45,24 @@ const getFieldName = (field) => labelFields[field]?.label || field;
 
 const pxToMm = (px) => px / 3.78;
 
+/** Escapa caracteres especiales para usar en RegExp. */
+const escapeRegex = (str) => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Reemplaza el token {{oldKey}} por {{newKey}} en content (todas las ocurrencias). */
+const replacePlaceholderInContent = (content, oldKey, newKey) => {
+    if (content == null || content === '' || !oldKey || !newKey || oldKey === newKey) return content;
+    const token = new RegExp(`\\{\\{${escapeRegex(oldKey)}\\}\\}`, 'g');
+    return String(content).replace(token, `{{${newKey}}}`);
+};
+
+/** Misma normalización que el panel "Nombre del campo": solo [a-zA-Z0-9 ], primera letra mayúscula. */
+const normalizeKeyForStorage = (raw) => {
+    const filtered = String(raw || '').replace(/[^a-zA-Z0-9 ]/g, '');
+    const i = filtered.search(/[a-zA-Z]/);
+    if (i < 0) return filtered;
+    return filtered.slice(0, i) + filtered[i].toUpperCase() + filtered.slice(i + 1);
+};
+
 // Valor por defecto de netWeight para usar cuando no hay valor disponible
 const NET_WEIGHT_DEFAULT = "20,000 kg";
 
@@ -490,22 +508,55 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     const duplicateElement = (id) => {
         const el = elements.find((e) => e.id === id);
         if (!el) return;
-        const copy = { ...el, id: `element-${Date.now()}`, x: el.x + 10, y: el.y + 10 };
+        let copy = { ...el, id: `element-${Date.now()}`, x: el.x + 10, y: el.y + 10 };
+        if (KEY_FIELD_TYPES.includes(el.type) && el.key) {
+            const existingKeys = new Set(
+                elements
+                    .filter((e) => KEY_FIELD_TYPES.includes(e.type))
+                    .map((e) => String(e.key || '').trim())
+                    .filter(Boolean)
+            );
+            const baseKey = String(el.key || '').trim();
+            let candidate = normalizeKeyForStorage(`${baseKey} copia`);
+            let n = 2;
+            while (existingKeys.has(candidate)) {
+                candidate = normalizeKeyForStorage(`${baseKey} ${n}`);
+                n += 1;
+            }
+            copy = { ...copy, key: candidate };
+        }
         setElements((prev) => [...prev, copy]);
         setSelectedElement(copy.id);
     };
 
     const updateElement = (id, updates) => {
         setElements((prev) => {
-            const updated = prev.map((el) => {
+            const target = prev.find((el) => el.id === id);
+            const isKeyField = target && KEY_FIELD_TYPES.includes(target.type);
+            const newKey = updates.key !== undefined ? String(updates.key || '').trim() : '';
+            const oldKey = target ? String(target.key || '').trim() : '';
+            const shouldReplicateKey = isKeyField && oldKey !== '' && newKey !== '' && oldKey !== newKey;
+
+            let updated = prev.map((el) => {
                 if (el.id === id) {
                     const merged = { ...el, ...updates };
-                    // Normalizar el elemento actualizado antes de guardarlo
-                    // Crear un objeto completamente nuevo para forzar re-render
                     return { ...normalizeElement(merged) };
                 }
                 return el;
             });
+
+            if (shouldReplicateKey) {
+                updated = updated.map((el) => {
+                    const hasContent = el.qrContent || el.html || el.barcodeContent;
+                    if (!hasContent) return el;
+                    const next = { ...el };
+                    if (el.qrContent) next.qrContent = replacePlaceholderInContent(el.qrContent, oldKey, newKey);
+                    if (el.html) next.html = replacePlaceholderInContent(el.html, oldKey, newKey);
+                    if (el.barcodeContent) next.barcodeContent = replacePlaceholderInContent(el.barcodeContent, oldKey, newKey);
+                    return next;
+                });
+            }
+
             return updated;
         });
     };

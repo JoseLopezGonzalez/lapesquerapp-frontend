@@ -3,7 +3,7 @@
 | Nº | Mejora | Afecta a | Impacto | Estado |
 |----|--------|----------|---------|--------|
 | 1 | Validaciones completas e inline en formularios (pedidos, productos, entidades genéricas) | Editor pedido (sheet), gestor pedidos (crear), forms entidades productos/pedidos | Alto | ✅ Implementada |
-| 2 | Replicar cambio de nombres de campos en editor de etiquetas a campos que los usan (QR, párrafos, etc.) | Label editor, formatos de etiqueta | Medio | ⏳ Pendiente |
+| 2 | Replicar cambio de nombres de campos en editor de etiquetas a campos que los usan (QR, párrafos, etc.) | Label editor, formatos de etiqueta | Medio | ✅ Implementada |
 | 3 | Restricciones en formatos de etiquetas: campos críticos obligatorios antes de guardar | Gestor de etiquetas | Medio | ⏳ Pendiente |
 | 4 | Corregir scroll en combobox al buscar (resultado arriba, scroll en medio) | Comboboxes globales / Shadcn | Medio | ⏳ Pendiente |
 | 5 | Combobox producto en líneas de previsión (crear pedido): tamaño y comportamiento como en edición | Gestor pedidos, form crear pedido | Bajo | ⏳ Pendiente |
@@ -26,8 +26,8 @@
 - **Descripción reinterpretada:** En el editor de etiquetas de un formato, cuando se cambie el nombre de un campo, ese cambio debe replicarse en todos los lugares que referencian ese campo (QR, párrafos, etc.) para que sigan funcionando correctamente.
 - **Afecta a:** Label editor, definición de formatos de etiqueta y referencias entre campos.
 - **Impacto estimado:** Medio (correcto funcionamiento de etiquetas).
-- **Estado:** ⏳ Pendiente
-- **Notas:**
+- **Estado:** ✅ Implementada
+- **Notas:** 2025-02-11. En useLabelEditor: al cambiar key en updateElement se reemplaza {{oldKey}} por {{newKey}} en qrContent, html y barcodeContent de todos los elementos. Al duplicar un campo con key se asigna nombre único (ej. "Lote copia", "Lote 2"). Helpers: replacePlaceholderInContent, normalizeKeyForStorage, escapeRegex.
 
 ### Mejora Nº 3 – Restricciones en formatos de etiquetas
 - **Descripción reinterpretada:** En el gestor de etiquetas, imponer restricciones: todos los campos críticos (nombre, valores, etc.) deben estar rellenos; si no, no se permitirá guardar el formato.
