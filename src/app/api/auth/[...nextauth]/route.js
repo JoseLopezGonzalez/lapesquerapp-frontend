@@ -75,8 +75,9 @@ export const authOptions = {
         }
       }
 
-      // Refrescar datos del usuario si se solicita explícitamente o periódicamente
-      if (trigger === 'update' || (token.accessToken && Date.now() - (token.lastRefresh || 0) > 60 * 60 * 1000)) {
+      // Validar token con el backend en cada lectura de sesión cuando hay accessToken.
+      // Así detectamos tokens revocados/eliminados en BD (ej. migración password → OTP/magic link).
+      if (token.accessToken) {
         try {
           const response = await fetchWithTenant(`${API_URL_V2}me`, {
             method: 'GET',
@@ -86,7 +87,7 @@ export const authOptions = {
             },
           });
 
-          // Token revocado o inválido (ej. personal token eliminado en BD) → invalidar sesión
+          // Token revocado o inválido → invalidar sesión (evita loader infinito en frontend)
           if (response.status === 401 || response.status === 403) {
             console.warn('[NextAuth] Token rechazado por el backend (401/403), invalidando sesión');
             return null;
@@ -95,8 +96,6 @@ export const authOptions = {
           if (response.ok) {
             const userData = await response.json();
             const currentUser = userData.data || userData;
-            
-            // Actualizar token con datos frescos (rol siempre string)
             const rawRole = currentUser.role ?? token.role;
             token.role = Array.isArray(rawRole) ? (rawRole[0] ?? null) : rawRole;
             if (currentUser.assigned_store_id !== undefined) {
