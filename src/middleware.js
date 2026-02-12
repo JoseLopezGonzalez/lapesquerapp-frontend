@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import roleConfig from "./configs/roleConfig";
+import { API_BASE_URL } from "./configs/config";
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { isAuthError } from "./configs/authConfig";
 
@@ -68,16 +69,16 @@ export async function middleware(req) {
 
   // Validar token con el backend para detectar revocación/cancelación
   try {
-    // Obtener el host para detectar el tenant
+    // Obtener el host para detectar el tenant (en localhost usar 'dev')
     const host = req.headers.get('host') || '';
-    const tenant = host.includes('localhost') 
-      ? (host.split('.').length > 1 && host.split('.')[0] !== 'localhost' ? host.split('.')[0] : 'brisamar')
+    const tenant = host.includes('localhost')
+      ? (host.split('.').length > 1 && host.split('.')[0] !== 'localhost' ? host.split('.')[0] : 'dev')
       : host.split('.')[0];
-    
+
     console.log(`🔐 [Middleware] Validando token para tenant: ${tenant}, ruta: ${pathname}`);
-    
+
     const verifyResponse = await fetchWithTenant(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`, 
+      `${API_BASE_URL}/api/v2/me`, 
       {
         method: "GET",
         headers: {

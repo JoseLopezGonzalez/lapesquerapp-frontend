@@ -1,23 +1,22 @@
 import { isAuthError, isAuthStatusCode } from '@/configs/authConfig';
 
 export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
-  let tenant = 'brisamar'; // Valor por defecto si no se detecta ninguno
+  // En desarrollo (localhost) usar tenant 'dev'; en producción por subdominio o 'brisamar'
+  const DEFAULT_DEV_TENANT = 'dev';
+  let tenant = 'brisamar';
 
   if (typeof window === 'undefined') {
     // ---- SERVIDOR ----
     let host;
-    
-    // Si se pasan headers desde el middleware, usarlos directamente
+
     if (reqHeaders) {
       host = reqHeaders.get('host');
     } else {
-      // En otros contextos del servidor, usar headers() de next/headers
       try {
         const { headers } = await import('next/headers');
-        const headersList = await headers(); // En Next.js 16, headers() devuelve una Promise
+        const headersList = await headers();
         host = headersList.get('host');
       } catch (error) {
-        // Si falla (por ejemplo, en middleware), intentar obtener del URL
         console.warn('⚠️ No se pudo obtener headers, usando valor por defecto');
       }
     }
@@ -26,7 +25,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       const parts = host.split('.');
       const isLocal = host.includes('localhost');
       tenant = isLocal
-        ? parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'brisamar'
+        ? (parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : DEFAULT_DEV_TENANT)
         : host.split('.')[0];
     }
 
@@ -38,10 +37,8 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
     const isLocal = clientHost.includes('localhost');
 
     tenant = isLocal
-      ? parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : 'brisamar'
+      ? (parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : DEFAULT_DEV_TENANT)
       : parts[0];
-
-    // console.log('🌐 Tenant detectado (cliente):', tenant);
   }
 
   // --- Headers personalizados ---
