@@ -19,11 +19,9 @@ export default function ReceptionPrintDialog({
     pallets = [], // For 'pallets' mode
     creationMode = null
 }) {
-    // Usar usePrintElement igual que en el store manager
     const { onPrint } = usePrintElement({ 
         id: 'reception-print-content', 
-        width: 210, // A4 width in mm
-        height: 297 // A4 height in mm
+        freeSize: true
     });
     // Get supplier name from options or object
     const supplierName = useMemo(() => {
@@ -110,8 +108,8 @@ export default function ReceptionPrintDialog({
                     <DialogTitle>Imprimir Nota de Entrada</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col justify-center w-full flex-1 overflow-auto">
-                    {/* Vista previa */}
-                    <div className="p-6 space-y-6 bg-white border rounded-lg">
+                    {/* Vista previa - forzar estilo claro para dark mode */}
+                    <div className="p-6 space-y-6 bg-white text-gray-900 border border-gray-200 rounded-lg print:bg-white">
                         {/* Title */}
                         <h1 className="text-3xl font-bold text-center mb-6">NOTA DE ENTRADA</h1>
                         
@@ -138,7 +136,7 @@ export default function ReceptionPrintDialog({
                                 <div className="font-bold mb-3">Artículo</div>
                                 <div className="space-y-2">
                                     {productsList.length === 0 ? (
-                                        <div className="text-muted-foreground">No hay productos</div>
+                                        <div className="text-gray-500">No hay productos</div>
                                     ) : (
                                         <>
                                             {productsList.map((product, index) => (
@@ -183,7 +181,7 @@ export default function ReceptionPrintDialog({
                 </div>
                 {/* Área de impresión dentro del Dialog pero oculta - igual que BoxLabelPrintDialog */}
                 <div id="reception-print-content" className="hidden print:block">
-                    <div className="p-8 space-y-6" style={{ width: '210mm', minHeight: '297mm' }}>
+                    <div className="p-8 space-y-6 print:px-1 print:py-4">
                         {/* Title */}
                         <h1 className="text-3xl font-bold text-center mb-6">NOTA DE ENTRADA</h1>
                         
@@ -210,7 +208,7 @@ export default function ReceptionPrintDialog({
                                 <div className="font-bold mb-3">Artículo</div>
                                 <div className="space-y-2">
                                     {productsList.length === 0 ? (
-                                        <div className="text-muted-foreground">No hay productos</div>
+                                        <div className="text-gray-500">No hay productos</div>
                                     ) : (
                                         <>
                                             {productsList.map((product, index) => (

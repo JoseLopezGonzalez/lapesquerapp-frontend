@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-export function usePrintElement({ id, width = 100, height = 150 }) {
+export function usePrintElement({ id, width = 100, height = 150, freeSize = false }) {
   const onPrint = useCallback(() => {
     const elementToPrint = document.getElementById(id);
     if (!elementToPrint) return;
@@ -24,19 +24,18 @@ export function usePrintElement({ id, width = 100, height = 150 }) {
       doc.head.appendChild(el.cloneNode(true));
     });
 
-    // Estilos de impresión
-    const printStyle = document.createElement("style");
-    printStyle.textContent = `
-      @media print {
+    // Estilos de impresión: freeSize omite @page size para que el contenido se ajuste al formato nativo
+    const pageSizeCss = freeSize
+      ? ""
+      : `
         @page {
           size: ${width}mm ${height}mm;
           margin: 0;
         }
-        body {
-          margin: 0;
-          padding: 0;
-          background: white;
-        }
+      `;
+    const pageClassCss = freeSize
+      ? ""
+      : `
         .page {
           width: ${width}mm;
           height: ${height}mm;
@@ -47,6 +46,17 @@ export function usePrintElement({ id, width = 100, height = 150 }) {
         .page:last-child {
           page-break-after: auto;
         }
+      `;
+    const printStyle = document.createElement("style");
+    printStyle.textContent = `
+      @media print {
+        ${pageSizeCss}
+        body {
+          margin: 0;
+          padding: 0;
+          background: white;
+        }
+        ${pageClassCss}
       }
     `;
     doc.head.appendChild(printStyle);
@@ -64,7 +74,7 @@ export function usePrintElement({ id, width = 100, height = 150 }) {
         document.body.removeChild(iframe);
       }, 500);
     }, 500);
-  }, [id, width, height]);
+  }, [id, width, height, freeSize]);
 
   return { onPrint };
 }

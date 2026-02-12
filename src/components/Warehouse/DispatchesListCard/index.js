@@ -20,15 +20,18 @@ import {
 import TablePagination from "../TablePagination";
 import { ceboDispatchService } from "@/services/domain/cebo-dispatches/ceboDispatchService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
-import { Printer } from "lucide-react";
+import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
+import DispatchPrintDialog from "../DispatchPrintDialog";
+import toast from "react-hot-toast";
+import { getToastTheme } from "@/customs/reactHotToast";
 
-const PER_PAGE = 10;
+const PER_PAGE = 9;
 
 function getDispatchNetWeight(dispatch) {
-  if (dispatch.net_weight != null) return Number(dispatch.net_weight);
-  const products = dispatch.products ?? [];
-  const sum = products.reduce((acc, p) => acc + (Number(p.net_weight) || 0), 0);
+  if (dispatch.netWeight != null) return Number(dispatch.netWeight);
+  const details = dispatch.details ?? [];
+  const sum = details.reduce((acc, d) => acc + (Number(d.netWeight) || 0), 0);
   return sum;
 }
 
@@ -37,19 +40,36 @@ export default function DispatchesListCard({ storeId = null }) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [printData, setPrintData] = useState(null);
+  const [loadingPrintId, setLoadingPrintId] = useState(null);
+  const [showAllQuantities, setShowAllQuantities] = useState(false);
+  const [revealedRowIds, setRevealedRowIds] = useState(() => new Set());
+
+  const isQuantityVisible = (rowId) => showAllQuantities || revealedRowIds.has(rowId);
+  const toggleRowQuantity = (rowId) => {
+    setRevealedRowIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      const today = new Date().toISOString().split("T")[0];
+      const filters = { dates: { start: today, end: today } };
       try {
         const res = await ceboDispatchService.list(
-          {},
+          filters,
           { page, perPage: PER_PAGE }
         );
         if (cancelled) return;
         setData(res.data ?? []);
-        setTotal(res.total ?? 0);
+        setTotal(res.meta?.total ?? res.total ?? 0);
       } catch (e) {
         if (!cancelled) setData([]);
       } finally {
@@ -62,6 +82,26 @@ export default function DispatchesListCard({ storeId = null }) {
 
   const lastPage = Math.max(1, Math.ceil(total / PER_PAGE));
 
+  const handlePrintClick = async (row) => {
+    setLoadingPrintId(row.id);
+    try {
+      const dispatch = await ceboDispatchService.getById(row.id);
+      setPrintData({
+        dispatchId: dispatch.id,
+        supplier: dispatch.supplier,
+        date: dispatch.date,
+        notes: dispatch.notes,
+        details: dispatch.details || [],
+      });
+      setPrintDialogOpen(true);
+    } catch (err) {
+      console.error("Error al cargar salida para imprimir:", err);
+      toast.error("No se pudo cargar la salida de cebo", getToastTheme());
+    } finally {
+      setLoadingPrintId(null);
+    }
+  };
+
   const cardClass = "flex flex-col h-full min-h-0";
 
   return (
@@ -71,15 +111,29 @@ export default function DispatchesListCard({ storeId = null }) {
           <CardTitle>Salidas de cebo</CardTitle>
           <CardDescription>Lista de salidas</CardDescription>
         </div>
-        <Button
-          asChild
-          size="sm"
-          variant="default"
-        >
-          <Link href={storeId != null ? `/warehouse/${storeId}/dispatches/create` : "/admin/cebo-dispatches"}>
-            Nueva Salida +
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8"
+            title={showAllQuantities ? "Ocultar todas las cantidades" : "Mostrar todas las cantidades"}
+            onClick={() => {
+              setShowAllQuantities((v) => !v);
+              setRevealedRowIds(new Set());
+            }}
+          >
+            {showAllQuantities ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </Button>
+          <Button asChild size="sm" variant="default">
+            <Link href={storeId != null ? `/warehouse/${storeId}/dispatches/create` : "/admin/cebo-dispatches"}>
+              Nueva Salida +
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden pt-0">
         {loading ? (
@@ -112,18 +166,42 @@ export default function DispatchesListCard({ storeId = null }) {
                         <TableCell>{row.id}</TableCell>
                         <TableCell>{row.supplier?.name ?? "—"}</TableCell>
                         <TableCell className="text-right">
-                          {`${getDispatchNetWeight(row).toFixed(2)} kg`}
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              title={isQuantityVisible(row.id) ? "Ocultar cantidad" : "Mostrar cantidad"}
+                              onClick={() => toggleRowQuantity(row.id)}
+                            >
+                              {isQuantityVisible(row.id) ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <span className="tabular-nums min-w-[4rem]">
+                              {isQuantityVisible(row.id)
+                                ? `${getDispatchNetWeight(row).toFixed(2)} kg`
+                                : "*****"}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>{row.date ? formatDate(row.date) : "—"}</TableCell>
                         <TableCell>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="icon"
                             className="h-8 w-8"
-                            disabled
-                            title="Imprimir (próximamente)"
+                            disabled={loadingPrintId != null}
+                            title="Imprimir"
+                            onClick={() => handlePrintClick(row)}
                           >
-                            <Printer className="h-4 w-4" />
+                            {loadingPrintId === row.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Printer className="h-4 w-4" />
+                            )}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -144,6 +222,20 @@ export default function DispatchesListCard({ storeId = null }) {
           </>
         )}
       </CardContent>
+      {printData && (
+        <DispatchPrintDialog
+          isOpen={printDialogOpen}
+          onClose={() => {
+            setPrintDialogOpen(false);
+            setPrintData(null);
+          }}
+          dispatchId={printData.dispatchId}
+          supplier={printData.supplier}
+          date={printData.date}
+          notes={printData.notes}
+          details={printData.details}
+        />
+      )}
     </Card>
   );
 }

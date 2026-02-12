@@ -3,7 +3,8 @@
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import CreateReceptionForm from "@/components/Admin/RawMaterialReceptions/CreateReceptionForm";
+import OperarioCreateReceptionForm from "@/components/Warehouse/OperarioCreateReceptionForm";
+import { RawMaterialReceptionsOptionsProvider } from "@/context/gestor-options/RawMaterialReceptionsOptionsContext";
 import { Card, CardContent } from "@/components/ui/card";
 import WarehouseOperatorLayout from "@/components/WarehouseOperatorLayout";
 import Loader from "@/components/Utilities/Loader";
@@ -67,19 +68,24 @@ export default function WarehouseReceptionCreatePage() {
 
   return (
     <WarehouseOperatorLayout storeName={storeData.name}>
-      <div className="w-full max-w-5xl mx-auto space-y-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/warehouse/${storeId}`} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Volver al panel
-          </Link>
-        </Button>
-        <Card className="w-full p-6">
-          <CardContent className="overflow-y-auto p-0">
-            <CreateReceptionForm onSuccess={handleOnCreate} />
-          </CardContent>
-        </Card>
-      </div>
+      <RawMaterialReceptionsOptionsProvider>
+        <div className="w-full max-w-5xl mx-auto space-y-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/warehouse/${storeId}`} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Volver al panel
+            </Link>
+          </Button>
+          <Card className="w-full p-6">
+            <CardContent className="overflow-y-auto p-0">
+              <OperarioCreateReceptionForm
+                onSuccess={handleOnCreate}
+                storeId={storeId}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </RawMaterialReceptionsOptionsProvider>
     </WarehouseOperatorLayout>
   );
 }

@@ -14,13 +14,15 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
 
-
-
+/**
+ * Combobox con lista en diálogo centrado.
+ * La lista aparece como un pequeño diálogo en el centro de la pantalla,
+ * scrollable y sin exceder el alto del viewport (max 85vh).
+ */
 export function Combobox({ 
   options, 
   placeholder, 
@@ -51,62 +53,51 @@ export function Combobox({
     return (options || []).find((option) => option.value === value)
   }, [options, value])
 
-  // Manejar el cierre del popover para llamar onBlur si está definido
   const handleOpenChange = React.useCallback((newOpen) => {
     setOpen(newOpen)
     if (!newOpen) setSearchValue("")
-    // Notificar al componente padre si hay un callback
-    if (externalOnOpenChange) {
-      externalOnOpenChange(newOpen)
-    }
-    // Si se está cerrando y hay onBlur, llamarlo
-    if (!newOpen && onBlur) {
-      setTimeout(() => {
-        onBlur()
-      }, 0)
-    }
+    externalOnOpenChange?.(newOpen)
+    if (!newOpen && onBlur) setTimeout(() => onBlur(), 0)
   }, [onBlur, externalOnOpenChange])
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange} className={className || ""}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          disabled={isDisabled}
-          className=" justify-between w-full overflow-hidden"
-        >
-          <div className="w-full truncate text-start text-base md:text-sm">
-            {loading && !value ? (
-              // Solo mostrar "Cargando..." si no hay valor seleccionado
-              <span className="text-muted-foreground">Cargando opciones...</span>
-            ) : selectedOption ? (
-              // Si encontramos la opción, mostrar su label
-              selectedOption.label
-            ) : value ? (
-              // Si hay un valor pero no se encontró en las opciones (puede ser durante el loading),
-              // mostrar un mensaje indicando que se está cargando, pero mantener el valor visible
-              loading ? (
-                <span className="text-muted-foreground">Cargando...</span>
-              ) : (
-                // Si no está cargando y no se encontró, mostrar el valor como fallback
-                <span className="text-muted-foreground">{String(value)}</span>
-              )
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Button
+        type="button"
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        disabled={isDisabled}
+        onClick={() => !isDisabled && setOpen(true)}
+        className={cn("justify-between w-full overflow-hidden", className)}
+      >
+        <div className="w-full truncate text-start text-base md:text-sm">
+          {loading && !value ? (
+            <span className="text-muted-foreground">Cargando opciones...</span>
+          ) : selectedOption ? (
+            selectedOption.label
+          ) : value ? (
+            loading ? (
+              <span className="text-muted-foreground">Cargando...</span>
             ) : (
-              placeholder
-            )}
-          </div>
-
-          {loading ? (
-            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
+              <span className="text-muted-foreground">{String(value)}</span>
+            )
           ) : (
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            placeholder
           )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[9999]">
-        <Command>
+        </div>
+        {loading ? (
+          <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
+        ) : (
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        )}
+      </Button>
+      <DialogContent
+        hideClose
+        className="w-[min(400px,90vw)] max-h-[85vh] p-0 gap-0 overflow-hidden flex flex-col"
+      >
+        <Command className="flex flex-col overflow-hidden rounded-lg border-0 shadow-none">
           <CommandInput
             placeholder={searchPlaceholder}
             disabled={loading}
@@ -115,7 +106,7 @@ export function Combobox({
           />
           <CommandList
             ref={listRef}
-            /* scroll con rueda de raton forzado */
+            className="max-h-[min(320px,60vh)] overflow-y-auto overflow-x-hidden overscroll-contain"
             onWheel={(e) => {
               e.currentTarget.scrollBy({
                 top: e.deltaY * 2,
@@ -134,14 +125,15 @@ export function Combobox({
                     <CommandItem
                       key={option.value}
                       value={option.label}
-                      onSelect={(currentValue) => {
+                      onSelect={() => {
                         onChange(option.value === value ? "" : option.value)
                         setOpen(false)
                       }}
+                      className="min-h-[44px] touch-manipulation"
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          "mr-2 h-4 w-4 shrink-0",
                           value === option.value ? "opacity-100" : "opacity-0"
                         )}
                       />
@@ -153,7 +145,7 @@ export function Combobox({
             )}
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   )
 }
