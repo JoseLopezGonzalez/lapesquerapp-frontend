@@ -50,17 +50,26 @@ export default function LoginPage() {
       setIsDemo(true);
     }
 
-    const brandingImagePath = `/images/tenants/${subdomain}/image.png`;
+    // Tenant "dev" en localhost no tiene imagen propia; usar una existente para evitar 400
+    const isDevLocalhost = hostname.includes("localhost") && subdomain === "dev";
+    const brandingImagePath = isDevLocalhost
+      ? "/images/landing.png"
+      : `/images/tenants/${subdomain}/image.png`;
     setBrandingImageUrl(brandingImagePath);
 
     fetch(`${API_URL_V2}public/tenant/${subdomain}`)
       .then((res) => res.json())
       .then((data) => {
+        // En desarrollo (dev.localhost) permitir acceso aunque el backend marque tenant inactivo
+        if (isDevLocalhost) {
+          setTenantActive(true);
+          return;
+        }
         if (!data || data.error || data.active === false) {
           setTenantActive(false);
         }
       })
-      .catch(() => setTenantActive(false))
+      .catch(() => (isDevLocalhost ? setTenantActive(true) : setTenantActive(false)))
       .finally(() => setTenantChecked(true));
   }, []);
 
@@ -180,6 +189,7 @@ export default function LoginPage() {
                 src={brandingImageUrl || "/images/landing.png"}
                 alt="Imagen de branding"
                 fill
+                sizes="100vw"
                 className="object-cover"
                 priority
                 onError={(e) => {
@@ -312,6 +322,7 @@ export default function LoginPage() {
                     src={brandingImageUrl || "/images/landing.png"}
                     alt="Imagen de branding"
                     fill
+                    sizes="(max-width: 1024px) 100vw, 500px"
                     className="object-cover"
                     priority
                     onError={(e) => {

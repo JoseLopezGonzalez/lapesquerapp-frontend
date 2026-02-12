@@ -1,9 +1,12 @@
 // Base URL del backend (desarrollo: http://localhost:8000, producción: https://api.lapesquerapp.es)
-// Usar NEXT_PUBLIC_API_URL o NEXT_PUBLIC_API_BASE_URL (sin /api al final)
-const API_BASE_URL =
+// En el navegador con backend en localhost:8000 usamos proxy /api-backend para evitar CORS
+const envBase =
   typeof process !== 'undefined'
     ? (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.lapesquerapp.es').replace(/\/$/, '')
     : 'https://api.lapesquerapp.es';
+const isDevBackend = envBase === 'http://localhost:8000';
+const API_BASE_URL =
+  typeof window !== 'undefined' && isDevBackend ? '/api-backend' : envBase;
 
 export const API_URL = `${API_BASE_URL}/api/`;
 export const API_URL_V1 = `${API_URL}v1/`;

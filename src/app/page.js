@@ -18,12 +18,12 @@ export default function HomePage() {
   useEffect(() => {
     const hostname = window.location.hostname;
 
-    // Quita 'localhost' o cualquier dominio principal (incluyendo desarrollo local con subdominios)
+    // Sin subdominio → landing; con subdominio (ej. dev.localhost) → login
     const parts = hostname.split(".");
-    const isLocal = hostname.includes("localhost");
+    const isLocal = hostname.includes("localhost") || hostname === "127.0.0.1";
 
     if (isLocal) {
-      // Ej: brisamar.localhost → ['brisamar', 'localhost']
+      // Ej: localhost → landing; dev.localhost → login (tenant dev)
       setIsSubdomain(parts.length > 1 && parts[0] !== "localhost");
     } else {
       const baseDomain = "lapesquerapp.es";
