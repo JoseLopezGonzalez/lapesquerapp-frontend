@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, CornerDownLeft, Copy, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Warehouse, Trash2, Unlink, Link2, Search, X, Loader2, CornerDownLeft, Copy, MoreVertical, PackagePlus } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import { XMarkIcon } from '@heroicons/react/20/solid';
@@ -21,7 +21,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
-import { getPallet, getAvailablePalletsForOrder } from '@/services/palletService';
+import { getPallet, getAvailablePalletsForOrder, createPallet } from '@/services/palletService';
+import { getProductOptions } from '@/services/productService';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
@@ -29,9 +30,15 @@ import { cn } from '@/lib/utils';
 import SearchPalletCard from './SearchPalletCard';
 import Masonry from 'react-masonry-css';
 
+const roundToTwoDecimals = (weight) => {
+    const num = parseFloat(weight);
+    if (isNaN(num)) return 0;
+    return parseFloat(num.toFixed(2));
+};
+
 const OrderPallets = () => {
     const isMobile = useIsMobile();
-    const { pallets, order, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet, onLinkPallets, onUnlinkAllPallets } = useOrderContext();
+    const { pallets, order, plannedProductDetails, onEditingPallet, onCreatingPallet, onDeletePallet, onUnlinkPallet, onLinkPallets, onUnlinkAllPallets } = useOrderContext();
     const { data: session } = useSession();
     const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
     const [selectedPalletId, setSelectedPalletId] = useState(null);
@@ -60,6 +67,12 @@ const OrderPallets = () => {
     const [isCloning, setIsCloning] = useState(false);
     const [unlinkingPalletId, setUnlinkingPalletId] = useState(null);
     const [isUnlinkingAll, setIsUnlinkingAll] = useState(false);
+
+    // Estados para crear palet desde previsión
+    const [isCreateFromForecastDialogOpen, setIsCreateFromForecastDialogOpen] = useState(false);
+    const [createFromForecastLot, setCreateFromForecastLot] = useState('');
+    const [createFromForecastStoreId, setCreateFromForecastStoreId] = useState(null);
+    const [isCreatingFromForecast, setIsCreatingFromForecast] = useState(false);
     
     // Función para generar IDs únicos temporales para cajas clonadas
     const generateUniqueBoxId = (() => {
@@ -439,6 +452,142 @@ const OrderPallets = () => {
         }
     };
 
+    // Crear palet automáticamente desde la previsión del pedido
+    const handleOpenCreateFromForecastDialog = () => {
+        const persistedDetails = (plannedProductDetails || []).filter(d => d?.id && d?.product?.id);
+        const detailsWithBoxes = persistedDetails.filter(d => Number(d.boxes) > 0);
+        if (detailsWithBoxes.length === 0) {
+            toast.error('La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.', getToastTheme());
+            return;
+        }
+        setCreateFromForecastLot('');
+        setCreateFromForecastStoreId(null);
+        setIsCreateFromForecastDialogOpen(true);
+    };
+
+    const handleCloseCreateFromForecastDialog = () => {
+        setIsCreateFromForecastDialogOpen(false);
+        setCreateFromForecastLot('');
+        setCreateFromForecastStoreId(null);
+    };
+
+    const handleCreatePalletFromForecast = async () => {
+        const lot = (createFromForecastLot || '').trim();
+        if (!lot) {
+            toast.error('Introduce el lote', getToastTheme());
+            return;
+        }
+        if (!createFromForecastStoreId) {
+            toast.error('Selecciona el almacén donde se almacenará el palet', getToastTheme());
+            return;
+        }
+
+        const token = session?.user?.accessToken;
+        if (!token) {
+            toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+            return;
+        }
+
+        const persistedDetails = (plannedProductDetails || []).filter(d => d?.id && d?.product?.id);
+        const detailsWithBoxes = persistedDetails.filter(d => Number(d.boxes) > 0);
+        if (detailsWithBoxes.length === 0) {
+            toast.error('No hay productos en la previsión con cajas', getToastTheme());
+            return;
+        }
+
+        let productOptionsMap = new Map();
+        try {
+            const products = await getProductOptions(token);
+            (Array.isArray(products) ? products : []).forEach(p => {
+                const id = p?.id ?? p?.value;
+                if (id != null) productOptionsMap.set(String(id), { id, name: p?.name ?? p?.label ?? '', boxGtin: p?.boxGtin ?? null });
+            });
+        } catch (err) {
+            console.error('Error al cargar productos:', err);
+        }
+
+        const buildGs1128 = (productId, lotVal, netWeight) => {
+            const p = productOptionsMap.get(String(productId));
+            const boxGtin = p?.boxGtin;
+            if (!boxGtin) return null;
+            const w = parseFloat(netWeight) || 0;
+            const formatted = w.toFixed(2).replace('.', '').padStart(6, '0');
+            return `(01)${boxGtin}(3100)${formatted}(10)${lotVal}`;
+        };
+
+        let nextBoxId = Date.now();
+        const boxes = [];
+        for (const detail of detailsWithBoxes) {
+            const numBoxes = Math.max(0, parseInt(detail.boxes, 10) || 0);
+            const totalQty = parseFloat(detail.quantity) || 0;
+            if (numBoxes <= 0) continue;
+
+            const weightPerBox = totalQty / numBoxes;
+            const standardWeight = roundToTwoDecimals(weightPerBox);
+            let accumulated = 0;
+
+            for (let i = 0; i < numBoxes; i++) {
+                const isLast = i === numBoxes - 1;
+                const netWeight = isLast
+                    ? roundToTwoDecimals(totalQty - accumulated)
+                    : standardWeight;
+                accumulated += netWeight;
+
+                const productId = detail.product?.id ?? detail.productId;
+                const productName = detail.product?.name ?? '';
+                const gs1128 = buildGs1128(productId, lot, netWeight);
+
+                const box = {
+                    id: nextBoxId++,
+                    new: true,
+                    product: { id: productId, name: productName },
+                    lot,
+                    netWeight,
+                    grossWeight: netWeight,
+                    ...(gs1128 && { gs1128 }),
+                };
+                boxes.push(box);
+            }
+        }
+
+        if (boxes.length === 0) {
+            toast.error('No se pudieron generar cajas desde la previsión', getToastTheme());
+            return;
+        }
+
+        const palletData = {
+            id: null,
+            observations: '',
+            state: { id: 1, name: 'Registrado' },
+            productsNames: [],
+            boxes,
+            lots: [lot],
+            netWeight: boxes.reduce((sum, b) => sum + parseFloat(b.netWeight || 0), 0),
+            numberOfBoxes: boxes.length,
+            position: null,
+            store: { id: createFromForecastStoreId },
+            storeId: createFromForecastStoreId,
+            orderId: order?.id,
+        };
+
+        try {
+            setIsCreatingFromForecast(true);
+            const result = await createPallet(palletData, token);
+            const newPallet = result?.data ?? result;
+            if (newPallet) {
+                await onCreatingPallet(newPallet);
+                handleCloseCreateFromForecastDialog();
+                toast.success('Palet creado desde la previsión correctamente', getToastTheme());
+            }
+        } catch (err) {
+            console.error('Error al crear palet desde previsión:', err);
+            const msg = err?.userMessage ?? err?.data?.userMessage ?? err?.response?.data?.userMessage ?? err?.message ?? 'Error al crear el palet';
+            toast.error(msg, getToastTheme());
+        } finally {
+            setIsCreatingFromForecast(false);
+        }
+    };
+
     // console.log('pallets ahiiiiii', pallets);
     return (
         <div className='flex-1 flex flex-col min-h-0'>
@@ -698,6 +847,15 @@ const OrderPallets = () => {
                             Vincular
                         </Button>
                         <Button 
+                            variant="outline"
+                            onClick={handleOpenCreateFromForecastDialog}
+                            size="sm"
+                            className="flex-1 min-h-[44px]"
+                        >
+                            <PackagePlus className="h-4 w-4 mr-2" />
+                            Desde previsión
+                        </Button>
+                        <Button 
                             onClick={handleOpenNewPallet}
                             size="sm"
                             className="flex-1 min-h-[44px]"
@@ -771,6 +929,13 @@ const OrderPallets = () => {
                             >
                             <Link2 className="h-4 w-4 mr-2" />
                             Vincular palets existentes
+                        </Button>
+                            <Button 
+                                variant="outline"
+                                onClick={handleOpenCreateFromForecastDialog}
+                            >
+                                <PackagePlus className="h-4 w-4 mr-2" />
+                                Crear desde previsión
                         </Button>
                             <Button 
                                 onClick={handleOpenNewPallet}
@@ -937,6 +1102,76 @@ const OrderPallets = () => {
                             El palet se creará en el almacén seleccionado y se vinculará automáticamente a este pedido.
                         </p>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Create Pallet from Forecast Dialog */}
+            <Dialog open={isCreateFromForecastDialogOpen} onOpenChange={(open) => !open && handleCloseCreateFromForecastDialog()}>
+                <DialogContent className={isMobile ? "max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col" : "sm:max-w-md"}>
+                    <DialogHeader className={isMobile ? "text-center" : ""}>
+                        <DialogTitle className={`flex items-center gap-2 ${isMobile ? "justify-center" : ""}`}>
+                            <PackagePlus className="h-5 w-5" />
+                            Crear palet desde previsión
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className={`space-y-4 ${isMobile ? "flex flex-col items-center justify-center flex-1" : ""}`}>
+                        <p className="text-sm text-muted-foreground">
+                            Se creará un palet con todas las cajas de la previsión del pedido. Introduce el lote y el almacén donde se almacenará.
+                        </p>
+                        <div className={`space-y-4 ${isMobile ? "w-full max-w-md" : ""}`}>
+                            <div className="space-y-2">
+                                <Label htmlFor="create-from-forecast-lot">Lote</Label>
+                                <Input
+                                    id="create-from-forecast-lot"
+                                    type="text"
+                                    placeholder="Ej. LOT-2025-001"
+                                    value={createFromForecastLot}
+                                    onChange={(e) => setCreateFromForecastLot(e.target.value)}
+                                    disabled={isCreatingFromForecast}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="create-from-forecast-store">Almacén</Label>
+                                <Combobox
+                                    options={storeOptions}
+                                    value={createFromForecastStoreId || ''}
+                                    onChange={(value) => setCreateFromForecastStoreId(value || null)}
+                                    placeholder="Selecciona el almacén"
+                                    searchPlaceholder="Buscar almacén..."
+                                    notFoundMessage="No se encontraron almacenes"
+                                    loading={storesLoading}
+                                    disabled={isCreatingFromForecast}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter className={isMobile ? "flex-col gap-2" : ""}>
+                        <Button 
+                            variant="outline" 
+                            onClick={handleCloseCreateFromForecastDialog}
+                            disabled={isCreatingFromForecast}
+                            className={isMobile ? "w-full" : ""}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleCreatePalletFromForecast}
+                            disabled={isCreatingFromForecast}
+                            className={isMobile ? "w-full" : ""}
+                        >
+                            {isCreatingFromForecast ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Creando...
+                                </>
+                            ) : (
+                                <>
+                                    <PackagePlus className="h-4 w-4 mr-2" />
+                                    Crear palet
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
