@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { isAuthError, isAuthStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
 
+const { AUTH_SESSION_EXPIRED_EVENT } = AUTH_ERROR_CONFIG;
+
 
 export default function AuthErrorInterceptor() {
   useEffect(() => {
@@ -161,14 +163,18 @@ export default function AuthErrorInterceptor() {
       }
     };
 
+    const handleSessionExpiredEvent = () => handleAuthError();
+
     window.addEventListener('error', handleGlobalError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
 
     // Cleanup: restaurar fetch original y remover listeners cuando el componente se desmonte
     return () => {
       window.fetch = originalFetch;
       window.removeEventListener('error', handleGlobalError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { isAuthError, isAuthStatusCode } from '@/configs/authConfig';
+import { isAuthError, isAuthStatusCode, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
 
 export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
   // En desarrollo (localhost) usar tenant 'dev'; en producción por subdominio o 'brisamar'
@@ -125,9 +125,13 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       // Si es un error de validación, NO lanzar "No autenticado"
       // Permitir que el error se propague con el mensaje real del backend
       if (!isValidationError) {
-        // Error de autenticación: sesión expirada o token inválido.
-        // Se lanza sin console.error; el flujo lo gestionan SettingsContext (signOut)
-        // y AuthErrorInterceptor (toast + redirect a login).
+        // En cliente: no lanzar para evitar que el overlay/consola muestre el error.
+        // Se dispara un evento que AuthErrorInterceptor escucha (toast + signOut + redirect).
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent(AUTH_ERROR_CONFIG.AUTH_SESSION_EXPIRED_EVENT));
+          return res;
+        }
+        // En servidor: lanzar para que API routes etc. reciban el error
         const err = new Error('No autenticado');
         err.status = res.status;
         err.code = 'UNAUTHENTICATED';

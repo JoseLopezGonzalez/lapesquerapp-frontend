@@ -207,7 +207,8 @@ export default function SettingsForm() {
       }
       // Si no hay password pero había configuración previa, no incluir el campo (mantiene la actual)
 
-      await updateSettings(payload);
+      const result = await updateSettings(payload);
+      if (result && result.authError) return; // Sesión expirada; el interceptor muestra toast y redirige
       setSettings(payload); // Notifica a todos los consumidores del Context
       setEmailPassword(''); // Limpiar campo de contraseña después de guardar
       setHadPreviousConfig(true); // Marcar que ahora hay configuración

@@ -14,7 +14,10 @@ export async function getSettings() {
       'User-Agent': getUserAgent(),
     },
   });
-  if (!res.ok) throw new Error('Error al obtener configuración');
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) return null; // Auth ya gestionado por fetchWithTenant (evento)
+    throw new Error('Error al obtener configuración');
+  }
   return await res.json();
 }
 
@@ -31,6 +34,7 @@ export async function updateSettings(data) {
     body: JSON.stringify(data),
   });
   if (!res.ok) {
+    if (res.status === 401 || res.status === 403) return { success: false, authError: true };
     // Intentar parsear el error del backend para mostrar mensaje más específico
     try {
       const errorData = await res.json();

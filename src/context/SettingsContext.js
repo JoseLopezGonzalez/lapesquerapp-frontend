@@ -122,8 +122,7 @@ export function SettingsProvider({ children }) {
           console.warn(`[SettingsProvider:${instanceIdRef.current}] ⚠️ Tenant cambió durante la carga (${currentTenant} → ${tenantAfterLoad}), descartando datos`);
           return; // No guardar datos si el tenant cambió
         }
-        
-        // console.log(`[SettingsProvider:${instanceIdRef.current}] Settings recibidos para tenant ${currentTenant}:`, data);
+        if (data === null) return; // 401/403: auth ya gestionado por evento (toast + redirect)
         setSettings(data);
         hasErrorRef.current = false; // Resetear flag de error en éxito
       })

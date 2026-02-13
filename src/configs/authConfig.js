@@ -1,5 +1,8 @@
 // Configuración para el manejo de errores de autenticación
 export const AUTH_ERROR_CONFIG = {
+  // Evento que se dispara en cliente cuando la sesión expira (para no lanzar y evitar overlay)
+  AUTH_SESSION_EXPIRED_EVENT: 'auth:session-expired',
+
   // Mensajes de error que indican problemas de autenticación
   AUTH_ERROR_MESSAGES: [
     'No autenticado',

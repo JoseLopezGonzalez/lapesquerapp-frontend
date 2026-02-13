@@ -27,6 +27,7 @@ export async function getSettingValue(key, forceRefresh = false) {
   if (!tenant) {
     console.warn(`[getSettingValue:${INSTANCE_ID}] No se pudo obtener tenant, intentando obtener settings sin caché`);
     const settings = await getSettings();
+    if (settings === null) return undefined;
     return settings?.[key];
   }
 
@@ -34,7 +35,10 @@ export async function getSettingValue(key, forceRefresh = false) {
   if (!cachedSettingsByTenant[tenant] || forceRefresh) {
     // Obtener settings desde API (fetchWithTenant ya maneja el tenant correcto)
     const settings = await getSettings();
-    
+    if (settings === null) {
+      invalidateSettingsCache(tenant);
+      return undefined;
+    }
     // Verificar nuevamente el tenant después de cargar (doble verificación de seguridad)
     const tenantAfterLoad = getCurrentTenant();
     if (tenantAfterLoad && tenantAfterLoad !== tenant) {
