@@ -495,6 +495,7 @@ const OrderPallets = () => {
             return;
         }
 
+        setIsCreatingFromForecast(true);
         let productOptionsMap = new Map();
         try {
             const products = await getProductOptions(token);
@@ -551,6 +552,7 @@ const OrderPallets = () => {
         }
 
         if (boxes.length === 0) {
+            setIsCreatingFromForecast(false);
             toast.error('No se pudieron generar cajas desde la previsión', getToastTheme());
             return;
         }
@@ -571,7 +573,6 @@ const OrderPallets = () => {
         };
 
         try {
-            setIsCreatingFromForecast(true);
             const result = await createPallet(palletData, token);
             const newPallet = result?.data ?? result;
             if (newPallet) {
