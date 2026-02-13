@@ -14,15 +14,11 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
-/**
- * Combobox con lista en diálogo centrado.
- * La lista aparece como un pequeño diálogo en el centro de la pantalla,
- * scrollable y sin exceder el alto del viewport (max 85vh).
- */
 export function Combobox({ 
   options, 
   placeholder, 
@@ -53,51 +49,57 @@ export function Combobox({
     return (options || []).find((option) => option.value === value)
   }, [options, value])
 
+  // Manejar el cierre del popover para llamar onBlur si está definido
   const handleOpenChange = React.useCallback((newOpen) => {
     setOpen(newOpen)
     if (!newOpen) setSearchValue("")
-    externalOnOpenChange?.(newOpen)
-    if (!newOpen && onBlur) setTimeout(() => onBlur(), 0)
+    // Notificar al componente padre si hay un callback
+    if (externalOnOpenChange) {
+      externalOnOpenChange(newOpen)
+    }
+    // Si se está cerrando y hay onBlur, llamarlo
+    if (!newOpen && onBlur) {
+      setTimeout(() => {
+        onBlur()
+      }, 0)
+    }
   }, [onBlur, externalOnOpenChange])
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button
-        type="button"
-        variant="outline"
-        role="combobox"
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        disabled={isDisabled}
-        onClick={() => !isDisabled && setOpen(true)}
-        className={cn("justify-between w-full overflow-hidden", className)}
-      >
-        <div className="w-full truncate text-start text-base md:text-sm">
-          {loading && !value ? (
-            <span className="text-muted-foreground">Cargando opciones...</span>
-          ) : selectedOption ? (
-            selectedOption.label
-          ) : value ? (
-            loading ? (
-              <span className="text-muted-foreground">Cargando...</span>
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={isDisabled}
+          className={cn("justify-between w-full overflow-hidden", className)}
+        >
+          <div className="w-full truncate text-start text-base md:text-sm">
+            {loading && !value ? (
+              <span className="text-muted-foreground">Cargando opciones...</span>
+            ) : selectedOption ? (
+              selectedOption.label
+            ) : value ? (
+              loading ? (
+                <span className="text-muted-foreground">Cargando...</span>
+              ) : (
+                <span className="text-muted-foreground">{String(value)}</span>
+              )
             ) : (
-              <span className="text-muted-foreground">{String(value)}</span>
-            )
+              placeholder
+            )}
+          </div>
+
+          {loading ? (
+            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
           ) : (
-            placeholder
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           )}
-        </div>
-        {loading ? (
-          <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
-        ) : (
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        )}
-      </Button>
-      <DialogContent
-        hideClose
-        className="w-[min(400px,90vw)] max-h-[85vh] p-0 gap-0 overflow-hidden flex flex-col"
-      >
-        <Command className="flex flex-col overflow-hidden rounded-lg border-0 shadow-none">
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[9999]">
+        <Command>
           <CommandInput
             placeholder={searchPlaceholder}
             disabled={loading}
@@ -106,7 +108,6 @@ export function Combobox({
           />
           <CommandList
             ref={listRef}
-            className="max-h-[min(320px,60vh)] overflow-y-auto overflow-x-hidden overscroll-contain"
             onWheel={(e) => {
               e.currentTarget.scrollBy({
                 top: e.deltaY * 2,
@@ -129,7 +130,6 @@ export function Combobox({
                         onChange(option.value === value ? "" : option.value)
                         setOpen(false)
                       }}
-                      className="min-h-[44px] touch-manipulation"
                     >
                       <Check
                         className={cn(
@@ -145,7 +145,7 @@ export function Combobox({
             )}
           </CommandList>
         </Command>
-      </DialogContent>
-    </Dialog>
+      </PopoverContent>
+    </Popover>
   )
 }
