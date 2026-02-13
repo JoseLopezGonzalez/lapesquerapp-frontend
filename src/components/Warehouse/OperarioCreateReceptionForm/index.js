@@ -5,8 +5,7 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Combobox } from "@/components/Shadcn/Combobox";
-import { Plus, Trash2, ArrowRight, ArrowLeft, Loader2, Check, Pencil } from "lucide-react";
+import { Plus, Trash2, ArrowRight, ArrowLeft, Loader2, Check, Pencil, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -43,6 +42,48 @@ const TARE_OPTIONS = [
 ];
 
 const CACHE_KEY_LAST_SPECIES = "operario-reception-last-species";
+const CACHE_KEY_PRODUCT_HISTORY = "operario-reception-product-history";
+const MAX_PRODUCT_HISTORY = 100;
+const QUICK_PICKS_COUNT = 4;
+
+function getProductHistory(speciesId) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY_PRODUCT_HISTORY);
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return data[String(speciesId)] ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function pushProductToHistory(speciesId, productId) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY_PRODUCT_HISTORY);
+    const data = raw ? JSON.parse(raw) : {};
+    const key = String(speciesId);
+    const arr = data[key] ?? [];
+    arr.push(String(productId));
+    if (arr.length > MAX_PRODUCT_HISTORY) arr.splice(0, arr.length - MAX_PRODUCT_HISTORY);
+    data[key] = arr;
+    localStorage.setItem(CACHE_KEY_PRODUCT_HISTORY, JSON.stringify(data));
+  } catch (_) {}
+}
+
+function getQuickPickProductIds(speciesId, productOptions) {
+  const history = getProductHistory(speciesId);
+  const counts = {};
+  for (let i = history.length - 1; i >= 0; i--) {
+    const id = history[i];
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  const validIds = new Set((productOptions || []).map((o) => String(o.value)));
+  return Object.entries(counts)
+    .filter(([id]) => validIds.has(id))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, QUICK_PICKS_COUNT)
+    .map(([id]) => id);
+}
 
 const STEPS = [
   { id: 0, title: "Especie", description: "Seleccione la especie" },
@@ -62,6 +103,7 @@ export default function OperarioCreateReceptionForm({ onSuccess, onCancel, store
   const [editingLineIndex, setEditingLineIndex] = useState(null);
   const [lineDialogOpen, setLineDialogOpen] = useState(false);
   const [lineDialogStep, setLineDialogStep] = useState(0);
+  const [productStepView, setProductStepView] = useState("quick"); // 'quick' | 'search'
   const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
   const [speciesOptions, setSpeciesOptions] = useState([]);
   const [speciesLoading, setSpeciesLoading] = useState(true);
@@ -470,12 +512,14 @@ export default function OperarioCreateReceptionForm({ onSuccess, onCancel, store
           const handleCloseLineDialog = () => {
             setLineDialogOpen(false);
             setLineDialogStep(0);
+            setProductStepView("quick");
             setEditingLineIndex(null);
           };
 
           const handleOpenLineDialog = (forEditIndex = null) => {
             if (forEditIndex !== null) setEditingLineIndex(forEditIndex);
             setLineDialogStep(0);
+            setProductStepView("quick");
             setLineDialogOpen(true);
           };
 
@@ -493,14 +537,19 @@ export default function OperarioCreateReceptionForm({ onSuccess, onCancel, store
               if (!valid) return;
             }
             if (lineDialogStep < LINE_DIALOG_STEPS.length - 1) {
+              if (lineDialogStep === 0) setProductStepView("quick");
               setLineDialogStep(lineDialogStep + 1);
             } else {
               const d = watchedDetails[formIndex];
               const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 1, d?.tare ?? "3");
               if (!d?.product || net <= 0) return;
+              const productId = typeof d.product === "object" ? d.product?.id ?? d.product?.value : d.product;
               if (editingLineIndex !== null) {
                 handleCloseLineDialog();
               } else {
+                if (speciesValue != null && productId != null) {
+                  pushProductToHistory(speciesValue, productId);
+                }
                 append({ product: null, grossWeight: "", boxes: 1, tare: "3", netWeight: "" });
                 handleCloseLineDialog();
               }
@@ -586,30 +635,105 @@ export default function OperarioCreateReceptionForm({ onSuccess, onCancel, store
                   </div>
                   <div className="min-h-[220px] py-4 flex flex-col items-center justify-center w-full flex-1">
                     {lineDialogStep === 0 && (
-                      <div className="w-full max-w-[320px]">
-                        <Controller
-                          name={`details.${formIndex}.product`}
-                          control={control}
-                          rules={{ required: "Seleccione producto" }}
-                          render={({ field: { onChange, value } }) => (
-                            <Combobox
-                              options={productOptionsBySpecies}
-                              value={value}
-                              onChange={onChange}
-                              placeholder="Seleccione producto"
-                              searchPlaceholder="Buscar..."
-                              notFoundMessage="Sin resultados"
-                              loading={productsBySpeciesLoading}
-                              className="min-h-[44px] touch-manipulation w-full"
-                            />
-                          )}
-                        />
-                        {errors.details?.[formIndex]?.product && (
-                          <p className="text-xs text-destructive mt-1">
-                            {errors.details[formIndex].product.message}
-                          </p>
-                        )}
-                      </div>
+                      <Controller
+                        name={`details.${formIndex}.product`}
+                        control={control}
+                        rules={{ required: "Seleccione producto" }}
+                        render={({ field: { onChange, value } }) => {
+                          const productValue = typeof value === "object" ? value?.id ?? value?.value : value;
+                          const quickPickIds = getQuickPickProductIds(speciesValue, productOptionsBySpecies);
+                          const quickPickOpts = quickPickIds
+                            .map((id) => productOptionsBySpecies?.find((o) => String(o.value) === id))
+                            .filter(Boolean);
+
+                          if (productStepView === "search") {
+                            return (
+                              <div className="w-full flex flex-col gap-2 flex-1 min-h-0">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="self-start -ml-1 touch-manipulation"
+                                  onClick={() => setProductStepView("quick")}
+                                >
+                                  <ArrowLeft className="h-4 w-4 mr-1" />
+                                  Volver
+                                </Button>
+                                <div
+                                  className="flex-1 min-h-[200px] max-h-[min(320px,50vh)] rounded-lg border overflow-y-auto overflow-x-hidden"
+                                  style={{ minHeight: 0 }}
+                                >
+                                  <div className="flex flex-col gap-2 p-3 pr-4">
+                                    {productsBySpeciesLoading ? (
+                                      <p className="py-6 text-center text-sm text-muted-foreground">Cargando...</p>
+                                    ) : (productOptionsBySpecies || []).length === 0 ? (
+                                      <p className="py-6 text-center text-sm text-muted-foreground">Sin productos</p>
+                                    ) : (
+                                      (productOptionsBySpecies || []).map((opt, idx) => {
+                                        const isSelected = productValue != null && String(opt.value) === String(productValue);
+                                        return (
+                                          <button
+                                            key={opt.value ?? idx}
+                                            type="button"
+                                            onClick={() => onChange(opt.value)}
+                                            className={cn(
+                                              "w-full text-left rounded-lg border-2 px-4 py-3 transition-colors touch-manipulation min-h-[56px] flex flex-col justify-center",
+                                              isSelected
+                                                ? "border-primary border-l-4 bg-primary/5"
+                                                : "border-border hover:border-primary/40 hover:bg-muted/50"
+                                            )}
+                                          >
+                                            <span className="font-medium text-foreground">{opt.label}</span>
+                                          </button>
+                                        );
+                                      })
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="w-full space-y-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full min-h-[44px] touch-manipulation"
+                                onClick={() => setProductStepView("search")}
+                              >
+                                <Search className="h-4 w-4 mr-2" />
+                                Buscar más
+                              </Button>
+                              <div className="flex flex-col gap-2">
+                                {quickPickOpts.map((opt) => {
+                                  const isSelected = productValue != null && String(opt.value) === String(productValue);
+                                  return (
+                                    <button
+                                      key={opt.value}
+                                      type="button"
+                                      onClick={() => onChange(opt.value)}
+                                      className={cn(
+                                        "w-full text-left rounded-lg border-2 px-4 py-3 transition-colors touch-manipulation min-h-[52px] flex items-center",
+                                        isSelected
+                                          ? "border-primary border-l-4 bg-primary/5"
+                                          : "border-border hover:border-primary/40 hover:bg-muted/50"
+                                      )}
+                                    >
+                                      <span className="font-medium text-foreground">{opt.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {errors.details?.[formIndex]?.product && (
+                                <p className="text-xs text-destructive text-center">
+                                  {errors.details[formIndex].product.message}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }}
+                      />
                     )}
                     {lineDialogStep === 1 && (
                       <div className="space-y-2">
@@ -710,7 +834,10 @@ export default function OperarioCreateReceptionForm({ onSuccess, onCancel, store
                         variant="outline"
                         size="sm"
                         className="min-h-[40px] flex-1 touch-manipulation text-sm"
-                        onClick={() => setLineDialogStep(lineDialogStep - 1)}
+                        onClick={() => {
+                          if (lineDialogStep === 1) setProductStepView("quick");
+                          setLineDialogStep(lineDialogStep - 1);
+                        }}
                       >
                         <ArrowLeft className="h-4 w-4 mr-1.5" />
                         Anterior
