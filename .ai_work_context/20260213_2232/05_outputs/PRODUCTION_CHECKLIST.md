@@ -89,5 +89,5 @@
 
 ## 10. Logs y debugging
 
-- [ ] Eliminar o condicionar `console.log` en producción.
-- [ ] Revisar `console.warn` y `console.error` — mantener solo los necesarios para monitoreo.
+- [x] Eliminar o condicionar `console.log` en producción — **Implementado**: `removeConsole` en next.config + `src/lib/logger.js`.
+- [ ] Revisar `console.warn` y `console.error` en archivos que aún no usan el logger — mantener solo los necesarios para monitoreo.

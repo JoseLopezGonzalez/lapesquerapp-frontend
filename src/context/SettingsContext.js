@@ -30,23 +30,28 @@ export function SettingsProvider({ children }) {
       : 'server'
   );
 
-  // Listener para detectar cambios de tenant (navegación entre subdominios)
+  // Detectar cambios de tenant solo cuando el usuario vuelve a la pestaña
+  // (evita setInterval constante; navegación entre subdominios suele causar reload)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const checkTenantChange = () => {
       const currentTenant = getCurrentTenant();
       if (lastTenantRef.current && lastTenantRef.current !== currentTenant) {
-        console.log(`[SettingsProvider] 🔄 Cambio de tenant detectado: ${lastTenantRef.current} → ${currentTenant}`);
-        setTenantKey(prev => prev + 1); // Forzar re-render
+        setTenantKey(prev => prev + 1);
       }
     };
 
-    // Verificar cambios periódicamente (cada 2 segundos)
-    // Esto es necesario porque no hay evento nativo para detectar cambios de subdominio
-    const interval = setInterval(checkTenantChange, 2000);
+    const onVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') checkTenantChange();
+    };
 
-    return () => clearInterval(interval);
+    document.addEventListener('visibilitychange', onVisibilityOrFocus);
+    window.addEventListener('focus', checkTenantChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityOrFocus);
+      window.removeEventListener('focus', checkTenantChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -74,13 +79,14 @@ export function SettingsProvider({ children }) {
 
     // Si no hay tenant (solo puede pasar en servidor), no cargar settings
     if (!currentTenant) {
-      console.warn('[SettingsProvider] No se pudo obtener tenant, no se cargarán settings');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[SettingsProvider] No se pudo obtener tenant, no se cargarán settings');
+      }
       return;
     }
 
     // Si el tenant cambió, limpiar settings y caché del tenant anterior
     if (lastTenantRef.current && lastTenantRef.current !== currentTenant) {
-      console.log(`[SettingsProvider:${instanceIdRef.current}] ⚠️ Tenant cambió de ${lastTenantRef.current} a ${currentTenant}, limpiando settings y caché`);
       setSettings(null);
       invalidateSettingsCache(lastTenantRef.current);
       hasErrorRef.current = false; // Resetear error al cambiar tenant
@@ -119,7 +125,9 @@ export function SettingsProvider({ children }) {
         const tenantAfterLoad = typeof window !== 'undefined' ? getCurrentTenant() : null;
         
         if (tenantAfterLoad !== currentTenant) {
-          console.warn(`[SettingsProvider:${instanceIdRef.current}] ⚠️ Tenant cambió durante la carga (${currentTenant} → ${tenantAfterLoad}), descartando datos`);
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[SettingsProvider] Tenant cambió durante la carga, descartando datos`);
+          }
           return; // No guardar datos si el tenant cambió
         }
         if (data === null) return; // 401/403: auth ya gestionado por evento (toast + redirect)
@@ -134,7 +142,11 @@ export function SettingsProvider({ children }) {
         if (isAuthError(err)) {
           hasErrorRef.current = false;
           // Forzar signOut en cliente para que useSession() pase a "unauthenticated" y la home muestre login en vez de loader
-          signOut({ redirect: false }).catch((e) => console.warn('[SettingsProvider] signOut:', e));
+          signOut({ redirect: false }).catch((e) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[SettingsProvider] signOut:', e);
+            }
+          });
           return;
         }
         // Para otros errores (5xx, red), marcar error para prevenir reintentos infinitos

@@ -234,9 +234,23 @@ export function getOrder(orderId, token) {
 **Propósito**: Contiene funciones utilitarias fundamentales y helpers base.
 
 **Archivos**:
+- `logger.js` - Logger condicional: `log`/`info`/`debug` no-op en producción; `warn`/`error` siempre activos
 - `utils.js` - Función `cn()` para merge de clases Tailwind
 - `fetchWithTenant.js` - Función base para fetch con soporte multi-tenant
 - `barcodes.js` - Utilidades para códigos de barras (EAN13, EAN14, GS1-128)
+
+### `logger.js`
+**Propósito**: Reducir ruido y overhead en producción. Usar `log()` en lugar de `console.log()` para depuración.
+
+```javascript
+import { log, warn, error } from "@/lib/logger";
+
+log("solo en desarrollo");   // no-op en producción
+warn("siempre visible");
+error("siempre visible");
+```
+
+**Documentación detallada**: Ver `12-UTILIDADES-HELPERS.md` sección Logger.
 
 ### `utils.js`
 ```javascript

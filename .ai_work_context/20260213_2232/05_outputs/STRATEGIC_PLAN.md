@@ -7,13 +7,13 @@
 
 ## 1. Quick wins (1–2 días)
 
-| # | Acción | Archivos | Impacto | Reversibilidad |
-|---|--------|----------|---------|----------------|
-| 1 | Envolver `console.log/warn/error` en `if (process.env.NODE_ENV === 'development')` o usar babel plugin para eliminarlos en prod | middleware.js, useStore.js, fetchWithTenant.js, y ~30 archivos más | Medio — reduce overhead y ruido | Fácil |
-| 2 | Añadir `dynamic(ssr: false)` para Orquestador y Market Data Extractor | app/admin/orquestador, app/admin/market-data-extractor | Medio — reduce bundle inicial en rutas principales | Fácil |
-| 3 | Configurar `compress: true` y headers de caché en next.config.mjs | next.config.mjs | Bajo–Medio | Fácil |
-| 4 | Reducir o eliminar setInterval de SettingsProvider; usar `document.visibilityState` o evento `focus` | SettingsContext.js | Bajo | Fácil |
-| 5 | Añadir `reactStrictMode: true` si no está (verificar) | next.config.mjs | Bajo (detección de efectos secundarios) | Fácil |
+| # | Acción | Archivos | Impacto | Estado |
+|---|--------|----------|---------|--------|
+| 1 | ~~Envolver `console.log` o usar logger~~ | useStore.js, fetchWithTenant.js, SettingsContext.js, next.config (removeConsole) | Medio | **✅ Implementado** — `src/lib/logger.js` + removeConsole |
+| 2 | Añadir `dynamic(ssr: false)` para Orquestador y Market Data Extractor | app/admin/orquestador, app/admin/market-data-extractor | Medio — reduce bundle inicial en rutas principales | Pendiente |
+| 3 | Configurar `compress: true` y headers de caché en next.config.mjs | next.config.mjs | Bajo–Medio | Pendiente |
+| 4 | ~~Reducir o eliminar setInterval de SettingsProvider~~ | SettingsContext.js | Bajo | **✅ Implementado** — visibilitychange + focus |
+| 5 | Añadir `reactStrictMode: true` si no está (verificar) | next.config.mjs | Bajo (detección de efectos secundarios) | Pendiente |
 
 ---
 
@@ -53,7 +53,7 @@
 
 ## 5. Priorización recomendada
 
-1. **Semana 1**: Quick wins 1–5.
+1. **Semana 1**: Quick wins 2, 3, 5 (1 y 4 ya implementados).
 2. **Semanas 2–3**: Introducir SWR/React Query en EntityClient y useStores; optimizar middleware.
 3. **Mes 1**: Lazy load de recharts/xlsx; separar landing; primeras migraciones a Server Components.
 4. **Meses 2–3**: Refactor completo de fetching; evaluación de Edge y BFF.

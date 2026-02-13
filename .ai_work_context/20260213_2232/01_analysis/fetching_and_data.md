@@ -32,4 +32,4 @@
 1. **Waterfall de fetches**: EntityClient y otros cargan datos tras montaje; no hay preload.
 2. **Sin caché global**: cada navegación recarga datos completos.
 3. **console.log en producción**: useStore, middleware, fetchWithTenant, diagramTransformers, etc.
-4. **SettingsProvider**: `setInterval(checkTenantChange, 2000)` — ejecuta cada 2s en todas las sesiones.
+4. **SettingsProvider**: ~~setInterval 2s~~ ✅ Reemplazado por `visibilitychange` + `focus` — sin polling constante.

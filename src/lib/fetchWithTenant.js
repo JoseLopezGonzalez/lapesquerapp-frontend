@@ -1,4 +1,5 @@
 import { isAuthError, isAuthStatusCode, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
+import { log } from '@/lib/logger';
 
 export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
   // En desarrollo (localhost) usar tenant 'dev'; en producción por subdominio o 'brisamar'
@@ -17,7 +18,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         const headersList = await headers();
         host = headersList.get('host');
       } catch (error) {
-        console.warn('⚠️ No se pudo obtener headers, usando valor por defecto');
+        log('⚠️ No se pudo obtener headers, usando valor por defecto');
       }
     }
 
@@ -29,7 +30,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         : host.split('.')[0];
     }
 
-    console.log('🌐 Tenant detectado (servidor):', tenant);
+    log('🌐 Tenant detectado (servidor):', tenant);
   } else {
     // ---- CLIENTE ----
     const clientHost = window.location.host;
@@ -87,7 +88,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       }
     } catch (parseError) {
       // Si falla el parseo, continuar con errorJson vacío
-      console.warn('⚠️ No se pudo parsear la respuesta de error:', parseError);
+      log('⚠️ No se pudo parsear la respuesta de error:', parseError);
     }
     
     // Si es un error de autenticación (401/403), verificar el tipo de error
@@ -96,9 +97,9 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       if (isLogoutRequest || isLoggingOut) {
         // Solo loguear sin lanzar error para que el logout continúe
         if (isLogoutRequest) {
-          console.log('ℹ️ Logout: respuesta 401/403 esperada al revocar token');
-        } else if (isLoggingOut) {
-          console.log('ℹ️ Logout en curso: ignorando error 401/403');
+          log('ℹ️ Logout: respuesta 401/403 esperada al revocar token');
+        } else         if (isLoggingOut) {
+          log('ℹ️ Logout en curso: ignorando error 401/403');
         }
         return res; // Retornar la respuesta sin lanzar error
       }
@@ -153,7 +154,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       if (!isAuthStatusCode(res.status) && isAuthError({ message: errorJson.message })) {
         // Si hay un logout en curso, no lanzar error
         if (isLoggingOut2) {
-          console.log('ℹ️ Logout en curso: ignorando error de autenticación');
+          log('ℹ️ Logout en curso: ignorando error de autenticación');
           return res; // Retornar la respuesta sin lanzar error
         }
         const err = new Error('No autenticado');

@@ -1,5 +1,6 @@
 import { UNLOCATED_POSITION_ID } from "@/configs/config";
 import { getToastTheme } from "@/customs/reactHotToast";
+import { log } from "@/lib/logger";
 import { removePalletPosition, getPallet } from "@/services/palletService";
 import { getStore, getStores, getRegisteredPallets } from "@/services/storeService";
 import { REGISTERED_PALLETS_STORE_ID } from "@/hooks/useStores";
@@ -345,10 +346,10 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
         
         fetchStore
             .then((data) => {
-                console.log('useStore - Raw data from API:', data);
-                console.log('useStore - data type:', typeof data);
-                console.log('useStore - data is null?', data === null);
-                console.log('useStore - data is undefined?', data === undefined);
+                log('useStore - Raw data from API:', data);
+                log('useStore - data type:', typeof data);
+                log('useStore - data is null?', data === null);
+                log('useStore - data is undefined?', data === undefined);
                 
                 if (!data) {
                     console.error('useStore - ERROR: Data is null or undefined!');
@@ -356,9 +357,9 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
                     return;
                 }
                 
-                console.log('useStore - data.content:', data?.content);
-                console.log('useStore - data.content?.pallets:', data?.content?.pallets);
-                console.log('useStore - data.content?.pallets?.length:', data?.content?.pallets?.length);
+                log('useStore - data.content:', data?.content);
+                log('useStore - data.content?.pallets:', data?.content?.pallets);
+                log('useStore - data.content?.pallets?.length:', data?.content?.pallets?.length);
                 
                 // Si es el almacén fantasma, asegurar que tenga el ID correcto
                 if (storeId === REGISTERED_PALLETS_STORE_ID) {
@@ -373,10 +374,10 @@ export function useStore({ storeId, onUpdateCurrentStoreTotalNetWeight, onAddNet
                             bigBoxes: []
                         }
                     };
-                    console.log('useStore - Setting ghost store data:', ghostStoreData);
-                    console.log('useStore - Ghost store content:', ghostStoreData.content);
-                    console.log('useStore - Ghost store pallets:', ghostStoreData.content?.pallets);
-                    console.log('useStore - Ghost store pallets length:', ghostStoreData.content?.pallets?.length);
+                    log('useStore - Setting ghost store data:', ghostStoreData);
+                    log('useStore - Ghost store content:', ghostStoreData.content);
+                    log('useStore - Ghost store pallets:', ghostStoreData.content?.pallets);
+                    log('useStore - Ghost store pallets length:', ghostStoreData.content?.pallets?.length);
                     setStore(ghostStoreData);
                 } else {
                     setStore(data);

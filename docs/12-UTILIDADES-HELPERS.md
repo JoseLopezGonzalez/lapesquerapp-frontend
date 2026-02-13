@@ -434,6 +434,35 @@ export const parseAzureDocumentAIResult = (data) => {
 
 ## 📚 Utilidades de Librería (`/src/lib/`)
 
+### 0. Logger (desarrollo vs producción)
+
+**Archivo**: `/src/lib/logger.js`
+
+**Propósito**: Reducir ruido y overhead en producción. Los métodos `log`, `info` y `debug` son no-op en producción; `warn` y `error` se mantienen siempre.
+
+**API**:
+```javascript
+import { log, info, debug, warn, error } from '@/lib/logger';
+
+log('solo en desarrollo');      // no-op en producción
+info('solo en desarrollo');     // no-op en producción
+debug('solo en desarrollo');    // no-op en producción
+warn('siempre visible');        // se muestra en todos los entornos
+error('siempre visible');       // se muestra en todos los entornos
+```
+
+**Cuándo usar**:
+- **log/info/debug**: mensajes de depuración, trazabilidad, logs de flujo.
+- **warn/error**: errores reales o advertencias que deban verse en producción.
+
+**Configuración adicional**: `next.config.mjs` incluye `compiler.removeConsole` en producción para eliminar `console.log`/`info`/`debug` del bundle (mantiene `error` y `warn`). Puede no aplicarse con Turbopack; el logger es la alternativa garantizada.
+
+**Archivos que ya lo usan**: `useStore.js`, `fetchWithTenant.js`, `SettingsContext.js`.
+
+**Guía**: Para nuevos logs de depuración, usar `log()` en lugar de `console.log()`.
+
+---
+
 ### 1. fetchWithTenant
 
 **Archivo**: `/src/lib/fetchWithTenant.js`

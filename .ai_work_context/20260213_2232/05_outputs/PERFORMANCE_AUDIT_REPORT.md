@@ -22,10 +22,10 @@ La aplicación es un ERP para el sector pesquero con arquitectura multi-tenant. 
 | 3 | Sin caché de datos (SWR/React Query); todo fetch en cliente | **Alto** | Re-fetch en cada navegación, waterfalls | Bajo |
 | 4 | Home page `/` obligatoriamente client por useSession + hostname | **Alto** | FCP/LCP degradados en landing y login | Medio |
 | 5 | Dependencias pesadas (recharts, xlsx, jspdf, React Flow) en rutas frecuentes | **Alto** | Bundle grande, tiempo de parse/ejecución | Medio |
-| 6 | SettingsProvider: setInterval 2s para detectar cambio de tenant | **Medio** | Overhead innecesario en todas las sesiones | Bajo |
-| 7 | 100+ console.log en código de producción | **Medio** | Overhead menor, ruido en consola | Bajo |
+| 6 | ~~SettingsProvider: setInterval 2s~~ | ~~Medio~~ | **✅ Implementado** — Reemplazado por `visibilitychange` + `focus` | — |
+| 7 | ~~100+ console.log en producción~~ | ~~Medio~~ | **✅ Implementado** — removeConsole en next.config + `src/lib/logger.js` | — |
 | 8 | next.config.mjs mínimo — sin optimizaciones de build | **Medio** | Oportunidad perdida en compresión, headers, imágenes | Bajo |
-| 9 | useStore con 21 console.log y fetch pesado de pallets | **Medio** | Degrada experiencia en warehouse | Bajo |
+| 9 | ~~useStore con 21 console.log~~ | ~~Medio~~ | **✅ Implementado** — Migrado a `log()` de logger en useStore, fetchWithTenant, SettingsContext | — |
 | 10 | Falta dynamic import en rutas pesadas (orquestador, market-data-extractor) | **Medio** | Carga inicial lenta en esas rutas | Bajo |
 
 ---
@@ -93,25 +93,19 @@ const verifyResponse = await fetchWithTenant(
 
 ---
 
-### 3.6 SettingsProvider setInterval (Medio)
+### 3.6 ~~SettingsProvider setInterval~~ ✅ Implementado
 
-**Archivo**: `src/context/SettingsContext.js` líneas 45–49
+**Archivo**: `src/context/SettingsContext.js`
 
-```javascript
-const interval = setInterval(checkTenantChange, 2000);
-```
-
-- **Impacto**: Ejecuta `getCurrentTenant()` cada 2 segundos en todas las sesiones.
-- **Reversión**: Eliminar interval; usar evento de visibilidad o cambio de foco si es necesario.
+- **Antes**: `setInterval(checkTenantChange, 2000)` ejecutándose cada 2 segundos.
+- **Implementado**: Reemplazado por listeners `visibilitychange` y `focus`; solo se verifica tenant al volver a la pestaña.
 
 ---
 
-### 3.7 console.log en producción (Medio)
+### 3.7 ~~console.log en producción~~ ✅ Implementado
 
-**Evidencia**: `grep -r "console\.\(log\|warn\|error\)" src | wc -l` → 100+
-
-- **Archivos críticos**: middleware.js, useStore.js, fetchWithTenant.js, diagramTransformers.js, productionService.js, etc.
-- **Reversión**: Restaurar logs si se usan para debugging en producción.
+- **Implementado**: (1) `next.config.mjs` con `compiler.removeConsole` (excluye error/warn); (2) utilidad `src/lib/logger.js` usada en useStore, fetchWithTenant, SettingsContext. Logs de depuración pasan por `log()` que es no-op en producción.
+- **Doc**: Ver `docs/12-UTILIDADES-HELPERS.md` sección Logger.
 
 ---
 
@@ -125,13 +119,12 @@ const interval = setInterval(checkTenantChange, 2000);
 
 ---
 
-### 3.9 useStore con logs y fetch pesado (Medio)
+### 3.9 ~~useStore con logs~~ ✅ Implementado (fetch pesado pendiente)
 
 **Archivo**: `src/hooks/useStore.js`
 
-- 21 `console.log` en flujo de carga.
-- Fetch de pallets/boxes completo en cada carga de almacén.
-- **Reversión**: Restaurar logs; no cambiar lógica de fetch sin plan de paginación.
+- **Logs**: ✅ Migrados a `log()` de `@/lib/logger` — no se ejecutan en producción.
+- **Pendiente**: Fetch de pallets/boxes completo en cada carga; requiere plan de paginación/virtualización.
 
 ---
 
@@ -172,8 +165,8 @@ const interval = setInterval(checkTenantChange, 2000);
 
 **El frontend está operativo pero no optimizado para escalar.** Para un uso intensivo y móvil, se recomienda:
 
-1. **Quick wins**: Eliminar/condicionar logs, optimizar middleware (cachear validación o hacerla async), añadir dynamic imports en rutas pesadas, configurar next.config.
-2. **Mejoras estructurales**: Introducir SWR o React Query, reducir intervalo de SettingsProvider.
+1. **Quick wins**: ~~Eliminar/condicionar logs~~ ✅, optimizar middleware (cachear validación o hacerla async), añadir dynamic imports en rutas pesadas, configurar next.config. ~~Reducir intervalo de SettingsProvider~~ ✅.
+2. **Mejoras estructurales**: Introducir SWR o React Query.
 3. **Refactor a medio plazo**: Separar landing estática, migrar vistas de solo lectura a Server Components, evaluar sustitución de librerías muy pesadas (xlsx, recharts) por alternativas más ligeras o carga bajo demanda.
 
 **Veredicto**: El sistema puede escalar con las mejoras propuestas; sin ellas, la experiencia en dispositivos lentos y redes débiles se verá afectada.

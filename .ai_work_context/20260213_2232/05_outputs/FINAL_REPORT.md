@@ -12,6 +12,8 @@ Se ha completado una auditoría técnica de rendimiento del frontend PesquerApp 
 
 **Conclusión**: El sistema es operativo pero no está optimizado. Se han identificado 1 problema crítico, 4 de alto impacto y 5 de impacto medio. Con las mejoras propuestas (Quick wins y mejoras estructurales), el frontend puede escalar de forma sostenible.
 
+**Mejoras ya implementadas** (post-auditoría): setInterval en SettingsProvider → visibilitychange + focus; logger `src/lib/logger.js` + removeConsole en next.config; migración de logs en useStore, fetchWithTenant, SettingsContext.
+
 ---
 
 ## 2. Objetivos cumplidos
@@ -60,7 +62,7 @@ No hubo decisiones críticas bloqueantes. Toda la auditoría se ejecutó con aut
 
 ## 6. Advertencias
 
-- **No se implementaron cambios** en el código. Solo se documentó el estado actual y las recomendaciones.
+- **Cambios implementados** (post-auditoría): setInterval en SettingsProvider, logger y logs en client-side. El resto de recomendaciones sigue pendiente.
 - La **validación de token en middleware** es una decisión de seguridad. Cualquier cambio (cachear, validar en background) debe evaluarse con el equipo de seguridad.
 - El **paso de middleware a proxy** en Next.js 16 está deprecado; conviene planificar la migración.
 
@@ -69,7 +71,7 @@ No hubo decisiones críticas bloqueantes. Toda la auditoría se ejecutó con aut
 ## 7. Próximos pasos sugeridos
 
 1. Revisar el Performance Audit Report con el equipo técnico.
-2. Priorizar Quick wins (eliminar logs, dynamic imports, config).
+2. Priorizar Quick wins restantes (dynamic imports, config) — logs y setInterval ya implementados.
 3. Decidir si se introduce SWR o React Query para caching.
 4. Medir baseline con Lighthouse antes y después de cada lote de mejoras.
 5. Actualizar la Production Checklist según el entorno de despliegue real.

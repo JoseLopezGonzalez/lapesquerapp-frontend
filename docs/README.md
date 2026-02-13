@@ -42,7 +42,7 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 
 10. **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)** - Flujos funcionales documentados
 11. **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)** - Tailwind CSS y design system
 12. **[11-AUTENTICACION-AUTORIZACION.md](./11-AUTENTICACION-AUTORIZACION.md)** - NextAuth y protección de rutas
-13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Funciones auxiliares y helpers
+13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Funciones auxiliares, helpers y logger (desarrollo vs producción)
 14. **[13-EXPORTACIONES-INTEGRACIONES.md](./13-EXPORTACIONES-INTEGRACIONES.md)** - Exportaciones e integraciones
 
 ### Estado del Proyecto
