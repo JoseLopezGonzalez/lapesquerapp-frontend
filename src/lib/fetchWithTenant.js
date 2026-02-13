@@ -125,9 +125,13 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       // Si es un error de validación, NO lanzar "No autenticado"
       // Permitir que el error se propague con el mensaje real del backend
       if (!isValidationError) {
-        // Si no es un error de validación, es realmente un error de autenticación
-        console.error('❌ Error de autenticación (401/403): Sesión expirada o token inválido');
-        throw new Error('No autenticado');
+        // Error de autenticación: sesión expirada o token inválido.
+        // Se lanza sin console.error; el flujo lo gestionan SettingsContext (signOut)
+        // y AuthErrorInterceptor (toast + redirect a login).
+        const err = new Error('No autenticado');
+        err.status = res.status;
+        err.code = 'UNAUTHENTICATED';
+        throw err;
       }
       // Si es un error de validación, continuar con el flujo normal de manejo de errores
     }
@@ -148,7 +152,10 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
           console.log('ℹ️ Logout en curso: ignorando error de autenticación');
           return res; // Retornar la respuesta sin lanzar error
         }
-        throw new Error('No autenticado');
+        const err = new Error('No autenticado');
+        err.status = res.status;
+        err.code = 'UNAUTHENTICATED';
+        throw err;
       }
       
       // Priorizar userMessage sobre message para mostrar errores en formato natural

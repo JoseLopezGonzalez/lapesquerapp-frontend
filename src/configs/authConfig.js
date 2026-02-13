@@ -24,7 +24,9 @@ export const AUTH_ERROR_CONFIG = {
 
 // Función para verificar si un error es de autenticación
 export function isAuthError(error) {
-  if (!error || !error.message) return false;
+  if (!error) return false;
+  if (error.code === 'UNAUTHENTICATED') return true;
+  if (!error.message) return false;
   
   const message = error.message.toLowerCase();
   return AUTH_ERROR_CONFIG.AUTH_ERROR_MESSAGES.some(

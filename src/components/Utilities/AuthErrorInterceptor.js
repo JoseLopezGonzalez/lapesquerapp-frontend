@@ -144,24 +144,31 @@ export default function AuthErrorInterceptor() {
       }
     };
 
-    // Interceptar errores globales de JavaScript
+    // Interceptar errores globales de JavaScript (evento 'error')
     const handleGlobalError = (event) => {
       const error = event.error || event.reason;
-      
       if (isAuthError(error)) {
         handleAuthError();
       }
     };
 
-    // Agregar listeners para errores globales
+    // Rechazos de promesas no capturados (ej. getSettings() → getSettingValue sin .catch)
+    // preventDefault() evita que el error se muestre en consola/overlay de Next.js
+    const handleUnhandledRejection = (event) => {
+      if (isAuthError(event.reason)) {
+        event.preventDefault();
+        handleAuthError();
+      }
+    };
+
     window.addEventListener('error', handleGlobalError);
-    window.addEventListener('unhandledrejection', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     // Cleanup: restaurar fetch original y remover listeners cuando el componente se desmonte
     return () => {
       window.fetch = originalFetch;
       window.removeEventListener('error', handleGlobalError);
-      window.removeEventListener('unhandledrejection', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
