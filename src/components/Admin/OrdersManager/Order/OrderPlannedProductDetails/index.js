@@ -178,8 +178,7 @@ const OrderPlannedProductDetails = () => {
             plannedProductDetailActions.create(detail)
                 .then(() => {
                     toast.success('Linea creada correctamente', { id: toastId });
-                    // Remover la línea temporal del estado local usando tempId
-                    setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
+                    setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
                     setEditIndex(null);
                 })
                 .catch((error) => {
@@ -207,20 +206,20 @@ const OrderPlannedProductDetails = () => {
             });
     };
 
-    const handleOnClickDeleteLine = async (detailId) => {
-        // Si es una línea temporal, solo removerla del estado local
-        if (detailId === null || detailId === undefined) {
-            const detail = details[editIndex];
-            if (detail.isTemporary) {
-                setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
-            }
+    const handleOnClickDeleteLine = async (detail) => {
+        // Línea temporal: solo remover del estado local (identificar por tempId, no por editIndex)
+        if (!detail?.id && detail?.isTemporary) {
+            setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
             setEditIndex(null);
             return;
         }
 
+        // Línea persistida: requiere id para eliminar vía API
+        if (!detail?.id) return;
+
         const toastId = toast.loading('Eliminando linea...', getToastTheme());
 
-        plannedProductDetailActions.delete(detailId)
+        plannedProductDetailActions.delete(detail.id)
             .then(() => {
                 toast.success('Linea eliminada correctamente', { id: toastId });
                 setEditIndex(null);
@@ -234,9 +233,8 @@ const OrderPlannedProductDetails = () => {
     };
 
     const handleOnClickCloseLine = (detail) => {
-        if (!detail.id) {
-            // Remover línea temporal del estado local usando tempId
-            setTemporaryDetails(temporaryDetails.filter(temp => temp.tempId !== detail.tempId));
+        if (!detail?.id && detail?.isTemporary) {
+            setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
         }
         setEditIndex(null);
     };
@@ -408,7 +406,7 @@ const OrderPlannedProductDetails = () => {
                                                                 <Edit2 size={16} className="mr-2" />
                                                                 Editar
                                                             </Button>
-                                                            <Button variant="destructive" onClick={() => handleOnClickDeleteLine(detail.id)} size="sm" className="flex-1">
+                                                            <Button variant="destructive" onClick={() => handleOnClickDeleteLine(detail)} size="sm" className="flex-1">
                                                                 <Trash2 size={16} className="mr-2" />
                                                                 Eliminar
                                                             </Button>
