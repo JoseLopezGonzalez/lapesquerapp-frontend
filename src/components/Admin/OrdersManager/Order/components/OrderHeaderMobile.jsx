@@ -1,0 +1,84 @@
+'use client';
+
+import { ArrowLeft, MoreVertical, Printer, Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { SECTIONS_CONFIG, PRIMARY_SECTION_IDS_MOBILE } from '../config/sectionsConfig';
+
+/**
+ * Header móvil: botón back + título (#orderId) + menú ⋮ (secciones overflow, Editar, Imprimir)
+ * Solo se muestra cuando existe onClose (contexto sheet/drawer)
+ */
+export default function OrderHeaderMobile({
+  order,
+  onClose,
+  onNavigateSection,
+  onEdit,
+  onPrint,
+}) {
+  if (!onClose) return null;
+
+  const overflowSections = SECTIONS_CONFIG.filter(
+    (s) => !PRIMARY_SECTION_IDS_MOBILE.includes(s.id)
+  );
+
+  return (
+    <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+      <div className="relative flex items-center justify-center px-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <h2 className="text-xl font-normal dark:text-white text-center">
+          #{order.id}
+        </h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
+              aria-label="Más opciones"
+            >
+              <MoreVertical className="h-6 w-6" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {overflowSections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <DropdownMenuItem
+                  key={section.id}
+                  onClick={() => onNavigateSection(section.id)}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {section.title}
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Editar pedido
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onPrint}>
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}

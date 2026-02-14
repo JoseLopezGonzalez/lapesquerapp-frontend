@@ -31,6 +31,8 @@ import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CreateOrderFormMobile from './CreateOrderFormMobile';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { orderCreateSchema } from './schemas/orderCreateSchema';
 
 const CreateOrderForm = ({ onCreate, onClose }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
@@ -60,6 +62,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         watch,
         setValue
     } = useForm({
+        resolver: zodResolver(orderCreateSchema),
         defaultValues: {
             ...defaultValues,
             plannedProducts: [],
@@ -178,7 +181,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         const commonProps = {
             id: field.name,
             placeholder: field.props?.placeholder || '',
-            ...register(field.name, field.rules),
+            ...register(field.name),
         };
 
         switch (field.component) {
@@ -187,7 +190,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <DatePicker
                                 date={value}
@@ -204,7 +206,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                 <SelectTrigger className="w-full overflow-hidden" loading={loading}>
@@ -233,7 +234,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Combobox
                                 options={field.options}
@@ -257,7 +257,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                         name={field.name}
                         control={control}
                         defaultValue={[]}
-                        rules={field.rules}
                         render={({ field: { value, onChange } }) => (
                             <EmailListInput
                                 value={Array.isArray(value) ? value : []} // Asegura que 'value' es un array
@@ -361,7 +360,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                                         <Controller
                                             control={control}
                                             name={`plannedProducts.${index}.product`}
-                                            rules={{ required: 'Producto es requerido' }}
                                             render={({ field: { onChange, value } }) => (
                                                 <Combobox
                                                     options={productOptions}
@@ -378,40 +376,27 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                                     <Input
                                         type="number"
                                         step="any"
-                                        {...register(`plannedProducts.${index}.quantity`, {
-                                            required: 'Cantidad es requerida',
-                                            valueAsNumber: true,
-                                            min: { value: 0.01, message: 'Cantidad debe ser mayor que 0' }
-                                        })}
+                                        {...register(`plannedProducts.${index}.quantity`, { valueAsNumber: true })}
                                         placeholder="Cantidad"
                                         className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Input
                                         type="number"
                                         step="any"
-                                        {...register(`plannedProducts.${index}.boxes`, {
-                                            required: 'Cajas son requeridas',
-                                            valueAsNumber: true,
-                                            min: { value: 1, message: 'Cajas debe ser al menos 1' }
-                                        })}
+                                        {...register(`plannedProducts.${index}.boxes`, { valueAsNumber: true })}
                                         placeholder="Cajas"
                                         className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Input
                                         type="number"
                                         step="any"
-                                        {...register(`plannedProducts.${index}.unitPrice`, {
-                                            required: 'Precio unitario es requerido',
-                                            valueAsNumber: true,
-                                            min: { value: 0.01, message: 'Precio debe ser mayor que 0' }
-                                        })}
+                                        {...register(`plannedProducts.${index}.unitPrice`, { valueAsNumber: true })}
                                         placeholder="Precio"
                                         className={isMobile ? 'h-12 text-base' : ''}
                                     />
                                     <Controller
                                         control={control}
                                         name={`plannedProducts.${index}.tax`}
-                                        rules={{ required: 'IVA es requerido' }}
                                         render={({ field }) => {
                                             const currentValue = field.value ? String(field.value) : "";
                                             

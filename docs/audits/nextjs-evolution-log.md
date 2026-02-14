@@ -432,3 +432,383 @@ git revert <commit-hash>
 - O pasar a otro bloque del CORE (Productos, Clientes, Stock)
 
 ---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 11: Order config y utilidades (Fase 1.1)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Configuración y helpers inline en Order (~40 líneas)
+
+### Changes Applied
+1. **config/sectionsConfig.js**:
+   - SECTIONS_CONFIG (componentes, iconos, lazy loading)
+   - PRIMARY_SECTION_IDS_MOBILE
+
+2. **utils/getTransportImage.js**:
+   - getTransportImage(transportName) — helper para rutas de imágenes de transporte
+
+3. **Order/index.js**: eliminadas ~40 líneas (imports config y utils)
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar config/ y utils/, restaurar inline en Order
+```
+
+### Next Steps
+- Sub-bloque 1.2: Extraer OrderHeaderMobile
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 12: OrderHeaderMobile (Fase 1.2)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Header móvil inline en Order (~55 líneas)
+
+### Changes Applied
+1. **Order/components/OrderHeaderMobile.jsx**:
+   - Botón back + título (#orderId) + menú ⋮
+   - Secciones overflow, Editar pedido, Imprimir
+   - Props: order, onClose, onNavigateSection, onEdit, onPrint
+
+2. **Order/index.js**: reemplazado header inline por `<OrderHeaderMobile />`
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderHeaderMobile.jsx, restaurar inline en Order
+```
+
+### Next Steps
+- Sub-bloque 1.3: Extraer OrderSummaryMobile
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 13: OrderSummaryMobile (Fase 1.3)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Cabecera móvil centrada inline en Order (~75 líneas)
+
+### Changes Applied
+1. **Order/components/OrderSummaryMobile.jsx**:
+   - Cliente, transporte, badge estado, fecha carga, temperatura, palets, importe
+   - Dropdowns de estado y temperatura incluidos
+   - Props: order, transportImage, onStatusChange, onTemperatureChange
+
+2. **Order/index.js**: reemplazado bloque inline por `<OrderSummaryMobile />`
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderSummaryMobile.jsx, restaurar inline en Order
+```
+
+### Next Steps
+- Sub-bloque 1.4: Extraer OrderSectionList
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 14: OrderSectionList (Fase 1.4)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Lista de secciones móvil inline en Order (~35 líneas)
+
+### Changes Applied
+1. **Order/components/OrderSectionList.jsx**:
+   - ScrollArea + Card con botones de secciones primarias (Previsión, Producción, Envío de Documentos)
+   - Props: onSelectSection, hasSafeAreaPadding
+
+2. **Order/index.js**: reemplazado bloque inline por `<OrderSectionList />`
+   - Eliminado import ChevronRight (no usado)
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderSectionList.jsx, restaurar inline en Order
+```
+
+### Next Steps
+- Sub-bloque 1.5: Extraer OrderStatusDropdown y OrderTemperatureDropdown (desktop)
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 15: OrderStatusDropdown y OrderTemperatureDropdown (Fase 1.5)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- renderStatusBadge y dropdown temperatura inline en Order (~60 líneas)
+
+### Changes Applied
+1. **Order/components/OrderStatusDropdown.jsx**:
+   - StatusBadge + DropdownMenu (En producción, Terminado, Incidencia)
+   - Props: status, onStatusChange
+
+2. **Order/components/OrderTemperatureDropdown.jsx**:
+   - Temperatura + DropdownMenu (0, 4, -18, -23 ºC)
+   - Props: temperature, onTemperatureChange, className
+
+3. **Order/index.js**:
+   - Eliminado renderStatusBadge useCallback
+   - Reemplazado por OrderStatusDropdown y OrderTemperatureDropdown
+   - Eliminados imports: StatusBadge, ThermometerSnowflake
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderStatusDropdown.jsx, OrderTemperatureDropdown.jsx, restaurar inline en Order
+```
+
+### Next Steps
+- Sub-bloque 1.6: Extraer OrderHeaderDesktop y OrderTabsDesktop
+- O verificar líneas Order y pasar a Fase 2 (OrderPallets)
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 16: OrderHeaderDesktop, OrderTabsDesktop, OrderSectionContentMobile (Fase 1.6)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Header desktop, Tabs desktop y contenido de sección móvil inline en Order (~100 líneas)
+
+### Changes Applied
+1. **Order/components/OrderHeaderDesktop.jsx**:
+   - Estado, id, cliente, fecha, temperatura; botones Editar/Imprimir/⋮; imagen transporte
+   - Props: order, transportImage, onStatusChange, onTemperatureChange, onPrint
+
+2. **Order/components/OrderTabsDesktop.jsx**:
+   - TabsList + TabsContent generados desde SECTIONS_CONFIG
+   - Props: activeTab, onTabChange
+
+3. **Order/components/OrderSectionContentMobile.jsx**:
+   - Renderiza componente de SECTIONS_CONFIG según activeSection
+   - Elimina imports directos de OrderMap, OrderPallets, etc. en Order
+   - Props: activeSection
+
+4. **Order/index.js**: reemplazado ~100 líneas por componentes; eliminados imports no usados
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderHeaderDesktop, OrderTabsDesktop, OrderSectionContentMobile; restaurar inline
+```
+
+### Next Steps
+- Fase 1 completada. Order ~280 líneas (objetivo <250 cercano)
+- Fase 2: Reducir OrderPallets
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 2.2: Extraer OrderPalletsToolbar (Fase 2.2)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Toolbar (botones Crear, Vincular, Desde previsión, Desvincular todos) inline en OrderPallets (~80 líneas)
+
+### Changes Applied
+1. **OrderPallets/components/OrderPalletsToolbar.jsx**:
+   - Mobile: fixed footer con 3 botones + DropdownMenu (Desvincular todos)
+   - Desktop: CardHeader con título, CardDescription y botones
+   - Props: isMobile, pallets, isUnlinkingAll, onCreate, onLink, onCreateFromForecast, onUnlinkAll
+
+2. **OrderPallets/index.js**:
+   - Reemplazado footer móvil y CardHeader desktop por OrderPalletsToolbar
+   - Eliminados imports: Plus, Unlink, Link2, Loader2, MoreVertical, PackagePlus, Button, DropdownMenu, CardHeader/CardTitle/CardDescription
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderPalletsToolbar.jsx, restaurar inline en OrderPallets
+```
+
+### Next Steps
+- Fase 2.3: Extraer OrderPalletsContent
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 2.3: Extraer OrderPalletsContent (Fase 2.3)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Render condicional móvil (cards) vs desktop (tabla) inline en OrderPallets (~90 líneas)
+
+### Changes Applied
+1. **OrderPallets/components/OrderPalletsContent.jsx**:
+   - EmptyState cuando pallets.length === 0
+   - Mobile: lista de OrderPalletCard
+   - Desktop: tabla con OrderPalletTableRow
+   - Props: pallets, isMobile, onEdit, onClone, onUnlink, onDelete, onPrintLabel, isCloning, unlinkingPalletId
+
+2. **OrderPallets/index.js**:
+   - Reemplazado EmptyState + cards/table por OrderPalletsContent
+   - Eliminados imports: EmptyState, Table, OrderPalletCard, OrderPalletTableRow
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Comportamiento preservado
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Eliminar OrderPalletsContent.jsx, restaurar inline en OrderPallets
+```
+
+### Next Steps
+- Fase 2 completada. OrderPallets reducido (~250 líneas)
+- Fase 3: Formularios + Zod
+
+---
+
+## [2026-02-14] Bloque Ventas — Fase 3: Formularios + Zod
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Validación solo en backend (422) sin feedback inmediato en cliente
+
+### Changes Applied
+
+**Sub-bloque 3.1: CreateOrderForm + Zod**
+1. `CreateOrderForm/schemas/orderCreateSchema.js`: esquema Zod con customer, entryDate, loadDate, salesperson, payment, incoterm, buyerReference, transport, addresses, notes, emails, plannedProducts
+2. CreateOrderForm: `useForm({ resolver: zodResolver(orderCreateSchema), ... })`
+3. Eliminadas reglas inline de register/Controller (validación delegada a Zod)
+4. setErrorsFrom422 permanece como fallback en catch de handleCreate
+
+**Sub-bloque 3.2: OrderEditSheet + Zod**
+1. `OrderEditSheet/schemas/orderEditSchema.js`: esquema para campos editables (entryDate, loadDate, salesperson, payment, incoterm, buyerReference, transport, addresses, notes, emails)
+2. OrderEditSheet: `useForm({ resolver: zodResolver(orderEditSchema), ... })`
+3. Eliminadas reglas inline de register/Controller
+4. setErrorsFrom422 como fallback en catch de onSubmit
+
+**Dependencia**
+- Añadido @hookform/resolvers para zodResolver
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Validación cliente con feedback inmediato
+- ✅ Backend 422 sigue mapeándose con setErrorsFrom422
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+npm uninstall @hookform/resolvers
+# Restaurar rules en register/Controller, eliminar schemas y resolver
+```
+
+### Next Steps
+- Fase 4: Tests useOrder, useCustomerHistory, useOrders
+
+---
+
+## [2026-02-14] Bloque Ventas — Fase 4: Tests para hooks
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Plan**: docs/plan-ventas-9-10.md
+
+### Problems Addressed
+- Sin cobertura de tests para hooks críticos (useOrder, useCustomerHistory, useOrders)
+
+### Changes Applied
+
+**Sub-bloque 4.1: Tests useOrder** (`src/__tests__/hooks/useOrder.test.js`)
+- Devuelve order, loading, error cuando carga
+- updateOrderStatus actualiza caché y llama onChange
+- exportDocument llama fetchWithTenant
+- Manejo de error 401
+
+**Sub-bloque 4.2: Tests useCustomerHistory** (`src/__tests__/hooks/useCustomerHistory.test.js`)
+- Devuelve filteredHistory, generalMetrics, loading
+- dateFilter cambia getDateRange
+- calculateTrend devuelve direction y percentage
+- getDateRange devuelve from/to como Date
+- Estados de loading
+
+**Sub-bloque 4.3: Tests useOrders** (`src/__tests__/hooks/useOrders.test.js`)
+- Devuelve orders, isLoading
+- Array vacío cuando no hay pedidos
+- Error cuando falla la petición
+- Expone queryKey y refetch
+
+**Setup**
+- @vitest-environment happy-dom en tests de hooks (evita conflicto ESM con jsdom)
+- @testing-library/react, @testing-library/dom, happy-dom como devDependencies
+- Renombrado OrdersManagerOptionsContext.js → .jsx para parse correcto de JSX
+
+### Verification Results
+- ✅ 27 tests pasan (14 orderService + 4 useOrder + 5 useCustomerHistory + 4 useOrders)
+- ✅ Build exitoso
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar OrdersManagerOptionsContext.jsx → .js
+# Eliminar tests y deps de testing
+```
+
+### Next Steps
+- Plan Ventas 9/10 completado (Fases 1-4)
+
+---

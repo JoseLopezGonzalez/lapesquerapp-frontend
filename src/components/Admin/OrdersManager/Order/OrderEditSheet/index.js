@@ -21,6 +21,8 @@ import { format } from "date-fns"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { orderEditSchema } from './schemas/orderEditSchema';
 
 const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange }) => {
     const { order, updateOrderData } = useOrderContext()
@@ -36,6 +38,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
 
     const { register, handleSubmit, reset, control, setError, formState: { errors, isDirty, dirtyFields } } = useForm({
+        resolver: zodResolver(orderEditSchema),
         defaultValues,
         mode: 'onChange',
     });
@@ -135,7 +138,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         const commonProps = {
             id: field.name,
             placeholder: field.props?.placeholder || '',
-            ...register(field.name, field.rules),
+            ...register(field.name),
             className: isMobile ? 'h-12 text-base' : '',
         };
 
@@ -145,7 +148,6 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
                             return (
                                 <DatePicker
@@ -166,7 +168,6 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
                             return (
                                 <Select value={value} onValueChange={onChange} onBlur={onBlur}>
@@ -197,7 +198,6 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                     <Controller
                         name={field.name}
                         control={control}
-                        rules={field.rules}
                         render={({ field: { onChange, value, onBlur } }) => {
                             return (
                                 <Combobox
@@ -223,7 +223,6 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                         name={field.name}
                         control={control}
                         defaultValue={[]}
-                        rules={field.rules}
                         render={({ field: { value, onChange } }) => (
                             <EmailListInput
                                 value={Array.isArray(value) ? value : []}

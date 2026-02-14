@@ -33,6 +33,20 @@
 
 ---
 
+## Estado actual por bloque Core (puntuación)
+
+| Bloque | Rating | Notas | Fecha |
+|--------|--------|-------|-------|
+| **Ventas** (Orders + líneas + estados) | **9/10** | Fases 1-4 completadas: Order y OrderPallets refactorizados, formularios con Zod, tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
+| Auth + Roles/Permisos | — | Pendiente auditoría | — |
+| Productos | — | Pendiente auditoría | — |
+| Clientes | — | Pendiente auditoría | — |
+| Stock / Movimientos | — | Pendiente auditoría | — |
+| Informes básicos | — | Pendiente auditoría | — |
+| Configuración por tenant | — | Pendiente auditoría | — |
+
+---
+
 # FASE 1 — Auditoría Global de Calidad de Código
 
 ## 1.1 Auditoría Next.js

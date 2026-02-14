@@ -1,74 +1,29 @@
 'use client'
 
-import React, { useEffect, useState, lazy, Suspense, useCallback, useMemo } from 'react'
-import { Loader2, MoreVertical, Printer, ThermometerSnowflake, ArrowLeft, ChevronRight, FileText, Package, Boxes, Factory, Tag, FileCheck, Download, MapPin, AlertTriangle, History, Info, Map, Tickets, ListCollapse, Pencil } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useEffect, useState, Suspense, useCallback, useMemo } from 'react'
+import { ArrowLeft, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
-import OrderDetails from './OrderDetails';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import OrderSkeleton from './OrderSkeleton';
-import { formatDate } from '@/helpers/formats/dates/formatDates';
-import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
 import { useBackButton } from '@/hooks/use-back-button';
-import StatusBadge from '../StatusBadge';
-
-// Lazy load de componentes pesados para mejorar el rendimiento inicial
-const OrderPallets = lazy(() => import('./OrderPallets'));
-const OrderDocuments = lazy(() => import('./OrderDocuments'));
-const OrderExport = lazy(() => import('./OrderExport'));
-const OrderLabels = lazy(() => import('./OrderLabels'));
-const OrderMap = lazy(() => import('./OrderMap'));
-const OrderProduction = lazy(() => import('./OrderProduction'));
-const OrderProductDetails = lazy(() => import('./OrderProductDetails'));
-const OrderPlannedProductDetails = lazy(() => import('./OrderPlannedProductDetails'));
-const OrderIncident = lazy(() => import('./OrderIncident'));
-const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
-
-// Configuración de secciones: primarias (visibles como cards en mobile) vs overflow (menú ⋮)
-// Ref: docs/mobile-app/analisis/02-ANALISIS-EDITOR-PEDIDO-MOBILE.md
-const SECTIONS_CONFIG = [
-  { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
-  { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
-  { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: ListCollapse },
-  { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
-  { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
-  { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
-  { id: 'documents', title: 'Envío de Documentos', component: OrderDocuments, lazy: true, icon: FileCheck },
-  { id: 'export', title: 'Descargas', component: OrderExport, lazy: true, icon: Download },
-  { id: 'map', title: 'Ruta', component: OrderMap, lazy: true, icon: Map },
-  { id: 'incident', title: 'Incidencia', component: OrderIncident, lazy: true, icon: AlertTriangle },
-  { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
-];
-const PRIMARY_SECTION_IDS_MOBILE = ['products', 'production', 'documents'];
-
-// Función helper para obtener la imagen de transporte - optimizada
-const getTransportImage = (transportName) => {
-  const name = transportName.toLowerCase();
-  const transportMap = {
-    'olano': '/images/transports/trailer-olano.png',
-    'tir': '/images/transports/trailer-tir.png',
-    'tpo': '/images/transports/trailer-tpo.png',
-    'distran': '/images/transports/trailer-distran.png',
-    'narval': '/images/transports/trailer-narval.png',
-  };
-
-  for (const [key, value] of Object.entries(transportMap)) {
-    if (name.includes(key)) {
-      return value;
-    }
-  }
-  
-  return '/images/transports/trailer.png';
-};
+import { SECTIONS_CONFIG } from './config/sectionsConfig';
+import { getTransportImage } from './utils/getTransportImage';
+import OrderHeaderMobile from './components/OrderHeaderMobile';
+import OrderSummaryMobile from './components/OrderSummaryMobile';
+import OrderSectionList from './components/OrderSectionList';
+import OrderStatusDropdown from './components/OrderStatusDropdown';
+import OrderTemperatureDropdown from './components/OrderTemperatureDropdown';
+import OrderHeaderDesktop from './components/OrderHeaderDesktop';
+import OrderTabsDesktop from './components/OrderTabsDesktop';
+import OrderSectionContentMobile from './components/OrderSectionContentMobile';
 
 const OrderContent = ({ onLoading, onClose }) => {
   const isMobile = useIsMobile();
@@ -123,40 +78,6 @@ const OrderContent = ({ onLoading, onClose }) => {
       });
   }, [updateTemperatureOrder]);
 
-  // Función para renderizar el badge de estado - memoizada
-  const renderStatusBadge = useCallback((status) => {
-    const colors = {
-      pending: 'orange',
-      finished: 'green',
-      incident: 'red',
-    };
-
-    const statusText = {
-      pending: 'En producción',
-      finished: 'Terminado',
-      incident: 'Incidencia',
-    };
-
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger className="focus:outline-none">
-          <StatusBadge color={colors[status]} label={statusText[status]} />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className=' flex flex-col items-end '>
-          <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('pending')}>
-            <StatusBadge color="orange" label="En producción" />
-          </DropdownMenuItem>
-          <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('finished')}>
-            <StatusBadge color="green" label="Terminado" />
-          </DropdownMenuItem>
-          <DropdownMenuItem className='cursor-pointer' onClick={() => handleStatusChange('incident')} >
-            <StatusBadge color="red" label="Incidencia" />
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }, [handleStatusChange]);
-
   // Memoizar imagen de transporte
   const transportImage = useMemo(() => {
     return order?.transport?.name ? getTransportImage(order.transport.name) : '/images/transports/trailer.png';
@@ -177,157 +98,26 @@ const OrderContent = ({ onLoading, onClose }) => {
           {isMobile ? (
             activeSection === null ? (
               <>
-                {/* Header mobile: botón back + título (ID del pedido) - Solo en vista principal */}
-                {onClose && (
-                  <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
-                    <div className="relative flex items-center justify-center px-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onClose}
-                        className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
-                        aria-label="Volver"
-                      >
-                        <ArrowLeft className="h-6 w-6" />
-                      </Button>
-                      <h2 className="text-xl font-normal dark:text-white text-center">
-                        #{order.id}
-                      </h2>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
-                            aria-label="Más opciones"
-                          >
-                            <MoreVertical className="h-6 w-6" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          {SECTIONS_CONFIG.filter(s => !PRIMARY_SECTION_IDS_MOBILE.includes(s.id)).map((section) => {
-                            const Icon = section.icon;
-                            return (
-                              <DropdownMenuItem key={section.id} onClick={() => setActiveSection(section.id)}>
-                                <Icon className="h-4 w-4 mr-2" />
-                                {section.title}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => setEditSheetOpen(true)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Editar pedido
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={handleOnClickPrint}>
-                            <Printer className="h-4 w-4 mr-2" />
-                            Imprimir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                )}
+                <OrderHeaderMobile
+                  order={order}
+                  onClose={onClose}
+                  onNavigateSection={setActiveSection}
+                  onEdit={() => setEditSheetOpen(true)}
+                  onPrint={handleOnClickPrint}
+                />
                 
                 {/* Vista principal del pedido con lista de secciones */}
                 <div className="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
-                {/* Vista Mobile: Cabecera centrada y mobile-friendly */}
-                <div className='space-y-5 px-4 pt-6 text-center flex-shrink-0'>
-                  {/* Nombre del cliente */}
-                  <div>
-                    <p className='text-xl font-semibold'>{order.customer.name}</p>
-                    <p className='text-base text-muted-foreground mt-1'>Cliente Nº {order.customer.id}</p>
-                  </div>
-                  
-                  {/* Transporte */}
-                  <div className='flex flex-col items-center justify-center gap-2'>
-                    <img className="max-w-[170px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <p className='text-lg font-medium'>{order.transport.name}</p>
-                  </div>
-                  
-                  {/* Badge de estado */}
-                  <div className='flex justify-center'>
-                    {order && renderStatusBadge(order.status)}
-                  </div>
-                  
-                  {/* Fecha de Carga y Temperatura en primera fila */}
-                  <div className='flex items-center justify-center gap-6 flex-wrap'>
-                    <div>
-                      <p className='text-sm text-muted-foreground mb-1'>Fecha de Carga</p>
-                      <p className='text-lg font-semibold'>{formatDate(order.loadDate)}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-muted-foreground mb-1'>Temperatura</p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="focus:outline-none">
-                          <span className='text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors'>
-                            <ThermometerSnowflake className='h-5 w-5' />
-                            {order.temperature || '0'} ºC
-                          </span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
-                            0 ºC
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
-                            4 ºC
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
-                            - 18 ºC
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
-                            - 23 ºC
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  
-                  {/* Palets e Importe en segunda fila */}
-                  <div className='flex items-center justify-center gap-6 flex-wrap'>
-                    <div>
-                      <p className='text-sm text-muted-foreground mb-1'>Palets</p>
-                      <p className='text-lg font-semibold'>{order.numberOfPallets ? formatInteger(order.numberOfPallets) : '-'}</p>
-                    </div>
-                    <div>
-                      <p className='text-sm text-muted-foreground mb-1'>Importe</p>
-                      <p className='text-lg font-semibold'>{order.totalAmount ? formatDecimalCurrency(order.totalAmount) : '-'}</p>
-                    </div>
-                  </div>
-                </div>
-                {/* Lista de secciones principales (centrada, estrecha, en card) */}
-                <div className='flex-1 w-full overflow-hidden min-h-0'>
-                  <ScrollArea className="h-full w-full">
-                    <div className={`px-4 pt-8 flex justify-center ${onClose ? 'pb-8' : 'pb-2'}`} style={onClose ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}>
-                      <Card className="w-full max-w-[280px] overflow-hidden">
-                        <CardContent className="p-0">
-                          <div className="divide-y divide-border/60">
-                            {(() => {
-                              const primarySections = SECTIONS_CONFIG.filter(s => PRIMARY_SECTION_IDS_MOBILE.includes(s.id));
-                              return primarySections.map((section) => {
-                                const Icon = section.icon;
-                                return (
-                                  <button
-                                    key={section.id}
-                                    type="button"
-                                    onClick={() => setActiveSection(section.id)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] text-left hover:bg-muted/40 active:bg-muted/50 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                                  >
-                                    <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="flex-1 text-sm text-foreground">
-                                      {section.title}
-                                    </span>
-                                    <ChevronRight className="h-4 w-4 text-muted-foreground/70 shrink-0" />
-                                  </button>
-                                );
-                              });
-                            })()}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </ScrollArea>
-                </div>
+                <OrderSummaryMobile
+                  order={order}
+                  transportImage={transportImage}
+                  onStatusChange={handleStatusChange}
+                  onTemperatureChange={handleTemperatureChange}
+                />
+                <OrderSectionList
+                  onSelectSection={setActiveSection}
+                  hasSafeAreaPadding={!!onClose}
+                />
                 </div>
 
                 {/* Sheet de edición controlado desde menú ⋮ (mobile): sin barra inferior para pantalla más limpia */}
@@ -356,270 +146,21 @@ const OrderContent = ({ onLoading, onClose }) => {
                     <div className="absolute right-4 w-12 h-12" />
                   </div>
                 </div>
-                {/* Contenido de la sección */}
-                {activeSection === 'map' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                      <OrderMap />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'customer-history' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                      <OrderCustomerHistory />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'export' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
-                      <OrderExport />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'pallets' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
-                      <OrderPallets />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'products' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
-                      <OrderPlannedProductDetails />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'documents' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-0"><Loader /></div>}>
-                      <OrderDocuments />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'details' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <ScrollArea className="flex-1 min-h-0">
-                      <OrderDetails />
-                    </ScrollArea>
-                  </div>
-                ) : activeSection === 'productDetails' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                      <OrderProductDetails />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'production' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                      <OrderProduction />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'labels' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                      <OrderLabels />
-                    </Suspense>
-                  </div>
-                ) : activeSection === 'export' && isMobile ? (
-                  <div className="flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col">
-                    <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                      <OrderExport />
-                    </Suspense>
-                  </div>
-                ) : (
-                  <ScrollArea className="flex-1 w-full min-h-0" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom))' : '5rem' }}>
-                    <div className="px-4 py-4">
-                      {activeSection === 'details' && <OrderDetails />}
-                      {activeSection === 'productDetails' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderProductDetails />
-                        </Suspense>
-                      )}
-                      {activeSection === 'production' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderProduction />
-                        </Suspense>
-                      )}
-                      {activeSection === 'labels' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderLabels />
-                        </Suspense>
-                      )}
-                      {activeSection === 'map' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderMap />
-                        </Suspense>
-                      )}
-                      {activeSection === 'incident' && (
-                        <Suspense fallback={<div className="h-32 flex items-center justify-center"><Loader /></div>}>
-                          <OrderIncident />
-                        </Suspense>
-                      )}
-                    </div>
-                  </ScrollArea>
-                )}
+                <OrderSectionContentMobile activeSection={activeSection} />
               </div>
             )
           ) : (
             <Card className="h-full w-full relative p-4 sm:p-6 lg:p-9">
               <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
                 {/* Vista Desktop: Estructura original */}
-            <div className='flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2'>
-              <div className='space-y-1 flex-1'>
-                {order && renderStatusBadge(order.status)}
-                <h3 className='text-lg sm:text-xl font-medium'>#{order.id}</h3>
-                <div className=''>
-                  <p className=''>
-                    <span className='font-light text-2xl sm:text-3xl'>{order.customer.name}</span> <br />
-                    <span className='text-base sm:text-lg font-medium'>Cliente Nº {order.customer.id}</span>
-                  </p>
-                </div>
-                <div className=''>
-                  <p className='font-medium text-xs text-muted-foreground'>Fecha de Carga:</p>
-                  <p className='font-medium text-lg'>{formatDate(order.loadDate)}</p>
-                </div>
-                <div className=''>
-                  <p className='font-medium text-xs text-muted-foreground'>Temperatura:</p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="focus:outline-none">
-                      <span className='font-medium text-lg flex gap-1 items-center hover:text-muted-foreground'>
-                        <ThermometerSnowflake className='h-5 w-5 inline-block' />
-                        {order.temperature || '0'} ºC
-                      </span>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className=' '>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(0)}>
-                        0 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(4)}>
-                        4 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-18)}>
-                        - 18 ºC
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer' onClick={() => handleTemperatureChange(-23)}>
-                        - 23 ºC
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              {/* Botones desktop - ocultos en móvil (se muestran en bottom bar) */}
-              <div className='hidden lg:flex flex-row gap-2 h-fit pt-2'>
-                <div className='flex flex-col max-w-sm justify-end items-end gap-3'>
-                  <div className="flex gap-2">
-                    <OrderEditSheet />
-                    <Button variant="outline" onClick={handleOnClickPrint} >
-                      <Printer className="h-4 w-4 mr-2" />
-                      Imprimir
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
-                        <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className='flex flex-col items-end justify-center'>
-                    <img className="max-w-[240px]" src={transportImage} alt={`Transporte ${order.transport.name}`} />
-                    <h3 className='text-3xl font-light'>{order.transport.name}</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='flex-1 w-full overflow-y-hidden '>
-                  {/* Vista Desktop: Tabs (mantener comportamiento actual) */}
-              <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full flex flex-col w-full'>
-                  <div className="mb-4 flex justify-start">
-                    <TabsList className='w-fit inline-flex'>
-                      <TabsTrigger value="details" className="text-xs sm:text-sm whitespace-nowrap">Información</TabsTrigger>
-                      <TabsTrigger value="products" className="text-xs sm:text-sm whitespace-nowrap">Previsión</TabsTrigger>
-                      <TabsTrigger value="productDetails" className="text-xs sm:text-sm whitespace-nowrap">Detalle productos</TabsTrigger>
-                      <TabsTrigger value="production" className="text-xs sm:text-sm whitespace-nowrap">Producción</TabsTrigger>
-                      <TabsTrigger value="labels" className="text-xs sm:text-sm whitespace-nowrap">Etiquetas</TabsTrigger>
-                      <TabsTrigger value="pallets" className="text-xs sm:text-sm whitespace-nowrap">Palets</TabsTrigger>
-                      <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Envio de Documentos</TabsTrigger>
-                      <TabsTrigger value="export" className="text-xs sm:text-sm whitespace-nowrap">Descargas</TabsTrigger>
-                      <TabsTrigger value="map" className="text-xs sm:text-sm whitespace-nowrap">Ruta</TabsTrigger>
-                      <TabsTrigger value="incident" className="text-xs sm:text-sm whitespace-nowrap">Incidencia</TabsTrigger>
-                      <TabsTrigger value="customer-history" className="text-xs sm:text-sm whitespace-nowrap">Histórico</TabsTrigger>
-                    </TabsList>
-                  </div>
-                  <div className="flex-1 overflow-y-hidden w-full">
-                    {/* Tab Details - siempre cargado ya que es el default */}
-                    <TabsContent value="details" className="space-y-4 w-full h-full overflow-y-auto">
-                      <OrderDetails />
-                    </TabsContent>
-
-                    {/* Tabs con lazy loading - solo se cargan cuando están activos */}
-                    <TabsContent value="products" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderPlannedProductDetails />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="productDetails" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderProductDetails />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="production" className="space-y-4 w-full h-full ">
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderProduction />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="pallets" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderPallets />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="documents" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderDocuments />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="export" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderExport />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="labels" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderLabels />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="map" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderMap />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="incident" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderIncident />
-                      </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="customer-history" className='h-full'>
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
-                        <OrderCustomerHistory />
-                      </Suspense>
-                    </TabsContent>
-
-                  </div>
-                </Tabs>
-              </div>
-            </div>
+            <OrderHeaderDesktop
+              order={order}
+              transportImage={transportImage}
+              onStatusChange={handleStatusChange}
+              onTemperatureChange={handleTemperatureChange}
+              onPrint={handleOnClickPrint}
+            />
+            <OrderTabsDesktop activeTab={activeTab} onTabChange={setActiveTab} />
           </div>
         </Card>
           )}
