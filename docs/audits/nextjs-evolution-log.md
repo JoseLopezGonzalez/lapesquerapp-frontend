@@ -257,3 +257,178 @@ npm uninstall typescript @types/react @types/node
 - Declarar tipos NextAuth extendidos (auth.d.ts)
 
 ---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 7: NextAuth types + customerService TypeScript
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 6/10** | **Rating después: 6/10** (incremental)
+
+### Problems Addressed
+- Session.user.accessToken sin tipos (requería type assertion en orderService)
+- customerService en JS sin tipos estáticos
+
+### Changes Applied
+1. **NextAuth types** (`src/types/next-auth.d.ts`):
+   - Extensión de Session.user: accessToken, role, assignedStoreId, companyName, companyLogoUrl
+   - Extensión de User: accessToken, role, assignedStoreId, etc.
+   - Extensión de JWT: accessToken, role, lastRefresh, etc.
+   - orderService createOrder: session?.user?.accessToken sin type assertion
+
+2. **customerService.ts** (migración de customerService.js):
+   - Tipos: AuthToken, CustomerOrderHistoryOptions, CustomerOrderHistoryResponse
+   - Funciones tipadas: getCustomersOptions, getCustomer, getCustomerOrderHistory
+
+3. **customerService.js eliminado**
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Tests orderService pasan
+- ✅ Imports @/services/customerService resuelven a .ts
+
+### Gap to 10/10
+- Migrar palletService, otros servicios a TypeScript
+- OrderCustomerHistory ~966 líneas
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar customerService.js
+```
+
+### Next Steps
+- Migrar palletService a TypeScript
+- Continuar reduciendo OrderCustomerHistory
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 8: palletService TypeScript
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 6/10** | **Rating después: 6/10** (incremental)
+
+### Problems Addressed
+- palletService en JS sin tipos estáticos
+
+### Changes Applied
+1. **palletService.ts** (migración de palletService.js):
+   - Tipos: AuthToken, PalletPayload, AvailablePalletsParams, AvailablePalletsResponse, LinkPalletPayload
+   - Funciones tipadas: getPallet, updatePallet, createPallet, assignPalletsToPosition, movePalletToStore, moveMultiplePalletsToStore, removePalletPosition, deletePallet, unlinkPalletFromOrder, unlinkPalletsFromOrders, searchPalletsByLot, getAvailablePalletsForOrder, linkPalletToOrder, linkPalletsToOrders
+
+2. **palletService.js eliminado**
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Tests orderService pasan
+- ✅ Imports @/services/palletService resuelven a .ts
+
+### Gap to 10/10
+- Migrar más servicios a TypeScript (productService, storeService, etc.)
+- OrderCustomerHistory ~966 líneas
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar palletService.js
+```
+
+### Next Steps
+- Migrar productService, storeService a TypeScript
+- Continuar reduciendo OrderCustomerHistory
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 9: productService y storeService TypeScript
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 6/10** | **Rating después: 6/10** (incremental)
+
+### Problems Addressed
+- productService y storeService en JS sin tipos estáticos
+
+### Changes Applied
+1. **productService.ts** (migración de productService.js):
+   - getProductOptions(token): Promise<unknown>
+
+2. **storeService.ts** (migración de storeService.js):
+   - Tipos: AuthToken, GetStoresResponse
+   - Funciones: getStore, getStores, getStoreOptions, getTotalStockStats, getStockBySpeciesStats, getStockByProducts, getRegisteredPallets
+   - Eliminados console.log de debug en getRegisteredPallets
+
+3. **productService.js y storeService.js eliminados**
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Imports @/services/productService y @/services/storeService resuelven a .ts
+
+### Gap to 10/10
+- Migrar más servicios a TypeScript
+- OrderCustomerHistory ~966 líneas
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar productService.js y storeService.js
+```
+
+### Next Steps
+- Continuar migrando servicios a TypeScript
+- Reducir OrderCustomerHistory con componentes extraídos
+
+---
+
+## [2026-02-14] Bloque Ventas — Sub-bloque 10: Reducir OrderCustomerHistory
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 6/10** | **Rating después: 6.5/10**
+
+### Problems Addressed
+- OrderCustomerHistory ~966 líneas, componente monolítico
+- UI inline difícil de mantener y testear
+- Duplicación de lógica entre vista móvil y desktop
+
+### Changes Applied
+1. **Componentes extraídos**:
+   - `GeneralMetricsGrid.jsx` — grid de métricas (Total Pedidos, Valor Total, Frecuencia, Último Pedido)
+   - `DateFilterTabs.jsx` — tabs de filtro por fecha (Mes, Trimestre, año actual/pasado, selector de años)
+   - `ProductHistoryMobileCard.jsx` — tarjeta móvil con nombre, tendencia, métricas, gráficos y tabla
+   - `ProductHistoryAccordionItem.jsx` — ítem de acordeón desktop con misma información
+   - `ChartTooltip.jsx` — tooltip para gráficos Recharts
+
+2. **Utilidad extraída**:
+   - `utils/getChartDataByProduct.js` — transforma `product.lines` en datos para Recharts
+
+3. **OrderCustomerHistory/index.js**: de ~966 a ~305 líneas (−661 líneas, −68%)
+
+4. **Estructura final**:
+   - `OrderCustomerHistory/index.js` — orquestación, estados, errores
+   - `OrderCustomerHistory/components/` — UI descompuesta
+   - `OrderCustomerHistory/utils/` — transformaciones puras
+
+### Verification Results
+- ✅ Build exitoso (Next.js 16)
+- ✅ Sin errores de linter
+- ✅ Comportamiento preservado (historial, filtros, tendencias, gráficos móvil/desktop)
+
+### Gap to 10/10 (obligatorio si Rating después < 9)
+- Order/index.js ~647 líneas (>200)
+- OrderPallets ~903 líneas
+- Migrar componentes OrderCustomerHistory a TypeScript (opcional)
+- Formularios + Zod (validación cliente)
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar OrderCustomerHistory/index.js monolítico
+# Eliminar OrderCustomerHistory/components/ y utils/
+```
+
+### Next Steps
+- Reducir Order (~647 líneas) si prioridad
+- O migrar componentes OrderCustomerHistory a TypeScript
+- O pasar a otro bloque del CORE (Productos, Clientes, Stock)
+
+---
