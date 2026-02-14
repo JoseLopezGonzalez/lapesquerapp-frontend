@@ -51,8 +51,8 @@ describe('receptionCalculations', () => {
                 { grossWeight: 50, boxes: null, tare: 1 },
             ];
             const result = calculateNetWeights(details);
-            expect(result[0]).toBe(0);
-            expect(result[1]).toBe(50);
+            expect(result[0]).toBe(0); // grossWeight null → 0
+            expect(result[1]).toBe(49); // boxes null → defaults to 1, 50 - (1*1) = 49
         });
     });
 

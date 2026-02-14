@@ -2,8 +2,7 @@
 
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { useSession } from "next-auth/react"
+import { useState } from "react"
 import {
     Accordion,
     AccordionContent,
@@ -53,13 +52,8 @@ import {
     Area,
     Line,
 } from "recharts"
-import { getCustomerOrderHistory } from "@/services/customerService"
-import toast from "react-hot-toast"
-import { getToastTheme } from "@/customs/reactHotToast"
 import Loader from "@/components/Utilities/Loader"
 import { EmptyState } from "@/components/Utilities/EmptyState"
-import { subMonths, subYears, startOfMonth, endOfMonth, format as formatDate, parseISO, isWithinInterval, differenceInDays, startOfYear, endOfYear } from "date-fns"
-import { es } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -82,285 +76,32 @@ import {
 } from "@/components/ui/tooltip"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useCustomerHistory } from "@/hooks/useCustomerHistory"
 
 export default function OrderCustomerHistory() {
     const { order } = useOrderContext()
-    const { data: session } = useSession()
     const isMobile = useIsMobile()
-    const [customerHistory, setCustomerHistory] = useState([])
-    const [availableYears, setAvailableYears] = useState([])
-    const [initialLoading, setInitialLoading] = useState(true) // Solo para la primera carga
-    const [loadingData, setLoadingData] = useState(false) // Para cambios de filtro
-    const [error, setError] = useState(null)
     const [expandedItems, setExpandedItems] = useState([])
-    const [dateFilter, setDateFilter] = useState("month") // "month", "quarter", "year", "year-1", "year-select", "year-select"
-    const [selectedYear, setSelectedYear] = useState(null) // Año seleccionado en el selector
-    const [maxProductsToShow, setMaxProductsToShow] = useState(10) // Límite inicial de productos a mostrar
+    const [maxProductsToShow, setMaxProductsToShow] = useState(10)
 
-    // Calcular rango de fechas según el filtro
-    const getDateRange = useMemo(() => {
-        const now = new Date()
-        const currentYear = now.getFullYear()
-        
-        switch (dateFilter) {
-            case "month":
-                return { from: startOfMonth(subMonths(now, 1)), to: endOfMonth(subMonths(now, 1)) }
-            case "quarter":
-                const quarterStart = new Date(currentYear, Math.floor(now.getMonth() / 3) * 3 - 3, 1)
-                const quarterEnd = new Date(currentYear, Math.floor(now.getMonth() / 3) * 3, 0)
-                return { from: quarterStart, to: quarterEnd }
-            case "year":
-                // Año actual (ej: 2026 si estamos en 2026)
-                return { from: new Date(currentYear, 0, 1), to: new Date(currentYear, 11, 31) }
-            case "year-1":
-                // Año pasado (ej: 2025 si estamos en 2026)
-                return { from: new Date(currentYear - 1, 0, 1), to: new Date(currentYear - 1, 11, 31) }
-            case "year-select":
-                // Año seleccionado en el selector
-                if (selectedYear) {
-                    return { from: new Date(selectedYear, 0, 1), to: new Date(selectedYear, 11, 31) }
-                }
-                return null
-            default:
-                return null
-        }
-    }, [dateFilter, selectedYear])
-
-    // Cargar años disponibles (una sola vez al montar)
-    useEffect(() => {
-        const loadAvailableYears = async () => {
-            const customerId = order?.customer?.id
-            const token = session?.user?.accessToken
-
-            if (!customerId || !token) return
-
-            try {
-                const result = await getCustomerOrderHistory(customerId, token, {})
-                setAvailableYears(result.available_years || [])
-            } catch (err) {
-                console.error("Error al cargar años disponibles:", err)
-            }
-        }
-
-        loadAvailableYears()
-    }, [order?.customer?.id, session?.user?.accessToken])
-
-    // Cargar historial del cliente según el filtro seleccionado
-    useEffect(() => {
-        const loadCustomerHistory = async () => {
-            const customerId = order?.customer?.id
-            const token = session?.user?.accessToken
-
-            if (!customerId) {
-                setError("No se pudo obtener el ID del cliente")
-                setInitialLoading(false)
-                return
-            }
-
-            if (!token) {
-                setError("No se pudo obtener el token de autenticación")
-                setInitialLoading(false)
-                return
-            }
-
-            try {
-                // Si ya hay datos, solo mostrar loader en la sección de productos
-                if (customerHistory.length > 0) {
-                    setLoadingData(true)
-                } else {
-                    setInitialLoading(true)
-                }
-                setError(null)
-                
-                const dateRange = getDateRange
-                let options = {}
-                
-                if (dateRange && dateRange.from && dateRange.to) {
-                    options.dateFrom = formatDate(dateRange.from, 'yyyy-MM-dd')
-                    options.dateTo = formatDate(dateRange.to, 'yyyy-MM-dd')
-                }
-                
-                const result = await getCustomerOrderHistory(customerId, token, options)
-                setCustomerHistory(result.data || [])
-            } catch (err) {
-                const errorMessage = err.message || "Error al cargar el historial del cliente"
-                setError(errorMessage)
-                toast.error(errorMessage, getToastTheme())
-                // Solo limpiar datos si es la primera carga
-                if (customerHistory.length === 0) {
-                    setCustomerHistory([])
-                }
-            } finally {
-                setInitialLoading(false)
-                setLoadingData(false)
-            }
-        }
-
-        loadCustomerHistory()
-    }, [order?.customer?.id, session?.user?.accessToken, getDateRange])
-
-
-    // Verificar qué años tienen datos para mostrar solo las tabs correspondientes
-    const currentYear = new Date().getFullYear()
-    const hasCurrentYear = availableYears.includes(currentYear)
-    const hasYear1 = availableYears.includes(currentYear - 1)
-    // Años para el selector: todos excepto el actual y el pasado
-    const yearsForSelector = availableYears.filter(year => year < currentYear - 1)
-
-    // Los datos ya vienen filtrados del backend, así que usamos directamente customerHistory
-    const filteredHistory = customerHistory
-
-    // Calcular métricas generales
-    const generalMetrics = useMemo(() => {
-        if (!filteredHistory || filteredHistory.length === 0) return null
-
-        const allLines = filteredHistory.flatMap(p => p.lines)
-        const totalOrders = new Set(allLines.map(l => l.order_id)).size
-        const totalAmount = filteredHistory.reduce((sum, p) => sum + (p.total_amount || 0), 0)
-        const avgOrderValue = totalOrders > 0 ? totalAmount / totalOrders : 0
-
-        // Calcular frecuencia promedio (días entre pedidos)
-        const sortedDates = allLines
-            .map(l => parseISO(l.load_date))
-            .sort((a, b) => a - b)
-        
-        let totalDays = 0
-        for (let i = 1; i < sortedDates.length; i++) {
-            totalDays += differenceInDays(sortedDates[i], sortedDates[i-1])
-        }
-        const avgDaysBetween = sortedDates.length > 1 ? totalDays / (sortedDates.length - 1) : 0
-
-        // Último pedido
-        const lastOrderDate = sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null
-        const daysSinceLastOrder = lastOrderDate ? differenceInDays(new Date(), lastOrderDate) : null
-
-        return {
-            totalOrders,
-            totalAmount,
-            avgOrderValue,
-            avgDaysBetween: Math.round(avgDaysBetween),
-            daysSinceLastOrder,
-            lastOrderDate
-        }
-    }, [filteredHistory])
-
-    // Calcular tendencias para cada producto comparando con el período anterior del mismo rango
-    const calculateTrend = (product) => {
-        if (!product.lines || product.lines.length < 2 || !getDateRange) return { direction: "stable", percentage: 0 }
-
-        const currentPeriod = getDateRange
-        if (!currentPeriod.from || !currentPeriod.to) return { direction: "stable", percentage: 0 }
-
-        // Calcular el período anterior del mismo rango
-        let previousPeriod = null
-        const now = new Date()
-        const currentYear = now.getFullYear()
-
-        switch (dateFilter) {
-            case "month": {
-                // Mes anterior (el filtro muestra el mes pasado, así que comparamos con el anterior a ese)
-                const currentMonth = subMonths(now, 1)
-                const previousMonth = subMonths(currentMonth, 1)
-                previousPeriod = {
-                    from: startOfMonth(previousMonth),
-                    to: endOfMonth(previousMonth)
-                }
-                break
-            }
-            case "quarter": {
-                // Trimestre anterior (el filtro muestra el trimestre pasado, así que comparamos con el anterior a ese)
-                const currentQuarterMonth = Math.floor(now.getMonth() / 3) * 3 - 3
-                const prevQuarterMonth = currentQuarterMonth - 3
-                // Ajustar año si el trimestre anterior está en el año anterior
-                const prevQuarterYear = prevQuarterMonth < 0 ? now.getFullYear() - 1 : now.getFullYear()
-                const adjustedPrevQuarterMonth = prevQuarterMonth < 0 ? prevQuarterMonth + 12 : prevQuarterMonth
-                previousPeriod = {
-                    from: new Date(prevQuarterYear, adjustedPrevQuarterMonth, 1),
-                    to: new Date(prevQuarterYear, adjustedPrevQuarterMonth + 3, 0)
-                }
-                break
-            }
-            case "year": {
-                // Año anterior al actual
-                previousPeriod = {
-                    from: startOfYear(new Date(currentYear - 1, 0, 1)),
-                    to: endOfYear(new Date(currentYear - 1, 11, 31))
-                }
-                break
-            }
-            case "year-1": {
-                // Año anterior al pasado
-                previousPeriod = {
-                    from: startOfYear(new Date(currentYear - 2, 0, 1)),
-                    to: endOfYear(new Date(currentYear - 2, 11, 31))
-                }
-                break
-            }
-            case "year-select": {
-                // Año anterior al seleccionado
-                if (selectedYear) {
-                    const year = parseInt(selectedYear)
-                    previousPeriod = {
-                        from: startOfYear(new Date(year - 1, 0, 1)),
-                        to: endOfYear(new Date(year - 1, 11, 31))
-                    }
-                }
-                break
-            }
-        }
-
-        if (!previousPeriod) return { direction: "stable", percentage: 0 }
-
-        // Obtener todas las líneas del historial completo (no solo las filtradas)
-        const allLines = customerHistory
-            .find(p => p.product.id === product.product.id)?.lines || []
-
-        // Filtrar líneas del período actual
-        const currentPeriodLines = allLines.filter(l => {
-            const date = parseISO(l.load_date)
-            return isWithinInterval(date, { start: currentPeriod.from, end: currentPeriod.to })
-        })
-
-        // Filtrar líneas del período anterior
-        const previousPeriodLines = allLines.filter(l => {
-            const date = parseISO(l.load_date)
-            return isWithinInterval(date, { start: previousPeriod.from, end: previousPeriod.to })
-        })
-
-        if (previousPeriodLines.length === 0) return { direction: "stable", percentage: 0 }
-
-        const currentPeriodTotal = currentPeriodLines.reduce((sum, l) => sum + (Number(l.net_weight) || 0), 0)
-        const previousPeriodTotal = previousPeriodLines.reduce((sum, l) => sum + (Number(l.net_weight) || 0), 0)
-
-        if (previousPeriodTotal === 0) return { direction: "stable", percentage: 0 }
-
-        const percentage = ((currentPeriodTotal - previousPeriodTotal) / previousPeriodTotal) * 100
-
-        if (Math.abs(percentage) < 5) return { direction: "stable", percentage: 0 }
-        return { 
-            direction: percentage > 0 ? "up" : "down", 
-            percentage: Math.abs(percentage).toFixed(1) 
-        }
-    }
-
-
-    // Obtener texto del tooltip según el filtro
-    const getTrendTooltipText = () => {
-        switch (dateFilter) {
-            case "month":
-                return "Variación de peso neto comparado con el mes anterior"
-            case "quarter":
-                return "Variación de peso neto comparado con el trimestre anterior"
-            case "year":
-                return "Variación de peso neto comparado con el año anterior"
-            case "year-1":
-                return "Variación de peso neto comparado con el año anterior"
-            case "year-select":
-                return "Variación de peso neto comparado con el año anterior"
-            default:
-                return "Variación de peso neto comparado con el período anterior"
-        }
-    }
+    const {
+        customerHistory,
+        initialLoading,
+        loadingData,
+        error,
+        dateFilter,
+        setDateFilter,
+        selectedYear,
+        setSelectedYear,
+        currentYear,
+        hasCurrentYear,
+        hasYear1,
+        yearsForSelector,
+        filteredHistory,
+        generalMetrics,
+        calculateTrend,
+        getTrendTooltipText,
+    } = useCustomerHistory(order)
 
     const getChartDataByProduct = (product) => {
         return product.lines

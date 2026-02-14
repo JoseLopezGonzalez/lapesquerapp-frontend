@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { useSession } from 'next-auth/react';
+import { useQueryClient } from '@tanstack/react-query';
 import OrdersList from './OrdersList';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
-import { getActiveOrders } from '@/services/orderService';
+import { useOrders } from '@/hooks/useOrders';
 import { Loader2, Package, PlusCircle, Plus, Download, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,8 +16,7 @@ import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from '@/configs/config';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 
 const initialCategories = [
@@ -29,78 +28,49 @@ const initialCategories = [
 ]
 
 export default function OrdersManager() {
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
+    const queryClient = useQueryClient();
+    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
     const isMobile = useIsMobile();
 
     const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
     const [isOrderLoading, setIsOrderLoading] = useState(false);
 
-    const [orders, setOrders] = useState([]);
+    const { orders = [], isLoading: loading, error: ordersError, refetch, queryKey } = useOrders();
     const [categories, setCategories] = useState(initialCategories);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchText, setSearchText] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [reloadCounter, setReloadCounter] = useState(0);
     const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'production'
 
     // Debouncing de búsqueda para mejorar rendimiento
     const debouncedSearchText = useDebounce(searchText, 300);
 
-    // Función para actualizar un pedido en el listado sin recargar desde el endpoint
-    const updateOrderInList = useCallback((updatedOrder) => {
-        setOrders(prevOrders => {
-            return prevOrders.map(order => 
-                order.id === updatedOrder.id ? updatedOrder : order
-            );
-        });
-    }, []);
+    const error = ordersError;
 
-    // Función explícita para recargar pedidos
+    // Función explícita para recargar pedidos (invalida caché React Query)
     const reloadOrders = useCallback(() => {
-        setReloadCounter(prev => prev + 1);
-    }, []);
+        queryClient.invalidateQueries({ queryKey });
+    }, [queryClient, queryKey]);
 
     const handleOnChange = useCallback((updatedOrder = null) => {
-        // Si se pasa un pedido actualizado, actualizar el listado localmente
         if (updatedOrder) {
-            updateOrderInList(updatedOrder);
+            // Actualizar caché localmente para feedback inmediato
+            queryClient.setQueryData(queryKey, (prevOrders = []) =>
+                prevOrders.map(order =>
+                    order.id === updatedOrder.id ? updatedOrder : order
+                )
+            );
         } else {
-            // Si no se pasa nada, recargar desde el endpoint
-            reloadOrders();
+            // Recargar desde el endpoint
+            queryClient.invalidateQueries({ queryKey });
         }
-    }, [updateOrderInList, reloadOrders]);
+    }, [queryClient, queryKey]);
 
-    // Cargar pedidos activos
+    // Mostrar toast en error de carga (comportamiento anterior)
     useEffect(() => {
-        if (!token) {
-            setLoading(false);
-            setError('No hay sesión autenticada');
-            return;
+        if (ordersError) {
+            toast.error(ordersError, getToastTheme());
         }
-
-        setLoading(true);
-        setError(null);
-
-        getActiveOrders(token)
-            .then((data) => {
-                // Asegurar que data sea un array
-                const ordersArray = Array.isArray(data) ? data : [];
-                setOrders(ordersArray);
-                setLoading(false);
-                setError(null);
-            })
-            .catch((error) => {
-                const errorMessage = error?.message || 'Error al obtener los pedidos activos';
-                console.error('Error al obtener los pedidos activos:', error);
-                setError(errorMessage);
-                toast.error(errorMessage, getToastTheme());
-                setLoading(false);
-                // Asegurar que orders sea un array vacío en caso de error
-                setOrders([]);
-            });
-    }, [reloadCounter, token]);
+    }, [ordersError]);
 
     // Memoizar la categoría activa para evitar búsquedas repetidas
     const activeCategory = useMemo(() => {

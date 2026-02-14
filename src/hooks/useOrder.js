@@ -1,6 +1,7 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders, unlinkPalletsFromOrders } from '@/services/palletService';
 import { useSession } from 'next-auth/react';
@@ -57,14 +58,11 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     return Array.from(resultMap.values());
 };
 
-// Cache global de promesas de carga para compartir entre instancias
-const loadingPromises = new Map();
-
 export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const queryClient = useQueryClient();
+    const accessToken = session?.user?.accessToken;
+    const [mutationError, setMutationError] = useState(null);
     const [productOptions, setProductOptions] = useState([]);
     const [taxOptions, setTaxOptions] = useState([]);
     const [activeTab, setActiveTab] = useState('details');
@@ -72,20 +70,31 @@ export function useOrder(orderId, onChange) {
     const [optionsLoading, setOptionsLoading] = useState(false);
     const previousOrderIdRef = useRef(null);
 
-    const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
-
-    // Memoizar accessToken para evitar cambios de referencia innecesarios
-    const accessToken = useMemo(() => session?.user?.accessToken, [session?.user?.accessToken]);
-    
-    // Ref para rastrear el último token usado y evitar recargas innecesarias
-    const lastTokenRef = useRef(null);
-    const hasLoadedRef = useRef(false);
-    const lastOrderIdLoadedRef = useRef(null);
-    
-    // Ref para rastrear si hay una carga en progreso y evitar llamadas duplicadas
-    const loadingInProgressRef = useRef(false);
-
     const ordersManagerOptions = useOrdersManagerOptions();
+
+    // React Query para obtener el pedido
+    const queryKey = ['order', orderId];
+    const {
+        data: order = null,
+        isLoading: loading,
+        error: queryError,
+        refetch: queryRefetch,
+    } = useQuery({
+        queryKey,
+        queryFn: () => getOrder(orderId, accessToken),
+        enabled: !!orderId && !!accessToken && status !== 'loading',
+    });
+
+    const error = queryError ?? mutationError;
+
+    // Helper para actualizar order en caché y notificar al padre
+    const updateOrderCache = useCallback((updatedOrder) => {
+        if (!updatedOrder) return;
+        queryClient.setQueryData(queryKey, updatedOrder);
+        onChange?.(updatedOrder);
+    }, [queryClient, queryKey, onChange]);
+
+    const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
 
     // Si estamos dentro del Gestor de pedidos, usar opciones del contexto para no duplicar peticiones
     useEffect(() => {
@@ -124,83 +133,19 @@ export function useOrder(orderId, onChange) {
             
             setOptionsLoaded(true);
         } catch (err) {
-            setError(err);
+            setMutationError(err);
         } finally {
             setOptionsLoading(false);
         }
     }, [accessToken, optionsLoaded]);
 
+    // Resetear tab cuando cambia orderId
     useEffect(() => {
-        // Espera a que la sesión esté lista
-        if (!orderId || status === "loading") return;
-
-        // Si no hay token, no hacer nada
-        if (!accessToken) return;
-
-        // Evitar recargas innecesarias: solo recargar si cambió el orderId o el token realmente cambió
-        const tokenChanged = lastTokenRef.current !== accessToken;
-        const orderIdChanged = previousOrderIdRef.current !== orderId;
-        const orderIdAlreadyLoaded = lastOrderIdLoadedRef.current === orderId;
-        
-        // Si ya se cargó este orderId y no cambió el token, no recargar
-        if (orderIdAlreadyLoaded && !tokenChanged && !orderIdChanged) {
-            return;
-        }
-
-        // Marcar que hay una carga en progreso (solo local)
-        loadingInProgressRef.current = true;
-        
-        // Actualizar referencias
-        lastTokenRef.current = accessToken;
-        lastOrderIdLoadedRef.current = orderId;
-
-        // Solo resetear tab si cambió el orderId
-        if (orderIdChanged) {
+        if (previousOrderIdRef.current !== orderId) {
             setActiveTab('details');
             previousOrderIdRef.current = orderId;
         }
-
-        setLoading(true);
-        
-        // Si ya hay una promesa de carga para este pedido, reutilizarla
-        let loadPromise;
-        if (loadingPromises.has(orderId)) {
-            loadPromise = loadingPromises.get(orderId);
-        } else {
-            // Crear nueva promesa de carga
-            loadPromise = getOrder(orderId, accessToken)
-                .then((data) => {
-                    // Limpiar la promesa del cache después de completarse
-                    loadingPromises.delete(orderId);
-                    return data;
-                })
-                .catch((err) => {
-                    // Limpiar la promesa del cache incluso en caso de error
-                    loadingPromises.delete(orderId);
-                    throw err;
-                });
-            
-            // Guardar la promesa en el cache
-            loadingPromises.set(orderId, loadPromise);
-        }
-        
-        loadPromise
-            .then((data) => {
-                setOrder(data);
-                setLoading(false);
-                loadingInProgressRef.current = false; // Liberar el flag local
-            })
-            .catch((err) => {
-                console.error('Error al cargar pedido:', err);
-                setError(err);
-                setLoading(false);
-                loadingInProgressRef.current = false; // Liberar el flag incluso en caso de error
-                // Si hay error, permitir reintento removiendo la referencia
-                if (lastOrderIdLoadedRef.current === orderId) {
-                    lastOrderIdLoadedRef.current = null;
-                }
-            });
-    }, [orderId, status, accessToken]);
+    }, [orderId]);
 
     // Cargar opciones cuando se cambie al tab de productos planificados (solo si no vienen del contexto del gestor)
     useEffect(() => {
@@ -229,18 +174,14 @@ export function useOrder(orderId, onChange) {
     }, [optionsLoaded, accessToken, loadOptions, ordersManagerOptions?.productOptions?.length, ordersManagerOptions?.productsLoading, ordersManagerOptions?.taxOptionsLoading]);
 
     const reload = useCallback(async () => {
-        const token = session?.user?.accessToken;
-        if (!token) return null;
-        
         try {
-            const data = await getOrder(orderId, token);
-            setOrder(data);
-            return data; // Devolver el order actualizado
+            const result = await queryRefetch();
+            return result?.data ?? result;
         } catch (err) {
-            setError(err);
+            setMutationError(err);
             return null;
         }
-    }, [orderId, session?.user?.accessToken]);
+    }, [queryRefetch]);
 
     // Memoizar mergedProductDetails para evitar recálculos innecesarios
     const mergedProductDetails = useMemo(() => {
@@ -254,13 +195,12 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         updateOrder(orderId, updateData, token)
             .then((updated) => {
-                setOrder(updated);
-                // Pasar el pedido actualizado al onChange para actualizar el listado sin recargar
+                updateOrderCache(updated);
                 onChange(updated);
                 return updated;
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     };
@@ -269,12 +209,11 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         setOrderStatus(orderId, status, token)
             .then((updated) => {
-                setOrder(updated);
-                onChange(updated);
+                updateOrderCache(updated);
                 return updated;
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     };
@@ -295,12 +234,10 @@ export function useOrder(orderId, onChange) {
                     plannedProductDetails: updatedPlannedDetails
                 };
                 // Actualizar estado local
-                setOrder(updatedOrder);
-                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
-                onChange?.(updatedOrder);
+                updateOrderCache(updatedOrder);
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     };
@@ -317,12 +254,10 @@ export function useOrder(orderId, onChange) {
                     plannedProductDetails: filteredDetails
                 };
                 // Actualizar estado local
-                setOrder(updatedOrder);
-                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
-                onChange?.(updatedOrder);
+                updateOrderCache(updatedOrder);
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     }
@@ -338,12 +273,10 @@ export function useOrder(orderId, onChange) {
                     plannedProductDetails: [...order.plannedProductDetails, created]
                 };
                 // Actualizar estado local
-                setOrder(updatedOrder);
-                // Pasar el pedido actualizado al onChange sin recargar desde el servidor
-                onChange?.(updatedOrder);
+                updateOrderCache(updatedOrder);
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     }
@@ -588,12 +521,11 @@ export function useOrder(orderId, onChange) {
         const token = session?.user?.accessToken;
         updateOrder(orderId, { temperature: updatedTemperature }, token)
             .then((updated) => {
-                setOrder(updated);
-                onChange(updated);
+                updateOrderCache(updated);
                 return updated;
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     }
@@ -609,11 +541,10 @@ export function useOrder(orderId, onChange) {
                     status: 'incident',
                     incident: updated
                 };
-                setOrder(updatedOrder);
-                onChange(updatedOrder);
+                updateOrderCache(updatedOrder);
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     }
@@ -629,12 +560,11 @@ export function useOrder(orderId, onChange) {
                     ...order,
                     incident: updatedIncident,
                 };
-                setOrder(updatedOrder);
-                onChange?.(updatedOrder);
+                updateOrderCache(updatedOrder);
                 return updatedIncident;
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     };
@@ -652,11 +582,10 @@ export function useOrder(orderId, onChange) {
                     status: 'finished',
                     incident: null,
                 };
-                setOrder(updatedOrder);
-                onChange?.(updatedOrder);
+                updateOrderCache(updatedOrder);
             })
             .catch((err) => {
-                setError(err);
+                setMutationError(err);
                 throw err;
             });
     }
@@ -673,8 +602,7 @@ export function useOrder(orderId, onChange) {
             ...order,
             pallets: order.pallets.map(pallet => pallet.id == updatedPallet.id ? updatedPallet : pallet)
         };
-        setOrder(updatedOrder);
-        onChange?.(updatedOrder);
+        updateOrderCache(updatedOrder);
         
         // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
         try {
@@ -703,8 +631,7 @@ export function useOrder(orderId, onChange) {
             ...order,
             pallets: [...order.pallets, newPallet]
         };
-        setOrder(updatedOrder);
-        onChange?.(updatedOrder);
+        updateOrderCache(updatedOrder);
         
         // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
         try {
@@ -732,8 +659,7 @@ export function useOrder(orderId, onChange) {
                 ...order,
                 pallets: order.pallets.filter(pallet => pallet.id !== palletId)
             };
-            setOrder(updatedOrder);
-            onChange?.(updatedOrder);
+            updateOrderCache(updatedOrder);
             
             // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
             const reloadedOrder = await reload();
@@ -760,8 +686,7 @@ export function useOrder(orderId, onChange) {
                 ...order,
                 pallets: order.pallets.filter(pallet => pallet.id !== palletId)
             };
-            setOrder(updatedOrder);
-            onChange?.(updatedOrder);
+            updateOrderCache(updatedOrder);
             
             // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
             const reloadedOrder = await reload();
@@ -878,8 +803,7 @@ export function useOrder(orderId, onChange) {
                 ...order,
                 pallets: order.pallets.filter(pallet => !palletIds.includes(pallet.id))
             };
-            setOrder(updatedOrder);
-            onChange?.(updatedOrder);
+            updateOrderCache(updatedOrder);
             
             // Recargar el pedido completo desde el backend para actualizar productionProductDetails y productDetails
             const reloadedOrder = await reload();

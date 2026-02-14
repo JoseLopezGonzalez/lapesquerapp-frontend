@@ -19,6 +19,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
 import { useBackButton } from '@/hooks/use-back-button';
+import StatusBadge from '../StatusBadge';
 
 // Lazy load de componentes pesados para mejorar el rendimiento inicial
 const OrderPallets = lazy(() => import('./OrderPallets'));
@@ -48,41 +49,6 @@ const SECTIONS_CONFIG = [
   { id: 'customer-history', title: 'Histórico', component: OrderCustomerHistory, lazy: true, icon: History },
 ];
 const PRIMARY_SECTION_IDS_MOBILE = ['products', 'production', 'documents'];
-
-// Badge reutilizable - movido fuera del componente para evitar recreación
-const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
-  const colorVariants = {
-    green: {
-      bg: 'bg-green-200 dark:bg-green-900',
-      text: 'text-green-800 dark:text-green-300',
-      border: 'border dark:border-2 border-green-500',
-      dot: 'bg-green-500'
-    },
-    orange: {
-      bg: 'bg-orange-200 dark:bg-orange-900',
-      text: 'text-orange-800 dark:text-orange-300',
-      border: 'border dark:border-2 border-orange-500',
-      dot: 'bg-orange-500'
-    },
-    red: {
-      bg: 'bg-red-200 dark:bg-red-900',
-      text: 'text-red-800 dark:text-red-300',
-      border: 'border dark:border-2 border-red-500',
-      dot: 'bg-red-500'
-    },
-  };
-
-  const { bg, text, border, dot } = colorVariants[color] || colorVariants.green;
-
-  return (
-    <span
-      className={`inline-flex items-center ${bg} ${text} text-xs font-medium px-2.5 py-0.5 rounded-full ${border}`}
-    >
-      <span className={`w-2 h-2 me-1 ${dot} rounded-full`} />
-      {label}
-    </span>
-  );
-};
 
 // Función helper para obtener la imagen de transporte - optimizada
 const getTransportImage = (transportName) => {

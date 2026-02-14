@@ -3,6 +3,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import StatusBadge from '../../StatusBadge';
 
 const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
     const isMobile = useIsMobile();
@@ -40,41 +41,6 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 ? 'bg-green-500/10 border-green-500/50'
                 : 'bg-orange-500/10 border-orange-500/50'
         : '';
-
-    const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
-        const colorVariants = {
-            green: {
-                bg: 'bg-green-200 dark:bg-green-900',
-                text: 'text-green-800 dark:text-green-300',
-                border: 'border dark:border-2 border-green-500',
-                dot: 'bg-green-500'
-            },
-            orange: {
-                bg: 'bg-orange-200 dark:bg-orange-900',
-                text: 'text-orange-800 dark:text-orange-300',
-                border: 'border dark:border-2 border-orange-500',
-                dot: 'bg-orange-500'
-            },
-            red: {
-                bg: 'bg-red-100 dark:bg-red-900',
-                text: 'text-red-800 dark:text-red-300',
-                border: 'border dark:border-2 border-red-500',
-                dot: 'bg-red-500'
-            },
-            // Puedes añadir más colores aquí
-        };
-
-        const { bg, text, border, dot } = colorVariants[color] || colorVariants.green; // Fallback a verde
-
-        return (
-            <span
-                className={`inline-flex items-center ${bg} ${text} text-xs font-medium px-2.5 py-0.5 rounded-full ${border}`}
-            >
-                <span className={`w-2 h-2 me-1 ${dot} rounded-full`} />
-                {label}
-            </span>
-        );
-    };
 
     const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente';
 

@@ -3,6 +3,8 @@
 import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { useEffect } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/queryClient";
 import AuthErrorInterceptor from "@/components/Utilities/AuthErrorInterceptor";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { LogoutProvider } from "@/context/LogoutContext";
@@ -23,8 +25,9 @@ export default function ClientLayout({ children }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <TooltipProvider delayDuration={0}>
-        <SessionProvider>
-          <SettingsProvider>
+        <QueryClientProvider client={getQueryClient()}>
+          <SessionProvider>
+            <SettingsProvider>
             <LogoutProvider>
               <AuthErrorInterceptor />
               {children}
@@ -33,7 +36,8 @@ export default function ClientLayout({ children }) {
               <InstallPromptBanner />
             </LogoutProvider>
           </SettingsProvider>
-        </SessionProvider>
+          </SessionProvider>
+        </QueryClientProvider>
       </TooltipProvider>
     </ThemeProvider>
   );
