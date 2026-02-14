@@ -47,6 +47,7 @@ export function TransportRadarChart() {
 
     useEffect(() => {
         if (status !== "authenticated") return
+        if (!accessToken) return // Evitar 401 que desencadena signOut en AuthErrorInterceptor
         if (!range.from || !range.to) return
 
         setIsLoading(true)
