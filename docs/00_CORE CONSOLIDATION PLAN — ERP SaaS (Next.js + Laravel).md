@@ -19,15 +19,24 @@
 
 **Antes de mejorar nada, debemos definir qué bloques forman el Core comercial estable.**
 
-**Ejemplo típico:**
+**Bloques identificados en el frontend** (rutas, entidades, managers):
 
-* **Auth + Roles/Permisos**
-* **Productos (y anidados)**
-* **Clientes**
-* **Ventas (Orders + líneas + estados)**
-* **Stock / Movimientos**
-* **Informes básicos**
-* **Configuración por tenant**
+* 1. Auth + Roles/Permisos
+* 2. Dashboard (Admin + Operario)
+* 3. Ventas (Orders + líneas + estados)
+* 4. Productos (productos, categorías, familias, especies, artes pesca, zonas captura)
+* 5. Clientes (clientes, formas pago, países)
+* 6. Proveedores (proveedores, liquidaciones)
+* 7. Stock / Almacenes (stores, cajas, palets, stores-manager, warehouse operario, recepciones MP, salidas cebo)
+* 8. Producciones
+* 9. Fichajes / Gestión horaria (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager)
+* 10. Catálogos auxiliares (transportes, incoterms, comerciales)
+* 11. Usuarios y sesiones
+* 12. Orquestador (preparación pedidos)
+* 13. Editor de etiquetas
+* 14. Extracción datos lonja
+* 15. Informes básicos (gráficos Dashboard)
+* 16. Configuración por tenant
 
 **⚠️ Todo lo que quede fuera es “roadmap”, no core.**
 
@@ -37,16 +46,24 @@
 
 **Última actualización**: 2026-02-15
 
-| Bloque | Rating | Notas | Fecha |
-|--------|--------|-------|-------|
-| **Dashboard** (Admin + Operario) | **9/10** | Migración completa a React Query: useOrdersStats, useSpeciesOptions, useProductOptions, useDashboardCharts, usePunches, useReceptionsList, useDispatchesList. 14 cards/charts migrados. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
-| **Ventas** (Orders + líneas + estados) | **9/10** | Fases 1-4 completadas: Order y OrderPallets refactorizados, formularios con Zod, tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
-| **Auth + Roles/Permisos** | **8/10** | Auditoría y evolución completadas: authService TS + tipos API + tests (authService, authConfig); LoginPage dividida en hooks y subcomponentes; Zod + react-hook-form en login/verify; middleware, NextAuth route y componentes Auth migrados a TS; P2 (getAuthToken, ProtectedRoute, logs middleware); opcionales (useLoginTenant, useLoginActions, loginSchema en TS). Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
-| Productos | — | Pendiente auditoría | — |
-| Clientes | — | Pendiente auditoría | — |
-| **Stock / Movimientos** (Almacenes, Recepciones) | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
-| Informes básicos | — | Pendiente auditoría | — |
-| **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
+| # | Bloque | Rating | Notas | Fecha |
+|---|--------|--------|-------|-------|
+| 1 | **Auth + Roles/Permisos** | **8/10** | authService TS + tipos API + tests; LoginPage dividida; Zod en login/verify; middleware, NextAuth, componentes Auth en TS. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
+| 2 | **Dashboard** (Admin + Operario) | **9/10** | React Query: useOrdersStats, useSpeciesOptions, useProductOptions, useDashboardCharts, usePunches, useReceptionsList, useDispatchesList. 14 cards/charts. Ver evolution-log. | 2026-02-15 |
+| 3 | **Ventas** (Orders + líneas + estados) | **9/10** | Order y OrderPallets refactorizados; Zod en formularios; tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
+| 4 | **Productos** (productos, categorías, familias, especies, artes, zonas) | — | Pendiente auditoría | — |
+| 5 | **Clientes** (clientes, formas pago, países) | — | Pendiente auditoría | — |
+| 6 | **Proveedores** (proveedores, liquidaciones) | — | Pendiente auditoría | — |
+| 7 | **Stock / Almacenes** (stores, cajas, palets, recepciones MP, salidas cebo, warehouse operario) | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver evolution-log. | 2026-02-15 |
+| 8 | **Producciones** | — | Pendiente auditoría | — |
+| 9 | **Fichajes / Gestión horaria** (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager) | — | Pendiente auditoría | — |
+| 10 | **Catálogos auxiliares** (transportes, incoterms, comerciales) | — | Pendiente auditoría | — |
+| 11 | **Usuarios y sesiones** | — | Pendiente auditoría | — |
+| 12 | **Orquestador** (preparación pedidos) | — | Pendiente auditoría | — |
+| 13 | **Editor de etiquetas** | — | Pendiente auditoría | — |
+| 14 | **Extracción datos lonja** | — | Pendiente auditoría | — |
+| 15 | **Informes básicos** (gráficos Dashboard) | — | Pendiente auditoría; gráficos integrados en Dashboard | — |
+| 16 | **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver evolution-log. | 2026-02-15 |
 
 ---
 
