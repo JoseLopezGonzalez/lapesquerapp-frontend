@@ -46,7 +46,7 @@
 | Clientes | — | Pendiente auditoría | — |
 | **Stock / Movimientos** (Almacenes, Recepciones) | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
 | Informes básicos | — | Pendiente auditoría | — |
-| Configuración por tenant | — | Pendiente auditoría | — |
+| **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
 
 ---
 

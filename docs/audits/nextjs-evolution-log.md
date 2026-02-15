@@ -4,6 +4,47 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque Configuración por tenant — Migración completa
+
+**Priority**: P1
+**Risk Level**: Low
+**Rating antes: 4/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- P0: Sin tests para settingsService (requisito CORE)
+- P0: settingsService en JavaScript sin tipos
+- P1: useEffect + useState para data fetching (SettingsContext, SettingsForm)
+- P1: Validación inline sin Zod
+- P1: SettingsForm > 150 líneas (~428)
+
+### Changes Applied
+- **settingsService.ts**: Migración desde .js; tipos SettingsData, UpdateSettingsAuthError
+- **settingsService.test.ts**: 11 tests (getSettings, updateSettings, 401/403, authError, userMessage)
+- **useSettingsData.js**: Hook con React Query (queryKey ['settings', tenantId]); detección cambio tenant
+- **SettingsContext.js**: Refactorizado para usar useSettingsData (~25 líneas, antes ~178)
+- **settingsSchema.js**: Schema Zod para secciones empresa + email SMTP
+- **SettingsForm.js**: useForm + zodResolver; migración a React Query vía useSettings; reducido a ~115 líneas
+- **SettingsEmailSection.jsx**: Componente extraído (sección SMTP)
+- **config/sectionsConfig.js**: SECTIONS extraído
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ 11 tests settingsService pasan
+- ✅ SettingsForm < 150 líneas
+- ✅ React Query para settings
+- ✅ Zod + react-hook-form
+- ✅ Comportamiento preservado
+
+### Gap to 10/10
+- Tests para useSettingsData
+- Migrar useSettingsData, SettingsContext, getSettingValue a TypeScript
+- TenantContext en lugar de getCurrentTenant (cuando exista)
+
+### Next Steps
+- Siguiente bloque recomendado: Productos, Clientes o Informes
+
+---
+
 ## [2026-02-15] Bloque Dashboard — Migración completa a React Query
 
 **Priority**: P1  
