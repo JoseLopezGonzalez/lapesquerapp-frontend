@@ -4,6 +4,155 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque 13: Editor de etiquetas — Sub-bloque 1 (validación + tests)
+
+**Priority**: P0
+**Risk Level**: Low
+**Rating antes: 3/10** | **Rating después: 4/10** (parcial; pendiente división componente/hook)
+
+### Problems Addressed
+- P0: Sin tests para lógica crítica del editor
+- P1: useLabelEditor > 1100 líneas (lógica de validación mezclada)
+
+### Changes Applied
+- **labelEditorValidation.js** (nuevo): validateLabelName, hasDuplicateFieldKeys, hasElementValidationError, getElementValidationErrorReason, hasAnyElementValidationErrors, KEY_FIELD_TYPES. Extraído de useLabelEditor.
+- **useLabelEditor.js**: Importa desde labelEditorValidation; eliminadas ~55 líneas de definiciones locales. Líneas: 1132 → 1087.
+- **labelEditorValidation.test.js** (nuevo): 6 tests Vitest para validación (nombre, duplicados, errores por elemento).
+
+### Verification Results
+- ✅ Build exitoso (next build)
+- ✅ 6 tests pasan (vitest run src/hooks/labelEditorValidation.test.js)
+- ✅ Sin cambios de comportamiento; contratos LabelRender/useLabel preservados
+
+### Gap to 10/10
+- LabelEditor/index.js sigue ~1903 líneas (P0: dividir en subcomponentes: toolbar, panel izquierdo, panel derecho).
+- useLabelEditor.js ~1087 líneas (extraer useLabelEditorCanvas, labelEditorElementDefaults).
+- TypeScript para labelService y tipos.
+- React Query para getLabels/getLabel donde aplique.
+- Más tests (labelService, useLabelEditor).
+
+### Next Steps
+- Sub-bloque 1 continuación: extraer LabelEditorLeftPanel y/o LabelEditorToolbar desde index.js para bajar < 200 L por archivo.
+- Luego sub-bloques 2–5 (TypeScript, React Query, tests servicios, refino).
+
+---
+
+## [2026-02-15] Bloque 13: Editor de etiquetas — Sub-bloque 1 (panel izquierdo)
+
+**Priority**: P0
+**Risk Level**: Low
+**Rating antes: 4/10** | **Rating después: 5/10**
+
+### Problems Addressed
+- P0: LabelEditor/index.js ~1903 líneas (componente monolítico).
+
+### Changes Applied
+- **LabelEditorLeftPanel.jsx** (nuevo, ~345 L): Panel izquierdo con botones Crear/Seleccionar etiqueta, grid "Añadir Elementos", lista de elementos con cards (scroll, selección, duplicar/eliminar). Usa hasElementValidationError y getElementValidationErrorReason desde labelEditorValidation.
+- **LabelEditor/index.js**: Sustituido el bloque del sidebar izquierdo por `<LabelEditorLeftPanel ... />`; eliminadas ~310 líneas. Total: 1903 → 1593 L. Eliminados hasElementValidationError y getElementValidationErrorReason del destructuring (ahora solo en LeftPanel).
+
+### Verification Results
+- ✅ Build exitoso (next build).
+- ✅ Comportamiento preservado; contratos intactos.
+
+### Gap to 10/10
+- index.js sigue ~1593 L (objetivo < 200; extraer toolbar y panel propiedades).
+- useLabelEditor ~1087 L.
+- TypeScript, React Query, más tests.
+
+### Next Steps
+- Extraer LabelEditorToolbar y/o LabelEditorPropertyPanel para seguir reduciendo index.js.
+- Sub-bloques 2–5 según plan.
+
+---
+
+## [2026-02-15] Bloque 13: Editor de etiquetas — Toolbar + Panel propiedades
+
+**Priority**: P0
+**Risk Level**: Low
+**Rating antes: 5/10** | **Rating después: 6/10**
+
+### Problems Addressed
+- LabelEditor/index.js aún ~1473 L (toolbar y panel derecho monolíticos).
+
+### Changes Applied
+- **LabelEditorToolbar.jsx** (nuevo, ~149 L): Barra superior (dimensiones canvas, rotar, Valores de Ejemplo, atajos, Guardar, menú Import/Export/Imprimir/Eliminar) y barra inferior (zoom, nombre etiqueta). Acepta `children` para insertar el canvas entre ambas.
+- **LabelEditorPropertyPanel.jsx** (nuevo, ~943 L): Panel derecho completo (Card con cabecera por tipo de elemento, formularios por tipo, QRConfigPanel/BarcodeConfigPanel/RichParagraphConfigPanel, formato, texto, rotación, alineación). Extraído con script (líneas 463–1367 re-indentadas).
+- **LabelEditor/index.js**: Sustituidos toolbar + canvas + zoom por `<LabelEditorToolbar>…</LabelEditorToolbar>` y bloque panel (460–1369) por `<LabelEditorPropertyPanel ... />`. **1903 → 582 L.**
+
+### Verification Results
+- ✅ Build exitoso.
+- ✅ Sin errores de lint.
+
+### Gap to 10/10
+- index.js 582 L (objetivo < 200: opcional extraer más o dejar como orquestador).
+- useLabelEditor ~1087 L.
+- TypeScript, React Query, más tests (labelService, useLabelEditor).
+
+### Next Steps
+- Sub-bloques 2–5: TypeScript (labelService, tipos), React Query (getLabels/getLabel), tests, refino hasta 9/10.
+
+---
+
+## [2026-02-15] Bloque 13: Editor de etiquetas — TypeScript, React Query, tests
+
+**Priority**: P1
+**Risk Level**: Low
+**Rating antes: 6/10** | **Rating después: 8/10**
+
+### Problems Addressed
+- Sin tipos en labelService ni en respuestas API.
+- Data fetching manual (getLabels en LabelSelectorSheet, create/update/delete en useLabelEditor) sin caché ni invalidación.
+- Sin tests para labelService.
+
+### Changes Applied
+- **src/types/labelEditor.ts**: Tipos Label, LabelFormat, LabelCanvas, LabelElement, LabelElementType, LabelApiResponse.
+- **labelService.ts** (nuevo): Migración desde labelService.js; funciones tipadas (getLabel, getLabels, createLabel, updateLabel, deleteLabel, getLabelsOptions, duplicateLabel). Eliminado labelService.js.
+- **src/hooks/useLabels.ts**: useLabelsQuery(extraEnabled), useDeleteLabelMutation(), useDuplicateLabelMutation(); queryKey con getCurrentTenant(); invalidación en mutaciones.
+- **LabelSelectorSheet.jsx**: Sustituido useEffect + getLabels por useLabelsQuery(open); deleteLabel/duplicateLabel por useDeleteLabelMutation y useDuplicateLabelMutation; eliminados loadLabels y estado local de lista.
+- **useLabelEditor.js**: saveMutation y deleteMutation (useMutation); handleSave y handleDeleteLabel delegan en mutaciones; invalidación getLabelsQueryKey() en onSuccess; isSaving = saveMutation.isPending.
+- **src/services/labelService.test.ts**: 6 tests (getLabels, getLabel, createLabel, updateLabel, deleteLabel, duplicateLabel) con fetchWithTenant y labelServiceHelpers mockeados.
+
+### Verification Results
+- ✅ Build exitoso.
+- ✅ 12 tests pasan (6 labelEditorValidation + 6 labelService).
+
+### Gap to 10/10
+- useLabelEditor sigue en .js y ~1087 L; opcional migrar a TypeScript y/o extraer más lógica.
+- LabelEditorPropertyPanel ~943 L (aceptable por alcance).
+- E2E o tests de integración para flujo completo del editor (opcional).
+
+### Next Steps
+- Opcional: migrar useLabelEditor a .ts y reducir tamaño; más tests de integración.
+
+---
+
+## [2026-02-15] Bloque 13: Editor de etiquetas — useLabelEditor migrado a TypeScript
+
+**Priority**: P1
+**Risk Level**: Low
+**Rating antes: 8/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- useLabelEditor.js sin tipos; difícil mantenimiento y refactor seguro.
+
+### Changes Applied
+- **src/types/labelEditor.ts**: Añadidos LabelFieldDef, LabelFieldsMap, LabelFieldOption, DataContext, LabelDraft.
+- **src/hooks/useLabelEditor.ts** (nuevo): Migración completa desde useLabelEditor.js; interfaz UseLabelEditorReturn; tipado de estado, refs, handlers (MouseEvent para document listeners); labelFields tipado como LabelFieldsMap; eliminado useLabelEditor.js.
+- **Consumidores**: LabelEditor/index.js y FieldExamplesDialog.jsx siguen importando desde @/hooks/useLabelEditor (resolución a .ts).
+
+### Verification Results
+- ✅ Build exitoso (next build).
+- ✅ 12 tests pasan (labelService.test.ts + labelEditorValidation.test.js).
+
+### Gap to 10/10
+- LabelEditorPropertyPanel ~943 L (aceptable).
+- E2E o tests de integración para flujo completo del editor (opcional).
+
+### Next Steps
+- Cerrar Bloque 13; opcional sub-bloque 5 (useFieldEditor, sanitización RichParagraph, a11y).
+
+---
+
 ## [2026-02-15] Bloque Configuración por tenant — Migración completa
 
 **Priority**: P1

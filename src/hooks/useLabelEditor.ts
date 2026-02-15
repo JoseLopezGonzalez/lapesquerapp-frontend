@@ -1,16 +1,82 @@
-// useLabelEditor.js
+// useLabelEditor.ts
 import { createLabel, deleteLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, type RefObject, type Dispatch, type SetStateAction } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getLabelsQueryKey } from "@/hooks/useLabels";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 import { usePrintElement } from "@/hooks/usePrintElement";
 import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDate, addDays, parseDate } from "@/hooks/useLabel";
+import {
+    KEY_FIELD_TYPES,
+    validateLabelName,
+    hasDuplicateFieldKeys,
+    hasElementValidationError,
+    getElementValidationErrorReason,
+    hasAnyElementValidationErrors,
+} from "@/hooks/labelEditorValidation";
+import type { Label, LabelDraft, LabelElement, LabelElementType, LabelFieldOption, DataContext, LabelFieldsMap, LabelFormat } from "@/types/labelEditor";
 
-// labelFields.js
+/** Return type of useLabelEditor hook */
+export interface UseLabelEditorReturn {
+    elements: LabelElement[];
+    selectedElement: string | null;
+    selectedElementData: LabelElement | null;
+    zoom: number;
+    canvasRef: RefObject<HTMLDivElement | null>;
+    addElement: (type: LabelElementType) => void;
+    deleteElement: (id: string) => void;
+    updateElement: (id: string, updates: Partial<LabelElement>) => void;
+    setZoom: Dispatch<SetStateAction<number>>;
+    handleMouseDown: (e: React.MouseEvent, elementId: string) => void;
+    handleResizeMouseDown: (e: React.MouseEvent, elementId: string, corner: string) => void;
+    duplicateElement: (id: string) => void;
+    exportJSON: (name?: string) => void;
+    getFieldValue: (field: string) => string;
+    canvasWidth: number;
+    canvasHeight: number;
+    canvasRotation: number;
+    setCanvasWidth: Dispatch<SetStateAction<number>>;
+    setCanvasHeight: Dispatch<SetStateAction<number>>;
+    rotateCanvas: () => void;
+    selectedLabel: Label | LabelDraft | null;
+    labelName: string;
+    setLabelName: Dispatch<SetStateAction<string>>;
+    labelId: string | null;
+    openSelector: boolean;
+    setOpenSelector: Dispatch<SetStateAction<boolean>>;
+    showManualDialog: boolean;
+    setShowManualDialog: Dispatch<SetStateAction<boolean>>;
+    manualForm: Record<string, string>;
+    setManualForm: Dispatch<SetStateAction<Record<string, string>>>;
+    fileInputRef: RefObject<HTMLInputElement | null>;
+    handleOnClickSave: () => void;
+    handlePrint: () => void;
+    handleConfirmManual: () => void;
+    handleImportJSON: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleSelectLabel: (label: Label) => void;
+    handleCreateNewLabel: () => void;
+    handleElementRotationChange: (id: string, angle: number) => void;
+    handleSelectElementCard: (elementId: string | null) => void;
+    handleDeleteLabel: () => void;
+    getDefaultValuesFromElements: () => Record<string, string>;
+    fieldOptions: LabelFieldOption[];
+    allFieldOptions: LabelFieldOption[];
+    getFieldName: (field: string) => string;
+    isSaving: boolean;
+    clearEditor: () => void;
+    fieldExampleValues: Record<string, string>;
+    setFieldExampleValues: Dispatch<SetStateAction<Record<string, string>>>;
+    showFieldExamplesDialog: boolean;
+    setShowFieldExamplesDialog: Dispatch<SetStateAction<boolean>>;
+    autoFitToContent: (elementId: string) => void;
+    hasElementValidationError: (element: LabelElement) => boolean;
+    getElementValidationErrorReason: (element: LabelElement) => string | null;
+}
 
-export const labelFields = {
+export const labelFields: LabelFieldsMap = {
     "product.name": { label: "Nombre del Producto", defaultValue: "Pulpo Fresco" },
     "product.species.name": { label: "Especie", defaultValue: "Octopus vulgaris" },
     "product.species.faoCode": { label: "Codigo FAO", defaultValue: "OCC" },
@@ -22,41 +88,41 @@ export const labelFields = {
     "lot": { label: "Lote", defaultValue: "120225OCC01001" },
 };
 
-const defaultDataContext = Object.entries(labelFields).reduce((acc, [path, { defaultValue }]) => {
+const defaultDataContext: DataContext = Object.entries(labelFields).reduce<DataContext>((acc, [path, { defaultValue }]) => {
     const keys = path.split(".");
-    let ref = acc;
+    let ref = acc as Record<string, unknown>;
     keys.forEach((key, i) => {
         if (i === keys.length - 1) {
             ref[key] = defaultValue;
         } else {
             ref[key] = ref[key] || {};
-            ref = ref[key];
+            ref = ref[key] as Record<string, unknown>;
         }
     });
     return acc;
-}, {});
+}, {} as DataContext);
 
-const fieldOptions = Object.entries(labelFields).map(([value, { label }]) => ({
+const fieldOptions: LabelFieldOption[] = Object.entries(labelFields).map(([value, { label }]) => ({
     value,
     label,
 }));
 
-const getFieldName = (field) => labelFields[field]?.label || field;
+const getFieldName = (field: string): string => labelFields[field]?.label ?? field;
 
-const pxToMm = (px) => px / 3.78;
+const pxToMm = (px: number): number => px / 3.78;
 
 /** Escapa caracteres especiales para usar en RegExp. */
-const escapeRegex = (str) => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegex = (str: string): string => String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Reemplaza el token {{oldKey}} por {{newKey}} en content (todas las ocurrencias). */
-const replacePlaceholderInContent = (content, oldKey, newKey) => {
-    if (content == null || content === '' || !oldKey || !newKey || oldKey === newKey) return content;
+const replacePlaceholderInContent = (content: string | null | undefined, oldKey: string, newKey: string): string => {
+    if (content == null || content === '' || !oldKey || !newKey || oldKey === newKey) return content ?? '';
     const token = new RegExp(`\\{\\{${escapeRegex(oldKey)}\\}\\}`, 'g');
     return String(content).replace(token, `{{${newKey}}}`);
 };
 
 /** Misma normalización que el panel "Nombre del campo": solo [a-zA-Z0-9 ], primera letra mayúscula. */
-const normalizeKeyForStorage = (raw) => {
+const normalizeKeyForStorage = (raw: string): string => {
     const filtered = String(raw || '').replace(/[^a-zA-Z0-9 ]/g, '');
     const i = filtered.search(/[a-zA-Z]/);
     if (i < 0) return filtered;
@@ -67,7 +133,7 @@ const normalizeKeyForStorage = (raw) => {
 const NET_WEIGHT_DEFAULT = "20,000 kg";
 
 // Función para formatear netWeight según el tipo de campo
-const formatNetWeightField = (value, fieldName) => {
+const formatNetWeightField = (value: string | number, fieldName: string): string | number => {
     if (!value) return value;
     
     // Parsear el valor (puede venir como "20,000 kg" o como número)
@@ -96,7 +162,7 @@ const formatNetWeightField = (value, fieldName) => {
  * 
  * Regla de oro: La UI no interpreta estado, solo lo refleja.
  */
-const normalizeElement = (element) => {
+const normalizeElement = (element: LabelElement | null | undefined): LabelElement | null | undefined => {
     if (!element) return element;
     
     // Normalizar fontWeight: "bold" | "normal" (nunca números ni undefined)
@@ -126,22 +192,28 @@ const normalizeElement = (element) => {
         horizontalAlign = element.textAlign;
     }
     // Asegurar valores válidos
-    if (!horizontalAlign || !["left", "center", "right", "justify"].includes(horizontalAlign)) {
+    if (!horizontalAlign || !["left", "center", "right", "justify"].includes(String(horizontalAlign))) {
         horizontalAlign = "left";
+    } else {
+        horizontalAlign = String(horizontalAlign) as "left" | "center" | "right" | "justify";
     }
     
     // Normalizar verticalAlign: "start" | "end" | "center" (nunca undefined)
     let verticalAlign = element.verticalAlign || "start";
-    if (!["start", "end", "center"].includes(verticalAlign)) {
+    if (!["start", "end", "center"].includes(String(verticalAlign))) {
         verticalAlign = "start";
+    } else {
+        verticalAlign = String(verticalAlign) as "start" | "end" | "center";
     }
     
     // Normalizar direction para líneas: "horizontal" | "vertical" (nunca undefined)
     let direction = element.direction;
     if (element.type === "line") {
         direction = direction || "horizontal";
-        if (!["horizontal", "vertical"].includes(direction)) {
+        if (!["horizontal", "vertical"].includes(String(direction))) {
             direction = "horizontal";
+        } else {
+            direction = String(direction) as "horizontal" | "vertical";
         }
     }
     
@@ -151,7 +223,7 @@ const normalizeElement = (element) => {
         strokeWidth = typeof strokeWidth === "number" && strokeWidth > 0 ? strokeWidth : 0.1;
     }
     
-    const normalized = {
+    const normalized: LabelElement = {
         ...element,
         fontWeight,
         fontStyle,
@@ -165,8 +237,9 @@ const normalizeElement = (element) => {
     
     // Añadir propiedades específicas de línea si es necesario
     if (element.type === "line") {
-        normalized.direction = direction;
-        normalized.strokeWidth = strokeWidth;
+        const lineProps = normalized as LabelElement & { direction?: string; strokeWidth?: number };
+        lineProps.direction = direction as string;
+        lineProps.strokeWidth = strokeWidth as number;
     }
     
     return normalized;
@@ -175,20 +248,25 @@ const normalizeElement = (element) => {
 /**
  * Normaliza un array de elementos
  */
-const normalizeElements = (elements) => {
+const normalizeElements = (elements: unknown): LabelElement[] => {
     if (!Array.isArray(elements)) return [];
-    return elements.map(normalizeElement);
+    return elements.map(normalizeElement).filter((el): el is LabelElement => el != null);
 };
 
 /** Calcula la fecha de vista previa para un dateField (system con offset opcional, fieldOffset). Evita referencias circulares. */
-function getDateFieldPreviewValue(el, elementsList, visited = new Set(), valuesCache = null) {
+function getDateFieldPreviewValue(
+    el: LabelElement | null | undefined,
+    elementsList: LabelElement[],
+    visited: Set<string> = new Set(),
+    valuesCache: Record<string, string> | null = null
+): string {
     if (!el || el.type !== 'dateField' || !el.key) return '';
-    const key = el.key;
+    const key = String(el.key);
     if (visited.has(key)) return '';
     if (valuesCache && valuesCache[key] !== undefined) return valuesCache[key];
     const mode = el.dateMode || 'system';
     if (mode === 'manual') {
-        const v = el.sample || '';
+        const v = String(el.sample ?? '');
         if (valuesCache) valuesCache[key] = v;
         return v;
     }
@@ -202,7 +280,8 @@ function getDateFieldPreviewValue(el, elementsList, visited = new Set(), valuesC
     if (mode === 'fieldOffset' && el.fieldRef) {
         const refKey = String(el.fieldRef).trim();
         const refEl = elementsList.find((e) => e.type === 'dateField' && String(e.key || '').trim() === refKey);
-        let refStr = (valuesCache && valuesCache[refEl?.key] !== undefined) ? valuesCache[refEl.key] : (refEl ? getDateFieldPreviewValue(refEl, elementsList, visited, valuesCache) : '');
+        const refKeyCache = refEl ? String(refEl.key ?? '') : '';
+        let refStr = (valuesCache && refKeyCache && valuesCache[refKeyCache] !== undefined) ? valuesCache[refKeyCache] : (refEl ? getDateFieldPreviewValue(refEl, elementsList, visited, valuesCache) : '');
         if (!refStr && refEl?.dateMode === 'manual') refStr = formatDate(today);
         const refDate = parseDate(refStr);
         const v = refDate ? formatDate(addDays(refDate, el.fieldOffsetDays ?? 0)) : (refStr || '');
@@ -213,15 +292,15 @@ function getDateFieldPreviewValue(el, elementsList, visited = new Set(), valuesC
     return '';
 }
 
-export function useLabelEditor(dataContext = defaultDataContext) {
-    const [selectedLabel, setSelectedLabel] = useState(null);
-    const [elements, setElements] = useState([]);
+export function useLabelEditor(dataContext: DataContext = defaultDataContext): UseLabelEditorReturn {
+    const [selectedLabel, setSelectedLabel] = useState<Label | LabelDraft | null>(null);
+    const [elements, setElements] = useState<LabelElement[]>([]);
     const [labelName, setLabelName] = useState("");
-    const [labelId, setLabelId] = useState(null);
+    const [labelId, setLabelId] = useState<string | null>(null);
     
-    const [fieldExampleValues, setFieldExampleValues] = useState(() => {
+    const [fieldExampleValues, setFieldExampleValues] = useState<Record<string, string>>(() => {
         // Inicializar con los valores por defecto de labelFields
-        const initialValues = {};
+        const initialValues: Record<string, string> = {};
         Object.keys(labelFields).forEach(key => {
             initialValues[key] = labelFields[key].defaultValue;
         });
@@ -229,52 +308,52 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     });
     const [showFieldExamplesDialog, setShowFieldExamplesDialog] = useState(false);
 
-    const [selectedElement, setSelectedElement] = useState(null);
+    const [selectedElement, setSelectedElement] = useState<string | null>(null);
 
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [isResizing, setIsResizing] = useState(false);
-    const [resizeCorner, setResizeCorner] = useState(null);
-    const [resizeStart, setResizeStart] = useState(null);
+    const [resizeCorner, setResizeCorner] = useState<string | null>(null);
+    const [resizeStart, setResizeStart] = useState<{ x: number; y: number; width: number; height: number; elX: number; elY: number } | null>(null);
     const [zoom, setZoom] = useState(1);
     const [canvasWidth, setCanvasWidth] = useState(400);
     const [canvasHeight, setCanvasHeight] = useState(300);
     const [canvasRotation, setCanvasRotation] = useState(0);
-    const canvasRef = useRef(null);
-    const mouseDownPosRef = useRef(null);
+    const canvasRef = useRef<HTMLDivElement | null>(null);
+    const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
     const wasSelectedOnMouseDownRef = useRef(false);
-    const clickedElementIdRef = useRef(null);
+    const clickedElementIdRef = useRef<string | null>(null);
     const { data: session } = useSession();
 
     const [openSelector, setOpenSelector] = useState(false);
-    const [manualValues, setManualValues] = useState({});
+    const [manualValues, setManualValues] = useState<Record<string, string>>({});
     const [showManualDialog, setShowManualDialog] = useState(false);
-    const [manualForm, setManualForm] = useState({});
-    const [isSaving, setIsSaving] = useState(false);
-    const fileInputRef = useRef(null);
+    const [manualForm, setManualForm] = useState<Record<string, string>>({});
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { onPrint } = usePrintElement({ id: 'print-area', width: canvasWidth / 4, height: canvasHeight / 4 });
 
 
 
 
     const manualFieldOptions = useMemo(
-        () => {
-            const seen = new Set();
+        (): LabelFieldOption[] => {
+            const seen = new Set<string>();
             return elements
                 .filter(el => (el.type === 'manualField' || el.type === 'selectField' || el.type === 'checkboxField' || el.type === 'dateField') && el.key)
                 .filter(el => {
-                    if (seen.has(el.key)) return false;
-                    seen.add(el.key);
+                    const k = String(el.key ?? '');
+                    if (seen.has(k)) return false;
+                    seen.add(k);
                     return true;
                 })
-                .map(el => ({ value: el.key, label: el.key }));
+                .map(el => ({ value: String(el.key ?? ''), label: String(el.key ?? '') }));
         },
         [elements]
     );
 
     const allFieldOptions = useMemo(
-        () => {
-            const baseOptions = [...fieldOptions, ...manualFieldOptions];
+        (): LabelFieldOption[] => {
+            const baseOptions: LabelFieldOption[] = [...fieldOptions, ...manualFieldOptions];
             // Agregar campos virtuales para netWeight con formatos específicos
             const netWeightField = fieldOptions.find(opt => opt.value === 'netWeight');
             if (netWeightField) {
@@ -289,51 +368,53 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         [manualFieldOptions, fieldOptions]
     );
 
-    const getDefaultValuesFromElements = useCallback(() => {
-        const values = {};
+    const getDefaultValuesFromElements = useCallback((): Record<string, string> => {
+        const values: Record<string, string> = {};
 
-        const extractPlaceholders = (text) => {
+        const extractPlaceholders = (text: string | null | undefined): string[] => {
             const matches = text?.match(/{{([^}]+)}}/g) || [];
             return matches.map(m => m.slice(2, -2));
         };
 
-        const seenFields = new Set();
+        const seenFields = new Set<string>();
 
         elements.forEach(el => {
             // 🔹 Campos dinámicos directos tipo "field"
-            if (el.type === 'field' && el.field && labelFields[el.field] && !seenFields.has(el.field)) {
-                values[el.field] = fieldExampleValues[el.field] || labelFields[el.field].defaultValue;
-                seenFields.add(el.field);
+            const fieldStr = el.field != null ? String(el.field) : '';
+            if (el.type === 'field' && fieldStr && labelFields[fieldStr] && !seenFields.has(fieldStr)) {
+                values[fieldStr] = fieldExampleValues[fieldStr] || labelFields[fieldStr].defaultValue;
+                seenFields.add(fieldStr);
             }
 
             // 🔹 Campos manuales tipo "manualField"
-            if (el.type === 'manualField' && el.key && !seenFields.has(el.key)) {
-                values[el.key] = el.sample || '';
-                seenFields.add(el.key);
+            const keyStr = el.key != null ? String(el.key) : '';
+            if (el.type === 'manualField' && keyStr && !seenFields.has(keyStr)) {
+                values[keyStr] = String(el.sample ?? '');
+                seenFields.add(keyStr);
             }
 
             // 🔹 Campos select tipo "selectField" (se rellenan al imprimir, en editor usamos sample)
-            if (el.type === 'selectField' && el.key && !seenFields.has(el.key)) {
-                values[el.key] = el.sample || (Array.isArray(el.options) && el.options[0]) || '';
-                seenFields.add(el.key);
+            if (el.type === 'selectField' && keyStr && !seenFields.has(keyStr)) {
+                values[keyStr] = String(el.sample ?? (Array.isArray(el.options) && el.options[0]) ?? '');
+                seenFields.add(keyStr);
             }
 
             // 🔹 Campos checkbox tipo "checkboxField" (en editor mostramos el contenido; al imprimir depende del check)
-            if (el.type === 'checkboxField' && el.key && !seenFields.has(el.key)) {
-                values[el.key] = el.content || '';
-                seenFields.add(el.key);
+            if (el.type === 'checkboxField' && keyStr && !seenFields.has(keyStr)) {
+                values[keyStr] = String(el.content ?? '');
+                seenFields.add(keyStr);
             }
 
             // 🔹 Campos fecha tipo "dateField" (manual → sample; resto → calculado para vista previa; fieldOffset usa cache)
-            if (el.type === 'dateField' && el.key && !seenFields.has(el.key)) {
-                values[el.key] = (el.dateMode === 'manual' ? (el.sample || '') : getDateFieldPreviewValue(el, elements, new Set(), values)) || '';
-                seenFields.add(el.key);
+            if (el.type === 'dateField' && keyStr && !seenFields.has(keyStr)) {
+                values[keyStr] = String(el.dateMode === 'manual' ? (el.sample ?? '') : getDateFieldPreviewValue(el, elements, new Set(), values)) || '';
+                seenFields.add(keyStr);
             }
 
             // 🔹 Campos usados como {{placeholders}} en QR, Barcode, Parrafos ricos...
             const contents = [el.html, el.qrContent, el.barcodeContent];
             contents.forEach(content => {
-                extractPlaceholders(content).forEach(field => {
+                extractPlaceholders(typeof content === 'string' ? content : undefined).forEach(field => {
                     if (!seenFields.has(field)) {
                         values[field] = fieldExampleValues[field] || labelFields[field]?.defaultValue || '';
                         seenFields.add(field);
@@ -345,58 +426,44 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return values;
     }, [elements, fieldExampleValues]);
 
-    const validateLabelName = (name) => {
-        if (!name || name.trim().length === 0) {
-            return "El nombre no puede estar vacío";
-        }
-        if (name.length > 100) {
-            return "El nombre no puede exceder 100 caracteres";
-        }
-        // Permitir paréntesis para casos como "Nombre (Copia)"
-        if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ()]+$/.test(name)) {
-            return "El nombre contiene caracteres no permitidos";
-        }
-        return null;
-    };
+    const queryClient = useQueryClient();
+    type SaveMutationVars = { labelId?: string; labelName: string; labelFormat: LabelFormat; token?: string };
+    const saveMutation = useMutation({
+        mutationFn: async ({ labelId: id, labelName: name, labelFormat: format, token: t }: SaveMutationVars) => {
+            const token = t ?? '';
+            if (id) return updateLabel(id, name, format, token);
+            return createLabel(name, format, token);
+        },
+        onSuccess: (data, variables) => {
+            if (!variables.labelId && data?.data) {
+                setLabelId(data.data.id);
+                setSelectedLabel(data.data);
+            }
+            toast.success(`Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.`, getToastTheme());
+            queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+        },
+        onError: (err: Error) => {
+            const e = err as Error & { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } } };
+            const msg = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'Error al guardar etiqueta.';
+            toast.error(msg, getToastTheme());
+        },
+    });
+    type DeleteMutationVars = { labelId: string; token?: string };
+    const deleteMutation = useMutation({
+        mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
+        onSuccess: () => {
+            toast.success("Etiqueta eliminada correctamente.", getToastTheme());
+            clearEditor();
+            queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+        },
+        onError: (err: Error) => {
+            const e = err as Error & { userMessage?: string; data?: { userMessage?: string } };
+            const msg = e?.userMessage || e?.data?.userMessage || e?.message || 'Error al eliminar etiqueta.';
+            toast.error(msg, getToastTheme());
+        },
+    });
 
-    const KEY_FIELD_TYPES = ['manualField', 'selectField', 'checkboxField', 'dateField'];
-    const hasDuplicateFieldKeys = (elementsList) => {
-        const keys = new Set();
-        for (const el of elementsList || []) {
-            if (!KEY_FIELD_TYPES.includes(el.type)) continue;
-            const k = String(el.key || '').trim();
-            if (!k) continue;
-            if (keys.has(k)) return true;
-            keys.add(k);
-        }
-        return false;
-    };
-
-    /** Indica si un elemento tiene error de validación (key vacío o select sin opciones). */
-    const hasElementValidationError = (el) => {
-        if (!el) return false;
-        if (KEY_FIELD_TYPES.includes(el.type) && String(el.key || '').trim() === '') return true;
-        if (el.type === 'selectField') {
-            const opts = Array.isArray(el.options) ? el.options : [];
-            if (!opts.some((o) => String(o || '').trim() !== '')) return true;
-        }
-        return false;
-    };
-
-    /** Razón del error para mostrar en UI: 'key' | 'options' | null */
-    const getElementValidationErrorReason = (el) => {
-        if (!el) return null;
-        if (KEY_FIELD_TYPES.includes(el.type) && String(el.key || '').trim() === '') return 'key';
-        if (el.type === 'selectField') {
-            const opts = Array.isArray(el.options) ? el.options : [];
-            if (!opts.some((o) => String(o || '').trim() !== '')) return 'options';
-        }
-        return null;
-    };
-
-    const hasAnyElementValidationErrors = (elementsList) => {
-        return (elementsList || []).some((el) => hasElementValidationError(el));
-    };
+    const isSaving = saveMutation.isPending;
 
     const handleSave = async () => {
         const validationError = validateLabelName(labelName);
@@ -413,69 +480,23 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             return;
         }
         const token = session?.user?.accessToken;
-
         const labelFormat = {
             elements,
-            canvas: {
-                width: canvasWidth,
-                height: canvasHeight,
-                rotation: canvasRotation,
-            },
+            canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
         };
-
-        setIsSaving(true);
-        try {
-            let result;
-            if (labelId) {
-                result = await updateLabel(labelId, labelName, labelFormat, token);
-            } else {
-                result = await createLabel(labelName, labelFormat, token);
-                if (result?.data?.id) {
-                    setLabelId(result.data.id);
-                    setSelectedLabel(result.data);
-                }
-            }
-
-            toast.success(`Etiqueta ${labelId ? 'actualizada' : 'guardada'} correctamente.`);
-            return result;
-        } catch (err) {
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al guardar etiqueta.';
-            toast.error(errorMessage);
-            console.error(err);
-        } finally {
-            setIsSaving(false);
-        }
+        saveMutation.mutate({ labelId: labelId || undefined, labelName, labelFormat, token });
     };
 
     const handleDeleteLabel = async () => {
-        const token = session?.user?.accessToken;
-        try {
-            if (!labelId) {
-                toast.error("No hay etiqueta seleccionada para eliminar.");
-                return;
-            }
-            deleteLabel(labelId, token)
-                .then(() => {
-                    toast.success("Etiqueta eliminada correctamente.");
-                    clearEditor(); // Limpiar el editor completamente
-                })
-                .catch((err) => {
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar etiqueta.';
-                    toast.error(errorMessage);
-                    console.error(err);
-                });
-        } catch (err) {
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar etiqueta.';
-            toast.error(errorMessage);
-            console.error(err);
+        if (!labelId) {
+            toast.error("No hay etiqueta seleccionada para eliminar.", getToastTheme());
+            return;
         }
+        deleteMutation.mutate({ labelId, token: session?.user?.accessToken });
     };
 
     /* Mejorable, se puede extraer a initial element por cada tipo */
-    const addElement = (type) => {
+    const addElement = (type: LabelElementType) => {
         const newElement = {
             id: `element-${Date.now()}`,
             type,
@@ -525,24 +546,24 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             strokeWidth: type === "line" ? 0.1 : undefined,
         };
         // Normalizar antes de agregar
-        const normalizedElement = normalizeElement(newElement);
+        const normalizedElement = normalizeElement(newElement) ?? newElement as LabelElement;
         setElements((prev) => [...prev, normalizedElement]);
         setSelectedElement(normalizedElement.id);
     };
 
-    const deleteElement = (id) => {
+    const deleteElement = (id: string) => {
         setElements((prev) => prev.filter((el) => el.id !== id));
         if (selectedElement === id) setSelectedElement(null);
     };
 
-    const duplicateElement = (id) => {
+    const duplicateElement = (id: string) => {
         const el = elements.find((e) => e.id === id);
         if (!el) return;
-        let copy = { ...el, id: `element-${Date.now()}`, x: el.x + 10, y: el.y + 10 };
-        if (KEY_FIELD_TYPES.includes(el.type) && el.key) {
+        let copy: LabelElement = { ...el, id: `element-${Date.now()}`, x: el.x + 10, y: el.y + 10 };
+        if (KEY_FIELD_TYPES.includes(el.type as string) && el.key) {
             const existingKeys = new Set(
                 elements
-                    .filter((e) => KEY_FIELD_TYPES.includes(e.type))
+                    .filter((e) => KEY_FIELD_TYPES.includes(e.type as string))
                     .map((e) => String(e.key || '').trim())
                     .filter(Boolean)
             );
@@ -559,7 +580,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         setSelectedElement(copy.id);
     };
 
-    const updateElement = (id, updates) => {
+    const updateElement = (id: string, updates: Partial<LabelElement>) => {
         setElements((prev) => {
             const target = prev.find((el) => el.id === id);
             const isKeyField = target && KEY_FIELD_TYPES.includes(target.type);
@@ -567,10 +588,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
             const oldKey = target ? String(target.key || '').trim() : '';
             const shouldReplicateKey = isKeyField && oldKey !== '' && newKey !== '' && oldKey !== newKey;
 
-            let updated = prev.map((el) => {
+            let updated: LabelElement[] = prev.map((el) => {
                 if (el.id === id) {
                     const merged = { ...el, ...updates };
-                    return { ...normalizeElement(merged) };
+                    const normalized = normalizeElement(merged);
+                    return (normalized ?? merged) as LabelElement;
                 }
                 return el;
             });
@@ -580,10 +602,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                     const hasContent = el.qrContent || el.html || el.barcodeContent;
                     if (!hasContent) return el;
                     const next = { ...el };
-                    if (el.qrContent) next.qrContent = replacePlaceholderInContent(el.qrContent, oldKey, newKey);
-                    if (el.html) next.html = replacePlaceholderInContent(el.html, oldKey, newKey);
-                    if (el.barcodeContent) next.barcodeContent = replacePlaceholderInContent(el.barcodeContent, oldKey, newKey);
-                    return next;
+                    if (el.qrContent) next.qrContent = replacePlaceholderInContent(el.qrContent as string, oldKey, newKey);
+                    if (el.html) next.html = replacePlaceholderInContent(el.html as string, oldKey, newKey);
+                    if (el.barcodeContent) next.barcodeContent = replacePlaceholderInContent(el.barcodeContent as string, oldKey, newKey);
+                    return next as LabelElement;
                 });
             }
 
@@ -591,16 +613,16 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         });
     };
 
-    const getFieldValue = (field) => {
+    const getFieldValue = (field: string): string => {
         const keys = field.split(".");
-        let value = dataContext;
+        let value: unknown = dataContext;
         for (const key of keys) {
-            value = value?.[key];
+            value = (value as Record<string, unknown>)?.[key];
         }
-        return value?.toString() || field;
+        return value != null ? String(value) : field;
     };
 
-    const handleMouseDown = (e, elementId) => {
+    const handleMouseDown = (e: React.MouseEvent, elementId: string) => {
         e.preventDefault();
         
         // Guardar el elementId y si el elemento ya estaba seleccionado
@@ -630,7 +652,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
     };
 
-    const handleResizeMouseDown = (e, elementId, corner) => {
+    const handleResizeMouseDown = (e: React.MouseEvent, elementId: string, corner: string) => {
         e.preventDefault();
         setSelectedElement(elementId);
         setIsResizing(true);
@@ -650,7 +672,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     };
 
     const handleMouseMove = useCallback(
-        (e) => {
+        (e: MouseEvent) => {
             if ((!isDragging && !isResizing) || !canvasRef.current) return;
 
             // Si el elemento estaba seleccionado y ahora hay movimiento, seleccionarlo y empezar a arrastrar
@@ -717,7 +739,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         [isDragging, isResizing, selectedElement, dragOffset, resizeStart, resizeCorner, zoom, canvasWidth, canvasHeight, elements]
     );
 
-    const handleMouseUp = useCallback((e) => {
+    const handleMouseUp = useCallback((e: MouseEvent) => {
         // Si el elemento ya estaba seleccionado y no hubo movimiento significativo, deseleccionarlo
         if (wasSelectedOnMouseDownRef.current && mouseDownPosRef.current && e && clickedElementIdRef.current) {
             const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
@@ -737,9 +759,9 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         clickedElementIdRef.current = null;
     }, []);
 
-    const handleSelectElementCard = (elementId) => {
+    const handleSelectElementCard = (elementId: string | null) => {
         elementId === selectedElement ? setSelectedElement(null) : setSelectedElement(elementId);
-    }
+    };
 
     useEffect(() => {
         if (isDragging || isResizing) {
@@ -767,10 +789,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         URL.revokeObjectURL(url);
     };
 
-    const importJSON = (jsonData) => {
+    const importJSON = (jsonData: { elements?: unknown[]; canvas?: { width?: number; height?: number; rotation?: number }; name?: string }) => {
         if (!jsonData) return;
         if (Array.isArray(jsonData.elements)) {
-            const newElements = jsonData.elements.map((el, i) => ({ id: `element-${Date.now()}-${i}`, ...el }));
+            const newElements = jsonData.elements.map((el: unknown, i: number) => ({ id: `element-${Date.now()}-${i}`, ...(el as object) }));
             // Normalizar elementos al importar JSON
             const normalizedElements = normalizeElements(newElements);
             setElements(normalizedElements);
@@ -783,32 +805,35 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         return jsonData.name || "";
     };
 
-    const validateLabelJSON = (data) => {
+    const validateLabelJSON = (data: unknown): boolean => {
         if (!data || typeof data !== 'object') {
             throw new Error('El archivo JSON no es válido');
         }
-        if (!Array.isArray(data.elements)) {
+        const d = data as { elements?: unknown; canvas?: { width?: number; height?: number } };
+        if (!Array.isArray(d.elements)) {
             throw new Error('El formato de elementos no es válido. Debe ser un array.');
         }
-        if (!data.canvas || typeof data.canvas.width !== 'number' || typeof data.canvas.height !== 'number') {
+        if (!d.canvas || typeof d.canvas.width !== 'number' || typeof d.canvas.height !== 'number') {
             throw new Error('El formato del canvas no es válido. Debe tener width y height numéricos.');
         }
         return true;
     };
 
-    const handleImportJSON = (e) => {
+    const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = (ev: ProgressEvent<FileReader>) => {
             try {
-                const data = JSON.parse(ev.target.result);
+                const result = ev.target?.result;
+                if (typeof result !== 'string') return;
+                const data = JSON.parse(result);
                 validateLabelJSON(data);
                 const name = importJSON(data);
-                setLabelName(name);
+                setLabelName(name ?? '');
                 toast.success('Etiqueta importada correctamente', getToastTheme());
             } catch (err) {
-                const errorMessage = err.message || 'Error al importar la etiqueta';
+                const errorMessage = err instanceof Error ? err.message : 'Error al importar la etiqueta';
                 toast.error(errorMessage, getToastTheme());
                 console.error('Error al importar etiqueta:', err);
             }
@@ -819,15 +844,15 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     // Normalizar el elemento seleccionado antes de pasarlo a la UI
     // Usar useMemo para hacerlo reactivo y forzar re-render cuando cambia
     // Crear un objeto nuevo para forzar detección de cambios en React
-    const selectedElementData = useMemo(() => {
+    const selectedElementData = useMemo((): LabelElement | null => {
         if (!selectedElement) return null;
         const element = elements.find((el) => el.id === selectedElement);
         if (!element) return null;
         // Crear un objeto completamente nuevo para forzar detección de cambios
-        return normalizeElement({ ...element });
+        return normalizeElement({ ...element }) ?? null;
     }, [selectedElement, elements]);
 
-    const rotateCanvasTo = useCallback((angle) => {
+    const rotateCanvasTo = useCallback((angle: number) => {
         const diff = (angle - canvasRotation + 360) % 360;
         if (diff === 0) return;
         setElements((prev) => prev.map((el) => {
@@ -851,7 +876,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         rotateCanvasTo(next);
     }, [canvasRotation, rotateCanvasTo]);
 
-    const handleElementRotationChange = (id, angle) => {
+    const handleElementRotationChange = (id: string, angle: number) => {
         const element = elements.find(el => el.id === id);
         if (!element) return;
         const prevMod = (element.rotation || 0) % 180;
@@ -863,11 +888,11 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         updateElement(id, { rotation: angle, width, height });
     };
 
-    const handleCanvasRotationChange = (angle) => {
+    const handleCanvasRotationChange = (angle: number) => {
         rotateCanvasTo(angle);
     };
 
-    const handleSelectLabel = (label) => {
+    const handleSelectLabel = (label: Label) => {
         const labelId = label.id
         const labelName = label.name || "";
         const format = label.format
@@ -908,12 +933,13 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
 
     const handlePrint = () => {
-        const manualFields = elements.filter(el => el.type === 'manualField');
-        if (manualFields.length > 0) {
-            const formValues = {};
-            manualFields.forEach(el => {
-                formValues[el.key] = manualValues[el.key] || el.sample || '';
-            });
+            const manualFields = elements.filter(el => el.type === 'manualField');
+            if (manualFields.length > 0) {
+                const formValues: Record<string, string> = {};
+                manualFields.forEach(el => {
+                    const k = String(el.key ?? '');
+                    formValues[k] = manualValues[k] || String(el.sample ?? '') || '';
+                });
             setManualForm(formValues);
             setShowManualDialog(true);
         } else {
@@ -937,7 +963,7 @@ export function useLabelEditor(dataContext = defaultDataContext) {
     /**
      * Ajusta automáticamente el tamaño del elemento seleccionado al contenido
      */
-    const autoFitToContent = (elementId) => {
+    const autoFitToContent = (elementId: string) => {
         if (!elementId || !canvasRef.current) return;
         
         const element = elements.find(el => el.id === elementId);
@@ -951,19 +977,19 @@ export function useLabelEditor(dataContext = defaultDataContext) {
         }
 
         // Función auxiliar para obtener valores de ejemplo (similar a LabelElement)
-        const getExampleValue = (key) => {
+        const getExampleValue = (key: string): string => {
             // Si es un campo de netWeight con formato específico, aplicar el formato
             if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
                 // Usar el valor de netWeight si existe, si no usar el valor por defecto
                 const baseValue = fieldExampleValues['netWeight'] || labelFields['netWeight']?.defaultValue || NET_WEIGHT_DEFAULT;
-                return formatNetWeightField(baseValue, key);
+                return String(formatNetWeightField(baseValue, key));
             }
             // Usar fieldExampleValues primero, luego defaultValue de labelFields, o el sample para campos manuales
             return fieldExampleValues[key] || labelFields[key]?.defaultValue || '';
         };
 
         // Función para reemplazar placeholders en texto/HTML con valores de ejemplo
-        const replacePlaceholders = (str) => {
+        const replacePlaceholders = (str: string): string => {
             if (!str) return '';
             return str.replace(/{{([^}]+)}}/g, (_, field) => {
                 const value = getExampleValue(field);
@@ -984,12 +1010,12 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
         try {
             const tempElement = document.createElement('div');
-            tempElement.style.fontSize = `${element.fontSize || 2.5}mm`;
-            tempElement.style.fontWeight = element.fontWeight || 'normal';
-            tempElement.style.fontStyle = element.fontStyle || 'normal';
-            tempElement.style.textDecoration = element.textDecoration || 'none';
-            tempElement.style.textTransform = element.textTransform || 'none';
-            tempElement.style.color = element.color || '#000000';
+            tempElement.style.fontSize = `${Number(element.fontSize) || 2.5}mm`;
+            tempElement.style.fontWeight = String(element.fontWeight ?? 'normal');
+            tempElement.style.fontStyle = String(element.fontStyle ?? 'normal');
+            tempElement.style.textDecoration = String(element.textDecoration ?? 'none');
+            tempElement.style.textTransform = String(element.textTransform ?? 'none');
+            tempElement.style.color = String(element.color ?? '#000000');
             tempElement.style.fontFamily = 'inherit';
             tempElement.style.lineHeight = '1.2';
             
@@ -1007,28 +1033,28 @@ export function useLabelEditor(dataContext = defaultDataContext) {
 
             // Obtener el contenido según el tipo usando valores de ejemplo
             if (element.type === 'text') {
-                tempElement.textContent = element.text || '';
+                tempElement.textContent = String(element.text ?? '');
             } else if (element.type === 'field') {
                 // Usar valores de ejemplo en lugar de getFieldValue
-                const exampleValue = getExampleValue(element.field || '');
-                tempElement.textContent = exampleValue || element.field || '';
+                const fieldKey = String(element.field ?? '');
+                const exampleValue = getExampleValue(fieldKey);
+                tempElement.textContent = exampleValue || fieldKey;
             } else if (element.type === 'manualField') {
                 // Usar sample si existe, sino usar valor de ejemplo
-                tempElement.textContent = element.sample || getExampleValue(element.key || '') || '';
+                tempElement.textContent = String(element.sample ?? getExampleValue(String(element.key ?? '')) ?? '');
             } else if (element.type === 'richParagraph') {
                 // Para richParagraph, reemplazar placeholders con valores de ejemplo antes de medir
-                const htmlWithExamples = replacePlaceholders(element.html || '');
+                const htmlWithExamples = replacePlaceholders(String(element.html ?? ''));
                 // Limpiar fontSize inline para que use el del contenedor
-                const processHtml = (html) => {
+                const processHtml = (html: string): string => {
                     if (!html) return '';
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-                    const removeFontSize = (node) => {
+                    const removeFontSize = (node: Node): void => {
                         if (node.nodeType === Node.ELEMENT_NODE) {
-                            if (node.style) {
-                                node.style.removeProperty('font-size');
-                            }
-                            Array.from(node.children).forEach(child => removeFontSize(child));
+                            const el = node as HTMLElement;
+                            if (el.style) el.style.removeProperty('font-size');
+                            Array.from(node.childNodes).forEach(child => removeFontSize(child));
                         }
                     };
                     removeFontSize(doc.body);
@@ -1037,10 +1063,10 @@ export function useLabelEditor(dataContext = defaultDataContext) {
                 tempElement.innerHTML = processHtml(htmlWithExamples);
             } else if (element.type === 'sanitaryRegister') {
                 // Para sanitaryRegister, construir el texto
-                const parts = [];
-                if (element.countryCode) parts.push(element.countryCode);
-                if (element.approvalNumber) parts.push(element.approvalNumber);
-                if (element.suffix) parts.push(element.suffix);
+                const parts: string[] = [];
+                if (element.countryCode) parts.push(String(element.countryCode));
+                if (element.approvalNumber) parts.push(String(element.approvalNumber));
+                if (element.suffix) parts.push(String(element.suffix));
                 tempElement.textContent = parts.join(' ');
             }
 

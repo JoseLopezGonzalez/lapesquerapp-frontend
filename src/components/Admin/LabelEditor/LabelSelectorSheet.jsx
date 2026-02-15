@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardContent } from "@/components/ui/card"
-import { getLabels, deleteLabel, duplicateLabel } from "@/services/labelService"
-import { useSession } from "next-auth/react"
+import { useLabelsQuery, useDeleteLabelMutation, useDuplicateLabelMutation } from "@/hooks/useLabels"
 import Loader from "@/components/Utilities/Loader"
 import { Trash2, CopyPlus, Tag, Search, Plus, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
@@ -236,109 +235,62 @@ const exampleModels = [
 ]
 
 export default function LabelSelectorSheet({ open, onOpenChange, onSelect, children, onNew, onDelete }) {
-  const [models, setModels] = useState([])
-  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
-  const [hasLoaded, setHasLoaded] = useState(false)
-  const [deletingId, setDeletingId] = useState(null)
-  const [duplicatingId, setDuplicatingId] = useState(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [labelToDelete, setLabelToDelete] = useState(null)
-  const { data: session, status } = useSession();
+  const [deletingId, setDeletingId] = useState(null)
+  const [duplicatingId, setDuplicatingId] = useState(null)
+
+  const { data: labels = [], isLoading: loading, error } = useLabelsQuery(open)
+  const deleteMutation = useDeleteLabelMutation()
+  const duplicateMutation = useDuplicateLabelMutation()
+
+  useEffect(() => {
+    if (error) toast.error("Error al cargar las etiquetas", getToastTheme())
+  }, [error])
 
   const handleOnClickNewLabel = () => {
     onNew && onNew()
     onOpenChange(false)
   }
 
-  const loadLabels = () => {
-    if (status !== "authenticated" || !session?.user?.accessToken) return;
-    
-    setLoading(true);
-    const token = session.user.accessToken;
-
-    getLabels(token)
-      .then((data) => {
-        setModels(data);
-        setHasLoaded(true);
-      })
-      .catch((error) => {
-        console.error("Error al cargar los modelos de etiqueta:", error);
-        toast.error("Error al cargar las etiquetas", getToastTheme());
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }
-
   const handleDeleteClick = (labelId, labelName, e) => {
-    e.stopPropagation();
-    setLabelToDelete({ id: labelId, name: labelName });
-    setDeleteDialogOpen(true);
+    e.stopPropagation()
+    setLabelToDelete({ id: labelId, name: labelName })
+    setDeleteDialogOpen(true)
   }
 
   const handleDeleteConfirm = async () => {
-    if (!labelToDelete) return;
-
-    setDeletingId(labelToDelete.id);
-    const token = session?.user?.accessToken;
-
+    if (!labelToDelete) return
+    setDeletingId(labelToDelete.id)
     try {
-      await deleteLabel(labelToDelete.id, token);
-      toast.success("Etiqueta eliminada correctamente", getToastTheme());
-      // Actualizar estado local sin recargar desde el servidor
-      setModels(prevModels => prevModels.filter(m => m.id !== labelToDelete.id));
-      // Limpiar el editor si se eliminó la etiqueta que estaba siendo editada
-      if (onDelete) {
-        onDelete(labelToDelete.id);
-      }
-      setDeleteDialogOpen(false);
-      setLabelToDelete(null);
-    } catch (error) {
-      const errorMessage = error.message || 'Error al eliminar la etiqueta';
-      toast.error(errorMessage, getToastTheme());
-      console.error("Error al eliminar etiqueta:", error);
+      await deleteMutation.mutateAsync({ labelId: labelToDelete.id })
+      toast.success("Etiqueta eliminada correctamente", getToastTheme())
+      if (onDelete) onDelete(labelToDelete.id)
+      setDeleteDialogOpen(false)
+      setLabelToDelete(null)
+    } catch (err) {
+      toast.error(err?.message || "Error al eliminar la etiqueta", getToastTheme())
     } finally {
-      setDeletingId(null);
+      setDeletingId(null)
     }
   }
 
   const handleDuplicate = async (labelId, e) => {
-    e.stopPropagation();
-    
-    setDuplicatingId(labelId);
-    const token = session?.user?.accessToken;
-
+    e.stopPropagation()
+    setDuplicatingId(labelId)
     try {
-      const result = await duplicateLabel(labelId, token);
-      toast.success("Etiqueta duplicada correctamente", getToastTheme());
-      // Agregar la nueva etiqueta al estado local sin recargar desde el servidor
-      if (result?.data) {
-        setModels(prevModels => [...prevModels, result.data]);
-        // Limpiar el editor si se duplicó la etiqueta que estaba siendo editada
-        if (onDelete) {
-          onDelete(labelId);
-        }
-        // NO seleccionar automáticamente la nueva etiqueta - el usuario debe hacerlo conscientemente
-      }
-    } catch (error) {
-      const errorMessage = error.message || 'Error al duplicar la etiqueta';
-      toast.error(errorMessage, getToastTheme());
-      console.error("Error al duplicar etiqueta:", error);
+      await duplicateMutation.mutateAsync({ labelId })
+      toast.success("Etiqueta duplicada correctamente", getToastTheme())
+      if (onDelete) onDelete(labelId)
+    } catch (err) {
+      toast.error(err?.message || "Error al duplicar la etiqueta", getToastTheme())
     } finally {
-      setDuplicatingId(null);
+      setDuplicatingId(null)
     }
   }
 
-  useEffect(() => {
-    if (status !== "authenticated") return; // Esperar a que esté autenticado
-    if (!session?.user?.accessToken) return;
-    if (hasLoaded && !open) return; // No recargar si ya se cargó y está cerrado
-
-    loadLabels();
-  }, [status, session, open, hasLoaded]);
-
-  const filtered = models.filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = labels.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()))
 
   const handleSelect = (model) => {
     onSelect && onSelect(model)
