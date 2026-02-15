@@ -41,3 +41,19 @@
 **Log**: `docs/audits/nextjs-evolution-log.md`  
 **Rating después**: 5/10  
 **Próximo**: Sub-bloque 2 (useStore, useStores) o siguiente módulo
+
+---
+
+## Sub-bloque 2 — useStoreData + useStores React Query
+
+**Status**: ✅ Completado  
+**Rating después**: 6/10  
+**Próximo**: Sub-bloque 3 (dividir useStore en más hooks) o siguiente módulo
+
+---
+
+## Sub-bloque 3 — useStoreDialogs + useStorePositions
+
+**Status**: ✅ Completado  
+**Rating después**: 7/10  
+**useStore**: ~530 → ~105 líneas

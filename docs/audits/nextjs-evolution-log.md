@@ -4,6 +4,55 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 5: CreateReceptionForm (Admin)
+
+**Priority**: P1  
+**Risk Level**: Medium  
+**Rating antes: 7.5/10** | **Rating después: 8/10**
+
+### Problems Addressed
+- CreateReceptionForm (Admin) 1093 líneas con lógica inline (P1: dividir UI y lógica)
+
+### Changes Applied
+- **useAdminReceptionForm.js** (nuevo): Hook con form (react-hook-form), modo automático/manual, temporalPallets, usePriceSynchronization, PalletDialog state, mode-change dialog, handleCreate (líneas y palets), handleSaveClick, keyboard shortcut Ctrl+S
+- **CreateReceptionForm**: Refactorizado para usar el hook; componente reducido a ~580 líneas (UI pura)
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Tests existentes pasan
+
+### Gap to 10/10
+- Tests unitarios para useAdminReceptionForm
+- Posible extracción de AutomaticLinesTable y ManualPalletsTable como subcomponentes
+
+---
+
+## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 4: Recepciones (OperarioCreateReceptionForm)
+
+**Priority**: P1  
+**Risk Level**: Medium  
+**Rating antes: 7/10** | **Rating después: 7.5/10**
+
+### Problems Addressed
+- OperarioCreateReceptionForm ~928 líneas con lógica inline (P1: dividir UI y lógica)
+
+### Changes Applied
+- **useOperarioReceptionForm.js** (nuevo): Hook con form (react-hook-form), steps, species/supplier/product options, line dialog state, handleCreate, goNext/goBack, handleLineDialogNext
+- **OperarioCreateReceptionForm**: Refactorizado para usar el hook; componente reducido a ~450 líneas (UI pura)
+- Exportados: STEPS, getQuickPickProductIds, pushProductToHistory
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Tests existentes pasan (excepto fallo preexistente en home/page.test.js)
+
+### Gap to 10/10
+- CreateReceptionForm (Admin) 1093 líneas: refactor pendiente (modo automático/manual, usePriceSynchronization, dos flujos líneas vs palets)
+
+### Next Steps
+Sub-bloque 5 (opcional): dividir CreateReceptionForm (Admin) siguiendo patrón similar
+
+---
+
 ## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 1: Fundación
 
 **Priority**: P1  
@@ -42,6 +91,63 @@ npm run build
 
 ### Next Steps
 Sub-bloque 2: dividir useStore, migrar useStores a React Query
+
+---
+
+## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 3: useStoreDialogs + useStorePositions
+
+**Priority**: P1  
+**Risk Level**: Medium  
+**Rating antes: 6/10** | **Rating después: 7/10**
+
+### Problems Addressed
+- useStore ~530 líneas (P0/P1: componente/hook muy grande)
+
+### Changes Applied
+- **useStorePositions.js** (nuevo): Filtros, filteredPositionsMap, speciesSummary, unlocatedPallets, isPositionRelevant/Filled, getPositionPallets, changePalletsPosition, removePalletFromPosition
+- **useStoreDialogs.js** (nuevo): Estado y handlers de todos los diálogos/slideovers (Position, Unallocated, AddElement, Pallet, Label, MovePallet, MoveMultiple)
+- **useStore.js**: Orquestador que compone useStoreData + useStorePositions + useStoreDialogs (~105 líneas)
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Tests pasan
+
+### Gap to 10/10
+- CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
+
+---
+
+## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 2: useStoreData + useStores React Query
+
+**Priority**: P1  
+**Risk Level**: Medium  
+**Rating antes: 5/10** | **Rating después: 6/10**
+
+### Problems Addressed
+- useStore 766 líneas con fetch manual (P0)
+- useStores con useEffect + useState (P1: migrar a React Query)
+- console.log/commented code en useStore
+
+### Changes Applied
+- **useStoreData.js** (nuevo): Hook con useQuery para getStore/getRegisteredPallets
+- **useStore**: Usa useStoreData; eliminado useEffect de fetch y logs de debug
+- **useStores**: Migrado a useInfiniteQuery; ghost store + paginación
+- onUpdateCurrentStoreTotalNetWeight / onAddNetWeightToStore actualizan cache con setQueryData
+- **useStores.test.js** (nuevo): 3 tests (stores con ghost, error, loadMore)
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ useStores + storeService tests: 10 tests passed
+- ✅ Sin linter errors
+
+### Gap to 10/10
+- useStore sigue ~700 líneas (extraer useStoreDialogs, useStorePositions en sub-bloque 3)
+- CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+```
 
 ---
 

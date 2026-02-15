@@ -5,9 +5,9 @@
 
 **Tarea actual**: Bloque Stock/Inventario/Almacenes
 
-**Fase**: Sub-bloque 1 implementado — Rating 4/10 → 5/10
+**Fase**: Sub-bloques 1, 2 y 3 implementados — Rating 4/10 → 7/10
 
-**Próximo paso**: Sub-bloque 2 (useStore, useStores) o siguiente módulo según indicación del usuario
+**Próximo paso**: Sub-bloque 4 (Recepciones) o siguiente módulo
 
 ---
 
