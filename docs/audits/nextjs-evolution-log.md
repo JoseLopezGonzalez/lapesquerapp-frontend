@@ -4,6 +4,217 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque Auth — Sub-bloque 1: authService TypeScript + tipos API + tests
+
+**Priority**: P0  
+**Risk Level**: Low  
+**Rating antes: 4/10** | **Rating después: 5,5/10**
+
+### Problems Addressed
+- P0: authService en JavaScript sin tipos (requisito TypeScript en servicios)
+- P0: Sin tests para authService ni authConfig (módulo crítico)
+- Respuestas de API de auth sin interfaces reutilizables
+
+### Changes Applied
+1. **Tipos** (`src/types/auth.ts`): RequestAccessResponse, AuthUser, VerifyAuthResponse, GetCurrentUserResponse, AuthApiError. Alineados con next-auth y respuestas del backend (snake_case donde aplica).
+2. **authService.ts**: Migrado desde authService.js; firmas públicas idénticas; parámetros y retornos tipados. Eliminado authService.js. Ajustes de tipos para getCurrentUser (data wrapper vs raíz) y para err.data (cast vía unknown).
+3. **Tests authService** (`src/__tests__/services/authService.test.ts`): 16 tests; mock de fetchWithTenant y getSession. requestAccess (éxito, 429, error backend), requestOtp (éxito, error), verifyOtp (éxito, error con status/data), verifyMagicLinkToken (éxito, 429), logout (sin sesión, con token, backend falla), getCurrentUser (data wrapper, raíz, sin sesión, not ok).
+4. **Tests authConfig** (`src/__tests__/configs/authConfig.test.ts`): 11 tests; isAuthError (null/undefined, UNAUTHENTICATED, mensajes, case insensitive), isAuthStatusCode (401/403, otros), buildLoginUrl (sin path, con from, query string). vi.stubGlobal('window') para buildLoginUrl en Node.
+
+### Verification Results
+- ✅ Build exitoso: `npm run build`
+- ✅ 27 tests Auth pasan: `npm run test:run -- src/__tests__/services/authService.test.ts src/__tests__/configs/authConfig.test.ts`
+- ✅ Sin cambios en UI ni en comportamiento; consumidores (LoginPage, auth/verify, AdminLayoutClient) sin modificar
+- ⚠️ home/page.test.js sigue fallando (preexistente); 2 tests authService corregidos para reflejar prioridad message sobre userMessage
+
+### Gap to 10/10 (obligatorio si Rating después < 9)
+- Sub-bloque 2: Dividir LoginPage en subcomponentes/hooks (<150 líneas)
+- Sub-bloque 3: Zod + react-hook-form en login/verify
+- Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes)
+- P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar src/services/authService.js desde commit anterior
+# Eliminar: src/services/authService.ts, src/types/auth.ts, src/__tests__/services/authService.test.ts, src/__tests__/configs/authConfig.test.ts
+npm run build
+npm run test:run
+```
+
+### Next Steps
+- Usuario puede indicar siguiente sub-bloque del bloque Auth (p. ej. dividir LoginPage) o cambiar de módulo
+
+---
+
+## [2026-02-15] Bloque Auth — Sub-bloque 2: Dividir LoginPage en subcomponentes y hooks
+
+**Priority**: P0  
+**Risk Level**: Medium  
+**Rating antes: 5,5/10** | **Rating después: 6,5/10**
+
+### Problems Addressed
+- P0: LoginPage ~610 líneas (bloqueante >200)
+- Mantenibilidad y pruebas del flujo de login
+
+### Changes Applied
+1. **Util** `src/utils/loginUtils.js`: safeRedirectFrom(from), getRedirectUrl(user, searchString).
+2. **useLoginTenant** (`src/hooks/useLoginTenant.js`): useEffect de comprobación de tenant, branding y demo; retorna tenantChecked, tenantActive, brandingImageUrl, isDemo, demoEmail.
+3. **useLoginActions** (`src/hooks/useLoginActions.js`): handleAcceder, handleVerifyOtp, backToEmail, handleOtpPaste y efecto de rellenar OTP desde portapapeles.
+4. **LoginWelcomeStep** (`src/components/LoginPage/LoginWelcomeStep.jsx`): pantalla de bienvenida móvil (imagen, título, RotatingText, Continuar, enlaces legales).
+5. **LoginFormContent** (`src/components/LoginPage/LoginFormContent.jsx`): bloque reutilizable email (input + Acceder) u OTP (alertas + InputOTP + Verificar + Volver); variant desktop|mobile.
+6. **LoginFormDesktop** / **LoginFormMobile** (`LoginFormDesktop.jsx`, `LoginFormMobile.jsx`): layout desktop (Card+imagen) y móvil (botón volver); ambos usan LoginFormContent.
+7. **LoginPage** (`src/components/LoginPage/index.js`): orquesta hooks y subcomponentes; **108 líneas** (antes ~610). Todos los archivos &lt;150 líneas.
+
+### Verification Results
+- ✅ Build exitoso: `npm run build`
+- ✅ 27 tests Auth pasan
+- ✅ Comportamiento preservado (misma UI y flujos; sin cambios de diseño)
+- Líneas: index 108, LoginWelcomeStep 122, LoginFormContent 119, LoginFormDesktop 115, LoginFormMobile 111, useLoginActions 133, useLoginTenant 56, loginUtils 40
+
+### Gap to 10/10 (obligatorio si Rating después < 9)
+- Sub-bloque 3: Zod + react-hook-form en login/verify
+- Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes Auth)
+- P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar src/components/LoginPage/index.js desde commit anterior (monolito)
+# Eliminar: LoginWelcomeStep, LoginFormContent, LoginFormDesktop, LoginFormMobile, useLoginTenant, useLoginActions, loginUtils
+npm run build
+```
+
+### Next Steps
+- Siguiente sub-bloque Auth: Zod + react-hook-form en login, o cambiar de módulo
+
+---
+
+## [2026-02-15] Bloque Auth — Sub-bloque 3: Zod + react-hook-form en login/verify
+
+**Priority**: P1  
+**Risk Level**: Medium  
+**Rating antes: 6,5/10** | **Rating después: 7,5/10**
+
+### Problems Addressed
+- P1: Formularios de login sin validación cliente con Zod (solo backend)
+- Alineación con stack del proyecto (react-hook-form + zod en todos los formularios)
+
+### Changes Applied
+1. **Schemas** `src/schemas/loginSchema.js`: loginEmailSchema (email requerido, formato email), loginOtpSchema (code 6 dígitos, solo números), magicLinkTokenSchema (string no vacío para verify).
+2. **LoginPage**: Dos useForm con zodResolver(loginEmailSchema) y zodResolver(loginOtpSchema). emailForm.handleSubmit(actions.handleAcceder) y otpForm.handleSubmit(actions.handleVerifyOtp). setCodeValue = otpForm.setValue('code') para paste/clipboard. handleBackToEmail resetea otpForm.
+3. **useLoginActions**: Acepta datos del form: handleAcceder(data) con data.email, handleVerifyOtp(data) con data.code (email desde closure). Parámetro setCodeValue en lugar de setCode para rellenar OTP desde portapapeles/pegado.
+4. **LoginFormContent**: Usa register('email') y emailErrors para email; Controller + useWatch para InputOTP (code), otpErrors. Mensajes de error bajo campos. Botón Verificar deshabilitado hasta code.length === 6.
+5. **LoginFormDesktop / LoginFormMobile**: Reciben y pasan a LoginFormContent las props de formulario (emailRegister, emailErrors, onEmailSubmit, otpControl, otpErrors, onOtpSubmit, onBackToEmail, onOtpPaste).
+6. **auth/verify**: Validación del token con magicLinkTokenSchema.safeParse antes de llamar a verifyMagicLinkToken. Uso de getRedirectUrl desde loginUtils.
+
+### Verification Results
+- ✅ Build exitoso: `npm run build`
+- ✅ 27 tests Auth pasan
+- ✅ Validación cliente: email vacío/inválido y código distinto de 6 dígitos muestran error sin llamar al backend
+
+### Gap to 10/10 (obligatorio si Rating después < 9)
+- Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes Auth)
+- P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar useLoginActions, LoginFormContent, LoginFormDesktop, LoginFormMobile, LoginPage index, auth/verify/page
+# Eliminar src/schemas/loginSchema.js si se revierte todo
+npm run build
+```
+
+### Next Steps
+- Sub-bloque 4 Auth (TS en middleware/NextAuth/componentes) u otro módulo
+
+---
+
+## [2026-02-15] Bloque Auth — Sub-bloque 4: Migrar a TypeScript el resto del bloque Auth
+
+**Priority**: P0  
+**Risk Level**: Medium  
+**Rating antes: 7,5/10** | **Rating después: 8/10**
+
+### Problems Addressed
+- P0: Middleware, ruta NextAuth, configs y lib/auth en JavaScript
+- Componentes Auth (AdminRouteProtection, ProtectedRoute, LogoutDialog, LogoutContext, AuthErrorInterceptor, LoginPage, auth/verify) en .js/.jsx
+
+### Changes Applied
+1. **Configs** (ya en TS): authConfig.ts (AUTH_ERROR_CONFIG, isAuthError, isAuthStatusCode, buildLoginUrl, AuthErrorLike), roleConfig.ts (roleConfig, RoleKey). Eliminados .js.
+2. **Middleware** `src/middleware.ts`: NextRequest, JWTToken, getToken, fetchWithTenant con req.headers; lib/fetchWithTenant.d.ts para tercer parámetro Headers | null.
+3. **NextAuth** `src/app/api/auth/[...nextauth]/route.ts`: NextAuthOptions, User, Session; authorize retorna User con id; jwt/session callbacks con retornos tipados (null as unknown as JWT/Session donde aplica).
+4. **Lib** `src/lib/auth/getAuthToken.ts`, `getServerAuthToken.ts`, `src/lib/utils/getCurrentTenant.ts`, `src/utils/loginUtils.ts`: tipados; eliminados .js.
+5. **Componentes Auth migrados a TS/TSX**: AdminRouteProtection/index.tsx, ProtectedRoute/index.tsx, AuthErrorInterceptor.tsx, LogoutDialog.tsx, LogoutContext.tsx, useIsLoggingOut.ts; LoginPage (index.tsx, LoginWelcomeStep.tsx, LoginFormContent.tsx, LoginFormDesktop.tsx, LoginFormMobile.tsx); auth/verify/page.tsx. Eliminados los .js/.jsx correspondientes.
+6. **Tipos para UI en JSX**: alert.d.ts, card.d.ts, button.d.ts (componentes ui); RotatingText/index.d.ts; casts locales en LoginFormContent (Label, Input, Button, InputOTP/Group/Slot) y en auth/verify (Button asChild). AuthErrorInterceptor: AuthErrorLike en isAuthError(error as AuthErrorLike | null).
+
+### Verification Results
+- ✅ Build exitoso: `npm run build`
+- ✅ 27 tests Auth pasan: `npm run test:run -- auth`
+- ✅ Sin cambios de comportamiento; imports sin extensión resuelven a .ts/.tsx
+
+### Gap to 10/10 (obligatorio si Rating después < 9)
+- ~~P2: getAuthToken logs; decisión ProtectedRoute; logs middleware~~ → ver entrada Mejoras P2
+- Opcional: migrar useLoginTenant/useLoginActions y loginSchema a TS; migrar fetchWithTenant.js a TS
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+# Restaurar archivos .js/.jsx eliminados desde commit anterior
+# Eliminar .ts/.tsx y .d.ts añadidos en este sub-bloque
+npm run build
+npm run test:run -- auth
+```
+
+### Next Steps
+- Mejoras P2 del bloque Auth (getAuthToken, ProtectedRoute, logs middleware) → ver entrada siguiente
+
+---
+
+## [2026-02-15] Bloque Auth — Mejoras P2 (getAuthToken, ProtectedRoute, logs middleware)
+
+**Priority**: P2  
+**Risk Level**: Low  
+**Rating**: 8/10 (sin cambio)
+
+### Problems Addressed
+- P2: Revisar getAuthToken (quitar o condicionar console.log en producción)
+- P2: Decidir uso de ProtectedRoute (documentar si no usado)
+- P2: Reducir logs del middleware en producción (nivel configurable)
+
+### Changes Applied
+1. **getAuthToken** (`src/lib/auth/getAuthToken.ts`): No había console.log en el código actual. Añadidos JSDoc: contexto de serverTokenContext y que el helper no hace log para evitar ruido en producción; el caller puede registrar errores si lo necesita.
+2. **ProtectedRoute** (`src/components/ProtectedRoute/index.tsx`): Añadido JSDoc explicando que es protección genérica por rol (allowedRoles), que actualmente no está usado por ninguna ruta (/admin usa AdminRouteProtection) y que se puede usar en layouts/páginas que necesiten restricción por allowedRoles sin la lógica de operario. Decisión: mantener el componente como código disponible, documentado.
+3. **middleware** (`src/middleware.ts`): Uso del logger del proyecto (`@/lib/logger`): el mensaje "Token inválido o sesión cancelada" (status, tenant, pathname, errorText) pasa a `devLog` (solo desarrollo); los dos console.error en catch (error al obtener token, error al validar con backend) pasan a `logError` (warn/error se mantienen en producción según el logger). En producción se reduce el ruido de logs de validación; se mantienen los errores reales.
+
+### Verification Results
+- ✅ Build exitoso: `npm run build`
+- ✅ 27 tests Auth pasan: `npm run test:run -- auth`
+
+### Next Steps
+- Mejoras opcionales: useLoginTenant/useLoginActions y loginSchema a TS → ver entrada siguiente
+
+---
+
+## [2026-02-15] Bloque Auth — Mejoras opcionales: useLoginTenant, useLoginActions y loginSchema a TypeScript
+
+**Priority**: Opcional  
+**Risk Level**: Low  
+**Rating**: 8/10 (sin cambio)
+
+### Cambios realizados
+1. **loginSchema.ts**: Migrado desde loginSchema.js; exportados tipos `LoginEmailForm` y `LoginOtpForm` (z.infer). Eliminado loginSchema.js.
+2. **useLoginTenant.ts**: Migrado desde useLoginTenant.js; interfaz `TenantApiResponse` para la respuesta de la API; estado `demoEmail` tipado como `string | null`. Eliminado useLoginTenant.js.
+3. **useLoginActions.ts**: Migrado desde useLoginActions.js; interfaces `UseLoginActionsParams`, `AccederData`, `VerifyOtpData`, `AuthErrorLike`; tipo `ClipboardEvent` para handleOtpPaste. Eliminado useLoginActions.js.
+4. **LoginPage**: Tipos de `onOtpPaste` unificados a `(e: React.ClipboardEvent) => void` en LoginFormContent, LoginFormDesktop y LoginFormMobile para compatibilidad con el handler tipado.
+5. **Tipos desde schema**: LoginFormContent, LoginFormDesktop y LoginFormMobile usan `LoginEmailForm` y `LoginOtpForm` importados de `@/schemas/loginSchema` en lugar de interfaces locales duplicadas; una sola fuente de verdad para las formas de login.
+
+### Verificación
+- ✅ Build: `npm run build`
+- ✅ Tests Auth: 27 pasan (`npm run test:run -- auth`)
+
+---
+
 ## [2026-02-14] Bloque Ventas — Sub-bloque 1: Tests para orderService
 
 **Priority**: P0  

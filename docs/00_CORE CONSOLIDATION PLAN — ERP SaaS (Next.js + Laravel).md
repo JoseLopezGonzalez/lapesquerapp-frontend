@@ -38,7 +38,7 @@
 | Bloque | Rating | Notas | Fecha |
 |--------|--------|-------|-------|
 | **Ventas** (Orders + líneas + estados) | **9/10** | Fases 1-4 completadas: Order y OrderPallets refactorizados, formularios con Zod, tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
-| Auth + Roles/Permisos | — | Pendiente auditoría | — |
+| **Auth + Roles/Permisos** | **8/10** | Auditoría y evolución completadas: authService TS + tipos API + tests (authService, authConfig); LoginPage dividida en hooks y subcomponentes; Zod + react-hook-form en login/verify; middleware, NextAuth route y componentes Auth migrados a TS; P2 (getAuthToken, ProtectedRoute, logs middleware); opcionales (useLoginTenant, useLoginActions, loginSchema en TS). Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
 | Productos | — | Pendiente auditoría | — |
 | Clientes | — | Pendiente auditoría | — |
 | Stock / Movimientos | — | Pendiente auditoría | — |
