@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Pie, PieChart, ResponsiveContainer } from "recharts"
 import {
     Card,
@@ -16,24 +16,12 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { useSession } from "next-auth/react"
-import { getSalesBySalesperson } from "@/services/orderService"
-import Loader from "@/components/Utilities/Loader"
+import { useSalesBySalesperson } from "@/hooks/useOrdersStats"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
+import Loader from "@/components/Utilities/Loader"
 import { SearchX } from "lucide-react"
 import { actualYearRange } from "@/helpers/dates"
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
-
-const pieColors = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-    "var(--chart-6)",
-    "var(--chart-7)",
-    "var(--chart-8)",
-]
 
 const initialDateRange = {
     from: actualYearRange.from,
@@ -41,36 +29,8 @@ const initialDateRange = {
 }
 
 export function SalesBySalespersonPieChart() {
-    const { data: session, status } = useSession()
-    const [chartData, setChartData] = useState([])
-    const [isLoading, setIsLoading] = useState(true)
     const [range, setRange] = useState(initialDateRange)
-
-    const accessToken = session?.user?.accessToken
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-        if (!range.from || !range.to) return
-
-        setIsLoading(true)
-
-        const dateFrom = range.from.toLocaleDateString('sv-SE')
-        const dateTo = range.to.toLocaleDateString('sv-SE')
-
-        getSalesBySalesperson({ dateFrom, dateTo }, accessToken)
-            .then((data) => {
-                const colored = data.map((item, index) => ({
-                    ...item,
-                    fill: pieColors[index % pieColors.length],
-                }))
-                setChartData(colored)
-            })
-            .catch((error) => {
-                console.error("Error al obtener datos:", error)
-                setChartData([])
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, range, accessToken])
+    const { data: chartData = [], isLoading } = useSalesBySalesperson(range)
 
     const chartConfig = {
         quantity: {

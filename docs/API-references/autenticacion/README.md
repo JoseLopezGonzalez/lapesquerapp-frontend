@@ -200,10 +200,14 @@ Content-Type: application/json
 
 ### Response Exitosa (200)
 
+La respuesta sigue la convención de Laravel API Resources: el payload va dentro de la clave `data`.
+
 ```json
 {
-  "active": true,
-  "name": "Mi Empresa"
+  "data": {
+    "active": true,
+    "name": "Mi Empresa"
+  }
 }
 ```
 
@@ -211,7 +215,24 @@ Content-Type: application/json
 
 ```json
 {
-  "error": "Tenant not found"
+  "error": "Tenant no encontrado"
 }
 ```
+
+### Response Errónea (422) - Subdominio Inválido
+
+Cuando el subdominio contiene caracteres no permitidos (espacios, `@`, etc.):
+
+```json
+{
+  "message": "El subdominio solo puede contener letras, números, guiones y guiones bajos.",
+  "errors": {
+    "subdomain": ["El subdominio solo puede contener letras, números, guiones y guiones bajos."]
+  }
+}
+```
+
+### Rate Limiting
+
+Este endpoint tiene un límite de **60 peticiones por minuto**. En caso de superarlo, la API devuelve **429 Too Many Requests**.
 

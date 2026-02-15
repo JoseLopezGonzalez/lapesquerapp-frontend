@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import TablePagination from "../TablePagination";
+import { useReceptionsList } from "@/hooks/useReceptionsList";
 import { rawMaterialReceptionService } from "@/services/domain/raw-material-receptions/rawMaterialReceptionService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
@@ -34,10 +35,8 @@ const ReceptionPrintDialog = dynamic(
 const PER_PAGE = 9;
 
 export default function ReceptionsListCard({ storeId = null }) {
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const { data, total, isLoading: loading } = useReceptionsList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [loadingPrintId, setLoadingPrintId] = useState(null);
@@ -53,30 +52,6 @@ export default function ReceptionsListCard({ storeId = null }) {
       return next;
     });
   };
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      const today = new Date().toISOString().split("T")[0];
-      const filters = { dates: { start: today, end: today } };
-      try {
-        const res = await rawMaterialReceptionService.list(
-          filters,
-          { page, perPage: PER_PAGE }
-        );
-        if (cancelled) return;
-        setData(res.data ?? []);
-        setTotal(res.meta?.total ?? res.total ?? 0);
-      } catch (e) {
-        if (!cancelled) setData([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [page]);
 
   const lastPage = Math.max(1, Math.ceil(total / PER_PAGE));
 

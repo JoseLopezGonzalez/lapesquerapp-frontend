@@ -1,68 +1,76 @@
-// src/hooks/useProductOptions.js
-import { useEffect, useState } from 'react';
-import { getProductOptions } from '@/services/productService';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerOptionsContext';
-import { useRawMaterialReceptionsOptions } from '@/context/gestor-options/RawMaterialReceptionsOptionsContext';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { getProductOptions } from '@/services/productService';
+import { getProductCategoryOptions } from '@/services/productCategoryService';
+import { getProductFamilyOptions } from '@/services/productFamilyService';
 
 /**
- * Hook para obtener opciones de productos.
- * Usa el contexto del gestor actual si existe (Gestor de pedidos o Recepciones de materia prima),
- * si no hace fetch directo. Otros apartados (ej. Gestor de almacenes) pueden usar el hook
- * sin provider y obtienen los datos por API.
- * Ver: docs/OPCIONES-POR-GESTOR.md
+ * Hook para obtener opciones de productos (value, label) para selects.
+ * Usado por useAdminReceptionForm, CreateOrderForm, EditReceptionForm.
  */
-export const useProductOptions = () => {
-  const ordersManagerOptions = useOrdersManagerOptions();
-  const receptionsOptions = useRawMaterialReceptionsOptions();
+export function useProductOptions() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const [productOptions, setProductOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ['products', 'options', tenantId ?? 'unknown'],
+    queryFn: () => getProductOptions(token),
+    enabled: !!token && !!tenantId,
+  });
 
-  const fromOrdersManager = ordersManagerOptions?.productOptions?.length > 0 || ordersManagerOptions?.productsLoading;
-  const fromReceptions = receptionsOptions?.productOptions?.length > 0 || receptionsOptions?.productsLoading;
+  const productOptions = Array.isArray(data)
+    ? data.map((p) => ({ value: `${p.id}`, label: p.name }))
+    : [];
 
-  useEffect(() => {
-    if (fromOrdersManager && ordersManagerOptions?.productOptions?.length > 0) {
-      setProductOptions(ordersManagerOptions.productOptions);
-      setLoading(ordersManagerOptions.productsLoading ?? false);
-      return;
-    }
-    if (fromReceptions && receptionsOptions?.productOptions?.length > 0) {
-      setProductOptions(receptionsOptions.productOptions);
-      setLoading(receptionsOptions.productsLoading ?? false);
-      return;
-    }
-    if (fromOrdersManager && ordersManagerOptions?.productsLoading) {
-      setLoading(true);
-      return;
-    }
-    if (fromReceptions && receptionsOptions?.productsLoading) {
-      setLoading(true);
-      return;
-    }
+  return {
+    productOptions,
+    loading: isLoading,
+  };
+}
 
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+function useOptions(queryKey, queryFn, enabled) {
+  const { data, isLoading, error } = useQuery({
+    queryKey,
+    queryFn,
+    enabled,
+  });
+  return {
+    data: Array.isArray(data) ? data : [],
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
 
-    getProductOptions(token)
-      .then((products) => {
-        setProductOptions((products || []).map(p => ({ value: `${p.id}`, label: p.name })));
-      })
-      .catch(err => console.error('Error al cargar productos:', err))
-      .finally(() => setLoading(false));
-  }, [token, fromOrdersManager, fromReceptions, ordersManagerOptions, receptionsOptions]);
+/**
+ * Hook para obtener opciones de categorías de productos usando React Query.
+ */
+export function useProductCategoryOptions() {
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  if (fromOrdersManager && ordersManagerOptions?.productOptions?.length > 0) {
-    return { productOptions: ordersManagerOptions.productOptions, loading: ordersManagerOptions.productsLoading ?? false };
-  }
-  if (fromReceptions && receptionsOptions?.productOptions?.length > 0) {
-    return { productOptions: receptionsOptions.productOptions, loading: receptionsOptions.productsLoading ?? false };
-  }
+  return useOptions(
+    ['productCategories', 'options', tenantId ?? 'unknown'],
+    () => getProductCategoryOptions(token),
+    !!token && !!tenantId
+  );
+}
 
-  return { productOptions, loading };
-};
+/**
+ * Hook para obtener opciones de familias de productos usando React Query.
+ */
+export function useProductFamilyOptions() {
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+
+  return useOptions(
+    ['productFamilies', 'options', tenantId ?? 'unknown'],
+    () => getProductFamilyOptions(token),
+    !!token && !!tenantId
+  );
+}

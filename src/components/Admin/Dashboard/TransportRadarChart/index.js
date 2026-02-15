@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
+import { useState } from "react"
 import {
     RadarChart,
     Radar,
@@ -23,7 +22,7 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart"
 import { TrendingUp, Truck } from "lucide-react"
-import { getTransportChartData } from "@/services/orderService"
+import { useTransportChartData } from "@/hooks/useDashboardCharts"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { actualYearRange } from "@/helpers/dates"
@@ -35,35 +34,8 @@ const initialDateRange = {
 }
 
 export function TransportRadarChart() {
-    const { data: session, status } = useSession()
     const [range, setRange] = useState(initialDateRange)
-    const [data, setData] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
-
-    // console.log(data)
-
-    const accessToken = session?.user?.accessToken
-
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-        if (!accessToken) return // Evitar 401 que desencadena signOut en AuthErrorInterceptor
-        if (!range.from || !range.to) return
-
-        setIsLoading(true)
-
-        const from = range.from.toLocaleDateString('sv-SE')
-        const to = range.to.toLocaleDateString('sv-SE')
-
-        getTransportChartData({
-            token: accessToken,
-            from,
-            to,
-        })
-            .then(setData)
-            .catch((err) => console.error("Error al obtener datos de transporte:", err))
-            .finally(() => setIsLoading(false))
-    }, [status, range, accessToken])
+    const { data = [], isLoading } = useTransportChartData(range)
 
     const chartConfig = {
         netWeight: {

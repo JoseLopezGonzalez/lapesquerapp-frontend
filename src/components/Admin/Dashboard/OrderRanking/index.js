@@ -1,16 +1,15 @@
 'use client'
 
-import { useEffect, useState } from "react"
-import { ChevronDownIcon, SearchX, FileSpreadsheet } from "lucide-react"
+import { useState } from "react"
+import { SearchX } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
-import { getSpeciesOptions } from "@/services/speciesService"
-import { useSession } from "next-auth/react"
-import { getOrderRankingStats } from "@/services/orderService"
+import { useSpeciesOptions } from "@/hooks/useSpeciesOptions"
+import { useOrderRankingStats } from "@/hooks/useOrdersStats"
 import { Skeleton } from "@/components/ui/skeleton"
 import { actualYearRange } from "@/helpers/dates"
 import { Button } from "@/components/ui/button"
@@ -31,15 +30,15 @@ export function OrderRankingChart() {
     const [groupBy, setGroupBy] = useState("client")
     const [valueType, setValueType] = useState("totalAmount")
     const [speciesId, setSpeciesId] = useState("all")
-    const [speciesOptions, setSpeciesOptions] = useState([])
-    const [isLoadingFirst, setIsLoadingFirst] = useState(true)
-    const [isLoading, setIsLoading] = useState(true)
-    const [chartData, setChartData] = useState([])
-    const [fullData, setFullData] = useState([])
     const [range, setRange] = useState(initialDateRange)
-    const { data: session, status } = useSession()
 
-    const accessToken = session?.user?.accessToken
+    const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions()
+    const { data: chartData = [], fullData = [], isLoading } = useOrderRankingStats({
+        range,
+        groupBy,
+        valueType,
+        speciesId,
+    })
 
     const chartConfig = {
         totalAmount: {
@@ -57,67 +56,6 @@ export function OrderRankingChart() {
             formatter: formatDecimalWeight,
         },
     }[valueType]
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-        if (!range.from || !range.to || !groupBy || !valueType) return
-
-        setIsLoading(true)
-
-        const params = {
-            groupBy,
-            valueType,
-            dateFrom: range.from.toLocaleDateString("sv-SE"),
-            dateTo: range.to.toLocaleDateString("sv-SE"),
-            speciesId,
-        }
-
-        getOrderRankingStats(params, accessToken)
-            .then((data) => {
-                // Manejar diferentes formatos de respuesta
-                let safeData = []
-                if (Array.isArray(data)) {
-                    safeData = data
-                } else if (data && typeof data === 'object') {
-                    // Si es un objeto, intentar extraer un array
-                    if (Array.isArray(data.data)) {
-                        safeData = data.data
-                    } else if (Array.isArray(data.results)) {
-                        safeData = data.results
-                    } else {
-                        safeData = []
-                    }
-                } else {
-                    safeData = []
-                }
-                
-                setFullData(safeData) // guardamos todos
-                const formattedData = safeData.slice(0, 5)
-                console.log("📊 Setting chartData:", formattedData, "Length:", formattedData.length)
-                setChartData(formattedData)
-            })
-            .catch((err) => {
-                console.error("Error al obtener ranking de pedidos:", err)
-                setChartData([])
-                setFullData([])
-            })
-            .finally(() => {
-                setIsLoading(false)
-                setIsLoadingFirst(false)
-            })
-    }, [groupBy, valueType, speciesId, status,  range, accessToken])
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        const token = session.user.accessToken
-        getSpeciesOptions(token)
-            .then(setSpeciesOptions)
-            .catch((error) => {
-                console.error("Error fetchWithTenanting species options:", error)
-                setSpeciesOptions([])
-            })
-    }, [status, session])
 
     const handleExportToExcel = () => {
         if (fullData.length === 0) {
@@ -140,6 +78,8 @@ export function OrderRankingChart() {
         const fileName = `ranking_pedidos_${groupBy}_${valueType}.xlsx`
         saveAs(blob, fileName)
     }
+
+    const isLoadingFirst = speciesLoading
 
     if (isLoadingFirst) return (
         <Card className="w-full max-w-full overflow-hidden">
@@ -304,7 +244,6 @@ export function OrderRankingChart() {
                         onClick={handleExportToExcel}
                     >
                         <PiMicrosoftExcelLogoFill className="w-4 h-4 text-green-700" />
-                        {/* Exportar Excel */}
                     </Button>
                 </div>
             </CardFooter>

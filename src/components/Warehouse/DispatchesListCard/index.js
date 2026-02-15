@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import TablePagination from "../TablePagination";
+import { useDispatchesList } from "@/hooks/useDispatchesList";
 import { ceboDispatchService } from "@/services/domain/cebo-dispatches/ceboDispatchService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
@@ -26,8 +27,6 @@ import DispatchPrintDialog from "../DispatchPrintDialog";
 import toast from "react-hot-toast";
 import { getToastTheme } from "@/customs/reactHotToast";
 
-const PER_PAGE = 9;
-
 function getDispatchNetWeight(dispatch) {
   if (dispatch.netWeight != null) return Number(dispatch.netWeight);
   const details = dispatch.details ?? [];
@@ -35,11 +34,11 @@ function getDispatchNetWeight(dispatch) {
   return sum;
 }
 
+const PER_PAGE = 9;
+
 export default function DispatchesListCard({ storeId = null }) {
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const { data, total, isLoading: loading } = useDispatchesList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [loadingPrintId, setLoadingPrintId] = useState(null);
@@ -55,30 +54,6 @@ export default function DispatchesListCard({ storeId = null }) {
       return next;
     });
   };
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      const today = new Date().toISOString().split("T")[0];
-      const filters = { dates: { start: today, end: today } };
-      try {
-        const res = await ceboDispatchService.list(
-          filters,
-          { page, perPage: PER_PAGE }
-        );
-        if (cancelled) return;
-        setData(res.data ?? []);
-        setTotal(res.meta?.total ?? res.total ?? 0);
-      } catch (e) {
-        if (!cancelled) setData([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [page]);
 
   const lastPage = Math.max(1, Math.ceil(total / PER_PAGE));
 

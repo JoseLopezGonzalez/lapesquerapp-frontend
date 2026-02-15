@@ -1,11 +1,10 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useSession } from "next-auth/react"
-import { getPunchesStatistics } from "@/services/punchService"
+import { usePunchesStatistics } from "@/hooks/usePunches"
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { startOfMonth, endOfMonth, format, parseISO } from "date-fns"
@@ -39,49 +38,15 @@ const getInitialDateRange = () => {
 }
 
 export function WorkerStatisticsCard() {
-    const { data: session, status } = useSession()
-    const [isLoading, setIsLoading] = useState(true)
-    const [data, setData] = useState(null)
     const [dateRange, setDateRange] = useState(getInitialDateRange)
+    const { data, isLoading, isError, error } = usePunchesStatistics(dateRange)
 
-    const accessToken = session?.user?.accessToken
-
-    // Función para cargar datos
-    const fetchData = useCallback((showLoader = false) => {
-        if (!accessToken || !dateRange?.from || !dateRange?.to) return
-        
-        if (showLoader) {
-            setIsLoading(true)
-        }
-        
-        // Convertir fechas a formato YYYY-MM-DD
-        const date_start = format(dateRange.from, 'yyyy-MM-dd')
-        const date_end = format(dateRange.to, 'yyyy-MM-dd')
-        
-        getPunchesStatistics(accessToken, { date_start, date_end })
-            .then(setData)
-            .catch((err) => {
-                console.error("Error al obtener estadísticas:", err)
-                // Mostrar error al usuario con userMessage si está disponible
-                const errorMessage = err.userMessage || err.message || 'Error al obtener las estadísticas'
-                toast.error(errorMessage, getToastTheme())
-                if (showLoader) {
-                    setData(null)
-                }
-            })
-            .finally(() => {
-                if (showLoader) {
-                    setIsLoading(false)
-                }
-            })
-    }, [accessToken, dateRange])
-
-    // Carga inicial y cuando cambian los parámetros
     useEffect(() => {
-        if (status !== "authenticated") return
-        if (!dateRange?.from || !dateRange?.to) return
-        fetchData(true)
-    }, [status, dateRange, fetchData])
+        if (isError && error) {
+            const errorMessage = error.userMessage || error.message || 'Error al obtener las estadísticas'
+            toast.error(errorMessage, getToastTheme())
+        }
+    }, [isError, error])
 
     // Formatear horas
     const formatHours = (hours) => {

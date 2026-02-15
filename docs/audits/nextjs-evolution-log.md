@@ -4,6 +4,47 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque Dashboard — Migración completa a React Query
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 5/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- 11 componentes con useEffect + useState en lugar de React Query
+- useStockStats, useOrdersStats, usePunches, useReceptionsList, useDispatchesList: migración completa
+- Dashboard/index.js: comentarios {true && ...} innecesarios
+- WorkingEmployeesCard, WorkerStatisticsCard: datos vía punchService manual
+- ReceptionsListCard, DispatchesListCard: datos vía rawMaterialReceptionService/ceboDispatchService manual
+
+### Changes Applied
+- **useOrdersStats.js**: useOrdersTotalNetWeightStats, useOrdersTotalAmountStats, useOrderRankingStats, useSalesBySalesperson
+- **useSpeciesOptions.js**: useSpeciesOptions (React Query)
+- **useProductOptions.js**: useProductCategoryOptions, useProductFamilyOptions; restaurado useProductOptions (productos para formularios)
+- **useDashboardCharts.js**: useSalesChartData, useReceptionChartData, useDispatchChartData, useTransportChartData
+- **usePunches.js**: usePunchesDashboard, usePunchesStatistics
+- **useReceptionsList.js**, **useDispatchesList.js**: listado paginado del día con React Query
+- Migración de TotalQuantitySoldCard, TotalAmountSoldCard, OrderRankingChart, SalesBySalespersonPieChart
+- Migración de SalesChart, ReceptionChart, DispatchChart, TransportRadarChart
+- Migración de WorkingEmployeesCard, WorkerStatisticsCard, ReceptionsListCard, DispatchesListCard
+- Dashboard/index.js: eliminación de comentarios {true && ...}
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Todos los componentes Dashboard usan React Query
+- ✅ Caché compartida por tenant en todas las queries
+- ✅ useProductOptions restaurado para useAdminReceptionForm, CreateOrderForm, EditReceptionForm
+
+### Gap to 10/10
+- TenantContext en lugar de getCurrentTenant (cuando exista)
+- Tests unitarios para hooks nuevos
+- Migración a TypeScript de componentes Dashboard
+
+### Next Steps
+- Siguiente bloque recomendado: Productos, Clientes o Informes
+
+---
+
 ## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 5: CreateReceptionForm (Admin)
 
 **Priority**: P1  

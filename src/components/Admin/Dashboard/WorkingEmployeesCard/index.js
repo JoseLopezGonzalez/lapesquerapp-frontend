@@ -1,61 +1,14 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useSession } from "next-auth/react"
-import { getPunchesDashboard } from "@/services/punchService"
+import { usePunchesDashboard } from "@/hooks/usePunches"
 import { Users, Clock, UserCheck, LogIn, LogOut, TrendingUp, Coffee, PlayCircle, PauseCircle, XCircle, Activity, AlertTriangle, Calendar } from "lucide-react"
 import { formatDateHour } from "@/helpers/formats/dates/formatDates"
 
 export function WorkingEmployeesCard() {
-    const { data: session, status } = useSession()
-    const [isLoading, setIsLoading] = useState(true)
-    const [data, setData] = useState(null)
-
-    const accessToken = session?.user?.accessToken
-
-    // Función para cargar datos (usando useCallback para evitar recreaciones)
-    const fetchData = useCallback((showLoader = false) => {
-        if (!accessToken) return
-        
-        if (showLoader) {
-            setIsLoading(true)
-        }
-        
-        getPunchesDashboard(accessToken)
-            .then(setData)
-            .catch((err) => {
-                console.error("Error al obtener datos del dashboard:", err)
-                // No actualizar setData(null) en actualizaciones silenciosas para mantener los datos anteriores
-                if (showLoader) {
-                    setData(null)
-                }
-            })
-            .finally(() => {
-                if (showLoader) {
-                    setIsLoading(false)
-                }
-            })
-    }, [accessToken])
-
-    // Carga inicial con loader
-    useEffect(() => {
-        if (status !== "authenticated") return
-        fetchData(true)
-    }, [status, fetchData])
-
-    // Actualización automática cada 5 minutos sin loader
-    useEffect(() => {
-        if (status !== "authenticated" || !accessToken) return
-
-        const interval = setInterval(() => {
-            fetchData(false) // Actualización silenciosa
-        }, 5 * 60 * 1000) // 5 minutos
-
-        return () => clearInterval(interval)
-    }, [status, accessToken, fetchData])
+    const { data, isLoading } = usePunchesDashboard()
 
     if (isLoading) {
         return (

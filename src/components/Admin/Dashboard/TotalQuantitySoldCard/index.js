@@ -1,40 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown } from "lucide-react"
-import { useSession } from "next-auth/react"
-import { getOrdersTotalNetWeightStats } from "@/services/orderService"
+import { useOrdersTotalNetWeightStats } from "@/hooks/useOrdersStats"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function TotalQuantitySoldCard() {
-    const { data: session, status } = useSession()
-    const [data, setData] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
-
-    const accessToken = session?.user?.accessToken
-
-
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        const today = new Date()
-        const firstDay = new Date(today.getFullYear(), 0, 1)
-        const dateFrom = firstDay.toISOString().split("T")[0]
-        const dateTo = today.toISOString().split("T")[0]
-
-
-        getOrdersTotalNetWeightStats({ dateFrom, dateTo }, accessToken)
-            .then(setData)
-            .catch((err) => {
-                console.error("Error al obtener la cantidad total:", err)
-                setData(null)
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, accessToken])
+    const { data, isLoading } = useOrdersTotalNetWeightStats()
 
     const percentage = data?.percentageChange
     const hasValidPercentage = typeof percentage === "number" && !isNaN(percentage)
@@ -59,7 +33,6 @@ export function TotalQuantitySoldCard() {
             </CardHeader>
         </Card>
     )
-
 
     return (
         <Card className="relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">

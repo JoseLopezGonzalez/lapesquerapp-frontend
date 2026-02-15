@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
-import { useSession } from "next-auth/react"
+import { useState, useMemo } from "react"
 import {
     Card,
     CardHeader,
@@ -31,10 +30,9 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getDispatchChartData } from "@/services/ceboDispatch/getDispatchChartData"
-import { getSpeciesOptions } from "@/services/speciesService"
-import { getProductCategoryOptions } from "@/services/productCategoryService"
-import { getProductFamilyOptions } from "@/services/productFamilyService"
+import { useSpeciesOptions } from "@/hooks/useSpeciesOptions"
+import { useProductCategoryOptions, useProductFamilyOptions } from "@/hooks/useProductOptions"
+import { useDispatchChartData } from "@/hooks/useDashboardCharts"
 import { formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { SearchX, Loader2 } from "lucide-react"
 import { actualYearRange } from "@/helpers/dates"
@@ -46,80 +44,34 @@ const initialDateRange = {
 }
 
 export function DispatchChart() {
-    const { data: session, status } = useSession()
-
     const [speciesId, setSpeciesId] = useState("all")
-    const [speciesOptions, setSpeciesOptions] = useState([])
-    const [speciesLoading, setSpeciesLoading] = useState(true)
     const [categoryId, setCategoryId] = useState("all")
-    const [categoryOptions, setCategoryOptions] = useState([])
-    const [categoryLoading, setCategoryLoading] = useState(true)
     const [familyId, setFamilyId] = useState("all")
-    const [familyOptions, setFamilyOptions] = useState([])
-    const [familyLoading, setFamilyLoading] = useState(true)
     const [unit, setUnit] = useState("quantity")
     const [groupBy, setGroupBy] = useState("month")
     const [range, setRange] = useState(initialDateRange)
-    const [chartData, setChartData] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
 
-    const accessToken = session?.user?.accessToken
+    const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions()
+    const { data: categoryOptions = [], isLoading: categoryLoading } = useProductCategoryOptions()
+    const { data: familyOptions = [], isLoading: familyLoading } = useProductFamilyOptions()
+    const { data: chartData = [], isLoading } = useDispatchChartData({
+        range,
+        speciesId,
+        categoryId,
+        familyId,
+        unit,
+        groupBy,
+    })
 
-    // Calcular el total de kilogramos desde los datos del backend
     const totalKg = useMemo(() => {
         if (unit !== "quantity" || !chartData || chartData.length === 0) return 0
         return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
     }, [chartData, unit])
 
-    // Calcular el total de importe desde los datos del backend
     const totalAmount = useMemo(() => {
         if (unit !== "amount" || !chartData || chartData.length === 0) return 0
         return chartData.reduce((sum, item) => sum + (item.value || 0), 0)
     }, [chartData, unit])
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        setSpeciesLoading(true)
-        setCategoryLoading(true)
-        setFamilyLoading(true)
-
-        Promise.all([
-            getSpeciesOptions(accessToken)
-                .then(setSpeciesOptions)
-                .catch((err) => console.error("Error al cargar especies:", err))
-                .finally(() => setSpeciesLoading(false)),
-            getProductCategoryOptions(accessToken)
-                .then(setCategoryOptions)
-                .catch((err) => console.error("Error al cargar categorías:", err))
-                .finally(() => setCategoryLoading(false)),
-            getProductFamilyOptions(accessToken)
-                .then(setFamilyOptions)
-                .catch((err) => console.error("Error al cargar familias:", err))
-                .finally(() => setFamilyLoading(false))
-        ])
-    }, [status, accessToken])
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-        if (!range.from || !range.to) return
-
-        setIsLoading(true)
-
-        getDispatchChartData({
-            token: session.user.accessToken,
-            speciesId,
-            categoryId,
-            familyId,
-            from: range.from.toLocaleDateString("sv-SE"),
-            to: range.to.toLocaleDateString("sv-SE"),
-            unit,
-            groupBy,
-        })
-            .then(setChartData)
-            .catch((err) => console.error("Error al obtener salidas de cebo:", err))
-            .finally(() => setIsLoading(false))
-    }, [speciesId, categoryId, familyId, range, unit, status, groupBy])
 
     return (
         <Card className="w-full max-w-full overflow-hidden min-w-0 box-border">

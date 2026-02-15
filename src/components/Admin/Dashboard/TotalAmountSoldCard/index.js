@@ -1,40 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { TrendingUp, TrendingDown, Info, Calendar } from "lucide-react"
-import { useSession } from "next-auth/react"
-import { getOrdersTotalAmountStats } from "@/services/orderService"
+import { useOrdersTotalAmountStats } from "@/hooks/useOrdersStats"
 import { formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers"
 
+const formatDateRange = (from, to) => {
+    const f = new Date(from).toLocaleDateString("es-ES")
+    const t = new Date(to).toLocaleDateString("es-ES")
+    return `${f} → ${t}`
+}
+
 export function TotalAmountSoldCard() {
-    const { data: session, status } = useSession()
-    const [data, setData] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
-
-    const accessToken = session?.user?.accessToken
-
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        const today = new Date()
-        const firstDay = new Date(today.getFullYear(), 0, 1)
-        const dateFrom = firstDay.toISOString().split("T")[0]
-        const dateTo = today.toISOString().split("T")[0]
-
-        getOrdersTotalAmountStats({ dateFrom, dateTo }, accessToken)
-            .then(setData)
-            .catch((err) => {
-                console.error("Error al obtener el importe total:", err)
-                setData(null)
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, accessToken])
+    const { data, isLoading } = useOrdersTotalAmountStats()
 
     const percentage = data?.percentageChange
     const hasValidPercentage = typeof percentage === "number" && !isNaN(percentage)
@@ -42,12 +24,6 @@ export function TotalAmountSoldCard() {
     const isDown = hasValidPercentage && percentage < 0
     const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : null
     const trendColor = isUp ? "text-green-600" : isDown ? "text-red-600" : ""
-
-    const formatDateRange = (from, to) => {
-        const f = new Date(from).toLocaleDateString("es-ES")
-        const t = new Date(to).toLocaleDateString("es-ES")
-        return `${f} → ${t}`
-    }
 
     if (isLoading) {
         return (
@@ -67,7 +43,6 @@ export function TotalAmountSoldCard() {
             </Card>
         )
     }
-
 
     return (
         <Card className="p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">

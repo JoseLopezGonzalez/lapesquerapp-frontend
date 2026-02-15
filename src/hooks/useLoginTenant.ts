@@ -3,9 +3,17 @@
 import { useState, useEffect } from "react";
 import { API_URL_V2 } from "@/configs/config";
 
+/** Respuesta 200: convención Laravel API Resource (payload en `data`) */
+interface TenantSuccessPayload {
+  active: boolean;
+  name: string;
+}
+
 interface TenantApiResponse {
-  error?: unknown;
-  active?: boolean;
+  data?: TenantSuccessPayload;
+  error?: string;
+  message?: string;
+  errors?: Record<string, string[]>;
 }
 
 export function useLoginTenant() {
@@ -34,12 +42,17 @@ export function useLoginTenant() {
 
     fetch(`${API_URL_V2}public/tenant/${subdomain}`)
       .then((res) => res.json())
-      .then((data: TenantApiResponse) => {
+      .then((body: TenantApiResponse) => {
         if (isDevLocalhost) {
           setTenantActive(true);
           return;
         }
-        if (!data || data.error || data.active === false) {
+        // 200: payload en body.data; 404: body.error; 422: body.message/errors; 429: sin data
+        if (body?.data) {
+          setTenantActive(body.data.active !== false);
+        } else if (body?.error || body?.message || body?.errors) {
+          setTenantActive(false);
+        } else {
           setTenantActive(false);
         }
       })
