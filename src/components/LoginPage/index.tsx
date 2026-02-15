@@ -86,36 +86,39 @@ export default function LoginPage() {
             {...pageTransition}
             className="login-background flex min-h-screen items-center justify-center bg-white dark:bg-black"
           >
-            <LoginFormDesktop
-              tenantActive={tenantActive}
-              isDemo={isDemo}
-              brandingImageUrl={brandingImageUrl}
-              accessRequested={accessRequested}
-              loading={loading}
-              emailRegister={emailForm.register}
-              emailErrors={emailForm.formState.errors}
-              onEmailSubmit={emailForm.handleSubmit(actions.handleAcceder)}
-              otpControl={otpForm.control}
-              otpErrors={otpForm.formState.errors}
-              onOtpSubmit={otpForm.handleSubmit(actions.handleVerifyOtp)}
-              onBackToEmail={handleBackToEmail}
-              onOtpPaste={actions.handleOtpPaste}
-            />
-            <LoginFormMobile
-              tenantActive={tenantActive}
-              isDemo={isDemo}
-              onBackToWelcome={() => setShowForm(false)}
-              accessRequested={accessRequested}
-              loading={loading}
-              emailRegister={emailForm.register}
-              emailErrors={emailForm.formState.errors}
-              onEmailSubmit={emailForm.handleSubmit(actions.handleAcceder)}
-              otpControl={otpForm.control}
-              otpErrors={otpForm.formState.errors}
-              onOtpSubmit={otpForm.handleSubmit(actions.handleVerifyOtp)}
-              onBackToEmail={handleBackToEmail}
-              onOtpPaste={actions.handleOtpPaste}
-            />
+            {isMobile ? (
+              <LoginFormMobile
+                tenantActive={tenantActive}
+                isDemo={isDemo}
+                onBackToWelcome={() => setShowForm(false)}
+                accessRequested={accessRequested}
+                loading={loading}
+                emailRegister={emailForm.register}
+                emailErrors={emailForm.formState.errors}
+                onEmailSubmit={emailForm.handleSubmit(actions.handleAcceder)}
+                otpControl={otpForm.control}
+                otpErrors={otpForm.formState.errors}
+                onOtpSubmit={otpForm.handleSubmit(actions.handleVerifyOtp)}
+                onBackToEmail={handleBackToEmail}
+                onOtpPaste={actions.handleOtpPaste}
+              />
+            ) : (
+              <LoginFormDesktop
+                tenantActive={tenantActive}
+                isDemo={isDemo}
+                brandingImageUrl={brandingImageUrl}
+                accessRequested={accessRequested}
+                loading={loading}
+                emailRegister={emailForm.register}
+                emailErrors={emailForm.formState.errors}
+                onEmailSubmit={emailForm.handleSubmit(actions.handleAcceder)}
+                otpControl={otpForm.control}
+                otpErrors={otpForm.formState.errors}
+                onOtpSubmit={otpForm.handleSubmit(actions.handleVerifyOtp)}
+                onBackToEmail={handleBackToEmail}
+                onOtpPaste={actions.handleOtpPaste}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
