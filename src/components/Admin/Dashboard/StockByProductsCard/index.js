@@ -1,36 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { getStockByProducts } from "@/services/storeService"
+import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatDecimal, formatDecimalWeight, formatInteger } from "@/helpers/formats/numbers/formatNumbers"
+import { formatDecimal, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PackageSearch, SearchX } from "lucide-react"
+import { useStockByProductsStats } from "@/hooks/useStockStats"
 
 export function StockByProductsCard() {
-    const { data: session, status } = useSession()
-    const [stockData, setStockData] = useState([])
-    const [isLoading, setIsLoading] = useState(true)
+    const { data: stockData = [], isLoading } = useStockByProductsStats()
     const [search, setSearch] = useState("")
-
-    const accessToken = session?.user?.accessToken
-
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        getStockByProducts(accessToken)
-            .then(setStockData)
-            .catch((err) => {
-                console.error("Error al cargar stock por productos:", err)
-                setStockData([])
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, accessToken])
 
     const filteredData = stockData.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())

@@ -14,9 +14,7 @@ import TabItem from './Tab/TabItem'; */
 
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { useStores } from "@/hooks/useStores";
-import { ScrollShadow } from "@nextui-org/react";
 import { useState } from "react";
-import React from "react";
 import StoreCard from "./StoresManager/StoreCard";
 import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
 import LoadingStoresHeader from "./StoresManager/LoadingStoresHeader";
@@ -42,18 +40,6 @@ export default function StoresManager() {
   const loadingStore = false;
   const store = null;
 
-  /* const [selectedStoreId, setSelectedStoreId] = useState(store); */
-
-  // Debug: Log stores cuando cambian
-  React.useEffect(() => {
-    if (stores && stores.length > 0) {
-      console.log('StoresManager - Rendering stores:', stores.length);
-      console.log('First store (should be ghost):', stores[0]);
-      const ghostStore = stores.find(s => s.id === 'registered');
-      console.log('Ghost store found:', ghostStore);
-    }
-  }, [stores]);
-
   const handleOnSelectStore = (id) => {
     if (loadingStore) return;
     if (id === selectedStoreId) {
@@ -72,20 +58,14 @@ export default function StoresManager() {
         ) : (
           /* Content */
           <div className="h-full w-full gap-6 flex flex-col items-center justify-center">
-            <ScrollShadow
+            <div
+              className="overflow-x-auto overflow-y-hidden w-full min-h-36 py-2 rounded-xl flex gap-3"
               onWheel={(e) => {
                 e.preventDefault();
-                e.currentTarget.scrollLeft += e.deltaY; // Permite desplazamiento horizontal con la rueda
+                e.currentTarget.scrollLeft += e.deltaY;
               }}
-              hideScrollBar
-              orientation="horizontal" className="space-x-3 rounded-xl  flex  w-full min-h-36 py-2">
-              <>
-                {stores && stores.length > 0 && stores.map((store) => {
-                  // Debug log para cada store
-                  if (store.id === 'registered') {
-                    console.log('Rendering ghost store:', store);
-                  }
-                  return (
+            >
+              {stores && stores.length > 0 && stores.map((store) => (
                     <StoreCard 
                       key={store.id || `store-${store.name}`} 
                       store={store} 
@@ -94,8 +74,7 @@ export default function StoresManager() {
                       onClick={() => handleOnSelectStore(store.id)} 
                       block={loadingStore} 
                     />
-                  );
-                })}
+                  ))}
                 {realStores.length === 0 && (
                   <Card
                     onClick={() => router.push('/admin/stores/create')}
@@ -125,8 +104,7 @@ export default function StoresManager() {
                     loading={loadingMore}
                   />
                 )}
-              </>
-            </ScrollShadow>
+            </div>
 
             {/* Content Box */}
             <div className='grow flex items-center justify-center w-full overflow-hidden'>

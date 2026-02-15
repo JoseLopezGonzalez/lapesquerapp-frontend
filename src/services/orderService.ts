@@ -593,13 +593,18 @@ export async function getSalesChartData(params: SalesChartParams): Promise<unkno
   return (data as { data?: unknown[] })?.data ?? (data as unknown[]);
 }
 
+/** Transport chart params */
+export interface TransportChartParams {
+  from: string;
+  to: string;
+  token: AuthToken;
+}
+
 /**
  * Fetches transport chart data.
+ * @param params - { from, to, token } - date range and auth token
  */
-export async function getTransportChartData(
-  params: { from: string; to: string },
-  token: AuthToken
-): Promise<unknown> {
+export async function getTransportChartData(params: TransportChartParams): Promise<unknown> {
   const query = new URLSearchParams({
     dateFrom: params.from,
     dateTo: params.to,
@@ -612,7 +617,7 @@ export async function getTransportChartData(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${params.token}`,
         'User-Agent': getUserAgent(),
       },
     }

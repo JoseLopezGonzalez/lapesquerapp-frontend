@@ -1,31 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { getStockBySpeciesStats } from "@/services/storeService"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
 import { Package } from "lucide-react"
+import { useStockBySpeciesStats } from "@/hooks/useStockStats"
 
 export function StockBySpeciesCard() {
-    const { data: session, status } = useSession()
-    const [stockData, setStockData] = useState([])
-    const [isLoading, setIsLoading] = useState(true)
-
-    const accessToken = session?.user?.accessToken
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        getStockBySpeciesStats(accessToken)
-            .then(setStockData)
-            .catch((err) => {
-                console.error("Error al cargar stock por especie:", err)
-                setStockData([])
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, accessToken])
+    const { data: stockData = [], isLoading } = useStockBySpeciesStats()
 
     if (isLoading) return (
         <Card className="w-full max-w-full overflow-hidden">

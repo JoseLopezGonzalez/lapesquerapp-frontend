@@ -5,9 +5,9 @@
 
 **Tarea actual**: Bloque Stock/Inventario/Almacenes
 
-**Fase**: STEP 0 y STEP 1 completados — Análisis con Rating antes 4/10
+**Fase**: Sub-bloque 1 implementado — Rating 4/10 → 5/10
 
-**Próximo paso**: STEP 2 — Proponer cambios por sub-bloques y solicitar aprobación
+**Próximo paso**: Sub-bloque 2 (useStore, useStores) o siguiente módulo según indicación del usuario
 
 ---
 

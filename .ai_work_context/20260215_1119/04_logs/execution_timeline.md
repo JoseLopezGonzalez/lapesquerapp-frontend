@@ -31,3 +31,13 @@
 **Documentos creados**: `01_analysis/step1-analisis.md`  
 **Rating antes**: 4/10  
 **Próximo**: STEP 2 (proponer cambios, esperar aprobación)
+
+---
+
+## STEP 3–5 — Implementación Sub-bloque 1
+
+**Status**: ✅ Completado  
+**Documentos creados**: `03_execution/subblock1-implementation.md`  
+**Log**: `docs/audits/nextjs-evolution-log.md`  
+**Rating después**: 5/10  
+**Próximo**: Sub-bloque 2 (useStore, useStores) o siguiente módulo

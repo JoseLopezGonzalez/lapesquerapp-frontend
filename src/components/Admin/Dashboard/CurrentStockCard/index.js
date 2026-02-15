@@ -1,31 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { useSession } from "next-auth/react"
 import { formatDecimalWeight, formatInteger } from "@/helpers/formats/numbers/formatNumbers"
-import { getTotalStockStats } from "@/services/storeService"
+import { useTotalStockStats } from "@/hooks/useStockStats"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function CurrentStockCard() {
-    const { data: session, status } = useSession()
-    const [isLoading, setIsLoading] = useState(true)
-    const [data, setData] = useState(null)
-
-    const accessToken = session?.user?.accessToken
-
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-
-        getTotalStockStats(accessToken)
-            .then(setData)
-            .catch((err) => {
-                console.error("Error al obtener el stock:", err)
-                setData(null)
-            })
-            .finally(() => setIsLoading(false))
-    }, [status, accessToken])
+    const { data, isLoading } = useTotalStockStats()
 
     if (isLoading) return (
         <Card className="flex justify-between relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">

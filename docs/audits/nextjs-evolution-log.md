@@ -4,6 +4,47 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-15] Bloque Stock/Inventario/Almacenes — Sub-bloque 1: Fundación
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 4/10** | **Rating después: 5/10**
+
+### Problems Addressed
+- Dashboard Stock cards usando useEffect + useState (P1: migrar a React Query)
+- ScrollShadow de NextUI en StoresManager (P1: design system)
+- console.log de debug en StoresManager
+- Sin tests para storeService (P0)
+
+### Changes Applied
+- Creación de useStockStats.js con useTotalStockStats, useStockBySpeciesStats, useStockByProductsStats
+- Migración de CurrentStockCard, StockBySpeciesCard, StockByProductsCard a React Query
+- Sustitución de ScrollShadow por div con overflow-x-auto (shadcn-native)
+- Eliminación de console.log en StoresManager
+- Tests unitarios para storeService (7 tests)
+
+### Verification Results
+- ✅ storeService tests: 7 tests passed
+- ✅ Build exitoso
+- ✅ Sin linter errors en archivos modificados
+- ✅ No imports de @nextui-org en StoresManager
+
+### Gap to 10/10
+- useStore 766 líneas (dividir), CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
+- Store 244 líneas (P1)
+- Migrar useStores a React Query, TenantContext, tests para hooks
+
+### Rollback Plan
+```bash
+git revert <commit-hash>
+npm run build
+```
+
+### Next Steps
+Sub-bloque 2: dividir useStore, migrar useStores a React Query
+
+---
+
 ## [2026-02-15] Bloque Auth — Sub-bloque 1: authService TypeScript + tipos API + tests
 
 **Priority**: P0  
