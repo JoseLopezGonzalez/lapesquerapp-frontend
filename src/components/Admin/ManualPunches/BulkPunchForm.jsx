@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,38 +21,74 @@ import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle, Copy }
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
-import { employeeService } from '@/services/domain/employees/employeeService';
+import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 
 export default function BulkPunchForm() {
   const { data: session } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [validating, setValidating] = useState(false);
-  const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [employeeOptions, setEmployeeOptions] = useState([]);
+  const queryClient = useQueryClient();
+  const { options: employeeOptions, isLoading: loadingEmployees, error: employeesError } = useEmployeeOptions();
+
   const [rows, setRows] = useState([]);
   const [validationResults, setValidationResults] = useState(null);
   const [submitResults, setSubmitResults] = useState(null);
   const [isValidated, setIsValidated] = useState(false);
 
-  // Cargar opciones de empleados
-  useEffect(() => {
-    const loadEmployees = async () => {
-      if (!session?.user?.accessToken) return;
-
-      try {
-        setLoadingEmployees(true);
-        const options = await employeeService.getOptions();
-        setEmployeeOptions(options || []);
-      } catch (error) {
-        console.error('Error al cargar empleados:', error);
-        toast.error('Error al cargar la lista de empleados', getToastTheme());
-      } finally {
-        setLoadingEmployees(false);
+  const validateMutation = useMutation({
+    mutationFn: async (punches) => {
+      const token = session?.user?.accessToken;
+      if (!token) throw new Error('No hay sesión activa');
+      return validateBulkPunches(punches, token);
+    },
+    onSuccess: (result) => {
+      setValidationResults(result);
+      if (result.invalid === 0) {
+        setIsValidated(true);
+        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
+      } else {
+        setIsValidated(false);
+        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
       }
-    };
+    },
+    onError: () => {
+      toast.error('Error al validar los fichajes', getToastTheme());
+    },
+  });
 
-    loadEmployees();
-  }, [session]);
+  const submitMutation = useMutation({
+    mutationFn: async (punches) => {
+      const token = session?.user?.accessToken;
+      if (!token) throw new Error('No hay sesión activa');
+      return createBulkPunches(punches, token);
+    },
+    onSuccess: (result) => {
+      setSubmitResults(result);
+      if (result.failed === 0) {
+        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
+        setTimeout(() => {
+          setRows([]);
+          setValidationResults(null);
+          setSubmitResults(null);
+          setIsValidated(false);
+        }, 3000);
+        queryClient.invalidateQueries({ queryKey: ['punches'] });
+      } else {
+        toast.error(
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
+          getToastTheme()
+        );
+      }
+    },
+    onError: (error) => {
+      const msg = error?.userMessage || error?.message || 'Error al registrar los fichajes';
+      toast.error(msg, getToastTheme());
+    },
+  });
+
+  useEffect(() => {
+    if (employeesError) {
+      toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+    }
+  }, [employeesError]);
 
   // Añadir una nueva fila
   const addRow = () => {
@@ -171,100 +208,45 @@ export default function BulkPunchForm() {
     setIsValidated(false);
   };
 
-  // Validar fichajes
-  const handleValidate = async () => {
+  const punchesPayload = rows.map((row) => ({
+    employee_id: parseInt(row.employee_id) || null,
+    event_type: row.event_type,
+    timestamp: new Date(row.timestamp).toISOString(),
+    device_id: 'manual-admin',
+  }));
+
+  const handleValidate = () => {
     if (rows.length === 0) {
       toast.error('Añade al menos un fichaje para validar', getToastTheme());
       return;
     }
-
     if (!session?.user?.accessToken) {
       toast.error('No hay sesión activa', getToastTheme());
       return;
     }
-
-    try {
-      setValidating(true);
-      const token = session.user.accessToken;
-
-      const punches = rows.map(row => ({
-        employee_id: parseInt(row.employee_id) || null,
-        event_type: row.event_type,
-        timestamp: new Date(row.timestamp).toISOString(),
-        device_id: 'manual-admin',
-      }));
-
-      const result = await validateBulkPunches(punches, token);
-      setValidationResults(result);
-      
-      if (result.invalid === 0) {
-        setIsValidated(true);
-        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
-      } else {
-        setIsValidated(false);
-        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
-      }
-    } catch (error) {
-      console.error('Error al validar:', error);
-      toast.error('Error al validar los fichajes', getToastTheme());
-    } finally {
-      setValidating(false);
-    }
+    validateMutation.mutate(punchesPayload);
   };
 
-  // Enviar fichajes
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (rows.length === 0) {
       toast.error('Añade al menos un fichaje para registrar', getToastTheme());
       return;
     }
-
     if (!isValidated) {
       toast.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero', getToastTheme());
       return;
     }
-
     if (!session?.user?.accessToken) {
       toast.error('No hay sesión activa', getToastTheme());
       return;
     }
-
-    try {
-      setLoading(true);
-      const token = session.user.accessToken;
-
-      const punches = rows.map(row => ({
-        employee_id: parseInt(row.employee_id),
-        event_type: row.event_type,
-        timestamp: new Date(row.timestamp).toISOString(),
-        device_id: 'manual-admin',
-      }));
-
-      const result = await createBulkPunches(punches, token);
-      setSubmitResults(result);
-
-      if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
-        // Limpiar formulario después de éxito
-        setTimeout(() => {
-          setRows([]);
-          setValidationResults(null);
-          setSubmitResults(null);
-          setIsValidated(false);
-        }, 3000);
-      } else {
-        toast.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
-          getToastTheme()
-        );
-      }
-    } catch (error) {
-      console.error('Error al registrar fichajes:', error);
-      const errorMessage = error.userMessage || error.message || 'Error al registrar los fichajes';
-      toast.error(errorMessage, getToastTheme());
-    } finally {
-      setLoading(false);
-    }
+    const payload = rows.map((row) => ({
+      employee_id: parseInt(row.employee_id),
+      event_type: row.event_type,
+      timestamp: new Date(row.timestamp).toISOString(),
+      device_id: 'manual-admin',
+    }));
+    submitMutation.mutate(payload);
   };
 
   const getRowValidation = (index) => {
@@ -303,9 +285,9 @@ export default function BulkPunchForm() {
               type="button"
               onClick={handleValidate}
               variant="outline"
-              disabled={validating || rows.length === 0}
+              disabled={validateMutation.isPending || rows.length === 0}
             >
-              {validating ? (
+              {validateMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Validando...
@@ -317,9 +299,9 @@ export default function BulkPunchForm() {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={loading || rows.length === 0 || !isValidated}
+              disabled={submitMutation.isPending || rows.length === 0 || !isValidated}
             >
-              {loading ? (
+              {submitMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Registrando...
@@ -332,7 +314,7 @@ export default function BulkPunchForm() {
         </div>
 
         {/* Mensaje de validación requerida */}
-        {rows.length > 0 && !isValidated && !validating && (
+        {rows.length > 0 && !isValidated && !validateMutation.isPending && (
           <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md">
             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <div className="flex-1">

@@ -2,181 +2,93 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2, Users } from 'lucide-react';
 import Loader from '@/components/Utilities/Loader';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
-import { getEmployees } from '@/services/employeeService';
+import { useEmployeesWithLastPunch } from '@/hooks/useEmployeesForPunches';
 import { createPunch } from '@/services/punchService';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const DEVICE_ID = 'manual-web-interface';
 
+function getErrorMessage(err) {
+    return err?.userMessage || err?.data?.userMessage || err?.response?.data?.userMessage || err?.message || 'Error al registrar el fichaje';
+}
+
 export default function TimePunchManager() {
     const { data: session } = useSession();
-    const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const queryClient = useQueryClient();
+    const { employees, isLoading: loading, error: employeesError } = useEmployeesWithLastPunch({ perPage: 100, with_last_punch: true });
+
     const [registeringId, setRegisteringId] = useState(null);
     const [lastSuccess, setLastSuccess] = useState(null);
-    const [dialogContent, setDialogContent] = useState(null); // Contenido congelado del dialog
+    const [dialogContent, setDialogContent] = useState(null);
 
-    // Cargar lista de empleados
+    const punchMutation = useMutation({
+        mutationFn: async ({ employeeId }) => {
+            const token = session?.user?.accessToken;
+            if (!token) throw new Error('No hay sesión activa');
+            const result = await createPunch(
+                { employee_id: employeeId, device_id: DEVICE_ID },
+                token
+            );
+            if (!result) throw new Error('No se recibió respuesta del servidor');
+            return result;
+        },
+        onSuccess: (result, { employeeId, employeeName }) => {
+            const eventType = result.event_type || result.eventType || null;
+            const resultTimestamp = result.timestamp || result.created_at || result.createdAt || result.date || new Date().toISOString();
+            const resultEmployeeName = result.employee_name || result.employeeName || employeeName;
+            const currentEmployee = employees.find((emp) => emp.id === employeeId);
+            const previousLastPunchEvent = currentEmployee?.lastPunchEvent || null;
+
+            setDialogContent({
+                eventType,
+                employeeName: resultEmployeeName,
+                timestamp: resultTimestamp,
+            });
+            setLastSuccess({
+                employeeId,
+                employeeName: resultEmployeeName,
+                eventType,
+                timestamp: resultTimestamp,
+                previousLastPunchEvent,
+            });
+
+            queryClient.invalidateQueries({ queryKey: ['employees'] });
+            queryClient.invalidateQueries({ queryKey: ['punches'] });
+
+            setTimeout(() => {
+                setLastSuccess(null);
+                setDialogContent(null);
+            }, 3000);
+        },
+        onError: (error) => {
+            toast.error(getErrorMessage(error), getToastTheme());
+        },
+        onSettled: () => {
+            setRegisteringId(null);
+        },
+    });
+
     useEffect(() => {
-        const loadEmployees = async () => {
-            if (!session?.user?.accessToken) return;
+        if (employeesError) {
+            toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+        }
+    }, [employeesError]);
 
-            try {
-                setLoading(true);
-                const token = session.user.accessToken;
-                const response = await getEmployees(token, { perPage: 100, with_last_punch: true });
-                setEmployees(response.data || []);
-            } catch (error) {
-                console.error('Error al cargar empleados:', error);
-                // Priorizar userMessage sobre message para mostrar errores en formato natural
-                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al cargar la lista de empleados';
-                toast.error(errorMessage, getToastTheme());
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadEmployees();
-    }, [session]);
-
-    const handleRegisterPunch = async (employeeId, employeeName) => {
+    const handleRegisterPunch = (employeeId, employeeName) => {
         if (!session?.user?.accessToken) {
             toast.error('No hay sesión activa', getToastTheme());
             return;
         }
-
-        try {
-            setRegisteringId(employeeId);
-            const token = session.user.accessToken;
-
-            // Registrar el fichaje usando employee_id
-            let result;
-            try {
-                result = await createPunch(
-                    {
-                        employee_id: employeeId,
-                        device_id: DEVICE_ID,
-                    },
-                    token
-                );
-            } catch (punchError) {
-                // Log detallado del error para debugging
-                console.error('Error en createPunch:', punchError);
-                console.error('Error details:', {
-                    message: punchError.message,
-                    error: punchError,
-                });
-                
-                // Priorizar userMessage sobre message para mostrar errores en formato natural
-                let errorMessage = 'Error al registrar el fichaje';
-                if (punchError.userMessage) {
-                    errorMessage = punchError.userMessage;
-                } else if (punchError.data?.userMessage) {
-                    errorMessage = punchError.data.userMessage;
-                } else if (punchError.response?.data?.userMessage) {
-                    errorMessage = punchError.response.data.userMessage;
-                } else if (punchError.message) {
-                    errorMessage = punchError.message;
-                } else if (punchError.error) {
-                    errorMessage = typeof punchError.error === 'string' 
-                        ? punchError.error 
-                        : (punchError.error.userMessage || punchError.error.message || errorMessage);
-                }
-                
-                throw new Error(errorMessage);
-            }
-
-            // Validar que result existe y tiene la estructura esperada
-            if (!result) {
-                throw new Error('No se recibió respuesta del servidor');
-            }
-
-            // Mostrar resultado con un mensaje visual mejorado
-            const eventType = result.event_type || result.eventType || null;
-            const eventTypeLabel = eventType === 'IN' ? 'Entrada' : eventType === 'OUT' ? 'Salida' : 'Fichaje';
-            
-            // Intentar obtener timestamp de múltiples lugares posibles
-            const resultTimestamp = result.timestamp 
-                || result.created_at 
-                || result.createdAt
-                || result.date
-                || new Date().toISOString();
-            
-            let timestampString = '';
-            try {
-                const timestampDate = new Date(resultTimestamp);
-                if (!isNaN(timestampDate.getTime())) {
-                    timestampString = timestampDate.toLocaleString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    });
-                }
-            } catch (e) {
-                console.warn('Error al formatear timestamp:', e);
-                timestampString = 'ahora';
-            }
-
-            const resultEmployeeName = result.employee_name || result.employeeName || employeeName;
-
-            // Encontrar el empleado actual para guardar su estado previo
-            const currentEmployee = employees.find(emp => emp.id === employeeId);
-            const previousLastPunchEvent = currentEmployee?.lastPunchEvent || null;
-            
-            // Guardar información del último éxito ANTES de recargar empleados
-            // Esto asegura que el dialog muestre la información correcta
-            // También guardamos el estado previo para congelar la visualización de la card
-            const successData = {
-                employeeId,
-                employeeName: resultEmployeeName,
-                eventType: eventType,
-                timestamp: resultTimestamp,
-                previousLastPunchEvent: previousLastPunchEvent, // Estado previo antes del fichaje
-            };
-            
-            // Congelar el contenido del dialog de inmediato para evitar cambios
-            setDialogContent({
-                eventType: eventType,
-                employeeName: resultEmployeeName,
-                timestamp: resultTimestamp,
-            });
-            
-            setLastSuccess(successData);
-
-            // Recargar lista de empleados para actualizar lastPunchEvent
-            // Hacerlo después de un pequeño delay para que el dialog se muestre primero
-            setTimeout(async () => {
-                try {
-                    const response = await getEmployees(token, { perPage: 100, with_last_punch: true });
-                    setEmployees(response.data || []);
-                } catch (reloadError) {
-                    console.warn('Error al recargar empleados, pero el fichaje se registró correctamente:', reloadError);
-                    // No mostrar error aquí, el fichaje ya se registró
-                }
-            }, 100);
-
-            // Cerrar dialog de éxito después de 3 segundos
-            setTimeout(() => {
-                setLastSuccess(null);
-                setDialogContent(null); // Limpiar contenido congelado también
-            }, 3000);
-        } catch (error) {
-            console.error('Error al registrar fichaje:', error);
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al registrar el fichaje';
-            toast.error(errorMessage, getToastTheme());
-        } finally {
-            setRegisteringId(null);
-        }
+        setRegisteringId(employeeId);
+        punchMutation.mutate({ employeeId, employeeName });
     };
 
     const getNextPunchType = (lastPunch) => {

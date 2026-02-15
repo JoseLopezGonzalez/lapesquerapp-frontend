@@ -1,231 +1,143 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import {
     getProductionRecord,
     createProductionRecord,
     updateProductionRecord,
     getProductionRecordsOptions,
     getProduction
-} from '@/services/productionService'
-import { fetchWithTenant } from '@/lib/fetchWithTenant'
-import { API_URL_V2 } from '@/configs/config'
-import { dateToIso } from '@/helpers/production/dateFormatters'
+} from '@/services/productionService';
+import { dateToIso } from '@/helpers/production/dateFormatters';
+import { useProduction } from '@/hooks/production/useProduction';
+import { useProcessOptions } from '@/hooks/production/useProcessOptions';
 
 /**
- * Hook personalizado para gestionar production records
- * @param {string|number} productionId - ID de la producción
- * @param {string|number|null} recordId - ID del record (null para crear nuevo)
- * @param {Function} onRefresh - Callback cuando se actualiza el record
- * @returns {object} - Estado y funciones del hook
+ * Hook personalizado para gestionar production records con React Query.
+ * Mantiene la misma API que antes para ProductionRecordContext y ProductionRecordEditor.
  */
 export function useProductionRecord(productionId, recordId = null, onRefresh = null) {
-    const { data: session } = useSession()
-    const token = session?.user?.accessToken
+    const { data: session } = useSession();
+    const token = session?.user?.accessToken;
+    const queryClient = useQueryClient();
 
-    const [record, setRecord] = useState(null)
-    const [production, setProduction] = useState(null)
-    const [processes, setProcesses] = useState([])
-    const [existingRecords, setExistingRecords] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
-    const [error, setError] = useState(null)
+    const { production, isLoading: productionLoading, refetch: refetchProduction } = useProduction(productionId);
+    const { processes, isLoading: processesLoading } = useProcessOptions();
 
-    // isEditMode es true si hay un recordId inicial O si hay un record con ID (después de crear)
-    const isEditMode = recordId !== null || (record?.id !== null && record?.id !== undefined)
+    const [record, setRecord] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Cargar procesos disponibles
-    const loadProcesses = useCallback(async () => {
-        if (!token) return
-        
-        try {
-            const response = await fetchWithTenant(`${API_URL_V2}processes/options`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                    'User-Agent': navigator.userAgent,
-                },
-            })
-            
-            if (response.ok) {
-                const data = await response.json()
-                setProcesses(data.data || data || [])
-            }
-        } catch (err) {
-            console.warn('No se pudieron cargar los tipos de proceso:', err)
-            setProcesses([])
+    const isEditMode = recordId !== null || (record?.id != null);
+
+    const recordQuery = useQuery({
+        queryKey: ['productionRecords', recordId],
+        queryFn: () => getProductionRecord(recordId, token),
+        enabled: !!token && !!recordId,
+    });
+
+    const existingRecordsQuery = useQuery({
+        queryKey: ['productionRecords', 'options', productionId, recordId ?? record?.id],
+        queryFn: () => getProductionRecordsOptions(token, productionId, recordId || record?.id),
+        enabled: !!token && !!productionId,
+    });
+
+    const existingRecords = existingRecordsQuery.data ?? [];
+
+    useEffect(() => {
+        if (recordId && recordQuery.data !== undefined) {
+            setRecord(recordQuery.data);
+        } else if (!recordId) {
+            setRecord(null);
         }
-    }, [token])
+    }, [recordId, recordQuery.data]);
 
-    // Cargar records existentes en formato minimal (para select de proceso padre)
-    const loadExistingRecords = useCallback(async () => {
-        if (!token || !productionId) return
-        
-        try {
-            // Usar recordId del parámetro o del record cargado
-            const currentRecordId = recordId || (record?.id ? record.id : null)
-            const records = await getProductionRecordsOptions(token, productionId, currentRecordId)
-            setExistingRecords(records || [])
-        } catch (err) {
-            console.warn('Error loading existing records:', err)
-            setExistingRecords([])
-        }
-    }, [token, productionId, recordId, record?.id])
-
-    // Cargar datos iniciales
-    const loadInitialData = useCallback(async () => {
-        if (!token || !productionId) return
-
-        try {
-            setLoading(true)
-            setError(null)
-
-            // Cargar información de la producción
-            try {
-                const productionData = await getProduction(productionId, token)
-                setProduction(productionData)
-            } catch (err) {
-                console.warn('Error loading production data:', err)
-            }
-
-            // Si es modo edición, cargar el record y datos relacionados en paralelo
-            if (isEditMode && recordId) {
-                try {
-                    // Cargar record, procesos y existing records en paralelo para optimizar
-                    const [recordData] = await Promise.all([
-                        getProductionRecord(recordId, token),
-                        loadProcesses() // Cargar procesos en paralelo
-                    ])
-                    setRecord(recordData)
-                    
-                    // Cargar existing records después de tener el record (para excluir el ID correcto)
-                    // El endpoint ya excluye el record actual, así que solo necesita productionId
-                    await loadExistingRecords()
-                } catch (err) {
-                    console.error('Error loading record:', err)
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar el proceso';
-                    setError(errorMessage)
-                }
-            } else {
-                // Si es modo creación, cargar procesos y existing records en paralelo
-                await Promise.all([
-                    loadProcesses(),
-                    loadExistingRecords()
-                ])
-            }
-        } catch (err) {
-            console.error('Error loading data:', err)
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos';
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
-        }
-    }, [token, productionId, recordId, isEditMode, loadProcesses, loadExistingRecords])
-
-    // Guardar record (crear o actualizar)
-    const saveRecord = useCallback(async (formData) => {
-        if (!token || !productionId) {
-            throw new Error('Token o productionId no disponible')
-        }
-
-        // Validar que process_id sea obligatorio
-        if (!formData.process_id || formData.process_id === 'none') {
-            throw new Error('El tipo de proceso es obligatorio')
-        }
-
-        setSaving(true)
-        setError(null)
-
-        try {
-            // Convertir fechas de date (YYYY-MM-DD) a ISO agregando hora por defecto (12:00:00)
-            // La hora se agrega automáticamente en el backend, imperceptible para el usuario
-            const startedAtISO = dateToIso(formData.started_at)
-            const finishedAtISO = dateToIso(formData.finished_at)
-            
+    const saveMutation = useMutation({
+        mutationFn: async ({ formData, isEdit }) => {
+            const startedAtISO = dateToIso(formData.started_at);
+            const finishedAtISO = dateToIso(formData.finished_at);
             const recordData = {
                 production_id: parseInt(productionId),
                 process_id: parseInt(formData.process_id),
-                parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none' 
-                    ? parseInt(formData.parent_record_id) 
+                parent_record_id: formData.parent_record_id && formData.parent_record_id !== 'none'
+                    ? parseInt(formData.parent_record_id)
                     : null,
                 started_at: startedAtISO,
                 ...(finishedAtISO !== null && { finished_at: finishedAtISO }),
-                notes: formData.notes || null
+                notes: formData.notes || null,
+            };
+            if (isEdit) {
+                return updateProductionRecord(recordId, recordData, token);
             }
-
-            let response
-            if (isEditMode) {
-                response = await updateProductionRecord(recordId, recordData, token)
-                // Recargar el record actualizado
-                const updatedRecord = await getProductionRecord(recordId, token)
-                setRecord(updatedRecord)
+            return createProductionRecord(recordData, token);
+        },
+        onSuccess: async (response, { formData, isEdit }) => {
+            setError(null);
+            if (isEdit) {
+                const updated = await getProductionRecord(recordId, token);
+                setRecord(updated);
             } else {
-                response = await createProductionRecord(recordData, token)
-                const createdRecordId = response?.data?.id || response?.id
-
-                if (createdRecordId) {
-                    const newRecord = await getProductionRecord(createdRecordId, token)
-                    setRecord(newRecord)
+                const createdId = response?.data?.id ?? response?.id;
+                if (createdId) {
+                    const newRecord = await getProductionRecord(createdId, token);
+                    setRecord(newRecord);
                 }
             }
+            queryClient.invalidateQueries({ queryKey: ['productionRecords'] });
+            queryClient.invalidateQueries({ queryKey: ['productions'] });
+            if (onRefresh) onRefresh();
+        },
+        onError: (err) => {
+            const msg = err?.userMessage ?? err?.data?.userMessage ?? err?.response?.data?.userMessage ?? err?.message ?? `Error al ${recordId ? 'actualizar' : 'crear'} el proceso`;
+            setError(msg);
+        },
+        onSettled: () => setSaving(false),
+    });
 
-            // Recargar records para actualizar el select de proceso padre
-            await loadExistingRecords()
-
-            // Llamar callback si existe
-            if (onRefresh) {
-                onRefresh()
-            }
-
-            return response
-        } catch (err) {
-            console.error('Error saving record:', err)
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el proceso`;
-            setError(errorMessage)
-            throw err
-        } finally {
-            setSaving(false)
+    const saveRecord = useCallback(async (formData) => {
+        if (!token || !productionId) throw new Error('Token o productionId no disponible');
+        if (!formData.process_id || formData.process_id === 'none') throw new Error('El tipo de proceso es obligatorio');
+        setSaving(true);
+        setError(null);
+        try {
+            await saveMutation.mutateAsync({
+                formData,
+                isEdit: !!recordId,
+            });
+        } catch (e) {
+            setSaving(false);
+            throw e;
         }
-    }, [token, productionId, recordId, isEditMode, loadExistingRecords, onRefresh])
+    }, [token, productionId, recordId, saveMutation]);
 
-    // Recargar datos
     const refresh = useCallback(() => {
-        loadInitialData()
-    }, [loadInitialData])
+        refetchProduction();
+        recordQuery.refetch();
+        existingRecordsQuery.refetch();
+    }, [refetchProduction, recordQuery, existingRecordsQuery]);
 
-    // Efecto para cargar datos cuando cambian las dependencias
-    useEffect(() => {
-        if (token && productionId) {
-            loadInitialData()
-        }
-    }, [token, productionId, recordId, loadInitialData])
+    const loadInitialData = useCallback(() => {
+        refetchProduction();
+        recordQuery.refetch();
+        existingRecordsQuery.refetch();
+    }, [refetchProduction, recordQuery, existingRecordsQuery]);
 
-    // Función para actualizar el record directamente (para contexto)
-    const setRecordDirect = useCallback((newRecord) => {
-        setRecord(newRecord)
-    }, [])
+    const loading = productionLoading || processesLoading || (!!recordId && recordQuery.isLoading) || existingRecordsQuery.isLoading;
 
     return {
-        // Datos
         record,
         production,
-        processes,
+        processes: processes ?? [],
         existingRecords,
-        
-        // Estados
         loading,
         saving,
         error,
         isEditMode,
-        
-        // Funciones
         saveRecord,
         refresh,
         loadInitialData,
-        setRecord: setRecordDirect // Exponer setRecord para el contexto
-    }
+        setRecord,
+    };
 }
-

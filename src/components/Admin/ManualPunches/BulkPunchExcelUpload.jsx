@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,43 +17,80 @@ import { Loader2, Upload, Download, CheckCircle2, AlertTriangle, AlertCircle, X 
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
 import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
-import { employeeService } from '@/services/domain/employees/employeeService';
+import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 export default function BulkPunchExcelUpload() {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
-  const [loading, setLoading] = useState(false);
-  const [validating, setValidating] = useState(false);
+  const { options: employeeOptions, isLoading: loadingEmployees, error: employeesError } = useEmployeeOptions();
+
   const [loadingTemplate, setLoadingTemplate] = useState(false);
-  const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [employeeOptions, setEmployeeOptions] = useState([]);
   const [parsedData, setParsedData] = useState([]);
   const [validationResults, setValidationResults] = useState(null);
   const [submitResults, setSubmitResults] = useState(null);
   const [fileName, setFileName] = useState('');
   const [isValidated, setIsValidated] = useState(false);
 
-  // Cargar opciones de empleados
-  useEffect(() => {
-    const loadEmployees = async () => {
-      if (!session?.user?.accessToken) return;
-
-      try {
-        setLoadingEmployees(true);
-        const options = await employeeService.getOptions();
-        setEmployeeOptions(options || []);
-      } catch (error) {
-        console.error('Error al cargar empleados:', error);
-        toast.error('Error al cargar la lista de empleados', getToastTheme());
-      } finally {
-        setLoadingEmployees(false);
+  const validateMutation = useMutation({
+    mutationFn: async (punches) => {
+      const token = session?.user?.accessToken;
+      if (!token) throw new Error('No hay sesión activa');
+      return validateBulkPunches(punches, token);
+    },
+    onSuccess: (result) => {
+      setValidationResults(result);
+      if (result.invalid === 0) {
+        setIsValidated(true);
+        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
+      } else {
+        setIsValidated(false);
+        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
       }
-    };
+    },
+    onError: () => {
+      toast.error('Error al validar los fichajes', getToastTheme());
+    },
+  });
 
-    loadEmployees();
-  }, [session]);
+  const submitMutation = useMutation({
+    mutationFn: async (punches) => {
+      const token = session?.user?.accessToken;
+      if (!token) throw new Error('No hay sesión activa');
+      return createBulkPunches(punches, token);
+    },
+    onSuccess: (result) => {
+      setSubmitResults(result);
+      if (result.failed === 0) {
+        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
+        setTimeout(() => {
+          setParsedData([]);
+          setValidationResults(null);
+          setSubmitResults(null);
+          setIsValidated(false);
+          setFileName('');
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }, 3000);
+        queryClient.invalidateQueries({ queryKey: ['punches'] });
+      } else {
+        toast.error(
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
+          getToastTheme()
+        );
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.userMessage || error?.message || 'Error al registrar los fichajes', getToastTheme());
+    },
+  });
+
+  useEffect(() => {
+    if (employeesError) {
+      toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+    }
+  }, [employeesError]);
 
   // Función para buscar empleado por nombre
   const findEmployeeByName = (name) => {
@@ -416,104 +454,39 @@ export default function BulkPunchExcelUpload() {
     }
   };
 
-  // Validar fichajes
-  const handleValidate = async () => {
+  const punchesFromParsed = parsedData.map((row) => ({
+    employee_id: parseInt(row.employee_id),
+    event_type: row.event_type,
+    timestamp: row.timestamp,
+    device_id: 'manual-admin',
+  }));
+
+  const handleValidate = () => {
     if (parsedData.length === 0) {
       toast.error('No hay datos para validar. Por favor, carga un archivo Excel primero', getToastTheme());
       return;
     }
-
     if (!session?.user?.accessToken) {
       toast.error('No hay sesión activa', getToastTheme());
       return;
     }
-
-    try {
-      setValidating(true);
-      const token = session.user.accessToken;
-
-      const punches = parsedData.map(row => ({
-        employee_id: parseInt(row.employee_id),
-        event_type: row.event_type,
-        timestamp: row.timestamp,
-        device_id: 'manual-admin',
-      }));
-
-      const result = await validateBulkPunches(punches, token);
-      setValidationResults(result);
-
-      if (result.invalid === 0) {
-        setIsValidated(true);
-        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
-      } else {
-        setIsValidated(false);
-        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
-      }
-    } catch (error) {
-      console.error('Error al validar:', error);
-      toast.error('Error al validar los fichajes', getToastTheme());
-    } finally {
-      setValidating(false);
-    }
+    validateMutation.mutate(punchesFromParsed);
   };
 
-  // Enviar fichajes
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (parsedData.length === 0) {
       toast.error('No hay datos para registrar. Por favor, carga un archivo Excel primero', getToastTheme());
       return;
     }
-
     if (!isValidated) {
       toast.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero', getToastTheme());
       return;
     }
-
     if (!session?.user?.accessToken) {
       toast.error('No hay sesión activa', getToastTheme());
       return;
     }
-
-    try {
-      setLoading(true);
-      const token = session.user.accessToken;
-
-      const punches = parsedData.map(row => ({
-        employee_id: parseInt(row.employee_id),
-        event_type: row.event_type,
-        timestamp: row.timestamp,
-        device_id: 'manual-admin',
-      }));
-
-      const result = await createBulkPunches(punches, token);
-      setSubmitResults(result);
-
-      if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
-        // Limpiar después de éxito
-        setTimeout(() => {
-          setParsedData([]);
-          setFileName('');
-          setValidationResults(null);
-          setSubmitResults(null);
-          setIsValidated(false);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
-        }, 3000);
-      } else {
-        toast.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
-          getToastTheme()
-        );
-      }
-    } catch (error) {
-      console.error('Error al registrar fichajes:', error);
-      const errorMessage = error.userMessage || error.message || 'Error al registrar los fichajes';
-      toast.error(errorMessage, getToastTheme());
-    } finally {
-      setLoading(false);
-    }
+    submitMutation.mutate(punchesFromParsed);
   };
 
   // Limpiar datos
@@ -599,9 +572,9 @@ export default function BulkPunchExcelUpload() {
                 type="button"
                 onClick={handleValidate}
                 variant="outline"
-                disabled={validating}
+                disabled={validateMutation.isPending}
               >
-                {validating ? (
+                {validateMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Validando...
@@ -613,10 +586,10 @@ export default function BulkPunchExcelUpload() {
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={loading || !isValidated}
+                disabled={submitMutation.isPending || !isValidated}
                 className="ml-auto"
               >
-                {loading ? (
+                {submitMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Importando...
@@ -650,7 +623,7 @@ export default function BulkPunchExcelUpload() {
         )}
 
         {/* Mensaje de validación requerida */}
-        {parsedData.length > 0 && !isValidated && !validating && (
+        {parsedData.length > 0 && !isValidated && !validateMutation.isPending && (
           <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md">
             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <div className="flex-1">

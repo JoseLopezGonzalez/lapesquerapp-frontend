@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft, Loader2, AlertCircle, Radio } from 'lucide-react';
@@ -17,9 +18,45 @@ const DEVICE_ID = 'nfc-reader-web-interface';
 
 export default function NFCPunchManager() {
     const { data: session } = useSession();
+    const queryClient = useQueryClient();
     const { theme, resolvedTheme } = useTheme();
     const [nfcCode, setNfcCode] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const punchMutation = useMutation({
+        mutationFn: async ({ punchPayload }) => {
+            const token = session?.user?.accessToken;
+            if (!token) throw new Error('No hay sesión activa');
+            const result = await createPunch(punchPayload, token);
+            if (!result) throw new Error('No se recibió respuesta del servidor');
+            return result;
+        },
+        onSuccess: (result, { employeeName, eventType }) => {
+            const actualEventType = result.event_type || result.eventType || eventType;
+            const actualEventTypeLabel = actualEventType === 'IN' ? 'Entrada' : 'Salida';
+            const resultTimestamp = result.timestamp || result.created_at || result.createdAt || result.date || new Date().toISOString();
+            let timestampString = '';
+            try {
+                const d = new Date(resultTimestamp);
+                if (!Number.isNaN(d.getTime())) {
+                    timestampString = d.toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+            } catch {
+                timestampString = 'ahora';
+            }
+            setDialogContent(null);
+            showSuccessMessage(employeeName, actualEventType, actualEventTypeLabel, timestampString);
+            queryClient.invalidateQueries({ queryKey: ['punches'] });
+            queryClient.invalidateQueries({ queryKey: ['employees'] });
+        },
+        onError: (error) => {
+            const msg = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al registrar el fichaje';
+            showErrorDialog(msg);
+        },
+        onSettled: () => {
+            setIsProcessing(false);
+        },
+    });
     const [dialogContent, setDialogContent] = useState(null);
     const [statusMessage, setStatusMessage] = useState(null); // { type: 'error' | 'success', message: string, employeeName?: string, eventType?: string }
     const inputRef = useRef(null);
@@ -151,90 +188,19 @@ export default function NFCPunchManager() {
             }
 
             const employee = employeesResponse.data[0];
-
-            // Determinar si es entrada o salida basándose en el último fichaje
             const lastPunch = employee.lastPunchEvent;
             const isEntry = !lastPunch || lastPunch.event_type === 'OUT';
             const eventType = isEntry ? 'IN' : 'OUT';
-            const eventTypeLabel = isEntry ? 'Entrada' : 'Salida';
 
-            // Registrar el fichaje (sin mostrar diálogo de carga cuando el trabajador se identifica correctamente)
-            // Enviamos el event_type calculado, aunque el backend podría determinarlo automáticamente
-            let result;
-            try {
-                result = await createPunch(
-                    {
-                        uid: uid,
-                        device_id: DEVICE_ID,
-                        event_type: eventType, // Enviamos el tipo calculado en el frontend
-                    },
-                    token
-                );
-            } catch (punchError) {
-                console.error('Error en createPunch:', punchError);
-                
-                // Priorizar userMessage sobre message para mostrar errores en formato natural
-                let errorMessage = 'Error al registrar el fichaje';
-                if (punchError.userMessage) {
-                    errorMessage = punchError.userMessage;
-                } else if (punchError.data?.userMessage) {
-                    errorMessage = punchError.data.userMessage;
-                } else if (punchError.response?.data?.userMessage) {
-                    errorMessage = punchError.response.data.userMessage;
-                } else if (punchError.message) {
-                    errorMessage = punchError.message;
-                } else if (punchError.error) {
-                    errorMessage = typeof punchError.error === 'string' 
-                        ? punchError.error 
-                        : (punchError.error.userMessage || punchError.error.message || errorMessage);
-                }
-                
-                throw new Error(errorMessage);
-            }
-
-            // Validar que result existe
-            if (!result) {
-                throw new Error('No se recibió respuesta del servidor');
-            }
-
-            // Obtener el event_type real del resultado (puede diferir del esperado)
-            const actualEventType = result.event_type || result.eventType || eventType;
-            const actualEventTypeLabel = actualEventType === 'IN' ? 'Entrada' : 'Salida';
-
-            // Obtener timestamp
-            const resultTimestamp = result.timestamp 
-                || result.created_at 
-                || result.createdAt
-                || result.date
-                || new Date().toISOString();
-            
-            let timestampString = '';
-            try {
-                const timestampDate = new Date(resultTimestamp);
-                if (!isNaN(timestampDate.getTime())) {
-                    timestampString = timestampDate.toLocaleString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                    });
-                }
-            } catch (e) {
-                console.warn('Error al formatear timestamp:', e);
-                timestampString = 'ahora';
-            }
-
-            // Cerrar el diálogo de registro
-            setDialogContent(null);
-
-            // Mostrar mensaje de éxito en el área principal
-            showSuccessMessage(employee.name, actualEventType, actualEventTypeLabel, timestampString);
-
+            punchMutation.mutate({
+                punchPayload: { uid, device_id: DEVICE_ID, event_type: eventType },
+                employeeName: employee.name,
+                eventType,
+            });
         } catch (error) {
             console.error('Error al procesar fichaje NFC:', error);
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al procesar el fichaje';
             showErrorDialog(errorMessage);
-        } finally {
             setIsProcessing(false);
         }
     };

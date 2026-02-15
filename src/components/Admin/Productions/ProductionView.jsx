@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getProduction, getProductionProcessTree, getProductionTotals } from '@/services/productionService'
+import { useProductionDetail } from '@/hooks/production/useProductionDetail'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,57 +18,10 @@ import ProductionRecordsManager from './ProductionRecordsManager'
 import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
 const ProductionView = ({ productionId }) => {
-    const { data: session } = useSession()
     const router = useRouter()
-    const [production, setProduction] = useState(null)
-    const [processTree, setProcessTree] = useState(null)
-    const [totals, setTotals] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const { production, processTree, totals, isLoading: loading, error, refetch } = useProductionDetail(productionId)
     const [viewMode, setViewMode] = useState('simple')
     const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
-
-    useEffect(() => {
-        if (session?.user?.accessToken && productionId) {
-            loadProductionData()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionId])
-
-    const loadProductionData = async () => {
-        try {
-            setLoading(true)
-            setError(null)
-
-            const token = session.user.accessToken
-
-            // Cargar datos en paralelo
-            const [productionData, treeData, totalsData] = await Promise.all([
-                getProduction(productionId, token),
-                getProductionProcessTree(productionId, token).catch((err) => {
-                    console.error('Error al cargar processTree:', err)
-                    // Si es un error 500, probablemente es un problema del backend con los nodos de venta/stock
-                    if (err.message && err.message.includes('500')) {
-                        console.error('Error 500 del backend - posible problema con formato de fechas en nodos de venta/stock')
-                    }
-                    return null
-                }),
-                getProductionTotals(productionId, token).catch(() => null)
-            ])
-
-            console.log('ProductionView - processTree cargado:', treeData)
-            setProduction(productionData)
-            setProcessTree(treeData)
-            setTotals(totalsData)
-        } catch (err) {
-            console.error('Error loading production data:', err)
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los datos de la producción';
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
-        }
-    }
 
 
     if (loading) {
@@ -704,7 +656,7 @@ const ProductionView = ({ productionId }) => {
                         <ProductionRecordsManager
                             productionId={productionId}
                             processTree={processTree}
-                            onRefresh={loadProductionData}
+                            onRefresh={refetch}
                         />
                     </div>
                 </TabsContent>

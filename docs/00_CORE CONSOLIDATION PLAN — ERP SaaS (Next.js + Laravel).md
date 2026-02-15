@@ -51,12 +51,12 @@
 | 1 | **Auth + Roles/Permisos** | **8/10** | authService TS + tipos API + tests; LoginPage dividida; Zod en login/verify; middleware, NextAuth, componentes Auth en TS. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
 | 2 | **Dashboard** (Admin + Operario) | **9/10** | React Query: useOrdersStats, useSpeciesOptions, useProductOptions, useDashboardCharts, usePunches, useReceptionsList, useDispatchesList. 14 cards/charts. Ver evolution-log. | 2026-02-15 |
 | 3 | **Ventas** (Orders + líneas + estados) | **9/10** | Order y OrderPallets refactorizados; Zod en formularios; tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
-| 4 | **Productos** (productos, categorías, familias, especies, artes, zonas) | — | Pendiente auditoría | — |
+| 4 | **Productos** (productos, categorías, familias, especies, artes, zonas) | **9/10** | useProductOptions, useProductCategoryOptions, useProductFamilyOptions, useSpeciesOptions (React Query); useCaptureZoneOptions, useFishingGearOptions en useProductBlockCatalogOptions; productService.ts tipado (ProductOption); tipos en src/types/product.ts. Listados vía EntityClient. | 2026-02-15 |
 | 5 | **Clientes** (clientes, formas pago, países) | — | Pendiente auditoría | — |
 | 6 | **Proveedores** (proveedores, liquidaciones) | — | Pendiente auditoría | — |
 | 7 | **Stock / Almacenes** (stores, cajas, palets, recepciones MP, salidas cebo, warehouse operario) | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver evolution-log. | 2026-02-15 |
-| 8 | **Producciones** | — | Pendiente auditoría | — |
-| 9 | **Fichajes / Gestión horaria** (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager) | — | Pendiente auditoría | — |
+| 8 | **Producciones** | **9/10** | useProductionDetail, useProduction, useProcessOptions (React Query); useProductionRecord migrado a React Query + useMutation; ProductionView y editor con invalidación coordinada; tipos en src/types/production.ts. Pendiente: reducción de ProductionInputsManager/OutputsManager/ConsumptionsManager (P0, +200 líneas). Ver .ai_work_context/20260215_1313/01_analysis y 02_planning bloque-8. | 2026-02-15 |
+| 9 | **Fichajes / Gestión horaria** (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager) | **9/10** | usePunchesDashboard, usePunchesStatistics, usePunchesList, usePunchesByMonth; useEmployeeOptions, useEmployeesWithLastPunch; IndividualPunchForm Zod + RHF + useMutation; TimePunch/NFCPunch useMutation; BulkPunchForm/Excel useMutation + useEmployeeOptions; tipos en `src/types/punch.ts`. Ver `.ai_work_context/20260215_1313/`. | 2026-02-15 |
 | 10 | **Catálogos auxiliares** (transportes, incoterms, comerciales) | — | Pendiente auditoría | — |
 | 11 | **Usuarios y sesiones** | — | Pendiente auditoría | — |
 | 12 | **Orquestador** (preparación pedidos) | — | Pendiente auditoría | — |

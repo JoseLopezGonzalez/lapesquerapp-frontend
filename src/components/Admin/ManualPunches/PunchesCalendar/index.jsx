@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertTriangle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToastTheme } from '@/customs/reactHotToast';
-import { getPunchesByMonth } from '@/services/punchService';
+import { usePunchesByMonth } from '@/hooks/usePunchesList';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -22,36 +21,20 @@ const MONTHS = [
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 export default function PunchesCalendar() {
-  const { data: session } = useSession();
-  const [loading, setLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
-  const [punchesData, setPunchesData] = useState(null);
   const [selectedDayPunches, setSelectedDayPunches] = useState([]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  // Cargar fichajes del mes
+  const { data: punchesData, isLoading: loading, error } = usePunchesByMonth(year, month);
+
   useEffect(() => {
-    const loadPunches = async () => {
-      if (!session?.user?.accessToken) return;
-
-      try {
-        setLoading(true);
-        const token = session.user.accessToken;
-        const data = await getPunchesByMonth(year, month, token);
-        setPunchesData(data);
-      } catch (error) {
-        console.error('Error al cargar fichajes:', error);
-        toast.error('Error al cargar los fichajes del mes', getToastTheme());
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPunches();
-  }, [year, month, session]);
+    if (error) {
+      toast.error(error || 'Error al cargar los fichajes del mes', getToastTheme());
+    }
+  }, [error]);
 
   // Navegación de meses
   const goToPreviousMonth = () => {
