@@ -12,21 +12,11 @@ import type {
 const THROTTLE_MESSAGE =
   "Demasiados intentos; espera un momento antes de volver a intentar.";
 
-/** En el navegador usamos proxy Next.js para evitar CORS; en servidor llamamos directo a la API. */
-function authUrl(path: string): string {
-  if (typeof window !== "undefined") {
-    return `/api/backend-auth/${path}`;
-  }
-  return path === "logout" || path === "me"
-    ? `${API_URL_V2}${path}`
-    : `${API_URL_V2}auth/${path}`;
-}
-
 /**
  * Solicita acceso: un solo correo con enlace + código (reemplaza magic-link/request y otp/request).
  */
 export async function requestAccess(email: string): Promise<RequestAccessResponse> {
-  const response = await fetchWithTenant(authUrl("request-access"), {
+  const response = await fetchWithTenant(`${API_URL_V2}auth/request-access`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -47,7 +37,7 @@ export async function requestAccess(email: string): Promise<RequestAccessRespons
  * Canjea el token del magic link y devuelve access_token y user (sin autenticación).
  */
 export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthResponse> {
-  const response = await fetchWithTenant(authUrl("magic-link/verify"), {
+  const response = await fetchWithTenant(`${API_URL_V2}auth/magic-link/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token }),
@@ -74,7 +64,7 @@ export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthRes
  * Solicita un código OTP por email (sin autenticación).
  */
 export async function requestOtp(email: string): Promise<RequestAccessResponse> {
-  const response = await fetchWithTenant(authUrl("otp/request"), {
+  const response = await fetchWithTenant(`${API_URL_V2}auth/otp/request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -98,7 +88,7 @@ export async function verifyOtp(
   email: string,
   code: string
 ): Promise<VerifyAuthResponse> {
-  const response = await fetchWithTenant(authUrl("otp/verify"), {
+  const response = await fetchWithTenant(`${API_URL_V2}auth/otp/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, code }),
@@ -132,7 +122,7 @@ export async function logout(): Promise<Response | { ok: boolean }> {
       return { ok: true };
     }
 
-    const response = await fetchWithTenant(authUrl("logout"), {
+    const response = await fetchWithTenant(`${API_URL_V2}logout`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${session.user.accessToken}`,
@@ -160,7 +150,7 @@ export async function getCurrentUser(): Promise<AuthUser> {
     throw new Error("No hay sesión autenticada");
   }
 
-  const response = await fetchWithTenant(authUrl("me"), {
+  const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${session.user.accessToken}`,

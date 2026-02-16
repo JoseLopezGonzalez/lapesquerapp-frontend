@@ -94,21 +94,12 @@ Por tanto, que el login “no vaya” por CORS **no se soluciona** cambiando el 
 
 Es un mensaje aparte: el navegador avisa de que se llamó a `beforeinstallprompt.preventDefault()` pero no se llegó a llamar a `prompt()` para mostrar el banner de instalación. No tiene relación con el error de CORS; se puede tratar por separado (mostrar el banner cuando quieras o no llamar a `preventDefault()` si no vas a usarlo).
 
-## Opción desde el frontend: proxy de auth (implementado)
-
-Para no depender del CORS del backend en el login, las llamadas de **auth** (request-access, otp, magic-link, logout, me) van a una **API route de Next.js** en lugar de a Laravel. El navegador llama a `https://brisamar.lapesquerapp.es/api/backend-auth/...` (mismo origen, sin CORS) y Next.js reenvía la petición a Laravel desde el servidor.
-
-- Ruta: `src/app/api/backend-auth/[...path]/route.ts`
-- En `authService.ts`, `authUrl()` hace que en el navegador se use `/api/backend-auth/request-access`, etc.
-
-Con esto el login funciona aunque Laravel no envíe headers CORS. El resto de la API sigue llamando a Laravel desde el cliente.
-
 ## Resumen de opciones
 
 | Dónde | Qué hacer |
 |-------|-----------|
 | **Backend (Laravel)** | Revisar `config/cors.php`, `CORS_ALLOWED_ORIGINS` en .env de producción, que las rutas `/api/v2/*` pasen por el middleware CORS y que OPTIONS responda 200 con headers CORS. |
 | **Proxy (nginx, etc.)** | Asegurar que OPTIONS llegue a Laravel o que el proxy responda a OPTIONS con los headers CORS correctos. |
-| **Frontend (Next.js)** | **Hecho**: proxy `/api/backend-auth/*` para auth; el navegador ya no llama a `api.lapesquerapp.es` en login. El resto de endpoints siguen yendo al backend (CORS sigue siendo necesario para ellos). |
+| **Frontend (Next.js)** | No es necesario cambiar la lógica ni el .env para "arreglar" este CORS; el frontend ya llama a la URL correcta y envía los headers esperados. |
 
 Si en un commit anterior “funcionaba”, lo más probable es que en el servidor de la API (o en el proxy) se haya cambiado la configuración CORS, se haya dejado de cargar `CORS_ALLOWED_ORIGINS`, o se esté cacheando una respuesta OPTIONS sin headers. Revisar el backend y el proxy con el checklist anterior suele ser suficiente para resolverlo.
