@@ -50,7 +50,7 @@ export function useLoginActions({
         setAccessRequested(true);
       } catch (err) {
         const msg = (err as AuthErrorLike).message || "Error al solicitar acceso.";
-        notify.error(msg);
+        notify.error({ title: msg });
       } finally {
         setLoading(false);
       }
@@ -75,7 +75,7 @@ export function useLoginActions({
         if (!signInResult || signInResult.error) {
           throw new Error(signInResult?.error || "Error al iniciar sesión.");
         }
-        notify.success("Inicio de sesión exitoso");
+        notify.success({ title: "Inicio de sesión exitoso" });
         const search =
           typeof window !== "undefined" ? window.location.search : "";
         window.location.href = getRedirectUrl(result.user, search);
@@ -86,7 +86,7 @@ export function useLoginActions({
           e.data?.userMessage ||
           e.data?.message ||
           "Error al verificar el código.";
-        notify.error(msg);
+        notify.error({ title: msg });
       } finally {
         setLoading(false);
       }

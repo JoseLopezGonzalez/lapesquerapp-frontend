@@ -198,13 +198,13 @@ export function useAdminReceptionForm({ onSuccess }) {
       try {
         const supplierError = validateSupplier(data.supplier);
         if (supplierError) {
-          notify.error(supplierError);
+          notify.error({ title: supplierError });
           return;
         }
 
         const dateError = validateDate(data.date);
         if (dateError) {
-          notify.error(dateError);
+          notify.error({ title: dateError });
           return;
         }
 
@@ -213,15 +213,16 @@ export function useAdminReceptionForm({ onSuccess }) {
         if (mode === 'automatic') {
           const detailsError = validateReceptionDetails(data.details);
           if (detailsError) {
-            notify.error(detailsError);
+            notify.error({ title: detailsError });
             return;
           }
 
           const transformedDetails = transformDetailsToApiFormat(data.details);
 
           if (transformedDetails.length === 0) {
-            notify.error(
-              'Debe completar al menos una línea válida con producto y peso neto');
+            notify.error({
+              title: 'Debe completar al menos una línea válida con producto y peso neto',
+            });
             return;
           }
 
@@ -234,7 +235,7 @@ export function useAdminReceptionForm({ onSuccess }) {
         } else {
           const palletsError = validateTemporalPallets(temporalPallets);
           if (palletsError) {
-            notify.error(palletsError);
+            notify.error({ title: palletsError });
             return;
           }
 
@@ -243,8 +244,9 @@ export function useAdminReceptionForm({ onSuccess }) {
           const convertedPallets = transformPalletsToApiFormat(temporalPallets);
 
           if (convertedPallets.length === 0) {
-            notify.error(
-              'Debe completar al menos un palet válido con producto y cajas');
+            notify.error({
+              title: 'Debe completar al menos un palet válido con producto y cajas',
+            });
             return;
           }
 
@@ -276,7 +278,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           setTemporalPallets(updatedTemporalPallets);
         }
 
-        notify.success('Recepción creada exitosamente');
+        notify.success({ title: 'Recepción creada exitosamente' });
 
         if (onSuccess) {
           onSuccess(createdReception);
@@ -288,7 +290,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           mode,
           hasPallets: temporalPallets.length,
         });
-        notify.error(formatReceptionError(error, 'create'));
+        notify.error({ title: formatReceptionError(error, 'create') });
       }
     },
     [mode, temporalPallets, onSuccess, router]
@@ -301,7 +303,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           delete submitErrors.details;
         }
         if (Object.keys(submitErrors).length > 0) {
-          notify.error('Por favor, complete todos los campos requeridos');
+          notify.error({ title: 'Por favor, complete todos los campos requeridos' });
         } else {
           handleCreate(watch());
         }

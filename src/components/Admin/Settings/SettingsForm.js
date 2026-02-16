@@ -43,7 +43,7 @@ export default function SettingsForm() {
 
   const onValidSubmit = async (data) => {
     if (!hadPreviousConfig && !emailPassword) {
-      notify.error('La contraseña SMTP es obligatoria');
+      notify.error({ title: 'La contraseña SMTP es obligatoria' });
       return;
     }
     setSaving(true);
@@ -55,10 +55,10 @@ export default function SettingsForm() {
       setSettings(payload);
       setEmailPassword('');
       setHadPreviousConfig(true);
-      notify.success('Configuración guardada');
+      notify.success({ title: 'Configuración guardada' });
     } catch (error) {
       const msg = error?.userMessage ?? (error?.message?.includes('configuración de email') ? 'La configuración de email no está completa.' : error?.message ?? 'Error al guardar');
-      notify.error(msg);
+      notify.error({ title: msg });
     } finally {
       setSaving(false);
     }

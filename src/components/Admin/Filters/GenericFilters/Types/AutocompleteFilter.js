@@ -24,7 +24,7 @@ import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService';
             console.error("Error al cargar opciones del filtro de autocompletado:", error);
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || `Error al cargar las opciones para ${label}. Por favor, inténtelo de nuevo.`;
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             setOptions([]); // Asegúrate de que las opciones estén vacías en caso de error
         } finally {
             setLoading(false);

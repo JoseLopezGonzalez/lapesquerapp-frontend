@@ -43,7 +43,7 @@ export function WorkerStatisticsCard() {
     useEffect(() => {
         if (isError && error) {
             const errorMessage = error.userMessage || error.message || 'Error al obtener las estadísticas'
-            notify.error(errorMessage)
+            notify.error({ title: errorMessage })
         }
     }, [isError, error])
 

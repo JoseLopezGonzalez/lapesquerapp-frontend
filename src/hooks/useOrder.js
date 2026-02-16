@@ -585,7 +585,7 @@ export function useOrder(orderId, onChange) {
     const onEditingPallet = async (updatedPallet) => {
         const isPalletVinculated = updatedPallet.orderId === order.id;
         if (!isPalletVinculated) {
-            notify.error('El pallet no está vinculado a este pedido');
+            notify.error({ title: 'El pallet no está vinculado a este pedido' });
             return;
         } 
         // Actualizar estado local inmediatamente para feedback visual
@@ -607,14 +607,14 @@ export function useOrder(orderId, onChange) {
             console.error('Error al recargar el pedido después de editar palet:', error);
             // Mostrar error al usuario
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         }
     }
 
     const onCreatingPallet = async (newPallet) => {
         const isPalletVinculated = newPallet.orderId === order.id;
         if (!isPalletVinculated) {
-            notify.error('El pallet no está vinculado a este pedido');
+            notify.error({ title: 'El pallet no está vinculado a este pedido' });
             return;
         }
         // Actualizar estado local inmediatamente para feedback visual
@@ -631,13 +631,13 @@ export function useOrder(orderId, onChange) {
             if (reloadedOrder) {
                 onChange?.(reloadedOrder);
                 // Mostrar toast DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
-                notify.success('Palet creado y vinculado correctamente');
+                notify.success({ title: 'Palet creado y vinculado correctamente' });
             }
         } catch (error) {
             console.error('Error al recargar el pedido después de crear palet:', error);
             // Mostrar error al usuario
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         }
     }
 
@@ -659,11 +659,11 @@ export function useOrder(orderId, onChange) {
                 onChange?.(reloadedOrder);
             }
             
-            notify.success('Palet eliminado correctamente');
+            notify.success({ title: 'Palet eliminado correctamente' });
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar el palet';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             throw error;
         }
     };
@@ -686,11 +686,11 @@ export function useOrder(orderId, onChange) {
                 onChange?.(reloadedOrder);
             }
             
-            notify.success('Palet desvinculado correctamente');
+            notify.success({ title: 'Palet desvinculado correctamente' });
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular el palet';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             throw error;
         }
     };
@@ -698,7 +698,7 @@ export function useOrder(orderId, onChange) {
     const onLinkPallets = async (palletIds) => {
         const token = session?.user?.accessToken;
         if (!order?.id) {
-            notify.error('No se puede vincular palets: el pedido no tiene ID');
+            notify.error({ title: 'No se puede vincular palets: el pedido no tiene ID' });
             return;
         }
 
@@ -719,35 +719,34 @@ export function useOrder(orderId, onChange) {
             
             // Mostrar toasts DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
             if (palletIds.length === 1) {
-                notify.success(result.message || 'Palet vinculado correctamente');
+                notify.success({ title: result.message || 'Palet vinculado correctamente' });
             } else {
                 // Mostrar mensajes según los resultados
                 if (result.linked > 0) {
                     const message = result.linked === 1 
                         ? 'Palet vinculado correctamente' 
                         : `${result.linked} palets vinculados correctamente`;
-                    notify.success(message);
+                    notify.success({ title: message });
                 }
                 if (result.already_linked > 0) {
                     const message = result.already_linked === 1
                         ? '1 palet ya estaba vinculado'
                         : `${result.already_linked} palets ya estaban vinculados`;
-                    toast(message, {
-                        icon: 'ℹ️' });
+                    notify.info({ title: message });
                 }
                 if (result.errors > 0) {
                     const errorDetails = result.error_details || result.errors_details || [];
                     errorDetails.forEach(error => {
                         // Priorizar userMessage sobre message para mostrar errores en formato natural
                         const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
-                        notify.error(`Palet ${error.pallet_id}: ${errorMessage}`);
+                        notify.error({ title: `Palet ${error.pallet_id}: ${errorMessage}` });
                     });
                 }
             }
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al vincular los palets';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             throw error;
         }
     };
@@ -755,7 +754,7 @@ export function useOrder(orderId, onChange) {
     const onUnlinkAllPallets = async (palletIds) => {
         const token = session?.user?.accessToken;
         if (!palletIds || palletIds.length === 0) {
-            notify.error('No hay palets para desvincular');
+            notify.error({ title: 'No hay palets para desvincular' });
             return;
         }
 
@@ -767,21 +766,20 @@ export function useOrder(orderId, onChange) {
                 const message = result.unlinked === 1
                     ? 'Palet desvinculado correctamente'
                     : `${result.unlinked} palets desvinculados correctamente`;
-                notify.success(message);
+                notify.success({ title: message });
             }
             if (result.already_unlinked > 0) {
                 const message = result.already_unlinked === 1
                     ? '1 palet ya estaba desvinculado'
                     : `${result.already_unlinked} palets ya estaban desvinculados`;
-                toast(message, {
-                    icon: 'ℹ️' });
+                notify.info({ title: message });
             }
             if (result.errors > 0) {
                 const errorDetails = result.results?.filter(r => r.status !== 'unlinked') || [];
                 errorDetails.forEach(error => {
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular';
-                    notify.error(`Palet ${error.pallet_id}: ${errorMessage}`);
+                    notify.error({ title: `Palet ${error.pallet_id}: ${errorMessage}` });
                 });
             }
             
@@ -801,7 +799,7 @@ export function useOrder(orderId, onChange) {
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular los palets';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             throw error;
         }
     };

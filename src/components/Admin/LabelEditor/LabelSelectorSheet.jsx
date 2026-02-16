@@ -245,7 +245,7 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
   const duplicateMutation = useDuplicateLabelMutation()
 
   useEffect(() => {
-    if (error) notify.error("Error al cargar las etiquetas")
+    if (error) notify.error({ title: "Error al cargar las etiquetas" })
   }, [error])
 
   const handleOnClickNewLabel = () => {
@@ -264,12 +264,12 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     setDeletingId(labelToDelete.id)
     try {
       await deleteMutation.mutateAsync({ labelId: labelToDelete.id })
-      notify.success("Etiqueta eliminada correctamente")
+      notify.success({ title: "Etiqueta eliminada correctamente" })
       if (onDelete) onDelete(labelToDelete.id)
       setDeleteDialogOpen(false)
       setLabelToDelete(null)
     } catch (err) {
-      notify.error(err?.message || "Error al eliminar la etiqueta")
+      notify.error({ title: err?.message || "Error al eliminar la etiqueta" })
     } finally {
       setDeletingId(null)
     }
@@ -280,10 +280,10 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     setDuplicatingId(labelId)
     try {
       await duplicateMutation.mutateAsync({ labelId })
-      notify.success("Etiqueta duplicada correctamente")
+      notify.success({ title: "Etiqueta duplicada correctamente" })
       if (onDelete) onDelete(labelId)
     } catch (err) {
-      notify.error(err?.message || "Error al duplicar la etiqueta")
+      notify.error({ title: err?.message || "Error al duplicar la etiqueta" })
     } finally {
       setDuplicatingId(null)
     }

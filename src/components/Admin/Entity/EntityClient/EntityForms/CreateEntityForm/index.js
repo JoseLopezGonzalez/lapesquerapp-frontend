@@ -155,7 +155,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
             const entityService = getEntityService(endpoint);
             if (!entityService) {
-                notify.error('No se encontró el servicio para esta entidad.');
+                notify.error({ title: 'No se encontró el servicio para esta entidad.' });
                 return;
             }
 
@@ -163,7 +163,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 const createdEntity = await entityService.create(finalData);
                 const createdId = createdEntity?.id || createdEntity?.data?.id || null;
 
-                notify.success(successMessage || "Entidad creada con éxito!");
+                notify.success({ title: successMessage || "Entidad creada con éxito!" });
                 reset(); // Clear form after successful submission
                 
                 // Si es una producción y tenemos el ID, redirigir a la página de producción
@@ -188,7 +188,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 } else if (createError instanceof Error) {
                     userErrorMessage = createError.userMessage || createError.message || userErrorMessage;
                 }
-                notify.error(userErrorMessage);
+                notify.error({ title: userErrorMessage });
             }
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
@@ -206,7 +206,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userErrorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || userErrorMessage;
             }
-            notify.error(userErrorMessage);
+            notify.error({ title: userErrorMessage });
         }
     };
 

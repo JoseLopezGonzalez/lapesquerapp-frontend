@@ -151,7 +151,7 @@ export const useReceptionForm = ({
      */
     const handleError = useCallback((error, context = 'operation') => {
         const errorInfo = logReceptionError(error, context, { mode, isEdit });
-        notify.error(formatReceptionError(error, context));
+        notify.error({ title: formatReceptionError(error, context) });
     }, [mode, isEdit]);
 
     // Memoized values

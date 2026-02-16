@@ -55,8 +55,9 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         },
         (formErrors) => {
             const errorCount = Object.keys(formErrors).length;
-            notify.error(
-                `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`);
+            notify.error({
+                title: `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`,
+            });
         }
     );
 
@@ -95,7 +96,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         });
 
         if (Object.keys(payload).length === 0) {
-            notify.info('No hay cambios para guardar');
+            notify.info({ title: 'No hay cambios para guardar' });
             setSaving(false);
             return;
         }

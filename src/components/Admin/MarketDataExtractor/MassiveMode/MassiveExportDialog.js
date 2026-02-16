@@ -112,19 +112,19 @@ export default function MassiveExportDialog({
                 }));
 
             if (documentsToExport.length === 0) {
-                notify.error('No hay documentos válidos para exportar.');
+                notify.error({ title: 'No hay documentos válidos para exportar.' });
                 setIsExporting(false);
                 return;
             }
 
             downloadMassiveExcel(documentsToExport, { software });
-            notify.success('Excel generado correctamente');
+            notify.success({ title: 'Excel generado correctamente' });
             onOpenChange(false);
         } catch (error) {
             console.error('Error al exportar:', error);
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al exportar';
-            notify.error(`Error al exportar: ${errorMessage}`);
+            notify.error({ title: `Error al exportar: ${errorMessage}` });
         } finally {
             setIsExporting(false);
         }

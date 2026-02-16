@@ -46,18 +46,18 @@ export default function MovePalletToStoreDialog() {
 
     const handleSubmit = () => {
         if (!selectedStoreValue) {
-            notify.error("Seleccione un almacén de destino");
+            notify.error({ title: "Seleccione un almacén de destino" });
             return;
         }
 
         movePalletToStore(palletId, selectedStoreValue, token)
             .then(() => {
-                notify.success("Pallet movido correctamente");
+                notify.success({ title: "Pallet movido correctamente" });
                 updateStoreWhenOnMovePalletToStore({palletId , storeId: selectedStoreValue});
                 resetAndClose();
             })
             .catch(() => {
-                notify.error("Error al mover el pallet");
+                notify.error({ title: "Error al mover el pallet" });
             });
     };
 

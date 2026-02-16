@@ -30,7 +30,7 @@ export default function OrderIncidentPanel() {
     const [loading, setLoading] = useState(false)
 
     const handleCreate = async () => {
-        if (!newDescription) return notify.error("La descripción es obligatoria")
+        if (!newDescription) return notify.error({ title: "La descripción es obligatoria" })
         setLoading(true)
         try {
             await notify.promise(openOrderIncident(newDescription), {
@@ -45,7 +45,7 @@ export default function OrderIncidentPanel() {
     }
 
     const handleResolve = async () => {
-        if (!resolutionType) return notify.error("Selecciona un tipo de resolución")
+        if (!resolutionType) return notify.error({ title: "Selecciona un tipo de resolución" })
         setLoading(true)
         try {
             await notify.promise(resolveOrderIncident(resolutionType, resolutionNotes), {

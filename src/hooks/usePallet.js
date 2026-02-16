@@ -373,7 +373,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 boxes: [...(prev.boxes || []), newBox]
             })));
 
-        notify.success('Caja duplicada correctamente');
+        notify.success({ title: 'Caja duplicada correctamente' });
     };
 
     /* Delete box */
@@ -384,7 +384,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 ...prev,
                 boxes: prev.boxes.filter((box) => box.id !== boxId)
             })));
-        notify.success('Caja eliminada correctamente');
+        notify.success({ title: 'Caja eliminada correctamente' });
     };
     /* Edit box */
     const editBox = {
@@ -454,7 +454,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                notify.error('No hay cajas disponibles para editar');
+                notify.error({ title: 'No hay cajas disponibles para editar' });
                 return;
             }
 
@@ -471,7 +471,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            notify.success(`Lote actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
+            notify.success({ title: `Lote actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}` });
         },
         
         /**
@@ -488,13 +488,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                notify.error('No hay cajas disponibles para editar');
+                notify.error({ title: 'No hay cajas disponibles para editar' });
                 return;
             }
 
             const parsedWeight = parseFloat(netWeight);
             if (isNaN(parsedWeight) || parsedWeight <= 0) {
-                notify.error('El peso debe ser un número positivo');
+                notify.error({ title: 'El peso debe ser un número positivo' });
                 return;
             }
 
@@ -513,7 +513,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            notify.success(`Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
+            notify.success({ title: `Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}` });
         },
         
         /**
@@ -530,18 +530,18 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                notify.error('No hay cajas disponibles para editar');
+                notify.error({ title: 'No hay cajas disponibles para editar' });
                 return;
             }
 
             const parsedDifference = parseFloat(weightDifference);
             if (isNaN(parsedDifference)) {
-                notify.error('El peso debe ser un número válido');
+                notify.error({ title: 'El peso debe ser un número válido' });
                 return;
             }
 
             if (parsedDifference === 0) {
-                notify.error('El peso a sumar/restar no puede ser cero');
+                notify.error({ title: 'El peso a sumar/restar no puede ser cero' });
                 return;
             }
 
@@ -574,10 +574,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             const successfullyUpdated = boxesToEdit.length - boxesWithInvalidResult;
             if (boxesWithInvalidResult > 0) {
-                notify.warning(`${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja actualizada' : 'cajas actualizadas'}. ${boxesWithInvalidResult} ${boxesWithInvalidResult === 1 ? 'caja no se pudo actualizar' : 'cajas no se pudieron actualizar'} (el peso resultante sería negativo o cero)`);
+                notify.warning({ title: `${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja actualizada' : 'cajas actualizadas'}. ${boxesWithInvalidResult} ${boxesWithInvalidResult === 1 ? 'caja no se pudo actualizar' : 'cajas no se pudieron actualizar'} (el peso resultante sería negativo o cero)` });
             } else {
                 const action = parsedDifference > 0 ? 'sumado' : 'restado';
-                notify.success(`${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}`);
+                notify.success({ title: `${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}` });
             }
         },
         
@@ -592,19 +592,19 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             
             // Validar que se proporcionen ambos IDs
             if (!oldProductId || !newProductId) {
-                notify.error('Debe seleccionar el producto actual y el nuevo producto');
+                notify.error({ title: 'Debe seleccionar el producto actual y el nuevo producto' });
                 return;
             }
             
             if (oldProductId === newProductId) {
-                notify.error('El producto nuevo debe ser diferente al actual');
+                notify.error({ title: 'El producto nuevo debe ser diferente al actual' });
                 return;
             }
             
             // Obtener el nuevo producto
             const newProduct = getProductById(newProductId);
             if (!newProduct) {
-                notify.error('El producto seleccionado no existe');
+                notify.error({ title: 'El producto seleccionado no existe' });
                 return;
             }
             
@@ -621,7 +621,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 );
 
             if (boxesToEdit.length === 0) {
-                notify.error('No hay cajas disponibles con el producto seleccionado para editar');
+                notify.error({ title: 'No hay cajas disponibles con el producto seleccionado para editar' });
                 return;
             }
 
@@ -642,7 +642,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            notify.success(`Producto actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
+            notify.success({ title: `Producto actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}` });
         }
     };
 
@@ -698,7 +698,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
         if (method === 'manual') {
             if (!productId || !lot || !netWeight) {
-                notify.error('Por favor, completa todos los campos requeridos');
+                notify.error({ title: 'Por favor, completa todos los campos requeridos' });
                 return;
             }
             const product = getProductById(productId); // Validar que el producto existe
@@ -711,7 +711,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             addBox(newBox);
         } else if (method === 'average') {
             if (!productId || !totalWeight || !numberOfBoxes) {
-                notify.error('Por favor, completa todos los campos requeridos');
+                notify.error({ title: 'Por favor, completa todos los campos requeridos' });
                 return;
             }
             
@@ -754,7 +754,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
         } else if (method === 'bulk') {
             if (!productId || !weights) {
-                notify.error('Por favor, completa todos los campos requeridos.');
+                notify.error({ title: 'Por favor, completa todos los campos requeridos.' });
                 return;
             }
 
@@ -790,12 +790,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             });
 
             if (hasError) {
-                notify.error('Algunas líneas tienen símbolos no permitidos o pesos negativos. Revisa los datos e intenta de nuevo.');
+                notify.error({ title: 'Algunas líneas tienen símbolos no permitidos o pesos negativos. Revisa los datos e intenta de nuevo.' });
                 return;
             }
 
             if (weightsArray.length === 0) {
-                notify.error('Por favor, ingresa al menos un peso válido.');
+                notify.error({ title: 'Por favor, ingresa al menos un peso válido.' });
                 return;
             }
 
@@ -811,10 +811,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 addBox(newBox);
             });
 
-            notify.success(`Se agregaron ${weightsArray.length} cajas correctamente`);
+            notify.success({ title: `Se agregaron ${weightsArray.length} cajas correctamente` });
         } else if (method === 'lector') {
             if (!scannedCode) {
-                notify.error('Por favor, escanea un código válido.');
+                notify.error({ title: 'Por favor, escanea un código válido.' });
                 return;
             }
 
@@ -829,7 +829,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
             
             if (!match) {
-                notify.error('Formato de código escaneado no válido. Se espera 3100 para kg o 3200 para libras.');
+                notify.error({ title: 'Formato de código escaneado no válido. Se espera 3100 para kg o 3200 para libras.' });
                 return;
             }
 
@@ -846,7 +846,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             const product = productsOptions.find(p => p.boxGtin === gtin);
             if (!product) {
-                notify.error(`No se encontró ningún producto con GTIN ${gtin}`);
+                notify.error({ title: `No se encontró ningún producto con GTIN ${gtin}` });
                 return;
             }
 
@@ -863,12 +863,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             };
 
             addBox(newBox);
-            notify.success('Caja añadida correctamente por lector');
+            notify.success({ title: 'Caja añadida correctamente por lector' });
         } else if (method === 'gs1') {
             const { gs1codes } = boxCreationData;
 
             if (!gs1codes) {
-                notify.error('Por favor, pega los códigos GS1-128.');
+                notify.error({ title: 'Por favor, pega los códigos GS1-128.' });
                 return;
             }
 
@@ -925,17 +925,17 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
 
             if (parsedBoxes.length === 0) {
-                notify.error('Ninguno de los códigos pudo ser procesado. Verifica el formato y los productos.');
+                notify.error({ title: 'Ninguno de los códigos pudo ser procesado. Verifica el formato y los productos.' });
                 return;
             }
 
             parsedBoxes.forEach(addBox);
 
             if (failedLines.length > 0) {
-                notify.error(`${failedLines.length} códigos no fueron reconocidos.`);
+                notify.error({ title: `${failedLines.length} códigos no fueron reconocidos.` });
                 console.warn("Códigos fallidos:", failedLines);
             } else {
-                notify.success(`Se agregaron ${parsedBoxes.length} cajas correctamente.`);
+                notify.success({ title: `Se agregaron ${parsedBoxes.length} cajas correctamente.` });
             }
 
             setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
@@ -950,21 +950,21 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
         const scannedCode = boxCreationData.deleteScannedCode.trim();
         if (!scannedCode) {
-            notify.error('Por favor, escanea un código válido para eliminar.');
+            notify.error({ title: 'Por favor, escanea un código válido para eliminar.' });
             return;
         }
 
         // Convertir el código escaneado sin paréntesis al formato con paréntesis
         const gs1128Code = convertScannedCodeToGs1128(scannedCode);
         if (!gs1128Code) {
-            notify.error('Formato de código escaneado no válido para eliminar.');
+            notify.error({ title: 'Formato de código escaneado no válido para eliminar.' });
             return;
         }
 
         
         const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === gs1128Code);
         if (!boxToDelete) {
-            notify.error('No se encontró ninguna caja que coincida con el código escaneado.');
+            notify.error({ title: 'No se encontró ninguna caja que coincida con el código escaneado.' });
             return;
         }
 
@@ -975,7 +975,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             })
         );
 
-        notify.success('Caja eliminada correctamente por lector');
+        notify.success({ title: 'Caja eliminada correctamente por lector' });
         setBoxCreationData(prev => ({ ...prev, deleteScannedCode: '' }));
     };
 
@@ -1003,14 +1003,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 boxes: []
             })
         ));
-        notify.success('Todas las cajas han sido eliminadas');
+        notify.success({ title: 'Todas las cajas han sido eliminadas' });
     };
 
     const resetAllChanges = () => {
         // console.log("resetAllChanges: pallet =", pallet);
         setTemporalPallet({ ...pallet });
         setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
-        notify.success('Cambios desechos');
+        notify.success({ title: 'Cambios desechos' });
     };
 
 
@@ -1043,13 +1043,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     // console.log('Pallet created successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
-                    notify.success('Palet creado correctamente');
+                    notify.success({ title: 'Palet creado correctamente' });
                 })
                 .catch((err) => {
                     console.error('Error al crear el palet:', err);
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al crear el palet';
-                    notify.error(errorMessage);
+                    notify.error({ title: errorMessage });
                 })
                 .finally(() => {
                     setSaving(false);
@@ -1062,13 +1062,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     // console.log('Pallet updated successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
-                    notify.success('Palet actualizado correctamente');
+                    notify.success({ title: 'Palet actualizado correctamente' });
                 })
                 .catch((err) => {
                     console.error('Error al actualizar el palet:', err);
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al actualizar el palet';
-                    notify.error(errorMessage);
+                    notify.error({ title: errorMessage });
                 })
                 .finally(() => {
                     setSaving(false);

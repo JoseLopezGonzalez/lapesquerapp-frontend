@@ -96,7 +96,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             })
             .catch((err) => {
                 console.error('Error al cargar datos del cliente:', err);
-                notify.error('Error al cargar la información del cliente. Intente de nuevo.');
+                notify.error({ title: 'Error al cargar la información del cliente. Intente de nuevo.' });
             });
     }, [selectedCustomerId, setValue, session]); // Usar selectedCustomerId directamente en lugar de watch('customer')
 
@@ -315,10 +315,11 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     (formErrors) => {
                         // Mostrar toast cuando hay errores de validación
                         const errorCount = Object.keys(formErrors).length;
-                        notify.error(
-                            errorCount > 1 
+                        notify.error({
+                            title: errorCount > 1 
                                 ? `Por favor, corrige los ${errorCount} errores en el formulario` 
-                                : 'Por favor, corrige el error en el formulario');
+                                : 'Por favor, corrige el error en el formulario',
+                        });
                     }
                 )} className={`flex flex-col ${isMobile ? 'gap-6' : 'gap-8'}`}>
                     {formGroups.map((group) => (

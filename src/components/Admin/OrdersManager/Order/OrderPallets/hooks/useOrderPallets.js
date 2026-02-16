@@ -131,7 +131,7 @@ export function useOrderPallets() {
     async (palletId) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        notify.error('No se pudo obtener el token de autenticación');
+        notify.error({ title: 'No se pudo obtener el token de autenticación' });
         return;
       }
       try {
@@ -155,7 +155,7 @@ export function useOrderPallets() {
         setSelectedStoreId(originalPallet.storeId || originalPallet.store?.id);
         setSelectedPalletId('new');
         setIsPalletDialogOpen(true);
-        notify.success('Palet clonado. Puedes editarlo antes de guardarlo.');
+        notify.success({ title: 'Palet clonado. Puedes editarlo antes de guardarlo.' });
       } catch (error) {
         console.error('Error al clonar el palet:', error);
         const msg =
@@ -164,7 +164,7 @@ export function useOrderPallets() {
           error.response?.data?.userMessage ||
           error.message ||
           'Error al clonar el palet';
-        notify.error(msg);
+        notify.error({ title: msg });
       } finally {
         setIsCloning(false);
       }
@@ -220,7 +220,7 @@ export function useOrderPallets() {
         setPaginationMeta(result.meta || null);
       } catch (error) {
         console.error('Error al cargar palets disponibles:', error);
-        notify.error('Error al cargar palets disponibles');
+        notify.error({ title: 'Error al cargar palets disponibles' });
       } finally {
         setIsInitialLoading(false);
       }
@@ -242,16 +242,16 @@ export function useOrderPallets() {
     const trimmed = inputPalletId.trim();
     if (!trimmed) return;
     if (!/^\d+$/.test(trimmed)) {
-      notify.error('Por favor ingresa un ID numérico válido');
+      notify.error({ title: 'Por favor ingresa un ID numérico válido' });
       return;
     }
     const id = parseInt(trimmed, 10);
     if (palletIds.includes(id)) {
-      notify.error('Este ID ya está en la lista');
+      notify.error({ title: 'Este ID ya está en la lista' });
       return;
     }
     if (pallets.some((p) => p.id === id)) {
-      notify.error('Este palet ya está vinculado a este pedido');
+      notify.error({ title: 'Este palet ya está vinculado a este pedido' });
       return;
     }
     setPalletIds([...palletIds, id]);
@@ -276,7 +276,7 @@ export function useOrderPallets() {
     async (page = 1, storeIdOverride = null) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        notify.error('No se pudo obtener el token de autenticación');
+        notify.error({ title: 'No se pudo obtener el token de autenticación' });
         return;
       }
       try {
@@ -288,20 +288,21 @@ export function useOrderPallets() {
 
         if (palletIds.length > 0) {
           if (palletIds.length > 50) {
-            notify.error('Máximo 50 IDs a la vez. Por favor, reduce la cantidad');
+            notify.error({ title: 'Máximo 50 IDs a la vez. Por favor, reduce la cantidad' });
             setIsSearching(false);
             return;
           }
           const linkedPalletIds = pallets.map((p) => p.id);
           const idsToSearch = palletIds.filter((id) => !linkedPalletIds.includes(id));
           if (idsToSearch.length === 0) {
-            notify.info('Todos los palets especificados ya están vinculados a este pedido');
+            notify.info({ title: 'Todos los palets especificados ya están vinculados a este pedido' });
             setIsSearching(false);
             return;
           }
           if (idsToSearch.length < palletIds.length) {
-            notify.info(
-              `${palletIds.length - idsToSearch.length} palet(s) ya están vinculados y se omitirán`);
+            notify.info({
+              title: `${palletIds.length - idsToSearch.length} palet(s) ya están vinculados y se omitirán`,
+            });
           }
           const result = await getAvailablePalletsForOrder(
             {
@@ -315,13 +316,14 @@ export function useOrderPallets() {
           foundPallets = result.data || [];
           meta = result.meta || null;
           if (foundPallets.length === 0) {
-            notify.error('No se encontraron palets disponibles con los IDs especificados');
+            notify.error({ title: 'No se encontraron palets disponibles con los IDs especificados' });
             setIsSearching(false);
             return;
           }
           if (foundPallets.length < idsToSearch.length) {
-            notify.info(
-              `${idsToSearch.length - foundPallets.length} palet(s) no se encontraron o no están disponibles`);
+            notify.info({
+              title: `${idsToSearch.length - foundPallets.length} palet(s) no se encontraron o no están disponibles`,
+            });
           }
           setPaginationMeta(null);
         } else {
@@ -342,7 +344,7 @@ export function useOrderPallets() {
           error.response?.data?.userMessage ||
           error.message ||
           'Error al buscar palets';
-        notify.error(msg);
+        notify.error({ title: msg });
       } finally {
         setIsSearching(false);
       }
@@ -366,7 +368,7 @@ export function useOrderPallets() {
 
   const handleLinkSelectedPallets = useCallback(async () => {
     if (selectedPalletIds.length === 0) {
-      notify.error('Por favor selecciona al menos un palet');
+      notify.error({ title: 'Por favor selecciona al menos un palet' });
       return;
     }
     try {
@@ -389,12 +391,12 @@ export function useOrderPallets() {
 
   const handleUnlinkAllPallets = useCallback(async () => {
     if (!pallets?.length) {
-      notify.error('No hay palets para desvincular');
+      notify.error({ title: 'No hay palets para desvincular' });
       return;
     }
     const palletsToUnlink = pallets.filter((p) => !p.receptionId);
     if (palletsToUnlink.length === 0) {
-      notify.error('No hay palets disponibles para desvincular. Todos pertenecen a recepciones.');
+      notify.error({ title: 'No hay palets disponibles para desvincular. Todos pertenecen a recepciones.' });
       return;
     }
     const ids = palletsToUnlink.map((p) => p.id);
@@ -412,8 +414,9 @@ export function useOrderPallets() {
     const detailsWithBoxes = (plannedProductDetails || [])
       .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
     if (detailsWithBoxes.length === 0) {
-      notify.error(
-        'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.');
+      notify.error({
+        title: 'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.',
+      });
       return;
     }
     setCreateFromForecastLot('');
@@ -430,22 +433,22 @@ export function useOrderPallets() {
   const handleCreatePalletFromForecast = useCallback(async () => {
     const lot = (createFromForecastLot || '').trim();
     if (!lot) {
-      notify.error('Introduce el lote');
+      notify.error({ title: 'Introduce el lote' });
       return;
     }
     if (!createFromForecastStoreId) {
-      notify.error('Selecciona el almacén donde se almacenará el palet');
+      notify.error({ title: 'Selecciona el almacén donde se almacenará el palet' });
       return;
     }
     const token = session?.user?.accessToken;
     if (!token) {
-      notify.error('No se pudo obtener el token de autenticación');
+      notify.error({ title: 'No se pudo obtener el token de autenticación' });
       return;
     }
     const detailsWithBoxes = (plannedProductDetails || [])
       .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
     if (detailsWithBoxes.length === 0) {
-      notify.error('No hay productos en la previsión con cajas');
+      notify.error({ title: 'No hay productos en la previsión con cajas' });
       return;
     }
 
@@ -511,7 +514,7 @@ export function useOrderPallets() {
 
     if (boxes.length === 0) {
       setIsCreatingFromForecast(false);
-      notify.error('No se pudieron generar cajas desde la previsión');
+      notify.error({ title: 'No se pudieron generar cajas desde la previsión' });
       return;
     }
 
@@ -536,7 +539,7 @@ export function useOrderPallets() {
       if (newPallet) {
         await onCreatingPallet(newPallet);
         handleCloseCreateFromForecastDialog();
-        notify.success('Palet creado desde la previsión correctamente');
+        notify.success({ title: 'Palet creado desde la previsión correctamente' });
       }
     } catch (err) {
       console.error('Error al crear palet desde previsión:', err);
@@ -546,7 +549,7 @@ export function useOrderPallets() {
         err.response?.data?.userMessage ||
         err.message ||
         'Error al crear el palet desde previsión';
-      notify.error(msg);
+      notify.error({ title: msg });
     } finally {
       setIsCreatingFromForecast(false);
     }

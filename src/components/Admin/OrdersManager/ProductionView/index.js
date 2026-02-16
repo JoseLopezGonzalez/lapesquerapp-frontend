@@ -521,7 +521,7 @@ const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 30000, u
         if (!silent) {
           console.error('ProductionView: Error al obtener datos:', err)
           setError(errorMessage)
-          notify.error(errorMessage)
+          notify.error({ title: errorMessage })
           setLoading(false)
           setProductionData([])
         }

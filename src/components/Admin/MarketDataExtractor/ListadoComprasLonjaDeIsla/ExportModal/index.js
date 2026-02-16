@@ -313,7 +313,7 @@ const ExportModal = ({ document }) => {
         );
 
         if (comprasSeleccionadas.length === 0) {
-            notify.error('No hay compras seleccionadas para vincular.');
+            notify.error({ title: 'No hay compras seleccionadas para vincular.' });
             return;
         }
 
@@ -322,7 +322,7 @@ const ExportModal = ({ document }) => {
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
+                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
             }
 
             if (result.errores > 0) {
@@ -330,18 +330,18 @@ const ExportModal = ({ document }) => {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error(`${barcoInfo}${errorDetail.error}`, {
+                    notify.error({ title: `${barcoInfo}${errorDetail.error}` }, {
                         duration: 6000,
                     });
                 });
                 
                 if (result.errores > 3) {
-                    notify.error(`${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`);
+                    notify.error({ title: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.` });
                 }
             }
         } catch (error) {
             console.error('Error al enlazar compras:', error);
-            notify.error(`Error al enlazar: ${error.message}`);
+            notify.error({ title: `Error al enlazar: ${error.message}` });
         }
     };
 

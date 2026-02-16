@@ -211,9 +211,9 @@ export function useStorePositions({ store, setStore, token }) {
           content: { ...prevStore.content, pallets: updatedPallets },
         };
       });
-      notify.success('Posición eliminada correctamente');
+      notify.success({ title: 'Posición eliminada correctamente' });
     } catch (error) {
-      notify.error('Error al quitar la posición');
+      notify.error({ title: 'Error al quitar la posición' });
     }
   };
 

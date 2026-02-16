@@ -51,7 +51,7 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
                     })
                     .catch((error) => {
                         console.error('Error al validar:', error);
-                        notify.error('Error al validar recepciones');
+                        notify.error({ title: 'Error al validar recepciones' });
                     })
                     .finally(() => {
                         setIsValidating(false);
@@ -117,7 +117,7 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
         });
 
         if (comprasSeleccionadas.length === 0) {
-            notify.error('No hay compras seleccionadas para vincular.');
+            notify.error({ title: 'No hay compras seleccionadas para vincular.' });
             return;
         }
 
@@ -126,25 +126,25 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
+                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
             }
             if (result.errores > 0) {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error(`${barcoInfo}${errorDetail.error}`, { duration: 6000 });
+                    notify.error({ title: `${barcoInfo}${errorDetail.error}` }, { duration: 6000 });
                 });
                 if (result.errores > 3) {
-                    notify.error(`${result.errores - 3} error(es) adicional(es).`);
+                    notify.error({ title: `${result.errores - 3} error(es) adicional(es).` });
                 }
             }
             if (result.correctas === 0 && result.errores === 0) {
-                notify.info('No hay compras válidas para enlazar');
+                notify.info({ title: 'No hay compras válidas para enlazar' });
             }
             if (result.correctas > 0 && onSuccess) onSuccess();
         } catch (error) {
             console.error('Error al enlazar:', error);
-            notify.error(`Error al enlazar: ${error.message}`);
+            notify.error({ title: `Error al enlazar: ${error.message}` });
         } finally {
             setIsLinking(false);
         }

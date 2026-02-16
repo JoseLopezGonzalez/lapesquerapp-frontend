@@ -30,10 +30,10 @@ export default function MassiveExportModal({ documents }) {
             }));
 
             downloadMassiveExcel(documentsToExport);
-            notify.success('Excel generado correctamente');
+            notify.success({ title: 'Excel generado correctamente' });
         } catch (error) {
             console.error('Error al exportar:', error);
-            notify.error(`Error al exportar: ${error.message}`);
+            notify.error({ title: `Error al exportar: ${error.message}` });
         } finally {
             setIsExporting(false);
         }
@@ -54,7 +54,7 @@ export default function MassiveExportModal({ documents }) {
             });
 
             if (allLinkedSummary.length === 0) {
-                notify.error('No hay compras para enlazar');
+                notify.error({ title: 'No hay compras para enlazar' });
                 return;
             }
 
@@ -62,19 +62,19 @@ export default function MassiveExportModal({ documents }) {
             const result = await linkAllPurchases(allLinkedSummary);
 
             if (result.correctas > 0) {
-                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
+                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
             }
 
             if (result.errores > 0) {
-                notify.error(`${result.errores} compras fallaron al enlazar`);
+                notify.error({ title: `${result.errores} compras fallaron al enlazar` });
             }
 
             if (result.correctas === 0 && result.errores === 0) {
-                notify.info('No hay compras válidas para enlazar');
+                notify.info({ title: 'No hay compras válidas para enlazar' });
             }
         } catch (error) {
             console.error('Error al enlazar:', error);
-            notify.error(`Error al enlazar: ${error.message}`);
+            notify.error({ title: `Error al enlazar: ${error.message}` });
         } finally {
             setIsLinking(false);
         }

@@ -93,12 +93,12 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     const handleSubmit = async () => {
         if (!selectedStoreValue) {
-            notify.error("Seleccione un almacén de destino");
+            notify.error({ title: "Seleccione un almacén de destino" });
             return;
         }
 
         if (selectedPalletIds.size === 0) {
-            notify.error("Seleccione al menos un palet para mover");
+            notify.error({ title: "Seleccione al menos un palet para mover" });
             return;
         }
 
@@ -116,13 +116,13 @@ export default function MoveMultiplePalletsToStoreDialog() {
                 if (errors && errors.length > 0) {
                     message += `. ${total_count - moved_count} palet(s) no se pudieron mover.`;
                 }
-                notify.success(message);
+                notify.success({ title: message });
             }
 
             // Mostrar errores individuales si existen
             if (errors && errors.length > 0) {
                 errors.forEach(({ pallet_id, error }) => {
-                    notify.error(`Palet #${pallet_id}: ${error}`);
+                    notify.error({ title: `Palet #${pallet_id}: ${error}` });
                 });
             }
 
@@ -136,7 +136,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || "Error al mover los palets";
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         } finally {
             setIsSubmitting(false);
         }

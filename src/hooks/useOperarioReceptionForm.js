@@ -198,7 +198,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
     async (data) => {
       const supplierId = data.supplier?.id ?? data.supplier;
       if (!supplierId) {
-        notify.error('Seleccione un proveedor');
+        notify.error({ title: 'Seleccione un proveedor' });
         return;
       }
 
@@ -225,8 +225,9 @@ export function useOperarioReceptionForm({ onSuccess }) {
         });
 
       if (validDetails.length === 0) {
-        notify.error(
-          'Complete al menos una línea con producto, peso bruto, cajas y tara');
+        notify.error({
+          title: 'Complete al menos una línea con producto, peso bruto, cajas y tara',
+        });
         return;
       }
 
@@ -239,11 +240,12 @@ export function useOperarioReceptionForm({ onSuccess }) {
 
       try {
         const created = await createRawMaterialReception(payload);
-        notify.success('Recepción creada correctamente');
+        notify.success({ title: 'Recepción creada correctamente' });
         onSuccess?.(created);
       } catch (err) {
-        notify.error(
-          err?.message || 'No se pudo crear la recepción');
+        notify.error({
+          title: err?.message || 'No se pudo crear la recepción',
+        });
       }
     },
     [onSuccess]

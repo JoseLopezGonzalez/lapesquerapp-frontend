@@ -27,7 +27,7 @@ export default function AuthErrorInterceptor() {
         clearSession();
         return;
       }
-      notify.error("Sesión expirada. Redirigiendo al login...");
+      notify.error({ title: "Sesión expirada. Redirigiendo al login..." });
       setTimeout(async () => {
         await clearSession();
         window.location.href = buildLoginUrl(window.location.pathname);

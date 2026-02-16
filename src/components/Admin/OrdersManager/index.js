@@ -66,7 +66,7 @@ export default function OrdersManager() {
     // Mostrar toast en error de carga (comportamiento anterior)
     useEffect(() => {
         if (ordersError) {
-            notify.error(ordersError);
+            notify.error({ title: ordersError });
         }
     }, [ordersError]);
 

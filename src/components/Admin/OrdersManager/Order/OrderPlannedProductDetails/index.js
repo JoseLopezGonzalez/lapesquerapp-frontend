@@ -229,7 +229,7 @@ const OrderPlannedProductDetails = () => {
 
         const detail = mergedProductDetails.find((productDetail) => productDetail.status === 'noPlanned');
         if (!detail) {
-            notify.error('No hay productos detectados ');
+            notify.error({ title: 'No hay productos detectados' });
             return;
         }
         const product = detail.product;

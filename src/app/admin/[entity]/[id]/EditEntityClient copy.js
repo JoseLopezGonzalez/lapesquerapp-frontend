@@ -148,14 +148,14 @@ export default function EditEntityClient({ config }) {
             });
 
             if (res.ok) {
-                notify.success(successMessage);
+                notify.success({ title: successMessage });
                 /* router.push(`/admin/${endpoint}`); */
             } else {
-                notify.error(errorMessage);
+                notify.error({ title: errorMessage });
             }
         } catch (err) {
             console.error(err);
-            notify.error("Error inesperado");
+            notify.error({ title: "Error inesperado" });
         }
     };
 

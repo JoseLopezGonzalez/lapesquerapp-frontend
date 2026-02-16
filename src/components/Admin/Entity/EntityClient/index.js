@@ -192,14 +192,14 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            notify.error('No se encontró el servicio para esta entidad.');
+            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
             return;
         }
 
         try {
             await entityService.delete(id);
             const successMessage = 'Elemento eliminado con éxito.';
-            notify.success(successMessage);
+            notify.success({ title: successMessage });
             if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
@@ -224,7 +224,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         }
     }, [config.endpoint, isQueryDriven, queryResult?.refetch]);
 
@@ -246,7 +246,7 @@ export default function EntityClient({ config }) {
 
     useEffect(() => {
         if (queryResult?.error) {
-            notify.error(queryResult.error);
+            notify.error({ title: queryResult.error });
         }
     }, [queryResult?.error]);
 
@@ -261,7 +261,7 @@ export default function EntityClient({ config }) {
         const entityService = getEntityService(config.endpoint);
         
         if (!entityService) {
-            notify.error('No se encontró el servicio para esta entidad.');
+            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
             setData((prevData) => ({ ...prevData, loading: false }));
             return;
         }
@@ -318,7 +318,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
             setData((prevData) => ({ ...prevData, loading: false }));
         }
     }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]);
@@ -402,7 +402,7 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            notify.error('No se encontró el servicio para esta entidad.');
+            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
             return;
         }
 
@@ -410,7 +410,7 @@ export default function EntityClient({ config }) {
         try {
             await entityService.deleteMultiple(selectedRows);
             const successMessage = 'Elementos eliminados con éxito.';
-            notify.success(successMessage);
+            notify.success({ title: successMessage });
             if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
@@ -437,7 +437,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         } finally {
             setIsDeleting(false);
         }
@@ -462,7 +462,7 @@ export default function EntityClient({ config }) {
 
         try {
             await performAction(`${API_URL_V2}${action.endpoint}`, action.method || 'POST', body);
-            notify.success(action.successMessage || 'Acción completada con éxito');
+            notify.success({ title: action.successMessage || 'Acción completada con éxito' });
             setSelectedRows([]); // Clear selection after global action
             // Optionally, re-fetch data to reflect changes
             fetchData(currentPage, filters);
@@ -474,7 +474,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         }
     };
 
@@ -584,12 +584,12 @@ export default function EntityClient({ config }) {
         if (!entityService?.resendInvitation) return;
         try {
             await entityService.resendInvitation(id);
-            notify.success('Se ha enviado un enlace de acceso al correo del usuario.');
+            notify.success({ title: 'Se ha enviado un enlace de acceso al correo del usuario.' });
             if (queryResult?.refetch) queryResult.refetch();
             else fetchData(currentPage, filters);
         } catch (err) {
             const errorMessage = err?.data?.userMessage || err?.message || 'Error al reenviar la invitación.';
-            notify.error(errorMessage);
+            notify.error({ title: errorMessage });
         }
     }, [config.endpoint, currentPage, filters, queryResult?.refetch]);
 

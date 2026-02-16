@@ -56,17 +56,17 @@ export function SupplierLiquidationList() {
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
         "Error al obtener la lista de proveedores";
-      notify.error(msg);
+      notify.error({ title: msg });
     }
   }, [error]);
 
   const handleBuscar = () => {
     if (!dateRange.from || !dateRange.to) {
-      notify.error("Por favor, seleccione un rango de fechas");
+      notify.error({ title: "Por favor, seleccione un rango de fechas" });
       return;
     }
     if (dateRange.from > dateRange.to) {
-      notify.error("La fecha de inicio debe ser anterior a la fecha de fin");
+      notify.error({ title: "La fecha de inicio debe ser anterior a la fecha de fin" });
       return;
     }
     refetch();
@@ -74,7 +74,7 @@ export function SupplierLiquidationList() {
 
   const handleSupplierClick = (supplierId: number, ev?: React.MouseEvent) => {
     if (!dateRange.from || !dateRange.to) {
-      notify.error("Por favor, seleccione un rango de fechas");
+      notify.error({ title: "Por favor, seleccione un rango de fechas" });
       return;
     }
     const s = format(dateRange.from, "yyyy-MM-dd");

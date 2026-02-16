@@ -95,7 +95,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
         "Error al obtener el detalle de la liquidación";
-      notify.error(msg);
+      notify.error({ title: msg });
     }
   }, [error]);
 
@@ -103,7 +103,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     if (!startDate || !endDate || !data) return;
 
     if (!paymentMethod) {
-      notify.error("Debe seleccionar un método de pago (Efectivo o Transferencia)");
+      notify.error({ title: "Debe seleccionar un método de pago (Efectivo o Transferencia)" });
       return;
     }
 

@@ -67,7 +67,7 @@ export default function TimePunchManager() {
             }, 3000);
         },
         onError: (error) => {
-            notify.error(getErrorMessage(error));
+            notify.error({ title: getErrorMessage(error) });
         },
         onSettled: () => {
             setRegisteringId(null);
@@ -76,13 +76,13 @@ export default function TimePunchManager() {
 
     useEffect(() => {
         if (employeesError) {
-            notify.error(employeesError || 'Error al cargar la lista de empleados');
+            notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
         }
     }, [employeesError]);
 
     const handleRegisterPunch = (employeeId, employeeName) => {
         if (!session?.user?.accessToken) {
-            notify.error('No hay sesión activa');
+            notify.error({ title: 'No hay sesión activa' });
             return;
         }
         setRegisteringId(employeeId);

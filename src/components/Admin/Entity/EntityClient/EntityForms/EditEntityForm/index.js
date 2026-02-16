@@ -88,7 +88,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const loadEntityData = useCallback(async () => {
         const entityService = getEntityService(endpoint);
         if (!entityService) {
-            notify.error('No se encontró el servicio para esta entidad.');
+            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
             setLoading(false);
             return;
         }
@@ -107,7 +107,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            notify.error(userMessage);
+            notify.error({ title: userMessage });
             console.error("Error loading entity data:", err);
         } finally {
             setLoading(false);
@@ -208,12 +208,12 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
             const entityService = getEntityService(endpoint);
             if (!entityService) {
-                notify.error('No se encontró el servicio para esta entidad.');
+                notify.error({ title: 'No se encontró el servicio para esta entidad.' });
                 return;
             }
 
             await entityService.update(id, finalData);
-            notify.success(successMessage);
+            notify.success({ title: successMessage });
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
         } catch (err) {
@@ -230,7 +230,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            notify.error(userMessage);
+            notify.error({ title: userMessage });
             console.error("Submission error:", err);
         }
     };

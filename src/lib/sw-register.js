@@ -5,6 +5,8 @@
  * Registra el SW en el navegador y maneja actualizaciones.
  */
 
+import { notify } from '@/lib/notifications';
+
 /**
  * Registrar Service Worker
  */
@@ -72,14 +74,8 @@ export function registerServiceWorker() {
  * Muestra notificación al usuario para que recargue la página
  */
 function handleServiceWorkerUpdate() {
-  // Opcional: Mostrar toast/notificación al usuario
-  // Por ahora solo loguear
-  // En el futuro se puede integrar con notify (Sileo)
-  if (typeof window !== 'undefined' && window.toast) {
-    window.toast('Nueva versión disponible. Recarga la página para actualizar.', {
-      duration: 5000,
-      icon: '🔄',
-    });
+  if (typeof window !== 'undefined') {
+    notify.info({ title: 'Nueva versión disponible. Recarga la página para actualizar.' }, { duration: 5000 });
   }
 }
 

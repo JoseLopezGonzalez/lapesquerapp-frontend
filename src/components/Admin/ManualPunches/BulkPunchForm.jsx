@@ -41,14 +41,14 @@ export default function BulkPunchForm() {
       setValidationResults(result);
       if (result.invalid === 0) {
         setIsValidated(true);
-        notify.success('Todos los fichajes son válidos. Ya puedes registrar');
+        notify.success({ title: 'Todos los fichajes son válidos. Ya puedes registrar' });
       } else {
         setIsValidated(false);
-        notify.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`);
+        notify.error({ title: `${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar` });
       }
     },
     onError: () => {
-      notify.error('Error al validar los fichajes');
+      notify.error({ title: 'Error al validar los fichajes' });
     },
   });
 
@@ -61,7 +61,7 @@ export default function BulkPunchForm() {
     onSuccess: (result) => {
       setSubmitResults(result);
       if (result.failed === 0) {
-        notify.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`);
+        notify.success({ title: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente` });
         setTimeout(() => {
           setRows([]);
           setValidationResults(null);
@@ -70,19 +70,20 @@ export default function BulkPunchForm() {
         }, 3000);
         queryClient.invalidateQueries({ queryKey: ['punches'] });
       } else {
-        notify.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`);
+        notify.error({
+          title: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
+        });
       }
     },
     onError: (error) => {
       const msg = error?.userMessage || error?.message || 'Error al registrar los fichajes';
-      notify.error(msg);
+      notify.error({ title: msg });
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      notify.error(employeesError || 'Error al cargar la lista de empleados');
+      notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
     }
   }, [employeesError]);
 
@@ -213,11 +214,11 @@ export default function BulkPunchForm() {
 
   const handleValidate = () => {
     if (rows.length === 0) {
-      notify.error('Añade al menos un fichaje para validar');
+      notify.error({ title: 'Añade al menos un fichaje para validar' });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error('No hay sesión activa');
+      notify.error({ title: 'No hay sesión activa' });
       return;
     }
     validateMutation.mutate(punchesPayload);
@@ -225,15 +226,15 @@ export default function BulkPunchForm() {
 
   const handleSubmit = () => {
     if (rows.length === 0) {
-      notify.error('Añade al menos un fichaje para registrar');
+      notify.error({ title: 'Añade al menos un fichaje para registrar' });
       return;
     }
     if (!isValidated) {
-      notify.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero');
+      notify.error({ title: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero' });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error('No hay sesión activa');
+      notify.error({ title: 'No hay sesión activa' });
       return;
     }
     const payload = rows.map((row) => ({

@@ -95,9 +95,9 @@ export default function IndividualPunchForm() {
       setSuccess(true);
       if (isFullSession) {
         if (result?.failed === 0) {
-          notify.success('Sesión completa registrada correctamente (Entrada + Salida)');
+          notify.success({ title: 'Sesión completa registrada correctamente (Entrada + Salida)' });
         } else {
-          notify.error('Se registró la entrada, pero la salida falló');
+          notify.error({ title: 'Se registró la entrada, pero la salida falló' });
         }
       } else {
         notify.success(
@@ -110,13 +110,13 @@ export default function IndividualPunchForm() {
     },
     onError: (error) => {
       const message = error?.userMessage || error?.message || 'Error al registrar el fichaje';
-      notify.error(message);
+      notify.error({ title: message });
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      notify.error(employeesError || 'Error al cargar la lista de empleados');
+      notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
     }
   }, [employeesError]);
 

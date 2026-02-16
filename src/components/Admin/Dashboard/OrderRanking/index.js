@@ -58,7 +58,7 @@ export function OrderRankingChart() {
 
     const handleExportToExcel = () => {
         if (fullData.length === 0) {
-            notify.error("No hay datos para exportar")
+            notify.error({ title: "No hay datos para exportar" })
             return
         }
 

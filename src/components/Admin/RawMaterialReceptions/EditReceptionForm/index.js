@@ -483,7 +483,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     setInitialFormState(JSON.stringify(normalizedFormData));
             } catch (error) {
                 const errorInfo = logReceptionError(error, 'load', { receptionId });
-                notify.error(formatReceptionError(error, 'load'));
+                notify.error({ title: formatReceptionError(error, 'load') });
             } finally {
                 setLoading(false);
                 isLoadingRef.current = false;
@@ -691,13 +691,13 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             // Validate using centralized validators
             const supplierError = validateSupplier(data.supplier);
             if (supplierError) {
-                notify.error(supplierError);
+                notify.error({ title: supplierError });
                 return;
             }
 
             const dateError = validateDate(data.date);
             if (dateError) {
-                notify.error(dateError);
+                notify.error({ title: dateError });
                 return;
             }
 
@@ -707,7 +707,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate pallets using centralized validator
                 const palletsError = validateTemporalPallets(temporalPallets);
                 if (palletsError) {
-                    notify.error(palletsError);
+                    notify.error({ title: palletsError });
                     return;
                 }
 
@@ -733,8 +733,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             const [productId, lot] = key.split('-');
                             const product = productOptions.find(p => p.value === productId || p.id === productId);
                             const productName = product?.label || product?.name || `Producto ${productId}`;
-                            notify.error(
-                                `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`);
+                            notify.error({
+                                title: `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`,
+                            });
                             return;
                         }
                     }
@@ -744,7 +745,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         (item.pallet?.boxes || []).some(box => !box.id)
                     );
                     if (hasNewBoxes) {
-                        notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
+                        notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
                         return;
                     }
                 }
@@ -757,7 +758,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const convertedPallets = transformPalletsToApiFormat(temporalPallets, originalBoxIds);
 
                 if (convertedPallets.length === 0) {
-                    notify.error('Debe completar al menos un palet válido con producto y cajas');
+                    notify.error({ title: 'Debe completar al menos un palet válido con producto y cajas' });
                     return;
                 }
 
@@ -781,7 +782,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate details using centralized validator
                 const detailsError = validateReceptionDetails(data.details);
                 if (detailsError) {
-                    notify.error(detailsError);
+                    notify.error({ title: detailsError });
                     return;
                 }
 
@@ -789,7 +790,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const transformedDetails = transformDetailsToApiFormat(data.details);
 
                 if (transformedDetails.length === 0) {
-                    notify.error('Debe completar al menos una línea válida con producto y peso neto');
+                    notify.error({ title: 'Debe completar al menos una línea válida con producto y peso neto' });
                     return;
                 }
 
@@ -887,7 +888,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 setInitialFormState(JSON.stringify(normalizedFormData));
             }
             
-            notify.success('Recepción actualizada exitosamente');
+            notify.success({ title: 'Recepción actualizada exitosamente' });
             announce('Recepción actualizada exitosamente', 'assertive');
             
             if (onSuccess) {
@@ -902,7 +903,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 creationMode, 
                 hasPallets: temporalPallets.length 
             });
-            notify.error(formatReceptionError(error, 'update'));
+            notify.error({ title: formatReceptionError(error, 'update') });
         }
     }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce, normalizePalletsForComparison, mapDetailsFromBackend, reset]);
 
@@ -1537,7 +1538,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                         onClick={async () => {
                                                             try {
                                                                 if (!session?.user?.accessToken) {
-                                                                    notify.error('No hay sesión autenticada');
+                                                                    notify.error({ title: 'No hay sesión autenticada' });
                                                                     return;
                                                                 }
                                                                 const fullPallet = await getPallet(pallet.id, session.user.accessToken);
@@ -1545,7 +1546,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                                 setIsPalletLabelDialogOpen(true);
                                                             } catch (error) {
                                                                 logReceptionError(error, 'loadPallet', { palletId: pallet.id });
-                                                                notify.error(formatReceptionError(error, 'loadPallet'));
+                                                                notify.error({ title: formatReceptionError(error, 'loadPallet') });
                                                             }
                                                         }}
                                                         title="Ver etiqueta del palet"
@@ -1613,7 +1614,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 // Si no tiene ID, es una caja nueva
                                 // Validar que no se puedan crear nuevas cajas cuando hay cajas usadas
                                 if (hasUsedBoxes) {
-                                    notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
+                                    notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
                                     return null; // Filtrar esta caja
                                 }
                                 return box;
@@ -1634,7 +1635,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     } else {
                         // Validar que no se puedan crear nuevos palets con cajas nuevas cuando hay cajas usadas
                         if (hasUsedBoxes && pallet.boxes?.some(box => !box.id)) {
-                            notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
+                            notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
                             return;
                         }
                         

@@ -111,7 +111,7 @@ export function useCustomerHistory(order) {
             } catch (err) {
                 const errorMessage = err.message || 'Error al cargar el historial del cliente';
                 setError(errorMessage);
-                notify.error(errorMessage);
+                notify.error({ title: errorMessage });
                 setCustomerHistory((prev) => (prev.length === 0 ? [] : prev));
             } finally {
                 setInitialLoading(false);

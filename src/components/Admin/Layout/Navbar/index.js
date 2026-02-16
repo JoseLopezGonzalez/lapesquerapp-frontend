@@ -26,7 +26,7 @@ import { notify } from "@/lib/notifications";export default function Navbar() {
             await signOut({ redirect: false });
             
             // Mostrar toast de éxito
-            notify.success('Sesión cerrada correctamente');
+            notify.success({ title: 'Sesión cerrada correctamente' });
             
             // Redirigir después de un breve delay para que se vea el toast
             setTimeout(() => {
@@ -36,7 +36,7 @@ import { notify } from "@/lib/notifications";export default function Navbar() {
             console.error('Error en logout:', err);
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            notify.success('Sesión cerrada correctamente');
+            notify.success({ title: 'Sesión cerrada correctamente' });
             setTimeout(() => {
                 window.location.replace('/');
             }, 500);

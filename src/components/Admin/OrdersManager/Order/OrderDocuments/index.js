@@ -125,7 +125,7 @@ const OrderDocuments = () => {
 
     const handleOnClickSendMultiple = async () => {
         if (!selectedDocument) {
-            notify.error("Por favor seleccione un documento");
+            notify.error({ title: "Por favor seleccione un documento" });
             return;
         }
         const selectedRecipientsArray = Object.entries(selectedRecipients)
@@ -133,7 +133,7 @@ const OrderDocuments = () => {
             .map(([id]) => id);
 
         if (selectedRecipientsArray.length === 0) {
-            notify.error("Por favor seleccione al menos un destinatario");
+            notify.error({ title: "Por favor seleccione al menos un destinatario" });
             return;
         }
 

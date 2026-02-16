@@ -40,22 +40,22 @@ export default function IndividualMode() {
                 notify.error(
                     `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`);
             } else if (result.errorType === 'azure') {
-                notify.error(result.error);
+                notify.error({ title: result.error });
             } else {
                 console.error("Error inesperado:", result.error);
-                notify.error("Error inesperado al procesar el documento.");
+                notify.error({ title: "Error inesperado al procesar el documento." });
             }
         }
     };
 
     const handleProcessError = (error) => {
         console.error("Error inesperado:", error);
-        notify.error("Error inesperado al procesar el documento.");
+        notify.error({ title: "Error inesperado al procesar el documento." });
     };
 
     const handleProcess = () => {
         if (!documentType) {
-            notify.error("Por favor, seleccione un archivo y el tipo de documento.");
+            notify.error({ title: "Por favor, seleccione un archivo y el tipo de documento." });
             return;
         }
 
@@ -65,7 +65,7 @@ export default function IndividualMode() {
             'listadoComprasLonjaDeIsla',
         ];
         if (!validTypes.includes(documentType)) {
-            notify.error("Tipo de documento no soportado.");
+            notify.error({ title: "Tipo de documento no soportado." });
             return;
         }
 

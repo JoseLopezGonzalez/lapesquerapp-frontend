@@ -37,7 +37,7 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
     await signOut({ redirect: false });
     
     // Mostrar toast de éxito
-    notify.success('Sesión cerrada correctamente');
+    notify.success({ title: 'Sesión cerrada correctamente' });
     
     // Redirigir después de un breve delay para que se vea el toast
     setTimeout(() => {

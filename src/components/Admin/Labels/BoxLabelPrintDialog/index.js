@@ -37,11 +37,11 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
 
     const handleOnClickPrintLabel = () => {
         if (disabledPrintButton) {
-            notify.error('Por favor, completa todos los campos manuales antes de imprimir.');
+            notify.error({ title: 'Por favor, completa todos los campos manuales antes de imprimir.' });
             return;
         }
         // console.log('Imprimiendo etiquetas con los siguientes valores:', values);
-        notify.success(`Imprimiendo ${values.length} etiquetas...`);
+        notify.success({ title: `Imprimiendo ${values.length} etiquetas...` });
         onPrint();
     }
 

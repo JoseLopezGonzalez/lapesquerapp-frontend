@@ -129,7 +129,7 @@ export function useStoreDialogs({
 
   const openDuplicatePalletDialog = async (palletId) => {
     if (!token) {
-      notify.error('No se pudo obtener el token de autenticación');
+      notify.error({ title: 'No se pudo obtener el token de autenticación' });
       return;
     }
 

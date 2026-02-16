@@ -72,7 +72,7 @@ export default function ReceptionsListCard({ storeId = null }) {
       setPrintDialogOpen(true);
     } catch (err) {
       console.error("Error al cargar recepción para imprimir:", err);
-      notify.error("No se pudo cargar la recepción");
+      notify.error({ title: "No se pudo cargar la recepción" });
     } finally {
       setLoadingPrintId(null);
     }

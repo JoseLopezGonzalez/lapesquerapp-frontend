@@ -437,27 +437,27 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 setLabelId(data.data.id);
                 setSelectedLabel(data.data);
             }
-            notify.success(`Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.`);
+            notify.success({ title: `Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.` });
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
         onError: (err: Error) => {
             const e = err as Error & { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } } };
             const msg = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'Error al guardar etiqueta.';
-            notify.error(msg);
+            notify.error({ title: msg });
         },
     });
     type DeleteMutationVars = { labelId: string; token?: string };
     const deleteMutation = useMutation({
         mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
         onSuccess: () => {
-            notify.success("Etiqueta eliminada correctamente.");
+            notify.success({ title: "Etiqueta eliminada correctamente." });
             clearEditor();
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
         onError: (err: Error) => {
             const e = err as Error & { userMessage?: string; data?: { userMessage?: string } };
             const msg = e?.userMessage || e?.data?.userMessage || e?.message || 'Error al eliminar etiqueta.';
-            notify.error(msg);
+            notify.error({ title: msg });
         },
     });
 
@@ -466,15 +466,15 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
     const handleSave = async () => {
         const validationError = validateLabelName(labelName);
         if (validationError) {
-            notify.error(validationError);
+            notify.error({ title: validationError });
             return;
         }
         if (hasDuplicateFieldKeys(elements)) {
-            notify.error('Error: hay campos con el mismo nombre.');
+            notify.error({ title: 'Error: hay campos con el mismo nombre.' });
             return;
         }
         if (hasAnyElementValidationErrors(elements)) {
-            notify.error('Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.');
+            notify.error({ title: 'Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.' });
             return;
         }
         const token = session?.user?.accessToken;
@@ -487,7 +487,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
 
     const handleDeleteLabel = async () => {
         if (!labelId) {
-            notify.error("No hay etiqueta seleccionada para eliminar.");
+            notify.error({ title: "No hay etiqueta seleccionada para eliminar." });
             return;
         }
         deleteMutation.mutate({ labelId, token: session?.user?.accessToken });
@@ -829,10 +829,10 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 validateLabelJSON(data);
                 const name = importJSON(data);
                 setLabelName(name ?? '');
-                notify.success('Etiqueta importada correctamente');
+                notify.success({ title: 'Etiqueta importada correctamente' });
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Error al importar la etiqueta';
-                notify.error(errorMessage);
+                notify.error({ title: errorMessage });
                 console.error('Error al importar etiqueta:', err);
             }
         };
@@ -970,7 +970,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
         // Solo funciona para elementos de texto
         const textTypes = ['text', 'field', 'manualField', 'richParagraph', 'sanitaryRegister'];
         if (!textTypes.includes(element.type)) {
-            notify.error('Esta función solo está disponible para elementos de texto');
+            notify.error({ title: 'Esta función solo está disponible para elementos de texto' });
             return;
         }
 
@@ -1089,13 +1089,13 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 height: Math.max(minSize, heightMm + margin),
             });
 
-            notify.success('Tamaño ajustado al contenido');
+            notify.success({ title: 'Tamaño ajustado al contenido' });
         } catch (error) {
             console.error('Error al ajustar tamaño:', error);
             if (document.body.contains(tempContainer)) {
                 document.body.removeChild(tempContainer);
             }
-            notify.error('Error al ajustar el tamaño');
+            notify.error({ title: 'Error al ajustar el tamaño' });
         }
     };
 

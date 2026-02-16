@@ -101,7 +101,7 @@ export default function AddElementToPosition({ open }) {
     const onSubmit = () => {
         assignPalletsToPosition(position, selectedPalletIds, token)
             .then((response) => {
-                notify.success("Pallets ubicados correctamente")
+                notify.success({ title: "Pallets ubicados correctamente" })
                 setSelectedPalletIds([])
                 setSearchQuery("")
                 changePalletsPosition(selectedPalletIds, position)
@@ -109,7 +109,7 @@ export default function AddElementToPosition({ open }) {
             })
             .catch((error) => {
                 console.error("Error al ubicar los pallets:", error)
-                notify.error("Error al ubicar los pallets")
+                notify.error({ title: "Error al ubicar los pallets" })
             })
     }
 
@@ -121,7 +121,7 @@ export default function AddElementToPosition({ open }) {
 
     const handleSubmit = () => {
         if (selectedPalletIds.length <= 0) {
-            notify.error("Debe seleccionar al menos un pallet para ubicar")
+            notify.error({ title: "Debe seleccionar al menos un pallet para ubicar" })
             return
         }
         onSubmit(selectedPalletIds)

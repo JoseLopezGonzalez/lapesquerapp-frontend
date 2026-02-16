@@ -30,7 +30,7 @@ export default function PunchesCalendar() {
 
   useEffect(() => {
     if (error) {
-      notify.error(error || 'Error al cargar los fichajes del mes');
+      notify.error({ title: error || 'Error al cargar los fichajes del mes' });
     }
   }, [error]);
 
