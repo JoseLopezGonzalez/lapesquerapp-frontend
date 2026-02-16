@@ -29,6 +29,7 @@ import CreateOrderFormMobile from './CreateOrderFormMobile';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { notify } from '@/lib/notifications';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { orderCreateSchema } from './schemas/orderCreateSchema';
 
 const CreateOrderForm = ({ onCreate, onClose }) => {
@@ -149,10 +150,15 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
         try {
             const newOrderData = await notify.promise(createOrder(payload), {
-                loading: 'Creando pedido...',
-                success: 'Pedido creado correctamente',
-                error: (error) =>
-                    error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error desconocido al crear el pedido',
+                loading: { title: 'Creando pedido...' },
+                success: { title: 'Pedido creado correctamente' },
+                error: (error) => {
+                    const message =
+                        error?.message ||
+                        (error?.data && getErrorMessage(error.data)) ||
+                        'Error desconocido al crear el pedido';
+                    return { title: message };
+                },
             });
             reset({
                 ...defaultValues,
