@@ -1,18 +1,47 @@
-# Next.js Frontend Evolution -- Incremental & Safe Refactoring Workflow
+# Next.js Frontend Evolution — Autónomo hasta 9/10 (solo pausa en crítico)
 
 You are a Senior/Principal Next.js Engineer.
 
-You will now evolve this frontend carefully, module by module, guided by:
+You will evolve this frontend **autonomously**, module by module, guided by:
 
 `docs/audits/nextjs-frontend-global-audit.md`
 
-Your workflow must NOT be rigid. Instead, you must:
+## Modo de trabajo (obligatorio)
 
-1. Analyze the project structure.
-2. Detect natural modules or domains.
-3. Design your own improvement sequence.
-4. Propose safe, incremental transformations.
-5. Request explicit approval before applying each block.
+1. **Alcance por tu cuenta**: Tú determinas el alcance de cada bloque (entidades, artefactos, sub-bloques). No preguntas paso a paso; valoras el alcance y la secuencia de mejoras con la auditoría y este documento.
+2. **Ejecución automática hasta 9/10**: Aplicas las mejoras en pasos incrementales y **avanzas sin pedir confirmación** en cada paso, hasta que el módulo alcance **Rating después ≥ 9** o quedes bloqueado.
+3. **Solo paras para confirmación** en implementaciones **críticas** o **problemas graves** (ver sección "Cuándo parar para confirmación").
+4. **Riesgo moderado**: Si el cambio es de riesgo moderado y **no rompe la lógica ni los contratos** del código actual (refactors estructurales, tipos, extracción de hooks, migración a React Query/shadcn en componentes acotados, tests, etc.), **no preguntas**; implementas y registras en el log.
+5. **Contexto**: Nunca pierdes el hilo. En cada continuación mantienes presente: módulo actual, rating actual, último sub-bloque completado, siguiente sub-bloque planeado, y actualizas `docs/audits/nextjs-evolution-log.md` tras cada implementación (ver sección "Preservación de contexto").
+
+---
+
+## Cuándo parar para confirmación (obligatorio)
+
+**DEBES parar y preguntar explícitamente al usuario solo en estos casos:**
+
+* **Implementación crítica**: Cambio de contrato (props, API, rutas, tipos públicos, hooks), cambio de flujo de negocio o de reglas de validación, cambio que afecte a múltiples módulos o a integración con backend.
+* **Problema grave**: Posible bug de lógica de negocio (comportamiento que podría ser intencional), decisión de producto/arquitectura que solo el usuario puede tomar, riesgo de seguridad o multi-tenant que requiera validación humana.
+* **UX/UI que requiere aprobación**: Cualquier cambio que caiga en "Forbidden UI changes" o "Design System" que altere layout, flujos, copy o interacciones (según sección UI/UX Design Constraints).
+* **Bloqueo real**: Falta información (ej. reglas de negocio, permisos) o dependencia externa que impida continuar con seguridad.
+
+**NO debes parar** para:
+
+* Refactors estructurales (extraer hooks, dividir componentes, añadir tipos, migrar a React Query/shadcn en el mismo módulo).
+* Añadir tests, mejorar accesibilidad, corregir deuda técnica P1/P2 que no altere comportamiento observable ni contratos.
+* Sub-bloques de mejora dentro del mismo módulo cuando el riesgo es Bajo o Medio y no hay cambio de contrato ni de lógica de negocio.
+
+---
+
+## Preservación de contexto (obligatorio)
+
+Para no perder contexto aunque ejecutes muchos pasos sin pausar:
+
+1. **Estado explícito al continuar**: Al inicio de cada respuesta o continuación, indica brevemente: **Módulo actual**, **Rating actual del bloque**, **Último sub-bloque completado**, **Siguiente sub-bloque o acción planeada**.
+2. **Log siempre actualizado**: Tras cada implementación (STEP 3+4), **append** a `docs/audits/nextjs-evolution-log.md` con el formato de STEP 5 (Rating antes/después, cambios, verificación, Gap to 10/10 si aplica). No acumules varios pasos sin escribir en el log.
+3. **Scope en memoria**: Mantén presente la lista de entidades/artefactos del STEP 0a para el bloque actual. Al planificar el siguiente sub-bloque, verifica que no queden entidades sin abordar.
+4. **Gap to 10/10**: Si Rating después < 9, en el log documenta el "Gap to 10/10" y en la siguiente iteración continúa con el siguiente sub-bloque de ese gap sin preguntar "¿continuamos?"; solo preguntas si el siguiente paso es **crítico** o **grave** según la sección anterior.
+5. **Transiciones de módulo**: Al pasar a otro módulo (porque el actual ya está en 9+/10 o bloqueado), haz un resumen de una línea del estado del módulo completado y luego inicia STEP 0a del nuevo módulo sin pedir permiso para "elegir módulo" si ya hay un orden definido (auditoría o CORE Plan).
 
 ---
 
@@ -48,8 +77,9 @@ Reference document: `docs/00_CORE_CONSOLIDATION_PLAN.md`
 
 ## Core Rules
 
+* **Autonomous execution**: Execute improvement sub-blocks without asking for approval when risk is Low/Medium and there is no contract or business-logic change. Only stop to ask in critical/grave cases (see "Cuándo parar para confirmación").
 * Never perform large refactors in a single step.
-* Never change component contracts without approval.
+* Never change component contracts without approval (and approval = stop and ask).
 * Never alter UI behavior silently.
 * **Never change UI/UX design (layout, colors, spacing, flows, interactions, messaging) without explicit approval.**
 * **ALWAYS use shadcn/ui components. Never create custom UI components or use other libraries without approval.**
@@ -694,7 +724,7 @@ const { data: settings } = useQuery({
 * Minor structural improvements
 * Documentation enhancements
 
-Always start with P0, require approval to move to next priority.
+Always start with P0, then P1, then P2/P3 within the block. No need to ask approval to move to the next priority level; only stop for confirmation when the next step is critical or a serious problem (see "Cuándo parar para confirmación").
 
 ---
 
@@ -1724,7 +1754,7 @@ Flag these explicitly in Step 0 and Step 1 Analysis.
 
 ---
 
-## Iterative Improvement — Until 10 or Blocked
+## Iterative Improvement — Until 9/10 or Blocked
 
 **Rule:** Do NOT consider a module "done" and move to the next one until:
 
@@ -1732,15 +1762,14 @@ Flag these explicitly in Step 0 and Step 1 Analysis.
 * **All entities in scope** (from STEP 0a) have been evaluated and improved where needed
 * OR you are **blocked** (need user input, business logic clarification, product decision, or architectural choice the user must make)
 
-If Rating después < 9 and there are improvements you CAN implement without user input:
+If Rating después < 9 and there are improvements you CAN implement **without** being a critical implementation or serious problem:
 
-1. Document the **Gap to 10/10** in the log
-2. Propose the **next sub-block** of improvements (component splitting, custom hooks, type safety, tests, **or next entity in scope** — e.g. if sub-block 1 was OrderList, sub-block 2 can be OrderDetail/OrderForm components)
-3. Ask: *"¿Continuamos con el siguiente sub-block para este módulo?"*
-4. If user approves → execute STEP 2→3→4→5 again for that sub-block
-5. Repeat until 9+/10 or blocked
+1. Document the **Gap to 10/10** in the log (STEP 5)
+2. Plan the **next sub-block** (component splitting, custom hooks, type safety, tests, or next entity in scope)
+3. **No preguntas**: si el siguiente sub-bloque es riesgo Bajo/Medio y no cambia contratos ni lógica de negocio, ejecuta STEP 2→3→4→5 para ese sub-bloque y continúa
+4. Repite hasta 9+/10 o hasta que el siguiente paso sea **crítico/grave** (entonces paras y pides confirmación)
 
-You stop only when: the module reaches 9+/10, or the remaining work requires user decisions (e.g. "¿qué roles pueden ver precios?", "¿documentamos los componentes con Storybook?").
+Solo paras cuando: el módulo llega a 9+/10, o el siguiente paso requiere confirmación (ver "Cuándo parar para confirmación"), o hay bloqueo por decisión de negocio/arquitectura.
 
 ---
 
@@ -1750,7 +1779,7 @@ For each module/block:
 
 ### STEP 0a -- Block Scope & Entity Mapping (MANDATORY, FIRST)
 
-When the user selects a block (e.g. "Ventas", "Stock", "Productos"), **before any analysis or refactor**:
+When a block is selected (por ti según auditoría/prioridad o por el usuario), **before any analysis or refactor**:
 
 1. **Map all entities** that form part of that block:
    * **Primary components** (e.g. OrderList, OrderDetail for Ventas)
@@ -1761,9 +1790,9 @@ When the user selects a block (e.g. "Ventas", "Stock", "Productos"), **before an
    * State management (Context providers, stores)
    * **Tests** (existing: unit, integration, e2e; and gaps: what should exist for this entity/flows)
    * Utilities/helpers (if relevant for the analysis)
-3. **Present scope to user**:
-   * "Bloque [X] incluye: **Entidades** [list], **Artefactos** [summary by type]. ¿Confirmas o hay que añadir/quitar algo?"
-   * Wait for confirmation or adjustment before proceeding
+3. **Fija el alcance tú mismo**:
+   * Documenta: "Bloque [X] incluye: **Entidades** [list], **Artefactos** [summary by type]."
+   * No es obligatorio preguntar confirmación de alcance; si el alcance es ambiguo o muy grande, puedes resumir y seguir. Solo pregunta si hay duda real (ej. si el usuario ha delimitado un subdominio concreto).
 4. **Scope rule:** The improvement plan (STEP 1, 2, etc.) MUST cover ALL entities and artifacts in scope. You may phase them (sub-block 1: entity A; sub-block 2: entity B) but nothing in scope may be ignored without explicit justification. A block is not complete until all entities in scope have been evaluated and improved where needed.
 
 ---
@@ -1857,7 +1886,7 @@ Document for **all entities and artifacts in scope** (from STEP 0a):
 
 **Scope rule:** The improvements must cover ALL entities in scope (from STEP 0a). If the block includes OrderList, OrderDetail, OrderForm, etc., the plan must address each (components, hooks, types, API calls, **tests per entity/flow**, etc.), even if phased across sub-blocks. Do NOT focus only on the main page.
 
-Present:
+For each sub-block, document:
 
 * Improvements to apply (full list for this sub-block)
 * Expected impact
@@ -1867,9 +1896,10 @@ Present:
 * Breaking change analysis (if any)
 * If Rating después will still be < 9: what remains for the next sub-block (Gap to 10)
 
-**STOP and request approval.**
+**Decisión de ejecución (no preguntar en todos los casos):**
 
-Only after explicit approval:
+* **Riesgo Bajo o Medio** y sin cambio de contrato ni de lógica de negocio → **no pidas aprobación**; pasa a STEP 3 (Implementation) y ejecuta. Documenta el plan en el log antes o después.
+* **Riesgo Alto o Crítico**, o cambio de contrato/API/flujo/UX que requiera aprobación → **STOP**: presenta el plan, riesgo y rollback, y pide confirmación explícita antes de STEP 3.
 
 ---
 
@@ -1937,7 +1967,7 @@ For Medium/High/Critical: Require extended manual testing.
 
 Append summary to: `docs/audits/nextjs-evolution-log.md`
 
-If **Rating después < 9**: you MUST add a **"Gap to 10/10"** section listing what remains: tests, component splitting, custom hooks, type safety, error handling, accessibility, **and any entities/artifacts in scope not yet addressed** (e.g. "OrderDetail component", "ProductCard in Sales context"). Indicate whether you can continue with the next sub-block or need user input. Then offer to continue: *"¿Continuamos con el siguiente sub-bloque de mejoras para este módulo?"*
+If **Rating después < 9**: you MUST add a **"Gap to 10/10"** section listing what remains: tests, component splitting, custom hooks, type safety, error handling, accessibility, **and any entities/artifacts in scope not yet addressed** (e.g. "OrderDetail component", "ProductCard in Sales context"). Indicate whether the next step is autonomous (continue with next sub-block) or requires user input (critical/blocked). Do not ask "¿Continuamos?"; if the next sub-block is low/medium risk and non-breaking, continue automatically and keep context (see Preservación de contexto).
 
 Use this format:
 
@@ -2157,22 +2187,18 @@ Guided by the **Next.js Structural Patterns** section and the audit findings, yo
 ## First Action (Based on Audit Document)
 
 1. Read `docs/audits/nextjs-frontend-global-audit.md` (and `docs/audits/findings/structural-patterns-usage.md` if present)
-2. Extract **Top 5 Systemic Risks** identified
-3. Extract **Top 5 High-Impact Improvements** identified
-4. Use the audit's **Next.js Structural Patterns** section (and the findings above) when planning improvements per module
-5. Map them to CORE modules (Auth, Products, Customers, Sales, Stock, Reports, Config)
-6. **Ask the user which module/block they want to address first**
-7. Once the user specifies the block:
-   * Execute **STEP 0a**: Block Scope & Entity Mapping — identify all entities and artifacts, present to user, **wait for confirmation**
-   * Execute STEP 0: Document current UI behavior
-   * Execute STEP 1: Analysis (covering **all entities in scope**) with **Rating antes: X/10** and priority classification
-   * Execute STEP 2: Present proposed changes
-   * Wait for approval
-8. After approval, proceed with STEP 3, 4, and 5 (log must include **Rating antes**, **Rating después** and **Gap to 10/10** if < 9)
-9. If Rating después < 9 and there is a Gap to 10/10 you can implement → propose next sub-block and ask *"¿Continuamos con el siguiente sub-block?"* (do not switch module until 9+/10 or blocked)
-10. Only when module reaches 9+/10 or is blocked → ask user for next module
+2. Extract **Top 5 Systemic Risks** and **Top 5 High-Impact Improvements**
+3. Use the audit's **Next.js Structural Patterns** section when planning improvements per module
+4. Map to CORE modules (Auth, Products, Customers, Sales, Stock, Reports, Config)
+5. **Selecciona el primer módulo/bloque** según prioridad de la auditoría y el CORE Plan (P0 primero; si no hay indicación, orden sugerido: Auth → Products/Customers → Sales → Stock → Reports → Config). No es obligatorio preguntar "¿qué módulo?"; si el usuario ya indicó uno, usa ese. Si no, elige por riesgo e impacto.
+6. Ejecuta **STEP 0a**: Block Scope & Entity Mapping — identifica entidades y artefactos, documenta alcance (no hace falta esperar confirmación salvo alcance ambiguo)
+7. Ejecuta STEP 0: Document current UI behavior
+8. Ejecuta STEP 1: Analysis (todas las entidades en alcance), **Rating antes: X/10**, prioridades
+9. STEP 2: Propón cambios por sub-bloques. Si riesgo Bajo/Medio y sin cambio de contrato → **sigue a STEP 3–5 sin pedir aprobación**. Si riesgo Alto/Crítico o cambio de contrato/lógica/UX → para y pide confirmación
+10. Repite sub-bloques (STEP 2→3→4→5) hasta **Rating después ≥ 9** o bloqueo; en cada paso actualiza el log y mantén contexto (ver Preservación de contexto)
+11. Cuando el módulo llegue a 9+/10 o quede bloqueado: si hay más módulos pendientes, puedes pasar al siguiente según el mismo orden de prioridad, o resumir estado y dejar que el usuario indique el siguiente. No abandones un módulo por debajo de 9/10 sin documentar el Gap y, si el siguiente paso es ejecutable y no crítico, sin continuar con el siguiente sub-bloque.
 
-**Do NOT start arbitrarily. Do NOT assume which block to work on. Always ask the user for direction on which module to tackle next. Do NOT leave a module at 6/10 and move on without proposing the next sub-block.**
+**No preguntas paso a paso.** Valoras alcance y prioridad tú mismo; solo paras para confirmación en implementaciones críticas o problemas graves.
 
 ---
 
@@ -2182,4 +2208,4 @@ Generate all analysis, proposals, and logs in **Spanish** (matching project docu
 
 ---
 
-Proceed autonomously but safely. Request user input for block selection. Request explicit approval before implementations.
+Proceed autonomously until 9/10 or blocked. Only stop for confirmation on critical implementations or serious problems. Preserve context at every step (state, log, scope); do not lose track when executing multiple sub-blocks without pausing.
