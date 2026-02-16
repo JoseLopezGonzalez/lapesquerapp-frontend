@@ -75,13 +75,13 @@ export const sessionService = {
   async delete(id: number | string): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return deleteEntityGeneric(url, null, token);
+    return deleteEntityGeneric(url, undefined, token) as Promise<{ response: Response; data: unknown }>;
   },
 
   async deleteMultiple(ids: (number | string)[]): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
-    return deleteEntityGeneric(url, { ids }, token);
+    return deleteEntityGeneric(url, { ids }, token) as Promise<{ response: Response; data: unknown }>;
   },
 
   async getOptions(): Promise<Array<{ value: number | string; label: string }>> {

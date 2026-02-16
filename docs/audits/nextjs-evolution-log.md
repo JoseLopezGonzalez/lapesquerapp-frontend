@@ -4,6 +4,37 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-16] Bloque 11: Usuarios y sesiones
+
+**Priority**: P0/P1  
+**Risk Level**: Low  
+**Rating antes: 4/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- P0: userService, sessionService, roleService en JavaScript sin tipos
+- P0: Sin tests para servicios de usuarios/sesiones/roles
+- P1: Data fetching manual (useEffect + useState) en EntityClient para users/sessions
+
+### Changes Applied
+- **Tipos**: `src/types/user.ts` (User, UsersListResponse, UserListFilters, PaginationMeta, UserOption); `src/types/session.ts` (Session, SessionsListResponse, SessionListFilters).
+- **Servicios TypeScript**: `userService.ts`, `sessionService.ts`, `roleService.ts`; eliminados .js. Tipado de list/getById/create/update/delete/getOptions; userService.resendInvitation tipado.
+- **React Query**: `useUsersList.ts`, `useSessionsList.ts`, `useRoleOptions.ts` con cache key tenant-aware (getCurrentTenant).
+- **EntityClient**: Para `config.endpoint === 'users'` o `'sessions'` usa useUsersList/useSessionsList en lugar de fetch manual; dataForTable, paginationMetaForTable, refetch en delete/refresh/resend/closeModal; useEffect de fetchData omitido para users/sessions.
+- **Tests**: userService.test.ts (5 tests), sessionService.test.ts (4 tests), roleService.test.ts (1 test). Total 10 tests.
+
+### Verification Results
+- Build exitoso (next build)
+- 10 tests nuevos pasan (userService, sessionService, roleService)
+- Comportamiento preservado: listado, filtros, paginación, eliminar, reenviar invitación (users)
+
+### Gap to 10/10
+- EntityClient sigue en .js; resto del bloque en TS. Opcional: migrar CreateEntityForm/EditEntityForm para users cuando se habilite crear/editar.
+
+### Next Steps
+- Siguiente bloque según CORE Plan (p. ej. Clientes, Proveedores, Catálogos auxiliares).
+
+---
+
 ## [2026-02-16] Bloque 15: Informes básicos (gráficos Dashboard)
 
 **Priority**: P1  

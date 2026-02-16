@@ -201,6 +201,12 @@ export default function EntityClient({ config }) {
         }
     }, [queryResult?.error]);
 
+    useEffect(() => {
+        if (!isUsersOrSessions || !queryResult?.meta) return;
+        const validPage = queryResult.meta.current_page;
+        if (validPage !== currentPage) setCurrentPage(validPage);
+    }, [isUsersOrSessions, queryResult?.meta?.current_page, currentPage]);
+
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
         const entityService = getEntityService(config.endpoint);
@@ -536,14 +542,18 @@ export default function EntityClient({ config }) {
     // Handler para cerrar modal y refrescar datos si es necesario
     const handleCloseModal = (shouldRefresh = false) => {
         setModal({ open: false, mode: null, editId: null });
-        if (shouldRefresh) fetchData(currentPage, filters);
+        if (shouldRefresh) {
+            if (isUsersOrSessions && queryResult?.refetch) queryResult.refetch();
+            else fetchData(currentPage, filters);
+        }
     };
 
     // Handler para recargar datos con filtros actuales
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
-            await fetchData(currentPage, filters);
+            if (isUsersOrSessions && queryResult?.refetch) await queryResult.refetch();
+            else await fetchData(currentPage, filters);
         } finally {
             setIsRefreshing(false);
         }
@@ -556,12 +566,13 @@ export default function EntityClient({ config }) {
         try {
             await entityService.resendInvitation(id);
             toast.success('Se ha enviado un enlace de acceso al correo del usuario.', getToastTheme());
-            fetchData(currentPage, filters);
+            if (queryResult?.refetch) queryResult.refetch();
+            else fetchData(currentPage, filters);
         } catch (err) {
             const errorMessage = err?.data?.userMessage || err?.message || 'Error al reenviar la invitación.';
             toast.error(errorMessage, getToastTheme());
         }
-    }, [config.endpoint, currentPage, filters]);
+    }, [config.endpoint, currentPage, filters, queryResult?.refetch]);
 
     // Preparar columns y rows para EntityTable
     const columns = generateColumns2(config.table.headers, { 
@@ -570,7 +581,7 @@ export default function EntityClient({ config }) {
       onResendInvitation: config.endpoint === 'users' ? handleResendInvitation : undefined,
       config: config 
     });
-    const rows = data.rows;
+    const rows = dataForTable.rows;
 
     const actions = config.actions?.map(action => ({
         ...action,
@@ -609,10 +620,10 @@ export default function EntityClient({ config }) {
                 />
                 <div className="flex-1 overflow-y-auto min-h-0">
                     <EntityBody
-                        data={{ loading: data.loading, rows }}
+                        data={{ loading: dataForTable.loading, rows }}
                         columns={columns}
                         headers={config.table?.headers || []}
-                        loading={data.loading}
+                        loading={dataForTable.loading}
                         emptyState={config.emptyState || { title: '', description: '' }}
                         isSelectable={true}
                         selectedRows={selectedRows}
@@ -626,11 +637,11 @@ export default function EntityClient({ config }) {
                 <EntityFooter>
                     <div className='w-full flex justify-between items-center py-2'>
                         <ResultsSummary
-                            totalItems={paginationMeta.totalItems}
+                            totalItems={paginationMetaForTable.totalItems}
                             selectedCount={selectedRows.length}
-                            loading={data.loading}
+                            loading={dataForTable.loading}
                         />
-                        <PaginationFooter meta={paginationMeta} currentPage={currentPage} onPageChange={handlePageChange} />
+                        <PaginationFooter meta={paginationMetaForTable} currentPage={currentPage} onPageChange={handlePageChange} />
                     </div>
                 </EntityFooter>
             </EntityTable>
