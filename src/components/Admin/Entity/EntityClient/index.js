@@ -5,6 +5,13 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUsersList } from '@/hooks/useUsersList';
 import { useSessionsList } from '@/hooks/useSessionsList';
+import { useTransportsList } from '@/hooks/useTransportsList';
+import { useIncotermsList } from '@/hooks/useIncotermsList';
+import { useSalespeopleList } from '@/hooks/useSalespeopleList';
+import { useCustomersList } from '@/hooks/useCustomersList';
+import { useSuppliersList } from '@/hooks/useSuppliersList';
+import { usePaymentTermsList } from '@/hooks/usePaymentTermsList';
+import { useCountriesList } from '@/hooks/useCountriesList';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
 import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/ResultsSummary';
@@ -134,9 +141,55 @@ export default function EntityClient({ config }) {
         perPage,
         enabled: config.endpoint === 'sessions',
     });
+    const transportsListResult = useTransportsList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'transports',
+    });
+    const incotermsListResult = useIncotermsList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'incoterms',
+    });
+    const salespeopleListResult = useSalespeopleList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'salespeople',
+    });
+    const customersListResult = useCustomersList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'customers',
+    });
+    const suppliersListResult = useSuppliersList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'suppliers',
+    });
+    const paymentTermsListResult = usePaymentTermsList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'payment-terms',
+    });
+    const countriesListResult = useCountriesList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'countries',
+    });
 
     const isUsersOrSessions = config.endpoint === 'users' || config.endpoint === 'sessions';
-    const queryResult = config.endpoint === 'users' ? usersListResult : config.endpoint === 'sessions' ? sessionsListResult : null;
+    const isCatalogBlock = config.endpoint === 'transports' || config.endpoint === 'incoterms' || config.endpoint === 'salespeople';
+    const isBlock5Clients = config.endpoint === 'customers' || config.endpoint === 'payment-terms' || config.endpoint === 'countries';
+    const isBlock6Suppliers = config.endpoint === 'suppliers';
+    const isQueryDriven = isUsersOrSessions || isCatalogBlock || isBlock5Clients || isBlock6Suppliers;
+    const queryResult = config.endpoint === 'users' ? usersListResult : config.endpoint === 'sessions' ? sessionsListResult : config.endpoint === 'transports' ? transportsListResult : config.endpoint === 'incoterms' ? incotermsListResult : config.endpoint === 'salespeople' ? salespeopleListResult : config.endpoint === 'customers' ? customersListResult : config.endpoint === 'suppliers' ? suppliersListResult : config.endpoint === 'payment-terms' ? paymentTermsListResult : config.endpoint === 'countries' ? countriesListResult : null;
 
     const handleDelete = useCallback(async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
@@ -151,7 +204,7 @@ export default function EntityClient({ config }) {
             await entityService.delete(id);
             const successMessage = 'Elemento eliminado con éxito.';
             toast.success(successMessage);
-            if (isUsersOrSessions && queryResult?.refetch) {
+            if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
                 setData((prevData) => ({
@@ -177,23 +230,23 @@ export default function EntityClient({ config }) {
             }
             toast.error(errorMessage);
         }
-    }, [config.endpoint, isUsersOrSessions, queryResult?.refetch]);
+    }, [config.endpoint, isQueryDriven, queryResult?.refetch]);
 
     const dataForTable = useMemo(() => {
-        if (!isUsersOrSessions || !queryResult) return data;
+        if (!isQueryDriven || !queryResult) return data;
         const processedRows = mapEntityRows(queryResult.data, config.table?.headers || [], handleDelete, config);
         return { loading: queryResult.isLoading, rows: processedRows };
-    }, [isUsersOrSessions, queryResult?.data, queryResult?.isLoading, data, config.table?.headers, handleDelete, config]);
+    }, [isQueryDriven, queryResult?.data, queryResult?.isLoading, data, config.table?.headers, handleDelete, config]);
 
     const paginationMetaForTable = useMemo(() => {
-        if (!isUsersOrSessions || !queryResult) return paginationMeta;
+        if (!isQueryDriven || !queryResult) return paginationMeta;
         return {
             currentPage: queryResult.meta.current_page,
             totalPages: queryResult.meta.last_page,
             totalItems: queryResult.meta.total,
             perPage: queryResult.meta.per_page,
         };
-    }, [isUsersOrSessions, queryResult?.meta, paginationMeta]);
+    }, [isQueryDriven, queryResult?.meta, paginationMeta]);
 
     useEffect(() => {
         if (queryResult?.error) {
@@ -202,10 +255,10 @@ export default function EntityClient({ config }) {
     }, [queryResult?.error]);
 
     useEffect(() => {
-        if (!isUsersOrSessions || !queryResult?.meta) return;
+        if (!isQueryDriven || !queryResult?.meta) return;
         const validPage = queryResult.meta.current_page;
         if (validPage !== currentPage) setCurrentPage(validPage);
-    }, [isUsersOrSessions, queryResult?.meta?.current_page, currentPage]);
+    }, [isQueryDriven, queryResult?.meta?.current_page, currentPage]);
 
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
@@ -289,7 +342,7 @@ export default function EntityClient({ config }) {
 
     // useEffect unificado para manejar cambios en filtros y página (no usado para users/sessions; usan React Query)
     useEffect(() => {
-        if (config.endpoint === 'users' || config.endpoint === 'sessions') return;
+        if (config.endpoint === 'users' || config.endpoint === 'sessions' || config.endpoint === 'transports' || config.endpoint === 'incoterms' || config.endpoint === 'salespeople' || config.endpoint === 'customers' || config.endpoint === 'suppliers' || config.endpoint === 'payment-terms' || config.endpoint === 'countries') return;
         // Prevenir llamadas múltiples simultáneas
         if (isLoadingRef.current) {
             return;
@@ -362,7 +415,7 @@ export default function EntityClient({ config }) {
             await entityService.deleteMultiple(selectedRows);
             const successMessage = 'Elementos eliminados con éxito.';
             toast.success(successMessage);
-            if (isUsersOrSessions && queryResult?.refetch) {
+            if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
                 setData((prevData) => ({
@@ -543,7 +596,7 @@ export default function EntityClient({ config }) {
     const handleCloseModal = (shouldRefresh = false) => {
         setModal({ open: false, mode: null, editId: null });
         if (shouldRefresh) {
-            if (isUsersOrSessions && queryResult?.refetch) queryResult.refetch();
+            if (isQueryDriven && queryResult?.refetch) queryResult.refetch();
             else fetchData(currentPage, filters);
         }
     };
@@ -552,7 +605,7 @@ export default function EntityClient({ config }) {
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
-            if (isUsersOrSessions && queryResult?.refetch) await queryResult.refetch();
+            if (isQueryDriven && queryResult?.refetch) await queryResult.refetch();
             else await fetchData(currentPage, filters);
         } finally {
             setIsRefreshing(false);

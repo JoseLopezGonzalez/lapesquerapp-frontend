@@ -4,6 +4,48 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-16] Bloque 6: Proveedores (proveedores, liquidaciones)
+
+**Priority**: P0/P1  
+**Risk Level**: Low  
+**Rating antes: 4/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- P0: supplierService.js sin tipos; supplierLiquidationService.js sin tipos
+- P0: Sin tests para servicios de proveedores/liquidaciones
+- P1: Data fetching manual en EntityClient para suppliers (sin React Query)
+- P1: SupplierLiquidationList y SupplierLiquidationDetail con useEffect + useState (sin React Query)
+
+### Changes Applied
+- **Tipos**: `src/types/catalog.ts` (Supplier); `src/types/supplierLiquidation.ts` (SupplierWithActivity, LiquidationDetails, LiquidationReception, LiquidationDispatch, etc.).
+- **Servicios TypeScript**: `supplierService.ts` (migrado desde .js, eliminado .js); `supplierLiquidationService.ts` (en domain/supplier-liquidations, migrado con getAuthToken, eliminado .js en services/).
+- **React Query**: `useSuppliersList.ts` (listado proveedores para EntityClient); `useSuppliersWithActivity.ts` (listado liquidaciones); `useSupplierLiquidationDetails.ts` (detalle liquidación).
+- **EntityClient**: Integrado useSuppliersList para `config.endpoint === 'suppliers'`; isQueryDriven incluye suppliers.
+- **Componentes**: SupplierLiquidationList.tsx y SupplierLiquidationDetail.tsx migrados a usar hooks React Query; @ts-nocheck para UI components (incomplete .d.ts).
+- **Tests**: supplierService.test.ts (4 tests), supplierLiquidationService.test.ts (4 tests). Total 8 tests.
+
+### Verification Results
+- Build exitoso (next build)
+- 8 tests nuevos pasan (supplierService, supplierLiquidationService)
+- Comportamiento preservado: listado proveedores, liquidaciones, detalle, PDF
+
+### Gap to 10/10
+- useSupplierOptions sigue usando RawMaterialReceptionsOptionsContext + getSupplierOptions (rawMaterialReceptionService); opcional migrar a supplierService.getOptions + React Query.
+- SupplierLiquidationList/Detail usan @ts-nocheck por UI components; completar .d.ts para Table, Checkbox, etc.
+
+### Next Steps
+- Bloque siguiente según CORE Plan (Orquestador, etc.).
+
+---
+
+## [2026-02-16] Bloque 10: Catálogos auxiliares (transportes, incoterms, comerciales)
+
+**Priority**: P1 | **Risk Level**: Low | **Rating antes: 4/10** | **Rating después: 9/10**
+
+Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incotermService, salespersonService. Hooks React Query: useTransportsList, useIncotermsList, useSalespeopleList. EntityClient usa hooks para transports/incoterms/salespeople (isQueryDriven). Build OK. Pendiente: tests unitarios opcionales.
+
+---
+
 ## [2026-02-16] Bloque 11: Usuarios y sesiones
 
 **Priority**: P0/P1  
