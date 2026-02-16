@@ -21,7 +21,7 @@ function SileoToaster() {
   // Solo pasamos opciones en dark para que el toast se vea bien (fondo oscuro, texto claro).
   // En light no pasamos options y dejamos el control por defecto de Sileo.
   const options =
-    resolvedTheme === "dark"
+    resolvedTheme === "light"
       ? {
           fill: "#171717",
           styles: {
