@@ -1435,3 +1435,57 @@ git revert <commit-hash>
 - Sub-bloque 4: Tests DocumentProcessor y validators.
 
 ---
+
+## [2026-02-16] Bloque 14: Extracción datos lonja — Sub-bloques 2–5 y 7
+
+**Priority**: P0/P1
+**Risk Level**: Low
+**Rating antes: 6/10** | **Rating después: 8/10**
+
+### Problems Addressed
+- ExportModals: parseDecimalValue, calculateImporte, calculateImporteFromLinea duplicados (Sub-bloques 3–5)
+- Sin tests para DocumentProcessor y validators (Sub-bloque 7)
+
+### Changes Applied
+- **Sub-bloque 2** (sesión anterior): MassiveExportDialog 893→299 L; previews Cofra/Lonja/Asoc.
+- **Sub-bloques 3–5**: ListadoComprasLonjaDeIsla, ListadoComprasAsoc, AlbaranCofra ExportModals: importan parseDecimalValue, calculateImporte, calculateImporteFromLinea desde common.js; eliminadas ~35 L de helpers locales por archivo. LonjaDeIsla: parseEuropeanNumber(importe) → parseDecimalValue(importe).
+- **Sub-bloque 7**: lonjaDeIslaValidator.test.js (9 tests); DocumentProcessor.test.js (8 tests: getAzureDocumentType, isValidDocumentType, getAvailableDocumentTypes, processDocument con mock Azure).
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ 18 tests nuevos pasan
+- ✅ Sin errores de lint
+
+### Gap to 10/10
+- ExportModals siguen ~600–830 L (división en hooks pendiente).
+- MassiveLinkPurchasesDialog 389 L.
+- TypeScript para validators/parsers.
+
+### Next Steps
+- Sub-bloque 6: Refactor MassiveLinkPurchasesDialog (useLinkPurchases).
+- Extracción de hooks en ExportModals si se requiere 9+/10.
+
+---
+
+## [2026-02-16] Bloque 14: Extracción datos lonja — Sub-bloque 6 (useLinkPurchases)
+
+**Priority**: P1
+**Risk Level**: Low
+**Rating antes: 8/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- MassiveLinkPurchasesDialog 389 líneas (P1)
+
+### Changes Applied
+- **useLinkPurchases.js** (nuevo, 165 L): Hook con estado (selectedLinks, allLinkedSummary, validationResults), efectos (generar summary, validar, inicializar selección), handlers (handleToggleLink, handleToggleAll, handleLinkPurchases, getValidationStatus).
+- **MassiveLinkPurchasesDialog.js**: 389 → 217 L. Usa useLinkPurchases; solo UI (Dialog, Table, Checkbox, estados).
+
+### Verification Results
+- ✅ Build exitoso
+- ✅ Comportamiento preservado
+
+### Gap to 10/10
+- ExportModals ~600–830 L (opcional para 10/10).
+- TypeScript.
+
+---

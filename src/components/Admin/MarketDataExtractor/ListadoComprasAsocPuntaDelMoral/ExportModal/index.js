@@ -11,47 +11,13 @@ import { asocArmadoresPuntaDelMoral, asocArmadoresPuntaDelMoralSubasta, barcos, 
 import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { formatDecimalCurrency, formatDecimalWeight, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers'
+import { parseDecimalValue, calculateImporte, calculateImporteFromLinea } from '@/exportHelpers/common'
+import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { normalizeText } from '@/helpers/formats/texts'
 import { getToastTheme } from '@/customs/reactHotToast'
 import toast from 'react-hot-toast'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
-
-const parseDecimalValue = (value) => {
-    if (typeof value === 'number') {
-        return value;
-    }
-
-    if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === '') return 0;
-        if (trimmed.includes(',')) {
-            const parsed = parseEuropeanNumber(trimmed);
-            return Number.isNaN(parsed) ? 0 : parsed;
-        }
-        const dotMatches = trimmed.match(/\./g);
-        if (dotMatches && dotMatches.length > 1) {
-            const parts = trimmed.split('.');
-            const decimalPart = parts.pop();
-            const integerPart = parts.join('');
-            const reconstructed = `${integerPart}.${decimalPart}`;
-            const parsed = Number(reconstructed);
-            return Number.isNaN(parsed) ? 0 : parsed;
-        }
-        const parsed = Number(trimmed);
-        return Number.isNaN(parsed) ? 0 : parsed;
-    }
-
-    return 0;
-};
-
-const calculateImporte = (weight, price) => {
-    const kilos = parseDecimalValue(weight);
-    const precio = parseDecimalValue(price);
-    const importe = kilos * precio;
-    return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
-};
 
 const ExportModal = ({ document }) => {
     const { details: { fecha, tipoSubasta }, tables } = document

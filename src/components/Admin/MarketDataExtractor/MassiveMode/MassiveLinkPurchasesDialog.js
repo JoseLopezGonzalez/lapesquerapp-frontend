@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check, X, Link as LinkIcon, Loader2, Info } from "lucide-react";
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
+import { useLinkPurchases } from "./useLinkPurchases";
 
 export default function MassiveLinkPurchasesDialog({ 
     open, 
@@ -18,190 +15,21 @@ export default function MassiveLinkPurchasesDialog({
     documents,
     linkedSummaryGenerators 
 }) {
-    const [selectedLinks, setSelectedLinks] = useState([]);
-    const [isLinking, setIsLinking] = useState(false);
-    const [isValidating, setIsValidating] = useState(false);
-    const [allLinkedSummary, setAllLinkedSummary] = useState([]);
-    const [validationResults, setValidationResults] = useState({});
-
-    // Generate linkedSummary for all documents, group by supplier, and validate
-    useEffect(() => {
-        if (!open || !documents || documents.length === 0) {
-            setAllLinkedSummary([]);
-            setValidationResults({});
-            return;
-        }
-
-        const summary = [];
-        documents.forEach((doc) => {
-            const generator = linkedSummaryGenerators[doc.documentType];
-            if (generator && doc.processedData && doc.processedData.length > 0) {
-                const linkedSummary = generator(doc.processedData[0]);
-                if (linkedSummary && linkedSummary.length > 0) {
-                    summary.push(...linkedSummary);
-                }
-            }
-        });
-
-        // Group by supplierId and date (combine multiple barcos with same supplier)
-        const groupedSummary = groupLinkedSummaryBySupplier(summary);
-        setAllLinkedSummary(groupedSummary);
-
-        // Validate purchases when dialog opens
-        if (groupedSummary.length > 0) {
-            const validItems = groupedSummary.filter(item => !item.error);
-            if (validItems.length > 0) {
-                setIsValidating(true);
-                validatePurchases(groupedSummary)
-                    .then((validation) => {
-                        // Create a map for quick lookup
-                        const validationMap = {};
-                        validation.validationResults.forEach((result) => {
-                            const key = `${result.supplierId}_${result.date}`;
-                            validationMap[key] = result;
-                        });
-                        setValidationResults(validationMap);
-                    })
-                    .catch((error) => {
-                        console.error('Error al validar:', error);
-                        toast.error('Error al validar recepciones', getToastTheme());
-                    })
-                    .finally(() => {
-                        setIsValidating(false);
-                    });
-            }
-        }
-    }, [open, documents, linkedSummaryGenerators]);
-
-    // Initialize selections when linkedSummary changes and validations are complete
-    useEffect(() => {
-        if (allLinkedSummary.length === 0) {
-            setSelectedLinks([]);
-            return;
-        }
-
-        // Wait for validation to complete before initializing selections
-        if (isValidating) {
-            return;
-        }
-
-        // Only initialize if we have validation results (validations are complete)
-        const validationKeysCount = Object.keys(validationResults).length;
-        if (validationKeysCount === 0 && allLinkedSummary.some(l => !l.error)) {
-            // Still waiting for validations
-            return;
-        }
-
-        // Select by default only those without error, valid, can update, AND have changes
-        const initialSelection = allLinkedSummary
-            .map((linea, index) => {
-                if (linea.error) return null;
-                const validation = getValidationStatus(linea);
-                // Only select if valid, can update, AND has changes (not "sin cambios")
-                return (validation?.valid && validation?.canUpdate && validation?.hasChanges) ? index : null;
-            })
-            .filter(index => index !== null);
-        setSelectedLinks(initialSelection);
-    }, [allLinkedSummary.length, isValidating, Object.keys(validationResults).length]);
-
-    // Function to handle selection/deselection of a line
-    const handleToggleLink = (index) => {
-        setSelectedLinks(prev => {
-            if (prev.includes(index)) {
-                return prev.filter(i => i !== index);
-            } else {
-                return [...prev, index];
-            }
-        });
-    };
-
-    // Function to select/deselect all lines without error and that can be updated
-    const handleToggleAll = () => {
-        const validIndices = allLinkedSummary
-            .map((linea, index) => {
-                if (linea.error) return null;
-                const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
-                const validation = validationResults[key];
-                // Only include if valid and can update
-                return (validation?.valid && validation?.canUpdate) ? index : null;
-            })
-            .filter(index => index !== null);
-        
-        if (selectedLinks.length === validIndices.length) {
-            // If all are selected, deselect all
-            setSelectedLinks([]);
-        } else {
-            // If not all are selected, select all valid ones
-            setSelectedLinks(validIndices);
-        }
-    };
-
-    // Get validation status for a linea
-    const getValidationStatus = (linea) => {
-        const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
-        return validationResults[key] || null;
-    };
-
-    const handleLinkPurchases = async () => {
-        // Filter only selected purchases that are valid and can be updated
-        const comprasSeleccionadas = allLinkedSummary.filter((linea, index) => {
-            if (!selectedLinks.includes(index)) return false;
-            if (linea.error) return false;
-            
-            // Check validation status
-            const validation = getValidationStatus(linea);
-            if (!validation || !validation.valid || !validation.canUpdate) return false;
-            
-            return true;
-        });
-
-        if (comprasSeleccionadas.length === 0) {
-            toast.error('No hay compras seleccionadas para vincular.', getToastTheme());
-            return;
-        }
-
-        setIsLinking(true);
-        try {
-            // Link all selected purchases
-            const result = await linkAllPurchases(comprasSeleccionadas);
-
-            if (result.correctas > 0) {
-                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
-            }
-
-            if (result.errores > 0) {
-                // Show detailed errors for first few failures
-                const erroresAMostrar = result.erroresDetalles.slice(0, 3);
-                erroresAMostrar.forEach((errorDetail) => {
-                    const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    toast.error(`${barcoInfo}${errorDetail.error}`, {
-                        ...getToastTheme(),
-                        duration: 6000,
-                    });
-                });
-                
-                if (result.errores > 3) {
-                    toast.error(`${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`, getToastTheme());
-                }
-            }
-
-            if (result.correctas === 0 && result.errores === 0) {
-                toast.info('No hay compras válidas para enlazar', getToastTheme());
-            }
-
-            // Close dialog on success
-            if (result.correctas > 0) {
-                onOpenChange(false);
-            }
-        } catch (error) {
-            console.error('Error al enlazar:', error);
-            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
-        } finally {
-            setIsLinking(false);
-        }
-    };
-
-    const validLinksCount = allLinkedSummary.filter(l => !l.error).length;
+    const {
+        allLinkedSummary,
+        selectedLinks,
+        isValidating,
+        isLinking,
+        getValidationStatus,
+        handleToggleLink,
+        handleToggleAll,
+        handleLinkPurchases,
+    } = useLinkPurchases({
+        open,
+        documents,
+        linkedSummaryGenerators,
+        onSuccess: () => onOpenChange(false),
+    });
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
