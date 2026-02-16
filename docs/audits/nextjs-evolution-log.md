@@ -4,6 +4,40 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 
 ---
 
+## [2026-02-16] Bloque 15: Informes básicos (gráficos Dashboard)
+
+**Priority**: P1  
+**Risk Level**: Low  
+**Rating antes: 7/10** | **Rating después: 9/10**
+
+### Problems Addressed
+- P1: useDashboardCharts, useOrdersStats, useStockStats en .js (sin tipos)
+- P1: getReceptionChartData, getDispatchChartData en .js (sin tipos)
+- P2: Sin tests para chart services
+
+### Changes Applied
+- **getReceptionChartData.ts**: Migración desde .js; interfaces ReceptionChartDataParams, ChartDataPoint; tipado de retorno Promise<ChartDataPoint[]>. Eliminado getReceptionChartData.js.
+- **getDispatchChartData.ts**: Migración desde .js; interfaces DispatchChartDataParams, ChartDataPoint; tipado de retorno Promise<ChartDataPoint[]>. Eliminado getDispatchChartData.js.
+- **useDashboardCharts.ts**: Migración desde .js; interfaces ChartDataParams, UseChartDataReturn; tipado de params en useSalesChartData, useReceptionChartData, useDispatchChartData, useTransportChartData. Eliminado useDashboardCharts.js.
+- **useOrdersStats.ts**: Migración desde .js; interfaces OrderRankingParams, OrderRankingItem, SalesBySalespersonParams, SalesBySalespersonItem; tipado de parseOrderRankingData. Eliminado useOrdersStats.js.
+- **useStockStats.ts**: Migración desde .js; tipado de retorno. Eliminado useStockStats.js.
+- **getReceptionChartData.test.ts**: 4 tests Vitest (fetch array, extract data.data, optional filters, API error).
+- **getDispatchChartData.test.ts**: 4 tests Vitest (fetch array, extract data.data, optional filters, API error).
+
+### Verification Results
+- ✅ Build exitoso (next build)
+- ✅ 144 tests pasan (21 archivos)
+- ✅ Sin cambios de comportamiento; contratos preservados
+
+### Gap to 10/10
+- usePunches.js sigue en .js (compartido con Bloque 9 Fichajes).
+- Tests de integración para hooks de charts (opcional).
+
+### Next Steps
+- Bloque siguiente: Clientes, Proveedores o Catálogos auxiliares.
+
+---
+
 ## [2026-02-15] Bloque 13: Editor de etiquetas — Sub-bloque 1 (validación + tests)
 
 **Priority**: P0

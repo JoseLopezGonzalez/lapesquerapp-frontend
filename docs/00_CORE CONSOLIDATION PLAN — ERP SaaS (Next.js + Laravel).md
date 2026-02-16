@@ -44,7 +44,7 @@
 
 ## Estado actual por bloque Core (puntuación)
 
-**Última actualización**: 2026-02-15
+**Última actualización**: 2026-02-16
 
 | # | Bloque | Rating | Notas | Fecha |
 |---|--------|--------|-------|-------|
@@ -60,9 +60,9 @@
 | 10 | **Catálogos auxiliares** (transportes, incoterms, comerciales) | — | Pendiente auditoría | — |
 | 11 | **Usuarios y sesiones** | — | Pendiente auditoría | — |
 | 12 | **Orquestador** (preparación pedidos) | — | Pendiente auditoría | — |
-| 13 | **Editor de etiquetas** | — | Pendiente auditoría | — |
+| 13 | **Editor de etiquetas** | **9/10** | labelEditorValidation + tests; LabelEditorLeftPanel, LabelEditorToolbar, LabelEditorPropertyPanel; labelService.ts + useLabels; useLabelEditor.ts; 18 tests. Ver evolution-log. | 2026-02-15 |
 | 14 | **Extracción datos lonja** | **9/10** | IndividualMode unificado; MassiveExportDialog 893→299 L; ExportModals common.js; useLinkPurchases (MassiveLink 389→217 L); 18 tests. Ver evolution-log. | 2026-02-16 |
-| 15 | **Informes básicos** (gráficos Dashboard) | — | Pendiente auditoría; gráficos integrados en Dashboard | — |
+| 15 | **Informes básicos** (gráficos Dashboard) | **9/10** | useDashboardCharts, useOrdersStats, useStockStats, getReceptionChartData, getDispatchChartData en TypeScript; 8 tests chart services. Ver evolution-log. | 2026-02-16 |
 | 16 | **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver evolution-log. | 2026-02-15 |
 
 ---

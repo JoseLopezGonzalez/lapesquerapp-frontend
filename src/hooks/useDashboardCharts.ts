@@ -8,7 +8,26 @@ import { getReceptionChartData } from '@/services/rawMaterialReception/getRecept
 import { getDispatchChartData } from '@/services/ceboDispatch/getDispatchChartData';
 import { getTransportChartData } from '@/services/orderService';
 
-function useChartData(queryKey, queryFn, enabled) {
+interface ChartDataParams {
+  range?: { from?: Date; to?: Date };
+  speciesId?: string;
+  categoryId?: string;
+  familyId?: string;
+  unit?: string;
+  groupBy?: string;
+}
+
+interface UseChartDataReturn {
+  data: unknown[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+function useChartData(
+  queryKey: unknown[],
+  queryFn: () => Promise<unknown>,
+  enabled: boolean
+): UseChartDataReturn {
   const { data, isLoading, error } = useQuery({
     queryKey,
     queryFn,
@@ -24,9 +43,9 @@ function useChartData(queryKey, queryFn, enabled) {
 
 /**
  * Hook para datos del gráfico de ventas.
- * @param {Object} params - { range, speciesId, categoryId, familyId, unit, groupBy }
  */
-export function useSalesChartData({ range, speciesId, categoryId, familyId, unit, groupBy }) {
+export function useSalesChartData(params: ChartDataParams) {
+  const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
@@ -37,12 +56,12 @@ export function useSalesChartData({ range, speciesId, categoryId, familyId, unit
     ['sales', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
     () =>
       getSalesChartData({
-        token,
+        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
-        from,
-        to,
+        from: from!,
+        to: to!,
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
@@ -53,7 +72,8 @@ export function useSalesChartData({ range, speciesId, categoryId, familyId, unit
 /**
  * Hook para datos del gráfico de recepciones.
  */
-export function useReceptionChartData({ range, speciesId, categoryId, familyId, unit, groupBy }) {
+export function useReceptionChartData(params: ChartDataParams) {
+  const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
@@ -64,12 +84,12 @@ export function useReceptionChartData({ range, speciesId, categoryId, familyId, 
     ['receptions', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
     () =>
       getReceptionChartData({
-        token,
+        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
-        from,
-        to,
+        from: from!,
+        to: to!,
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
@@ -80,7 +100,8 @@ export function useReceptionChartData({ range, speciesId, categoryId, familyId, 
 /**
  * Hook para datos del gráfico de salidas/dispatches.
  */
-export function useDispatchChartData({ range, speciesId, categoryId, familyId, unit, groupBy }) {
+export function useDispatchChartData(params: ChartDataParams) {
+  const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
@@ -91,12 +112,12 @@ export function useDispatchChartData({ range, speciesId, categoryId, familyId, u
     ['dispatches', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
     () =>
       getDispatchChartData({
-        token,
+        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
-        from,
-        to,
+        from: from!,
+        to: to!,
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
@@ -107,7 +128,8 @@ export function useDispatchChartData({ range, speciesId, categoryId, familyId, u
 /**
  * Hook para datos del gráfico de transporte.
  */
-export function useTransportChartData(range) {
+export function useTransportChartData(params: { range?: { from?: Date; to?: Date } }) {
+  const { range } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
@@ -116,7 +138,7 @@ export function useTransportChartData(range) {
 
   return useChartData(
     ['transport', 'chart', tenantId ?? 'unknown', from, to],
-    () => getTransportChartData({ token, from, to }),
+    () => getTransportChartData({ token: token as string, from: from!, to: to! }),
     !!token && !!tenantId && !!from && !!to
   );
 }

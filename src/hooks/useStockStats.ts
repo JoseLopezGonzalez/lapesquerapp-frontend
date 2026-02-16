@@ -11,20 +11,15 @@ import {
 
 /**
  * Hook para obtener el stock total usando React Query.
- * @returns {Object} { data, isLoading, error }
  */
 export function useTotalStockStats() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['stock', 'total', tenantId ?? 'unknown'],
-    queryFn: () => getTotalStockStats(token),
+    queryFn: () => getTotalStockStats(token as string),
     enabled: !!token && !!tenantId,
   });
 
@@ -37,24 +32,19 @@ export function useTotalStockStats() {
 
 /**
  * Hook para obtener el stock por especies usando React Query.
- * @returns {Object} { data, isLoading, error }
  */
 export function useStockBySpeciesStats() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['stock', 'by-species', tenantId ?? 'unknown'],
-    queryFn: () => getStockBySpeciesStats(token),
+    queryFn: () => getStockBySpeciesStats(token as string),
     enabled: !!token && !!tenantId,
   });
 
-  const stockData = Array.isArray(data) ? data : data?.data ?? [];
+  const stockData = Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? [];
   return {
     data: stockData,
     isLoading,
@@ -64,24 +54,19 @@ export function useStockBySpeciesStats() {
 
 /**
  * Hook para obtener el stock por productos usando React Query.
- * @returns {Object} { data, isLoading, error }
  */
 export function useStockByProductsStats() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['stock', 'by-products', tenantId ?? 'unknown'],
-    queryFn: () => getStockByProducts(token),
+    queryFn: () => getStockByProducts(token as string),
     enabled: !!token && !!tenantId,
   });
 
-  const stockData = Array.isArray(data) ? data : data?.data ?? [];
+  const stockData = Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? [];
   return {
     data: stockData,
     isLoading,

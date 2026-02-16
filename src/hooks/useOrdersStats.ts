@@ -10,18 +10,23 @@ import {
   getSalesBySalesperson,
 } from '@/services/orderService';
 
-function getYearToDateRange() {
+interface OrderRankingItem {
+  name: string;
+  value: number;
+  [key: string]: unknown;
+}
+
+function getYearToDateRange(): { dateFrom: string; dateTo: string } {
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), 0, 1);
-  const dateFrom = firstDay.toISOString().split('T')[0];
-  const dateTo = today.toISOString().split('T')[0];
+  const dateFrom = firstDay.toISOString().split('T')[0] ?? '';
+  const dateTo = today.toISOString().split('T')[0] ?? '';
   return { dateFrom, dateTo };
 }
 
 /**
  * Hook para obtener la cantidad total vendida (kg) usando React Query.
  * Rango: 1 enero - hoy (año en curso).
- * @returns {Object} { data, isLoading, error }
  */
 export function useOrdersTotalNetWeightStats() {
   const { data: session } = useSession();
@@ -29,13 +34,9 @@ export function useOrdersTotalNetWeightStats() {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { dateFrom, dateTo } = getYearToDateRange();
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['orders', 'totalNetWeight', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token),
+    queryFn: () => getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token as string),
     enabled: !!token && !!tenantId,
   });
 
@@ -49,7 +50,6 @@ export function useOrdersTotalNetWeightStats() {
 /**
  * Hook para obtener el importe total vendido usando React Query.
  * Rango: 1 enero - hoy (año en curso).
- * @returns {Object} { data, isLoading, error }
  */
 export function useOrdersTotalAmountStats() {
   const { data: session } = useSession();
@@ -57,13 +57,9 @@ export function useOrdersTotalAmountStats() {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { dateFrom, dateTo } = getYearToDateRange();
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo }, token),
+    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo }, token as string),
     enabled: !!token && !!tenantId,
   });
 
@@ -74,43 +70,46 @@ export function useOrdersTotalAmountStats() {
   };
 }
 
-function parseOrderRankingData(rawData) {
-  if (Array.isArray(rawData)) return rawData;
+function parseOrderRankingData(rawData: unknown): OrderRankingItem[] {
+  if (Array.isArray(rawData)) return rawData as OrderRankingItem[];
   if (rawData && typeof rawData === 'object') {
-    if (Array.isArray(rawData.data)) return rawData.data;
-    if (Array.isArray(rawData.results)) return rawData.results;
+    const obj = rawData as Record<string, unknown>;
+    if (Array.isArray(obj.data)) return obj.data as OrderRankingItem[];
+    if (Array.isArray(obj.results)) return obj.results as OrderRankingItem[];
   }
   return [];
 }
 
+interface OrderRankingParams {
+  range?: { from?: Date; to?: Date };
+  groupBy?: string;
+  valueType?: string;
+  speciesId?: string;
+}
+
 /**
  * Hook para obtener el ranking de pedidos usando React Query.
- * @param {Object} params - { range, groupBy, valueType, speciesId }
- * @returns {Object} { data, fullData, isLoading, error }
  */
-export function useOrderRankingStats({ range, groupBy, valueType, speciesId }) {
+export function useOrderRankingStats(params: OrderRankingParams) {
+  const { range, groupBy, valueType, speciesId } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
-  const {
-    data: rawData,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: rawData, isLoading, error } = useQuery({
     queryKey: ['orders', 'ranking', tenantId ?? 'unknown', dateFrom, dateTo, groupBy, valueType, speciesId],
     queryFn: () =>
       getOrderRankingStats(
         {
-          groupBy,
-          valueType,
-          dateFrom,
-          dateTo,
+          groupBy: groupBy ?? 'client',
+          valueType: valueType ?? 'totalAmount',
+          dateFrom: dateFrom!,
+          dateTo: dateTo!,
           speciesId: speciesId ?? 'all',
         },
-        token
+        token as string
       ),
     enabled: !!token && !!tenantId && !!dateFrom && !!dateTo && !!groupBy && !!valueType,
   });
@@ -137,30 +136,36 @@ const PIE_COLORS = [
   'var(--chart-8)',
 ];
 
+interface SalesBySalespersonItem {
+  name?: string;
+  value?: number;
+  fill?: string;
+  [key: string]: unknown;
+}
+
+interface SalesBySalespersonParams {
+  range?: { from?: Date; to?: Date };
+}
+
 /**
  * Hook para obtener ventas por comercial usando React Query.
- * @param {Object} range - { from, to }
- * @returns {Object} { data, isLoading, error }
  */
-export function useSalesBySalesperson(range) {
+export function useSalesBySalesperson(params: SalesBySalespersonParams) {
+  const { range } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
-  const {
-    data: rawData,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: rawData, isLoading, error } = useQuery({
     queryKey: ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getSalesBySalesperson({ dateFrom, dateTo }, token),
+    queryFn: () => getSalesBySalesperson({ dateFrom: dateFrom!, dateTo: dateTo! }, token as string),
     enabled: !!token && !!tenantId && !!dateFrom && !!dateTo,
   });
 
-  const data = Array.isArray(rawData)
-    ? rawData.map((item, index) => ({
+  const data: SalesBySalespersonItem[] = Array.isArray(rawData)
+    ? (rawData as SalesBySalespersonItem[]).map((item, index) => ({
         ...item,
         fill: PIE_COLORS[index % PIE_COLORS.length],
       }))
