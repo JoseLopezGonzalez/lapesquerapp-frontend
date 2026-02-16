@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
+/** Acepta string o number (el Combobox puede devolver el id numérico) y normaliza a string para la API */
+const employeeIdSchema = z
+  .union([z.string(), z.number()])
+  .transform((v) => (v === undefined || v === null ? '' : String(v)))
+  .refine((s) => s.trim().length > 0, 'El empleado es obligatorio');
+
 const baseShape = {
-  employee_id: z.string().min(1, 'El empleado es obligatorio'),
+  employee_id: employeeIdSchema,
   event_type: z.enum(['IN', 'OUT']).optional(),
   timestamp: z
     .string()

@@ -1,8 +1,10 @@
 'use client';
 
 import toast from 'react-hot-toast';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUsersList } from '@/hooks/useUsersList';
+import { useSessionsList } from '@/hooks/useSessionsList';
 import { GenericFilters } from '@/components/Admin/Filters/GenericFilters/GenericFilters';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
 import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/ResultsSummary';
@@ -112,6 +114,30 @@ export default function EntityClient({ config }) {
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
 
+    const perPage = config?.perPage || 12;
+    const filtersObject = useMemo(() => {
+        const obj = formatFiltersObject(filters);
+        const requiredRelations = extractRequiredRelations(config.table?.headers || []);
+        if (requiredRelations.length > 0) obj._requiredRelations = requiredRelations;
+        return obj;
+    }, [filters, config.table?.headers]);
+
+    const usersListResult = useUsersList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'users',
+    });
+    const sessionsListResult = useSessionsList({
+        filters: filtersObject,
+        page: currentPage,
+        perPage,
+        enabled: config.endpoint === 'sessions',
+    });
+
+    const isUsersOrSessions = config.endpoint === 'users' || config.endpoint === 'sessions';
+    const queryResult = config.endpoint === 'users' ? usersListResult : config.endpoint === 'sessions' ? sessionsListResult : null;
+
     const handleDelete = useCallback(async (id) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
 
@@ -125,10 +151,14 @@ export default function EntityClient({ config }) {
             await entityService.delete(id);
             const successMessage = 'Elemento eliminado con éxito.';
             toast.success(successMessage);
-            setData((prevData) => ({
-                ...prevData,
-                rows: prevData.rows.filter((item) => item.id !== id),
-            }));
+            if (isUsersOrSessions && queryResult?.refetch) {
+                queryResult.refetch();
+            } else {
+                setData((prevData) => ({
+                    ...prevData,
+                    rows: prevData.rows.filter((item) => item.id !== id),
+                }));
+            }
             setSelectedRows((prevSelected) => prevSelected.filter((rowId) => rowId !== id));
         } catch (error) {
             let errorMessage = 'Hubo un error al intentar eliminar el elemento.';
@@ -147,7 +177,29 @@ export default function EntityClient({ config }) {
             }
             toast.error(errorMessage);
         }
-    }, [config.endpoint]);
+    }, [config.endpoint, isUsersOrSessions, queryResult?.refetch]);
+
+    const dataForTable = useMemo(() => {
+        if (!isUsersOrSessions || !queryResult) return data;
+        const processedRows = mapEntityRows(queryResult.data, config.table?.headers || [], handleDelete, config);
+        return { loading: queryResult.isLoading, rows: processedRows };
+    }, [isUsersOrSessions, queryResult?.data, queryResult?.isLoading, data, config.table?.headers, handleDelete, config]);
+
+    const paginationMetaForTable = useMemo(() => {
+        if (!isUsersOrSessions || !queryResult) return paginationMeta;
+        return {
+            currentPage: queryResult.meta.current_page,
+            totalPages: queryResult.meta.last_page,
+            totalItems: queryResult.meta.total,
+            perPage: queryResult.meta.per_page,
+        };
+    }, [isUsersOrSessions, queryResult?.meta, paginationMeta]);
+
+    useEffect(() => {
+        if (queryResult?.error) {
+            toast.error(queryResult.error, getToastTheme());
+        }
+    }, [queryResult?.error]);
 
     const fetchData = useCallback(async (page, currentFilters) => {
         setData((prevData) => ({ ...prevData, loading: true }));
@@ -229,8 +281,9 @@ export default function EntityClient({ config }) {
         fetchDataRef.current = fetchData;
     }, [fetchData]);
 
-    // useEffect unificado para manejar cambios en filtros y página
+    // useEffect unificado para manejar cambios en filtros y página (no usado para users/sessions; usan React Query)
     useEffect(() => {
+        if (config.endpoint === 'users' || config.endpoint === 'sessions') return;
         // Prevenir llamadas múltiples simultáneas
         if (isLoadingRef.current) {
             return;
@@ -303,11 +356,14 @@ export default function EntityClient({ config }) {
             await entityService.deleteMultiple(selectedRows);
             const successMessage = 'Elementos eliminados con éxito.';
             toast.success(successMessage);
-            // Filter out deleted rows and reset selectedRows state after successful deletion
-            setData((prevData) => ({
-                ...prevData,
-                rows: prevData.rows.filter((item) => !selectedRows.includes(item.id)),
-            }));
+            if (isUsersOrSessions && queryResult?.refetch) {
+                queryResult.refetch();
+            } else {
+                setData((prevData) => ({
+                    ...prevData,
+                    rows: prevData.rows.filter((item) => !selectedRows.includes(item.id)),
+                }));
+            }
             setSelectedRows([]);
         } catch (error) {
             let errorMessage = 'Hubo un error al intentar eliminar los elementos.';

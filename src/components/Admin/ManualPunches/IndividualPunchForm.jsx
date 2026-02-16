@@ -22,6 +22,20 @@ import {
   getDefaultTimestampValues,
 } from './individualPunchSchema';
 
+/** Mapa de errores de Zod a español para mensajes por defecto (ej. tipo incorrecto) */
+const zodErrorMapES = (issue, ctx) => {
+  if (issue.code === 'invalid_type') {
+    if (issue.received === 'number' && issue.expected === 'string') {
+      return { message: 'Se esperaba texto, se recibió un número' };
+    }
+    if (issue.received === 'string' && issue.expected === 'number') {
+      return { message: 'Se esperaba un número, se recibió texto' };
+    }
+    return { message: `Tipo no válido: se esperaba ${issue.expected}, se recibió ${issue.received}` };
+  }
+  return { message: ctx.defaultError };
+};
+
 export default function IndividualPunchForm() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -39,7 +53,7 @@ export default function IndividualPunchForm() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema, { errorMap: zodErrorMapES }),
     defaultValues,
   });
 
