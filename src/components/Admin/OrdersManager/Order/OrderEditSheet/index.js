@@ -56,7 +56,10 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         (formErrors) => {
             const errorCount = Object.keys(formErrors).length;
             notify.error({
-                title: `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`,
+                title: 'Errores en el formulario',
+                description: errorCount > 0
+                    ? `Por favor, corrige los ${errorCount} error${errorCount > 1 ? 's' : ''} indicados.`
+                    : 'Por favor, revisa y corrige los campos marcados.',
             });
         }
     );

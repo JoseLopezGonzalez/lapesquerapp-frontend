@@ -325,9 +325,10 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                         // Mostrar toast cuando hay errores de validación
                         const errorCount = Object.keys(formErrors).length;
                         notify.error({
-                            title: errorCount > 1 
-                                ? `Por favor, corrige los ${errorCount} errores en el formulario` 
-                                : 'Por favor, corrige el error en el formulario',
+                            title: 'Errores en el formulario',
+                            description: errorCount > 1
+                                ? `Por favor, corrige los ${errorCount} errores en el formulario.`
+                                : 'Por favor, corrige el error en el formulario.',
                         });
                     }
                 )} className={`flex flex-col ${isMobile ? 'gap-6' : 'gap-8'}`}>
