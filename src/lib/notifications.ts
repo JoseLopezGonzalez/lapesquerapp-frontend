@@ -1,7 +1,7 @@
 /**
  * Wrapper unificado de notificaciones usando Sileo.
  * Usa title + description como en la documentación: https://sileo.aaryan.design/docs
- * El tema (dark/light) lo gestiona Sileo automáticamente.
+ * El tema (dark/light) se aplica en el Toaster (ClientLayout) pasando options según resolvedTheme.
  */
 
 import type { ReactNode } from "react";
