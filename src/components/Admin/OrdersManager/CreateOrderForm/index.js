@@ -153,11 +153,14 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                 loading: { title: 'Creando pedido...' },
                 success: { title: 'Pedido creado correctamente' },
                 error: (error) => {
-                    const message =
+                    const description =
                         error?.message ||
                         (error?.data && getErrorMessage(error.data)) ||
                         'Error desconocido al crear el pedido';
-                    return { title: message };
+                    return {
+                        title: 'Error al crear el pedido',
+                        description,
+                    };
                 },
             });
             reset({

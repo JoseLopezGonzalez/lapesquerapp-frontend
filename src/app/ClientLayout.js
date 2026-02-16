@@ -31,8 +31,9 @@ export default function ClientLayout({ children }) {
             <SettingsProvider>
             <LogoutProvider>
               <AuthErrorInterceptor />
+              {/* Toaster una vez en el layout (doc Sileo). offset por defecto 16. */}
+              <Toaster position="top-center" offset={16} />
               {children}
-              <Toaster position="top-center" />
               {/* Install Prompt Banner - Mobile */}
               <InstallPromptBanner />
             </LogoutProvider>
