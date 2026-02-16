@@ -61,7 +61,7 @@
 | 11 | **Usuarios y sesiones** | — | Pendiente auditoría | — |
 | 12 | **Orquestador** (preparación pedidos) | — | Pendiente auditoría | — |
 | 13 | **Editor de etiquetas** | — | Pendiente auditoría | — |
-| 14 | **Extracción datos lonja** | — | Pendiente auditoría | — |
+| 14 | **Extracción datos lonja** | **5/10** | IndividualMode unificado; common.js calculateImporteFromLinea; MassiveExportDialog usa utils. Pendiente: dividir ExportModals (>650 L), tests. Ver evolution-log. | 2026-02-16 |
 | 15 | **Informes básicos** (gráficos Dashboard) | — | Pendiente auditoría; gráficos integrados en Dashboard | — |
 | 16 | **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver evolution-log. | 2026-02-15 |
 

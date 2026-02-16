@@ -1401,3 +1401,37 @@ git revert <commit-hash>
 - Plan Ventas 9/10 completado (Fases 1-4)
 
 ---
+
+## [2026-02-16] Bloque 14: Extracción datos lonja — Sub-bloque 1 (IndividualMode + utils)
+
+**Priority**: P1
+**Risk Level**: Low
+**Rating antes: 4/10** | **Rating después: 5/10** (parcial)
+
+### Problems Addressed
+- IndividualMode: 3 handlers duplicados (processAlbaran..., processListadoAsoc..., processListadoLonja...)
+- MassiveExportDialog: helpers parseDecimalValueHelper, calculateImporte, calculateImporteFromLinea duplicados respecto a exportHelpers/common.js
+
+### Changes Applied
+- **IndividualMode/index.js**: Unificado en handleProcess(documentType) con handleProcessResult y handleProcessError. Eliminadas ~90 líneas duplicadas.
+- **exportHelpers/common.js**: Añadido calculateImporteFromLinea(linea, weightKey) para soportar kilos/pesoNeto.
+- **MassiveExportDialog.js**: Import de parseDecimalValue, calculateImporte, calculateImporteFromLinea desde common; eliminados helpers locales (~25 líneas).
+
+### Verification Results
+- ✅ Build exitoso (npm run build)
+- ✅ Sin errores de lint
+- ✅ Comportamiento preservado (flujo Individual/Masivo, export)
+
+### Gap to 10/10
+- MassiveExportDialog sigue ~870 líneas (P0: extraer CofraExportPreview, LonjaDeIslaExportPreview, AsocExportPreview).
+- ExportModal LonjaDeIsla 868 L, ExportModal ASOC 700 L, ExportModal AlbaranCofra 651 L (P0).
+- MassiveLinkPurchasesDialog 389 L (P1).
+- Sin tests para DocumentProcessor, validators, parsers.
+- Sin TypeScript.
+
+### Next Steps
+- Sub-bloque 2: Extraer previews de MassiveExportDialog.
+- Sub-bloque 3: Refactor ExportModals (hook + utils).
+- Sub-bloque 4: Tests DocumentProcessor y validators.
+
+---

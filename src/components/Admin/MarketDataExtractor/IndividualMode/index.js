@@ -30,115 +30,33 @@ export default function IndividualMode() {
         setLoading(false);
     };
 
-    const processAlbaranCofradiaPescadoresSantoCristoDelMar = () => {
-        setLoading(true);
-        setProcessedDocuments([]);
-
-        processDocument(file, 'albaranCofradiaPescadoresSantoCristoDelMar')
-            .then((result) => {
-                if (result.success) {
-                    setProcessedDocuments(result.data);
-                    setViewDocumentType("albaranCofradiaPescadoresSantoCristoDelMar");
-                } else {
-                    if (result.errorType === 'validation') {
-                        toast.error(
-                            `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'parsing') {
-                        toast.error(
-                            `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'azure') {
-                        toast.error(result.error, getToastTheme());
-                    } else {
-                        console.error("Error inesperado:", result.error);
-                        toast.error("Error inesperado al procesar el documento.", getToastTheme());
-                    }
-                }
-            })
-            .catch((error) => {
-                console.error("Error inesperado:", error);
+    const handleProcessResult = (result) => {
+        if (result.success) {
+            setProcessedDocuments(result.data);
+            setViewDocumentType(documentType);
+        } else {
+            if (result.errorType === 'validation') {
+                toast.error(
+                    `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`,
+                    getToastTheme()
+                );
+            } else if (result.errorType === 'parsing') {
+                toast.error(
+                    `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`,
+                    getToastTheme()
+                );
+            } else if (result.errorType === 'azure') {
+                toast.error(result.error, getToastTheme());
+            } else {
+                console.error("Error inesperado:", result.error);
                 toast.error("Error inesperado al procesar el documento.", getToastTheme());
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+            }
+        }
     };
 
-    const processListadoComprasAsocArmadoresPuntaDelMoral = () => {
-        setLoading(true);
-        setProcessedDocuments([]);
-
-        processDocument(file, 'listadoComprasAsocArmadoresPuntaDelMoral')
-            .then((result) => {
-                if (result.success) {
-                    setProcessedDocuments(result.data);
-                    setViewDocumentType("listadoComprasAsocArmadoresPuntaDelMoral");
-                } else {
-                    if (result.errorType === 'validation') {
-                        toast.error(
-                            `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'parsing') {
-                        toast.error(
-                            `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'azure') {
-                        toast.error(result.error, getToastTheme());
-                    } else {
-                        console.error("Error inesperado:", result.error);
-                        toast.error("Error inesperado al procesar el documento.", getToastTheme());
-                    }
-                }
-            })
-            .catch((error) => {
-                console.error("Error inesperado:", error);
-                toast.error("Error inesperado al procesar el documento.", getToastTheme());
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    };
-
-    const processListadoComprasLonjaDeIsla = () => {
-        setLoading(true);
-        setProcessedDocuments([]);
-
-        processDocument(file, 'listadoComprasLonjaDeIsla')
-            .then((result) => {
-                if (result.success) {
-                    setProcessedDocuments(result.data);
-                    setViewDocumentType("listadoComprasLonjaDeIsla");
-                } else {
-                    if (result.errorType === 'validation') {
-                        toast.error(
-                            `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'parsing') {
-                        toast.error(
-                            `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`,
-                            getToastTheme()
-                        );
-                    } else if (result.errorType === 'azure') {
-                        toast.error(result.error, getToastTheme());
-                    } else {
-                        console.error("Error inesperado:", result.error);
-                        toast.error("Error inesperado al procesar el documento.", getToastTheme());
-                    }
-                }
-            })
-            .catch((error) => {
-                console.error("Error inesperado:", error);
-                toast.error("Error inesperado al procesar el documento.", getToastTheme());
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+    const handleProcessError = (error) => {
+        console.error("Error inesperado:", error);
+        toast.error("Error inesperado al procesar el documento.", getToastTheme());
     };
 
     const handleProcess = () => {
@@ -147,19 +65,23 @@ export default function IndividualMode() {
             return;
         }
 
-        switch (documentType) {
-            case "albaranCofradiaPescadoresSantoCristoDelMar":
-                processAlbaranCofradiaPescadoresSantoCristoDelMar();
-                break;
-            case "listadoComprasAsocArmadoresPuntaDelMoral":
-                processListadoComprasAsocArmadoresPuntaDelMoral();
-                break;
-            case "listadoComprasLonjaDeIsla":
-                processListadoComprasLonjaDeIsla();
-                break;
-            default:
-                toast.error("Tipo de documento no soportado.", getToastTheme());
+        const validTypes = [
+            'albaranCofradiaPescadoresSantoCristoDelMar',
+            'listadoComprasAsocArmadoresPuntaDelMoral',
+            'listadoComprasLonjaDeIsla',
+        ];
+        if (!validTypes.includes(documentType)) {
+            toast.error("Tipo de documento no soportado.", getToastTheme());
+            return;
         }
+
+        setLoading(true);
+        setProcessedDocuments([]);
+
+        processDocument(file, documentType)
+            .then(handleProcessResult)
+            .catch(handleProcessError)
+            .finally(() => setLoading(false));
     };
 
     return (

@@ -58,3 +58,16 @@ export function calculateImporte(weight, price) {
     return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
 }
 
+/**
+ * Calculates importe from a line item (venta, subasta, etc.)
+ * Supports both kilos and pesoNeto as weight field.
+ *
+ * @param {Object} linea - Line item with weight and price
+ * @param {string} [weightKey='kilos'] - Key for weight (e.g. 'kilos', 'pesoNeto')
+ * @returns {number} Calculated importe rounded to 2 decimals
+ */
+export function calculateImporteFromLinea(linea, weightKey = 'kilos') {
+    const weight = linea[weightKey] ?? linea.pesoNeto ?? linea.kilos;
+    return calculateImporte(weight, linea.precio);
+}
+

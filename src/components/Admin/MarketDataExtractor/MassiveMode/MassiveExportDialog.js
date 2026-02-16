@@ -15,7 +15,7 @@ import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
+import { calculateImporte, calculateImporteFromLinea } from "@/exportHelpers/common";
 import { normalizeText } from "@/helpers/formats/texts";
 import { armadores, barcos, lonjas } from "../AlbaranCofraWeb/exportData";
 import { barcos as barcosLonja, barcosVentaDirecta, datosVendidurias, productos, serviciosLonjaDeIsla, servicioExtraLonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS } from "../ListadoComprasLonjaDeIsla/exportData";
@@ -145,34 +145,6 @@ export default function MassiveExportDialog({
             'listadoComprasAsocArmadoresPuntaDelMoral': 'Listado de compras - Asoc. Armadores Punta del Moral',
         };
         return labels[type] || type;
-    };
-
-    // Helper function to parse decimal values
-    const parseDecimalValueHelper = (value) => {
-        if (typeof value === 'number') return value;
-        if (typeof value === 'string') {
-            const trimmed = value.trim();
-            if (trimmed === '') return 0;
-            if (trimmed.includes(',')) {
-                const parsed = parseEuropeanNumber(trimmed);
-                return Number.isNaN(parsed) ? 0 : parsed;
-            }
-            return Number.isNaN(Number(trimmed)) ? 0 : Number(trimmed);
-        }
-        return 0;
-    };
-
-    const calculateImporte = (cantidad, precio) => {
-        const cantidadNum = parseDecimalValueHelper(cantidad);
-        const precioNum = parseDecimalValueHelper(precio);
-        const importe = cantidadNum * precioNum;
-        return Number.isFinite(importe) ? Number(importe.toFixed(2)) : 0;
-    };
-
-    const calculateImporteFromLinea = (linea) => {
-        const kilos = parseDecimalValueHelper(linea.kilos || linea.pesoNeto);
-        const precio = parseDecimalValueHelper(linea.precio);
-        return calculateImporte(kilos, precio);
     };
 
     // Render content for AlbaranCofraWeb
@@ -592,7 +564,7 @@ export default function MassiveExportDialog({
         const subastas = Object.values(subastasGroupedByBarco);
 
         const importeTotalCalculado = tables.subastas.reduce((acc, linea) => {
-            return acc + calculateImporte(parseDecimalValueHelper(linea.pesoNeto), parseDecimalValueHelper(linea.precio));
+            return acc + calculateImporteFromLinea(linea, 'pesoNeto');
         }, 0);
 
         const servicios = serviciosAsocArmadoresPuntaDelMoral.map((servicio) => ({
@@ -657,7 +629,7 @@ export default function MassiveExportDialog({
                                             <TableCell className="text-right">{linea.pesoNeto}</TableCell>
                                             <TableCell className="text-right">{linea.precio} €</TableCell>
                                             <TableCell className="text-right font-medium">
-                                                {calculateImporte(parseDecimalValueHelper(linea.pesoNeto), parseDecimalValueHelper(linea.precio))} €
+                                                {calculateImporteFromLinea(linea, 'pesoNeto')} €
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -688,7 +660,7 @@ export default function MassiveExportDialog({
                                             <TableCell className="text-right">{linea.pesoNeto}</TableCell>
                                             <TableCell className="text-right">{linea.precio} €</TableCell>
                                             <TableCell className="text-right font-medium">
-                                                {calculateImporte(parseDecimalValueHelper(linea.pesoNeto), parseDecimalValueHelper(linea.precio))} €
+                                                {calculateImporteFromLinea(linea, 'pesoNeto')} €
                                             </TableCell>
                                         </TableRow>
                                     ))}
