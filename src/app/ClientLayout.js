@@ -32,7 +32,7 @@ export default function ClientLayout({ children }) {
             <LogoutProvider>
               <AuthErrorInterceptor />
               {children}
-              <Toaster position="top-right" />
+              <Toaster position="top-center" />
               {/* Install Prompt Banner - Mobile */}
               <InstallPromptBanner />
             </LogoutProvider>

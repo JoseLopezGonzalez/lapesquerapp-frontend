@@ -133,11 +133,18 @@ export function useStoreDialogs({
       return;
     }
 
-    const loadingToastId = notify.loading('Duplicando...');
-
+    setIsDuplicatingPallet(true);
     try {
-      setIsDuplicatingPallet(true);
-      const originalPallet = await getPallet(palletId, token);
+      const originalPallet = await notify.promise(getPallet(palletId, token), {
+        loading: 'Duplicando...',
+        success: 'Listo',
+        error: (error) =>
+          error?.userMessage ||
+          error?.data?.userMessage ||
+          error?.response?.data?.userMessage ||
+          error?.message ||
+          'Error al duplicar el palet',
+      });
 
       const clonedPallet = {
         ...originalPallet,
@@ -157,16 +164,6 @@ export function useStoreDialogs({
       setClonedPalletData(clonedPallet);
       setPalletDialogData('new');
       setIsOpenPalletDialog(true);
-      notify.dismiss(loadingToastId);
-    } catch (error) {
-      notify.dismiss(loadingToastId);
-      const errorMessage =
-        error.userMessage ||
-        error.data?.userMessage ||
-        error.response?.data?.userMessage ||
-        error.message ||
-        'Error al duplicar el palet';
-      notify.error(errorMessage);
     } finally {
       setIsDuplicatingPallet(false);
     }

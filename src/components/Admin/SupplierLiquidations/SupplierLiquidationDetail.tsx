@@ -108,60 +108,55 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     }
 
     setDownloadingPdf(true);
-    const toastId = notify.loading("Generando PDF...");
+    const allDispatches = [...(data.dispatches ?? [])];
+    const relatedDispatches =
+      data.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
+    const totalDispatches = [
+      ...new Set([...allDispatches.map((d) => d.id), ...relatedDispatches.map((d) => d.id)]),
+    ];
+    const independentDispatchIds = allDispatches.map((d) => d.id);
+    const relatedDispatchIds = [...new Set(relatedDispatches.map((d) => d.id))];
+    const allReceptionsSelected =
+      selectedReceptions.length === (data.receptions?.length ?? 0) && selectedReceptions.length > 0;
+    const allDispatchesSelected =
+      selectedDispatches.length === totalDispatches.length && selectedDispatches.length > 0;
+    const receptionsToSend = allReceptionsSelected ? [] : selectedReceptions;
+    let dispatchesToSend: number[];
+    if (allReceptionsSelected && allDispatchesSelected) {
+      dispatchesToSend = [];
+    } else if (allReceptionsSelected && !allDispatchesSelected) {
+      dispatchesToSend = selectedDispatches;
+    } else {
+      const selectedRelated = selectedDispatches.filter((id) =>
+        relatedDispatchIds.includes(id)
+      );
+      dispatchesToSend = [...new Set([...independentDispatchIds, ...selectedRelated])];
+    }
 
     try {
-      const allDispatches = [...(data.dispatches ?? [])];
-      const relatedDispatches =
-        data.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
-      const totalDispatches = [
-        ...new Set([...allDispatches.map((d) => d.id), ...relatedDispatches.map((d) => d.id)]),
-      ];
-      const independentDispatchIds = allDispatches.map((d) => d.id);
-      const relatedDispatchIds = [...new Set(relatedDispatches.map((d) => d.id))];
-
-      const allReceptionsSelected =
-        selectedReceptions.length === (data.receptions?.length ?? 0) && selectedReceptions.length > 0;
-      const allDispatchesSelected =
-        selectedDispatches.length === totalDispatches.length && selectedDispatches.length > 0;
-
-      const receptionsToSend = allReceptionsSelected ? [] : selectedReceptions;
-
-      let dispatchesToSend: number[];
-      if (allReceptionsSelected && allDispatchesSelected) {
-        dispatchesToSend = [];
-      } else if (allReceptionsSelected && !allDispatchesSelected) {
-        dispatchesToSend = selectedDispatches;
-      } else {
-        const selectedRelated = selectedDispatches.filter((id) =>
-          relatedDispatchIds.includes(id)
-        );
-        dispatchesToSend = [...new Set([...independentDispatchIds, ...selectedRelated])];
-      }
-
-      await downloadSupplierLiquidationPdf({
-        supplierId,
-        startDate,
-        endDate,
-        supplierName: data.supplier?.name ?? "Proveedor",
-        selectedReceptions: receptionsToSend,
-        selectedDispatches: dispatchesToSend,
-        paymentMethod,
-        hasManagementFee,
-        showTransferPayment,
-      });
-      notify.success("PDF descargado correctamente", { id: toastId });
-    } catch (err) {
-      const e = err as { status?: number; message?: string };
-      let errorMessage = "Error al descargar el PDF";
-      if (e.status === 422) {
-        errorMessage = "Algunos IDs seleccionados no existen. Por favor, recargue la página.";
-      } else if (e.status === 404) {
-        errorMessage = "Proveedor no encontrado";
-      } else if (e.message) {
-        errorMessage = e.message;
-      }
-      notify.error(errorMessage, { id: toastId });
+      await notify.promise(
+        downloadSupplierLiquidationPdf({
+          supplierId,
+          startDate,
+          endDate,
+          supplierName: data.supplier?.name ?? "Proveedor",
+          selectedReceptions: receptionsToSend,
+          selectedDispatches: dispatchesToSend,
+          paymentMethod,
+          hasManagementFee,
+          showTransferPayment,
+        }),
+        {
+          loading: "Generando PDF...",
+          success: "PDF descargado correctamente",
+          error: (err: unknown) => {
+            const e = err as { status?: number; message?: string };
+            if (e?.status === 422) return "Algunos IDs seleccionados no existen. Por favor, recargue la página.";
+            if (e?.status === 404) return "Proveedor no encontrado";
+            return e?.message ?? "Error al descargar el PDF";
+          },
+        }
+      );
     } finally {
       setDownloadingPdf(false);
     }

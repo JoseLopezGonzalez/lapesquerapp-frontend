@@ -1,34 +1,30 @@
 /**
  * Wrapper unificado de notificaciones usando Sileo.
- * API estable para la app: notify.success(), notify.error(), etc.
- * @see https://sileo.aaryan.design/docs
+ * Usa title + description como en la documentación: https://sileo.aaryan.design/docs
+ * El tema (dark/light) lo gestiona Sileo automáticamente.
  */
 
 import type { ReactNode } from "react";
 import { sileo } from "sileo";
 
-const DEFAULT_POSITION = "top-right" as const;
+const DEFAULT_POSITION = "top-center" as const;
 const DEFAULT_DURATION_SUCCESS = 4000;
 const DEFAULT_DURATION_ERROR = 6000;
 const DEFAULT_DURATION_WARNING = 6000;
 const DEFAULT_DURATION_INFO = 5000;
 
-function toTitle(message: string | ReactNode): string {
-  if (typeof message === "string") return message;
-  if (message == null) return "";
-  // React nodes: use a simple string representation for Sileo title
-  if (typeof message === "object" && "props" in message && typeof (message as { props?: { children?: unknown } }).props?.children === "string")
-    return (message as { props: { children: string } }).props.children;
-  return String(message);
+export type NotifyMessage =
+  | string
+  | { title: string; description?: string };
+
+function toSileoContent(msg: NotifyMessage): { title: string; description?: string } {
+  if (typeof msg === "string") return { title: msg };
+  return { title: msg.title, description: msg.description };
 }
 
 export interface NotifyOptions {
-  /** Duración en ms; null = no auto-dismiss */
   duration?: number | null;
-  /** Posición (override global) */
   position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
-  /** Id del toast a reemplazar (para flujos loading → success/error). Al usarlo se hace dismiss del id y se muestra el nuevo toast. */
-  id?: string;
 }
 
 function applyOptions(opts?: NotifyOptions): { position?: NotifyOptions["position"]; duration?: number | null } {
@@ -39,75 +35,96 @@ function applyOptions(opts?: NotifyOptions): { position?: NotifyOptions["positio
 }
 
 export const notify = {
-  success(message: string | ReactNode, options?: NotifyOptions): string {
-    if (options?.id) sileo.dismiss(options.id);
+  success(message: NotifyMessage, options?: NotifyOptions): string {
     return sileo.success({
-      title: toTitle(message),
+      ...toSileoContent(message),
+      position: DEFAULT_POSITION,
       ...applyOptions(options),
       duration: options?.duration ?? DEFAULT_DURATION_SUCCESS,
     });
   },
 
-  error(message: string | ReactNode, options?: NotifyOptions): string {
-    if (options?.id) sileo.dismiss(options.id);
+  error(message: NotifyMessage, options?: NotifyOptions): string {
     return sileo.error({
-      title: toTitle(message),
+      ...toSileoContent(message),
+      position: DEFAULT_POSITION,
       ...applyOptions(options),
       duration: options?.duration ?? DEFAULT_DURATION_ERROR,
     });
   },
 
-  warning(message: string | ReactNode, options?: NotifyOptions): string {
-    if (options?.id) sileo.dismiss(options.id);
+  warning(message: NotifyMessage, options?: NotifyOptions): string {
     return sileo.warning({
-      title: toTitle(message),
+      ...toSileoContent(message),
+      position: DEFAULT_POSITION,
       ...applyOptions(options),
       duration: options?.duration ?? DEFAULT_DURATION_WARNING,
     });
   },
 
-  info(message: string | ReactNode, options?: NotifyOptions): string {
-    if (options?.id) sileo.dismiss(options.id);
+  info(message: NotifyMessage, options?: NotifyOptions): string {
     return sileo.info({
-      title: toTitle(message),
+      ...toSileoContent(message),
+      position: DEFAULT_POSITION,
       ...applyOptions(options),
       duration: options?.duration ?? DEFAULT_DURATION_INFO,
     });
   },
 
   /**
-   * Muestra un toast de "carga" (genérico). Para reemplazarlo por success/error, usa notify.success(msg, { id }) o notify.error(msg, { id }).
+   * Loading manual (solo para casos donde no hay promesa; preferir notify.promise para fetches).
    */
-  loading(message: string | ReactNode, options?: NotifyOptions): string {
+  loading(message: string | { title: string; description?: string }, options?: NotifyOptions): string {
+    const content = typeof message === "string" ? { title: message } : message;
     return sileo.show({
-      title: toTitle(message),
+      ...content,
+      position: DEFAULT_POSITION,
       ...applyOptions(options),
-      duration: null, // loading se mantiene hasta que se haga success/error con mismo id
+      duration: null,
     });
   },
 
   /**
-   * Encadena loading → success/error desde una promesa. Devuelve la misma promesa para encadenar.
+   * Toast nativo de Sileo para flujos async: loading → success/error con animaciones.
+   * Usar siempre que haya una promesa (fetch, mutación, etc.).
    */
   promise<T>(
     promise: Promise<T> | (() => Promise<T>),
     messages: {
-      loading: string;
-      success?: string | ((data: T) => string);
-      error?: string | ((err: unknown) => string);
+      loading: string | { title: string; description?: string };
+      success?: string | { title: string; description?: string } | ((data: T) => string | { title: string; description?: string });
+      error?: string | { title: string; description?: string } | ((err: unknown) => string | { title: string; description?: string });
     }
   ): Promise<T> {
     const promiseFn = typeof promise === "function" ? promise : () => promise;
+    const loadingContent = typeof messages.loading === "string"
+      ? { title: messages.loading }
+      : { title: messages.loading.title, description: messages.loading.description };
     const successFn = messages.success;
     const errorFn = messages.error;
     return sileo.promise(promiseFn(), {
-      loading: { title: messages.loading },
-      success: typeof successFn === "function"
-        ? (data) => ({ title: successFn(data) ?? "Listo" })
-        : { title: successFn ?? "Listo" },
-      error: typeof errorFn === "function"
-        ? (err) => ({ title: errorFn(err) ?? "Error" })
-        : { title: errorFn ?? "Error" },
+      position: DEFAULT_POSITION,
+      loading: loadingContent,
+      success: successFn == null
+        ? { title: "Listo" }
+        : typeof successFn === "function"
+          ? (data) => {
+              const out = successFn(data);
+              return typeof out === "string" ? { title: out } : out;
+            }
+          : typeof successFn === "string"
+            ? { title: successFn }
+            : successFn,
+      error: errorFn == null
+        ? { title: "Error" }
+        : typeof errorFn === "function"
+          ? (err) => {
+              const out = errorFn(err);
+              return typeof out === "string" ? { title: out } : out;
+            }
+          : typeof errorFn === "string"
+            ? { title: errorFn }
+            : errorFn,
     });
   },
 

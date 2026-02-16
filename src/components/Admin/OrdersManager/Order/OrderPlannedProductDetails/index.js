@@ -172,36 +172,28 @@ const OrderPlannedProductDetails = () => {
 
         if (!detail.id) {
             detail.orderId = order.id;
-            const toastId = notify.loading('Creando nueva linea...');
-            plannedProductDetailActions.create(detail)
-                .then(() => {
-                    notify.success('Linea creada correctamente', { id: toastId });
-                    setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
-                    setEditIndex(null);
-                })
-                .catch((error) => {
+            notify.promise(plannedProductDetailActions.create(detail), {
+                loading: 'Creando nueva linea...',
+                success: 'Linea creada correctamente',
+                error: (error) => {
                     console.error('Error al crear la linea:', error);
-                    // Priorizar userMessage sobre message para mostrar errores en formato natural
-                    const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al crear nueva linea';
-                    notify.error(errorMessage, { id: toastId });
-                });
+                    return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al crear nueva linea';
+                },
+            }).then(() => {
+                setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
+                setEditIndex(null);
+            });
             return;
         }
 
-        /* Toast */
-        const toastId = notify.loading('Actualizando linea...');
-
-        plannedProductDetailActions.update(detail.id, detail)
-            .then(() => {
-                notify.success('Linea actualizada correctamente', { id: toastId });
-                setEditIndex(null);
-            })
-            .catch((error) => {
+        notify.promise(plannedProductDetailActions.update(detail.id, detail), {
+            loading: 'Actualizando linea...',
+            success: 'Linea actualizada correctamente',
+            error: (error) => {
                 console.error('Error al actualizar la linea:', error);
-                // Priorizar userMessage sobre message para mostrar errores en formato natural
-                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la linea';
-                notify.error(errorMessage, { id: toastId });
-            });
+                return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al actualizar la linea';
+            },
+        }).then(() => setEditIndex(null));
     };
 
     const handleOnClickDeleteLine = async (detail) => {
@@ -215,19 +207,14 @@ const OrderPlannedProductDetails = () => {
         // Línea persistida: requiere id para eliminar vía API
         if (!detail?.id) return;
 
-        const toastId = notify.loading('Eliminando linea...');
-
-        plannedProductDetailActions.delete(detail.id)
-            .then(() => {
-                notify.success('Linea eliminada correctamente', { id: toastId });
-                setEditIndex(null);
-            })
-            .catch((error) => {
+        notify.promise(plannedProductDetailActions.delete(detail.id), {
+            loading: 'Eliminando linea...',
+            success: 'Linea eliminada correctamente',
+            error: (error) => {
                 console.error('Error al eliminar la linea:', error);
-                // Priorizar userMessage sobre message para mostrar errores en formato natural
-                const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar la linea';
-                notify.error(errorMessage, { id: toastId });
-            });
+                return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al eliminar la linea';
+            },
+        }).then(() => setEditIndex(null));
     };
 
     const handleOnClickCloseLine = (detail) => {

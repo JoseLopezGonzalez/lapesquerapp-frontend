@@ -294,8 +294,7 @@ export function useOrder(orderId, onChange) {
     /* ---------------------- */
 
     const exportDocument = async (documentName, type, documentLabel) => {
-        const toastId = notify.loading(`Exportando ${documentLabel}.${type}`);
-        try {
+        const doExport = async () => {
             const response = await fetchWithTenant(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
                 method: 'GET',
                 headers: {
@@ -303,27 +302,22 @@ export function useOrder(orderId, onChange) {
                     'User-Agent': navigator.userAgent,
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Error al exportar');
-            }
-
+            if (!response.ok) throw new Error('Error al exportar');
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${documentLabel}_${order.id}.${type}`; // Nombre del archivo de descarga
+            a.download = `${documentLabel}_${order.id}.${type}`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(url); // Liberar memoria
-
-            notify.success('Exportación exitosa', { id: toastId });
-
-        } catch (error) {
-            // console.log(error);
-            notify.error('Error al exportar', { id: toastId });
-        }
+            window.URL.revokeObjectURL(url);
+        };
+        await notify.promise(doExport(), {
+            loading: `Exportando ${documentLabel}.${type}`,
+            success: 'Exportación exitosa',
+            error: 'Error al exportar',
+        });
     };
 
     /*--------------------------*/

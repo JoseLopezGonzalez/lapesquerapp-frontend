@@ -801,14 +801,24 @@ Todos los componentes usan servicios de API v2:
 
 ### 4. Toast Notifications
 
-Uso consistente con Sileo vía wrapper `notify`:
+Sileo vía wrapper `notify` (título y descripción separados, posición top-center, tema dark/light automático):
 ```javascript
 import { notify } from '@/lib/notifications';
 
-notify.loading('Cargando...');
+// Mensaje simple (solo título)
 notify.success('Éxito');
-notify.error('Error');
-// Con reemplazo de loading: const id = notify.loading('...'); luego notify.success('Listo', { id });
+notify.error('Algo falló');
+
+// Título + descripción (recomendado para errores y contexto)
+notify.error({ title: "Algo falló", description: "Por favor, inténtalo de nuevo más tarde." });
+notify.success({ title: "Guardado", description: "Los cambios se aplicaron correctamente." });
+
+// Flujos async: usar siempre notify.promise (muestra loading → success/error nativo)
+await notify.promise(fetchAlgo(), {
+  loading: "Cargando...",
+  success: "Listo",
+  error: (err) => err?.message ?? "Error",
+});
 ```
 
 ### 5. Loading States

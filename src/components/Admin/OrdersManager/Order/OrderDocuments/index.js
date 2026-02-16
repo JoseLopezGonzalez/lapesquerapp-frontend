@@ -146,16 +146,11 @@ const OrderDocuments = () => {
             ]
         }
 
-        const toastId = notify.loading("Enviando documentos a multiples destinatarios...");
-
-        sendDocuments.customDocuments(json)
-            .then(() => {
-                notify.success('Documentos enviados correctamente', { id: toastId });
-            })
-            .catch((error) => {
-                notify.error('Error al enviar documentos', { id: toastId });
-                // console.log('Error al enviar documentos', error);
-            })
+        notify.promise(sendDocuments.customDocuments(json), {
+            loading: "Enviando documentos a multiples destinatarios...",
+            success: 'Documentos enviados correctamente',
+            error: 'Error al enviar documentos',
+        });
     };
 
     const handleOnClickSendSelectedDocuments = async () => {
@@ -178,31 +173,19 @@ const OrderDocuments = () => {
             }))
         }
 
-        const toastId = notify.loading("Enviando documentos...");
-
-        sendDocuments.customDocuments(json)
-            .then(() => {
-                notify.success('Documentos enviados correctamente', { id: toastId });
-                handleOnClickResetSelectedDocs();
-            })
-            .catch((error) => {
-                notify.error('Error al enviar documentos', { id: toastId });
-                // console.log('Error al enviar documentos', error);
-            })
-
+        notify.promise(sendDocuments.customDocuments(json), {
+            loading: "Enviando documentos...",
+            success: 'Documentos enviados correctamente',
+            error: 'Error al enviar documentos',
+        }).then(() => handleOnClickResetSelectedDocs());
     };
 
     const handleOnClickSendStandarDocuments = async () => {
-        const toastId = notify.loading("Enviando documentos estándar...");
-
-        sendDocuments.standardDocuments()
-            .then(() => {
-                notify.success('Documentos enviados correctamente', { id: toastId });
-            })
-            .catch((error) => {
-                notify.error('Error al enviar documentos', { id: toastId });
-                // console.log('Error al enviar documentos', error);
-            })
+        notify.promise(sendDocuments.standardDocuments(), {
+            loading: "Enviando documentos estándar...",
+            success: 'Documentos enviados correctamente',
+            error: 'Error al enviar documentos',
+        });
     };
 
 

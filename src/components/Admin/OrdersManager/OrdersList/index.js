@@ -77,8 +77,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
     }, [selectedOrderId, orders]);
 
     const exportDocument = async () => {
-        const toastId = notify.loading(`Exportando `);
-        try {
+        const doExport = async () => {
             const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
                 method: 'GET',
                 headers: {
@@ -86,27 +85,22 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                     'User-Agent': navigator.userAgent,
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Error al exportar');
-            }
-
+            if (!response.ok) throw new Error('Error al exportar');
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Reporte_pedidos_activos.xlsx`; // Nombre del archivo de descarga
+            a.download = `Reporte_pedidos_activos.xlsx`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(url); // Liberar memoria
-
-            notify.success('Exportación exitosa', { id: toastId });
-
-        } catch (error) {
-            // console.log(error);
-            notify.error('Error al exportar', { id: toastId });
-        }
+            window.URL.revokeObjectURL(url);
+        };
+        await notify.promise(doExport(), {
+            loading: 'Exportando',
+            success: 'Exportación exitosa',
+            error: 'Error al exportar',
+        });
     };
 
     const handleExportActivePlannedProducts = () => {

@@ -82,46 +82,37 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
     const onSubmit = async (data) => {
         setSaving(true);
-        const toastId = notify.loading('Actualizando pedido...');
-
-        // Construir payload solo con campos modificados (dirtyFields)
-        // Esto reduce el tamaño del payload y mejora el rendimiento
         const payload = {};
-        
-        // Iterar solo sobre los campos que han sido modificados
         Object.keys(dirtyFields).forEach((fieldName) => {
             const fieldValue = data[fieldName];
-            
-            // Convertir fechas a string YYYY-MM-DD si son Date
             if (fieldName === 'entryDate' || fieldName === 'loadDate') {
-                payload[fieldName] = fieldValue instanceof Date 
-                    ? format(fieldValue, 'yyyy-MM-dd') 
+                payload[fieldName] = fieldValue instanceof Date
+                    ? format(fieldValue, 'yyyy-MM-dd')
                     : fieldValue;
             } else {
                 payload[fieldName] = fieldValue;
             }
         });
 
-        // Si no hay campos modificados, no hacer nada
         if (Object.keys(payload).length === 0) {
-            notify.info('No hay cambios para guardar', { id: toastId });
+            notify.info('No hay cambios para guardar');
             setSaving(false);
             return;
         }
 
         try {
-            await updateOrderData(payload);
-            notify.success('Pedido actualizado correctamente', { id: toastId });
-            // Pequeño retardo para que se pueda apreciar el estado del botón antes de cerrar
+            await notify.promise(updateOrderData(payload), {
+                loading: 'Actualizando pedido...',
+                success: 'Pedido actualizado correctamente',
+                error: (error) =>
+                    error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido',
+            });
             await new Promise(resolve => setTimeout(resolve, 600));
-            // Cerrar el Sheet solo después de que se complete exitosamente el guardado
             setSaving(false);
             setOpen(false);
             reset(defaultValues);
             setInitialValues(null);
         } catch (error) {
-            const errorMessage = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
-            notify.error(errorMessage, { id: toastId });
             if (error?.status === 422 && error?.data?.errors) {
                 setErrorsFrom422(setError, error.data.errors);
             }

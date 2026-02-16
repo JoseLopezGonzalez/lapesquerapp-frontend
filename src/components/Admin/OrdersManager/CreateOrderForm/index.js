@@ -119,58 +119,54 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
     // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {
-        const toastId = notify.loading('Creando pedido...');
+        const payload = {
+            customer: parseInt(formData.customer),
+            entryDate: formData.entryDate ? format(formData.entryDate, 'yyyy-MM-dd') : null,
+            loadDate: formData.loadDate ? format(formData.loadDate, 'yyyy-MM-dd') : null,
+            salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
+            payment: formData.payment ? parseInt(formData.payment) : null,
+            incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
+            buyerReference: formData.buyerReference || null,
+            transport: formData.transport ? parseInt(formData.transport) : null,
+            truckPlate: formData.truckPlate || null,
+            trailerPlate: formData.trailerPlate || null,
+            temperature: formData.temperature || null,
+            billingAddress: formData.billingAddress || null,
+            shippingAddress: formData.shippingAddress || null,
+            transportationNotes: formData.transportationNotes || null,
+            productionNotes: formData.productionNotes || null,
+            accountingNotes: formData.accountingNotes || null,
+            emails: formData.emails || [],
+            ccEmails: formData.ccEmails || [],
+            plannedProducts: formData.plannedProducts.map((line) => ({
+                product: parseInt(line.product),
+                quantity: parseFloat(line.quantity),
+                boxes: parseInt(line.boxes),
+                unitPrice: parseFloat(line.unitPrice),
+                tax: parseInt(line.tax),
+            })),
+        };
 
         try {
-            // Prepara el payload tal como lo hacías
-            const payload = {
-                customer: parseInt(formData.customer),
-                entryDate: formData.entryDate ? format(formData.entryDate, 'yyyy-MM-dd') : null,
-                loadDate: formData.loadDate ? format(formData.loadDate, 'yyyy-MM-dd') : null,
-                salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
-                payment: formData.payment ? parseInt(formData.payment) : null,
-                incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
-                buyerReference: formData.buyerReference || null,
-                transport: formData.transport ? parseInt(formData.transport) : null,
-                truckPlate: formData.truckPlate || null,
-                trailerPlate: formData.trailerPlate || null,
-                temperature: formData.temperature || null,
-                billingAddress: formData.billingAddress || null,
-                shippingAddress: formData.shippingAddress || null,
-                transportationNotes: formData.transportationNotes || null,
-                productionNotes: formData.productionNotes || null,
-                accountingNotes: formData.accountingNotes || null,
-                emails: formData.emails || [],
-                ccEmails: formData.ccEmails || [],
-                plannedProducts: formData.plannedProducts.map((line) => ({
-                    product: parseInt(line.product),
-                    quantity: parseFloat(line.quantity),
-                    boxes: parseInt(line.boxes),
-                    unitPrice: parseFloat(line.unitPrice),
-                    tax: parseInt(line.tax),
-                })),
-            };
-
-            // Llama al servicio `createOrder`
-            const newOrderData = await createOrder(payload);
-
-            notify.success('Pedido creado correctamente', { id: toastId });
-            // Resetea el formulario después de una creación exitosa
+            const newOrderData = await notify.promise(createOrder(payload), {
+                loading: 'Creando pedido...',
+                success: 'Pedido creado correctamente',
+                error: (error) =>
+                    error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error desconocido al crear el pedido',
+            });
             reset({
                 ...defaultValues,
                 plannedProducts: [],
             });
-            // Resetear referencias para permitir que se carguen los datos del cliente de nuevo si se selecciona
             lastCustomerIdRef.current = null;
-            onCreate(newOrderData.id, newOrderData); // Pasa también el objeto completo del pedido creado
-
+            onCreate(newOrderData.id, newOrderData);
         } catch (error) {
             console.error('Error al crear el pedido:', error);
-            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido al crear el pedido';
-            notify.error(errorMessage, { id: toastId });
             if (error?.status === 422 && error?.data?.errors) {
                 setErrorsFrom422(setError, error.data.errors);
             }
+        } finally {
+            setSaving(false);
         }
     };
 

@@ -50,30 +50,22 @@ const OrderContent = ({ onLoading, onClose }) => {
 
   // Función para cambiar el estado del pedido - memoizada con useCallback
   const handleStatusChange = useCallback(async (newStatus) => {
-    const toastId = notify.loading('Actualizando estado del pedido...');
-    updateOrderStatus(newStatus)
-      .then(() => {
-        notify.success('Estado del pedido actualizado', { id: toastId });
-      })
-      .catch((error) => {
-        // Priorizar userMessage sobre message para mostrar errores en formato natural
-        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar el estado del pedido';
-        notify.error(errorMessage, { id: toastId });
-      });
+    await notify.promise(updateOrderStatus(newStatus), {
+      loading: 'Actualizando estado del pedido...',
+      success: 'Estado del pedido actualizado',
+      error: (error) =>
+        error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al actualizar el estado del pedido',
+    });
   }, [updateOrderStatus]);
 
   // Función para cambiar la temperatura - memoizada con useCallback
   const handleTemperatureChange = useCallback(async (newTemperature) => {
-    const toastId = notify.loading('Actualizando temperatura del pedido...');
-    updateTemperatureOrder(newTemperature)
-      .then(() => {
-        notify.success('Temperatura del pedido actualizada', { id: toastId });
-      })
-      .catch((error) => {
-        // Priorizar userMessage sobre message para mostrar errores en formato natural
-        const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la temperatura del pedido';
-        notify.error(errorMessage, { id: toastId });
-      });
+    await notify.promise(updateTemperatureOrder(newTemperature), {
+      loading: 'Actualizando temperatura del pedido...',
+      success: 'Temperatura del pedido actualizada',
+      error: (error) =>
+        error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al actualizar la temperatura del pedido',
+    });
   }, [updateTemperatureOrder]);
 
   // Memoizar imagen de transporte

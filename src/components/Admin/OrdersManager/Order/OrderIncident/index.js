@@ -31,41 +31,41 @@ export default function OrderIncidentPanel() {
 
     const handleCreate = async () => {
         if (!newDescription) return notify.error("La descripción es obligatoria")
-        const toastId = notify.loading("Creando incidencia...")
         setLoading(true)
         try {
-            await openOrderIncident(newDescription)
-            notify.success("Incidencia creada", { id: toastId })
-        } catch (err) {
-            notify.error("Error al crear incidencia", { id: toastId })
+            await notify.promise(openOrderIncident(newDescription), {
+                loading: "Creando incidencia...",
+                success: "Incidencia creada",
+                error: "Error al crear incidencia",
+            })
+            setNewDescription("")
         } finally {
             setLoading(false)
-            setNewDescription("")
         }
     }
 
     const handleResolve = async () => {
         if (!resolutionType) return notify.error("Selecciona un tipo de resolución")
-        const toastId = notify.loading("Resolviendo incidencia...")
         setLoading(true)
         try {
-            await resolveOrderIncident(resolutionType, resolutionNotes)
-            notify.success("Incidencia resuelta", { id: toastId })
-        } catch (err) {
-            notify.error("Error al resolver incidencia", { id: toastId })
+            await notify.promise(resolveOrderIncident(resolutionType, resolutionNotes), {
+                loading: "Resolviendo incidencia...",
+                success: "Incidencia resuelta",
+                error: "Error al resolver incidencia",
+            })
         } finally {
             setLoading(false)
         }
     }
 
     const handleDelete = async () => {
-        const toastId = notify.loading("Eliminando incidencia...")
         setLoading(true)
         try {
-            await deleteOrderIncident()
-            notify.success("Incidencia eliminada", { id: toastId })
-        } catch (err) {
-            notify.error("Error al eliminar incidencia", { id: toastId })
+            await notify.promise(deleteOrderIncident(), {
+                loading: "Eliminando incidencia...",
+                success: "Incidencia eliminada",
+                error: "Error al eliminar incidencia",
+            })
         } finally {
             setLoading(false)
         }

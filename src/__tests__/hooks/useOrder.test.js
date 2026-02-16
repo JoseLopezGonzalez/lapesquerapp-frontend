@@ -60,6 +60,7 @@ vi.mock('@/lib/notifications', () => ({
     loading: vi.fn(() => 'toast-id'),
     success: vi.fn(),
     error: vi.fn(),
+    promise: vi.fn((p, _opts) => (typeof p === 'function' ? Promise.resolve(p()) : Promise.resolve(p))),
   },
 }));
 

@@ -487,19 +487,17 @@ export default function EntityClient({ config }) {
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
         setIsExporting(true);
-        const toastId = notify.loading(waitingMessage || 'Generando exportación...');
-
         try {
-            await downloadFile(url, fileName, type);
-            notify.success('Exportación generada correctamente', { id: toastId });
-        } catch (error) {
-            const errorMessage =
-                error instanceof Response && error.status === 403
-                    ? 'No tienes permiso para generar esta exportación.'
-                    : error instanceof Error
-                        ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
-                        : 'Error: ocurrió algo inesperado al generar la exportación.';
-            notify.error(errorMessage, { id: toastId });
+            await notify.promise(downloadFile(url, fileName, type), {
+                loading: waitingMessage || 'Generando exportación...',
+                success: 'Exportación generada correctamente',
+                error: (error) =>
+                    error instanceof Response && error.status === 403
+                        ? 'No tienes permiso para generar esta exportación.'
+                        : error instanceof Error
+                            ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
+                            : 'Error: ocurrió algo inesperado al generar la exportación.',
+            });
         } finally {
             setIsExporting(false);
         }
@@ -514,19 +512,17 @@ export default function EntityClient({ config }) {
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
         setIsGeneratingReport(true);
-        const toastId = notify.loading(waitingMessage || 'Generando reporte...');
-
         try {
-            await downloadFile(url, fileName, type || 'pdf');
-            notify.success('Reporte generado correctamente', { id: toastId });
-        } catch (error) {
-            const errorMessage =
-                error instanceof Response && error.status === 403
-                    ? 'No tienes permiso para generar este reporte.'
-                    : error instanceof Error
-                        ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
-                        : 'Error: ocurrió algo inesperado al generar el reporte.';
-            notify.error(errorMessage, { id: toastId });
+            await notify.promise(downloadFile(url, fileName, type || 'pdf'), {
+                loading: waitingMessage || 'Generando reporte...',
+                success: 'Reporte generado correctamente',
+                error: (error) =>
+                    error instanceof Response && error.status === 403
+                        ? 'No tienes permiso para generar este reporte.'
+                        : error instanceof Error
+                            ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
+                            : 'Error: ocurrió algo inesperado al generar el reporte.',
+            });
         } finally {
             setIsGeneratingReport(false);
         }
