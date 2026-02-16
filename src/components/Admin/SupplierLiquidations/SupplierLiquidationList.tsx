@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Loader2, Search, ChevronRight } from "lucide-react";
-import { toast } from "react-hot-toast";
-
+import { notify } from "@/lib/notifications";
 import { DateRangePicker } from "@/components/ui/dateRangePicker";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +16,6 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSuppliersWithActivity } from "@/hooks/useSuppliersWithActivity";
-import { getToastTheme } from "@/customs/reactHotToast";
-
 function formatCurrency(value: number | undefined | null): string {
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -59,17 +56,17 @@ export function SupplierLiquidationList() {
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
         "Error al obtener la lista de proveedores";
-      toast.error(msg, getToastTheme());
+      notify.error(msg);
     }
   }, [error]);
 
   const handleBuscar = () => {
     if (!dateRange.from || !dateRange.to) {
-      toast.error("Por favor, seleccione un rango de fechas", getToastTheme());
+      notify.error("Por favor, seleccione un rango de fechas");
       return;
     }
     if (dateRange.from > dateRange.to) {
-      toast.error("La fecha de inicio debe ser anterior a la fecha de fin", getToastTheme());
+      notify.error("La fecha de inicio debe ser anterior a la fecha de fin");
       return;
     }
     refetch();
@@ -77,7 +74,7 @@ export function SupplierLiquidationList() {
 
   const handleSupplierClick = (supplierId: number, ev?: React.MouseEvent) => {
     if (!dateRange.from || !dateRange.to) {
-      toast.error("Por favor, seleccione un rango de fechas", getToastTheme());
+      notify.error("Por favor, seleccione un rango de fechas");
       return;
     }
     const s = format(dateRange.from, "yyyy-MM-dd");

@@ -3,10 +3,7 @@ import { createLabel, deleteLabel, updateLabel } from "@/services/labelService";
 import { useSession } from "next-auth/react";
 import { useState, useRef, useCallback, useEffect, useMemo, type RefObject, type Dispatch, type SetStateAction } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getLabelsQueryKey } from "@/hooks/useLabels";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { usePrintElement } from "@/hooks/usePrintElement";
+import { getLabelsQueryKey } from "@/hooks/useLabels";import { usePrintElement } from "@/hooks/usePrintElement";
 import { formatDecimal, parseEuropeanNumber } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDate, addDays, parseDate } from "@/hooks/useLabel";
 import {
@@ -17,6 +14,7 @@ import {
     getElementValidationErrorReason,
     hasAnyElementValidationErrors,
 } from "@/hooks/labelEditorValidation";
+import { notify } from "@/lib/notifications";
 import type { Label, LabelDraft, LabelElement, LabelElementType, LabelFieldOption, DataContext, LabelFieldsMap, LabelFormat } from "@/types/labelEditor";
 
 /** Return type of useLabelEditor hook */
@@ -439,27 +437,27 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 setLabelId(data.data.id);
                 setSelectedLabel(data.data);
             }
-            toast.success(`Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.`, getToastTheme());
+            notify.success(`Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.`);
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
         onError: (err: Error) => {
             const e = err as Error & { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } } };
             const msg = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'Error al guardar etiqueta.';
-            toast.error(msg, getToastTheme());
+            notify.error(msg);
         },
     });
     type DeleteMutationVars = { labelId: string; token?: string };
     const deleteMutation = useMutation({
         mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
         onSuccess: () => {
-            toast.success("Etiqueta eliminada correctamente.", getToastTheme());
+            notify.success("Etiqueta eliminada correctamente.");
             clearEditor();
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
         onError: (err: Error) => {
             const e = err as Error & { userMessage?: string; data?: { userMessage?: string } };
             const msg = e?.userMessage || e?.data?.userMessage || e?.message || 'Error al eliminar etiqueta.';
-            toast.error(msg, getToastTheme());
+            notify.error(msg);
         },
     });
 
@@ -468,15 +466,15 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
     const handleSave = async () => {
         const validationError = validateLabelName(labelName);
         if (validationError) {
-            toast.error(validationError, getToastTheme());
+            notify.error(validationError);
             return;
         }
         if (hasDuplicateFieldKeys(elements)) {
-            toast.error('Error: hay campos con el mismo nombre.', getToastTheme());
+            notify.error('Error: hay campos con el mismo nombre.');
             return;
         }
         if (hasAnyElementValidationErrors(elements)) {
-            toast.error('Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.', getToastTheme());
+            notify.error('Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.');
             return;
         }
         const token = session?.user?.accessToken;
@@ -489,7 +487,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
 
     const handleDeleteLabel = async () => {
         if (!labelId) {
-            toast.error("No hay etiqueta seleccionada para eliminar.", getToastTheme());
+            notify.error("No hay etiqueta seleccionada para eliminar.");
             return;
         }
         deleteMutation.mutate({ labelId, token: session?.user?.accessToken });
@@ -831,10 +829,10 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 validateLabelJSON(data);
                 const name = importJSON(data);
                 setLabelName(name ?? '');
-                toast.success('Etiqueta importada correctamente', getToastTheme());
+                notify.success('Etiqueta importada correctamente');
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Error al importar la etiqueta';
-                toast.error(errorMessage, getToastTheme());
+                notify.error(errorMessage);
                 console.error('Error al importar etiqueta:', err);
             }
         };
@@ -972,7 +970,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
         // Solo funciona para elementos de texto
         const textTypes = ['text', 'field', 'manualField', 'richParagraph', 'sanitaryRegister'];
         if (!textTypes.includes(element.type)) {
-            toast.error('Esta función solo está disponible para elementos de texto', getToastTheme());
+            notify.error('Esta función solo está disponible para elementos de texto');
             return;
         }
 
@@ -1091,13 +1089,13 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 height: Math.max(minSize, heightMm + margin),
             });
 
-            toast.success('Tamaño ajustado al contenido', getToastTheme());
+            notify.success('Tamaño ajustado al contenido');
         } catch (error) {
             console.error('Error al ajustar tamaño:', error);
             if (document.body.contains(tempContainer)) {
                 document.body.removeChild(tempContainer);
             }
-            toast.error('Error al ajustar el tamaño', getToastTheme());
+            notify.error('Error al ajustar el tamaño');
         }
     };
 

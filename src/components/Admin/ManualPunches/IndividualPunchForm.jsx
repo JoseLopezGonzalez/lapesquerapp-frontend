@@ -13,8 +13,7 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { notify } from '@/lib/notifications';
 import { createManualPunch, createBulkPunches } from '@/services/punchService';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 import {
@@ -96,14 +95,13 @@ export default function IndividualPunchForm() {
       setSuccess(true);
       if (isFullSession) {
         if (result?.failed === 0) {
-          toast.success('Sesión completa registrada correctamente (Entrada + Salida)', getToastTheme());
+          notify.success('Sesión completa registrada correctamente (Entrada + Salida)');
         } else {
-          toast.error('Se registró la entrada, pero la salida falló', getToastTheme());
+          notify.error('Se registró la entrada, pero la salida falló');
         }
       } else {
-        toast.success(
-          `Fichaje registrado correctamente: ${variables.event_type === 'IN' ? 'Entrada' : 'Salida'}`,
-          getToastTheme()
+        notify.success(
+          `Fichaje registrado correctamente: ${variables.event_type === 'IN' ? 'Entrada' : 'Salida'}`
         );
       }
       reset(getDefaultTimestampValues());
@@ -112,13 +110,13 @@ export default function IndividualPunchForm() {
     },
     onError: (error) => {
       const message = error?.userMessage || error?.message || 'Error al registrar el fichaje';
-      toast.error(message, getToastTheme());
+      notify.error(message);
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+      notify.error(employeesError || 'Error al cargar la lista de empleados');
     }
   }, [employeesError]);
 

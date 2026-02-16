@@ -1,11 +1,8 @@
-import { getToastTheme } from "@/customs/reactHotToast";
 import { getActiveOrdersOptions } from "@/services/orderService";
 import { createPallet, getPallet, updatePallet } from "@/services/palletService";
 import { getProductOptions } from "@/services/productService";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
+import { useEffect, useState } from "react";import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
@@ -376,7 +373,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 boxes: [...(prev.boxes || []), newBox]
             })));
 
-        toast.success('Caja duplicada correctamente', getToastTheme());
+        notify.success('Caja duplicada correctamente');
     };
 
     /* Delete box */
@@ -387,7 +384,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 ...prev,
                 boxes: prev.boxes.filter((box) => box.id !== boxId)
             })));
-        toast.success('Caja eliminada correctamente', getToastTheme());
+        notify.success('Caja eliminada correctamente');
     };
     /* Edit box */
     const editBox = {
@@ -457,7 +454,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                notify.error('No hay cajas disponibles para editar');
                 return;
             }
 
@@ -474,7 +471,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            toast.success(`Lote actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+            notify.success(`Lote actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
         },
         
         /**
@@ -491,13 +488,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                notify.error('No hay cajas disponibles para editar');
                 return;
             }
 
             const parsedWeight = parseFloat(netWeight);
             if (isNaN(parsedWeight) || parsedWeight <= 0) {
-                toast.error('El peso debe ser un número positivo', getToastTheme());
+                notify.error('El peso debe ser un número positivo');
                 return;
             }
 
@@ -516,7 +513,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            toast.success(`Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+            notify.success(`Peso actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
         },
         
         /**
@@ -533,18 +530,18 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 : temporalPallet.boxes.filter(box => box.isAvailable !== false);
 
             if (boxesToEdit.length === 0) {
-                toast.error('No hay cajas disponibles para editar', getToastTheme());
+                notify.error('No hay cajas disponibles para editar');
                 return;
             }
 
             const parsedDifference = parseFloat(weightDifference);
             if (isNaN(parsedDifference)) {
-                toast.error('El peso debe ser un número válido', getToastTheme());
+                notify.error('El peso debe ser un número válido');
                 return;
             }
 
             if (parsedDifference === 0) {
-                toast.error('El peso a sumar/restar no puede ser cero', getToastTheme());
+                notify.error('El peso a sumar/restar no puede ser cero');
                 return;
             }
 
@@ -577,10 +574,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             const successfullyUpdated = boxesToEdit.length - boxesWithInvalidResult;
             if (boxesWithInvalidResult > 0) {
-                toast.warning(`${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja actualizada' : 'cajas actualizadas'}. ${boxesWithInvalidResult} ${boxesWithInvalidResult === 1 ? 'caja no se pudo actualizar' : 'cajas no se pudieron actualizar'} (el peso resultante sería negativo o cero)`, getToastTheme());
+                notify.warning(`${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja actualizada' : 'cajas actualizadas'}. ${boxesWithInvalidResult} ${boxesWithInvalidResult === 1 ? 'caja no se pudo actualizar' : 'cajas no se pudieron actualizar'} (el peso resultante sería negativo o cero)`);
             } else {
                 const action = parsedDifference > 0 ? 'sumado' : 'restado';
-                toast.success(`${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+                notify.success(`${Math.abs(parsedDifference)} kg ${action} en ${successfullyUpdated} ${successfullyUpdated === 1 ? 'caja disponible' : 'cajas disponibles'}`);
             }
         },
         
@@ -595,19 +592,19 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             
             // Validar que se proporcionen ambos IDs
             if (!oldProductId || !newProductId) {
-                toast.error('Debe seleccionar el producto actual y el nuevo producto', getToastTheme());
+                notify.error('Debe seleccionar el producto actual y el nuevo producto');
                 return;
             }
             
             if (oldProductId === newProductId) {
-                toast.error('El producto nuevo debe ser diferente al actual', getToastTheme());
+                notify.error('El producto nuevo debe ser diferente al actual');
                 return;
             }
             
             // Obtener el nuevo producto
             const newProduct = getProductById(newProductId);
             if (!newProduct) {
-                toast.error('El producto seleccionado no existe', getToastTheme());
+                notify.error('El producto seleccionado no existe');
                 return;
             }
             
@@ -624,7 +621,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 );
 
             if (boxesToEdit.length === 0) {
-                toast.error('No hay cajas disponibles con el producto seleccionado para editar', getToastTheme());
+                notify.error('No hay cajas disponibles con el producto seleccionado para editar');
                 return;
             }
 
@@ -645,7 +642,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 })
             ));
 
-            toast.success(`Producto actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`, getToastTheme());
+            notify.success(`Producto actualizado en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}`);
         }
     };
 
@@ -701,7 +698,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
         if (method === 'manual') {
             if (!productId || !lot || !netWeight) {
-                toast.error('Por favor, completa todos los campos requeridos', getToastTheme());
+                notify.error('Por favor, completa todos los campos requeridos');
                 return;
             }
             const product = getProductById(productId); // Validar que el producto existe
@@ -714,7 +711,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             addBox(newBox);
         } else if (method === 'average') {
             if (!productId || !totalWeight || !numberOfBoxes) {
-                toast.error('Por favor, completa todos los campos requeridos', getToastTheme());
+                notify.error('Por favor, completa todos los campos requeridos');
                 return;
             }
             
@@ -757,7 +754,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
         } else if (method === 'bulk') {
             if (!productId || !weights) {
-                toast.error('Por favor, completa todos los campos requeridos.', getToastTheme());
+                notify.error('Por favor, completa todos los campos requeridos.');
                 return;
             }
 
@@ -793,12 +790,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             });
 
             if (hasError) {
-                toast.error('Algunas líneas tienen símbolos no permitidos o pesos negativos. Revisa los datos e intenta de nuevo.', getToastTheme());
+                notify.error('Algunas líneas tienen símbolos no permitidos o pesos negativos. Revisa los datos e intenta de nuevo.');
                 return;
             }
 
             if (weightsArray.length === 0) {
-                toast.error('Por favor, ingresa al menos un peso válido.', getToastTheme());
+                notify.error('Por favor, ingresa al menos un peso válido.');
                 return;
             }
 
@@ -814,10 +811,10 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 addBox(newBox);
             });
 
-            toast.success(`Se agregaron ${weightsArray.length} cajas correctamente`, getToastTheme());
+            notify.success(`Se agregaron ${weightsArray.length} cajas correctamente`);
         } else if (method === 'lector') {
             if (!scannedCode) {
-                toast.error('Por favor, escanea un código válido.', getToastTheme());
+                notify.error('Por favor, escanea un código válido.');
                 return;
             }
 
@@ -832,7 +829,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
             
             if (!match) {
-                toast.error('Formato de código escaneado no válido. Se espera 3100 para kg o 3200 para libras.', getToastTheme());
+                notify.error('Formato de código escaneado no válido. Se espera 3100 para kg o 3200 para libras.');
                 return;
             }
 
@@ -849,7 +846,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
             const product = productsOptions.find(p => p.boxGtin === gtin);
             if (!product) {
-                toast.error(`No se encontró ningún producto con GTIN ${gtin}`, getToastTheme());
+                notify.error(`No se encontró ningún producto con GTIN ${gtin}`);
                 return;
             }
 
@@ -866,12 +863,12 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             };
 
             addBox(newBox);
-            toast.success('Caja añadida correctamente por lector', getToastTheme());
+            notify.success('Caja añadida correctamente por lector');
         } else if (method === 'gs1') {
             const { gs1codes } = boxCreationData;
 
             if (!gs1codes) {
-                toast.error('Por favor, pega los códigos GS1-128.', getToastTheme());
+                notify.error('Por favor, pega los códigos GS1-128.');
                 return;
             }
 
@@ -928,17 +925,17 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
 
             if (parsedBoxes.length === 0) {
-                toast.error('Ninguno de los códigos pudo ser procesado. Verifica el formato y los productos.', getToastTheme());
+                notify.error('Ninguno de los códigos pudo ser procesado. Verifica el formato y los productos.');
                 return;
             }
 
             parsedBoxes.forEach(addBox);
 
             if (failedLines.length > 0) {
-                toast.error(`${failedLines.length} códigos no fueron reconocidos.`, getToastTheme());
+                notify.error(`${failedLines.length} códigos no fueron reconocidos.`);
                 console.warn("Códigos fallidos:", failedLines);
             } else {
-                toast.success(`Se agregaron ${parsedBoxes.length} cajas correctamente.`, getToastTheme());
+                notify.success(`Se agregaron ${parsedBoxes.length} cajas correctamente.`);
             }
 
             setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
@@ -953,21 +950,21 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
         const scannedCode = boxCreationData.deleteScannedCode.trim();
         if (!scannedCode) {
-            toast.error('Por favor, escanea un código válido para eliminar.', getToastTheme());
+            notify.error('Por favor, escanea un código válido para eliminar.');
             return;
         }
 
         // Convertir el código escaneado sin paréntesis al formato con paréntesis
         const gs1128Code = convertScannedCodeToGs1128(scannedCode);
         if (!gs1128Code) {
-            toast.error('Formato de código escaneado no válido para eliminar.', getToastTheme());
+            notify.error('Formato de código escaneado no válido para eliminar.');
             return;
         }
 
         
         const boxToDelete = temporalPallet.boxes.find(box => box.gs1128 === gs1128Code);
         if (!boxToDelete) {
-            toast.error('No se encontró ninguna caja que coincida con el código escaneado.', getToastTheme());
+            notify.error('No se encontró ninguna caja que coincida con el código escaneado.');
             return;
         }
 
@@ -978,7 +975,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             })
         );
 
-        toast.success('Caja eliminada correctamente por lector', getToastTheme());
+        notify.success('Caja eliminada correctamente por lector');
         setBoxCreationData(prev => ({ ...prev, deleteScannedCode: '' }));
     };
 
@@ -1006,14 +1003,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 boxes: []
             })
         ));
-        toast.success('Todas las cajas han sido eliminadas', getToastTheme());
+        notify.success('Todas las cajas han sido eliminadas');
     };
 
     const resetAllChanges = () => {
         // console.log("resetAllChanges: pallet =", pallet);
         setTemporalPallet({ ...pallet });
         setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
-        toast.success('Cambios desechos', getToastTheme());
+        notify.success('Cambios desechos');
     };
 
 
@@ -1046,13 +1043,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     // console.log('Pallet created successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
-                    toast.success('Palet creado correctamente', getToastTheme());
+                    notify.success('Palet creado correctamente');
                 })
                 .catch((err) => {
                     console.error('Error al crear el palet:', err);
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al crear el palet';
-                    toast.error(errorMessage, getToastTheme());
+                    notify.error(errorMessage);
                 })
                 .finally(() => {
                     setSaving(false);
@@ -1065,13 +1062,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                     // console.log('Pallet updated successfully:', data);
                     setPallet(data);
                     onChange(data); // Notificar al componente padre del cambio
-                    toast.success('Palet actualizado correctamente', getToastTheme());
+                    notify.success('Palet actualizado correctamente');
                 })
                 .catch((err) => {
                     console.error('Error al actualizar el palet:', err);
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al actualizar el palet';
-                    toast.error(errorMessage, getToastTheme());
+                    notify.error(errorMessage);
                 })
                 .finally(() => {
                     setSaving(false);

@@ -801,14 +801,14 @@ Todos los componentes usan servicios de API v2:
 
 ### 4. Toast Notifications
 
-Uso consistente de `react-hot-toast`:
+Uso consistente con Sileo vía wrapper `notify`:
 ```javascript
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { notify } from '@/lib/notifications';
 
-toast.loading('Cargando...', getToastTheme());
-toast.success('Éxito', getToastTheme());
-toast.error('Error', getToastTheme());
+notify.loading('Cargando...');
+notify.success('Éxito');
+notify.error('Error');
+// Con reemplazo de loading: const id = notify.loading('...'); luego notify.success('Listo', { id });
 ```
 
 ### 5. Loading States

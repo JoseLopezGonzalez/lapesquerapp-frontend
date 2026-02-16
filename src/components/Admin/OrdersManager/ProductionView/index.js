@@ -1,5 +1,6 @@
 'use client'
 
+import { notify } from "@/lib/notifications"
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,8 +13,6 @@ import { ThermometerSnowflake, Package, Clock, CheckCircle2, AlertCircle, Chevro
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSession } from 'next-auth/react'
 import { getProductionViewData } from '@/services/orderService'
-import toast from 'react-hot-toast'
-import { getToastTheme } from '@/customs/reactHotToast'
 import Loader from '@/components/Utilities/Loader'
 
 // Datos de prueba - simulan la estructura real de pedidos con productos planificados
@@ -522,7 +521,7 @@ const ProductionView = ({ orders = [], onClickOrder, autoPlayInterval = 30000, u
         if (!silent) {
           console.error('ProductionView: Error al obtener datos:', err)
           setError(errorMessage)
-          toast.error(errorMessage, getToastTheme())
+          notify.error(errorMessage)
           setLoading(false)
           setProductionData([])
         }

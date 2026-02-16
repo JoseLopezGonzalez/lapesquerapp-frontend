@@ -1,8 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
-import toast from "react-hot-toast";
-import { getSession } from "next-auth/react";
+import { useForm, Controller } from "react-hook-form";import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -17,9 +15,8 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 import EmailListInput from "@/components/ui/emailListInput";
 import { API_URL_V2 } from "@/configs/config";
 
-import get from "lodash.get";
-import { getToastTheme } from "@/customs/reactHotToast";
-import Loader from "@/components/Utilities/Loader";
+import get from "lodash.get";import Loader from "@/components/Utilities/Loader";
+import { notify } from "@/lib/notifications";
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 
 export function mapApiDataToFormValues(fields, data) {
@@ -151,14 +148,14 @@ export default function EditEntityClient({ config }) {
             });
 
             if (res.ok) {
-                toast.success(successMessage, getToastTheme());
+                notify.success(successMessage);
                 /* router.push(`/admin/${endpoint}`); */
             } else {
-                toast.error(errorMessage, getToastTheme());
+                notify.error(errorMessage);
             }
         } catch (err) {
             console.error(err);
-            toast.error("Error inesperado");
+            notify.error("Error inesperado");
         }
     };
 

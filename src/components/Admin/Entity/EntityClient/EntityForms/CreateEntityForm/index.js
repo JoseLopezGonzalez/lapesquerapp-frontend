@@ -1,9 +1,7 @@
 // components/CreateEntityClient.jsx
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
-import toast from "react-hot-toast";
-import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useForm, Controller } from "react-hook-form";import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,13 +18,12 @@ import { DatePicker } from "@/components/ui/datePicker";
 import { Combobox } from "@/components/Shadcn/Combobox";
 import EmailListInput from "@/components/ui/emailListInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { notify } from '@/lib/notifications';
 import { format } from "date-fns"
 import { Loader2 } from "lucide-react";
 
 // Import domain services and mapper
-import { getEntityService } from '@/services/domain/entityServiceMapper';
-import { getToastTheme } from "@/customs/reactHotToast";
-import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { getEntityService } from '@/services/domain/entityServiceMapper';import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 
@@ -158,7 +155,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
             const entityService = getEntityService(endpoint);
             if (!entityService) {
-                toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+                notify.error('No se encontró el servicio para esta entidad.');
                 return;
             }
 
@@ -166,7 +163,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 const createdEntity = await entityService.create(finalData);
                 const createdId = createdEntity?.id || createdEntity?.data?.id || null;
 
-                toast.success(successMessage || "Entidad creada con éxito!", getToastTheme());
+                notify.success(successMessage || "Entidad creada con éxito!");
                 reset(); // Clear form after successful submission
                 
                 // Si es una producción y tenemos el ID, redirigir a la página de producción
@@ -191,7 +188,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 } else if (createError instanceof Error) {
                     userErrorMessage = createError.userMessage || createError.message || userErrorMessage;
                 }
-                toast.error(userErrorMessage, getToastTheme());
+                notify.error(userErrorMessage);
             }
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
@@ -209,7 +206,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userErrorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || userErrorMessage;
             }
-            toast.error(userErrorMessage, getToastTheme());
+            notify.error(userErrorMessage);
         }
     };
 

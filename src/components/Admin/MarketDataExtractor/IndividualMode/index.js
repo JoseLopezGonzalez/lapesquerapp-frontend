@@ -6,13 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Sparkles, TextSearch } from "lucide-react";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
-import AlbaranCofraWeb from "../AlbaranCofraWeb";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
+import AlbaranCofraWeb from "../AlbaranCofraWeb";import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
 import { PdfUpload } from "@/components/Utilities/PdfUpload";
 import ListadoComprasLonjaDeIsla from "../ListadoComprasLonjaDeIsla";
 import { EmptyState } from "@/components/Utilities/EmptyState";
+import { notify } from "@/lib/notifications";
 import { processDocument } from "../shared/DocumentProcessor";
 
 export default function IndividualMode() {
@@ -36,32 +34,28 @@ export default function IndividualMode() {
             setViewDocumentType(documentType);
         } else {
             if (result.errorType === 'validation') {
-                toast.error(
-                    `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`,
-                    getToastTheme()
-                );
+                notify.error(
+                    `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`);
             } else if (result.errorType === 'parsing') {
-                toast.error(
-                    `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`,
-                    getToastTheme()
-                );
+                notify.error(
+                    `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`);
             } else if (result.errorType === 'azure') {
-                toast.error(result.error, getToastTheme());
+                notify.error(result.error);
             } else {
                 console.error("Error inesperado:", result.error);
-                toast.error("Error inesperado al procesar el documento.", getToastTheme());
+                notify.error("Error inesperado al procesar el documento.");
             }
         }
     };
 
     const handleProcessError = (error) => {
         console.error("Error inesperado:", error);
-        toast.error("Error inesperado al procesar el documento.", getToastTheme());
+        notify.error("Error inesperado al procesar el documento.");
     };
 
     const handleProcess = () => {
         if (!documentType) {
-            toast.error("Por favor, seleccione un archivo y el tipo de documento.", getToastTheme());
+            notify.error("Por favor, seleccione un archivo y el tipo de documento.");
             return;
         }
 
@@ -71,7 +65,7 @@ export default function IndividualMode() {
             'listadoComprasLonjaDeIsla',
         ];
         if (!validTypes.includes(documentType)) {
-            toast.error("Tipo de documento no soportado.", getToastTheme());
+            notify.error("Tipo de documento no soportado.");
             return;
         }
 

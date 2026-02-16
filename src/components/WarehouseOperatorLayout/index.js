@@ -2,10 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import {
+import { useState } from "react";import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -19,6 +16,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { notify } from "@/lib/notifications";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 
 export default function WarehouseOperatorLayout({ children, storeName }) {
@@ -39,7 +37,7 @@ export default function WarehouseOperatorLayout({ children, storeName }) {
     await signOut({ redirect: false });
     
     // Mostrar toast de éxito
-    toast.success('Sesión cerrada correctamente', getToastTheme());
+    notify.success('Sesión cerrada correctamente');
     
     // Redirigir después de un breve delay para que se vea el toast
     setTimeout(() => {

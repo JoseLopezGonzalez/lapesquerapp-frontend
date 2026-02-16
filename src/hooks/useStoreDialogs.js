@@ -1,10 +1,9 @@
 'use client';
 
-import { getToastTheme } from '@/customs/reactHotToast';
 import { getPallet } from '@/services/palletService';
 import { getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notifications';
 
 /**
  * Hook para estado y handlers de diálogos/slideovers del almacén.
@@ -130,11 +129,11 @@ export function useStoreDialogs({
 
   const openDuplicatePalletDialog = async (palletId) => {
     if (!token) {
-      toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+      notify.error('No se pudo obtener el token de autenticación');
       return;
     }
 
-    const loadingToastId = toast.loading('Duplicando...', getToastTheme());
+    const loadingToastId = notify.loading('Duplicando...');
 
     try {
       setIsDuplicatingPallet(true);
@@ -158,16 +157,16 @@ export function useStoreDialogs({
       setClonedPalletData(clonedPallet);
       setPalletDialogData('new');
       setIsOpenPalletDialog(true);
-      toast.dismiss(loadingToastId);
+      notify.dismiss(loadingToastId);
     } catch (error) {
-      toast.dismiss(loadingToastId);
+      notify.dismiss(loadingToastId);
       const errorMessage =
         error.userMessage ||
         error.data?.userMessage ||
         error.response?.data?.userMessage ||
         error.message ||
         'Error al duplicar el palet';
-      toast.error(errorMessage, getToastTheme());
+      notify.error(errorMessage);
     } finally {
       setIsDuplicatingPallet(false);
     }

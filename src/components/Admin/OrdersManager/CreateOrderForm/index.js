@@ -16,11 +16,7 @@ import { useSession } from 'next-auth/react';
 import { getCustomer } from '@/services/customerService'; // Ya externalizado
 import { useProductOptions } from '@/hooks/useProductOptions'; // Hook personalizado
 import { useTaxOptions } from '@/hooks/useTaxOptions'; // Hook personalizado
-import Loader from '@/components/Utilities/Loader';
-import { getToastTheme } from '@/customs/reactHotToast';
-import toast from 'react-hot-toast';
-
-import EmailListInput from '@/components/ui/emailListInput';
+import Loader from '@/components/Utilities/Loader';import EmailListInput from '@/components/ui/emailListInput';
 
 // Importa el nuevo servicio para la creación de pedidos
 import { createOrder } from '@/services/orderService';
@@ -32,6 +28,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import CreateOrderFormMobile from './CreateOrderFormMobile';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/notifications';
 import { orderCreateSchema } from './schemas/orderCreateSchema';
 
 const CreateOrderForm = ({ onCreate, onClose }) => {
@@ -99,7 +96,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             })
             .catch((err) => {
                 console.error('Error al cargar datos del cliente:', err);
-                toast.error('Error al cargar la información del cliente. Intente de nuevo.', getToastTheme());
+                notify.error('Error al cargar la información del cliente. Intente de nuevo.');
             });
     }, [selectedCustomerId, setValue, session]); // Usar selectedCustomerId directamente en lugar de watch('customer')
 
@@ -122,7 +119,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
     // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {
-        const toastId = toast.loading('Creando pedido...', getToastTheme());
+        const toastId = notify.loading('Creando pedido...');
 
         try {
             // Prepara el payload tal como lo hacías
@@ -157,7 +154,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             // Llama al servicio `createOrder`
             const newOrderData = await createOrder(payload);
 
-            toast.success('Pedido creado correctamente', { id: toastId });
+            notify.success('Pedido creado correctamente', { id: toastId });
             // Resetea el formulario después de una creación exitosa
             reset({
                 ...defaultValues,
@@ -170,7 +167,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         } catch (error) {
             console.error('Error al crear el pedido:', error);
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido al crear el pedido';
-            toast.error(errorMessage, { id: toastId });
+            notify.error(errorMessage, { id: toastId });
             if (error?.status === 422 && error?.data?.errors) {
                 setErrorsFrom422(setError, error.data.errors);
             }
@@ -322,12 +319,10 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
                     (formErrors) => {
                         // Mostrar toast cuando hay errores de validación
                         const errorCount = Object.keys(formErrors).length;
-                        toast.error(
+                        notify.error(
                             errorCount > 1 
                                 ? `Por favor, corrige los ${errorCount} errores en el formulario` 
-                                : 'Por favor, corrige el error en el formulario',
-                            getToastTheme()
-                        );
+                                : 'Por favor, corrige el error en el formulario');
                     }
                 )} className={`flex flex-col ${isMobile ? 'gap-6' : 'gap-8'}`}>
                     {formGroups.map((group) => (

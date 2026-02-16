@@ -1,5 +1,6 @@
 'use client'
 
+import { notify } from "@/lib/notifications"
 import { useState } from "react"
 import { SearchX } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts"
@@ -17,8 +18,6 @@ import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import Loader from "@/components/Utilities/Loader"
 import * as XLSX from "xlsx"
 import { saveAs } from "file-saver"
-import toast from "react-hot-toast"
-import { getToastTheme } from "@/customs/reactHotToast"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi"
 
 const initialDateRange = {
@@ -59,7 +58,7 @@ export function OrderRankingChart() {
 
     const handleExportToExcel = () => {
         if (fullData.length === 0) {
-            toast.error("No hay datos para exportar", getToastTheme())
+            notify.error("No hay datos para exportar")
             return
         }
 

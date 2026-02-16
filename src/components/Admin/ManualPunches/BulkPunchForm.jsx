@@ -17,10 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle, Copy } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
+import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle, Copy } from 'lucide-react';import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
+import { notify } from '@/lib/notifications';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 
 export default function BulkPunchForm() {
@@ -43,14 +41,14 @@ export default function BulkPunchForm() {
       setValidationResults(result);
       if (result.invalid === 0) {
         setIsValidated(true);
-        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
+        notify.success('Todos los fichajes son válidos. Ya puedes registrar');
       } else {
         setIsValidated(false);
-        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
+        notify.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`);
       }
     },
     onError: () => {
-      toast.error('Error al validar los fichajes', getToastTheme());
+      notify.error('Error al validar los fichajes');
     },
   });
 
@@ -63,7 +61,7 @@ export default function BulkPunchForm() {
     onSuccess: (result) => {
       setSubmitResults(result);
       if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
+        notify.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`);
         setTimeout(() => {
           setRows([]);
           setValidationResults(null);
@@ -72,21 +70,19 @@ export default function BulkPunchForm() {
         }, 3000);
         queryClient.invalidateQueries({ queryKey: ['punches'] });
       } else {
-        toast.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
-          getToastTheme()
-        );
+        notify.error(
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`);
       }
     },
     onError: (error) => {
       const msg = error?.userMessage || error?.message || 'Error al registrar los fichajes';
-      toast.error(msg, getToastTheme());
+      notify.error(msg);
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+      notify.error(employeesError || 'Error al cargar la lista de empleados');
     }
   }, [employeesError]);
 
@@ -217,11 +213,11 @@ export default function BulkPunchForm() {
 
   const handleValidate = () => {
     if (rows.length === 0) {
-      toast.error('Añade al menos un fichaje para validar', getToastTheme());
+      notify.error('Añade al menos un fichaje para validar');
       return;
     }
     if (!session?.user?.accessToken) {
-      toast.error('No hay sesión activa', getToastTheme());
+      notify.error('No hay sesión activa');
       return;
     }
     validateMutation.mutate(punchesPayload);
@@ -229,15 +225,15 @@ export default function BulkPunchForm() {
 
   const handleSubmit = () => {
     if (rows.length === 0) {
-      toast.error('Añade al menos un fichaje para registrar', getToastTheme());
+      notify.error('Añade al menos un fichaje para registrar');
       return;
     }
     if (!isValidated) {
-      toast.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero', getToastTheme());
+      notify.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero');
       return;
     }
     if (!session?.user?.accessToken) {
-      toast.error('No hay sesión activa', getToastTheme());
+      notify.error('No hay sesión activa');
       return;
     }
     const payload = rows.map((row) => ({

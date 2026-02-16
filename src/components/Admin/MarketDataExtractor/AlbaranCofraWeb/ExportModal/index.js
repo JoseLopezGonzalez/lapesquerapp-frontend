@@ -13,8 +13,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { parseDecimalValue, calculateImporte, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import toast from 'react-hot-toast'
-import { getToastTheme } from '@/customs/reactHotToast'
+import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
 
@@ -249,7 +248,7 @@ const ExportModal = ({ document }) => {
         );
 
         if (comprasSeleccionadas.length === 0) {
-            toast.error('No hay compras seleccionadas para vincular.', getToastTheme());
+            notify.error('No hay compras seleccionadas para vincular.');
             return;
         }
 
@@ -258,7 +257,7 @@ const ExportModal = ({ document }) => {
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
+                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
             }
 
             if (result.errores > 0) {
@@ -266,19 +265,18 @@ const ExportModal = ({ document }) => {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    toast.error(`${barcoInfo}${errorDetail.error}`, {
-                        ...getToastTheme(),
+                    notify.error(`${barcoInfo}${errorDetail.error}`, {
                         duration: 6000,
                     });
                 });
                 
                 if (result.errores > 3) {
-                    toast.error(`${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`, getToastTheme());
+                    notify.error(`${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`);
                 }
             }
         } catch (error) {
             console.error('Error al enlazar compras:', error);
-            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
+            notify.error(`Error al enlazar: ${error.message}`);
         }
     };
 

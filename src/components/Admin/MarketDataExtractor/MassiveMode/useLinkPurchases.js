@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { validatePurchases, groupLinkedSummaryBySupplier, linkAllPurchases } from "@/services/export/linkService";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
+import { notify } from "@/lib/notifications";
 
 /**
  * Hook for managing link purchases state and logic in MassiveLinkPurchasesDialog
@@ -52,7 +51,7 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
                     })
                     .catch((error) => {
                         console.error('Error al validar:', error);
-                        toast.error('Error al validar recepciones', getToastTheme());
+                        notify.error('Error al validar recepciones');
                     })
                     .finally(() => {
                         setIsValidating(false);
@@ -118,7 +117,7 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
         });
 
         if (comprasSeleccionadas.length === 0) {
-            toast.error('No hay compras seleccionadas para vincular.', getToastTheme());
+            notify.error('No hay compras seleccionadas para vincular.');
             return;
         }
 
@@ -127,25 +126,25 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
+                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
             }
             if (result.errores > 0) {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    toast.error(`${barcoInfo}${errorDetail.error}`, { ...getToastTheme(), duration: 6000 });
+                    notify.error(`${barcoInfo}${errorDetail.error}`, { duration: 6000 });
                 });
                 if (result.errores > 3) {
-                    toast.error(`${result.errores - 3} error(es) adicional(es).`, getToastTheme());
+                    notify.error(`${result.errores - 3} error(es) adicional(es).`);
                 }
             }
             if (result.correctas === 0 && result.errores === 0) {
-                toast.info('No hay compras válidas para enlazar', getToastTheme());
+                notify.info('No hay compras válidas para enlazar');
             }
             if (result.correctas > 0 && onSuccess) onSuccess();
         } catch (error) {
             console.error('Error al enlazar:', error);
-            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
+            notify.error(`Error al enlazar: ${error.message}`);
         } finally {
             setIsLinking(false);
         }

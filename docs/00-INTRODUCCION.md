@@ -80,7 +80,7 @@ export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
 
 ### Otros
 
-- **react-hot-toast 2.5.1** - Notificaciones toast
+- **sileo** - Notificaciones toast (wrapper en `@/lib/notifications` como `notify`)
 - **framer-motion 11.18.2** - Animaciones
 - **@tanstack/react-table 8.21.3** - Tablas avanzadas
 - **cmdk 1.0.0** - Command menu

@@ -11,11 +11,7 @@ import {
     validateReceptionDetails, 
     validateTemporalPallets 
 } from '@/helpers/receptionValidators';
-import { formatReceptionError, logReceptionError } from '@/helpers/receptionErrorHandler';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-
-/**
+import { formatReceptionError, logReceptionError } from '@/helpers/receptionErrorHandler';/**
  * Shared hook for reception forms
  * @param {Object} options - Configuration options
  * @param {string} options.mode - Initial mode: 'automatic' or 'manual'
@@ -155,7 +151,7 @@ export const useReceptionForm = ({
      */
     const handleError = useCallback((error, context = 'operation') => {
         const errorInfo = logReceptionError(error, context, { mode, isEdit });
-        toast.error(formatReceptionError(error, context), getToastTheme());
+        notify.error(formatReceptionError(error, context));
     }, [mode, isEdit]);
 
     // Memoized values

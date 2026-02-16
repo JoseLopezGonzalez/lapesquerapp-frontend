@@ -13,12 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Upload, Download, CheckCircle2, AlertTriangle, AlertCircle, X } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
+import { Loader2, Upload, Download, CheckCircle2, AlertTriangle, AlertCircle, X } from 'lucide-react';import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 import * as XLSX from 'xlsx';
+import { notify } from '@/lib/notifications';
 import { saveAs } from 'file-saver';
 
 export default function BulkPunchExcelUpload() {
@@ -44,14 +42,14 @@ export default function BulkPunchExcelUpload() {
       setValidationResults(result);
       if (result.invalid === 0) {
         setIsValidated(true);
-        toast.success('Todos los fichajes son válidos. Ya puedes registrar', getToastTheme());
+        notify.success('Todos los fichajes son válidos. Ya puedes registrar');
       } else {
         setIsValidated(false);
-        toast.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`, getToastTheme());
+        notify.error(`${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar`);
       }
     },
     onError: () => {
-      toast.error('Error al validar los fichajes', getToastTheme());
+      notify.error('Error al validar los fichajes');
     },
   });
 
@@ -64,7 +62,7 @@ export default function BulkPunchExcelUpload() {
     onSuccess: (result) => {
       setSubmitResults(result);
       if (result.failed === 0) {
-        toast.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
+        notify.success(`Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente`);
         setTimeout(() => {
           setParsedData([]);
           setValidationResults(null);
@@ -75,20 +73,18 @@ export default function BulkPunchExcelUpload() {
         }, 3000);
         queryClient.invalidateQueries({ queryKey: ['punches'] });
       } else {
-        toast.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
-          getToastTheme()
-        );
+        notify.error(
+          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`);
       }
     },
     onError: (error) => {
-      toast.error(error?.userMessage || error?.message || 'Error al registrar los fichajes', getToastTheme());
+      notify.error(error?.userMessage || error?.message || 'Error al registrar los fichajes');
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+      notify.error(employeesError || 'Error al cargar la lista de empleados');
     }
   }, [employeesError]);
 
@@ -360,18 +356,18 @@ export default function BulkPunchExcelUpload() {
     if (!file) return;
 
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      toast.error('Por favor, selecciona un archivo Excel (.xlsx o .xls)', getToastTheme());
+      notify.error('Por favor, selecciona un archivo Excel (.xlsx o .xls)');
       return;
     }
 
     // Verificar que los empleados estén cargados
     if (employeeOptions.length === 0 && !loadingEmployees) {
-      toast.error('Por favor, espera a que se carguen los empleados', getToastTheme());
+      notify.error('Por favor, espera a que se carguen los empleados');
       return;
     }
 
     if (loadingEmployees) {
-      toast.error('Por favor, espera a que se carguen los empleados antes de importar', getToastTheme());
+      notify.error('Por favor, espera a que se carguen los empleados antes de importar');
       return;
     }
 
@@ -385,23 +381,21 @@ export default function BulkPunchExcelUpload() {
       const { data, errors } = await parseExcel(file);
 
       if (errors.length > 0) {
-        toast.error(
-          `Se encontraron ${errors.length} error(es) al parsear el Excel`,
-          getToastTheme()
-        );
+        notify.error(
+          `Se encontraron ${errors.length} error(es) al parsear el Excel`);
         console.warn('Errores de parsing:', errors);
       }
 
       if (data.length === 0) {
-        toast.error('No se encontraron datos válidos en el Excel', getToastTheme());
+        notify.error('No se encontraron datos válidos en el Excel');
         return;
       }
 
       setParsedData(data);
-      toast.success(`Se parsearon ${data.length} ${data.length === 1 ? 'fichaje' : 'fichajes'} correctamente`, getToastTheme());
+      notify.success(`Se parsearon ${data.length} ${data.length === 1 ? 'fichaje' : 'fichajes'} correctamente`);
     } catch (error) {
       console.error('Error al parsear Excel:', error);
-      toast.error(`Error al parsear el Excel: ${error.message}`, getToastTheme());
+      notify.error(`Error al parsear el Excel: ${error.message}`);
     }
   };
 
@@ -445,10 +439,10 @@ export default function BulkPunchExcelUpload() {
 
       // Descargar
       saveAs(blob, 'plantilla-fichajes.xlsx');
-      toast.success('Plantilla descargada correctamente', getToastTheme());
+      notify.success('Plantilla descargada correctamente');
     } catch (error) {
       console.error('Error al descargar plantilla:', error);
-      toast.error('Error al descargar la plantilla', getToastTheme());
+      notify.error('Error al descargar la plantilla');
     } finally {
       setLoadingTemplate(false);
     }
@@ -463,11 +457,11 @@ export default function BulkPunchExcelUpload() {
 
   const handleValidate = () => {
     if (parsedData.length === 0) {
-      toast.error('No hay datos para validar. Por favor, carga un archivo Excel primero', getToastTheme());
+      notify.error('No hay datos para validar. Por favor, carga un archivo Excel primero');
       return;
     }
     if (!session?.user?.accessToken) {
-      toast.error('No hay sesión activa', getToastTheme());
+      notify.error('No hay sesión activa');
       return;
     }
     validateMutation.mutate(punchesFromParsed);
@@ -475,15 +469,15 @@ export default function BulkPunchExcelUpload() {
 
   const handleSubmit = () => {
     if (parsedData.length === 0) {
-      toast.error('No hay datos para registrar. Por favor, carga un archivo Excel primero', getToastTheme());
+      notify.error('No hay datos para registrar. Por favor, carga un archivo Excel primero');
       return;
     }
     if (!isValidated) {
-      toast.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero', getToastTheme());
+      notify.error('Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero');
       return;
     }
     if (!session?.user?.accessToken) {
-      toast.error('No hay sesión activa', getToastTheme());
+      notify.error('No hay sesión activa');
       return;
     }
     submitMutation.mutate(punchesFromParsed);

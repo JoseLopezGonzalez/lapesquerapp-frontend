@@ -1,7 +1,4 @@
-'use client';
-
-import toast from 'react-hot-toast';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+'use client';import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUsersList } from '@/hooks/useUsersList';
 import { useSessionsList } from '@/hooks/useSessionsList';
@@ -18,8 +15,7 @@ import { ResultsSummary } from '@/components/Admin/Entity/EntityClient/EntityTab
 import { EntityFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter';
 import { API_URL_V2 } from '@/configs/config';
 import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
-import { FaRegFilePdf } from "react-icons/fa";
-import { getToastTheme } from '@/customs/reactHotToast';
+import { FaRegFilePdf } from "react-icons/fa";import { notify } from '@/lib/notifications';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 // Utilidades genéricas para acciones y descargas (no específicas de entidades)
 import { performAction, downloadFile } from '@/lib/api/apiActions';
@@ -196,14 +192,14 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            toast.error('No se encontró el servicio para esta entidad.');
+            notify.error('No se encontró el servicio para esta entidad.');
             return;
         }
 
         try {
             await entityService.delete(id);
             const successMessage = 'Elemento eliminado con éxito.';
-            toast.success(successMessage);
+            notify.success(successMessage);
             if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
@@ -228,7 +224,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            toast.error(errorMessage);
+            notify.error(errorMessage);
         }
     }, [config.endpoint, isQueryDriven, queryResult?.refetch]);
 
@@ -250,7 +246,7 @@ export default function EntityClient({ config }) {
 
     useEffect(() => {
         if (queryResult?.error) {
-            toast.error(queryResult.error, getToastTheme());
+            notify.error(queryResult.error);
         }
     }, [queryResult?.error]);
 
@@ -265,7 +261,7 @@ export default function EntityClient({ config }) {
         const entityService = getEntityService(config.endpoint);
         
         if (!entityService) {
-            toast.error('No se encontró el servicio para esta entidad.');
+            notify.error('No se encontró el servicio para esta entidad.');
             setData((prevData) => ({ ...prevData, loading: false }));
             return;
         }
@@ -322,7 +318,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
             setData((prevData) => ({ ...prevData, loading: false }));
         }
     }, [config.endpoint, config.perPage, config.table.headers, config.viewRoute, handleDelete]);
@@ -406,7 +402,7 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            toast.error('No se encontró el servicio para esta entidad.');
+            notify.error('No se encontró el servicio para esta entidad.');
             return;
         }
 
@@ -414,7 +410,7 @@ export default function EntityClient({ config }) {
         try {
             await entityService.deleteMultiple(selectedRows);
             const successMessage = 'Elementos eliminados con éxito.';
-            toast.success(successMessage);
+            notify.success(successMessage);
             if (isQueryDriven && queryResult?.refetch) {
                 queryResult.refetch();
             } else {
@@ -441,7 +437,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            toast.error(errorMessage);
+            notify.error(errorMessage);
         } finally {
             setIsDeleting(false);
         }
@@ -466,7 +462,7 @@ export default function EntityClient({ config }) {
 
         try {
             await performAction(`${API_URL_V2}${action.endpoint}`, action.method || 'POST', body);
-            toast.success(action.successMessage || 'Acción completada con éxito');
+            notify.success(action.successMessage || 'Acción completada con éxito');
             setSelectedRows([]); // Clear selection after global action
             // Optionally, re-fetch data to reflect changes
             fetchData(currentPage, filters);
@@ -478,7 +474,7 @@ export default function EntityClient({ config }) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
             }
-            toast.error(errorMessage);
+            notify.error(errorMessage);
         }
     };
 
@@ -491,25 +487,11 @@ export default function EntityClient({ config }) {
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
         setIsExporting(true);
-        const toastId = toast.loading(
-            (t) => (
-                <span className="flex gap-2 items-center justify-center">
-                    {type === 'pdf' && <FaRegFilePdf className="h-6 w-6 text-red-500" />}
-                    {type === 'excel' || type === 'xlsx' && <PiMicrosoftExcelLogoFill className="h-6 w-6 text-green-500" />}
-                    {waitingMessage || 'Generando exportación...'}
-                </span>
-            ),
-            getToastTheme()
-        );
+        const toastId = notify.loading(waitingMessage || 'Generando exportación...');
 
         try {
             await downloadFile(url, fileName, type);
-            toast.success(
-                <span className="flex gap-2 items-center justify-center">
-                    Exportación generada correctamente
-                </span>,
-                { id: toastId }
-            );
+            notify.success('Exportación generada correctamente', { id: toastId });
         } catch (error) {
             const errorMessage =
                 error instanceof Response && error.status === 403
@@ -517,7 +499,7 @@ export default function EntityClient({ config }) {
                     : error instanceof Error
                         ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
                         : 'Error: ocurrió algo inesperado al generar la exportación.';
-            toast.error(errorMessage, { id: toastId });
+            notify.error(errorMessage, { id: toastId });
         } finally {
             setIsExporting(false);
         }
@@ -532,23 +514,11 @@ export default function EntityClient({ config }) {
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
 
         setIsGeneratingReport(true);
-        const toastId = toast.loading(
-            (t) => (
-                <span className="flex gap-2 items-center justify-center">
-                    {waitingMessage || 'Generando reporte...'}
-                </span>
-            ),
-            getToastTheme()
-        );
+        const toastId = notify.loading(waitingMessage || 'Generando reporte...');
 
         try {
             await downloadFile(url, fileName, type || 'pdf');
-            toast.success(
-                <span className="flex gap-2 items-center justify-center">
-                    Reporte generado correctamente
-                </span>,
-                { id: toastId }
-            );
+            notify.success('Reporte generado correctamente', { id: toastId });
         } catch (error) {
             const errorMessage =
                 error instanceof Response && error.status === 403
@@ -556,7 +526,7 @@ export default function EntityClient({ config }) {
                     : error instanceof Error
                         ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
                         : 'Error: ocurrió algo inesperado al generar el reporte.';
-            toast.error(errorMessage, { id: toastId });
+            notify.error(errorMessage, { id: toastId });
         } finally {
             setIsGeneratingReport(false);
         }
@@ -618,12 +588,12 @@ export default function EntityClient({ config }) {
         if (!entityService?.resendInvitation) return;
         try {
             await entityService.resendInvitation(id);
-            toast.success('Se ha enviado un enlace de acceso al correo del usuario.', getToastTheme());
+            notify.success('Se ha enviado un enlace de acceso al correo del usuario.');
             if (queryResult?.refetch) queryResult.refetch();
             else fetchData(currentPage, filters);
         } catch (err) {
             const errorMessage = err?.data?.userMessage || err?.message || 'Error al reenviar la invitación.';
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
         }
     }, [config.endpoint, currentPage, filters, queryResult?.refetch]);
 

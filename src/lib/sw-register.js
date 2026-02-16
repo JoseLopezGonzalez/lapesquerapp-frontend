@@ -74,7 +74,7 @@ export function registerServiceWorker() {
 function handleServiceWorkerUpdate() {
   // Opcional: Mostrar toast/notificación al usuario
   // Por ahora solo loguear
-  // En el futuro se puede integrar con react-hot-toast
+  // En el futuro se puede integrar con notify (Sileo)
   if (typeof window !== 'undefined' && window.toast) {
     window.toast('Nueva versión disponible. Recarga la página para actualizar.', {
       duration: 5000,

@@ -4,10 +4,7 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2, AlertTriangle } from "lucide-react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { processDocument } from "../shared/DocumentProcessor";
+import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2, AlertTriangle } from "lucide-react";import { processDocument } from "../shared/DocumentProcessor";
 import DocumentList from "./DocumentList";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
@@ -16,6 +13,7 @@ import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
 import MassiveLinkPurchasesDialog from "./MassiveLinkPurchasesDialog";
+import { notify } from "@/lib/notifications";
 import MassiveExportDialog from "./MassiveExportDialog";
 
 export default function MassiveMode() {
@@ -58,7 +56,7 @@ export default function MassiveMode() {
 
     const handleDeleteProcessedDocument = (documentId) => {
         setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
-        toast.success('Documento eliminado de la lista', getToastTheme());
+        notify.success('Documento eliminado de la lista');
     };
 
     const handleDeleteAllProcessedDocuments = () => {
@@ -76,7 +74,7 @@ export default function MassiveMode() {
 
         const processedIds = processedDocuments.map((doc) => doc.id);
         setDocuments((prev) => prev.filter((doc) => !processedIds.includes(doc.id)));
-        toast.success(`Se eliminaron ${processedDocuments.length} documento(s) de la lista`, getToastTheme());
+        notify.success(`Se eliminaron ${processedDocuments.length} documento(s) de la lista`);
     };
 
     const handleProcessAll = async () => {
@@ -91,12 +89,10 @@ export default function MassiveMode() {
                 (doc) => (doc.status === 'pending' || doc.status === 'error') && !doc.documentType
             );
             if (documentsWithoutType.length > 0) {
-                toast.error(
-                    `Por favor, seleccione el tipo de documento para todos los archivos pendientes.`,
-                    getToastTheme()
-                );
+                notify.error(
+                    `Por favor, seleccione el tipo de documento para todos los archivos pendientes.`);
             } else {
-                toast.info('No hay documentos pendientes para procesar.', getToastTheme());
+                notify.info('No hay documentos pendientes para procesar.');
             }
             return;
         }
@@ -133,11 +129,9 @@ export default function MassiveMode() {
                 // Show toast if document failed
                 if (!result.success) {
                     errorCount++;
-                    toast.error(
+                    notify.error(
                         `Error al procesar "${doc.file.name}": ${result.error || 'Error desconocido'}`,
-                        {
-                            ...getToastTheme(),
-                            duration: 6000, // Show for 6 seconds
+                        { duration: 6000, // Show for 6 seconds
                         }
                     );
                 } else {
@@ -160,11 +154,9 @@ export default function MassiveMode() {
                 
                 // Show toast for caught errors
                 errorCount++;
-                toast.error(
+                notify.error(
                     `Error al procesar "${doc.file.name}": ${errorMessage}`,
-                    {
-                        ...getToastTheme(),
-                        duration: 6000, // Show for 6 seconds
+                    { duration: 6000, // Show for 6 seconds
                     }
                 );
             }
@@ -174,25 +166,21 @@ export default function MassiveMode() {
 
         // Show summary toast if there were errors
         if (errorCount > 0) {
-            toast.error(
+            notify.error(
                 `Procesamiento completado: ${successCount} éxito, ${errorCount} error(es). Revisa los documentos con error.`,
-                {
-                    ...getToastTheme(),
-                    duration: 8000, // Show for 8 seconds
+                { duration: 8000, // Show for 8 seconds
                 }
             );
         } else if (successCount > 0) {
-            toast.success(
-                `Todos los documentos procesados correctamente (${successCount})`,
-                getToastTheme()
-            );
+            notify.success(
+                `Todos los documentos procesados correctamente (${successCount})`);
         }
     };
 
     const handleRetryDocument = async (documentId) => {
         const doc = documents.find((d) => d.id === documentId);
         if (!doc || !doc.documentType) {
-            toast.error('Por favor, seleccione el tipo de documento.', getToastTheme());
+            notify.error('Por favor, seleccione el tipo de documento.');
             return;
         }
 
@@ -247,7 +235,7 @@ export default function MassiveMode() {
 
     const handleOpenExportDialog = () => {
         if (successfulDocuments.length === 0) {
-            toast.error('No hay documentos válidos para exportar.', getToastTheme());
+            notify.error('No hay documentos válidos para exportar.');
             return;
         }
         setIsExportDialogOpen(true);
@@ -267,7 +255,7 @@ export default function MassiveMode() {
         });
 
         if (allLinkedSummary.length === 0) {
-            toast.error('No hay compras para enlazar', getToastTheme());
+            notify.error('No hay compras para enlazar');
             return;
         }
 

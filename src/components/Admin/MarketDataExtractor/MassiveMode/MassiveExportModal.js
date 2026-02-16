@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Download, Link as LinkIcon, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { downloadMassiveExcel } from "@/services/export/excelGenerator";
+import { Download, Link as LinkIcon, Loader2 } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { linkAllPurchases } from "@/services/export/linkService";
 import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
+import { notify } from "@/lib/notifications";
 import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
 
 export default function MassiveExportModal({ documents }) {
@@ -32,10 +30,10 @@ export default function MassiveExportModal({ documents }) {
             }));
 
             downloadMassiveExcel(documentsToExport);
-            toast.success('Excel generado correctamente', getToastTheme());
+            notify.success('Excel generado correctamente');
         } catch (error) {
             console.error('Error al exportar:', error);
-            toast.error(`Error al exportar: ${error.message}`, getToastTheme());
+            notify.error(`Error al exportar: ${error.message}`);
         } finally {
             setIsExporting(false);
         }
@@ -56,7 +54,7 @@ export default function MassiveExportModal({ documents }) {
             });
 
             if (allLinkedSummary.length === 0) {
-                toast.error('No hay compras para enlazar', getToastTheme());
+                notify.error('No hay compras para enlazar');
                 return;
             }
 
@@ -64,19 +62,19 @@ export default function MassiveExportModal({ documents }) {
             const result = await linkAllPurchases(allLinkedSummary);
 
             if (result.correctas > 0) {
-                toast.success(`Compras enlazadas correctamente (${result.correctas})`, getToastTheme());
+                notify.success(`Compras enlazadas correctamente (${result.correctas})`);
             }
 
             if (result.errores > 0) {
-                toast.error(`${result.errores} compras fallaron al enlazar`, getToastTheme());
+                notify.error(`${result.errores} compras fallaron al enlazar`);
             }
 
             if (result.correctas === 0 && result.errores === 0) {
-                toast.info('No hay compras válidas para enlazar', getToastTheme());
+                notify.info('No hay compras válidas para enlazar');
             }
         } catch (error) {
             console.error('Error al enlazar:', error);
-            toast.error(`Error al enlazar: ${error.message}`, getToastTheme());
+            notify.error(`Error al enlazar: ${error.message}`);
         } finally {
             setIsLinking(false);
         }

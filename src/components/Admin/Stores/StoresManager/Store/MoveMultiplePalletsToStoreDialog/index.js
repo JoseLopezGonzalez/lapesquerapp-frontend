@@ -14,16 +14,14 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { Warehouse, Check, Search, X, Package, Loader2, Layers } from "lucide-react";
+import { useSession } from "next-auth/react";import { Warehouse, Check, Search, X, Package, Loader2, Layers } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
 import { moveMultiplePalletsToStore } from "@/services/palletService";
 import { useStoreContext } from "@/context/StoreContext";
 import { useStoresOptions } from "@/hooks/useStoresOptions";
 import { Badge } from "@/components/ui/badge";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
+import { notify } from "@/lib/notifications";
 import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 
 export default function MoveMultiplePalletsToStoreDialog() {
@@ -95,12 +93,12 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     const handleSubmit = async () => {
         if (!selectedStoreValue) {
-            toast.error("Seleccione un almacén de destino", getToastTheme());
+            notify.error("Seleccione un almacén de destino");
             return;
         }
 
         if (selectedPalletIds.size === 0) {
-            toast.error("Seleccione al menos un palet para mover", getToastTheme());
+            notify.error("Seleccione al menos un palet para mover");
             return;
         }
 
@@ -118,13 +116,13 @@ export default function MoveMultiplePalletsToStoreDialog() {
                 if (errors && errors.length > 0) {
                     message += `. ${total_count - moved_count} palet(s) no se pudieron mover.`;
                 }
-                toast.success(message, getToastTheme());
+                notify.success(message);
             }
 
             // Mostrar errores individuales si existen
             if (errors && errors.length > 0) {
                 errors.forEach(({ pallet_id, error }) => {
-                    toast.error(`Palet #${pallet_id}: ${error}`, getToastTheme());
+                    notify.error(`Palet #${pallet_id}: ${error}`);
                 });
             }
 
@@ -138,7 +136,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || "Error al mover los palets";
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

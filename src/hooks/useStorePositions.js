@@ -2,9 +2,7 @@
 
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 import { getAvailableBoxes } from '@/helpers/pallet/boxAvailability';
-import { useEffect, useMemo, useState } from 'react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { useEffect, useMemo, useState } from 'react';import { notify } from '@/lib/notifications';
 import { removePalletPosition } from '@/services/palletService';
 
 const initialFilters = {
@@ -213,9 +211,9 @@ export function useStorePositions({ store, setStore, token }) {
           content: { ...prevStore.content, pallets: updatedPallets },
         };
       });
-      toast.success('Posición eliminada correctamente', getToastTheme());
+      notify.success('Posición eliminada correctamente');
     } catch (error) {
-      toast.error('Error al quitar la posición', getToastTheme());
+      notify.error('Error al quitar la posición');
     }
   };
 

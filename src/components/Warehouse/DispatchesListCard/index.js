@@ -23,11 +23,7 @@ import { ceboDispatchService } from "@/services/domain/cebo-dispatches/ceboDispa
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
-import DispatchPrintDialog from "../DispatchPrintDialog";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-
-function getDispatchNetWeight(dispatch) {
+import DispatchPrintDialog from "../DispatchPrintDialog";function getDispatchNetWeight(dispatch) {
   if (dispatch.netWeight != null) return Number(dispatch.netWeight);
   const details = dispatch.details ?? [];
   const sum = details.reduce((acc, d) => acc + (Number(d.netWeight) || 0), 0);
@@ -71,7 +67,7 @@ export default function DispatchesListCard({ storeId = null }) {
       setPrintDialogOpen(true);
     } catch (err) {
       console.error("Error al cargar salida para imprimir:", err);
-      toast.error("No se pudo cargar la salida de cebo", getToastTheme());
+      notify.error("No se pudo cargar la salida de cebo");
     } finally {
       setLoadingPrintId(null);
     }

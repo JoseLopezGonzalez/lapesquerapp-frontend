@@ -4,10 +4,7 @@ import React, { useEffect, useState, Suspense, useCallback, useMemo } from 'reac
 import { ArrowLeft, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
-import { OrderProvider, useOrderContext } from '@/context/OrderContext';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import OrderSkeleton from './OrderSkeleton';
+import { OrderProvider, useOrderContext } from '@/context/OrderContext';import OrderSkeleton from './OrderSkeleton';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,6 +20,7 @@ import OrderStatusDropdown from './components/OrderStatusDropdown';
 import OrderTemperatureDropdown from './components/OrderTemperatureDropdown';
 import OrderHeaderDesktop from './components/OrderHeaderDesktop';
 import OrderTabsDesktop from './components/OrderTabsDesktop';
+import { notify } from '@/lib/notifications';
 import OrderSectionContentMobile from './components/OrderSectionContentMobile';
 
 const OrderContent = ({ onLoading, onClose }) => {
@@ -52,29 +50,29 @@ const OrderContent = ({ onLoading, onClose }) => {
 
   // Función para cambiar el estado del pedido - memoizada con useCallback
   const handleStatusChange = useCallback(async (newStatus) => {
-    const toastId = toast.loading('Actualizando estado del pedido...', getToastTheme());
+    const toastId = notify.loading('Actualizando estado del pedido...');
     updateOrderStatus(newStatus)
       .then(() => {
-        toast.success('Estado del pedido actualizado', { id: toastId, ...getToastTheme() });
+        notify.success('Estado del pedido actualizado', { id: toastId });
       })
       .catch((error) => {
         // Priorizar userMessage sobre message para mostrar errores en formato natural
         const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar el estado del pedido';
-        toast.error(errorMessage, { id: toastId, ...getToastTheme() });
+        notify.error(errorMessage, { id: toastId });
       });
   }, [updateOrderStatus]);
 
   // Función para cambiar la temperatura - memoizada con useCallback
   const handleTemperatureChange = useCallback(async (newTemperature) => {
-    const toastId = toast.loading('Actualizando temperatura del pedido...', getToastTheme());
+    const toastId = notify.loading('Actualizando temperatura del pedido...');
     updateTemperatureOrder(newTemperature)
       .then(() => {
-        toast.success('Temperatura del pedido actualizada', { id: toastId, ...getToastTheme() });
+        notify.success('Temperatura del pedido actualizada', { id: toastId });
       })
       .catch((error) => {
         // Priorizar userMessage sobre message para mostrar errores en formato natural
         const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la temperatura del pedido';
-        toast.error(errorMessage, { id: toastId, ...getToastTheme() });
+        notify.error(errorMessage, { id: toastId });
       });
   }, [updateTemperatureOrder]);
 

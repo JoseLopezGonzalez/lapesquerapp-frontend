@@ -1,4 +1,5 @@
 "use client"
+import { notify } from '@/lib/notifications';
 import { useState, useEffect } from "react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
@@ -8,8 +9,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useLabelsQuery, useDeleteLabelMutation, useDuplicateLabelMutation } from "@/hooks/useLabels"
 import Loader from "@/components/Utilities/Loader"
 import { Trash2, CopyPlus, Tag, Search, Plus, Loader2 } from "lucide-react"
-import toast from "react-hot-toast"
-import { getToastTheme } from "@/customs/reactHotToast"
 import {
     Dialog,
     DialogContent,
@@ -246,7 +245,7 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
   const duplicateMutation = useDuplicateLabelMutation()
 
   useEffect(() => {
-    if (error) toast.error("Error al cargar las etiquetas", getToastTheme())
+    if (error) notify.error("Error al cargar las etiquetas")
   }, [error])
 
   const handleOnClickNewLabel = () => {
@@ -265,12 +264,12 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     setDeletingId(labelToDelete.id)
     try {
       await deleteMutation.mutateAsync({ labelId: labelToDelete.id })
-      toast.success("Etiqueta eliminada correctamente", getToastTheme())
+      notify.success("Etiqueta eliminada correctamente")
       if (onDelete) onDelete(labelToDelete.id)
       setDeleteDialogOpen(false)
       setLabelToDelete(null)
     } catch (err) {
-      toast.error(err?.message || "Error al eliminar la etiqueta", getToastTheme())
+      notify.error(err?.message || "Error al eliminar la etiqueta")
     } finally {
       setDeletingId(null)
     }
@@ -281,10 +280,10 @@ export default function LabelSelectorSheet({ open, onOpenChange, onSelect, child
     setDuplicatingId(labelId)
     try {
       await duplicateMutation.mutateAsync({ labelId })
-      toast.success("Etiqueta duplicada correctamente", getToastTheme())
+      notify.success("Etiqueta duplicada correctamente")
       if (onDelete) onDelete(labelId)
     } catch (err) {
-      toast.error(err?.message || "Error al duplicar la etiqueta", getToastTheme())
+      notify.error(err?.message || "Error al duplicar la etiqueta")
     } finally {
       setDuplicatingId(null)
     }

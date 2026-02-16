@@ -5,14 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Loader2, AlertTriangle, FileText, CircleX } from "lucide-react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { downloadMassiveExcel } from "@/services/export/excelGenerator";
+import { Download, Loader2, AlertTriangle, FileText, CircleX } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { generateCofraExcelRows } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaExcelRows } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { notify } from "@/lib/notifications";
 import { CofraExportPreview, LonjaDeIslaExportPreview, AsocExportPreview } from "./previews";
 
 export default function MassiveExportDialog({ 
@@ -114,19 +112,19 @@ export default function MassiveExportDialog({
                 }));
 
             if (documentsToExport.length === 0) {
-                toast.error('No hay documentos válidos para exportar.', getToastTheme());
+                notify.error('No hay documentos válidos para exportar.');
                 setIsExporting(false);
                 return;
             }
 
             downloadMassiveExcel(documentsToExport, { software });
-            toast.success('Excel generado correctamente', getToastTheme());
+            notify.success('Excel generado correctamente');
             onOpenChange(false);
         } catch (error) {
             console.error('Error al exportar:', error);
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al exportar';
-            toast.error(`Error al exportar: ${errorMessage}`, getToastTheme());
+            notify.error(`Error al exportar: ${errorMessage}`);
         } finally {
             setIsExporting(false);
         }

@@ -4,12 +4,10 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders, unlinkPalletsFromOrders } from '@/services/palletService';
-import { useSession } from 'next-auth/react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { API_URL_V2 } from '@/configs/config';
+import { useSession } from 'next-auth/react';import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
 import { getTaxOptions } from '@/services/taxService';
+import { notify } from '@/lib/notifications';
 import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerOptionsContext';
 
 const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
@@ -296,7 +294,7 @@ export function useOrder(orderId, onChange) {
     /* ---------------------- */
 
     const exportDocument = async (documentName, type, documentLabel) => {
-        const toastId = toast.loading(`Exportando ${documentLabel}.${type}`, getToastTheme());
+        const toastId = notify.loading(`Exportando ${documentLabel}.${type}`);
         try {
             const response = await fetchWithTenant(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
                 method: 'GET',
@@ -320,11 +318,11 @@ export function useOrder(orderId, onChange) {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url); // Liberar memoria
 
-            toast.success('Exportación exitosa', { id: toastId });
+            notify.success('Exportación exitosa', { id: toastId });
 
         } catch (error) {
             // console.log(error);
-            toast.error('Error al exportar', { id: toastId });
+            notify.error('Error al exportar', { id: toastId });
         }
     };
 
@@ -593,7 +591,7 @@ export function useOrder(orderId, onChange) {
     const onEditingPallet = async (updatedPallet) => {
         const isPalletVinculated = updatedPallet.orderId === order.id;
         if (!isPalletVinculated) {
-            toast.error('El pallet no está vinculado a este pedido');
+            notify.error('El pallet no está vinculado a este pedido');
             return;
         } 
         // Actualizar estado local inmediatamente para feedback visual
@@ -615,14 +613,14 @@ export function useOrder(orderId, onChange) {
             console.error('Error al recargar el pedido después de editar palet:', error);
             // Mostrar error al usuario
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
         }
     }
 
     const onCreatingPallet = async (newPallet) => {
         const isPalletVinculated = newPallet.orderId === order.id;
         if (!isPalletVinculated) {
-            toast.error('El pallet no está vinculado a este pedido');
+            notify.error('El pallet no está vinculado a este pedido');
             return;
         }
         // Actualizar estado local inmediatamente para feedback visual
@@ -639,13 +637,13 @@ export function useOrder(orderId, onChange) {
             if (reloadedOrder) {
                 onChange?.(reloadedOrder);
                 // Mostrar toast DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
-                toast.success('Palet creado y vinculado correctamente', getToastTheme());
+                notify.success('Palet creado y vinculado correctamente');
             }
         } catch (error) {
             console.error('Error al recargar el pedido después de crear palet:', error);
             // Mostrar error al usuario
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al recargar el pedido';
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
         }
     }
 
@@ -667,11 +665,11 @@ export function useOrder(orderId, onChange) {
                 onChange?.(reloadedOrder);
             }
             
-            toast.success('Palet eliminado correctamente');
+            notify.success('Palet eliminado correctamente');
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar el palet';
-            toast.error(errorMessage);
+            notify.error(errorMessage);
             throw error;
         }
     };
@@ -694,11 +692,11 @@ export function useOrder(orderId, onChange) {
                 onChange?.(reloadedOrder);
             }
             
-            toast.success('Palet desvinculado correctamente');
+            notify.success('Palet desvinculado correctamente');
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular el palet';
-            toast.error(errorMessage);
+            notify.error(errorMessage);
             throw error;
         }
     };
@@ -706,7 +704,7 @@ export function useOrder(orderId, onChange) {
     const onLinkPallets = async (palletIds) => {
         const token = session?.user?.accessToken;
         if (!order?.id) {
-            toast.error('No se puede vincular palets: el pedido no tiene ID');
+            notify.error('No se puede vincular palets: el pedido no tiene ID');
             return;
         }
 
@@ -727,37 +725,35 @@ export function useOrder(orderId, onChange) {
             
             // Mostrar toasts DESPUÉS de que se complete el reload para que los demás apartados estén actualizados
             if (palletIds.length === 1) {
-                toast.success(result.message || 'Palet vinculado correctamente', getToastTheme());
+                notify.success(result.message || 'Palet vinculado correctamente');
             } else {
                 // Mostrar mensajes según los resultados
                 if (result.linked > 0) {
                     const message = result.linked === 1 
                         ? 'Palet vinculado correctamente' 
                         : `${result.linked} palets vinculados correctamente`;
-                    toast.success(message, getToastTheme());
+                    notify.success(message);
                 }
                 if (result.already_linked > 0) {
                     const message = result.already_linked === 1
                         ? '1 palet ya estaba vinculado'
                         : `${result.already_linked} palets ya estaban vinculados`;
                     toast(message, {
-                        icon: 'ℹ️',
-                        ...getToastTheme()
-                    });
+                        icon: 'ℹ️' });
                 }
                 if (result.errors > 0) {
                     const errorDetails = result.error_details || result.errors_details || [];
                     errorDetails.forEach(error => {
                         // Priorizar userMessage sobre message para mostrar errores en formato natural
                         const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido';
-                        toast.error(`Palet ${error.pallet_id}: ${errorMessage}`, getToastTheme());
+                        notify.error(`Palet ${error.pallet_id}: ${errorMessage}`);
                     });
                 }
             }
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al vincular los palets';
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
             throw error;
         }
     };
@@ -765,7 +761,7 @@ export function useOrder(orderId, onChange) {
     const onUnlinkAllPallets = async (palletIds) => {
         const token = session?.user?.accessToken;
         if (!palletIds || palletIds.length === 0) {
-            toast.error('No hay palets para desvincular', getToastTheme());
+            notify.error('No hay palets para desvincular');
             return;
         }
 
@@ -777,23 +773,21 @@ export function useOrder(orderId, onChange) {
                 const message = result.unlinked === 1
                     ? 'Palet desvinculado correctamente'
                     : `${result.unlinked} palets desvinculados correctamente`;
-                toast.success(message, getToastTheme());
+                notify.success(message);
             }
             if (result.already_unlinked > 0) {
                 const message = result.already_unlinked === 1
                     ? '1 palet ya estaba desvinculado'
                     : `${result.already_unlinked} palets ya estaban desvinculados`;
                 toast(message, {
-                    icon: 'ℹ️',
-                    ...getToastTheme()
-                });
+                    icon: 'ℹ️' });
             }
             if (result.errors > 0) {
                 const errorDetails = result.results?.filter(r => r.status !== 'unlinked') || [];
                 errorDetails.forEach(error => {
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular';
-                    toast.error(`Palet ${error.pallet_id}: ${errorMessage}`, getToastTheme());
+                    notify.error(`Palet ${error.pallet_id}: ${errorMessage}`);
                 });
             }
             
@@ -813,7 +807,7 @@ export function useOrder(orderId, onChange) {
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al desvincular los palets';
-            toast.error(errorMessage, getToastTheme());
+            notify.error(errorMessage);
             throw error;
         }
     };

@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertTriangle, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { usePunchesByMonth } from '@/hooks/usePunchesList';
+import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertTriangle, AlertCircle } from 'lucide-react';import { usePunchesByMonth } from '@/hooks/usePunchesList';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { notify } from '@/lib/notifications';
 import PunchDayDialog from './PunchDayDialog';
 
 const MONTHS = [
@@ -32,7 +30,7 @@ export default function PunchesCalendar() {
 
   useEffect(() => {
     if (error) {
-      toast.error(error || 'Error al cargar los fichajes del mes', getToastTheme());
+      notify.error(error || 'Error al cargar los fichajes del mes');
     }
   }, [error]);
 

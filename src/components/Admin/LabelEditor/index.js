@@ -72,6 +72,7 @@ import LabelEditorToolbar from "./LabelEditorToolbar";
 import LabelEditorPropertyPanel from "./LabelEditorPropertyPanel";
 import FieldExamplesDialog from "./FieldExamplesDialog";
 
+import { notify } from '@/lib/notifications';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -84,9 +85,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { usePrintElement } from "@/hooks/usePrintElement"
 import LabelRender from "./LabelRender"
-import toast from "react-hot-toast"
-import { getToastTheme } from "@/customs/reactHotToast"
-
 export default function LabelEditor() {
     const {
         elements,

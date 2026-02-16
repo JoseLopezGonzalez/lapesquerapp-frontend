@@ -9,13 +9,11 @@ import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { EmptyState } from '@/components/Utilities/EmptyState/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { notify } from '@/lib/notifications';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const OrderPlannedProductDetails = () => {
@@ -174,10 +172,10 @@ const OrderPlannedProductDetails = () => {
 
         if (!detail.id) {
             detail.orderId = order.id;
-            const toastId = toast.loading('Creando nueva linea...', getToastTheme());
+            const toastId = notify.loading('Creando nueva linea...');
             plannedProductDetailActions.create(detail)
                 .then(() => {
-                    toast.success('Linea creada correctamente', { id: toastId });
+                    notify.success('Linea creada correctamente', { id: toastId });
                     setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
                     setEditIndex(null);
                 })
@@ -185,24 +183,24 @@ const OrderPlannedProductDetails = () => {
                     console.error('Error al crear la linea:', error);
                     // Priorizar userMessage sobre message para mostrar errores en formato natural
                     const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al crear nueva linea';
-                    toast.error(errorMessage, { id: toastId });
+                    notify.error(errorMessage, { id: toastId });
                 });
             return;
         }
 
         /* Toast */
-        const toastId = toast.loading('Actualizando linea...', getToastTheme());
+        const toastId = notify.loading('Actualizando linea...');
 
         plannedProductDetailActions.update(detail.id, detail)
             .then(() => {
-                toast.success('Linea actualizada correctamente', { id: toastId });
+                notify.success('Linea actualizada correctamente', { id: toastId });
                 setEditIndex(null);
             })
             .catch((error) => {
                 console.error('Error al actualizar la linea:', error);
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al actualizar la linea';
-                toast.error(errorMessage, { id: toastId });
+                notify.error(errorMessage, { id: toastId });
             });
     };
 
@@ -217,18 +215,18 @@ const OrderPlannedProductDetails = () => {
         // Línea persistida: requiere id para eliminar vía API
         if (!detail?.id) return;
 
-        const toastId = toast.loading('Eliminando linea...', getToastTheme());
+        const toastId = notify.loading('Eliminando linea...');
 
         plannedProductDetailActions.delete(detail.id)
             .then(() => {
-                toast.success('Linea eliminada correctamente', { id: toastId });
+                notify.success('Linea eliminada correctamente', { id: toastId });
                 setEditIndex(null);
             })
             .catch((error) => {
                 console.error('Error al eliminar la linea:', error);
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error al eliminar la linea';
-                toast.error(errorMessage, { id: toastId });
+                notify.error(errorMessage, { id: toastId });
             });
     };
 
@@ -244,7 +242,7 @@ const OrderPlannedProductDetails = () => {
 
         const detail = mergedProductDetails.find((productDetail) => productDetail.status === 'noPlanned');
         if (!detail) {
-            toast.error('No hay productos detectados ', getToastTheme());
+            notify.error('No hay productos detectados ');
             return;
         }
         const product = detail.product;

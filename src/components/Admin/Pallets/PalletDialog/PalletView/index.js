@@ -33,12 +33,9 @@ import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { formatDateShort } from "@/helpers/formats/dates/formatDates";
 
 import { usePallet, saveDiscountPreferences } from "@/hooks/usePallet";
-import { usePrintElement } from "@/hooks/usePrintElement";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-
-import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
+import { usePrintElement } from "@/hooks/usePrintElement";import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
+import { notify } from "@/lib/notifications";
 import BoxesLabels from "./BoxesLabels";
 
 
@@ -122,7 +119,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing edit
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            toast.error(`No se puede modificar el lote de la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            notify.error(`No se puede modificar el lote de la caja #${boxId}: está siendo usada en producción`);
             return;
         }
         editPallet.box.edit.lot(boxId, lot);
@@ -133,7 +130,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing edit
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            toast.error(`No se puede modificar el peso de la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            notify.error(`No se puede modificar el peso de la caja #${boxId}: está siendo usada en producción`);
             return;
         }
         editPallet.box.edit.netWeight(boxId, netWeight);
@@ -144,7 +141,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing duplicate
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            toast.error(`No se puede duplicar la caja #${boxId}: está siendo usada en producción`, getToastTheme());
+            notify.error(`No se puede duplicar la caja #${boxId}: está siendo usada en producción`);
             return;
         }
         editPallet.box.duplicate(boxId);
@@ -159,7 +156,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
             const productionText = productionInfo 
                 ? ` (Producción #${productionInfo.id}${productionInfo.lot ? `, Lote: ${productionInfo.lot}` : ''})`
                 : '';
-            toast.error(`No se puede eliminar la caja #${boxId}: está siendo usada en producción${productionText}`, getToastTheme());
+            notify.error(`No se puede eliminar la caja #${boxId}: está siendo usada en producción${productionText}`);
             return;
         }
         editPallet.box.delete(boxId);

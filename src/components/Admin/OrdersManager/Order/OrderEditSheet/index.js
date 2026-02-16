@@ -12,16 +12,14 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { Edit, Check, Loader2, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { useOrderContext } from '@/context/OrderContext';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import EmailListInput from '@/components/ui/emailListInput';
+import { useOrderContext } from '@/context/OrderContext';import EmailListInput from '@/components/ui/emailListInput';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { notify } from '@/lib/notifications';
 import { orderEditSchema } from './schemas/orderEditSchema';
 
 const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange }) => {
@@ -57,10 +55,8 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         },
         (formErrors) => {
             const errorCount = Object.keys(formErrors).length;
-            toast.error(
-                `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`,
-                getToastTheme()
-            );
+            notify.error(
+                `Por favor, corrige los errores en el formulario${errorCount > 0 ? ` (${errorCount} error${errorCount > 1 ? 'es' : ''})` : ''}`);
         }
     );
 
@@ -86,7 +82,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
     const onSubmit = async (data) => {
         setSaving(true);
-        const toastId = toast.loading('Actualizando pedido...', getToastTheme());
+        const toastId = notify.loading('Actualizando pedido...');
 
         // Construir payload solo con campos modificados (dirtyFields)
         // Esto reduce el tamaño del payload y mejora el rendimiento
@@ -108,14 +104,14 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
         // Si no hay campos modificados, no hacer nada
         if (Object.keys(payload).length === 0) {
-            toast.info('No hay cambios para guardar', { id: toastId });
+            notify.info('No hay cambios para guardar', { id: toastId });
             setSaving(false);
             return;
         }
 
         try {
             await updateOrderData(payload);
-            toast.success('Pedido actualizado correctamente', { id: toastId });
+            notify.success('Pedido actualizado correctamente', { id: toastId });
             // Pequeño retardo para que se pueda apreciar el estado del botón antes de cerrar
             await new Promise(resolve => setTimeout(resolve, 600));
             // Cerrar el Sheet solo después de que se complete exitosamente el guardado
@@ -125,7 +121,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
             setInitialValues(null);
         } catch (error) {
             const errorMessage = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido';
-            toast.error(errorMessage, { id: toastId });
+            notify.error(errorMessage, { id: toastId });
             if (error?.status === 422 && error?.data?.errors) {
                 setErrorsFrom422(setError, error.data.errors);
             }

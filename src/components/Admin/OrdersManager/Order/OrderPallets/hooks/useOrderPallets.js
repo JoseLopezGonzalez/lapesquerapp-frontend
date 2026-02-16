@@ -3,9 +3,7 @@ import { useOrderContext } from '@/context/OrderContext';
 import { useSession } from 'next-auth/react';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
 import { getPallet, getAvailablePalletsForOrder, createPallet } from '@/services/palletService';
-import { getProductOptions } from '@/services/productService';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { getProductOptions } from '@/services/productService';import { notify } from '@/lib/notifications';
 import { roundToTwoDecimals } from '../utils/roundToTwoDecimals';
 
 /**
@@ -133,7 +131,7 @@ export function useOrderPallets() {
     async (palletId) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+        notify.error('No se pudo obtener el token de autenticación');
         return;
       }
       try {
@@ -157,7 +155,7 @@ export function useOrderPallets() {
         setSelectedStoreId(originalPallet.storeId || originalPallet.store?.id);
         setSelectedPalletId('new');
         setIsPalletDialogOpen(true);
-        toast.success('Palet clonado. Puedes editarlo antes de guardarlo.', getToastTheme());
+        notify.success('Palet clonado. Puedes editarlo antes de guardarlo.');
       } catch (error) {
         console.error('Error al clonar el palet:', error);
         const msg =
@@ -166,7 +164,7 @@ export function useOrderPallets() {
           error.response?.data?.userMessage ||
           error.message ||
           'Error al clonar el palet';
-        toast.error(msg, getToastTheme());
+        notify.error(msg);
       } finally {
         setIsCloning(false);
       }
@@ -222,7 +220,7 @@ export function useOrderPallets() {
         setPaginationMeta(result.meta || null);
       } catch (error) {
         console.error('Error al cargar palets disponibles:', error);
-        toast.error('Error al cargar palets disponibles', getToastTheme());
+        notify.error('Error al cargar palets disponibles');
       } finally {
         setIsInitialLoading(false);
       }
@@ -244,16 +242,16 @@ export function useOrderPallets() {
     const trimmed = inputPalletId.trim();
     if (!trimmed) return;
     if (!/^\d+$/.test(trimmed)) {
-      toast.error('Por favor ingresa un ID numérico válido', getToastTheme());
+      notify.error('Por favor ingresa un ID numérico válido');
       return;
     }
     const id = parseInt(trimmed, 10);
     if (palletIds.includes(id)) {
-      toast.error('Este ID ya está en la lista', getToastTheme());
+      notify.error('Este ID ya está en la lista');
       return;
     }
     if (pallets.some((p) => p.id === id)) {
-      toast.error('Este palet ya está vinculado a este pedido', getToastTheme());
+      notify.error('Este palet ya está vinculado a este pedido');
       return;
     }
     setPalletIds([...palletIds, id]);
@@ -278,7 +276,7 @@ export function useOrderPallets() {
     async (page = 1, storeIdOverride = null) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+        notify.error('No se pudo obtener el token de autenticación');
         return;
       }
       try {
@@ -290,22 +288,20 @@ export function useOrderPallets() {
 
         if (palletIds.length > 0) {
           if (palletIds.length > 50) {
-            toast.error('Máximo 50 IDs a la vez. Por favor, reduce la cantidad', getToastTheme());
+            notify.error('Máximo 50 IDs a la vez. Por favor, reduce la cantidad');
             setIsSearching(false);
             return;
           }
           const linkedPalletIds = pallets.map((p) => p.id);
           const idsToSearch = palletIds.filter((id) => !linkedPalletIds.includes(id));
           if (idsToSearch.length === 0) {
-            toast.info('Todos los palets especificados ya están vinculados a este pedido', getToastTheme());
+            notify.info('Todos los palets especificados ya están vinculados a este pedido');
             setIsSearching(false);
             return;
           }
           if (idsToSearch.length < palletIds.length) {
-            toast.info(
-              `${palletIds.length - idsToSearch.length} palet(s) ya están vinculados y se omitirán`,
-              getToastTheme()
-            );
+            notify.info(
+              `${palletIds.length - idsToSearch.length} palet(s) ya están vinculados y se omitirán`);
           }
           const result = await getAvailablePalletsForOrder(
             {
@@ -319,15 +315,13 @@ export function useOrderPallets() {
           foundPallets = result.data || [];
           meta = result.meta || null;
           if (foundPallets.length === 0) {
-            toast.error('No se encontraron palets disponibles con los IDs especificados', getToastTheme());
+            notify.error('No se encontraron palets disponibles con los IDs especificados');
             setIsSearching(false);
             return;
           }
           if (foundPallets.length < idsToSearch.length) {
-            toast.info(
-              `${idsToSearch.length - foundPallets.length} palet(s) no se encontraron o no están disponibles`,
-              getToastTheme()
-            );
+            notify.info(
+              `${idsToSearch.length - foundPallets.length} palet(s) no se encontraron o no están disponibles`);
           }
           setPaginationMeta(null);
         } else {
@@ -348,7 +342,7 @@ export function useOrderPallets() {
           error.response?.data?.userMessage ||
           error.message ||
           'Error al buscar palets';
-        toast.error(msg, getToastTheme());
+        notify.error(msg);
       } finally {
         setIsSearching(false);
       }
@@ -372,7 +366,7 @@ export function useOrderPallets() {
 
   const handleLinkSelectedPallets = useCallback(async () => {
     if (selectedPalletIds.length === 0) {
-      toast.error('Por favor selecciona al menos un palet', getToastTheme());
+      notify.error('Por favor selecciona al menos un palet');
       return;
     }
     try {
@@ -395,12 +389,12 @@ export function useOrderPallets() {
 
   const handleUnlinkAllPallets = useCallback(async () => {
     if (!pallets?.length) {
-      toast.error('No hay palets para desvincular', getToastTheme());
+      notify.error('No hay palets para desvincular');
       return;
     }
     const palletsToUnlink = pallets.filter((p) => !p.receptionId);
     if (palletsToUnlink.length === 0) {
-      toast.error('No hay palets disponibles para desvincular. Todos pertenecen a recepciones.', getToastTheme());
+      notify.error('No hay palets disponibles para desvincular. Todos pertenecen a recepciones.');
       return;
     }
     const ids = palletsToUnlink.map((p) => p.id);
@@ -418,10 +412,8 @@ export function useOrderPallets() {
     const detailsWithBoxes = (plannedProductDetails || [])
       .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
     if (detailsWithBoxes.length === 0) {
-      toast.error(
-        'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.',
-        getToastTheme()
-      );
+      notify.error(
+        'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.');
       return;
     }
     setCreateFromForecastLot('');
@@ -438,22 +430,22 @@ export function useOrderPallets() {
   const handleCreatePalletFromForecast = useCallback(async () => {
     const lot = (createFromForecastLot || '').trim();
     if (!lot) {
-      toast.error('Introduce el lote', getToastTheme());
+      notify.error('Introduce el lote');
       return;
     }
     if (!createFromForecastStoreId) {
-      toast.error('Selecciona el almacén donde se almacenará el palet', getToastTheme());
+      notify.error('Selecciona el almacén donde se almacenará el palet');
       return;
     }
     const token = session?.user?.accessToken;
     if (!token) {
-      toast.error('No se pudo obtener el token de autenticación', getToastTheme());
+      notify.error('No se pudo obtener el token de autenticación');
       return;
     }
     const detailsWithBoxes = (plannedProductDetails || [])
       .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
     if (detailsWithBoxes.length === 0) {
-      toast.error('No hay productos en la previsión con cajas', getToastTheme());
+      notify.error('No hay productos en la previsión con cajas');
       return;
     }
 
@@ -519,7 +511,7 @@ export function useOrderPallets() {
 
     if (boxes.length === 0) {
       setIsCreatingFromForecast(false);
-      toast.error('No se pudieron generar cajas desde la previsión', getToastTheme());
+      notify.error('No se pudieron generar cajas desde la previsión');
       return;
     }
 
@@ -544,7 +536,7 @@ export function useOrderPallets() {
       if (newPallet) {
         await onCreatingPallet(newPallet);
         handleCloseCreateFromForecastDialog();
-        toast.success('Palet creado desde la previsión correctamente', getToastTheme());
+        notify.success('Palet creado desde la previsión correctamente');
       }
     } catch (err) {
       console.error('Error al crear palet desde previsión:', err);
@@ -554,7 +546,7 @@ export function useOrderPallets() {
         err.response?.data?.userMessage ||
         err.message ||
         'Error al crear el palet desde previsión';
-      toast.error(msg, getToastTheme());
+      notify.error(msg);
     } finally {
       setIsCreatingFromForecast(false);
     }

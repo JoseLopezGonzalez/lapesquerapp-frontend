@@ -500,7 +500,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 
 **Dependencias**:
 - `next-auth/react` (signOut)
-- `react-hot-toast` (toast)
+- `@/lib/notifications` (notify, Sileo)
 - `@/configs/authConfig` (isAuthError, isAuthStatusCode, buildLoginUrl)
 
 ---

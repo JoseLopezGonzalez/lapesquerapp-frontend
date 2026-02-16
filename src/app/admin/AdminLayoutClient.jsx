@@ -1,14 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useSession, signOut } from "next-auth/react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import AdminRouteProtection from '@/components/AdminRouteProtection';
+import { useSession, signOut } from "next-auth/react";import AdminRouteProtection from '@/components/AdminRouteProtection';
 import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig";
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from "@/utils/navigationUtils";
+import { notify } from "@/lib/notifications";
 import { MessageSquare } from "lucide-react";
 
 export default function AdminLayoutClient({ children }) {
@@ -31,7 +29,7 @@ export default function AdminLayoutClient({ children }) {
       await signOut({ redirect: false });
       
       // Mostrar toast de éxito
-      toast.success('Sesión cerrada correctamente', getToastTheme());
+      notify.success('Sesión cerrada correctamente');
       
       // Redirigir después de un breve delay para que se vea el toast
       setTimeout(() => {
@@ -41,7 +39,7 @@ export default function AdminLayoutClient({ children }) {
       console.error('Error en logout:', err);
       // Incluso si falla el logout del backend, continuar con el logout del cliente
       await signOut({ redirect: false });
-      toast.success('Sesión cerrada correctamente', getToastTheme());
+      notify.success('Sesión cerrada correctamente');
       setTimeout(() => {
         window.location.replace('/');
       }, 500);

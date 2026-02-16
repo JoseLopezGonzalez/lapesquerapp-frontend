@@ -1,5 +1,6 @@
 "use client"
 
+import { notify } from "@/lib/notifications"
 import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +10,6 @@ import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { startOfMonth, endOfMonth, format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
-import toast from 'react-hot-toast'
-import { getToastTheme } from '@/customs/reactHotToast'
 import { 
     BarChart3, 
     Clock, 
@@ -44,7 +43,7 @@ export function WorkerStatisticsCard() {
     useEffect(() => {
         if (isError && error) {
             const errorMessage = error.userMessage || error.message || 'Error al obtener las estadísticas'
-            toast.error(errorMessage, getToastTheme())
+            notify.error(errorMessage)
         }
     }, [isError, error])
 

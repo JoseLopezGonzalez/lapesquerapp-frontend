@@ -1,5 +1,6 @@
 'use client'
 
+import { notify } from '@/lib/notifications';
 import { useState } from "react"
 import {
     Card, CardContent, CardDescription, CardFooter,
@@ -15,8 +16,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle, Ban, CheckCircle, Delete, Trash } from "lucide-react"
 import { useOrderContext } from "@/context/OrderContext"
-import { toast } from "react-hot-toast"
-import { getToastTheme } from "@/customs/reactHotToast"
 import { formatDate } from "@/helpers/formats/dates/formatDates"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -31,14 +30,14 @@ export default function OrderIncidentPanel() {
     const [loading, setLoading] = useState(false)
 
     const handleCreate = async () => {
-        if (!newDescription) return toast.error("La descripción es obligatoria")
-        const toastId = toast.loading("Creando incidencia...", getToastTheme())
+        if (!newDescription) return notify.error("La descripción es obligatoria")
+        const toastId = notify.loading("Creando incidencia...")
         setLoading(true)
         try {
             await openOrderIncident(newDescription)
-            toast.success("Incidencia creada", { id: toastId })
+            notify.success("Incidencia creada", { id: toastId })
         } catch (err) {
-            toast.error("Error al crear incidencia", { id: toastId })
+            notify.error("Error al crear incidencia", { id: toastId })
         } finally {
             setLoading(false)
             setNewDescription("")
@@ -46,27 +45,27 @@ export default function OrderIncidentPanel() {
     }
 
     const handleResolve = async () => {
-        if (!resolutionType) return toast.error("Selecciona un tipo de resolución")
-        const toastId = toast.loading("Resolviendo incidencia...", getToastTheme())
+        if (!resolutionType) return notify.error("Selecciona un tipo de resolución")
+        const toastId = notify.loading("Resolviendo incidencia...")
         setLoading(true)
         try {
             await resolveOrderIncident(resolutionType, resolutionNotes)
-            toast.success("Incidencia resuelta", { id: toastId })
+            notify.success("Incidencia resuelta", { id: toastId })
         } catch (err) {
-            toast.error("Error al resolver incidencia", { id: toastId })
+            notify.error("Error al resolver incidencia", { id: toastId })
         } finally {
             setLoading(false)
         }
     }
 
     const handleDelete = async () => {
-        const toastId = toast.loading("Eliminando incidencia...", getToastTheme())
+        const toastId = notify.loading("Eliminando incidencia...")
         setLoading(true)
         try {
             await deleteOrderIncident()
-            toast.success("Incidencia eliminada", { id: toastId })
+            notify.success("Incidencia eliminada", { id: toastId })
         } catch (err) {
-            toast.error("Error al eliminar incidencia", { id: toastId })
+            notify.error("Error al eliminar incidencia", { id: toastId })
         } finally {
             setLoading(false)
         }

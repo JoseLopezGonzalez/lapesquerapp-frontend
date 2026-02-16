@@ -1,6 +1,7 @@
 "use client";
 
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sileo";
+import "sileo/styles.css";
 import { SessionProvider } from "next-auth/react";
 import { useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -31,7 +32,7 @@ export default function ClientLayout({ children }) {
             <LogoutProvider>
               <AuthErrorInterceptor />
               {children}
-              <Toaster />
+              <Toaster position="top-right" />
               {/* Install Prompt Banner - Mobile */}
               <InstallPromptBanner />
             </LogoutProvider>

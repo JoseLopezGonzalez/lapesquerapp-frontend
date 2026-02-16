@@ -20,10 +20,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useOrderContext } from "@/context/OrderContext";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useOrderContext } from "@/context/OrderContext";import { useIsMobile } from "@/hooks/use-mobile";
+import { notify } from "@/lib/notifications";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -127,7 +125,7 @@ const OrderDocuments = () => {
 
     const handleOnClickSendMultiple = async () => {
         if (!selectedDocument) {
-            toast.error("Por favor seleccione un documento", getToastTheme());
+            notify.error("Por favor seleccione un documento");
             return;
         }
         const selectedRecipientsArray = Object.entries(selectedRecipients)
@@ -135,7 +133,7 @@ const OrderDocuments = () => {
             .map(([id]) => id);
 
         if (selectedRecipientsArray.length === 0) {
-            toast.error("Por favor seleccione al menos un destinatario", getToastTheme());
+            notify.error("Por favor seleccione al menos un destinatario");
             return;
         }
 
@@ -148,14 +146,14 @@ const OrderDocuments = () => {
             ]
         }
 
-        const toastId = toast.loading("Enviando documentos a multiples destinatarios...", getToastTheme());
+        const toastId = notify.loading("Enviando documentos a multiples destinatarios...");
 
         sendDocuments.customDocuments(json)
             .then(() => {
-                toast.success('Documentos enviados correctamente', { id: toastId });
+                notify.success('Documentos enviados correctamente', { id: toastId });
             })
             .catch((error) => {
-                toast.error('Error al enviar documentos', { id: toastId });
+                notify.error('Error al enviar documentos', { id: toastId });
                 // console.log('Error al enviar documentos', error);
             })
     };
@@ -180,29 +178,29 @@ const OrderDocuments = () => {
             }))
         }
 
-        const toastId = toast.loading("Enviando documentos...", getToastTheme());
+        const toastId = notify.loading("Enviando documentos...");
 
         sendDocuments.customDocuments(json)
             .then(() => {
-                toast.success('Documentos enviados correctamente', { id: toastId });
+                notify.success('Documentos enviados correctamente', { id: toastId });
                 handleOnClickResetSelectedDocs();
             })
             .catch((error) => {
-                toast.error('Error al enviar documentos', { id: toastId });
+                notify.error('Error al enviar documentos', { id: toastId });
                 // console.log('Error al enviar documentos', error);
             })
 
     };
 
     const handleOnClickSendStandarDocuments = async () => {
-        const toastId = toast.loading("Enviando documentos estándar...", getToastTheme());
+        const toastId = notify.loading("Enviando documentos estándar...");
 
         sendDocuments.standardDocuments()
             .then(() => {
-                toast.success('Documentos enviados correctamente', { id: toastId });
+                notify.success('Documentos enviados correctamente', { id: toastId });
             })
             .catch((error) => {
-                toast.error('Error al enviar documentos', { id: toastId });
+                notify.error('Error al enviar documentos', { id: toastId });
                 // console.log('Error al enviar documentos', error);
             })
     };

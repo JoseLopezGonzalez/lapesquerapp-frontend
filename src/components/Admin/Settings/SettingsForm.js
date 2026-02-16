@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import toast from 'react-hot-toast';
+import { notify } from '@/lib/notifications';
 import { updateSettings } from '@/services/settingsService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSettings } from '@/context/SettingsContext';
@@ -43,7 +43,7 @@ export default function SettingsForm() {
 
   const onValidSubmit = async (data) => {
     if (!hadPreviousConfig && !emailPassword) {
-      toast.error('La contraseña SMTP es obligatoria');
+      notify.error('La contraseña SMTP es obligatoria');
       return;
     }
     setSaving(true);
@@ -55,10 +55,10 @@ export default function SettingsForm() {
       setSettings(payload);
       setEmailPassword('');
       setHadPreviousConfig(true);
-      toast.success('Configuración guardada');
+      notify.success('Configuración guardada');
     } catch (error) {
       const msg = error?.userMessage ?? (error?.message?.includes('configuración de email') ? 'La configuración de email no está completa.' : error?.message ?? 'Error al guardar');
-      toast.error(msg);
+      notify.error(msg);
     } finally {
       setSaving(false);
     }

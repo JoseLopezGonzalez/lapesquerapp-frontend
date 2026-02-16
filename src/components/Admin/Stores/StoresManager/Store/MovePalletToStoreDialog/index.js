@@ -11,13 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { Warehouse, Check, Search, X } from "lucide-react";
+import { useSession } from "next-auth/react";import { Warehouse, Check, Search, X } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
 import { movePalletToStore } from "@/services/palletService";
 import { useStoreContext } from "@/context/StoreContext";
+import { notify } from "@/lib/notifications";
 import { useStoresOptions } from "@/hooks/useStoresOptions";
 
 export default function MovePalletToStoreDialog() {
@@ -48,18 +46,18 @@ export default function MovePalletToStoreDialog() {
 
     const handleSubmit = () => {
         if (!selectedStoreValue) {
-            toast.error("Seleccione un almacén de destino", getToastTheme());
+            notify.error("Seleccione un almacén de destino");
             return;
         }
 
         movePalletToStore(palletId, selectedStoreValue, token)
             .then(() => {
-                toast.success("Pallet movido correctamente", getToastTheme());
+                notify.success("Pallet movido correctamente");
                 updateStoreWhenOnMovePalletToStore({palletId , storeId: selectedStoreValue});
                 resetAndClose();
             })
             .catch(() => {
-                toast.error("Error al mover el pallet", getToastTheme());
+                notify.error("Error al mover el pallet");
             });
     };
 

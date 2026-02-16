@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { getCustomerOrderHistory } from '@/services/customerService';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { getCustomerOrderHistory } from '@/services/customerService';import { notify } from '@/lib/notifications';
 import {
     format as formatDate,
     parseISO,
@@ -113,7 +111,7 @@ export function useCustomerHistory(order) {
             } catch (err) {
                 const errorMessage = err.message || 'Error al cargar el historial del cliente';
                 setError(errorMessage);
-                toast.error(errorMessage, getToastTheme());
+                notify.error(errorMessage);
                 setCustomerHistory((prev) => (prev.length === 0 ? [] : prev));
             } finally {
                 setInitialLoading(false);

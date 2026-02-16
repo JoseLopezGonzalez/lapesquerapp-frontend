@@ -11,11 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
-import ProductionView from './ProductionView';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { useDebounce } from '@/hooks/useDebounce';
+import ProductionView from './ProductionView';import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { notify } from '@/lib/notifications';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 
@@ -68,7 +66,7 @@ export default function OrdersManager() {
     // Mostrar toast en error de carga (comportamiento anterior)
     useEffect(() => {
         if (ordersError) {
-            toast.error(ordersError, getToastTheme());
+            notify.error(ordersError);
         }
     }, [ordersError]);
 

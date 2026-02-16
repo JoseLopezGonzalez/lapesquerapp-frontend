@@ -11,13 +11,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Download, Plus, LayoutGrid } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { API_URL_V2 } from '@/configs/config';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { useSession } from 'next-auth/react';
+import { API_URL_V2 } from '@/configs/config';import { useSession } from 'next-auth/react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useBackButton } from '@/hooks/use-back-button';
 
+import { notify } from '@/lib/notifications';
 import {
     Tooltip,
     TooltipContent,
@@ -79,7 +77,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
     }, [selectedOrderId, orders]);
 
     const exportDocument = async () => {
-        const toastId = toast.loading(`Exportando `, getToastTheme());
+        const toastId = notify.loading(`Exportando `);
         try {
             const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
                 method: 'GET',
@@ -103,11 +101,11 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url); // Liberar memoria
 
-            toast.success('Exportación exitosa', { id: toastId });
+            notify.success('Exportación exitosa', { id: toastId });
 
         } catch (error) {
             // console.log(error);
-            toast.error('Error al exportar', { id: toastId });
+            notify.error('Error al exportar', { id: toastId });
         }
     };
 

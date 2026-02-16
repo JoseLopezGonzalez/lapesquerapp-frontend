@@ -18,9 +18,9 @@ vi.mock('@/services/customerService', () => ({
   getCustomerOrderHistory: vi.fn(),
 }));
 
-// Mock toast to avoid side effects
-vi.mock('react-hot-toast', () => ({
-  default: { error: vi.fn() },
+// Mock notifications (Sileo wrapper)
+vi.mock('@/lib/notifications', () => ({
+  notify: { error: vi.fn() },
 }));
 
 import { getCustomerOrderHistory } from '@/services/customerService';

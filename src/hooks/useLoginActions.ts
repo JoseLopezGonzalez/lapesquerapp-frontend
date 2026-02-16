@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, type ClipboardEvent } from "react";
-import { signIn } from "next-auth/react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-import { requestAccess, verifyOtp } from "@/services/authService";
+import { signIn } from "next-auth/react";import { requestAccess, verifyOtp } from "@/services/authService";
+import { notify } from "@/lib/notifications";
 import { getRedirectUrl } from "@/utils/loginUtils";
 
 export interface UseLoginActionsParams {
@@ -52,7 +50,7 @@ export function useLoginActions({
         setAccessRequested(true);
       } catch (err) {
         const msg = (err as AuthErrorLike).message || "Error al solicitar acceso.";
-        toast.error(msg, getToastTheme());
+        notify.error(msg);
       } finally {
         setLoading(false);
       }
@@ -77,7 +75,7 @@ export function useLoginActions({
         if (!signInResult || signInResult.error) {
           throw new Error(signInResult?.error || "Error al iniciar sesión.");
         }
-        toast.success("Inicio de sesión exitoso", getToastTheme());
+        notify.success("Inicio de sesión exitoso");
         const search =
           typeof window !== "undefined" ? window.location.search : "";
         window.location.href = getRedirectUrl(result.user, search);
@@ -88,7 +86,7 @@ export function useLoginActions({
           e.data?.userMessage ||
           e.data?.message ||
           "Error al verificar el código.";
-        toast.error(msg, getToastTheme());
+        notify.error(msg);
       } finally {
         setLoading(false);
       }

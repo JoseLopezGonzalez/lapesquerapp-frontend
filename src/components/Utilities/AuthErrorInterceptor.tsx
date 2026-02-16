@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { signOut } from "next-auth/react";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
+import { signOut } from "next-auth/react";import { notify } from "@/lib/notifications";
 import { isAuthError, isAuthStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG, type AuthErrorLike } from "@/configs/authConfig";
 
 const { AUTH_SESSION_EXPIRED_EVENT } = AUTH_ERROR_CONFIG;
@@ -29,7 +27,7 @@ export default function AuthErrorInterceptor() {
         clearSession();
         return;
       }
-      toast.error("Sesión expirada. Redirigiendo al login...", getToastTheme());
+      notify.error("Sesión expirada. Redirigiendo al login...");
       setTimeout(async () => {
         await clearSession();
         window.location.href = buildLoginUrl(window.location.pathname);

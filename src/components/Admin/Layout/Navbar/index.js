@@ -3,16 +3,12 @@
 import Link from 'next/link';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
-import toast from 'react-hot-toast';
-import { NAVBAR_LOGO } from '@/configs/config';
+import { signOut, useSession } from 'next-auth/react';import { NAVBAR_LOGO } from '@/configs/config';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
 import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
 import { UserIcon } from 'lucide-react';
-import { getToastTheme } from "@/customs/reactHotToast";
-
-export default function Navbar() {
+import { notify } from "@/lib/notifications";export default function Navbar() {
     const currentPath = usePathname();
     const { data: session } = useSession();
     const rawRole = session?.user?.role;
@@ -30,7 +26,7 @@ export default function Navbar() {
             await signOut({ redirect: false });
             
             // Mostrar toast de éxito
-            toast.success('Sesión cerrada correctamente', getToastTheme());
+            notify.success('Sesión cerrada correctamente');
             
             // Redirigir después de un breve delay para que se vea el toast
             setTimeout(() => {
@@ -40,7 +36,7 @@ export default function Navbar() {
             console.error('Error en logout:', err);
             // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            toast.success('Sesión cerrada correctamente', getToastTheme());
+            notify.success('Sesión cerrada correctamente');
             setTimeout(() => {
                 window.location.replace('/');
             }, 500);

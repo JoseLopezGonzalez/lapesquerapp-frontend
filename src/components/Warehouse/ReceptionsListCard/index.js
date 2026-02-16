@@ -23,11 +23,7 @@ import { useReceptionsList } from "@/hooks/useReceptionsList";
 import { rawMaterialReceptionService } from "@/services/domain/raw-material-receptions/rawMaterialReceptionService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
-import Loader from "@/components/Utilities/Loader";
-import toast from "react-hot-toast";
-import { getToastTheme } from "@/customs/reactHotToast";
-
-const ReceptionPrintDialog = dynamic(
+import Loader from "@/components/Utilities/Loader";const ReceptionPrintDialog = dynamic(
   () => import("@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog"),
   { ssr: false }
 );
@@ -76,7 +72,7 @@ export default function ReceptionsListCard({ storeId = null }) {
       setPrintDialogOpen(true);
     } catch (err) {
       console.error("Error al cargar recepción para imprimir:", err);
-      toast.error("No se pudo cargar la recepción", getToastTheme());
+      notify.error("No se pudo cargar la recepción");
     } finally {
       setLoadingPrintId(null);
     }

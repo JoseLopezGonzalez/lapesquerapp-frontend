@@ -1,14 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { format } from 'date-fns';
+import { useForm, useFieldArray } from 'react-hook-form';import { format } from 'date-fns';
 import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { speciesService } from '@/services/domain/species/speciesService';
-import { productService } from '@/services/domain/products/productService';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { productService } from '@/services/domain/products/productService';import { notify } from '@/lib/notifications';
 import { calculateNetWeight } from '@/helpers/receptionCalculations';
 
 const CACHE_KEY_LAST_SPECIES = 'operario-reception-last-species';
@@ -201,7 +198,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
     async (data) => {
       const supplierId = data.supplier?.id ?? data.supplier;
       if (!supplierId) {
-        toast.error('Seleccione un proveedor', getToastTheme());
+        notify.error('Seleccione un proveedor');
         return;
       }
 
@@ -228,10 +225,8 @@ export function useOperarioReceptionForm({ onSuccess }) {
         });
 
       if (validDetails.length === 0) {
-        toast.error(
-          'Complete al menos una línea con producto, peso bruto, cajas y tara',
-          getToastTheme()
-        );
+        notify.error(
+          'Complete al menos una línea con producto, peso bruto, cajas y tara');
         return;
       }
 
@@ -244,13 +239,11 @@ export function useOperarioReceptionForm({ onSuccess }) {
 
       try {
         const created = await createRawMaterialReception(payload);
-        toast.success('Recepción creada correctamente', getToastTheme());
+        notify.success('Recepción creada correctamente');
         onSuccess?.(created);
       } catch (err) {
-        toast.error(
-          err?.message || 'No se pudo crear la recepción',
-          getToastTheme()
-        );
+        notify.error(
+          err?.message || 'No se pudo crear la recepción');
       }
     },
     [onSuccess]

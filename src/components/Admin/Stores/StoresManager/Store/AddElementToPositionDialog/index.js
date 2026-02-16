@@ -1,5 +1,6 @@
 "use client"
 
+import { notify } from '@/lib/notifications';
 import { useState } from "react"
 import { Layers, Search, X, Check, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,10 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStoreContext } from "@/context/StoreContext"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getToastTheme } from "@/customs/reactHotToast"
 import { assignPalletsToPosition } from "@/services/palletService"
 import { useSession } from "next-auth/react"
-import toast from "react-hot-toast"
 import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability"
 
 const availablePallets = [
@@ -102,7 +101,7 @@ export default function AddElementToPosition({ open }) {
     const onSubmit = () => {
         assignPalletsToPosition(position, selectedPalletIds, token)
             .then((response) => {
-                toast.success("Pallets ubicados correctamente", getToastTheme())
+                notify.success("Pallets ubicados correctamente")
                 setSelectedPalletIds([])
                 setSearchQuery("")
                 changePalletsPosition(selectedPalletIds, position)
@@ -110,7 +109,7 @@ export default function AddElementToPosition({ open }) {
             })
             .catch((error) => {
                 console.error("Error al ubicar los pallets:", error)
-                toast.error("Error al ubicar los pallets", getToastTheme())
+                notify.error("Error al ubicar los pallets")
             })
     }
 
@@ -122,7 +121,7 @@ export default function AddElementToPosition({ open }) {
 
     const handleSubmit = () => {
         if (selectedPalletIds.length <= 0) {
-            toast.error("Debe seleccionar al menos un pallet para ubicar", getToastTheme())
+            notify.error("Debe seleccionar al menos un pallet para ubicar")
             return
         }
         onSubmit(selectedPalletIds)

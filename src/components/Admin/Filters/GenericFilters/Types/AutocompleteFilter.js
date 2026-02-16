@@ -5,10 +5,7 @@ import { Combobox } from '@/components/Shadcn/Combobox/index';
 import { Badge } from '@/components/ui/badge';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState, useCallback } from 'react';
-import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService';
-import toast from 'react-hot-toast';
-
-export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete, value }) => {
+import { fetchAutocompleteFilterOptions } from '@/services/autocompleteService';export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDelete, value }) => {
 
     const [options, setOptions] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -27,7 +24,7 @@ export const AutocompleteFilter = ({ label, placeholder, endpoint, onAdd, onDele
             console.error("Error al cargar opciones del filtro de autocompletado:", error);
             // Priorizar userMessage sobre message para mostrar errores en formato natural
             const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || `Error al cargar las opciones para ${label}. Por favor, inténtelo de nuevo.`;
-            toast.error(errorMessage);
+            notify.error(errorMessage);
             setOptions([]); // Asegúrate de que las opciones estén vacías en caso de error
         } finally {
             setLoading(false);

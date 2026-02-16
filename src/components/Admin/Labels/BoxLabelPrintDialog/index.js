@@ -11,9 +11,7 @@ import { useLabel } from '@/hooks/useLabel';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import LabelRender from '../../LabelEditor/LabelRender';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Printer, SquareMousePointer } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { Printer, SquareMousePointer } from 'lucide-react';import { notify } from '@/lib/notifications';
 import { motion } from 'framer-motion';
 
 
@@ -39,11 +37,11 @@ const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
 
     const handleOnClickPrintLabel = () => {
         if (disabledPrintButton) {
-            toast.error('Por favor, completa todos los campos manuales antes de imprimir.', getToastTheme());
+            notify.error('Por favor, completa todos los campos manuales antes de imprimir.');
             return;
         }
         // console.log('Imprimiendo etiquetas con los siguientes valores:', values);
-        toast.success(`Imprimiendo ${values.length} etiquetas...`, getToastTheme());
+        notify.success(`Imprimiendo ${values.length} etiquetas...`);
         onPrint();
     }
 

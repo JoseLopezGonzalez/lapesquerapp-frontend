@@ -2,16 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';import { format } from 'date-fns';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
 import { useAccessibilityAnnouncer } from '@/components/Admin/RawMaterialReceptions/AccessibilityAnnouncer';
-import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { normalizeDate, calculateNetWeights } from '@/helpers/receptionCalculations';
+import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';import { normalizeDate, calculateNetWeights } from '@/helpers/receptionCalculations';
 import {
   extractGlobalPriceMap,
   transformPalletsToApiFormat,
@@ -20,6 +16,7 @@ import {
   mapBackendPalletsToTemporal,
 } from '@/helpers/receptionTransformations';
 import { formatReceptionError, logReceptionError } from '@/helpers/receptionErrorHandler';
+import { notify } from '@/lib/notifications';
 import {
   validateSupplier,
   validateDate,
@@ -201,13 +198,13 @@ export function useAdminReceptionForm({ onSuccess }) {
       try {
         const supplierError = validateSupplier(data.supplier);
         if (supplierError) {
-          toast.error(supplierError, getToastTheme());
+          notify.error(supplierError);
           return;
         }
 
         const dateError = validateDate(data.date);
         if (dateError) {
-          toast.error(dateError, getToastTheme());
+          notify.error(dateError);
           return;
         }
 
@@ -216,17 +213,15 @@ export function useAdminReceptionForm({ onSuccess }) {
         if (mode === 'automatic') {
           const detailsError = validateReceptionDetails(data.details);
           if (detailsError) {
-            toast.error(detailsError, getToastTheme());
+            notify.error(detailsError);
             return;
           }
 
           const transformedDetails = transformDetailsToApiFormat(data.details);
 
           if (transformedDetails.length === 0) {
-            toast.error(
-              'Debe completar al menos una línea válida con producto y peso neto',
-              getToastTheme()
-            );
+            notify.error(
+              'Debe completar al menos una línea válida con producto y peso neto');
             return;
           }
 
@@ -239,7 +234,7 @@ export function useAdminReceptionForm({ onSuccess }) {
         } else {
           const palletsError = validateTemporalPallets(temporalPallets);
           if (palletsError) {
-            toast.error(palletsError, getToastTheme());
+            notify.error(palletsError);
             return;
           }
 
@@ -248,10 +243,8 @@ export function useAdminReceptionForm({ onSuccess }) {
           const convertedPallets = transformPalletsToApiFormat(temporalPallets);
 
           if (convertedPallets.length === 0) {
-            toast.error(
-              'Debe completar al menos un palet válido con producto y cajas',
-              getToastTheme()
-            );
+            notify.error(
+              'Debe completar al menos un palet válido con producto y cajas');
             return;
           }
 
@@ -283,7 +276,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           setTemporalPallets(updatedTemporalPallets);
         }
 
-        toast.success('Recepción creada exitosamente', getToastTheme());
+        notify.success('Recepción creada exitosamente');
 
         if (onSuccess) {
           onSuccess(createdReception);
@@ -295,7 +288,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           mode,
           hasPallets: temporalPallets.length,
         });
-        toast.error(formatReceptionError(error, 'create'), getToastTheme());
+        notify.error(formatReceptionError(error, 'create'));
       }
     },
     [mode, temporalPallets, onSuccess, router]
@@ -308,7 +301,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           delete submitErrors.details;
         }
         if (Object.keys(submitErrors).length > 0) {
-          toast.error('Por favor, complete todos los campos requeridos', getToastTheme());
+          notify.error('Por favor, complete todos los campos requeridos');
         } else {
           handleCreate(watch());
         }

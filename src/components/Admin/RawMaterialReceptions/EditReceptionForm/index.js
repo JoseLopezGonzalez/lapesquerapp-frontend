@@ -15,10 +15,7 @@ import { useSession } from 'next-auth/react';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
-import Loader from '@/components/Utilities/Loader';
-import { getToastTheme } from '@/customs/reactHotToast';
-import toast from 'react-hot-toast';
-import { Textarea } from '@/components/ui/textarea';
+import Loader from '@/components/Utilities/Loader';import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from "date-fns";
 import { getRawMaterialReception, updateRawMaterialReception } from '@/services/rawMaterialReceptionService';
@@ -28,6 +25,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { getPallet } from '@/services/palletService';
+import { notify } from '@/lib/notifications';
 import dynamic from 'next/dynamic';
 
 // Lazy load dialogs for code splitting
@@ -485,7 +483,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     setInitialFormState(JSON.stringify(normalizedFormData));
             } catch (error) {
                 const errorInfo = logReceptionError(error, 'load', { receptionId });
-                toast.error(formatReceptionError(error, 'load'), getToastTheme());
+                notify.error(formatReceptionError(error, 'load'));
             } finally {
                 setLoading(false);
                 isLoadingRef.current = false;
@@ -693,13 +691,13 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             // Validate using centralized validators
             const supplierError = validateSupplier(data.supplier);
             if (supplierError) {
-                toast.error(supplierError, getToastTheme());
+                notify.error(supplierError);
                 return;
             }
 
             const dateError = validateDate(data.date);
             if (dateError) {
-                toast.error(dateError, getToastTheme());
+                notify.error(dateError);
                 return;
             }
 
@@ -709,7 +707,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate pallets using centralized validator
                 const palletsError = validateTemporalPallets(temporalPallets);
                 if (palletsError) {
-                    toast.error(palletsError, getToastTheme());
+                    notify.error(palletsError);
                     return;
                 }
 
@@ -735,10 +733,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             const [productId, lot] = key.split('-');
                             const product = productOptions.find(p => p.value === productId || p.id === productId);
                             const productName = product?.label || product?.name || `Producto ${productId}`;
-                            toast.error(
-                                `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`,
-                                getToastTheme()
-                            );
+                            notify.error(
+                                `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`);
                             return;
                         }
                     }
@@ -748,7 +744,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         (item.pallet?.boxes || []).some(box => !box.id)
                     );
                     if (hasNewBoxes) {
-                        toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                        notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
                         return;
                     }
                 }
@@ -761,7 +757,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const convertedPallets = transformPalletsToApiFormat(temporalPallets, originalBoxIds);
 
                 if (convertedPallets.length === 0) {
-                    toast.error('Debe completar al menos un palet válido con producto y cajas', getToastTheme());
+                    notify.error('Debe completar al menos un palet válido con producto y cajas');
                     return;
                 }
 
@@ -785,7 +781,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate details using centralized validator
                 const detailsError = validateReceptionDetails(data.details);
                 if (detailsError) {
-                    toast.error(detailsError, getToastTheme());
+                    notify.error(detailsError);
                     return;
                 }
 
@@ -793,7 +789,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const transformedDetails = transformDetailsToApiFormat(data.details);
 
                 if (transformedDetails.length === 0) {
-                    toast.error('Debe completar al menos una línea válida con producto y peso neto', getToastTheme());
+                    notify.error('Debe completar al menos una línea válida con producto y peso neto');
                     return;
                 }
 
@@ -891,7 +887,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 setInitialFormState(JSON.stringify(normalizedFormData));
             }
             
-            toast.success('Recepción actualizada exitosamente', getToastTheme());
+            notify.success('Recepción actualizada exitosamente');
             announce('Recepción actualizada exitosamente', 'assertive');
             
             if (onSuccess) {
@@ -906,7 +902,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 creationMode, 
                 hasPallets: temporalPallets.length 
             });
-            toast.error(formatReceptionError(error, 'update'), getToastTheme());
+            notify.error(formatReceptionError(error, 'update'));
         }
     }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce, normalizePalletsForComparison, mapDetailsFromBackend, reset]);
 
@@ -1541,7 +1537,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                         onClick={async () => {
                                                             try {
                                                                 if (!session?.user?.accessToken) {
-                                                                    toast.error('No hay sesión autenticada', getToastTheme());
+                                                                    notify.error('No hay sesión autenticada');
                                                                     return;
                                                                 }
                                                                 const fullPallet = await getPallet(pallet.id, session.user.accessToken);
@@ -1549,7 +1545,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                                 setIsPalletLabelDialogOpen(true);
                                                             } catch (error) {
                                                                 logReceptionError(error, 'loadPallet', { palletId: pallet.id });
-                                                                toast.error(formatReceptionError(error, 'loadPallet'), getToastTheme());
+                                                                notify.error(formatReceptionError(error, 'loadPallet'));
                                                             }
                                                         }}
                                                         title="Ver etiqueta del palet"
@@ -1617,7 +1613,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 // Si no tiene ID, es una caja nueva
                                 // Validar que no se puedan crear nuevas cajas cuando hay cajas usadas
                                 if (hasUsedBoxes) {
-                                    toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                                    notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
                                     return null; // Filtrar esta caja
                                 }
                                 return box;
@@ -1638,7 +1634,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     } else {
                         // Validar que no se puedan crear nuevos palets con cajas nuevas cuando hay cajas usadas
                         if (hasUsedBoxes && pallet.boxes?.some(box => !box.id)) {
-                            toast.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción', getToastTheme());
+                            notify.error('No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción');
                             return;
                         }
                         

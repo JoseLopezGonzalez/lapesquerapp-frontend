@@ -1,9 +1,7 @@
 // components/EditEntityClient.jsx
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
-import toast from "react-hot-toast";
-import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useForm, Controller } from "react-hook-form";import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,10 +16,9 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 import { Loader2 } from "lucide-react";
 import EmailListInput from "@/components/ui/emailListInput";
 
-import get from "lodash.get";
-import { getToastTheme } from "@/customs/reactHotToast";
-import Loader from "@/components/Utilities/Loader";
+import get from "lodash.get";import Loader from "@/components/Utilities/Loader";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { notify } from '@/lib/notifications';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 // Import domain services and mapper
@@ -91,7 +88,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const loadEntityData = useCallback(async () => {
         const entityService = getEntityService(endpoint);
         if (!entityService) {
-            toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+            notify.error('No se encontró el servicio para esta entidad.');
             setLoading(false);
             return;
         }
@@ -110,7 +107,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            toast.error(userMessage, getToastTheme());
+            notify.error(userMessage);
             console.error("Error loading entity data:", err);
         } finally {
             setLoading(false);
@@ -211,12 +208,12 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
             const entityService = getEntityService(endpoint);
             if (!entityService) {
-                toast.error('No se encontró el servicio para esta entidad.', getToastTheme());
+                notify.error('No se encontró el servicio para esta entidad.');
                 return;
             }
 
             await entityService.update(id, finalData);
-            toast.success(successMessage, getToastTheme());
+            notify.success(successMessage);
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
         } catch (err) {
@@ -233,7 +230,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            toast.error(userMessage, getToastTheme());
+            notify.error(userMessage);
             console.error("Submission error:", err);
         }
     };

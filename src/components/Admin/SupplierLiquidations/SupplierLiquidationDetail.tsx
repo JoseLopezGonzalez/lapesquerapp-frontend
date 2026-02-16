@@ -4,8 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { Loader2, ArrowLeft, Download } from "lucide-react";
-import { toast } from "react-hot-toast";
-
+import { notify } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -22,8 +21,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useSupplierLiquidationDetails } from "@/hooks/useSupplierLiquidationDetails";
 import { downloadSupplierLiquidationPdf } from "@/services/domain/supplier-liquidations/supplierLiquidationService";
 import type { LiquidationReception, LiquidationDispatch } from "@/types/supplierLiquidation";
-import { getToastTheme } from "@/customs/reactHotToast";
-
 function formatCurrency(value: number | undefined | null): string {
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -98,7 +95,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
         "Error al obtener el detalle de la liquidación";
-      toast.error(msg, getToastTheme());
+      notify.error(msg);
     }
   }, [error]);
 
@@ -106,12 +103,12 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     if (!startDate || !endDate || !data) return;
 
     if (!paymentMethod) {
-      toast.error("Debe seleccionar un método de pago (Efectivo o Transferencia)", getToastTheme());
+      notify.error("Debe seleccionar un método de pago (Efectivo o Transferencia)");
       return;
     }
 
     setDownloadingPdf(true);
-    const toastId = toast.loading("Generando PDF...", getToastTheme());
+    const toastId = notify.loading("Generando PDF...");
 
     try {
       const allDispatches = [...(data.dispatches ?? [])];
@@ -153,7 +150,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         hasManagementFee,
         showTransferPayment,
       });
-      toast.success("PDF descargado correctamente", { id: toastId });
+      notify.success("PDF descargado correctamente", { id: toastId });
     } catch (err) {
       const e = err as { status?: number; message?: string };
       let errorMessage = "Error al descargar el PDF";
@@ -164,7 +161,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       } else if (e.message) {
         errorMessage = e.message;
       }
-      toast.error(errorMessage, { id: toastId });
+      notify.error(errorMessage, { id: toastId });
     } finally {
       setDownloadingPdf(false);
     }

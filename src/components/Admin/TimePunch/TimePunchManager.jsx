@@ -6,12 +6,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, ArrowRight, ArrowLeft, Loader2, User, AlertCircle, CheckCircle2, Users } from 'lucide-react';
-import Loader from '@/components/Utilities/Loader';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
-import { useEmployeesWithLastPunch } from '@/hooks/useEmployeesForPunches';
+import Loader from '@/components/Utilities/Loader';import { useEmployeesWithLastPunch } from '@/hooks/useEmployeesForPunches';
 import { createPunch } from '@/services/punchService';
 import { cn } from '@/lib/utils';
+import { notify } from '@/lib/notifications';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const DEVICE_ID = 'manual-web-interface';
@@ -69,7 +67,7 @@ export default function TimePunchManager() {
             }, 3000);
         },
         onError: (error) => {
-            toast.error(getErrorMessage(error), getToastTheme());
+            notify.error(getErrorMessage(error));
         },
         onSettled: () => {
             setRegisteringId(null);
@@ -78,13 +76,13 @@ export default function TimePunchManager() {
 
     useEffect(() => {
         if (employeesError) {
-            toast.error(employeesError || 'Error al cargar la lista de empleados', getToastTheme());
+            notify.error(employeesError || 'Error al cargar la lista de empleados');
         }
     }, [employeesError]);
 
     const handleRegisterPunch = (employeeId, employeeName) => {
         if (!session?.user?.accessToken) {
-            toast.error('No hay sesión activa', getToastTheme());
+            notify.error('No hay sesión activa');
             return;
         }
         setRegisteringId(employeeId);

@@ -54,9 +54,9 @@ vi.mock('@/context/gestor-options/OrdersManagerOptionsContext', () => ({
 vi.mock('@lib/fetchWithTenant', () => ({ fetchWithTenant: vi.fn() }));
 vi.mock('@/configs/config', () => ({ API_URL_V2: 'https://api.test/v2/' }));
 
-// Mock toast
-vi.mock('react-hot-toast', () => ({
-  default: {
+// Mock notifications (Sileo wrapper)
+vi.mock('@/lib/notifications', () => ({
+  notify: {
     loading: vi.fn(() => 'toast-id'),
     success: vi.fn(),
     error: vi.fn(),

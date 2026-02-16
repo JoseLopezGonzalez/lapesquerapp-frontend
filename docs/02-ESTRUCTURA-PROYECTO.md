@@ -351,28 +351,11 @@ export function buildLoginUrl(currentPath) { ... }
 **Estructura**:
 ```
 customs/
-├── reactDayPicker/
-│   └── reactDayPickerStyles.css    # Estilos personalizados para DatePicker
-└── reactHotToast/
-    └── index.js                     # Tema personalizado para toast notifications
+└── reactDayPicker/
+    └── reactDayPickerStyles.css    # Estilos personalizados para DatePicker
 ```
 
-### `reactHotToast/index.js`
-```javascript
-export const getToastTheme = () => {
-  const isDark = document.documentElement.classList.contains("dark");
-  return {
-    style: {
-      background: isDark ? "#171717" : "#fff",
-      color: isDark ? "#fff" : "#000",
-      borderColor: isDark ? "#404040" : "#d1d5db",
-      borderWidth: "1px",
-    },
-  };
-};
-```
-
-**Uso**: Tema dinámico que se adapta al modo oscuro/claro.
+**Nota**: Las notificaciones toast usan Sileo; el wrapper está en `@/lib/notifications` (`notify`).
 
 ---
 

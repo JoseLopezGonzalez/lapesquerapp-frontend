@@ -59,8 +59,7 @@ import {
   OctagonAlert,
 } from 'lucide-react';
 import { BsFileEarmarkPdf } from 'react-icons/bs';
-import toast from 'react-hot-toast';
-import { getToastTheme } from '@/customs/reactHotToast';
+import { notify } from '@/lib/notifications';
 import { getInitialMockState } from '@/data/mock/orquestador';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import OrderCard from '@/components/Admin/OrdersManager/OrdersList/OrderCard';
@@ -195,11 +194,11 @@ export default function OrquestadorView() {
     // Validación: 3 primeros campos y al menos una caja generable
     const missingField = !productId ? 'producto' : !lot ? 'lote' : !labelFormatId ? 'formato de etiqueta' : null;
     if (missingField) {
-      toast.error(`Completa los tres primeros campos: producto, lote y formato de etiqueta (falta: ${missingField}).`, getToastTheme());
+      notify.error(`Completa los tres primeros campos: producto, lote y formato de etiqueta (falta: ${missingField}).`);
       return;
     }
     if (lot.length !== 14) {
-      toast.error('El lote debe tener exactamente 14 caracteres.', getToastTheme());
+      notify.error('El lote debe tener exactamente 14 caracteres.');
       return;
     }
     let canGenerateAtLeastOne = false;
@@ -216,13 +215,13 @@ export default function OrquestadorView() {
       canGenerateAtLeastOne = weights.length >= 1;
     }
     if (!canGenerateAtLeastOne) {
-      toast.error('Indica al menos una caja a generar.', getToastTheme());
+      notify.error('Indica al menos una caja a generar.');
       return;
     }
 
     const product = products.find((p) => p.id === productId);
     if (!product) {
-      toast.error('Producto no encontrado.', getToastTheme());
+      notify.error('Producto no encontrado.');
       return;
     }
 
@@ -230,17 +229,17 @@ export default function OrquestadorView() {
       const totalWeight = (emisionForm.totalWeight || '').trim();
       const numberOfBoxes = (emisionForm.numberOfBoxes || '').trim();
       if (!totalWeight || !numberOfBoxes) {
-        toast.error('Peso total y número de cajas son obligatorios.', getToastTheme());
+        notify.error('Peso total y número de cajas son obligatorios.');
         return;
       }
       const n = parseInt(numberOfBoxes, 10);
       if (!Number.isInteger(n) || n < 1) {
-        toast.error('Número de cajas debe ser un entero mayor que 0.', getToastTheme());
+        notify.error('Número de cajas debe ser un entero mayor que 0.');
         return;
       }
       const netTotalWeight = parseFloat(totalWeight);
       if (netTotalWeight <= 0) {
-        toast.error('El peso total debe ser mayor que 0.', getToastTheme());
+        notify.error('El peso total debe ser mayor que 0.');
         return;
       }
       const averageNetWeight = netTotalWeight / n;
@@ -268,7 +267,7 @@ export default function OrquestadorView() {
       }));
       setLastGeneratedCount(n);
       setEmisionForm((p) => ({ ...p, totalWeight: '', numberOfBoxes: '' }));
-      toast.success(`${n} caja(s) generada(s) por promedio. Estado: Disponible.`, getToastTheme());
+      notify.success(`${n} caja(s) generada(s) por promedio. Estado: Disponible.`);
       return;
     }
 
@@ -280,7 +279,7 @@ export default function OrquestadorView() {
       .filter(Boolean);
     const weights = weightsLines.map((w) => parseFloat(w)).filter((n) => !Number.isNaN(n) && n > 0);
     if (weights.length === 0) {
-      toast.error('Introduce al menos un peso por línea (una caja por línea).', getToastTheme());
+      notify.error('Introduce al menos un peso por línea (una caja por línea).');
       return;
     }
     const newBoxes = weights.map((netWeight, i) => ({
@@ -298,20 +297,20 @@ export default function OrquestadorView() {
     }));
     setLastGeneratedCount(weights.length);
     setEmisionForm((p) => ({ ...p, weightsString: '' }));
-    toast.success(`${weights.length} caja(s) generada(s). Estado: Disponible (pendiente de escaneo).`, getToastTheme());
+    notify.success(`${weights.length} caja(s) generada(s). Estado: Disponible (pendiente de escaneo).`);
   }, [emisionForm, products, nextBoxId]);
 
   const handleImprimirEtiquetasEmision = useCallback(() => {
     if (lastGeneratedCount === 0) {
-      toast.error('Genera cajas antes de imprimir etiquetas.', getToastTheme());
+      notify.error('Genera cajas antes de imprimir etiquetas.');
       return;
     }
-    toast.success(`Impresión simulada: ${lastGeneratedCount} etiquetas de caja.`, getToastTheme());
+    notify.success(`Impresión simulada: ${lastGeneratedCount} etiquetas de caja.`);
   }, [lastGeneratedCount]);
 
   const handleLimpiarCajasEmision = useCallback(() => {
     setMockState((prev) => ({ ...prev, availableBoxes: [] }));
-    toast.success('Lista de cajas vaciada.', getToastTheme());
+    notify.success('Lista de cajas vaciada.');
   }, []);
 
   const openAddCajasDialog = useCallback(() => {
@@ -325,25 +324,25 @@ export default function OrquestadorView() {
   const handleAddCajasConfirm = useCallback(() => {
     const orderId = addCajasOrderId ? Number(addCajasOrderId) : null;
     if (!orderId) {
-      toast.error('Selecciona un pedido.', getToastTheme());
+      notify.error('Selecciona un pedido.');
       return;
     }
     if (addCajasMode === 'existing' && !addCajasPaletId) {
-      toast.error('Selecciona un palet.', getToastTheme());
+      notify.error('Selecciona un palet.');
       return;
     }
     if (availableBoxes.length === 0) {
-      toast.error('No hay cajas para añadir. Genera o escanea cajas antes.', getToastTheme());
+      notify.error('No hay cajas para añadir. Genera o escanea cajas antes.');
       return;
     }
     const order = orders.find((o) => o.id === orderId);
     const orderLabel = order ? `#${order.id} ${order.customer?.name}` : `#${orderId}`;
     if (addCajasMode === 'new') {
-      toast.success(`${availableBoxes.length} caja(s) añadidas al pedido ${orderLabel} como nuevo palet (simulado).`, getToastTheme());
+      notify.success(`${availableBoxes.length} caja(s) añadidas al pedido ${orderLabel} como nuevo palet (simulado).`);
     } else {
       const palet = pallets.find((p) => p.id === Number(addCajasPaletId));
       const paletLabel = palet ? `#${palet.id}` : addCajasPaletId;
-      toast.success(`${availableBoxes.length} caja(s) añadidas al palet ${paletLabel} del pedido ${orderLabel} (simulado).`, getToastTheme());
+      notify.success(`${availableBoxes.length} caja(s) añadidas al palet ${paletLabel} del pedido ${orderLabel} (simulado).`);
     }
     setAddCajasDialogOpen(false);
   }, [addCajasOrderId, addCajasMode, addCajasPaletId, availableBoxes.length, orders, pallets]);
@@ -351,7 +350,7 @@ export default function OrquestadorView() {
   // ——— Pantalla 2: Escanear caja y añadir al palet ———
   const handleConfirmarPalet = useCallback(() => {
     if (currentPalletBoxes.length === 0) {
-      toast.error('Añade al menos una caja al palet.', getToastTheme());
+      notify.error('Añade al menos una caja al palet.');
       return;
     }
     const orderId = selectedOrderId || null;
@@ -410,12 +409,12 @@ export default function OrquestadorView() {
     });
     setNextPalletId((id) => id + 1);
     setCurrentPalletBoxes([]);
-    toast.success(`Palet #${newPallet.id} cerrado (simulado). ${numberOfBoxes} cajas.`, getToastTheme());
+    notify.success(`Palet #${newPallet.id} cerrado (simulado). ${numberOfBoxes} cajas.`);
   }, [currentPalletBoxes, selectedOrderId, nextPalletId]);
 
   const handleFinishOrder = useCallback(() => {
     if (!selectedOrderId) {
-      toast.error('Selecciona un pedido.', getToastTheme());
+      notify.error('Selecciona un pedido.');
       return;
     }
     setMockState((prev) => ({
@@ -424,7 +423,7 @@ export default function OrquestadorView() {
         o.id === selectedOrderId ? { ...o, status: 'finished' } : o
       ),
     }));
-    toast.success(`Pedido #${selectedOrderId} marcado como Terminado (simulado).`, getToastTheme());
+    notify.success(`Pedido #${selectedOrderId} marcado como Terminado (simulado).`);
   }, [selectedOrderId]);
 
   // Overlay “Escanear etiquetas”: añadir caja al escanear (simulado)
@@ -464,7 +463,7 @@ export default function OrquestadorView() {
       const count = scannedLabelsBoxes.length;
       setScannedLabelsBoxes([]);
       setActiveScreen('preparacion');
-      toast.success(`${count} caja(s) pasan a disponibles.`, getToastTheme());
+      notify.success(`${count} caja(s) pasan a disponibles.`);
     } else {
       setActiveScreen('preparacion');
     }
@@ -914,7 +913,7 @@ export default function OrquestadorView() {
                                 variant="outline"
                                 className="justify-start"
                                 onClick={() => {
-                                  toast.success(`Descarga de "${doc.label}" para pedido #${selectedOrderId} (simulado). En producción usarás el gestor de pedidos.`, getToastTheme());
+                                  notify.success(`Descarga de "${doc.label}" para pedido #${selectedOrderId} (simulado). En producción usarás el gestor de pedidos.`);
                                 }}
                               >
                                 <BsFileEarmarkPdf className="h-4 w-4 mr-2 shrink-0" />
