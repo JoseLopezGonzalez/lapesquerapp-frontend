@@ -20,7 +20,8 @@ export async function middleware(req: NextRequest) {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
-    pathname.startsWith("/favicon.ico") ||
+    pathname.startsWith("/pesquerapp") ||
+    pathname.startsWith("/favicon") ||
     pathname.startsWith("/apple-touch-icon") ||
     pathname.startsWith("/og-image") ||
     pathname.startsWith("/site.webmanifest") ||

@@ -20,6 +20,11 @@ const STATIC_ASSETS = [
   '/',
   '/favicon.ico',
   '/apple-touch-icon.png',
+  '/favicon-generic.ico',
+  '/apple-touch-icon-generic.png',
+  '/pesquerapp/favicon.ico',
+  '/pesquerapp/apple-touch-icon.png',
+  '/pesquerapp/og-image.png',
   '/site.webmanifest',
 ];
 

@@ -10,7 +10,7 @@
 
 - **Interruptor por .env** entre modo genérico y modo con marca (La PesquerApp). Una sola fuente de verdad (módulo de config) y consumo en layout, login, landing, PWA, etc.
 - Con **`NEXT_PUBLIC_APP_BRANDING=pesquerapp`**: la app muestra la identidad completa y la landing es visible en la ruta raíz.
-- Con **`NEXT_PUBLIC_APP_BRANDING=generic`** (o no definida, o cualquier otro valor): textos y dominios neutros; **la landing no es accesible** (en la ruta raíz se muestra la pantalla de login).
+- Con **`NEXT_PUBLIC_APP_BRANDING=generic`** (o no definida, o cualquier otro valor): textos y dominios neutros; **la landing no es accesible** (en la ruta raíz no se muestra nada; página en blanco).
 
 ### Componentes principales
 
@@ -24,8 +24,9 @@
 
 - **`NEXT_PUBLIC_APP_BRANDING=generic`** (o no definida):
   - Nombres: "App", "App". Emails/dominios genéricos (ejemplo@example.com, soporte@example.com, etc.).
-  - **Landing no accesible**: en la ruta `/` se muestra la pantalla de login en lugar del contenido de la landing (redirección de comportamiento: no se renderiza la landing).
+  - **Landing no accesible**: en la ruta `/` no se muestra nada (página en blanco).
   - Manifest: nombre y descripción genéricos.
+  - **Iconos y PWA**: se usan rutas con sufijo `-generic` (ver apartado "Iconos y favicon en modo genérico").
 
 - **`NEXT_PUBLIC_APP_BRANDING=pesquerapp`**:
   - Identidad completa: La PesquerApp, PesquerApp, lapesquerapp.es, emails de soporte/demo/info.
@@ -61,12 +62,29 @@
   - `logoAlt` — Texto alternativo del logo (navbar).
   - `apiBaseUrlFallback` — Fallback de URL de API solo en modo pesquerapp; en genérico no se expone dominio real.
   - `manifestName`, `manifestShortName`, `manifestDescription` — Usados por la API del manifest.
+  - `faviconPath`, `appleTouchIconPath`, `ogImagePath`, `icon192Path`, `icon512Path` — Rutas de iconos y Open Graph según modo (genérico usa sufijo `-generic`).
+  - `splashBasePath` — Ruta base para splash screens iOS (ej. `/pesquerapp/splash`); vacía en genérico.
   - `isGenericBranding` — `true` cuando el branding no es pesquerapp (para no mostrar landing en raíz).
+
+### Iconos y favicon por modo
+
+- **Modo La PesquerApp**: favicon, apple touch, og-image, iconos PWA y **splash screens iOS** están en **`public/pesquerapp/`** (`public/pesquerapp/icons/` para 192 y 512, `public/pesquerapp/splash/` para los PNG de splash). Las rutas usadas son `/pesquerapp/...`; el layout solo enlaza los splash cuando hay `splashBasePath` (modo pesquerapp). En modo genérico no se enlazan splash específicos; el fallback usa `appleTouchIconPath`.
+- **Modo genérico**: el layout y el manifest usan rutas en la raíz de `public/` con sufijo `-generic`. Hay que **crear y colocar** estos archivos en `public/` (y en `public/icons/` cuando aplique):
+
+| Archivo | Uso | Recomendación |
+|---------|-----|----------------|
+| `favicon-generic.ico` | Pestaña del navegador | 16×16 o 32×32, neutro |
+| `apple-touch-icon-generic.png` | iOS / PWA apple touch | 180×180 px |
+| `og-image-generic.png` | Open Graph / redes | 1200×630 px |
+| `icons/icon-192x192-generic.png` | PWA Android/Chrome | 192×192 px |
+| `icons/icon-512x512-generic.png` | PWA Android/Chrome | 512×512 px |
+
+Si no existen, el navegador puede mostrar 404 para esos recursos; conviene tener al menos un favicon y un icono genéricos (por ejemplo un icono "A" o un símbolo neutro). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`, así que en genérico apunta al icono genérico cuando corresponde.
 
 ### Despliegue
 
 - En **Vercel** u otra plataforma, configurar la misma variable `NEXT_PUBLIC_APP_BRANDING` con valor `generic` o `pesquerapp` según el entorno.
-- Recordatorio: en **modo genérico** la landing no debe ser accesible; la raíz muestra login.
+- Recordatorio: en **modo genérico** la landing no es accesible (raíz en blanco); configurar iconos genéricos si se usa ese modo.
 
 ---
 

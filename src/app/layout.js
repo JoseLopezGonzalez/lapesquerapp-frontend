@@ -4,6 +4,10 @@ import {
   appName,
   appShortName,
   metadataBaseUrl,
+  faviconPath,
+  appleTouchIconPath,
+  ogImagePath,
+  splashBasePath,
 } from "@/configs/branding";
 
 const defaultTitle = `${appName} | ERP para pequeñas y medianas empresas pesqueras`;
@@ -26,7 +30,7 @@ export const metadata = {
     siteName: appName,
     images: [
       {
-        url: "/og-image.png",
+        url: ogImagePath,
         width: 1200,
         height: 630,
         alt: ogAlt,
@@ -39,11 +43,11 @@ export const metadata = {
     card: "summary_large_image",
     title: twitterTitle,
     description: "Solución completa ERP para empresas del sector pesquero.",
-    images: ["/og-image.png"],
+    images: [ogImagePath],
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: faviconPath,
+    apple: appleTouchIconPath,
   },
   manifest: "/api/manifest",
 };
@@ -65,90 +69,72 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* iOS Splash Screens - iPhone 14 Series */}
-        {/* iPhone 14 Pro Max */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-14-pro-max.png" 
-          media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-        
-        {/* iPhone 14 Pro */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-14-pro.png" 
-          media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-        
-        {/* iPhone 14 Plus */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-14-plus.png" 
-          media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-        
-        {/* iPhone 14 */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-14.png" 
-          media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-
-        {/* iOS Splash Screens - iPhone 13/12 Series (compatibilidad) */}
-        {/* iPhone 13/12 Pro Max */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-13-pro-max.png" 
-          media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-        
-        {/* iPhone 13/12 Pro */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-13-pro.png" 
-          media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        />
-        
-        {/* iPhone SE (3ra gen) */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/iphone-se-3.png" 
-          media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-        />
-
-        {/* iOS Splash Screens - iPad */}
-        {/* iPad Pro 12.9" */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/ipad-pro-12.9.png" 
-          media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-        />
-        
-        {/* iPad Pro 11" */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/ipad-pro-11.png" 
-          media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-        />
-        
-        {/* iPad Air */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/ipad-air.png" 
-          media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-        />
-        
-        {/* iPad Mini */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/splash/ipad-mini.png" 
-          media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-        />
-
+        {splashBasePath && (
+          <>
+            {/* iOS Splash Screens - iPhone 14 Series */}
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-14-pro-max.png`}
+              media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-14-pro.png`}
+              media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-14-plus.png`}
+              media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-14.png`}
+              media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            {/* iPhone 13/12 Series */}
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-13-pro-max.png`}
+              media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-13-pro.png`}
+              media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/iphone-se-3.png`}
+              media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+            />
+            {/* iPad */}
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/ipad-pro-12.9.png`}
+              media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/ipad-pro-11.png`}
+              media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/ipad-air.png`}
+              media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+            />
+            <link
+              rel="apple-touch-startup-image"
+              href={`${splashBasePath}/ipad-mini.png`}
+              media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+            />
+          </>
+        )}
         {/* Fallback - Usar apple-touch-icon si no hay splash screen específico */}
-        <link 
-          rel="apple-touch-startup-image" 
-          href="/apple-touch-icon.png"
+        <link
+          rel="apple-touch-startup-image"
+          href={appleTouchIconPath}
         />
       </head>
       <body className="bg-background w-full">

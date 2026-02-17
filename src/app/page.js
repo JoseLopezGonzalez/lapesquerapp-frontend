@@ -82,13 +82,9 @@ export default function HomePage() {
     );
   }
   
-  // Modo genérico: landing no accesible; mostrar login en la raíz
+  // Modo genérico: landing no accesible; no mostrar nada en la raíz (página en blanco)
   if (isGenericBranding) {
-    return (
-      <div className="space-y-4">
-        <LoginPage />
-      </div>
-    );
+    return <div className="min-h-screen bg-background" />;
   }
   return <LandingPage />;
 }
