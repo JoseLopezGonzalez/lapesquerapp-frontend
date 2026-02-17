@@ -79,12 +79,21 @@
 | `icons/icon-192x192-generic.png` | PWA Android/Chrome | 192×192 px |
 | `icons/icon-512x512-generic.png` | PWA Android/Chrome | 512×512 px |
 
-Si no existen, el navegador puede mostrar 404 para esos recursos; conviene tener al menos un favicon y un icono genéricos (por ejemplo un icono "A" o un símbolo neutro). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`, así que en genérico apunta al icono genérico cuando corresponde.
+El proyecto incluye **placeholders** mínimos en `public/` (`favicon-generic.png`, `apple-touch-icon-generic.png`, `public/icons/icon-192x192-generic.png`, `icon-512x512-generic.png`) para evitar 404 en modo genérico; puedes sustituirlos por iconos definitivos. En genérico el favicon usa `.png` (no `.ico`). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`.
 
 ### Despliegue
 
 - En **Vercel** u otra plataforma, configurar la misma variable `NEXT_PUBLIC_APP_BRANDING` con valor `generic` o `pesquerapp` según el entorno.
 - Recordatorio: en **modo genérico** la landing no es accesible (raíz en blanco); configurar iconos genéricos si se usa ese modo.
+
+### Si `/api/auth/session` devuelve 500 en producción
+
+No es por el branding. NextAuth requiere en el servidor de producción:
+
+- **`NEXTAUTH_URL`**: URL pública de la app (ej. `https://brisamar.congeladosbrisamar.es`), sin barra final.
+- **`NEXTAUTH_SECRET`**: una cadena secreta para firmar cookies/JWT (generar con `openssl rand -base64 32`).
+
+Sin estas variables, NextAuth puede devolver 500. Revisar los logs del servidor y las variables de entorno del despliegue.
 
 ---
 

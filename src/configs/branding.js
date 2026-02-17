@@ -30,7 +30,7 @@ export const demoUrl = isPesquerApp ? "https://test.lapesquerapp.es" : "#";
 export const logoAlt = isPesquerApp ? "PesquerApp" : "App";
 
 /** Rutas de iconos y assets según branding (en public/). PesquerApp en /pesquerapp/; genérico con sufijo -generic en raíz. */
-export const faviconPath = isPesquerApp ? "/pesquerapp/favicon.ico" : "/favicon-generic.ico";
+export const faviconPath = isPesquerApp ? "/pesquerapp/favicon.ico" : "/favicon-generic.png";
 export const appleTouchIconPath = isPesquerApp ? "/pesquerapp/apple-touch-icon.png" : "/apple-touch-icon-generic.png";
 export const ogImagePath = isPesquerApp ? "/pesquerapp/og-image.png" : "/og-image-generic.png";
 export const icon192Path = isPesquerApp ? "/pesquerapp/icons/icon-192x192.png" : "/icons/icon-192x192-generic.png";
