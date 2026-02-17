@@ -99,7 +99,10 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         });
 
         if (Object.keys(payload).length === 0) {
-            notify.info({ title: 'No hay cambios para guardar' });
+            notify.info({
+              title: 'Sin cambios',
+              description: 'No hay cambios para guardar en este pedido.',
+            });
             setSaving(false);
             return;
         }
@@ -107,9 +110,20 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
         try {
             await notify.promise(updateOrderData(payload), {
                 loading: 'Actualizando pedido...',
-                success: 'Pedido actualizado correctamente',
-                error: (error) =>
-                    error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || error?.response?.data?.message || 'Error al actualizar el pedido',
+                success: {
+                  title: 'Pedido actualizado',
+                  description: 'Los cambios del pedido se han guardado correctamente.',
+                },
+                error: (error) => {
+                  const desc =
+                    error?.userMessage ||
+                    error?.data?.userMessage ||
+                    error?.response?.data?.userMessage ||
+                    error?.message ||
+                    error?.response?.data?.message ||
+                    'No se pudieron guardar los cambios. Intente de nuevo.';
+                  return { title: 'Error al actualizar pedido', description: desc };
+                },
             });
             await new Promise(resolve => setTimeout(resolve, 600));
             setSaving(false);

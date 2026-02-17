@@ -108,6 +108,9 @@ export function useCustomerHistory(order) {
 
                 const result = await getCustomerOrderHistory(customerId, token, options);
                 setCustomerHistory(result.data || []);
+                if (result.available_years && result.available_years.length > 0) {
+                    setAvailableYears(result.available_years);
+                }
             } catch (err) {
                 const errorMessage = err.message || 'Error al cargar el historial del cliente';
                 setError(errorMessage);

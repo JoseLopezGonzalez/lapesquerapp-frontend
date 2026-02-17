@@ -93,12 +93,18 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     const handleSubmit = async () => {
         if (!selectedStoreValue) {
-            notify.error({ title: "Seleccione un almacén de destino" });
+            notify.error({
+              title: 'Almacén de destino requerido',
+              description: 'Seleccione un almacén para mover los palets.',
+            });
             return;
         }
 
         if (selectedPalletIds.size === 0) {
-            notify.error({ title: "Seleccione al menos un palet para mover" });
+            notify.error({
+              title: 'Ningún palet seleccionado',
+              description: 'Seleccione al menos un palet para mover.',
+            });
             return;
         }
 
@@ -112,17 +118,20 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
             // Mostrar mensaje de éxito con detalles
             if (moved_count > 0) {
-                let message = `Se movieron ${moved_count} palet(s) correctamente`;
+                let desc = `Se movieron ${moved_count} palet(s) correctamente.`;
                 if (errors && errors.length > 0) {
-                    message += `. ${total_count - moved_count} palet(s) no se pudieron mover.`;
+                    desc += ` ${total_count - moved_count} palet(s) no se pudieron mover.`;
                 }
-                notify.success({ title: message });
+                notify.success({ title: 'Palets movidos', description: desc });
             }
 
             // Mostrar errores individuales si existen
             if (errors && errors.length > 0) {
                 errors.forEach(({ pallet_id, error }) => {
-                    notify.error({ title: `Palet #${pallet_id}: ${error}` });
+                    notify.error({
+                      title: 'Error al mover palet',
+                      description: `Palet #${pallet_id}: ${error}`,
+                    });
                 });
             }
 
@@ -135,8 +144,8 @@ export default function MoveMultiplePalletsToStoreDialog() {
             resetAndClose();
         } catch (error) {
             // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || "Error al mover los palets";
-            notify.error({ title: errorMessage });
+            const errorMessage = error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || "No se pudieron mover los palets. Intente de nuevo.";
+            notify.error({ title: 'Error al mover palets', description: errorMessage });
         } finally {
             setIsSubmitting(false);
         }

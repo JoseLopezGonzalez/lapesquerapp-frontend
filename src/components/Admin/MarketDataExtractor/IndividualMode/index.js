@@ -34,28 +34,41 @@ export default function IndividualMode() {
             setViewDocumentType(documentType);
         } else {
             if (result.errorType === 'validation') {
-                notify.error(
-                    `Error de validación: ${result.error}\nPor favor, verifique que el documento sea del tipo correcto.`);
+                notify.error({
+                  title: 'Error de validación',
+                  description: `${result.error} Verifique que el documento sea del tipo correcto.`,
+                });
             } else if (result.errorType === 'parsing') {
-                notify.error(
-                    `Error al procesar datos: ${result.error}\nPor favor, contacte al administrador.`);
+                notify.error({
+                  title: 'Error al procesar datos',
+                  description: `${result.error} Contacte al administrador si persiste.`,
+                });
             } else if (result.errorType === 'azure') {
-                notify.error({ title: result.error });
+                notify.error({ title: 'Error en el servicio', description: result.error });
             } else {
                 console.error("Error inesperado:", result.error);
-                notify.error({ title: "Error inesperado al procesar el documento." });
+                notify.error({
+                  title: 'Error al procesar documento',
+                  description: 'Ocurrió un error inesperado. Intente de nuevo o contacte al administrador.',
+                });
             }
         }
     };
 
     const handleProcessError = (error) => {
         console.error("Error inesperado:", error);
-        notify.error({ title: "Error inesperado al procesar el documento." });
+        notify.error({
+          title: 'Error al procesar documento',
+          description: 'Ocurrió un error inesperado. Intente de nuevo o contacte al administrador.',
+        });
     };
 
     const handleProcess = () => {
         if (!documentType) {
-            notify.error({ title: "Por favor, seleccione un archivo y el tipo de documento." });
+            notify.error({
+              title: "Archivo y tipo requeridos",
+              description: "Seleccione un archivo y el tipo de documento.",
+            });
             return;
         }
 
@@ -65,7 +78,10 @@ export default function IndividualMode() {
             'listadoComprasLonjaDeIsla',
         ];
         if (!validTypes.includes(documentType)) {
-            notify.error({ title: "Tipo de documento no soportado." });
+            notify.error({
+              title: 'Tipo de documento no soportado',
+              description: 'Seleccione un tipo de documento válido para este extractor.',
+            });
             return;
         }
 

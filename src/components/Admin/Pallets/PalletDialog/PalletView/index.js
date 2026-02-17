@@ -119,7 +119,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing edit
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            notify.error({ title: `No se puede modificar el lote de la caja #${boxId}: está siendo usada en producción` });
+            notify.error({
+              title: 'Caja en uso',
+              description: `No se puede modificar el lote de la caja #${boxId}: está siendo usada en producción.`,
+            });
             return;
         }
         editPallet.box.edit.lot(boxId, lot);
@@ -130,7 +133,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing edit
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            notify.error({ title: `No se puede modificar el peso de la caja #${boxId}: está siendo usada en producción` });
+            notify.error({
+              title: 'Caja en uso',
+              description: `No se puede modificar el peso de la caja #${boxId}: está siendo usada en producción.`,
+            });
             return;
         }
         editPallet.box.edit.netWeight(boxId, netWeight);
@@ -141,7 +147,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         // Check if box is available before allowing duplicate
         const box = temporalPallet?.boxes?.find(b => b.id === boxId);
         if (box && !isBoxAvailable(box)) {
-            notify.error({ title: `No se puede duplicar la caja #${boxId}: está siendo usada en producción` });
+            notify.error({
+              title: 'Caja en uso',
+              description: `No se puede duplicar la caja #${boxId}: está siendo usada en producción.`,
+            });
             return;
         }
         editPallet.box.duplicate(boxId);
@@ -156,7 +165,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
             const productionText = productionInfo 
                 ? ` (Producción #${productionInfo.id}${productionInfo.lot ? `, Lote: ${productionInfo.lot}` : ''})`
                 : '';
-            notify.error({ title: `No se puede eliminar la caja #${boxId}: está siendo usada en producción${productionText}` });
+            notify.error({
+              title: 'Caja en uso',
+              description: `No se puede eliminar la caja #${boxId}: está siendo usada en producción${productionText}`,
+            });
             return;
         }
         editPallet.box.delete(boxId);

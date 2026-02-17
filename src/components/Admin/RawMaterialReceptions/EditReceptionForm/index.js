@@ -483,7 +483,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     setInitialFormState(JSON.stringify(normalizedFormData));
             } catch (error) {
                 const errorInfo = logReceptionError(error, 'load', { receptionId });
-                notify.error({ title: formatReceptionError(error, 'load') });
+                notify.error({
+                  title: 'Error al cargar recepción',
+                  description: formatReceptionError(error, 'load'),
+                });
             } finally {
                 setLoading(false);
                 isLoadingRef.current = false;
@@ -691,13 +694,13 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             // Validate using centralized validators
             const supplierError = validateSupplier(data.supplier);
             if (supplierError) {
-                notify.error({ title: supplierError });
+                notify.error({ title: 'Error en proveedor', description: supplierError });
                 return;
             }
 
             const dateError = validateDate(data.date);
             if (dateError) {
-                notify.error({ title: dateError });
+                notify.error({ title: 'Error en fecha', description: dateError });
                 return;
             }
 
@@ -707,7 +710,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate pallets using centralized validator
                 const palletsError = validateTemporalPallets(temporalPallets);
                 if (palletsError) {
-                    notify.error({ title: palletsError });
+                    notify.error({ title: 'Error en palets', description: palletsError });
                     return;
                 }
 
@@ -734,7 +737,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             const product = productOptions.find(p => p.value === productId || p.id === productId);
                             const productName = product?.label || product?.name || `Producto ${productId}`;
                             notify.error({
-                                title: `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`,
+                                title: 'Cambio de total de producto',
+                                description: `El total del producto ${productName} con lote ${lot || '(sin lote)'} ha cambiado. Original: ${formatDecimalWeight(originalTotal)}, Nuevo: ${formatDecimalWeight(currentTotal)}, Diferencia: ${formatDecimalWeight(difference)}`,
                             });
                             return;
                         }
@@ -745,7 +749,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         (item.pallet?.boxes || []).some(box => !box.id)
                     );
                     if (hasNewBoxes) {
-                        notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
+                        notify.error({
+                            title: 'Cajas en producción',
+                            description: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción.',
+                        });
                         return;
                     }
                 }
@@ -782,7 +789,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Validate details using centralized validator
                 const detailsError = validateReceptionDetails(data.details);
                 if (detailsError) {
-                    notify.error({ title: detailsError });
+                    notify.error({ title: 'Error en detalles', description: detailsError });
                     return;
                 }
 
@@ -790,7 +797,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 const transformedDetails = transformDetailsToApiFormat(data.details);
 
                 if (transformedDetails.length === 0) {
-                    notify.error({ title: 'Debe completar al menos una línea válida con producto y peso neto' });
+                    notify.error({
+                        title: 'Líneas incompletas',
+                        description: 'Debe completar al menos una línea válida con producto y peso neto.',
+                    });
                     return;
                 }
 
@@ -888,7 +898,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 setInitialFormState(JSON.stringify(normalizedFormData));
             }
             
-            notify.success({ title: 'Recepción actualizada exitosamente' });
+            notify.success({
+              title: 'Recepción actualizada',
+              description: 'Los cambios se han guardado correctamente.',
+            });
             announce('Recepción actualizada exitosamente', 'assertive');
             
             if (onSuccess) {
@@ -903,7 +916,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 creationMode, 
                 hasPallets: temporalPallets.length 
             });
-            notify.error({ title: formatReceptionError(error, 'update') });
+            notify.error({
+              title: 'Error al actualizar recepción',
+              description: formatReceptionError(error, 'update'),
+            });
         }
     }, [receptionId, creationMode, temporalPallets, originalBoxIds, onSuccess, router, announce, normalizePalletsForComparison, mapDetailsFromBackend, reset]);
 
@@ -1538,7 +1554,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                         onClick={async () => {
                                                             try {
                                                                 if (!session?.user?.accessToken) {
-                                                                    notify.error({ title: 'No hay sesión autenticada' });
+                                                                    notify.error({
+                                                                        title: 'Sesión no disponible',
+                                                                        description: 'No hay sesión autenticada. Inicia sesión e inténtalo de nuevo.',
+                                                                    });
                                                                     return;
                                                                 }
                                                                 const fullPallet = await getPallet(pallet.id, session.user.accessToken);
@@ -1546,7 +1565,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                                 setIsPalletLabelDialogOpen(true);
                                                             } catch (error) {
                                                                 logReceptionError(error, 'loadPallet', { palletId: pallet.id });
-                                                                notify.error({ title: formatReceptionError(error, 'loadPallet') });
+                                                                notify.error({
+                                                                    title: 'Error al cargar palet',
+                                                                    description: formatReceptionError(error, 'loadPallet'),
+                                                                });
                                                             }
                                                         }}
                                                         title="Ver etiqueta del palet"
@@ -1614,7 +1636,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 // Si no tiene ID, es una caja nueva
                                 // Validar que no se puedan crear nuevas cajas cuando hay cajas usadas
                                 if (hasUsedBoxes) {
-                                    notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
+                                    notify.error({
+                                        title: 'Cajas en producción',
+                                        description: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción.',
+                                    });
                                     return null; // Filtrar esta caja
                                 }
                                 return box;
@@ -1635,7 +1660,10 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     } else {
                         // Validar que no se puedan crear nuevos palets con cajas nuevas cuando hay cajas usadas
                         if (hasUsedBoxes && pallet.boxes?.some(box => !box.id)) {
-                            notify.error({ title: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción' });
+                            notify.error({
+                                title: 'Cajas en producción',
+                                description: 'No se pueden crear nuevas cajas cuando hay cajas siendo usadas en producción.',
+                            });
                             return;
                         }
                         

@@ -67,7 +67,10 @@ export default function TimePunchManager() {
             }, 3000);
         },
         onError: (error) => {
-            notify.error({ title: getErrorMessage(error) });
+            notify.error({
+              title: 'Error al registrar fichaje',
+              description: getErrorMessage(error),
+            });
         },
         onSettled: () => {
             setRegisteringId(null);
@@ -76,13 +79,19 @@ export default function TimePunchManager() {
 
     useEffect(() => {
         if (employeesError) {
-            notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
+            notify.error({
+              title: 'Error al cargar empleados',
+              description: employeesError || 'No se pudo cargar la lista de empleados. Intente de nuevo.',
+            });
         }
     }, [employeesError]);
 
     const handleRegisterPunch = (employeeId, employeeName) => {
         if (!session?.user?.accessToken) {
-            notify.error({ title: 'No hay sesión activa' });
+            notify.error({
+              title: 'Sesión no disponible',
+              description: 'No hay sesión activa. Inicia sesión e inténtalo de nuevo.',
+            });
             return;
         }
         setRegisteringId(employeeId);

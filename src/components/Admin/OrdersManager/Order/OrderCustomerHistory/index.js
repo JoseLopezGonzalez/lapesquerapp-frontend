@@ -34,6 +34,7 @@ export default function OrderCustomerHistory() {
 
   const {
     customerHistory,
+    availableYears,
     initialLoading,
     loadingData,
     error,
@@ -50,6 +51,9 @@ export default function OrderCustomerHistory() {
     calculateTrend,
     getTrendTooltipText,
   } = useCustomerHistory(order);
+
+  const hasNoData = !loadingData && (!customerHistory || customerHistory.length === 0);
+  const canChangeRange = availableYears && availableYears.length > 0;
 
   if (initialLoading) {
     return (
@@ -105,7 +109,7 @@ export default function OrderCustomerHistory() {
     );
   }
 
-  if (!loadingData && (!customerHistory || customerHistory.length === 0)) {
+  if (hasNoData && !canChangeRange) {
     return (
       <div className="h-full pb-2">
         {isMobile ? (
@@ -114,7 +118,7 @@ export default function OrderCustomerHistory() {
               <EmptyState
                 icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                 title="No hay historial de pedidos"
-                description="Este cliente aún no tiene pedidos registrados en el período seleccionado."
+                description="Este cliente aún no tiene pedidos registrados."
               />
             </div>
           </div>
@@ -128,7 +132,7 @@ export default function OrderCustomerHistory() {
               <EmptyState
                 icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                 title="No hay historial de pedidos"
-                description="Este cliente aún no tiene pedidos registrados en el período seleccionado."
+                description="Este cliente aún no tiene pedidos registrados."
               />
             </CardContent>
           </Card>
@@ -191,6 +195,14 @@ export default function OrderCustomerHistory() {
         {loadingData ? (
           <div className="h-full flex items-center justify-center">
             <Loader />
+          </div>
+        ) : hasNoData ? (
+          <div className="py-2 flex items-center justify-center flex-1">
+            <EmptyState
+              icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+              title="No hay historial de pedidos"
+              description="Este cliente no tiene pedidos en el período seleccionado. Prueba con otro rango de fechas."
+            />
           </div>
         ) : (
           <div className="py-2">
@@ -266,10 +278,16 @@ export default function OrderCustomerHistory() {
               </CardContent>
             )}
             <CardContent
-              className={`flex-1 py-2 min-h-0 ${loadingData ? "flex items-center justify-center" : "overflow-y-auto"}`}
+              className={`flex-1 py-2 min-h-0 ${loadingData || hasNoData ? "flex items-center justify-center" : "overflow-y-auto"}`}
             >
               {loadingData ? (
                 <Loader />
+              ) : hasNoData ? (
+                <EmptyState
+                  icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                  title="No hay historial de pedidos"
+                  description="Este cliente no tiene pedidos en el período seleccionado. Prueba con otro rango de fechas."
+                />
               ) : (
                 <>
                   <ShowMoreButton />

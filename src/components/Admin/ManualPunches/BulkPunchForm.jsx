@@ -41,14 +41,23 @@ export default function BulkPunchForm() {
       setValidationResults(result);
       if (result.invalid === 0) {
         setIsValidated(true);
-        notify.success({ title: 'Todos los fichajes son válidos. Ya puedes registrar' });
+        notify.success({
+          title: 'Fichajes válidos',
+          description: 'Todos los fichajes son válidos. Ya puedes registrar.',
+        });
       } else {
         setIsValidated(false);
-        notify.error({ title: `${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar` });
+        notify.error({
+          title: 'Errores en fichajes',
+          description: `${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar.`,
+        });
       }
     },
     onError: () => {
-      notify.error({ title: 'Error al validar los fichajes' });
+      notify.error({
+        title: 'Error al validar fichajes',
+        description: 'No se pudieron validar los fichajes. Intente de nuevo.',
+      });
     },
   });
 
@@ -61,7 +70,10 @@ export default function BulkPunchForm() {
     onSuccess: (result) => {
       setSubmitResults(result);
       if (result.failed === 0) {
-        notify.success({ title: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente` });
+        notify.success({
+          title: 'Fichajes registrados',
+          description: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente.`,
+        });
         setTimeout(() => {
           setRows([]);
           setValidationResults(null);
@@ -71,19 +83,23 @@ export default function BulkPunchForm() {
         queryClient.invalidateQueries({ queryKey: ['punches'] });
       } else {
         notify.error({
-          title: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`,
+          title: 'Registro parcial de fichajes',
+          description: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}; ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}. Revisa los datos e inténtalo de nuevo.`,
         });
       }
     },
     onError: (error) => {
-      const msg = error?.userMessage || error?.message || 'Error al registrar los fichajes';
-      notify.error({ title: msg });
+      const msg = error?.userMessage || error?.message || 'No se pudieron registrar los fichajes.';
+      notify.error({ title: 'Error al registrar fichajes', description: msg });
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
+      notify.error({
+        title: 'Error al cargar empleados',
+        description: employeesError || 'No se pudo cargar la lista de empleados. Intente de nuevo.',
+      });
     }
   }, [employeesError]);
 
@@ -214,11 +230,17 @@ export default function BulkPunchForm() {
 
   const handleValidate = () => {
     if (rows.length === 0) {
-      notify.error({ title: 'Añade al menos un fichaje para validar' });
+      notify.error({
+        title: 'Sin fichajes para validar',
+        description: 'Añade al menos un fichaje antes de validar.',
+      });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error({ title: 'No hay sesión activa' });
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No hay sesión activa. Inicia sesión e inténtalo de nuevo.',
+      });
       return;
     }
     validateMutation.mutate(punchesPayload);
@@ -226,15 +248,24 @@ export default function BulkPunchForm() {
 
   const handleSubmit = () => {
     if (rows.length === 0) {
-      notify.error({ title: 'Añade al menos un fichaje para registrar' });
+      notify.error({
+        title: 'Sin fichajes para registrar',
+        description: 'Añade al menos un fichaje antes de registrar.',
+      });
       return;
     }
     if (!isValidated) {
-      notify.error({ title: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero' });
+      notify.error({
+        title: 'Validación requerida',
+        description: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero.',
+      });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error({ title: 'No hay sesión activa' });
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No hay sesión activa. Inicia sesión e inténtalo de nuevo.',
+      });
       return;
     }
     const payload = rows.map((row) => ({

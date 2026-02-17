@@ -194,11 +194,17 @@ export default function OrquestadorView() {
     // Validación: 3 primeros campos y al menos una caja generable
     const missingField = !productId ? 'producto' : !lot ? 'lote' : !labelFormatId ? 'formato de etiqueta' : null;
     if (missingField) {
-      notify.error({ title: `Completa los tres primeros campos: producto, lote y formato de etiqueta (falta: ${missingField}).` });
+      notify.error({
+        title: 'Campos obligatorios',
+        description: `Completa los tres primeros campos: producto, lote y formato de etiqueta (falta: ${missingField}).`,
+      });
       return;
     }
     if (lot.length !== 14) {
-      notify.error({ title: 'El lote debe tener exactamente 14 caracteres.' });
+      notify.error({
+        title: 'Lote inválido',
+        description: 'El lote debe tener exactamente 14 caracteres.',
+      });
       return;
     }
     let canGenerateAtLeastOne = false;
@@ -215,13 +221,19 @@ export default function OrquestadorView() {
       canGenerateAtLeastOne = weights.length >= 1;
     }
     if (!canGenerateAtLeastOne) {
-      notify.error({ title: 'Indica al menos una caja a generar.' });
+      notify.error({
+        title: 'Datos insuficientes',
+        description: 'Indica al menos una caja a generar (pesos o peso total y número de cajas).',
+      });
       return;
     }
 
     const product = products.find((p) => p.id === productId);
     if (!product) {
-      notify.error({ title: 'Producto no encontrado.' });
+      notify.error({
+        title: 'Producto no encontrado',
+        description: 'El producto seleccionado no está disponible. Elige otro.',
+      });
       return;
     }
 
@@ -229,17 +241,26 @@ export default function OrquestadorView() {
       const totalWeight = (emisionForm.totalWeight || '').trim();
       const numberOfBoxes = (emisionForm.numberOfBoxes || '').trim();
       if (!totalWeight || !numberOfBoxes) {
-        notify.error({ title: 'Peso total y número de cajas son obligatorios.' });
+        notify.error({
+          title: 'Campos obligatorios',
+          description: 'Peso total y número de cajas son obligatorios.',
+        });
         return;
       }
       const n = parseInt(numberOfBoxes, 10);
       if (!Number.isInteger(n) || n < 1) {
-        notify.error({ title: 'Número de cajas debe ser un entero mayor que 0.' });
+        notify.error({
+          title: 'Número de cajas inválido',
+          description: 'El número de cajas debe ser un entero mayor que 0.',
+        });
         return;
       }
       const netTotalWeight = parseFloat(totalWeight);
       if (netTotalWeight <= 0) {
-        notify.error({ title: 'El peso total debe ser mayor que 0.' });
+        notify.error({
+          title: 'Peso inválido',
+          description: 'El peso total debe ser mayor que 0.',
+        });
         return;
       }
       const averageNetWeight = netTotalWeight / n;
@@ -267,7 +288,10 @@ export default function OrquestadorView() {
       }));
       setLastGeneratedCount(n);
       setEmisionForm((p) => ({ ...p, totalWeight: '', numberOfBoxes: '' }));
-      notify.success({ title: `${n} caja(s) generada(s) por promedio. Estado: Disponible.` });
+      notify.success({
+        title: `${n} caja(s) generada(s)`,
+        description: 'Estado: Disponible.',
+      });
       return;
     }
 
@@ -279,7 +303,10 @@ export default function OrquestadorView() {
       .filter(Boolean);
     const weights = weightsLines.map((w) => parseFloat(w)).filter((n) => !Number.isNaN(n) && n > 0);
     if (weights.length === 0) {
-      notify.error({ title: 'Introduce al menos un peso por línea (una caja por línea).' });
+      notify.error({
+        title: 'Peso requerido',
+        description: 'Introduce al menos un peso por línea (una caja por línea).',
+      });
       return;
     }
     const newBoxes = weights.map((netWeight, i) => ({
@@ -297,20 +324,32 @@ export default function OrquestadorView() {
     }));
     setLastGeneratedCount(weights.length);
     setEmisionForm((p) => ({ ...p, weightsString: '' }));
-    notify.success({ title: `${weights.length} caja(s) generada(s). Estado: Disponible (pendiente de escaneo).` });
+    notify.success({
+      title: `${weights.length} caja(s) generada(s)`,
+      description: 'Estado: Disponible (pendiente de escaneo).',
+    });
   }, [emisionForm, products, nextBoxId]);
 
   const handleImprimirEtiquetasEmision = useCallback(() => {
     if (lastGeneratedCount === 0) {
-      notify.error({ title: 'Genera cajas antes de imprimir etiquetas.' });
+      notify.error({
+        title: 'Sin cajas para imprimir',
+        description: 'Genera cajas antes de imprimir etiquetas.',
+      });
       return;
     }
-    notify.success({ title: `Impresión simulada: ${lastGeneratedCount} etiquetas de caja.` });
+    notify.success({
+      title: 'Impresión simulada',
+      description: `${lastGeneratedCount} etiquetas de caja.`,
+    });
   }, [lastGeneratedCount]);
 
   const handleLimpiarCajasEmision = useCallback(() => {
     setMockState((prev) => ({ ...prev, availableBoxes: [] }));
-    notify.success({ title: 'Lista de cajas vaciada.' });
+    notify.success({
+      title: 'Lista de cajas vaciada',
+      description: 'Se han eliminado todas las cajas de la lista.',
+    });
   }, []);
 
   const openAddCajasDialog = useCallback(() => {
@@ -324,25 +363,40 @@ export default function OrquestadorView() {
   const handleAddCajasConfirm = useCallback(() => {
     const orderId = addCajasOrderId ? Number(addCajasOrderId) : null;
     if (!orderId) {
-      notify.error({ title: 'Selecciona un pedido.' });
+      notify.error({
+        title: 'Pedido requerido',
+        description: 'Selecciona un pedido para añadir las cajas.',
+      });
       return;
     }
     if (addCajasMode === 'existing' && !addCajasPaletId) {
-      notify.error({ title: 'Selecciona un palet.' });
+      notify.error({
+        title: 'Palet requerido',
+        description: 'Selecciona un palet para añadir las cajas.',
+      });
       return;
     }
     if (availableBoxes.length === 0) {
-      notify.error({ title: 'No hay cajas para añadir. Genera o escanea cajas antes.' });
+      notify.error({
+        title: 'No hay cajas para añadir',
+        description: 'Genera o escanea cajas antes.',
+      });
       return;
     }
     const order = orders.find((o) => o.id === orderId);
     const orderLabel = order ? `#${order.id} ${order.customer?.name}` : `#${orderId}`;
     if (addCajasMode === 'new') {
-      notify.success({ title: `${availableBoxes.length} caja(s) añadidas al pedido ${orderLabel} como nuevo palet (simulado).` });
+      notify.success({
+        title: 'Cajas añadidas al pedido',
+        description: `${availableBoxes.length} caja(s) como nuevo palet (simulado). ${orderLabel}`,
+      });
     } else {
       const palet = pallets.find((p) => p.id === Number(addCajasPaletId));
       const paletLabel = palet ? `#${palet.id}` : addCajasPaletId;
-      notify.success({ title: `${availableBoxes.length} caja(s) añadidas al palet ${paletLabel} del pedido ${orderLabel} (simulado).` });
+      notify.success({
+        title: 'Cajas añadidas al palet',
+        description: `${availableBoxes.length} caja(s) al palet ${paletLabel} del pedido ${orderLabel} (simulado).`,
+      });
     }
     setAddCajasDialogOpen(false);
   }, [addCajasOrderId, addCajasMode, addCajasPaletId, availableBoxes.length, orders, pallets]);
@@ -350,7 +404,10 @@ export default function OrquestadorView() {
   // ——— Pantalla 2: Escanear caja y añadir al palet ———
   const handleConfirmarPalet = useCallback(() => {
     if (currentPalletBoxes.length === 0) {
-      notify.error({ title: 'Añade al menos una caja al palet.' });
+      notify.error({
+        title: 'Palet vacío',
+        description: 'Añade al menos una caja al palet antes de confirmar.',
+      });
       return;
     }
     const orderId = selectedOrderId || null;
@@ -409,12 +466,18 @@ export default function OrquestadorView() {
     });
     setNextPalletId((id) => id + 1);
     setCurrentPalletBoxes([]);
-    notify.success({ title: `Palet #${newPallet.id} cerrado (simulado). ${numberOfBoxes} cajas.` });
+    notify.success({
+      title: `Palet #${newPallet.id} cerrado (simulado)`,
+      description: `${numberOfBoxes} cajas.`,
+    });
   }, [currentPalletBoxes, selectedOrderId, nextPalletId]);
 
   const handleFinishOrder = useCallback(() => {
     if (!selectedOrderId) {
-      notify.error({ title: 'Selecciona un pedido.' });
+      notify.error({
+        title: 'Pedido requerido',
+        description: 'Selecciona un pedido para marcarlo como terminado.',
+      });
       return;
     }
     setMockState((prev) => ({
@@ -423,7 +486,10 @@ export default function OrquestadorView() {
         o.id === selectedOrderId ? { ...o, status: 'finished' } : o
       ),
     }));
-    notify.success({ title: `Pedido #${selectedOrderId} marcado como Terminado (simulado).` });
+    notify.success({
+      title: 'Pedido marcado como Terminado (simulado)',
+      description: `Pedido #${selectedOrderId}.`,
+    });
   }, [selectedOrderId]);
 
   // Overlay “Escanear etiquetas”: añadir caja al escanear (simulado)
@@ -463,7 +529,10 @@ export default function OrquestadorView() {
       const count = scannedLabelsBoxes.length;
       setScannedLabelsBoxes([]);
       setActiveScreen('preparacion');
-      notify.success({ title: `${count} caja(s) pasan a disponibles.` });
+      notify.success({
+        title: 'Cajas disponibles',
+        description: `${count} caja(s) pasan a disponibles.`,
+      });
     } else {
       setActiveScreen('preparacion');
     }
@@ -913,7 +982,10 @@ export default function OrquestadorView() {
                                 variant="outline"
                                 className="justify-start"
                                 onClick={() => {
-                                  notify.success({ title: `Descarga de "${doc.label}" para pedido #${selectedOrderId} (simulado). En producción usarás el gestor de pedidos.` });
+                                  notify.success({
+                                    title: 'Descarga simulada',
+                                    description: `"${doc.label}" para pedido #${selectedOrderId}. En producción usarás el gestor de pedidos.`,
+                                  });
                                 }}
                               >
                                 <BsFileEarmarkPdf className="h-4 w-4 mr-2 shrink-0" />

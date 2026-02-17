@@ -131,7 +131,10 @@ export function useOrderPallets() {
     async (palletId) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        notify.error({ title: 'No se pudo obtener el token de autenticación' });
+        notify.error({
+          title: 'Sesión no disponible',
+          description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
+        });
         return;
       }
       try {
@@ -155,7 +158,10 @@ export function useOrderPallets() {
         setSelectedStoreId(originalPallet.storeId || originalPallet.store?.id);
         setSelectedPalletId('new');
         setIsPalletDialogOpen(true);
-        notify.success({ title: 'Palet clonado. Puedes editarlo antes de guardarlo.' });
+        notify.success({
+          title: 'Palet clonado',
+          description: 'Puedes editarlo antes de guardarlo.',
+        });
       } catch (error) {
         console.error('Error al clonar el palet:', error);
         const msg =
@@ -220,7 +226,10 @@ export function useOrderPallets() {
         setPaginationMeta(result.meta || null);
       } catch (error) {
         console.error('Error al cargar palets disponibles:', error);
-        notify.error({ title: 'Error al cargar palets disponibles' });
+        notify.error({
+          title: 'Error al cargar palets',
+          description: 'No se pudieron cargar los palets disponibles. Intente de nuevo.',
+        });
       } finally {
         setIsInitialLoading(false);
       }
@@ -276,7 +285,10 @@ export function useOrderPallets() {
     async (page = 1, storeIdOverride = null) => {
       const token = session?.user?.accessToken;
       if (!token) {
-        notify.error({ title: 'No se pudo obtener el token de autenticación' });
+        notify.error({
+          title: 'Sesión no disponible',
+          description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
+        });
         return;
       }
       try {
@@ -437,18 +449,27 @@ export function useOrderPallets() {
       return;
     }
     if (!createFromForecastStoreId) {
-      notify.error({ title: 'Selecciona el almacén donde se almacenará el palet' });
+      notify.error({
+        title: 'Almacén requerido',
+        description: 'Selecciona el almacén donde se almacenará el palet.',
+      });
       return;
     }
     const token = session?.user?.accessToken;
     if (!token) {
-      notify.error({ title: 'No se pudo obtener el token de autenticación' });
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
+      });
       return;
     }
     const detailsWithBoxes = (plannedProductDetails || [])
       .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
     if (detailsWithBoxes.length === 0) {
-      notify.error({ title: 'No hay productos en la previsión con cajas' });
+      notify.error({
+        title: 'Sin productos con cajas',
+        description: 'No hay productos en la previsión con cajas. Añade cajas a la previsión.',
+      });
       return;
     }
 
@@ -539,7 +560,10 @@ export function useOrderPallets() {
       if (newPallet) {
         await onCreatingPallet(newPallet);
         handleCloseCreateFromForecastDialog();
-        notify.success({ title: 'Palet creado desde la previsión correctamente' });
+        notify.success({
+          title: 'Palet creado',
+          description: 'El palet se ha creado desde la previsión correctamente.',
+        });
       }
     } catch (err) {
       console.error('Error al crear palet desde previsión:', err);

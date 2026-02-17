@@ -42,14 +42,23 @@ export default function BulkPunchExcelUpload() {
       setValidationResults(result);
       if (result.invalid === 0) {
         setIsValidated(true);
-        notify.success({ title: 'Todos los fichajes son válidos. Ya puedes registrar' });
+        notify.success({
+          title: 'Fichajes válidos',
+          description: 'Todos los fichajes son válidos. Ya puedes registrar.',
+        });
       } else {
         setIsValidated(false);
-        notify.error({ title: `${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar` });
+        notify.error({
+          title: 'Errores en fichajes',
+          description: `${result.invalid} ${result.invalid === 1 ? 'fichaje con error' : 'fichajes con errores'}. Corrige los errores antes de registrar.`,
+        });
       }
     },
     onError: () => {
-      notify.error({ title: 'Error al validar los fichajes' });
+      notify.error({
+        title: 'Error al validar fichajes',
+        description: 'No se pudieron validar los fichajes. Intente de nuevo.',
+      });
     },
   });
 
@@ -62,7 +71,10 @@ export default function BulkPunchExcelUpload() {
     onSuccess: (result) => {
       setSubmitResults(result);
       if (result.failed === 0) {
-        notify.success({ title: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente` });
+        notify.success({
+          title: 'Fichajes registrados',
+          description: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'} correctamente.`,
+        });
         setTimeout(() => {
           setParsedData([]);
           setValidationResults(null);
@@ -73,18 +85,24 @@ export default function BulkPunchExcelUpload() {
         }, 3000);
         queryClient.invalidateQueries({ queryKey: ['punches'] });
       } else {
-        notify.error(
-          `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}, ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}`);
+        notify.error({
+          title: 'Registro parcial de fichajes',
+          description: `Se registraron ${result.created} ${result.created === 1 ? 'fichaje' : 'fichajes'}; ${result.failed} ${result.failed === 1 ? 'falló' : 'fallaron'}. Revisa los datos e inténtalo de nuevo.`,
+        });
       }
     },
     onError: (error) => {
-      notify.error({ title: error?.userMessage || error?.message || 'Error al registrar los fichajes' });
+      const msg = error?.userMessage || error?.message || 'No se pudieron registrar los fichajes.';
+      notify.error({ title: 'Error al registrar fichajes', description: msg });
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
+      notify.error({
+        title: 'Error al cargar empleados',
+        description: employeesError || 'No se pudo cargar la lista de empleados. Intente de nuevo.',
+      });
     }
   }, [employeesError]);
 
@@ -356,18 +374,27 @@ export default function BulkPunchExcelUpload() {
     if (!file) return;
 
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      notify.error({ title: 'Por favor, selecciona un archivo Excel (.xlsx o .xls)' });
+      notify.error({
+        title: 'Formato de archivo no válido',
+        description: 'Selecciona un archivo Excel (.xlsx o .xls).',
+      });
       return;
     }
 
     // Verificar que los empleados estén cargados
     if (employeeOptions.length === 0 && !loadingEmployees) {
-      notify.error({ title: 'Por favor, espera a que se carguen los empleados' });
+      notify.error({
+        title: 'Lista de empleados no cargada',
+        description: 'Espera a que se carguen los empleados antes de importar.',
+      });
       return;
     }
 
     if (loadingEmployees) {
-      notify.error({ title: 'Por favor, espera a que se carguen los empleados antes de importar' });
+      notify.error({
+        title: 'Espera a que carguen los empleados',
+        description: 'Importa el archivo cuando la lista esté lista.',
+      });
       return;
     }
 
@@ -381,21 +408,32 @@ export default function BulkPunchExcelUpload() {
       const { data, errors } = await parseExcel(file);
 
       if (errors.length > 0) {
-        notify.error(
-          `Se encontraron ${errors.length} error(es) al parsear el Excel`);
+        notify.error({
+          title: 'Errores al leer el Excel',
+          description: `Se encontraron ${errors.length} error(es) al parsear el archivo. Revisa el formato.`,
+        });
         console.warn('Errores de parsing:', errors);
       }
 
       if (data.length === 0) {
-        notify.error({ title: 'No se encontraron datos válidos en el Excel' });
+        notify.error({
+          title: 'Sin datos válidos en el Excel',
+          description: 'No se encontraron filas válidas de fichajes en el archivo.',
+        });
         return;
       }
 
       setParsedData(data);
-      notify.success({ title: `Se parsearon ${data.length} ${data.length === 1 ? 'fichaje' : 'fichajes'} correctamente` });
+      notify.success({
+        title: 'Excel importado',
+        description: `Se importaron ${data.length} ${data.length === 1 ? 'fichaje' : 'fichajes'} correctamente.`,
+      });
     } catch (error) {
       console.error('Error al parsear Excel:', error);
-      notify.error({ title: `Error al parsear el Excel: ${error.message}` });
+      notify.error({
+        title: 'Error al parsear el Excel',
+        description: error.message,
+      });
     }
   };
 
@@ -439,10 +477,16 @@ export default function BulkPunchExcelUpload() {
 
       // Descargar
       saveAs(blob, 'plantilla-fichajes.xlsx');
-      notify.success({ title: 'Plantilla descargada correctamente' });
+      notify.success({
+        title: 'Plantilla descargada',
+        description: 'La plantilla de fichajes se ha descargado correctamente.',
+      });
     } catch (error) {
       console.error('Error al descargar plantilla:', error);
-      notify.error({ title: 'Error al descargar la plantilla' });
+      notify.error({
+        title: 'Error al descargar plantilla',
+        description: 'No se pudo generar la plantilla. Intente de nuevo.',
+      });
     } finally {
       setLoadingTemplate(false);
     }
@@ -457,11 +501,17 @@ export default function BulkPunchExcelUpload() {
 
   const handleValidate = () => {
     if (parsedData.length === 0) {
-      notify.error({ title: 'No hay datos para validar. Por favor, carga un archivo Excel primero' });
+      notify.error({
+        title: 'No hay datos para validar',
+        description: 'Carga un archivo Excel primero.',
+      });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error({ title: 'No hay sesión activa' });
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No hay sesión activa. Inicia sesión e inténtalo de nuevo.',
+      });
       return;
     }
     validateMutation.mutate(punchesFromParsed);
@@ -469,15 +519,24 @@ export default function BulkPunchExcelUpload() {
 
   const handleSubmit = () => {
     if (parsedData.length === 0) {
-      notify.error({ title: 'No hay datos para registrar. Por favor, carga un archivo Excel primero' });
+      notify.error({
+        title: 'No hay datos para registrar',
+        description: 'Carga un archivo Excel primero.',
+      });
       return;
     }
     if (!isValidated) {
-      notify.error({ title: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero' });
+      notify.error({
+        title: 'Validación requerida',
+        description: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero.',
+      });
       return;
     }
     if (!session?.user?.accessToken) {
-      notify.error({ title: 'No hay sesión activa' });
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No hay sesión activa. Inicia sesión e inténtalo de nuevo.',
+      });
       return;
     }
     submitMutation.mutate(punchesFromParsed);

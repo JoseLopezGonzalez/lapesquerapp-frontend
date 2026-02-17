@@ -88,7 +88,10 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const loadEntityData = useCallback(async () => {
         const entityService = getEntityService(endpoint);
         if (!entityService) {
-            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
+            notify.error({
+              title: 'Servicio no disponible',
+              description: 'No se encontró el servicio para esta entidad. Contacte al administrador.',
+            });
             setLoading(false);
             return;
         }
@@ -107,7 +110,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            notify.error({ title: userMessage });
+            notify.error({ title: 'Error al cargar entidad', description: userMessage });
             console.error("Error loading entity data:", err);
         } finally {
             setLoading(false);
@@ -208,12 +211,18 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
             const entityService = getEntityService(endpoint);
             if (!entityService) {
-                notify.error({ title: 'No se encontró el servicio para esta entidad.' });
+                notify.error({
+                  title: 'Servicio no disponible',
+                  description: 'No se encontró el servicio para esta entidad. Contacte al administrador.',
+                });
                 return;
             }
 
             await entityService.update(id, finalData);
-            notify.success({ title: successMessage });
+            notify.success({
+              title: 'Cambios guardados',
+              description: successMessage,
+            });
             if (typeof onSuccess === 'function') onSuccess();
             // router.push(`/admin/${endpoint}`); // Uncomment if you want to redirect after success
         } catch (err) {
@@ -230,7 +239,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
             }
-            notify.error({ title: userMessage });
+            notify.error({ title: 'Error al guardar', description: userMessage });
             console.error("Submission error:", err);
         }
     };

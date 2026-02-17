@@ -294,7 +294,10 @@ const ExportModal = ({ document }) => {
         );
 
         if (comprasSeleccionadas.length === 0) {
-            notify.error({ title: 'No hay compras seleccionadas para vincular.' });
+            notify.error({
+              title: 'Sin compras seleccionadas',
+              description: 'Seleccione al menos una compra para vincular.',
+            });
             return;
         }
 
@@ -303,7 +306,10 @@ const ExportModal = ({ document }) => {
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
+                notify.success({
+                  title: 'Compras enlazadas',
+                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
+                });
             }
 
             if (result.errores > 0) {
@@ -311,18 +317,25 @@ const ExportModal = ({ document }) => {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error({ title: `${barcoInfo}${errorDetail.error}` }, {
-                        duration: 6000,
-                    });
+                    notify.error({
+                      title: 'Error al enlazar compra',
+                      description: `${barcoInfo}${errorDetail.error}`,
+                    }, { duration: 6000 });
                 });
                 
                 if (result.errores > 3) {
-                    notify.error({ title: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.` });
+                    notify.error({
+                      title: 'Varios errores al enlazar',
+                      description: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`,
+                    });
                 }
             }
         } catch (error) {
             console.error('Error al enlazar compras:', error);
-            notify.error({ title: `Error al enlazar: ${error.message}` });
+            notify.error({
+              title: 'Error al enlazar compras',
+              description: error.message,
+            });
         }
     };
 

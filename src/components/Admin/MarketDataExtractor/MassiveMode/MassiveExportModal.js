@@ -30,10 +30,16 @@ export default function MassiveExportModal({ documents }) {
             }));
 
             downloadMassiveExcel(documentsToExport);
-            notify.success({ title: 'Excel generado correctamente' });
+            notify.success({
+              title: 'Excel generado',
+              description: 'El archivo se ha generado correctamente.',
+            });
         } catch (error) {
             console.error('Error al exportar:', error);
-            notify.error({ title: `Error al exportar: ${error.message}` });
+            notify.error({
+              title: 'Error al exportar Excel',
+              description: error.message,
+            });
         } finally {
             setIsExporting(false);
         }
@@ -54,7 +60,10 @@ export default function MassiveExportModal({ documents }) {
             });
 
             if (allLinkedSummary.length === 0) {
-                notify.error({ title: 'No hay compras para enlazar' });
+                notify.error({
+                  title: 'Sin compras para enlazar',
+                  description: 'No hay compras en los documentos para vincular.',
+                });
                 return;
             }
 
@@ -62,19 +71,31 @@ export default function MassiveExportModal({ documents }) {
             const result = await linkAllPurchases(allLinkedSummary);
 
             if (result.correctas > 0) {
-                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
+                notify.success({
+                  title: 'Compras enlazadas',
+                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
+                });
             }
 
             if (result.errores > 0) {
-                notify.error({ title: `${result.errores} compras fallaron al enlazar` });
+                notify.error({
+                  title: 'Compras no enlazadas',
+                  description: `${result.errores} compras fallaron al enlazar.`,
+                });
             }
 
             if (result.correctas === 0 && result.errores === 0) {
-                notify.info({ title: 'No hay compras válidas para enlazar' });
+                notify.info({
+                  title: 'Sin compras válidas',
+                  description: 'No hay compras válidas para enlazar en la selección.',
+                });
             }
         } catch (error) {
             console.error('Error al enlazar:', error);
-            notify.error({ title: `Error al enlazar: ${error.message}` });
+            notify.error({
+              title: 'Error al enlazar',
+              description: error.message,
+            });
         } finally {
             setIsLinking(false);
         }

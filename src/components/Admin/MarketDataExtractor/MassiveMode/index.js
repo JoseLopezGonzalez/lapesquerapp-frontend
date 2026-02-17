@@ -56,7 +56,10 @@ export default function MassiveMode() {
 
     const handleDeleteProcessedDocument = (documentId) => {
         setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
-        notify.success({ title: 'Documento eliminado de la lista' });
+        notify.success({
+          title: 'Documento eliminado',
+          description: 'El documento se ha eliminado de la lista.',
+        });
     };
 
     const handleDeleteAllProcessedDocuments = () => {
@@ -74,7 +77,10 @@ export default function MassiveMode() {
 
         const processedIds = processedDocuments.map((doc) => doc.id);
         setDocuments((prev) => prev.filter((doc) => !processedIds.includes(doc.id)));
-        notify.success({ title: `Se eliminaron ${processedDocuments.length} documento(s) de la lista` });
+        notify.success({
+          title: 'Documentos eliminados',
+          description: `Se eliminaron ${processedDocuments.length} documento(s) de la lista.`,
+        });
     };
 
     const handleProcessAll = async () => {
@@ -90,10 +96,14 @@ export default function MassiveMode() {
             );
             if (documentsWithoutType.length > 0) {
                 notify.error({
-                    title: 'Por favor, seleccione el tipo de documento para todos los archivos pendientes.',
+                  title: 'Tipo de documento requerido',
+                  description: 'Seleccione el tipo de documento para todos los archivos pendientes.',
                 });
             } else {
-                notify.info({ title: 'No hay documentos pendientes para procesar.' });
+                notify.info({
+                  title: 'Sin documentos pendientes',
+                  description: 'No hay documentos pendientes para procesar.',
+                });
             }
             return;
         }
@@ -130,10 +140,10 @@ export default function MassiveMode() {
                 // Show toast if document failed
                 if (!result.success) {
                     errorCount++;
-                    notify.error(
-                        { title: `Error al procesar "${doc.file.name}": ${result.error || 'Error desconocido'}` },
-                        { duration: 6000 }
-                    );
+                    notify.error({
+                      title: 'Error al procesar documento',
+                      description: `${doc.file.name}: ${result.error || 'Error desconocido'}`,
+                    }, { duration: 6000 });
                 } else {
                     successCount++;
                 }
@@ -154,10 +164,10 @@ export default function MassiveMode() {
                 
                 // Show toast for caught errors
                 errorCount++;
-                notify.error(
-                    { title: `Error al procesar "${doc.file.name}": ${errorMessage}` },
-                    { duration: 6000 }
-                );
+                notify.error({
+                  title: 'Error al procesar documento',
+                  description: `${doc.file.name}: ${errorMessage}`,
+                }, { duration: 6000 });
             }
         }
 
@@ -165,19 +175,25 @@ export default function MassiveMode() {
 
         // Show summary toast if there were errors
         if (errorCount > 0) {
-            notify.error(
-                { title: `Procesamiento completado: ${successCount} éxito, ${errorCount} error(es). Revisa los documentos con error.` },
-                { duration: 8000 }
-            );
+            notify.error({
+              title: 'Procesamiento con errores',
+              description: `${successCount} correcto(s), ${errorCount} error(es). Revisa los documentos con error.`,
+            }, { duration: 8000 });
         } else if (successCount > 0) {
-            notify.success({ title: `Todos los documentos procesados correctamente (${successCount})` });
+            notify.success({
+              title: 'Documentos procesados',
+              description: `Todos los documentos (${successCount}) se procesaron correctamente.`,
+            });
         }
     };
 
     const handleRetryDocument = async (documentId) => {
         const doc = documents.find((d) => d.id === documentId);
         if (!doc || !doc.documentType) {
-            notify.error({ title: 'Por favor, seleccione el tipo de documento.' });
+            notify.error({
+              title: 'Tipo de documento requerido',
+              description: 'Seleccione el tipo de documento para reintentar.',
+            });
             return;
         }
 
@@ -232,7 +248,10 @@ export default function MassiveMode() {
 
     const handleOpenExportDialog = () => {
         if (successfulDocuments.length === 0) {
-            notify.error({ title: 'No hay documentos válidos para exportar.' });
+            notify.error({
+              title: 'Sin documentos para exportar',
+              description: 'No hay documentos procesados correctamente para exportar.',
+            });
             return;
         }
         setIsExportDialogOpen(true);
@@ -252,7 +271,10 @@ export default function MassiveMode() {
         });
 
         if (allLinkedSummary.length === 0) {
-            notify.error({ title: 'No hay compras para enlazar' });
+            notify.error({
+              title: 'Sin compras para enlazar',
+              description: 'No hay compras en los documentos para vincular.',
+            });
             return;
         }
 

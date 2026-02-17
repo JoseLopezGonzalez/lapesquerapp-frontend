@@ -95,28 +95,38 @@ export default function IndividualPunchForm() {
       setSuccess(true);
       if (isFullSession) {
         if (result?.failed === 0) {
-          notify.success({ title: 'Sesión completa registrada correctamente (Entrada + Salida)' });
+          notify.success({
+            title: 'Sesión registrada',
+            description: 'Entrada y salida registradas correctamente.',
+          });
         } else {
-          notify.error({ title: 'Se registró la entrada, pero la salida falló' });
+          notify.error({
+            title: 'Error al registrar salida',
+            description: 'Se registró la entrada, pero la salida falló.',
+          });
         }
       } else {
-        notify.success(
-          `Fichaje registrado correctamente: ${variables.event_type === 'IN' ? 'Entrada' : 'Salida'}`
-        );
+        notify.success({
+          title: 'Fichaje registrado',
+          description: `${variables.event_type === 'IN' ? 'Entrada' : 'Salida'} registrada correctamente.`,
+        });
       }
       reset(getDefaultTimestampValues());
       setTimeout(() => setSuccess(false), 3000);
       queryClient.invalidateQueries({ queryKey: ['punches'] });
     },
     onError: (error) => {
-      const message = error?.userMessage || error?.message || 'Error al registrar el fichaje';
-      notify.error({ title: message });
+      const message = error?.userMessage || error?.message || 'No se pudo registrar el fichaje.';
+      notify.error({ title: 'Error al registrar fichaje', description: message });
     },
   });
 
   useEffect(() => {
     if (employeesError) {
-      notify.error({ title: employeesError || 'Error al cargar la lista de empleados' });
+      notify.error({
+        title: 'Error al cargar empleados',
+        description: employeesError || 'No se pudo cargar la lista de empleados. Intente de nuevo.',
+      });
     }
   }, [employeesError]);
 

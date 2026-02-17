@@ -29,7 +29,10 @@ export default function AdminLayoutClient({ children }) {
       await signOut({ redirect: false });
       
       // Mostrar toast de éxito
-      notify.success({ title: 'Sesión cerrada correctamente' });
+      notify.success({
+        title: 'Sesión cerrada',
+        description: 'Has cerrado sesión correctamente.',
+      });
       
       // Redirigir después de un breve delay para que se vea el toast
       setTimeout(() => {
@@ -39,7 +42,10 @@ export default function AdminLayoutClient({ children }) {
       console.error('Error en logout:', err);
       // Incluso si falla el logout del backend, continuar con el logout del cliente
       await signOut({ redirect: false });
-      notify.success({ title: 'Sesión cerrada correctamente' });
+      notify.success({
+        title: 'Sesión cerrada',
+        description: 'Has cerrado sesión correctamente.',
+      });
       setTimeout(() => {
         window.location.replace('/');
       }, 500);

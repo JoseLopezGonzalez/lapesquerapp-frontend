@@ -17,6 +17,11 @@ export type NotifyMessage =
   | string
   | { title: string; description?: string };
 
+/**
+ * Título = descriptivo y contextual (ej. "Cambios guardados", "Error al crear pedido").
+ * Descripción = explicación de por qué fue bien o mal.
+ * Si se pasa string, se usa como title (sin description).
+ */
 function toSileoContent(msg: NotifyMessage): { title: string; description?: string } {
   if (typeof msg === "string") return { title: msg };
   return { title: msg.title, description: msg.description };
@@ -75,7 +80,7 @@ export const notify = {
    * Loading manual (solo para casos donde no hay promesa; preferir notify.promise para fetches).
    */
   loading(message: string | { title: string; description?: string }, options?: NotifyOptions): string {
-    const content = typeof message === "string" ? { title: message } : message;
+    const content = typeof message === "string" ? { title: message, description: undefined } : message;
     return sileo.show({
       ...content,
       position: DEFAULT_POSITION,

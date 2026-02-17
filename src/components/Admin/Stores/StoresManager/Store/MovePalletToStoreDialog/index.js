@@ -46,18 +46,27 @@ export default function MovePalletToStoreDialog() {
 
     const handleSubmit = () => {
         if (!selectedStoreValue) {
-            notify.error({ title: "Seleccione un almacén de destino" });
+            notify.error({
+              title: 'Almacén de destino requerido',
+              description: 'Seleccione un almacén para mover el palet.',
+            });
             return;
         }
 
         movePalletToStore(palletId, selectedStoreValue, token)
             .then(() => {
-                notify.success({ title: "Pallet movido correctamente" });
+                notify.success({
+                  title: 'Palet movido',
+                  description: 'El palet se ha movido correctamente al almacén seleccionado.',
+                });
                 updateStoreWhenOnMovePalletToStore({palletId , storeId: selectedStoreValue});
                 resetAndClose();
             })
             .catch(() => {
-                notify.error({ title: "Error al mover el pallet" });
+                notify.error({
+                  title: 'Error al mover palet',
+                  description: 'No se pudo mover el palet. Intente de nuevo.',
+                });
             });
     };
 

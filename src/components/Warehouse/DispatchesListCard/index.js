@@ -67,7 +67,10 @@ export default function DispatchesListCard({ storeId = null }) {
       setPrintDialogOpen(true);
     } catch (err) {
       console.error("Error al cargar salida para imprimir:", err);
-      notify.error({ title: "No se pudo cargar la salida de cebo" });
+      notify.error({
+        title: 'Error al cargar salida',
+        description: 'No se pudo cargar la salida de cebo. Intente de nuevo.',
+      });
     } finally {
       setLoadingPrintId(null);
     }

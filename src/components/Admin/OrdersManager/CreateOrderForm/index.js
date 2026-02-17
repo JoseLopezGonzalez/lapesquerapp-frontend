@@ -97,7 +97,10 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             })
             .catch((err) => {
                 console.error('Error al cargar datos del cliente:', err);
-                notify.error({ title: 'Error al cargar la información del cliente. Intente de nuevo.' });
+                notify.error({
+                  title: 'Error al cargar datos del cliente',
+                  description: 'No se pudieron cargar los datos. Intente de nuevo.',
+                });
             });
     }, [selectedCustomerId, setValue, session]); // Usar selectedCustomerId directamente en lugar de watch('customer')
 
@@ -151,7 +154,10 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         try {
             const newOrderData = await notify.promise(createOrder(payload), {
                 loading: { title: 'Creando pedido...' },
-                success: { title: 'Pedido creado correctamente' },
+                success: {
+                  title: 'Pedido creado',
+                  description: 'El pedido se ha creado correctamente.',
+                },
                 error: (error) => {
                     const description =
                         error?.message ||

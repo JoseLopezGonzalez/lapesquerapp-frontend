@@ -51,7 +51,10 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
                     })
                     .catch((error) => {
                         console.error('Error al validar:', error);
-                        notify.error({ title: 'Error al validar recepciones' });
+                        notify.error({
+                          title: 'Error al validar recepciones',
+                          description: 'No se pudieron validar las recepciones. Intente de nuevo.',
+                        });
                     })
                     .finally(() => {
                         setIsValidating(false);
@@ -117,7 +120,10 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
         });
 
         if (comprasSeleccionadas.length === 0) {
-            notify.error({ title: 'No hay compras seleccionadas para vincular.' });
+            notify.error({
+              title: 'Sin compras seleccionadas',
+              description: 'Seleccione al menos una compra para vincular.',
+            });
             return;
         }
 
@@ -126,25 +132,40 @@ export function useLinkPurchases({ open, documents, linkedSummaryGenerators, onS
             const result = await linkAllPurchases(comprasSeleccionadas);
 
             if (result.correctas > 0) {
-                notify.success({ title: `Compras enlazadas correctamente (${result.correctas})` });
+                notify.success({
+                  title: 'Compras enlazadas',
+                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
+                });
             }
             if (result.errores > 0) {
                 const erroresAMostrar = result.erroresDetalles.slice(0, 3);
                 erroresAMostrar.forEach((errorDetail) => {
                     const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error({ title: `${barcoInfo}${errorDetail.error}` }, { duration: 6000 });
+                    notify.error({
+                      title: 'Error al enlazar compra',
+                      description: `${barcoInfo}${errorDetail.error}`,
+                    }, { duration: 6000 });
                 });
                 if (result.errores > 3) {
-                    notify.error({ title: `${result.errores - 3} error(es) adicional(es).` });
+                    notify.error({
+                      title: 'Varios errores al enlazar',
+                      description: `${result.errores - 3} error(es) adicional(es). Revisa la consola si es necesario.`,
+                    });
                 }
             }
             if (result.correctas === 0 && result.errores === 0) {
-                notify.info({ title: 'No hay compras válidas para enlazar' });
+                notify.info({
+                  title: 'Sin compras válidas',
+                  description: 'No hay compras válidas para enlazar en la selección.',
+                });
             }
             if (result.correctas > 0 && onSuccess) onSuccess();
         } catch (error) {
             console.error('Error al enlazar:', error);
-            notify.error({ title: `Error al enlazar: ${error.message}` });
+            notify.error({
+              title: 'Error al enlazar compras',
+              description: error.message,
+            });
         } finally {
             setIsLinking(false);
         }

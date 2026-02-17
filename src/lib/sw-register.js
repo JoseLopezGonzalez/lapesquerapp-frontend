@@ -75,7 +75,10 @@ export function registerServiceWorker() {
  */
 function handleServiceWorkerUpdate() {
   if (typeof window !== 'undefined') {
-    notify.info({ title: 'Nueva versión disponible. Recarga la página para actualizar.' }, { duration: 5000 });
+    notify.info(
+  { title: 'Nueva versión disponible', description: 'Recarga la página para actualizar.' },
+  { duration: 5000 }
+);
   }
 }
 

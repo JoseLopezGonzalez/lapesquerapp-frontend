@@ -148,14 +148,14 @@ export default function EditEntityClient({ config }) {
             });
 
             if (res.ok) {
-                notify.success({ title: successMessage });
+                notify.success({ title: 'Cambios guardados', description: successMessage });
                 /* router.push(`/admin/${endpoint}`); */
             } else {
-                notify.error({ title: errorMessage });
+                notify.error({ title: 'Error al guardar', description: errorMessage });
             }
         } catch (err) {
             console.error(err);
-            notify.error({ title: "Error inesperado" });
+            notify.error({ title: 'Error inesperado', description: 'Ocurrió un error. Intente de nuevo.' });
         }
     };
 
