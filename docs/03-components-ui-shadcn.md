@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes del módulo Admin
-- **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)** - Sistema de diseño y estilos
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes del módulo Admin
+- **[10-estilos-design-system.md](./10-estilos-design-system.md)** - Sistema de diseño y estilos
 
 ---
 

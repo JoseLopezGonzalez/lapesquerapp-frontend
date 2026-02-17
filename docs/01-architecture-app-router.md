@@ -2,12 +2,12 @@
 
 ## 📐 Arquitectura General
 
-La aplicación utiliza **Next.js 15** con **App Router**, el sistema de enrutamiento basado en archivos introducido en Next.js 13+. La arquitectura sigue un patrón híbrido donde la mayoría de componentes son **Client Components** debido a la alta interactividad requerida.
+La aplicación utiliza **Next.js 16** con **App Router**, el sistema de enrutamiento basado en archivos introducido en Next.js 13+. La arquitectura sigue un patrón híbrido donde la mayoría de componentes son **Client Components** debido a la alta interactividad requerida.
 
 ## 📚 Documentación Relacionada
 
-- **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general y stack tecnológico
-- **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura detallada de directorios
+- **[00-overview-introduction.md](./00-overview-introduction.md)** - Visión general y stack tecnológico
+- **[02-project-structure.md](./02-project-structure.md)** - Estructura detallada de directorios
 
 ---
 
@@ -554,7 +554,7 @@ Aplicado a rutas `/warehouse/*`:
 
 ## ⚠️ Observaciones Críticas
 
-Para una lista completa de observaciones críticas, consulta **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)**.
+Para una lista completa de observaciones críticas, consulta **[15-observaciones-criticas.md](./15-observaciones-criticas.md)**.
 
 **Principales observaciones arquitectónicas:**
 - Mezcla inconsistente de Server/Client Components (oportunidad de optimización)

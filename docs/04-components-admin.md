@@ -2,9 +2,9 @@
 
 ## 📚 Documentación Relacionada
 
-- **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes base ShadCN UI
-- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks utilizados por los componentes
-- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API utilizados
+- **[03-components-ui-shadcn.md](./03-components-ui-shadcn.md)** - Componentes base ShadCN UI
+- **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks utilizados por los componentes
+- **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios API utilizados
 
 ---
 
@@ -344,7 +344,7 @@ export const configs = {
 };
 ```
 
-**Documentación detallada**: Ver [`configs/entitiesConfig.md`](../configs/entitiesConfig.md) y [`examples/entity-config-examples.md`](../examples/entity-config-examples.md) para más detalles y ejemplos.
+**Documentación detallada**: Ver [`configs/00-entities-config.md`](../configs/00-entities-config.md) y [`examples/00-entity-config-examples.md`](../examples/00-entity-config-examples.md) para más detalles y ejemplos.
 
 ---
 

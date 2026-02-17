@@ -793,7 +793,7 @@ Una vez completadas las tareas pendientes:
 
 Este documento lista las tareas generales para comenzar la implementación de la adaptación mobile. Estas son tareas base que deben completarse antes o en paralelo con la adaptación de módulos específicos.
 
-**Documento de referencia**: [00-PLAN-GENERAL.md](./00-PLAN-GENERAL.md)
+**Documento de referencia**: [01-plan-general-adaptacion-mobile.md](../plan/01-plan-general-adaptacion-mobile.md)
 
 ---
 
@@ -801,7 +801,7 @@ Este documento lista las tareas generales para comenzar la implementación de la
 
 **Estado**: ✅ **Fase 0, 1 y 2 Completadas** - Base técnica y design system implementados
 **Progreso**: 🟢 ~85% de tareas generales completadas
-**Última revisión**: Ver [RESUMEN-IMPLEMENTACION.md](./RESUMEN-IMPLEMENTACION.md) para detalles completos
+**Última revisión**: Ver secciones siguientes de este documento para detalles completos
 
 ---
 
@@ -1182,7 +1182,7 @@ Antes de pasar a módulos específicos (OrdersManager, etc.), asegurar:
 
 ---
 
-**Última actualización**: Fase 0, 1 y 2 completadas. Ver [RESUMEN-IMPLEMENTACION.md](./RESUMEN-IMPLEMENTACION.md) para revisión completa.
+**Última actualización**: Fase 0, 1 y 2 completadas. Ver checklist y secciones de este documento para revisión completa.
 
 
 
@@ -1300,7 +1300,7 @@ Antes de pasar a módulos específicos (OrdersManager, etc.), asegurar:
 
 ---
 
-**Ver [RESUMEN-IMPLEMENTACION.md](./RESUMEN-IMPLEMENTACION.md) para detalles completos**
+**Ver checklist y secciones anteriores de este documento para detalles completos.**
 
 
 

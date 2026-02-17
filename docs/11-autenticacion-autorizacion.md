@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Middleware y protección de rutas
-- **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura de archivos de autenticación
+- **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Middleware y protección de rutas
+- **[02-project-structure.md](./02-project-structure.md)** - Estructura de archivos de autenticación
 
 ---
 

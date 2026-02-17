@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios que utilizan `fetchWithTenant`
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan helpers
+- **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios que utilizan `fetchWithTenant`
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes que utilizan helpers
 
 ---
 

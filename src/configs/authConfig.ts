@@ -34,8 +34,14 @@ export function isAuthError(error: AuthErrorLike | null | undefined): boolean {
   );
 }
 
+/** True for 401 or 403. Use only for detection; for handling: 401 → redirect to login, 403 → show userMessage, no redirect. */
 export function isAuthStatusCode(status: number): boolean {
   return status === 401 || status === 403;
+}
+
+/** Solo 401: sin token o token inválido/expirado. Debe provocar signOut + redirect a login. */
+export function isUnauthorizedStatusCode(status: number): boolean {
+  return status === 401;
 }
 
 export function buildLoginUrl(currentPath = ""): string {

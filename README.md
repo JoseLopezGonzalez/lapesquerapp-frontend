@@ -57,16 +57,14 @@ La documentación completa del proyecto está disponible en [`docs/README.md`](.
 
 ### Documentación Complementaria
 
-- **Configuración de Entidades**: [`docs/configs/entitiesConfig.md`](./docs/configs/entitiesConfig.md)
-- **Ejemplos de Configuración**: [`docs/examples/entity-config-examples.md`](./docs/examples/entity-config-examples.md)
-- **Uso de Settings**: [`docs/USO_SETTINGS.md`](./docs/USO_SETTINGS.md)
+- **Configuración de Entidades**: [`docs/configs/00-entities-config.md`](./docs/configs/00-entities-config.md)
+- **Ejemplos de Configuración**: [`docs/examples/00-entity-config-examples.md`](./docs/examples/00-entity-config-examples.md)
+- **Uso de Settings**: [`docs/23-uso-settings.md`](./docs/23-uso-settings.md)
 - **Componentes de Filtros**: [`docs/components/Admin/Filters/GenericFilters/Types/`](./docs/components/Admin/Filters/GenericFilters/Types/)
 
 ### Documentación Técnica Adicional
 
-- **Análisis de Disponibilidad de Cajas**: [`docs/ANALISIS_DISPONIBILIDAD_CAJAS.md`](./docs/ANALISIS_DISPONIBILIDAD_CAJAS.md)
-- **Implementación del Diagrama de Producción**: [`docs/PRODUCTION_DIAGRAM_IMPLEMENTATION.md`](./docs/PRODUCTION_DIAGRAM_IMPLEMENTATION.md)
-- **Fix Backend Capture Zone**: [`docs/BACKEND_FIX_CAPTURE_ZONE_ID.md`](./docs/BACKEND_FIX_CAPTURE_ZONE_ID.md)
+Ver [docs/README.md](./docs/README.md) y [docs/00-docs-map.md](./docs/00-docs-map.md) para el índice completo.
 
 ---
 

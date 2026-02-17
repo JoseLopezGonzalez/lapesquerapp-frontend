@@ -4,8 +4,8 @@ Este documento explica cómo acceder, actualizar y reaccionar a los cambios de c
 
 ## 📚 Documentación Relacionada
 
-- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Documentación completa del SettingsContext
-- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios de settings
+- **[06-context-api.md](./06-context-api.md)** - Documentación completa del SettingsContext
+- **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios de settings
 
 ---
 

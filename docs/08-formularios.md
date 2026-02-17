@@ -2,9 +2,9 @@
 
 ## 📚 Documentación Relacionada
 
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan formularios
-- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks de configuración de formularios
-- **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)** - Flujos que incluyen formularios
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes que utilizan formularios
+- **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks de configuración de formularios
+- **[09-flujos-completos.md](./09-flujos-completos.md)** - Flujos que incluyen formularios
 
 ---
 

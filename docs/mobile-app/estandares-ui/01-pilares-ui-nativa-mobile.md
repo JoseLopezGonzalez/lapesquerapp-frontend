@@ -194,7 +194,7 @@ Evitar patrones que contradigan lo que ya conocen de apps nativas (p. ej. menú 
 - [WCAG 2.2 – Quick Reference](https://www.w3.org/WAI/WCAG22/quickref/)
 - [WCAG 2.2 – Understanding Target Size (Minimum) 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
 - ShadCN UI / Radix UI (componentes base del proyecto)
-- Documentos internos: `../plan/01-PLAN-GENERAL-ADAPTACION-MOBILE.md`, `../implementacion/01-MASTER-IMPLEMENTACION-MOBILE-PESQUERAPP.md`
+- Documentos internos: `../plan/01-plan-general-adaptacion-mobile.md`, `../implementacion/01-master-implementacion-mobile-pesquerapp.md`
 
 ---
 

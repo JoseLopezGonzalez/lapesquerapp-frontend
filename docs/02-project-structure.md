@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general del proyecto
-- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura Next.js App Router
+- **[00-overview-introduction.md](./00-overview-introduction.md)** - Visión general del proyecto
+- **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Arquitectura Next.js App Router
 
 ---
 
@@ -28,7 +28,7 @@ src/
 
 ## 📂 `/src/app` - Next.js App Router
 
-**Propósito**: Contiene todas las rutas de la aplicación usando el sistema de enrutamiento basado en archivos de Next.js 15.
+**Propósito**: Contiene todas las rutas de la aplicación usando el sistema de enrutamiento basado en archivos de Next.js 16.
 
 **Estructura**:
 ```
@@ -54,13 +54,13 @@ app/
 ```
 
 **Características**:
-- Usa App Router de Next.js 15
+- Usa App Router de Next.js 16
 - Mezcla de Server Components y Client Components
 - Layouts anidados
 - Rutas dinámicas con `[param]`
 - Metadata SEO en layouts
 
-**Documentación relacionada**: Ver `01-ARQUITECTURA.md` para detalles completos.
+**Documentación relacionada**: Ver `01-architecture-app-router.md` para detalles completos.
 
 ---
 
@@ -107,7 +107,7 @@ components/
 - Componentes de utilidad en `/Utilities`
 - Componentes de layout en raíz
 
-**Documentación relacionada**: Ver `03-COMPONENTES-UI.md` y `04-COMPONENTES-ADMIN.md`.
+**Documentación relacionada**: Ver `03-components-ui-shadcn.md` y `04-components-admin.md`.
 
 ---
 
@@ -131,7 +131,7 @@ components/
 const { order, loading } = useOrderContext();
 ```
 
-**Documentación relacionada**: Ver `06-CONTEXT-API.md`.
+**Documentación relacionada**: Ver `06-context-api.md`.
 
 ---
 
@@ -164,7 +164,7 @@ export function useOrder(orderId) {
 }
 ```
 
-**Documentación relacionada**: Ver `05-HOOKS-PERSONALIZADOS.md`.
+**Documentación relacionada**: Ver `05-hooks-personalizados.md`.
 
 ---
 
@@ -225,7 +225,7 @@ export function getOrder(orderId, token) {
 - Retornan Promises
 - Manejo consistente de errores
 
-**Documentación relacionada**: Ver `07-SERVICIOS-API-V2.md`.
+**Documentación relacionada**: Ver `07-servicios-api-v2.md`.
 
 ---
 
@@ -250,7 +250,7 @@ warn("siempre visible");
 error("siempre visible");
 ```
 
-**Documentación detallada**: Ver `12-UTILIDADES-HELPERS.md` sección Logger.
+**Documentación detallada**: Ver `12-utilidades-helpers.md` sección Logger.
 
 ### `utils.js`
 ```javascript
@@ -276,7 +276,7 @@ export function cn(...inputs) {
 - `serializeBarcode()` - Serializa códigos de barras según tipo
 - `formatMap` - Mapeo de formatos
 
-**Documentación relacionada**: Ver `12-UTILIDADES-HELPERS.md`.
+**Documentación relacionada**: Ver `12-utilidades-helpers.md`.
 
 ---
 
@@ -478,7 +478,7 @@ export const goBack = () => {
 };
 ```
 
-**Documentación relacionada**: Ver `12-UTILIDADES-HELPERS.md`.
+**Documentación relacionada**: Ver `12-utilidades-helpers.md`.
 
 ---
 
@@ -495,7 +495,7 @@ export const goBack = () => {
 
 **Matcher**: Se aplica a `/admin/*`, `/production/*`, `/warehouse/*`
 
-**Documentación relacionada**: Ver `01-ARQUITECTURA.md` y `11-AUTENTICACION-AUTORIZACION.md`.
+**Documentación relacionada**: Ver `01-architecture-app-router.md` y `11-autenticacion-autorizacion.md`.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## 📋 Visión General
 
-**Brisapp** es una aplicación web desarrollada con **Next.js 15** que actúa como panel de administración para la plataforma pesquera **BlueApp/PesquerApp**. La aplicación se conecta a una API Laravel backend y proporciona herramientas completas para la gestión diaria de operaciones pesqueras, incluyendo pedidos, producción, almacenes, clientes, productos, etiquetado y más.
+**Brisapp** es una aplicación web desarrollada con **Next.js 16** que actúa como panel de administración para la plataforma pesquera **BlueApp/PesquerApp**. La aplicación se conecta a una API Laravel backend y proporciona herramientas completas para la gestión diaria de operaciones pesqueras, incluyendo pedidos, producción, almacenes, clientes, productos, etiquetado y más.
 
 ### Propósito de esta Documentación
 
@@ -34,9 +34,9 @@ export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
 
 ### Framework y Librerías Principales
 
-- **Next.js 15.3.2** - Framework React con App Router
+- **Next.js 16.0.7** - Framework React con App Router
 - **React 19.0.0-rc** - Biblioteca UI (versión release candidate)
-- **NextAuth 4.24.11** - Autenticación y gestión de sesiones
+- **NextAuth 4.24.13** - Autenticación y gestión de sesiones
 - **React Hook Form 7.54.2** - Gestión de formularios
 - **Tailwind CSS 3.4.1** - Framework CSS utility-first
 - **ShadCN UI** - Componentes UI basados en Radix UI
@@ -216,7 +216,7 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 
 ## 🔐 Autenticación y Autorización
 
-- **NextAuth 4.24.11** para gestión de sesiones
+- **NextAuth 4.24.13** para gestión de sesiones
 - **Middleware** (`/src/middleware.js`) para protección de rutas basada en roles
 - **Roles principales**: `admin`, `manager`, `superuser`, `store_operator`
 - Validación de tokens con el backend API v2
@@ -331,14 +331,14 @@ npm run lint     # Linter
 
 ## 📚 Documentación Relacionada
 
-- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura detallada de Next.js App Router, layouts, y organización de módulos
-- **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura detallada de directorios y organización del código
+- **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Arquitectura detallada de Next.js App Router, layouts, y organización de módulos
+- **[02-project-structure.md](./02-project-structure.md)** - Estructura detallada de directorios y organización del código
 
 ---
 
 ## ⚠️ Observaciones Críticas
 
-Para una lista completa de observaciones críticas, consulta **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)**.
+Para una lista completa de observaciones críticas, consulta **[15-observaciones-criticas.md](./15-observaciones-criticas.md)**.
 
 **Principales observaciones:**
 - React 19 Release Candidate en uso (monitorear actualizaciones)

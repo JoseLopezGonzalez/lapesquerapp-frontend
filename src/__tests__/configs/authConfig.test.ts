@@ -7,6 +7,7 @@ import {
   AUTH_ERROR_CONFIG,
   isAuthError,
   isAuthStatusCode,
+  isUnauthorizedStatusCode,
   buildLoginUrl,
 } from "@/configs/authConfig";
 
@@ -64,6 +65,15 @@ describe("authConfig", () => {
       expect(isAuthStatusCode(200)).toBe(false);
       expect(isAuthStatusCode(404)).toBe(false);
       expect(isAuthStatusCode(500)).toBe(false);
+    });
+  });
+
+  describe('isUnauthorizedStatusCode', () => {
+    it('returns true only for 401', () => {
+      expect(isUnauthorizedStatusCode(401)).toBe(true);
+      expect(isUnauthorizedStatusCode(403)).toBe(false);
+      expect(isUnauthorizedStatusCode(200)).toBe(false);
+      expect(isUnauthorizedStatusCode(404)).toBe(false);
     });
   });
 

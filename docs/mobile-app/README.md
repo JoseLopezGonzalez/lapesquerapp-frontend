@@ -19,23 +19,23 @@ Este directorio agrupa toda la documentación relacionada con la **experiencia m
 
 ## Documentos clave actuales
 
-- `plan/01-PLAN-GENERAL-ADAPTACION-MOBILE.md`  
+- `plan/01-plan-general-adaptacion-mobile.md`  
   Documento maestro de **visión y estrategia** para la adaptación mobile y armonización con desktop.
 
-- `estandares-ui/01-PILARES-UI-NATIVA-MOBILE.md`  
+- `estandares-ui/01-pilares-ui-nativa-mobile.md`  
   **Pilares y estándares** de UI para que la PWA se sienta nativa (navegación, touch, feedback, accesibilidad, PWA, etc.).
 
-- `implementacion/01-MASTER-IMPLEMENTACION-MOBILE-PESQUERAPP.md`  
+- `implementacion/01-master-implementacion-mobile-pesquerapp.md`  
   Documento maestro de **implementación**: estado actual, tareas, fases, checklists y próximos pasos.
 
-- `implementacion/02-PLAN-LISTA-PEDIDOS-MOBILE.md`  
-  **Plan de implementación** de las mejoras de la pantalla principal del gestor de pedidos en mobile (lista como cola de trabajo, header simple, sheet de filtros, cards operativas). Basado en el análisis en `analisis/01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md`.
+- `implementacion/02-plan-lista-pedidos-mobile.md`  
+  **Plan de implementación** de las mejoras de la pantalla principal del gestor de pedidos en mobile. Basado en `analisis/01-analisis-gestor-pedidos-mobile.md`.
 
-- `analisis/01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md`  
+- `analisis/01-analisis-gestor-pedidos-mobile.md`  
   **Análisis** del gestor de pedidos en mobile: lista (cola de trabajo), header, filtros, cards, micro-interacciones.
 
-- `analisis/02-ANALISIS-EDITOR-PEDIDO-MOBILE.md`  
-  **Análisis** de la pantalla del **editor de pedido** en mobile (overview/detalle): overflow menu, jerarquía de acciones, qué mantener visible vs menú ⋮.
+- `analisis/02-analisis-editor-pedido-mobile.md`  
+  **Análisis** de la pantalla del **editor de pedido** en mobile (overview/detalle): overflow menu, jerarquía de acciones.
 
 El flujo esperado es:
 

@@ -1,4 +1,4 @@
-import { isAuthError, isAuthStatusCode, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
+import { isAuthError, isAuthStatusCode, isUnauthorizedStatusCode, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
 import { log } from '@/lib/logger';
 
 export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
@@ -91,21 +91,19 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       log('⚠️ No se pudo parsear la respuesta de error:', parseError);
     }
     
-    // Si es un error de autenticación (401/403), verificar el tipo de error
-    if (isAuthStatusCode(res.status)) {
+    // 401 = no autenticado (sin token, inválido o expirado) → signOut + redirect a login.
+    // 403 = autenticado pero sin permiso (rol/policy) → NO redirigir; mostrar userMessage y dejar que la UI maneje.
+    if (isUnauthorizedStatusCode(res.status)) {
       // Si es logout O hay un logout en curso, no tratarlo como error
       if (isLogoutRequest || isLoggingOut) {
-        // Solo loguear sin lanzar error para que el logout continúe
         if (isLogoutRequest) {
-          log('ℹ️ Logout: respuesta 401/403 esperada al revocar token');
-        } else         if (isLoggingOut) {
-          log('ℹ️ Logout en curso: ignorando error 401/403');
+          log('ℹ️ Logout: respuesta 401 esperada al revocar token');
+        } else if (isLoggingOut) {
+          log('ℹ️ Logout en curso: ignorando error 401');
         }
-        return res; // Retornar la respuesta sin lanzar error
+        return res;
       }
-      
-      // Verificar si el mensaje indica que es un error de validación del backend
-      // (no un error de sesión expirada)
+
       const errorMessage = (errorJson.message || errorJson.userMessage || '').toLowerCase();
       const isValidationError = errorMessage.includes('validation') ||
                                errorMessage.includes('validación') ||
@@ -122,24 +120,19 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
                                errorMessage.includes('requieren autenticación') ||
                                errorMessage.includes('require authentication') ||
                                errorMessage.includes('fichajes manuales');
-      
-      // Si es un error de validación, NO lanzar "No autenticado"
-      // Permitir que el error se propague con el mensaje real del backend
+
       if (!isValidationError) {
-        // En cliente: no lanzar para evitar que el overlay/consola muestre el error.
-        // Se dispara un evento que AuthErrorInterceptor escucha (toast + signOut + redirect).
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent(AUTH_ERROR_CONFIG.AUTH_SESSION_EXPIRED_EVENT));
           return res;
         }
-        // En servidor: lanzar para que API routes etc. reciban el error
         const err = new Error('No autenticado');
         err.status = res.status;
         err.code = 'UNAUTHENTICATED';
         throw err;
       }
-      // Si es un error de validación, continuar con el flujo normal de manejo de errores
     }
+    // 403: no disparar evento de sesión expirada; continuar al manejo normal de error (userMessage, throw).
 
     // Procesar el error normalmente (para todos los códigos de error, incluyendo 401/403 de validación)
     try {

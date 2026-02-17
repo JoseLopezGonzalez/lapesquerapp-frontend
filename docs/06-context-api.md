@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks que complementan los contextos
-- **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura y uso de providers
+- **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks que complementan los contextos
+- **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Arquitectura y uso de providers
 - **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía práctica de uso de Settings
 - **[OPCIONES-POR-GESTOR.md](./OPCIONES-POR-GESTOR.md)** - Contextos de opciones por gestor (productos, proveedores, impuestos) y cómo añadir nuevos
 

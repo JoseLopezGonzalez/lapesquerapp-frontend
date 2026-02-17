@@ -2,8 +2,8 @@
 
 > Plan de trabajo para aplicar las mejoras descritas en el análisis del gestor de pedidos, **solo en la pantalla de lista de pedidos** y **solo en versión mobile** (< 768px).
 
-**Documento de referencia:** [01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md](../analisis/01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md)  
-**Estándares:** [01-PILARES-UI-NATIVA-MOBILE.md](../estandares-ui/01-PILARES-UI-NATIVA-MOBILE.md), [02-TIPOLOGIAS-PANTALLAS-ENTIDADES-VS-GESTORES.md](../estandares-ui/02-TIPOLOGIAS-PANTALLAS-ENTIDADES-VS-GESTORES.md)
+**Documento de referencia:** [01-analisis-gestor-pedidos-mobile.md](../analisis/01-analisis-gestor-pedidos-mobile.md)  
+**Estándares:** [01-pilares-ui-nativa-mobile.md](../estandares-ui/01-pilares-ui-nativa-mobile.md), [02-tipologias-pantallas-entidades-vs-gestores.md](../estandares-ui/02-tipologias-pantallas-entidades-vs-gestores.md)
 
 ---
 
@@ -252,11 +252,11 @@ No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al
 
 ## 8. Referencias rápidas
 
-- **Análisis completo:** [01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md](../analisis/01-ANALISIS-GESTOR-PEDIDOS-MOBILE.md)  
+- **Análisis completo:** [01-analisis-gestor-pedidos-mobile.md](../analisis/01-analisis-gestor-pedidos-mobile.md)  
   Secciones clave: 7 (lista), 7.1–7.10 (modelo mental, propuestas), **7.11** (header), **7.12** (búsqueda y filtros / sheet), **7.13** (cards), **7.14** (micro-interacciones), **7.15** (qué no hacer), **7.16** (checklist final).
-- Pilares UI nativa: [01-PILARES-UI-NATIVA-MOBILE.md](../estandares-ui/01-PILARES-UI-NATIVA-MOBILE.md).
-- Tipologías (gestor = drill-down, cola de trabajo): [02-TIPOLOGIAS-PANTALLAS-ENTIDADES-VS-GESTORES.md](../estandares-ui/02-TIPOLOGIAS-PANTALLAS-ENTIDADES-VS-GESTORES.md).
-- Plan general y patrones (bottom sheet, breakpoint): [01-PLAN-GENERAL-ADAPTACION-MOBILE.md](../plan/01-PLAN-GENERAL-ADAPTACION-MOBILE.md).
+- Pilares UI nativa: [01-pilares-ui-nativa-mobile.md](../estandares-ui/01-pilares-ui-nativa-mobile.md).
+- Tipologías (gestor = drill-down, cola de trabajo): [02-tipologias-pantallas-entidades-vs-gestores.md](../estandares-ui/02-tipologias-pantallas-entidades-vs-gestores.md).
+- Plan general y patrones (bottom sheet, breakpoint): [01-plan-general-adaptacion-mobile.md](../plan/01-plan-general-adaptacion-mobile.md).
 
 ---
 

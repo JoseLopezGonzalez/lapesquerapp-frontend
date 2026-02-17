@@ -2,9 +2,9 @@
 
 ## 📚 Documentación Relacionada
 
-- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks que utilizan estos servicios
-- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Contextos que utilizan estos servicios
-- **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Función `fetchWithTenant`
+- **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks que utilizan estos servicios
+- **[06-context-api.md](./06-context-api.md)** - Contextos que utilizan estos servicios
+- **[12-utilidades-helpers.md](./12-utilidades-helpers.md)** - Función `fetchWithTenant`
 
 ---
 

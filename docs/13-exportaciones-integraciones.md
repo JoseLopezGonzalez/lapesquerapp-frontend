@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que implementan exportaciones
-- **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Helpers utilizados en exportaciones
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes que implementan exportaciones
+- **[12-utilidades-helpers.md](./12-utilidades-helpers.md)** - Helpers utilizados en exportaciones
 
 ---
 

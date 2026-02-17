@@ -2,9 +2,9 @@
 
 ## 📚 Documentación Relacionada
 
-- **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Contextos que complementan los hooks
-- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios utilizados por los hooks
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan estos hooks
+- **[06-context-api.md](./06-context-api.md)** - Contextos que complementan los hooks
+- **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios utilizados por los hooks
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes que utilizan estos hooks
 
 ---
 

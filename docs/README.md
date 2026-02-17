@@ -2,7 +2,9 @@
 
 ## 📋 Visión General
 
-Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 para gestión de operaciones pesqueras. Esta documentación cubre exclusivamente la **API v2** (versión activa).
+Documentación completa del frontend de **Brisapp**, una aplicación Next.js 16 para gestión de operaciones pesqueras. Esta documentación cubre exclusivamente la **API v2** (versión activa).
+
+📌 **Mapa completo**: [00-docs-map.md](./00-docs-map.md)
 
 ---
 
@@ -18,37 +20,37 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 
 
 ### Fundamentos
 
-1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Visión general, stack tecnológico, convenciones
-2. **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Arquitectura Next.js App Router, rutas, layouts
-3. **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Estructura de directorios y organización
+1. **[00-overview-introduction.md](./00-overview-introduction.md)** - Visión general, stack tecnológico, convenciones
+2. **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Arquitectura Next.js App Router, rutas, layouts
+3. **[02-project-structure.md](./02-project-structure.md)** - Estructura de directorios y organización
 
 ### Componentes y UI
 
-4. **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes base ShadCN UI y personalizados
-5. **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes del módulo Admin
+4. **[03-components-ui-shadcn.md](./03-components-ui-shadcn.md)** - Componentes base ShadCN UI y personalizados
+5. **[04-components-admin.md](./04-components-admin.md)** - Componentes del módulo Admin
 
 ### Estado y Lógica
 
-6. **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks personalizados
-7. **[06-CONTEXT-API.md](./06-CONTEXT-API.md)** - Context API (Order, Store, Settings)
+6. **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks personalizados
+7. **[06-context-api.md](./06-context-api.md)** - Context API (Order, Store, Settings)
 
 ### Servicios y Datos
 
-8. **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API v2 y endpoints
-9. **[08-FORMULARIOS.md](./08-FORMULARIOS.md)** - Sistema React Hook Form
+8. **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios API v2 y endpoints
+9. **[08-formularios.md](./08-formularios.md)** - Sistema React Hook Form
 
 ### Flujos y Funcionalidades
 
-10. **[09-FLUJOS-COMPLETOS.md](./09-FLUJOS-COMPLETOS.md)** - Flujos funcionales documentados
-11. **[10-ESTILOS-DESIGN-SYSTEM.md](./10-ESTILOS-DESIGN-SYSTEM.md)** - Tailwind CSS y design system
-12. **[11-AUTENTICACION-AUTORIZACION.md](./11-AUTENTICACION-AUTORIZACION.md)** - NextAuth y protección de rutas
-13. **[12-UTILIDADES-HELPERS.md](./12-UTILIDADES-HELPERS.md)** - Funciones auxiliares, helpers y logger (desarrollo vs producción)
-14. **[13-EXPORTACIONES-INTEGRACIONES.md](./13-EXPORTACIONES-INTEGRACIONES.md)** - Exportaciones e integraciones
+10. **[09-flujos-completos.md](./09-flujos-completos.md)** - Flujos funcionales documentados
+11. **[10-estilos-design-system.md](./10-estilos-design-system.md)** - Tailwind CSS y design system
+12. **[11-autenticacion-autorizacion.md](./11-autenticacion-autorizacion.md)** - NextAuth y protección de rutas
+13. **[12-utilidades-helpers.md](./12-utilidades-helpers.md)** - Funciones auxiliares, helpers y logger (desarrollo vs producción)
+14. **[13-exportaciones-integraciones.md](./13-exportaciones-integraciones.md)** - Exportaciones e integraciones
 
 ### Estado del Proyecto
 
-15. **[14-PRODUCCION-EN-CONSTRUCCION.md](./14-PRODUCCION-EN-CONSTRUCCION.md)** - Módulo de producción (en desarrollo)
-16. **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** - Problemas identificados y mejoras
+15. **[14-produccion-en-construccion.md](./14-produccion-en-construccion.md)** - Módulo de producción (en desarrollo)
+16. **[15-observaciones-criticas.md](./15-observaciones-criticas.md)** - Problemas identificados y mejoras
 
 ### Análisis y Auditorías
 
@@ -63,14 +65,13 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 
 
 ### Específica de Módulos
 
-- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Disponibilidad de cajas en palets
-- **[FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md](./FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md)** - Formato de respuesta API
+_(Docs específicos: ver subcarpetas analisis/, API-references/, etc.)_
 
 ### Guías Rápidas
 
-- **[USO_SETTINGS.md](./USO_SETTINGS.md)** - Guía de uso de settings globales
-- **[configs/entitiesConfig.md](./configs/entitiesConfig.md)** - Configuración de entidades
-- **[examples/entity-config-examples.md](./examples/entity-config-examples.md)** - Ejemplos de configuración
+- **[23-uso-settings.md](./23-uso-settings.md)** - Guía de uso de settings globales
+- **[configs/00-entities-config.md](./configs/00-entities-config.md)** - Configuración de entidades
+- **[examples/00-entity-config-examples.md](./examples/00-entity-config-examples.md)** - Ejemplos de configuración
 
 ---
 
@@ -78,20 +79,20 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 15 
 
 ### Para Desarrolladores Nuevos
 
-1. **[00-INTRODUCCION.md](./00-INTRODUCCION.md)** - Comienza aquí
-2. **[01-ARQUITECTURA.md](./01-ARQUITECTURA.md)** - Estructura general
-3. **[02-ESTRUCTURA-PROYECTO.md](./02-ESTRUCTURA-PROYECTO.md)** - Navegación del código
+1. **[00-overview-introduction.md](./00-overview-introduction.md)** - Comienza aquí
+2. **[01-architecture-app-router.md](./01-architecture-app-router.md)** - Estructura general
+3. **[02-project-structure.md](./02-project-structure.md)** - Navegación del código
 
 ### Para Revisión de Código
 
-- **[15-OBSERVACIONES-CRITICAS.md](./15-OBSERVACIONES-CRITICAS.md)** - Problemas identificados
+- **[15-observaciones-criticas.md](./15-observaciones-criticas.md)** - Problemas identificados
 
 ---
 
 ## 🔗 Enlaces Rápidos
 
-- [Introducción](./00-INTRODUCCION.md) - Comienza aquí
-- [Arquitectura](./01-ARQUITECTURA.md) - Estructura del proyecto
-- [Observaciones Críticas](./15-OBSERVACIONES-CRITICAS.md) - Problemas identificados
-- [Producción](./14-PRODUCCION-EN-CONSTRUCCION.md) - Módulo en desarrollo
+- [Introducción](./00-overview-introduction.md) - Comienza aquí
+- [Arquitectura](./01-architecture-app-router.md) - Estructura del proyecto
+- [Observaciones Críticas](./15-observaciones-criticas.md) - Problemas identificados
+- [Producción](./14-produccion-en-construccion.md) - Módulo en desarrollo
 

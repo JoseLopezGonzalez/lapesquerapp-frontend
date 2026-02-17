@@ -2,10 +2,10 @@
 
 ## 📚 Documentación Relacionada
 
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes mencionados en los flujos
-- **[05-HOOKS-PERSONALIZADOS.md](./05-HOOKS-PERSONALIZADOS.md)** - Hooks utilizados en los flujos
-- **[07-SERVICIOS-API-V2.md](./07-SERVICIOS-API-V2.md)** - Servicios API utilizados
-- **[08-FORMULARIOS.md](./08-FORMULARIOS.md)** - Formularios en los flujos
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes mencionados en los flujos
+- **[05-hooks-personalizados.md](./05-hooks-personalizados.md)** - Hooks utilizados en los flujos
+- **[07-servicios-api-v2.md](./07-servicios-api-v2.md)** - Servicios API utilizados
+- **[08-formularios.md](./08-formularios.md)** - Formularios en los flujos
 
 ---
 

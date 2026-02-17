@@ -8,7 +8,7 @@ Este directorio contiene toda la documentación relacionada con el sistema de Ch
 
 ### **Guías Principales**
 
-#### 1. **`ARCHIVOS-CLAVE-CHAT-AI.md`** ⭐ EMPEZAR AQUÍ
+#### 1. **`01-archivos-clave-chat-ai.md`** ⭐ EMPEZAR AQUÍ
 Guía rápida de los archivos más importantes del chat AI:
 - Qué archivos son críticos y qué hacen
 - Dónde hacer cambios comunes
@@ -19,7 +19,7 @@ Guía rápida de los archivos más importantes del chat AI:
 
 ---
 
-#### 2. **`IMPLEMENTACION-CHAT-AI-COMPLETA.md`**
+#### 2. **`02-implementacion-chat-ai-completa.md`**
 Documentación técnica completa de la implementación:
 - Librerías y versiones utilizadas
 - Estructura de archivos
@@ -32,7 +32,7 @@ Documentación técnica completa de la implementación:
 
 ---
 
-#### 3. **`PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md`**
+#### 3. **`00-plan-integracion-vercel-ai-chatbot.md`**
 Plan de integración original del Vercel AI Chatbot template:
 - Análisis del template
 - Criterios arquitectónicos
@@ -44,7 +44,7 @@ Plan de integración original del Vercel AI Chatbot template:
 
 ---
 
-#### 4. **`INTEGRACION-AI-CHAT-COMPLETADA.md`**
+#### 4. **`03-integracion-ai-chat-completada.md`**
 Resumen ejecutivo de la integración completada:
 - Estado actual del sistema
 - Características implementadas

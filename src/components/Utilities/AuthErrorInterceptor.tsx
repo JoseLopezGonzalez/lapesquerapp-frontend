@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { signOut } from "next-auth/react";import { notify } from "@/lib/notifications";
-import { isAuthError, isAuthStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG, type AuthErrorLike } from "@/configs/authConfig";
+import { isAuthError, isUnauthorizedStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG, type AuthErrorLike } from "@/configs/authConfig";
 
 const { AUTH_SESSION_EXPIRED_EVENT } = AUTH_ERROR_CONFIG;
 
@@ -46,7 +46,8 @@ export default function AuthErrorInterceptor() {
         else if (first instanceof URL) url = first.href;
         if (url.includes("/logout")) return await originalFetch(...args);
         const response = await originalFetch(...args);
-        if (isAuthStatusCode(response.status)) {
+        // Solo 401 → signOut + redirect. 403 = sin permiso para la acción; no redirigir (evitar bucle login → misma ruta → 403 → login).
+        if (isUnauthorizedStatusCode(response.status)) {
           const responseClone = response.clone();
           try {
             const contentType = response.headers.get("content-type");

@@ -6,13 +6,13 @@ Esta carpeta contiene análisis técnicos, auditorías de código, propuestas de
 
 ### Análisis de Componentes y Módulos
 
-- **[ANALISIS_EdicionPedidos.md](./ANALISIS_EdicionPedidos.md)** - Análisis completo del apartado de edición de pedidos
+- **[02-analisis-edicion-pedidos.md](./02-analisis-edicion-pedidos.md)** - Análisis completo del apartado de edición de pedidos
   - Auditoría técnica y estructural
   - Análisis de rendimiento
   - Propuestas de mejoras priorizadas
   - Estado de implementación: 8/12 tareas completadas
 
-- **[ANALISIS_OrdersManager.md](./ANALISIS_OrdersManager.md)** - Análisis completo del gestor de pedidos (Orders Manager)
+- **[03-analisis-orders-manager.md](./03-analisis-orders-manager.md)** - Análisis completo del gestor de pedidos (Orders Manager)
   - Auditoría técnica y estructural
   - Análisis de rendimiento
   - Propuestas de mejoras priorizadas
@@ -22,10 +22,10 @@ Esta carpeta contiene análisis técnicos, auditorías de código, propuestas de
 
 ### Optimizaciones Implementadas
 
-- **[OPTIMIZACION_ORDER_COMPONENT.md](./OPTIMIZACION_ORDER_COMPONENT.md)** - Optimizaciones del componente Order
-- **[OPTIMIZACION_ORDERS_MANAGER.md](./OPTIMIZACION_ORDERS_MANAGER.md)** - Optimizaciones del gestor de pedidos
-- **[OPTIMIZACION_BUSQUEDA_PALETS_LOTE.md](./OPTIMIZACION_BUSQUEDA_PALETS_LOTE.md)** - Optimizaciones de búsqueda de palets por lote
-- **[RESUMEN_OPTIMIZACIONES_ORDERS.md](./RESUMEN_OPTIMIZACIONES_ORDERS.md)** - Resumen de optimizaciones en módulo de pedidos
+- **[07-optimizacion-order-component.md](./07-optimizacion-order-component.md)** - Optimizaciones del componente Order
+- **[06-optimizacion-orders-manager.md](./06-optimizacion-orders-manager.md)** - Optimizaciones del gestor de pedidos
+- **[05-optimizacion-busqueda-palets-lote.md](./05-optimizacion-busqueda-palets-lote.md)** - Optimizaciones de búsqueda de palets por lote
+- **[08-resumen-optimizaciones-orders.md](./08-resumen-optimizaciones-orders.md)** - Resumen de optimizaciones en módulo de pedidos
 
 ## 📝 Formato de los Análisis
 

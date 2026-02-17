@@ -2,8 +2,8 @@
 
 ## 📚 Documentación Relacionada
 
-- **[03-COMPONENTES-UI.md](./03-COMPONENTES-UI.md)** - Componentes ShadCN UI
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes que utilizan el sistema de diseño
+- **[03-components-ui-shadcn.md](./03-components-ui-shadcn.md)** - Componentes ShadCN UI
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes que utilizan el sistema de diseño
 
 ---
 

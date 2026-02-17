@@ -448,10 +448,20 @@ GET /api/v2/activity-logs/{id}
 
 ## Configuración
 
+**GET /api/v2/settings** debe estar permitido para **todos los roles autenticados** (incluido operario), ya que el frontend usa estos datos en layout, cabecera y otras vistas comunes. **PUT** puede seguir restringido a administrador/superuser.
+
 ### Obtener Configuración
 
 ```http
 GET /api/v2/settings
+```
+
+**Requiere:** usuario autenticado (cualquier rol).
+
+#### Headers
+```http
+X-Tenant: {subdomain}
+Authorization: Bearer {access_token}
 ```
 
 #### Response Exitosa (200)
@@ -474,6 +484,8 @@ GET /api/v2/settings
 ```http
 PUT /api/v2/settings
 ```
+
+**Requiere:** rol con permiso para editar configuración (p. ej. administrador o superuser).
 
 #### Request Body
 

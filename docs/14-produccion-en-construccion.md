@@ -2,8 +2,7 @@
 
 ## 📚 Documentación Relacionada
 
-- **[04-COMPONENTES-ADMIN.md](./04-COMPONENTES-ADMIN.md)** - Componentes de producción
-- **[ANALISIS_DISPONIBILIDAD_CAJAS.md](./ANALISIS_DISPONIBILIDAD_CAJAS.md)** - Disponibilidad de cajas en palets
+- **[04-components-admin.md](./04-components-admin.md)** - Componentes de producción
 
 ## ⚡ Optimizaciones Implementadas
 

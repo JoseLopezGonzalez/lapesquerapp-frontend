@@ -6,22 +6,22 @@ Este directorio contiene toda la documentación relacionada con la refactorizaci
 
 ## 📚 Documentos
 
-### 🎯 [TODO Unificado](./TODO-UNIFICADO.md) ⭐ **START HERE**
+### 🎯 [TODO Unificado](./00-todo-unificado.md) ⭐ **START HERE**
 Documento que unifica todos los TODOs de los demás documentos en un solo lugar. Incluye estado de progreso, próximos pasos y tareas organizadas por fases.
 
 **📌 Consulta esto primero** para ver qué hacer a continuación y seguir el progreso.
 
-### 1. [Resumen Ejecutivo](./RESUMEN-ARQUITECTURA-SERVICIOS.md)
+### 1. [Resumen Ejecutivo](./03-resumen-arquitectura-servicios.md)
 Resumen completo del estado actual, lo que se ha completado y próximos pasos.
 
 **📌 Comienza aquí** si quieres una visión general rápida.
 
-### 2. [Arquitectura de Servicios de Dominio](./ARQUITECTURA-SERVICIOS-DOMINIO.md)
+### 2. [Arquitectura de Servicios de Dominio](./01-arquitectura-servicios-dominio.md)
 Documento principal que describe los principios arquitectónicos, estructura propuesta y restricciones.
 
 **📖 Lee esto** para entender la arquitectura completa y los principios de diseño.
 
-### 3. [Próximos Pasos](./PROXIMOS-PASOS.md)
+### 3. [Próximos Pasos](./02-proximos-pasos.md)
 Documento que resume las opciones de próximos pasos después de completar las fases 1-5.
 
 **📋 Revisa** para ver qué hacer después de completar la refactorización.
@@ -72,8 +72,8 @@ Documento que resume las opciones de próximos pasos después de completar las f
 ## 🚀 Inicio Rápido
 
 ### Para entender la arquitectura:
-1. Lee [Resumen Ejecutivo](./RESUMEN-ARQUITECTURA-SERVICIOS.md)
-2. Revisa [Arquitectura de Servicios](./ARQUITECTURA-SERVICIOS-DOMINIO.md)
+1. Lee [Resumen Ejecutivo](./03-resumen-arquitectura-servicios.md)
+2. Revisa [Arquitectura de Servicios](./01-arquitectura-servicios-dominio.md)
 
 ### Para implementar un nuevo service:
 1. Revisa el patrón de servicios existentes en `/src/services/domain/`
@@ -81,8 +81,8 @@ Documento que resume las opciones de próximos pasos después de completar las f
 3. Sigue el patrón establecido: métodos semánticos que usan servicios genéricos internamente
 
 ### Para ver el estado actual:
-1. Revisa [TODO Unificado](./TODO-UNIFICADO.md) para ver el estado de completitud
-2. Consulta [Próximos Pasos](./PROXIMOS-PASOS.md) para futuras mejoras
+1. Revisa [TODO Unificado](./00-todo-unificado.md) para ver el estado de completitud
+2. Consulta [Próximos Pasos](./02-proximos-pasos.md) para futuras mejoras
 
 ---
 
@@ -95,7 +95,7 @@ Documento que resume las opciones de próximos pasos después de completar las f
 - ✅ Chat AI integrado y funcionando (ver [Documentación del Chat AI](../chat-ai/README.md))
 
 **Próximos pasos:**
-- Ver [Próximos Pasos](./PROXIMOS-PASOS.md) para próximas mejoras
+- Ver [Próximos Pasos](./02-proximos-pasos.md) para próximas mejoras
 
 ---
 
@@ -106,8 +106,7 @@ Documento que resume las opciones de próximos pasos después de completar las f
 
 ### Otra Documentación
 - [API References](../API-references/README.md) - Contratos de la API backend
-- [Análisis API Frontend Backend](../ANALISIS-API-FRONTEND-BACKEND.md) - Análisis de inconsistencias
-- [Documentación de Servicios API v2](../07-SERVICIOS-API-V2.md) - Documentación de servicios existentes
+- [Documentación de Servicios API v2](../07-servicios-api-v2.md) - Documentación de servicios existentes
 
 ---
 
