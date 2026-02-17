@@ -17,7 +17,8 @@ import { InstallPromptBanner } from "@/components/PWA/InstallPromptBanner";
 
 function SileoToaster() {
   const { resolvedTheme } = useTheme();
-  // Doc Sileo: roundness (default 18) = border radius en px. 8 = más cuadrado.
+  // Como en la página de Sileo: light theme → toast negro; dark theme → toast blanco.
+  // Doc Sileo: fill "black" = toast oscuro; styles sobrescriben title/description para contraste.
   const roundness = 12;
   const options =
     resolvedTheme === "light"
@@ -29,7 +30,13 @@ function SileoToaster() {
             description: "!text-white/75",
           },
         }
-      : { roundness };
+      : {
+          roundness,
+          styles: {
+            title: "!text-gray-900",
+            description: "!text-gray-600",
+          },
+        };
 
   return <Toaster position="top-center" offset={16} options={options} />;
 }

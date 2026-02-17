@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Clock, Calendar, Calculator } from "lucide-react";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import ReceptionsListCard from "../ReceptionsListCard";
 import DispatchesListCard from "../DispatchesListCard";
+import NetWeightCalculatorDialog from "../NetWeightCalculatorDialog";
 
 const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -33,6 +33,7 @@ function useCurrentDateTime() {
 export default function OperarioDashboard({ storeId = null }) {
   const { data: session } = useSession();
   const [greeting] = useState(() => getGreeting());
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const userName = session?.user?.name || "Usuario";
   const now = useCurrentDateTime();
   const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
@@ -81,7 +82,19 @@ export default function OperarioDashboard({ storeId = null }) {
             </div>
           </CardContent>
         </Card>
-        <Card className={DASHBOARD_CARD_CLASS}>
+        <Card
+          className={DASHBOARD_CARD_CLASS + " cursor-pointer transition-colors hover:border-primary/30 hover:bg-muted/30"}
+          onClick={() => setCalculatorOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setCalculatorOpen(true);
+            }
+          }}
+          aria-label="Abrir calculadora de peso neto"
+        >
           <CardContent className="flex items-center gap-3 pt-6">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
               <Calculator className="h-5 w-5 text-muted-foreground" />
@@ -99,6 +112,8 @@ export default function OperarioDashboard({ storeId = null }) {
         <ReceptionsListCard storeId={storeId} />
         <DispatchesListCard storeId={storeId} />
       </div>
+
+      <NetWeightCalculatorDialog open={calculatorOpen} onOpenChange={setCalculatorOpen} />
     </div>
   );
 }

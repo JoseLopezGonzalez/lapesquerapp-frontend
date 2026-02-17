@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,9 @@ import {
   Check,
   Pencil,
   Search,
+  Fish,
+  Truck,
+  Package,
 } from 'lucide-react';
 import {
   Table,
@@ -30,8 +34,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Loader from '@/components/Utilities/Loader';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { calculateNetWeight } from '@/helpers/receptionCalculations';
 import { cn } from '@/lib/utils';
 import {
@@ -105,7 +110,7 @@ export default function OperarioCreateReceptionForm({
 
   if (speciesLoading || suppliersLoading) {
     return (
-      <div className="w-full flex justify-center py-12">
+      <div className="w-full flex-1 min-h-[280px] flex items-center justify-center">
         <Loader />
       </div>
     );
@@ -130,7 +135,7 @@ export default function OperarioCreateReceptionForm({
         i !== formIndex &&
         d?.product &&
         (parseFloat(d?.grossWeight) || 0) > 0 &&
-        calculateNetWeight(d?.grossWeight, d?.boxes ?? 1, d?.tare ?? '3') > 0
+        calculateNetWeight(d?.grossWeight, d?.boxes ?? 0, d?.tare ?? '3') > 0
     );
 
   return (
@@ -138,44 +143,87 @@ export default function OperarioCreateReceptionForm({
       <div className="shrink-0 flex flex-col items-center gap-3 pb-4">
         <h2 className="text-lg font-semibold">Nueva recepción de materia prima</h2>
         <div className="flex items-center gap-2 w-full max-w-[420px]">
-          {STEPS.map((s, i) => (
+          {STEPS.map((s, i) => {
+            const canGoToStep =
+              i === 0 ||
+              (i === 1 && speciesValue != null) ||
+              (i >= 2 && speciesValue != null && supplierValue != null);
+            return (
             <React.Fragment key={s.id}>
-              <button
+              <motion.button
                 type="button"
-                onClick={() => setStep(i)}
+                onClick={() => canGoToStep && setStep(i)}
+                disabled={!canGoToStep}
                 className={cn(
-                  'flex items-center justify-center min-w-[2.5rem] h-10 rounded-full text-sm font-medium transition-colors touch-manipulation',
+                  'flex items-center justify-center min-w-[2.75rem] h-11 rounded-full text-sm font-medium touch-manipulation',
                   step === i
                     ? 'bg-primary text-primary-foreground'
                     : step > i
                       ? 'bg-primary/20 text-primary'
-                      : 'bg-muted text-muted-foreground'
+                      : 'bg-muted text-muted-foreground',
+                  !canGoToStep && 'cursor-not-allowed opacity-60'
                 )}
-                aria-label={`Paso ${i + 1}: ${s.title}`}
+                aria-label={`Paso ${i + 1}: ${s.title}${!canGoToStep ? ' (completa el paso anterior)' : ''}`}
+                initial={false}
+                animate={{
+                  scale: step === i ? 1.08 : 1,
+                  transition: { type: 'spring', stiffness: 400, damping: 25 },
+                }}
+                whileTap={{ scale: 0.96 }}
               >
-                {step > i ? <Check className="h-4 w-4" /> : i + 1}
-              </button>
-              {i < STEPS.length - 1 && (
-                <div
-                  className={cn(
-                    'flex-1 h-1 rounded-full min-w-[1rem]',
-                    step > i ? 'bg-primary/30' : 'bg-muted'
+                <AnimatePresence mode="wait">
+                  {step > i ? (
+                    <motion.span
+                      key="check"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    >
+                      <Check className="h-4 w-4" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="num"
+                      initial={{ scale: 0.8, opacity: 0.8 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    >
+                      {i + 1}
+                    </motion.span>
                   )}
-                />
+                </AnimatePresence>
+              </motion.button>
+              {i < STEPS.length - 1 && (
+                <motion.div
+                  className="flex-1 h-1.5 rounded-full min-w-[1rem] overflow-hidden bg-muted"
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div
+                    className="h-full rounded-full bg-primary/30"
+                    initial={false}
+                    animate={{
+                      width: step > i ? '100%' : '0%',
+                    }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                  />
+                </motion.div>
               )}
             </React.Fragment>
-          ))}
+          );
+          })}
         </div>
         <p className="text-sm text-muted-foreground">{STEPS[step].description}</p>
         {step === 3 && (
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-[44px] touch-manipulation"
+            variant="default"
+            size="lg"
+            className="w-full max-w-[420px] min-h-[48px] gap-2 touch-manipulation"
             onClick={openAddLineDialog}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-5 w-5" />
             Añadir línea
           </Button>
         )}
@@ -198,9 +246,17 @@ export default function OperarioCreateReceptionForm({
             >
               <div className="flex flex-col gap-2 p-3 pr-4">
                 {speciesLoading ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">
-                    Cargando...
-                  </p>
+                  <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full">
+                    <Loader />
+                  </div>
+                ) : speciesOptions.length === 0 ? (
+                  <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full py-6">
+                    <EmptyState
+                      icon={<Fish className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                      title="No hay especies"
+                      description="No hay especies disponibles. Contacta con el administrador para dar de alta especies."
+                    />
+                  </div>
                 ) : (
                   speciesOptions.map((opt, idx) => {
                     const isSelected =
@@ -243,9 +299,17 @@ export default function OperarioCreateReceptionForm({
             >
               <div className="flex flex-col gap-2 p-3 pr-4">
                 {suppliersLoading ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">
-                    Cargando...
-                  </p>
+                  <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full">
+                    <Loader />
+                  </div>
+                ) : suppliersByLetter.length === 0 ? (
+                  <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full py-6">
+                    <EmptyState
+                      icon={<Truck className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                      title="No hay proveedores"
+                      description="No hay proveedores disponibles. Contacta con el administrador para dar de alta proveedores."
+                    />
+                  </div>
                 ) : (
                   suppliersByLetter.map(({ letter, options }) => (
                     <div key={letter} className="space-y-2">
@@ -308,7 +372,7 @@ export default function OperarioCreateReceptionForm({
 
           {step === 3 && (
             <div className="w-full space-y-6">
-              {confirmedLines.length > 0 && (
+              {confirmedLines.length > 0 ? (
                 <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -334,8 +398,12 @@ export default function OperarioCreateReceptionForm({
                           <TableCell className="font-medium">
                             {getProductLabel(d?.product)}
                           </TableCell>
-                          <TableCell>{d?.boxes ?? 1}</TableCell>
-                          <TableCell>{getTareLabel(d?.tare)}</TableCell>
+                          <TableCell>{d?.boxes ?? 0}</TableCell>
+                          <TableCell>
+                            {(d?.boxes != null && d?.boxes !== '' && parseInt(d.boxes, 10) > 0)
+                              ? getTareLabel(d?.tare)
+                              : '—'}
+                          </TableCell>
                           <TableCell className="text-right">
                             {parseFloat(d?.grossWeight) > 0
                               ? parseFloat(d.grossWeight).toFixed(2)
@@ -378,6 +446,18 @@ export default function OperarioCreateReceptionForm({
                     </TableBody>
                   </Table>
                 </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-6 w-full min-h-[min(260px,40vh)] rounded-lg border border-dashed border-muted-foreground/25 bg-muted/20 py-10 px-6">
+                  <div className="rounded-full bg-muted border border-border p-4">
+                    <Package className="h-14 w-14 text-muted-foreground" strokeWidth={1.5} />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h3 className="text-lg font-semibold">Ninguna línea añadida</h3>
+                    <p className="text-sm text-muted-foreground max-w-[280px]">
+                      Añade artículo, cajas, tara y peso bruto para crear la recepción.
+                    </p>
+                  </div>
+                </div>
               )}
 
               <Dialog
@@ -389,12 +469,12 @@ export default function OperarioCreateReceptionForm({
                   hideClose
                 >
                   <div className="text-center space-y-1">
-                    <h3 className="text-xl font-semibold">
+                    <DialogTitle className="text-xl font-semibold">
                       {LINE_DIALOG_STEPS[lineDialogStep]?.title ?? 'Línea'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground">
                       {LINE_DIALOG_STEPS[lineDialogStep]?.description ?? ''}
-                    </p>
+                    </DialogDescription>
                   </div>
                   <div className="min-h-[220px] py-4 flex flex-col items-center justify-center w-full flex-1">
                     {lineDialogStep === 0 && (
@@ -438,14 +518,18 @@ export default function OperarioCreateReceptionForm({
                                 >
                                   <div className="flex flex-col gap-2 p-3 pr-4">
                                     {productsBySpeciesLoading ? (
-                                      <p className="py-6 text-center text-sm text-muted-foreground">
-                                        Cargando...
-                                      </p>
+                                      <div className="flex items-center justify-center min-h-[200px] w-full">
+                                        <Loader />
+                                      </div>
                                     ) : (productOptionsBySpecies || []).length ===
                                       0 ? (
-                                      <p className="py-6 text-center text-sm text-muted-foreground">
-                                        Sin productos
-                                      </p>
+                                      <div className="flex items-center justify-center min-h-[200px] w-full py-6">
+                                        <EmptyState
+                                          icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                                          title="No hay productos para esta especie"
+                                          description="No hay productos asociados a la especie seleccionada. Contacta con el administrador."
+                                        />
+                                      </div>
                                     ) : (
                                       (productOptionsBySpecies || []).map(
                                         (opt, idx) => {
@@ -527,59 +611,62 @@ export default function OperarioCreateReceptionForm({
                       />
                     )}
                     {lineDialogStep === 1 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3 justify-center">
+                      <div className="w-full flex flex-col items-center gap-4">
+                        <div className="flex items-center gap-4 justify-center">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="default"
                             size="lg"
-                            className="h-14 w-14 p-0 touch-manipulation rounded-full"
+                            className="h-16 w-16 shrink-0 p-0 touch-manipulation text-4xl font-bold"
                             onClick={() => {
                               const v =
                                 parseInt(
                                   watch(`details.${formIndex}.boxes`),
                                   10
-                                ) || 1;
-                              if (v > 1)
+                                );
+                              const current = Number.isNaN(v) ? 0 : v;
+                              if (current > 0)
                                 setValue(
                                   `details.${formIndex}.boxes`,
-                                  v - 1
+                                  current - 1
                                 );
                             }}
                           >
-                            -
+                            −
                           </Button>
                           <Controller
                             name={`details.${formIndex}.boxes`}
                             control={control}
                             rules={{
                               required: 'Obligatorio',
-                              min: { value: 1, message: 'Mín. 1' },
+                              min: { value: 0, message: 'Mín. 0' },
                             }}
                             render={({ field }) => (
                               <Input
                                 type="number"
-                                min="1"
+                                min="0"
                                 {...field}
-                                value={field.value ?? 1}
-                                className="w-24 text-center min-h-[56px] text-xl touch-manipulation"
+                                value={field.value ?? 0}
+                                style={{ fontSize: '2.25rem' }}
+                                className="w-32 min-h-[80px] text-center font-bold touch-manipulation border-2 rounded-xl"
                               />
                             )}
                           />
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="default"
                             size="lg"
-                            className="h-14 w-14 p-0 touch-manipulation rounded-full"
+                            className="h-16 w-16 shrink-0 p-0 touch-manipulation text-4xl font-bold"
                             onClick={() => {
                               const v =
                                 parseInt(
                                   watch(`details.${formIndex}.boxes`),
                                   10
-                                ) || 1;
+                                );
+                              const current = Number.isNaN(v) ? 0 : v;
                               setValue(
                                 `details.${formIndex}.boxes`,
-                                v + 1
+                                current + 1
                               );
                             }}
                           >
@@ -594,7 +681,7 @@ export default function OperarioCreateReceptionForm({
                       </div>
                     )}
                     {lineDialogStep === 2 && (
-                      <div className="w-full max-w-[320px]">
+                      <div className="w-full flex flex-col items-center gap-4 max-w-[360px]">
                         <Controller
                           name={`details.${formIndex}.tare`}
                           control={control}
@@ -603,14 +690,15 @@ export default function OperarioCreateReceptionForm({
                               value={field.value}
                               onValueChange={field.onChange}
                             >
-                              <SelectTrigger className="min-h-[44px] touch-manipulation w-full">
-                                <SelectValue placeholder="Seleccione tara" />
+                              <SelectTrigger className="min-h-[80px] touch-manipulation w-full font-bold rounded-xl border-2 px-6 pr-12 whitespace-normal [&>span]:text-[1.875rem] [&>span]:font-bold [&>span]:line-clamp-none [&>span]:whitespace-normal">
+                                <SelectValue placeholder="Seleccione tara" className="text-[1.875rem] font-bold" />
                               </SelectTrigger>
                               <SelectContent>
                                 {TARE_OPTIONS.map((opt) => (
                                   <SelectItem
                                     key={opt.value}
                                     value={opt.value}
+                                    className="text-base py-3"
                                   >
                                     {opt.label}
                                   </SelectItem>
@@ -622,12 +710,12 @@ export default function OperarioCreateReceptionForm({
                       </div>
                     )}
                     {lineDialogStep === 3 && (
-                      <div className="w-full max-w-[320px]">
+                      <div className="w-full flex flex-col items-center gap-4 max-w-[320px]">
                         <Input
                           type="number"
                           step="0.01"
                           min="0"
-                          placeholder="Peso bruto (kg)"
+                          placeholder="0,00"
                           {...register(
                             `details.${formIndex}.grossWeight`,
                             {
@@ -635,10 +723,11 @@ export default function OperarioCreateReceptionForm({
                               min: { value: 0.01, message: 'Mín. 0.01' },
                             }
                           )}
-                          className="text-right min-h-[44px] touch-manipulation w-full text-lg"
+                          style={{ fontSize: '2.25rem' }}
+                          className="text-center min-h-[80px] touch-manipulation w-full font-bold rounded-xl border-2 px-4"
                         />
                         {errors.details?.[formIndex]?.grossWeight && (
-                          <p className="text-xs text-destructive mt-1">
+                          <p className="text-xs text-destructive text-center">
                             {
                               errors.details[formIndex].grossWeight
                                 .message
@@ -658,7 +747,15 @@ export default function OperarioCreateReceptionForm({
                         onClick={() => {
                           if (lineDialogStep === 1)
                             setProductStepView('quick');
-                          setLineDialogStep(lineDialogStep - 1);
+                          const prevStep =
+                            lineDialogStep === 3
+                              ? (() => {
+                                  const b = watch(`details.${formIndex}.boxes`);
+                                  const n = b != null && b !== '' ? parseInt(b, 10) : 0;
+                                  return Number.isNaN(n) || n === 0 ? 1 : 2;
+                                })()
+                              : lineDialogStep - 1;
+                          setLineDialogStep(prevStep);
                         }}
                       >
                         <ArrowLeft className="h-4 w-4 mr-1.5" />

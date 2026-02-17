@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   Card,
@@ -22,8 +23,12 @@ import TablePagination from "../TablePagination";
 import { useReceptionsList } from "@/hooks/useReceptionsList";
 import { rawMaterialReceptionService } from "@/services/domain/raw-material-receptions/rawMaterialReceptionService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
-import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
-import Loader from "@/components/Utilities/Loader";const ReceptionPrintDialog = dynamic(
+import { Printer, Loader2, Eye, EyeOff, Package } from "lucide-react";
+import Loader from "@/components/Utilities/Loader";
+import { EmptyState } from "@/components/Utilities/EmptyState";
+import { notify } from "@/lib/notifications";
+import { operatorRoutes } from "@/configs/roleRoutesConfig";
+const ReceptionPrintDialog = dynamic(
   () => import("@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog"),
   { ssr: false }
 );
@@ -31,6 +36,7 @@ import Loader from "@/components/Utilities/Loader";const ReceptionPrintDialog = 
 const PER_PAGE = 9;
 
 export default function ReceptionsListCard({ storeId = null }) {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, total, isLoading: loading } = useReceptionsList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
@@ -108,7 +114,7 @@ export default function ReceptionsListCard({ storeId = null }) {
             )}
           </Button>
           <Button asChild size="sm" variant="default">
-            <Link href="/admin/raw-material-receptions/create">
+            <Link href={operatorRoutes.receptionsCreate}>
               Nueva Recepción +
             </Link>
           </Button>
@@ -136,8 +142,18 @@ export default function ReceptionsListCard({ storeId = null }) {
                 <TableBody>
                   {data.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No hay recepciones
+                      <TableCell colSpan={6} className="p-0 align-top">
+                        <div className="flex min-h-[280px] w-full items-center justify-center py-12">
+                          <EmptyState
+                            icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                            title="No hay recepciones"
+                            description="Aún no se ha registrado ninguna recepción de materia prima. Crea la primera desde el botón superior."
+                            button={{
+                              name: "Nueva recepción",
+                              onClick: () => router.push(operatorRoutes.receptionsCreate),
+                            }}
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (

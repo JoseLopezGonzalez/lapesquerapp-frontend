@@ -10,11 +10,18 @@ import { TbPlugConnected } from "react-icons/tb";
 import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio, LayoutDashboard } from 'lucide-react';
 
 export const navigationConfig = [
+    /* Solo operario: acceso desde dashboard (/operator) */
+    {
+        name: 'Inicio',
+        icon: HomeIcon,
+        href: '/operator',
+        allowedRoles: ["operario"],
+    },
     {
         name: 'Inicio',
         icon: HomeIcon,
         href: '/admin/home',
-        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "tecnico"],
     },
     {
         name: 'Almacenes',
@@ -59,7 +66,7 @@ export const navigationConfig = [
     {
         name: 'Producciones',
         icon: Factory,
-        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/productions',
     },
     {
@@ -234,7 +241,7 @@ export const navigationManagerConfig = [
     {
         name: 'Preparación de pedidos',
         icon: LayoutDashboard,
-        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
+        allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/orquestador',
     },
     {
@@ -246,10 +253,15 @@ export const navigationManagerConfig = [
     {
         name: 'Almacenes interactivos',
         icon: LandPlot,
-        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
+        allowedRoles: ["operario"],
+        href: '/operator/stores-manager',
+    },
+    {
+        name: 'Almacenes interactivos',
+        icon: LandPlot,
+        allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/stores-manager',
     },
-
     {
         name: 'Editor de Etiquetas',
         icon: IoReceiptOutline,
@@ -271,7 +283,13 @@ export const navigationManagerConfig = [
     {
         name: 'Fichaje Automático NFC',
         icon: Radio,
-        allowedRoles: ["administrador", "direccion", "operario", "tecnico"],
+        allowedRoles: ["operario"],
+        href: '/operator/nfc-punch-manager',
+    },
+    {
+        name: 'Fichaje Automático NFC',
+        icon: Radio,
+        allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/nfc-punch-manager',
     },
     /* {

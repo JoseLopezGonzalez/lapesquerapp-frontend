@@ -32,6 +32,11 @@ export interface NotifyOptions {
   position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
 }
 
+export interface NotifyActionButton {
+  title: string;
+  onClick: () => void;
+}
+
 function applyOptions(opts?: NotifyOptions): { position?: NotifyOptions["position"]; duration?: number | null } {
   const out: { position?: NotifyOptions["position"]; duration?: number | null } = {};
   if (opts?.position) out.position = opts.position;
@@ -131,6 +136,33 @@ export const notify = {
             ? { title: errorFn }
             : errorFn,
     });
+  },
+
+  /**
+   * Toast de advertencia con un botón de acción (ej. confirmación "Continuar").
+   * No se cierra solo (duration: null). Al hacer clic en el botón se cierra el toast y se ejecuta onClick.
+   */
+  action(
+    message: NotifyMessage,
+    button: NotifyActionButton,
+    options?: NotifyOptions
+  ): string {
+    const { title, description } = toSileoContent(message);
+    let toastId: string;
+    toastId = sileo.warning({
+      title,
+      description,
+      position: options?.position ?? DEFAULT_POSITION,
+      duration: null,
+      button: {
+        title: button.title,
+        onClick: () => {
+          sileo.dismiss(toastId);
+          button.onClick();
+        },
+      },
+    });
+    return toastId;
   },
 
   dismiss(id: string): void {

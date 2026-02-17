@@ -12,7 +12,8 @@
  */
 export const calculateNetWeight = (grossWeight, boxes, tare) => {
     const gross = parseFloat(grossWeight) || 0;
-    const boxCount = parseInt(boxes) || 1;
+    const parsed = parseInt(boxes, 10);
+    const boxCount = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
     const tareWeight = parseFloat(tare) || 0;
     return Math.max(0, gross - (tareWeight * boxCount));
 };

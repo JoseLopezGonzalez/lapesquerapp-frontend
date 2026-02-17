@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -21,8 +22,11 @@ import TablePagination from "../TablePagination";
 import { useDispatchesList } from "@/hooks/useDispatchesList";
 import { ceboDispatchService } from "@/services/domain/cebo-dispatches/ceboDispatchService";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
-import { Printer, Loader2, Eye, EyeOff } from "lucide-react";
+import { Printer, Loader2, Eye, EyeOff, Truck } from "lucide-react";
 import Loader from "@/components/Utilities/Loader";
+import { EmptyState } from "@/components/Utilities/EmptyState";
+import { notify } from "@/lib/notifications";
+import { operatorRoutes } from "@/configs/roleRoutesConfig";
 import DispatchPrintDialog from "../DispatchPrintDialog";function getDispatchNetWeight(dispatch) {
   if (dispatch.netWeight != null) return Number(dispatch.netWeight);
   const details = dispatch.details ?? [];
@@ -33,6 +37,7 @@ import DispatchPrintDialog from "../DispatchPrintDialog";function getDispatchNet
 const PER_PAGE = 9;
 
 export default function DispatchesListCard({ storeId = null }) {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, total, isLoading: loading } = useDispatchesList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
@@ -103,7 +108,7 @@ export default function DispatchesListCard({ storeId = null }) {
             )}
           </Button>
           <Button asChild size="sm" variant="default">
-            <Link href={storeId != null ? `/warehouse/${storeId}/dispatches/create` : "/admin/cebo-dispatches"}>
+            <Link href={operatorRoutes.dispatchesCreate}>
               Nueva Salida +
             </Link>
           </Button>
@@ -130,8 +135,18 @@ export default function DispatchesListCard({ storeId = null }) {
                 <TableBody>
                   {data.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        No hay salidas de cebo
+                      <TableCell colSpan={5} className="p-0 align-top">
+                        <div className="flex min-h-[280px] w-full items-center justify-center py-12">
+                          <EmptyState
+                            icon={<Truck className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                            title="No hay salidas de cebo"
+                            description="Aún no se ha registrado ninguna salida de cebo. Crea la primera desde el botón superior."
+                            button={{
+                              name: "Nueva salida",
+                              onClick: () => router.push(operatorRoutes.dispatchesCreate),
+                            }}
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (

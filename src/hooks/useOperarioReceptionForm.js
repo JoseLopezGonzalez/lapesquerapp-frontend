@@ -75,6 +75,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
   const {
     register,
     handleSubmit,
+    getValues,
     control,
     watch,
     setValue,
@@ -89,7 +90,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
         {
           product: null,
           grossWeight: '',
-          boxes: 1,
+          boxes: 0,
           tare: '3',
           netWeight: '',
         },
@@ -198,7 +199,10 @@ export function useOperarioReceptionForm({ onSuccess }) {
     async (data) => {
       const supplierId = data.supplier?.id ?? data.supplier;
       if (!supplierId) {
-        notify.error({ title: 'Seleccione un proveedor' });
+        notify.error({
+          title: 'Falta proveedor',
+          description: 'Seleccione un proveedor para continuar.',
+        });
         return;
       }
 
@@ -206,7 +210,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
         .map((d) => {
           const net = calculateNetWeight(
             d?.grossWeight,
-            d?.boxes ?? 1,
+            d?.boxes ?? 0,
             d?.tare ?? '3'
           );
           return { ...d, _calculatedNet: net };
@@ -217,16 +221,18 @@ export function useOperarioReceptionForm({ onSuccess }) {
             typeof d.product === 'object'
               ? d.product?.id ?? d.product?.value
               : d.product;
+          const boxesVal = d.boxes != null && d.boxes !== '' ? parseInt(d.boxes, 10) : 0;
           return {
             product: { id: parseInt(productId) },
             netWeight: parseFloat(d._calculatedNet.toFixed(2)),
-            boxes: d.boxes ? parseInt(d.boxes) : undefined,
+            boxes: Number.isNaN(boxesVal) ? 0 : Math.max(0, boxesVal),
           };
         });
 
       if (validDetails.length === 0) {
         notify.error({
-          title: 'Complete al menos una línea con producto, peso bruto, cajas y tara',
+          title: 'Líneas incompletas',
+          description: 'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
         });
         return;
       }
@@ -240,11 +246,12 @@ export function useOperarioReceptionForm({ onSuccess }) {
 
       try {
         const created = await createRawMaterialReception(payload);
-        notify.success({ title: 'Recepción creada correctamente' });
         onSuccess?.(created);
       } catch (err) {
+        const message = err?.message || 'No se pudo crear la recepción';
         notify.error({
-          title: err?.message || 'No se pudo crear la recepción',
+          title: 'Error al crear la recepción',
+          description: message,
         });
       }
     },
@@ -252,9 +259,47 @@ export function useOperarioReceptionForm({ onSuccess }) {
   );
 
   const goNext = useCallback(() => {
-    if (step < 3) setStep((s) => s + 1);
-    else handleSubmit(handleCreate)();
-  }, [step, handleSubmit, handleCreate]);
+    if (step < 3) {
+      setStep((s) => s + 1);
+      return;
+    }
+    const data = getValues();
+    const supplierId = data.supplier?.id ?? data.supplier;
+    if (!supplierId) {
+      notify.error({ title: 'Falta proveedor', description: 'Seleccione un proveedor para continuar.' });
+      return;
+    }
+    const validDetails = (data.details || [])
+      .map((d) => {
+        const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 0, d?.tare ?? '3');
+        return { ...d, _calculatedNet: net };
+      })
+      .filter((d) => d.product && d._calculatedNet > 0);
+    if (validDetails.length === 0) {
+      notify.error({
+        title: 'Líneas incompletas',
+        description: 'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
+      });
+      return;
+    }
+    const someLinesWithoutBoxes = validDetails.some(
+      (d) => d.boxes == null || d.boxes === '' || parseInt(d.boxes, 10) === 0
+    );
+    if (someLinesWithoutBoxes) {
+      notify.action(
+        {
+          title: 'Algunas líneas no tienen cajas',
+          description: '¿Desea continuar?',
+        },
+        {
+          title: 'Continuar',
+          onClick: () => handleSubmit(handleCreate)(),
+        }
+      );
+      return;
+    }
+    handleSubmit(handleCreate)();
+  }, [step, getValues, handleSubmit, handleCreate]);
 
   const goBack = useCallback(() => {
     if (step > 0) setStep((s) => s - 1);
@@ -327,10 +372,16 @@ export function useOperarioReceptionForm({ onSuccess }) {
     }
     if (lineDialogStep < steps.length - 1) {
       if (lineDialogStep === 0) setProductStepView('quick');
-      setLineDialogStep(lineDialogStep + 1);
+      if (lineDialogStep === 1) {
+        const boxesVal = watchedDetails[formIndex]?.boxes;
+        const boxesNum = boxesVal != null && boxesVal !== '' ? parseInt(boxesVal, 10) : 0;
+        setLineDialogStep(Number.isNaN(boxesNum) || boxesNum === 0 ? 3 : 2);
+      } else {
+        setLineDialogStep(lineDialogStep + 1);
+      }
     } else {
       const d = watchedDetails[formIndex];
-      const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 1, d?.tare ?? '3');
+      const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 0, d?.tare ?? '3');
       if (!d?.product || net <= 0) return;
       const productId =
         typeof d.product === 'object'
@@ -345,7 +396,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
         append({
           product: null,
           grossWeight: '',
-          boxes: 1,
+          boxes: 0,
           tare: '3',
           netWeight: '',
         });

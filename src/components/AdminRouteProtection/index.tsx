@@ -7,19 +7,8 @@ import { useIsLoggingOut } from "@/hooks/useIsLoggingOut";
 import { LogoutDialog } from "@/components/Utilities/LogoutDialog";
 import Loader from "@/components/Utilities/Loader";
 
-const OPERARIO_ALLOWED_PATHS = [
-  "/admin/home",
-  "/admin/raw-material-receptions",
-  "/admin/cebo-dispatches",
-  "/admin/orquestador",
-  "/admin/stores-manager",
-  "/admin/nfc-punch-manager",
-];
-
-function isOperarioAllowedPath(pathname: string | null): boolean {
-  if (!pathname) return false;
-  return OPERARIO_ALLOWED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
-}
+/** El operario tiene su propio segmento /operator; si llega a /admin se redirige. */
+const OPERATOR_DASHBOARD = "/operator";
 
 interface AdminRouteProtectionProps {
   children: ReactNode;
@@ -35,8 +24,8 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
     if (status === "authenticated" && session?.user) {
       const rawRole = session.user.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
-      if (userRole === "operario" && !isOperarioAllowedPath(pathname)) {
-        router.replace("/admin/home");
+      if (userRole === "operario") {
+        router.replace(OPERATOR_DASHBOARD);
       }
     }
   }, [status, session, pathname, router]);
@@ -54,7 +43,7 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
   }
 
   const role = session?.user?.role != null ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role) : null;
-  if (status === "authenticated" && role === "operario" && !isOperarioAllowedPath(pathname)) {
+  if (status === "authenticated" && role === "operario") {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />

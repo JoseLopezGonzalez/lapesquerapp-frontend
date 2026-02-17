@@ -10,13 +10,14 @@ export type RoleKey =
   | "comercial";
 
 export const roleConfig: Record<string, RoleKey[]> = {
+  "/operator": ["operario"],
   "/admin": ["administrador", "direccion", "tecnico"],
-  "/admin/home": ["operario", "administrador", "direccion", "tecnico"],
-  "/admin/raw-material-receptions": ["operario", "administrador", "direccion", "tecnico"],
-  "/admin/cebo-dispatches": ["operario", "administrador", "direccion", "tecnico"],
-  "/admin/orquestador": ["operario", "administrador", "direccion", "tecnico"],
-  "/admin/stores-manager": ["operario", "administrador", "direccion", "tecnico"],
-  "/admin/nfc-punch-manager": ["operario", "administrador", "direccion", "tecnico"],
+  "/admin/home": ["administrador", "direccion", "tecnico"],
+  "/admin/raw-material-receptions": ["administrador", "direccion", "tecnico"],
+  "/admin/cebo-dispatches": ["administrador", "direccion", "tecnico"],
+  "/admin/orquestador": ["administrador", "direccion", "tecnico"],
+  "/admin/stores-manager": ["administrador", "direccion", "tecnico"],
+  "/admin/nfc-punch-manager": ["administrador", "direccion", "tecnico"],
   "/admin/orders": ["administrador", "direccion", "tecnico"],
   "/production": ["administrador", "direccion", "operario", "tecnico"],
   "/warehouse": ["administrador", "tecnico"],

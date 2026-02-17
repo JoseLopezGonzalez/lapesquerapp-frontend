@@ -122,9 +122,10 @@ export async function middleware(req: NextRequest) {
   const hasAccess =
     userRole && rolesAllowed.includes(userRole as (typeof rolesAllowed)[number]);
 
-  if (!hasAccess && userRole === "operario" && pathname.startsWith("/admin")) {
-    const homeUrl = new URL("/admin/home", req.url);
-    return NextResponse.redirect(homeUrl);
+  // Operario: todo /admin redirige a /operator (gestores bajo /operator/* reutilizan componentes)
+  if (userRole === "operario" && pathname.startsWith("/admin")) {
+    const operatorUrl = new URL("/operator", req.url);
+    return NextResponse.redirect(operatorUrl);
   }
 
   if (!rolesAllowed.length || !hasAccess) {
@@ -136,5 +137,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/production/:path*", "/warehouse/:path*"],
+  matcher: ["/admin/:path*", "/operator/:path*", "/production/:path*", "/warehouse/:path*"],
 };
