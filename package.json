@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "generate-generic-icons": "node scripts/generate-generic-icons.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.12",
@@ -89,6 +90,7 @@
     "eslint-config-next": "15.0.3",
     "happy-dom": "^20.6.1",
     "jsdom": "^27.0.1",
+    "pngjs": "^4.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3",

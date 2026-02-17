@@ -79,7 +79,7 @@
 | `icons/icon-192x192-generic.png` | PWA Android/Chrome | 192×192 px |
 | `icons/icon-512x512-generic.png` | PWA Android/Chrome | 512×512 px |
 
-El proyecto incluye **placeholders** mínimos en `public/` (`favicon-generic.png`, `apple-touch-icon-generic.png`, `public/icons/icon-192x192-generic.png`, `icon-512x512-generic.png`) para evitar 404 en modo genérico; puedes sustituirlos por iconos definitivos. En genérico el favicon usa `.png` (no `.ico`). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`.
+El proyecto incluye **placeholders** en `public/` con las dimensiones correctas (32×32 favicon, 180×180 apple-touch, 192×192 y 512×512 para PWA) para evitar 404 y el error del manifest "Resource size is not correct". Para regenerarlos: `npm run generate-generic-icons` (usa `scripts/generate-generic-icons.js` y devDependency `pngjs`). Puedes sustituir los PNG por iconos definitivos. En genérico el favicon usa `.png` (no `.ico`). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`.
 
 ### Despliegue
 
