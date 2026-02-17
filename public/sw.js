@@ -15,18 +15,9 @@ const CACHE_VERSION = 'v1.0.0';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const NAVIGATION_CACHE = `navigation-${CACHE_VERSION}`;
 
-// Assets estáticos a cachear en la instalación
-const STATIC_ASSETS = [
-  '/',
-  '/favicon.ico',
-  '/apple-touch-icon.png',
-  '/favicon-generic.ico',
-  '/apple-touch-icon-generic.png',
-  '/pesquerapp/favicon.ico',
-  '/pesquerapp/apple-touch-icon.png',
-  '/pesquerapp/og-image.png',
-  '/site.webmanifest',
-];
+// Assets estáticos a cachear en la instalación (solo rutas que existan en el deploy actual).
+// En generic solo existen -generic; en pesquerapp solo existen /pesquerapp/*. No precachear todos para evitar 404 en addAll.
+const STATIC_ASSETS = ['/'];
 
 // Tipos de archivos estáticos
 const STATIC_FILE_EXTENSIONS = [
@@ -55,12 +46,12 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => {
         console.log('[SW] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        // Añadir uno a uno para que un 404 (ej. favicon-genérico no creado) no rompa la instalación
+        return Promise.allSettled(
+          STATIC_ASSETS.map((url) => cache.add(url).catch(() => {}))
+        );
       })
-      .then(() => {
-        // Activar inmediatamente el nuevo Service Worker
-        return self.skipWaiting();
-      })
+      .then(() => self.skipWaiting())
       .catch((error) => {
         console.error('[SW] Error during installation:', error);
       })
