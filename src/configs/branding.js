@@ -15,8 +15,8 @@ export const appShortName = isPesquerApp ? "PesquerApp" : "App";
 /** URL base para metadata (Open Graph, etc.) */
 export const metadataBaseUrl = isPesquerApp ? "https://lapesquerapp.es" : "https://example.com";
 
-/** Dominio base para lógica tenant/redirección (ej. lapesquerapp.es) */
-export const baseDomain = isPesquerApp ? "lapesquerapp.es" : "";
+/** Dominio base para lógica tenant/redirección (ej. lapesquerapp.es). En generic, opcional vía NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN para deploy en un solo host (ej. brisamar.congeladosbrisamar.es → base = congeladosbrisamar.es, se trata como tenant "brisamar"). */
+export const baseDomain = isPesquerApp ? "lapesquerapp.es" : (process.env.NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN || "").trim() || "";
 
 export const supportEmail = isPesquerApp ? "soporte@pesquerapp.com" : "soporte@example.com";
 export const demoEmail = isPesquerApp ? "admin@lapesquerapp.es" : "admin@example.com";

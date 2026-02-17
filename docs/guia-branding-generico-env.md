@@ -56,7 +56,7 @@
   - `appName` — Nombre completo (pestaña, Open Graph, footer, login).
   - `appShortName` — Nombre corto (PWA, meta apple-mobile-web-app-title, banners "Instala X").
   - `metadataBaseUrl` — URL base para metadata y Open Graph.
-  - `baseDomain` — Dominio base para lógica tenant/redirección (ej. lapesquerapp.es).
+  - `baseDomain` — Dominio base para lógica tenant/redirección (ej. lapesquerapp.es). En generic puede venir de `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN` para deploy en un solo host.
   - `supportEmail`, `demoEmail`, `exampleEmail`, `infoEmail` — Emails de soporte, demo, placeholder e info.
   - `demoUrl` — URL del botón "Ver demo" en landing.
   - `logoAlt` — Texto alternativo del logo (navbar).
@@ -85,6 +85,8 @@ El proyecto incluye **placeholders** en `public/` con las dimensiones correctas 
 
 - En **Vercel** u otra plataforma, configurar la misma variable `NEXT_PUBLIC_APP_BRANDING` con valor `generic` o `pesquerapp` según el entorno.
 - Recordatorio: en **modo genérico** la landing no es accesible (raíz en blanco); configurar iconos genéricos si se usa ese modo.
+
+**Generic en un solo host (sin subdominios):** Si el front generic está alojado en una URL que ya es “de tenant” (ej. `brisamar.congeladosbrisamar.es` en vez de `lapesquerapp.com` + `brisamar.lapesquerapp.com`), hay que definir **`NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN`** con el dominio base. Así la app interpreta el host como subdominio y muestra login en lugar de la página en blanco. Ejemplo: deploy en `brisamar.congeladosbrisamar.es` → `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN=congeladosbrisamar.es` (el “tenant” será `brisamar`, como en useLoginTenant y llamadas al API). Sin esta variable, generic en ese host se considera “raíz” y se muestra la pantalla en blanco.
 
 ### Si `/api/auth/session` devuelve 500 en producción
 
