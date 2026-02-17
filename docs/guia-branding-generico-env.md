@@ -88,6 +88,19 @@ El proyecto incluye **placeholders** en `public/` con las dimensiones correctas 
 
 **Generic en un solo host (sin subdominios):** Si el front generic está alojado en una URL que ya es “de tenant” (ej. `brisamar.congeladosbrisamar.es` en vez de `lapesquerapp.com` + `brisamar.lapesquerapp.com`), hay que definir **`NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN`** con el dominio base. Así la app interpreta el host como subdominio y muestra login en lugar de la página en blanco. Ejemplo: deploy en `brisamar.congeladosbrisamar.es` → `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN=congeladosbrisamar.es` (el “tenant” será `brisamar`, como en useLoginTenant y llamadas al API). Sin esta variable, generic en ese host se considera “raíz” y se muestra la pantalla en blanco.
 
+**Deploy generic: qué hacer exactamente (ej. Vercel en brisamar.congeladosbrisamar.es)**  
+En el proyecto de Vercel que sirve la URL generic, en **Settings → Environment Variables** definir:
+
+| Variable | Valor | Notas |
+|----------|--------|--------|
+| `NEXT_PUBLIC_APP_BRANDING` | `generic` | Obligatorio para modo generic. |
+| `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN` | `congeladosbrisamar.es` | Para que ese host se trate como tenant "brisamar" y se muestre login (sin esto se ve página en blanco). |
+| `NEXTAUTH_URL` | `https://brisamar.congeladosbrisamar.es` | URL pública del front, sin barra final. Evita 500 en `/api/auth/session`. |
+| `NEXTAUTH_SECRET` | *(valor secreto)* | Ej. `openssl rand -base64 32`. Obligatorio en producción. |
+| `NEXT_PUBLIC_API_URL` (o `NEXT_PUBLIC_API_BASE_URL`) | URL del backend para ese tenant | Sin esto la app no puede llamar al API. |
+
+Después de guardar las variables, hacer **Redeploy** del último deployment para que el build use los nuevos valores. Tras el deploy, al entrar en `https://brisamar.congeladosbrisamar.es` debe mostrarse la pantalla de login y el tenant enviado al API será `brisamar`.
+
 ### Si `/api/auth/session` devuelve 500 en producción
 
 No es por el branding. NextAuth requiere en el servidor de producción:
