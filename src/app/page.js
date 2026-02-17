@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Utilities/Loader";
+import { baseDomain, isGenericBranding } from "@/configs/branding";
 
 export default function HomePage() {
   // ✅ CRÍTICO: Todos los hooks DEBEN ejecutarse ANTES de cualquier return condicional
@@ -26,10 +27,12 @@ export default function HomePage() {
       // Ej: localhost → landing; dev.localhost → login (tenant dev)
       setIsSubdomain(parts.length > 1 && parts[0] !== "localhost");
     } else {
-      const baseDomain = "lapesquerapp.es";
-      if (hostname === baseDomain || hostname === "www." + baseDomain) {
+      const domain = baseDomain || "example.com";
+      if (!domain) {
         setIsSubdomain(false);
-      } else if (hostname.endsWith("." + baseDomain)) {
+      } else if (hostname === domain || hostname === "www." + domain) {
+        setIsSubdomain(false);
+      } else if (hostname.endsWith("." + domain)) {
         setIsSubdomain(true);
       } else {
         setIsSubdomain(false); // fallback
@@ -79,5 +82,13 @@ export default function HomePage() {
     );
   }
   
+  // Modo genérico: landing no accesible; mostrar login en la raíz
+  if (isGenericBranding) {
+    return (
+      <div className="space-y-4">
+        <LoginPage />
+      </div>
+    );
+  }
   return <LandingPage />;
 }

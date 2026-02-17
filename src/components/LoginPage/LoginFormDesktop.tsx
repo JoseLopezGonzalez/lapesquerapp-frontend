@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { appName, supportEmail, isGenericBranding } from "@/configs/branding";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
@@ -54,7 +55,7 @@ export default function LoginFormDesktop(props: LoginFormDesktopProps) {
             <ul className="list-inside list-disc text-sm">
               <li>
                 Contacta con soporte para más información (
-                <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link>)
+                <Link href={`mailto:${supportEmail}`}>{supportEmail}</Link>)
               </li>
             </ul>
           </AlertDescription>
@@ -68,23 +69,25 @@ export default function LoginFormDesktop(props: LoginFormDesktopProps) {
           </div>
         )}
 
-        <div className="relative w-full max-w-[500px] overflow-hidden rounded-lg min-h-[240px]">
-          <Image
-            src={brandingImageUrl || "/images/landing.png"}
-            alt="Imagen de branding"
-            fill
-            sizes="(max-width: 1024px) 100vw, 500px"
-            className="object-cover"
-            priority
-            onError={(e) => { e.currentTarget.src = "/images/landing.png"; }}
-          />
-        </div>
+        {!isGenericBranding && (
+          <div className="relative w-full max-w-[500px] overflow-hidden rounded-lg min-h-[240px]">
+            <Image
+              src={brandingImageUrl || "/images/landing.png"}
+              alt="Imagen de branding"
+              fill
+              sizes="(max-width: 1024px) 100vw, 500px"
+              className="object-cover"
+              priority
+              onError={(e) => { e.currentTarget.src = "/images/landing.png"; }}
+            />
+          </div>
+        )}
 
         <div className="flex w-full flex-col items-center justify-center p-8 lg:p-12">
           <div className="mx-auto w-full max-w-xs space-y-8 py-20">
             <div className="text-center flex flex-col gap-3">
               <h2 className="text-2xl lg:text-3xl xl:text-[2.5rem] font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
-                La PesquerApp
+                {appName}
               </h2>
               <div className="flex items-center justify-center gap-1 text-nowrap">
                 <span className="text-md lg:text-xl text-primary">Mantén tu producción</span>
@@ -120,7 +123,7 @@ export default function LoginFormDesktop(props: LoginFormDesktopProps) {
               />
               <p className="text-center text-sm text-muted-foreground">
                 ¿Algún problema?{" "}
-                <Link href="mailto:soporte@pesquerapp.com" className="text-primary hover:text-muted-foreground">
+                <Link href={`mailto:${supportEmail}`} className="text-primary hover:text-muted-foreground">
                   Contáctanos
                 </Link>
               </p>

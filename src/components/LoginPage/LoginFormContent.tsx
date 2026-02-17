@@ -25,6 +25,7 @@ const InputOTPGroup = InputOTPGroupBase as React.ComponentType<React.PropsWithCh
 const InputOTPSlot = InputOTPSlotBase as React.ComponentType<{ index: number; className?: string }>;
 import { Mail, KeyRound } from "lucide-react";
 import type { LoginEmailForm, LoginOtpForm } from "@/schemas/loginSchema";
+import { exampleEmail } from "@/configs/branding";
 
 interface LoginFormContentProps {
   accessRequested: boolean;
@@ -76,7 +77,7 @@ export default function LoginFormContent({
           <Input
             type="email"
             id={inputId}
-            placeholder="ejemplo@lapesquerapp.es"
+            placeholder={exampleEmail}
             disabled={!tenantActive}
             className={inputClass}
             {...(emailRegister ? emailRegister("email") : {})}

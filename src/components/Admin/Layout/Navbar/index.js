@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';import { NAVBAR_LOGO } from '@/configs/config';
+import { logoAlt } from '@/configs/branding';
 import { classNames } from '@/helpers/styles/classNames';
 import { navigationConfig } from '@/configs/navgationConfig';
 import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/20/solid';
@@ -70,7 +71,7 @@ import { notify } from "@/lib/notifications";export default function Navbar() {
         <>
             <div className="flex w-full flex-col pt-5 pb-4 gap-5 justify-between h-full" >
                 <div className="mt-3 flex flex-shrink-0 items-center px-7">
-                    <img className="h-14 w-auto" src={NAVBAR_LOGO} alt="BlueApp" />
+                    <img className="h-14 w-auto" src={NAVBAR_LOGO} alt={logoAlt} />
                 </div>
                 <div className="mb-5 flex flex-grow flex-col overflow-y-auto  pr-4">
                     <div className=" text-sm font-medium px-8 mb-2 mt-8 text-neutral-400">

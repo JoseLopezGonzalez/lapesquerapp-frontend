@@ -2,8 +2,8 @@
 
 /**
  * Componente principal del AI Chat
- * 
- * Integrado en La PesquerApp para proporcionar asistencia mediante AI.
+ *
+ * Integrado en la aplicación para proporcionar asistencia mediante AI.
  * Usa Vercel AI SDK para manejar la conversación y tools para acceder a servicios de dominio.
  */
 

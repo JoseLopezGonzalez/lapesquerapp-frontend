@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { appShortName } from "@/configs/branding";
 
 export function InstallPromptBanner() {
   const { 
@@ -64,7 +65,7 @@ export function InstallPromptBanner() {
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <h3 className="font-semibold text-base text-primary-foreground leading-tight mb-1">
-                  Instala PesquerApp
+                  Instala {appShortName}
                 </h3>
                 <p className="text-sm text-primary-foreground/75 leading-relaxed">
                   Añade la app a tu pantalla de inicio para acceso rápido y una mejor experiencia
@@ -137,7 +138,7 @@ export function InstallPromptBanner() {
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
               <h3 className="font-semibold text-base leading-tight mb-1 text-primary-foreground">
-                Instala PesquerApp
+                Instala {appShortName}
               </h3>
               <p className="text-sm text-primary-foreground/75 leading-relaxed">
                 Añade la app a tu escritorio para acceso rápido y una mejor experiencia

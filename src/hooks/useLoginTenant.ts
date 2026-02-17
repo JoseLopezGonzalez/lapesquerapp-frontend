@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { API_URL_V2 } from "@/configs/config";
+import { demoEmail } from "@/configs/branding";
 
 /** Respuesta 200: convención Laravel API Resource (payload en `data`) */
 interface TenantSuccessPayload {
@@ -30,7 +31,7 @@ export function useLoginTenant() {
 
     if (subdomain === "test") {
       setIsDemo(true);
-      setDemoEmail("admin@lapesquerapp.es");
+      setDemoEmail(demoEmail);
     }
 
     const isDevLocalhost =

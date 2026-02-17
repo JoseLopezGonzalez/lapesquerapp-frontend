@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { appName, isGenericBranding } from "@/configs/branding";
 import { Button } from "@/components/ui/button";
 import RotatingText from "@/components/Utilities/RotatingText";
 import { motion } from "framer-motion";
@@ -30,17 +31,22 @@ export default function LoginWelcomeStep({
       className="relative min-h-screen w-full flex flex-col items-center px-4 pb-8"
     >
       <div className="absolute inset-0 z-0">
-        <Image
-          src={brandingImageUrl || "/images/landing.png"}
-          alt="Imagen de branding"
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-          onError={(e) => {
-            e.currentTarget.src = "/images/landing.png";
-          }}
-        />
+        {!isGenericBranding && (
+          <Image
+            src={brandingImageUrl || "/images/landing.png"}
+            alt="Imagen de branding"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+            onError={(e) => {
+              e.currentTarget.src = "/images/landing.png";
+            }}
+          />
+        )}
+        {isGenericBranding && (
+          <div className="absolute inset-0 bg-muted/50" aria-hidden />
+        )}
         <div
           className="absolute inset-0 dark:hidden"
           style={{
@@ -67,7 +73,7 @@ export default function LoginWelcomeStep({
         <div className="flex flex-col items-center text-center space-y-8 w-full">
           <div className="space-y-4">
             <h1 className="text-5xl font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-primary/80">
-              La PesquerApp
+              {appName}
             </h1>
           </div>
 

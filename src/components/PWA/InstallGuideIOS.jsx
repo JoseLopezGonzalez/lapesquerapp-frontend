@@ -28,6 +28,7 @@ import {
   DialogClose,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { appShortName } from "@/configs/branding";
 import { Button } from "@/components/ui/button";
 import { Download, Share2, Plus, CheckCircle } from "lucide-react";
 import { isIOSDevice, isPWAInstalled } from "@/hooks/use-pwa-install";
@@ -214,7 +215,7 @@ export function InstallGuideIOS({
           <div className="ml-11 bg-muted p-4 rounded-lg">
             <div className="flex items-center gap-3 text-sm">
               <CheckCircle className="w-5 h-5 text-primary" />
-              <span className="font-medium">Instalar PesquerApp</span>
+              <span className="font-medium">Instalar {appShortName}</span>
             </div>
           </div>
         </div>
@@ -268,7 +269,7 @@ export function InstallGuideIOS({
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <Download className="w-5 h-5" />
-              Instalar PesquerApp
+              Instalar {appShortName}
             </SheetTitle>
             <SheetDescription>
               {isIOS 
@@ -293,7 +294,7 @@ export function InstallGuideIOS({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5" />
-            Instalar PesquerApp
+            Instalar {appShortName}
           </DialogTitle>
           <DialogDescription>
             Instala la aplicación en tu escritorio para acceso rápido

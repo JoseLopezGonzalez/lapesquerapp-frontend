@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { Fish, Package, ShoppingCart, FileText, Waves, Shield, Globe, Mail, Phone, Star, Sparkle, Ticket, ArrowUpRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { appName, demoUrl, infoEmail } from "@/configs/branding"
 
 export default function LandingPage() {
     return (
@@ -26,7 +27,7 @@ export default function LandingPage() {
                             <div className="rounded-xl bg-sky-500 p-3">
                                 <Waves className="h-8 w-8 text-white" />
                             </div>
-                            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">La PesquerApp</h1>
+                            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">{appName}</h1>
                         </div>
                         <p className="mb-8 text-xl text-gray-600 dark:text-gray-300 sm:text-2xl">
                             Gestión total para industrias pesqueras
@@ -37,7 +38,7 @@ export default function LandingPage() {
                         </p>
                         <div className="flex gap-2 sm:gap-4 flex-row sm:justify-center w-full ">
                             <Button
-                                onClick={() => window.open("https://test.lapesquerapp.es", "_blank")}
+                                onClick={() => window.open(demoUrl, "_blank")}
                                 size="lg"
                                 className="bg-sky-500 hover:bg-sky-400 w-full sm:w-fit"
                             >
@@ -419,7 +420,7 @@ export default function LandingPage() {
                                 <div className="rounded-xl bg-sky-500 p-2">
                                     <Waves className="h-6 w-6 text-white" />
                                 </div>
-                                <span className="text-xl font-bold text-white">La Pesquerapp</span>
+                                <span className="text-xl font-bold text-white">{appName}</span>
                             </div>
                             <p className="mt-4 text-gray-400 text-center sm:text-left">
                                 La solución ERP más completa para la industria pesquera.<br /> Gestiona tu empresa con tecnología de
@@ -431,7 +432,7 @@ export default function LandingPage() {
                             <ul className="mt-4 space-y-2">
                                 <li className="flex items-center gap-2 text-sm text-gray-400">
                                     <Mail className="h-4 w-4" />
-                                    <span>info@lapesquerapp.es</span>
+                                    <span>{infoEmail}</span>
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-gray-400">
                                     <Phone className="h-4 w-4" />
@@ -442,7 +443,7 @@ export default function LandingPage() {
                     </div>
                     <Separator className="my-8 bg-slate-800" />
                     <div className="flex flex-col gap-4 sm:flex-row items-center sm:justify-between">
-                        <p className="text-sm text-gray-400">© 2025 La PesquerApp. Todos los derechos reservados.</p>
+                        <p className="text-sm text-gray-400">© 2025 {appName}. Todos los derechos reservados.</p>
                         <div className="flex gap-6">
                             <Link href="#" className="text-sm text-gray-400 hover:text-white">
                                 Aviso Legal

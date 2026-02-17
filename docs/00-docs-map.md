@@ -23,6 +23,7 @@
 | 14 | [14-produccion-en-construccion.md](./14-produccion-en-construccion.md) | Módulo producción |
 | 15 | [15-observaciones-criticas.md](./15-observaciones-criticas.md) | Observaciones críticas |
 | 16-23 | [16-guia-auth-magic-link-otp.md](./16-guia-auth-magic-link-otp.md) … [23-uso-settings.md](./23-uso-settings.md) | Guías y config |
+| — | [guia-branding-generico-env.md](./guia-branding-generico-env.md) | Branding genérico / La PesquerApp por .env |
 | 40 | [40-plan-core-consolidation-erp.md](./40-plan-core-consolidation-erp.md) | Plan consolidación Core |
 | 50-66 | analisis, endpoints, especificaciones, implementaciones | Docs técnicos |
 

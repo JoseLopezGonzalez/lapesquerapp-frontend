@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appName, supportEmail } from "@/configs/branding";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircleIcon, ArrowLeft } from "lucide-react";
@@ -51,7 +52,7 @@ export default function LoginFormMobile({
             <ul className="list-inside list-disc text-xs mt-2">
               <li>
                 Contacta con soporte para más información (
-                <Link href="mailto:soporte@pesquerapp.com">soporte@pesquerapp.com</Link>)
+                <Link href={`mailto:${supportEmail}`}>{supportEmail}</Link>)
               </li>
             </ul>
           </AlertDescription>
@@ -77,7 +78,7 @@ export default function LoginFormMobile({
         <div className="w-full space-y-8">
           <div className="text-center flex flex-col gap-4">
             <h2 className="text-4xl font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
-              La PesquerApp
+              {appName}
             </h2>
             <div className="flex items-center justify-center gap-1 text-nowrap flex-wrap">
               <span className="text-base text-primary">Mantén tu producción</span>
@@ -115,7 +116,7 @@ export default function LoginFormMobile({
             <p className="text-center text-sm text-muted-foreground pt-2">
               ¿Algún problema?{" "}
               <Link
-                href="mailto:soporte@pesquerapp.com"
+                href={`mailto:${supportEmail}`}
                 className="text-primary hover:text-muted-foreground underline underline-offset-2"
               >
                 Contáctanos

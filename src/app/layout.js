@@ -1,25 +1,35 @@
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
+import {
+  appName,
+  appShortName,
+  metadataBaseUrl,
+} from "@/configs/branding";
+
+const defaultTitle = `${appName} | ERP para pequeñas y medianas empresas pesqueras`;
+const ogTitle = `${appName} | El ERP de la industria pesquera`;
+const twitterTitle = `${appName} | ERP para el sector pesquero`;
+const ogAlt = `${appName} - ERP para el sector pesquero`;
 
 export const metadata = {
   title: {
-    default: "La PesquerApp | ERP para pequeñas y medianas empresas pesqueras",
-    template: "%s | La PesquerApp",
+    default: defaultTitle,
+    template: `%s | ${appName}`,
   },
   description: "ERP diseñado para empresas pesqueras. Controla producción, trazabilidad, compras, ventas y etiquetado.",
   keywords: ["ERP", "pesca", "trazabilidad", "producción", "ventas", "industria alimentaria"],
-  metadataBase: new URL("https://lapesquerapp.es"),
+  metadataBase: new URL(metadataBaseUrl),
   openGraph: {
-    title: "La PesquerApp | El ERP de la industria pesquera",
+    title: ogTitle,
     description: "Solución ERP moderna para pequeñas y medianas empresas del sector pesquero.",
-    url: "https://lapesquerapp.es",
-    siteName: "La PesquerApp",
+    url: metadataBaseUrl,
+    siteName: appName,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "La PesquerApp - ERP para el sector pesquero",
+        alt: ogAlt,
       },
     ],
     locale: "es_ES",
@@ -27,7 +37,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "La PesquerApp | ERP para el sector pesquero",
+    title: twitterTitle,
     description: "Solución completa ERP para empresas del sector pesquero.",
     images: ["/og-image.png"],
   },
@@ -35,7 +45,7 @@ export const metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  manifest: "/site.webmanifest",
+  manifest: "/api/manifest",
 };
 
 export default function RootLayout({ children }) {
@@ -45,7 +55,7 @@ export default function RootLayout({ children }) {
         {/* iOS PWA Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        <meta name="apple-mobile-web-app-title" content="PesquerApp" />
+        <meta name="apple-mobile-web-app-title" content={appShortName} />
         
         {/* Android/Chrome PWA Meta Tags */}
         {/* theme-color controla: barra de estado (notificaciones), barra de navegación y navegador */}
