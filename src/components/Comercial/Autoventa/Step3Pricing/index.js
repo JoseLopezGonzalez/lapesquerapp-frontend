@@ -15,8 +15,8 @@ export default function Step3Pricing({ state, setItemPrice, totalAmount }) {
   const items = state.items ?? [];
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border overflow-x-auto">
+    <div className="space-y-4 w-full">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

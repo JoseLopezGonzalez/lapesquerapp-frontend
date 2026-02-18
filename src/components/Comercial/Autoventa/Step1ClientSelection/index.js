@@ -75,7 +75,7 @@ export default function Step1ClientSelection({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full rounded-lg border overflow-y-auto overflow-x-hidden flex flex-col gap-6 p-4 min-h-[min(480px,72vh)]">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium">Fecha de entrada</label>
@@ -137,7 +137,6 @@ export default function Step1ClientSelection({
           </Sheet>
         </div>
       </div>
-
     </div>
   );
 }

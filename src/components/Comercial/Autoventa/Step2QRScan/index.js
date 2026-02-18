@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Package } from 'lucide-react';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
 import { parseGs1128Line } from '@/lib/gs1128Parser';
@@ -111,7 +112,7 @@ export default function Step2QRScan({
   const boxes = state.boxes ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="space-y-2">
         <Label htmlFor="gs1-code">Código GS1-128 (pegado o escaneado; varios códigos, uno por línea)</Label>
         <div className="flex gap-2">
@@ -138,8 +139,20 @@ export default function Step2QRScan({
         )}
       </div>
 
-      {boxes.length > 0 && (
-        <ul className="border rounded-md divide-y max-h-48 overflow-auto">
+      {boxes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-6 w-full min-h-[min(260px,40vh)] rounded-lg border border-dashed border-muted-foreground/25 bg-muted/20 py-10 px-6">
+          <div className="rounded-full bg-muted border border-border p-4">
+            <Package className="h-14 w-14 text-muted-foreground" strokeWidth={1.5} />
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold">Ninguna caja añadida</h3>
+            <p className="text-sm text-muted-foreground max-w-[280px]">
+              Escanea o pega códigos GS1-128 para añadir cajas.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <ul className="rounded-md border divide-y max-h-48 overflow-auto">
           {boxes.map((box, idx) => (
             <li key={idx} className="px-3 py-2 text-sm flex justify-between">
               <span>
@@ -150,7 +163,6 @@ export default function Step2QRScan({
           ))}
         </ul>
       )}
-
     </div>
   );
 }

@@ -7,7 +7,7 @@ export default function Step4Invoice({ state, setInvoiceRequired }) {
   const checked = Boolean(state.invoiceRequired);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full rounded-lg border p-4">
       <div className="flex items-center space-x-2">
         <Checkbox
           id="invoice-required"

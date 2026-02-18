@@ -1,9 +1,12 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { useAutoventa } from '@/hooks/useAutoventa';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import Step1ClientSelection from '../Step1ClientSelection';
 import Step2QRScan from '../Step2QRScan';
 import Step3Pricing from '../Step3Pricing';
@@ -13,7 +16,16 @@ import Step6Summary from '../Step6Summary';
 import Step7Confirmation from '../Step7Confirmation';
 import Step8PrintTicket from '../Step8PrintTicket';
 
-const STEPS = 8;
+const STEPS = [
+  { id: 1, title: 'Cliente', description: 'Seleccione cliente y fechas' },
+  { id: 2, title: 'Cajas', description: 'Escanea o pega códigos GS1-128' },
+  { id: 3, title: 'Precios', description: 'Indique precios por producto' },
+  { id: 4, title: 'Factura', description: 'Con factura o solo recibo' },
+  { id: 5, title: 'Observaciones', description: 'Observaciones (opcional)' },
+  { id: 6, title: 'Resumen', description: 'Revise el resumen' },
+  { id: 7, title: 'Confirmar', description: 'Confirmar y crear autoventa' },
+  { id: 8, title: 'Ticket', description: 'Imprimir ticket' },
+];
 
 export default function AutoventaWizard() {
   const router = useRouter();
@@ -63,105 +75,237 @@ export default function AutoventaWizard() {
     return step >= 4 && step <= 6;
   };
 
+  const canGoToStep = (stepIndex) => {
+    const s = stepIndex + 1;
+    return s <= step;
+  };
+
+  const [step7Error, setStep7Error] = useState(null);
+  const [step7Loading, setStep7Loading] = useState(false);
+
   const handleCancelStep7 = () => {
+    setStep7Error(null);
     reset();
     setStep(1);
   };
 
+  const handleStep7Submit = async () => {
+    setStep7Error(null);
+    setStep7Loading(true);
+    try {
+      await submitAutoventa();
+    } catch (err) {
+      setStep7Error(err?.message ?? 'Error al crear la autoventa.');
+    } finally {
+      setStep7Loading(false);
+    }
+  };
+
+  const contentMaxWidth = [1, 2, 4, 5].includes(step) ? 'max-w-[420px]' : 'max-w-[min(800px,95vw)]';
+
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto p-4 gap-4">
-      <h1 className="text-xl font-semibold">Autoventa</h1>
+    <div className="w-full h-full flex flex-col min-h-0">
+      <div className="shrink-0 flex flex-col items-center gap-3 pb-4 px-2">
+        <h2 className="text-lg font-semibold">Nueva autoventa</h2>
+        <div className="flex items-center gap-1 w-full max-w-[min(100%,420px)] overflow-x-auto">
+          {STEPS.map((s, i) => {
+            const stepNum = i + 1;
+            return (
+              <React.Fragment key={s.id}>
+                <motion.button
+                  type="button"
+                  onClick={() => canGoToStep(i) && setStep(stepNum)}
+                  disabled={!canGoToStep(i)}
+                  className={cn(
+                    'flex items-center justify-center min-w-9 h-9 shrink-0 rounded-full text-xs font-medium touch-manipulation',
+                    step === stepNum
+                      ? 'bg-primary text-primary-foreground'
+                      : step > stepNum
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-muted text-muted-foreground',
+                    !canGoToStep(i) && 'cursor-not-allowed opacity-60'
+                  )}
+                  aria-label={`Paso ${stepNum}: ${s.title}${!canGoToStep(i) ? ' (completa el paso anterior)' : ''}`}
+                  initial={false}
+                  animate={{
+                    scale: step === stepNum ? 1.08 : 1,
+                    transition: { type: 'spring', stiffness: 400, damping: 25 },
+                  }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  <AnimatePresence mode="wait">
+                    {step > stepNum ? (
+                      <motion.span
+                        key="check"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      >
+                        <Check className="h-4 w-4" />
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="num"
+                        initial={{ scale: 0.8, opacity: 0.8 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      >
+                        {stepNum}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+                {i < STEPS.length - 1 && (
+                  <motion.div
+                    className="flex-1 h-1.5 rounded-full min-w-[0.25rem] overflow-hidden bg-muted shrink min-w-[4px]"
+                    initial={false}
+                    animate={{ opacity: 1 }}
+                  >
+                    <motion.div
+                      className="h-full rounded-full bg-primary/30"
+                      initial={false}
+                      animate={{
+                        width: step > stepNum ? '100%' : '0%',
+                      }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                    />
+                  </motion.div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <p className="text-sm text-muted-foreground text-center">{STEPS[step - 1]?.description}</p>
+      </div>
 
-      <div className="flex gap-1 justify-center">
-        {Array.from({ length: STEPS }, (_, i) => i + 1).map((s) => (
-          <div
-            key={s}
-            className={`h-2 w-2 rounded-full transition-colors ${
-              s === step ? 'bg-primary' : s < step ? 'bg-primary/50' : 'bg-muted'
-            }`}
-            aria-current={s === step ? 'step' : undefined}
+      <div className={cn('flex flex-col flex-1 min-h-0 overflow-y-auto w-full mx-auto px-4', contentMaxWidth)}>
+        {step === 1 && (
+          <Step1ClientSelection
+            state={state}
+            setCustomer={setCustomer}
+            setDates={setDates}
           />
-        ))}
+        )}
+        {step === 2 && (
+          <Step2QRScan
+            state={state}
+            addBox={addBox}
+            removeAllBoxes={removeAllBoxes}
+          />
+        )}
+        {step === 3 && (
+          <Step3Pricing
+            state={state}
+            setItemPrice={setItemPrice}
+            totalAmount={totalAmount}
+          />
+        )}
+        {step === 4 && (
+          <Step4Invoice
+            state={state}
+            setInvoiceRequired={setInvoiceRequired}
+          />
+        )}
+        {step === 5 && (
+          <Step5Observations
+            state={state}
+            setObservations={setObservations}
+          />
+        )}
+        {step === 6 && (
+          <Step6Summary state={state} totalAmount={totalAmount} />
+        )}
+        {step === 7 && (
+          <Step7Confirmation
+            state={state}
+            totalAmount={totalAmount}
+            onCancel={handleCancelStep7}
+            error={step7Error}
+            isSubmitting={step7Loading}
+          />
+        )}
+        {step === 8 && (
+          <Step8PrintTicket
+            state={state}
+            onFinish={() => {
+              reset();
+              router.push('/comercial');
+            }}
+            onNew={() => {
+              reset();
+              setStep(1);
+            }}
+          />
+        )}
       </div>
 
-      <Card className="flex-1 min-h-0 flex flex-col">
-        <CardHeader className="shrink-0" />
-        <CardContent className="flex-1 min-h-0 overflow-auto">
-          {step === 1 && (
-            <Step1ClientSelection
-              state={state}
-              setCustomer={setCustomer}
-              setDates={setDates}
-            />
-          )}
-          {step === 2 && (
-            <Step2QRScan
-              state={state}
-              addBox={addBox}
-              removeAllBoxes={removeAllBoxes}
-            />
-          )}
-          {step === 3 && (
-            <Step3Pricing
-              state={state}
-              setItemPrice={setItemPrice}
-              totalAmount={totalAmount}
-            />
-          )}
-          {step === 4 && (
-            <Step4Invoice
-              state={state}
-              setInvoiceRequired={setInvoiceRequired}
-            />
-          )}
-          {step === 5 && (
-            <Step5Observations
-              state={state}
-              setObservations={setObservations}
-            />
-          )}
-          {step === 6 && (
-            <Step6Summary state={state} totalAmount={totalAmount} />
-          )}
-          {step === 7 && (
-            <Step7Confirmation
-              state={state}
-              totalAmount={totalAmount}
-              submitAutoventa={submitAutoventa}
-              setCreatedOrder={setCreatedOrder}
-              onCancel={handleCancelStep7}
-            />
-          )}
-          {step === 8 && (
-            <Step8PrintTicket
-              state={state}
-              onFinish={() => {
-                reset();
-                router.push('/comercial');
-              }}
-              onNew={() => {
-                reset();
-                setStep(1);
-              }}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-between gap-2 shrink-0">
-        {step > 1 && step < 7 && (
-          <Button variant="outline" onClick={goBack}>
-            Atrás
-          </Button>
-        )}
-        {step < 7 && (
-          <div className="flex-1 flex justify-end">
-            <Button onClick={goNext} disabled={!canGoNext()}>
-              Siguiente
-            </Button>
+      {step < 8 && (
+        <div className="shrink-0 flex gap-2 pt-4 pb-4 w-full justify-center px-4">
+          <div className="flex gap-2 w-full max-w-[420px]">
+            {step === 7 ? (
+              <>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="min-h-[40px] flex-1 touch-manipulation text-sm"
+                  onClick={handleCancelStep7}
+                  disabled={step7Loading}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="min-h-[40px] flex-1 touch-manipulation text-sm"
+                  onClick={handleStep7Submit}
+                  disabled={step7Loading}
+                >
+                  {step7Loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    <>
+                      Terminar
+                      <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                {step > 1 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={goBack}
+                    className="min-h-[40px] flex-1 touch-manipulation text-sm"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1.5" />
+                    Anterior
+                  </Button>
+                ) : (
+                  <div className="flex-1" />
+                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={goNext}
+                  disabled={!canGoNext()}
+                  className="min-h-[40px] flex-1 touch-manipulation text-sm"
+                >
+                  Siguiente
+                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                </Button>
+              </>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

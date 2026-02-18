@@ -17,14 +17,14 @@ export default function Step6Summary({ state, totalAmount }) {
   const invoiceRequired = Boolean(state.invoiceRequired);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full rounded-lg border p-4">
       <div className="grid gap-2 text-sm">
         <p><strong>Fecha entrada:</strong> {entryDate}</p>
         <p><strong>Fecha carga:</strong> {loadDate}</p>
         <p><strong>Cliente:</strong> {customerName}</p>
         <p><strong>Factura:</strong> {invoiceRequired ? 'Sí' : 'No'}</p>
       </div>
-      <div className="rounded-md border overflow-x-auto">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -54,7 +54,7 @@ export default function Step6Summary({ state, totalAmount }) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex justify-end font-semibold">
+      <div className="flex justify-end font-semibold text-lg">
         Total: {Number(totalAmount ?? 0).toFixed(2)} €
       </div>
     </div>

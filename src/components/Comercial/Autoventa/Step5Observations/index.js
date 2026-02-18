@@ -8,7 +8,7 @@ export default function Step5Observations({ state, setObservations }) {
   const maxLength = 1000;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full rounded-lg border p-4">
       <Label htmlFor="observations">Observaciones</Label>
       <Textarea
         id="observations"
