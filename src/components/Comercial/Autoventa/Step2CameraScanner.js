@@ -47,7 +47,7 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
           onError={handleError}
           formats={['qr_code']}
           constraints={CAMERA_CONSTRAINTS}
-          scanDelay={1200}
+          scanDelay={2000}
           sound
           styles={{
             container: {

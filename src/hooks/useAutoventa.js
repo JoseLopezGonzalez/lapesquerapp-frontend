@@ -79,6 +79,16 @@ export function useAutoventa() {
     setState((s) => ({ ...s, boxes: [], items: [] }));
   }, []);
 
+  const removeBox = useCallback((index) => {
+    setState((s) => {
+      const boxes = [...(s.boxes || [])];
+      if (index < 0 || index >= boxes.length) return s;
+      boxes.splice(index, 1);
+      const items = aggregateItemsFromBoxes(boxes);
+      return { ...s, boxes, items };
+    });
+  }, []);
+
   const setItemsFromBoxes = useCallback(() => {
     setState((s) => {
       const items = aggregateItemsFromBoxes(s.boxes || []);
@@ -138,6 +148,7 @@ export function useAutoventa() {
     setCustomer,
     setDates,
     addBox,
+    removeBox,
     removeAllBoxes,
     setItemsFromBoxes,
     setItemPrice,

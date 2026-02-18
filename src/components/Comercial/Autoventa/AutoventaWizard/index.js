@@ -31,6 +31,7 @@ export default function AutoventaWizard() {
     setStep,
     setCustomer,
     addBox,
+    removeBox,
     removeAllBoxes,
     setItemsFromBoxes,
     setItemPrice,
@@ -207,10 +208,11 @@ export default function AutoventaWizard() {
           </div>
         )}
         {step === 2 && (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex flex-1 min-h-0 w-full justify-center overflow-y-auto">
             <Step2QRScan
               state={state}
               addBox={addBox}
+              removeBox={removeBox}
               removeAllBoxes={removeAllBoxes}
             />
           </div>
