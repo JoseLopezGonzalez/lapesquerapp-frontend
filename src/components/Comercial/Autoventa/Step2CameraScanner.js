@@ -33,7 +33,7 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
         <Scanner
           onScan={handleScan}
           onError={handleError}
-          formats={['code_128']}
+          formats={['qr_code']}
           styles={{
             container: { width: '100%', height: '100%' },
             video: { width: '100%', height: '100%', objectFit: 'cover' },
