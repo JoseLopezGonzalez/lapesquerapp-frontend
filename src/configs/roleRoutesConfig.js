@@ -18,6 +18,7 @@ export const COMERCIAL_BASE = '/comercial';
 
 export const comercialRoutes = {
   dashboard: COMERCIAL_BASE,
+  autoventa: `${COMERCIAL_BASE}/autoventa`,
 };
 
 /** Rutas de admin para otros roles (referencia; no incluye operario para flujos propios) */
