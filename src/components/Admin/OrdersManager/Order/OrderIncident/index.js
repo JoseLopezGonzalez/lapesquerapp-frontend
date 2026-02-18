@@ -36,7 +36,10 @@ export default function OrderIncidentPanel() {
             await notify.promise(openOrderIncident(newDescription), {
                 loading: "Creando incidencia...",
                 success: "Incidencia creada",
-                error: "Error al crear incidencia",
+                error: (error) => {
+                    const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo crear la incidencia. Intente de nuevo.';
+                    return { title: 'Error al crear incidencia', description: desc };
+                },
             })
             setNewDescription("")
         } finally {
@@ -51,7 +54,10 @@ export default function OrderIncidentPanel() {
             await notify.promise(resolveOrderIncident(resolutionType, resolutionNotes), {
                 loading: "Resolviendo incidencia...",
                 success: "Incidencia resuelta",
-                error: "Error al resolver incidencia",
+                error: (error) => {
+                    const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo resolver la incidencia. Intente de nuevo.';
+                    return { title: 'Error al resolver incidencia', description: desc };
+                },
             })
         } finally {
             setLoading(false)
@@ -64,7 +70,10 @@ export default function OrderIncidentPanel() {
             await notify.promise(deleteOrderIncident(), {
                 loading: "Eliminando incidencia...",
                 success: "Incidencia eliminada",
-                error: "Error al eliminar incidencia",
+                error: (error) => {
+                    const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo eliminar la incidencia. Intente de nuevo.';
+                    return { title: 'Error al eliminar incidencia', description: desc };
+                },
             })
         } finally {
             setLoading(false)

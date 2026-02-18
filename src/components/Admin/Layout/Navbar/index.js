@@ -26,24 +26,14 @@ import { notify } from "@/lib/notifications";export default function Navbar() {
             // Luego cerrar sesión en NextAuth
             await signOut({ redirect: false });
             
-            // Mostrar toast de éxito
-            notify.success({
-                title: 'Sesión cerrada',
-                description: 'Has cerrado sesión correctamente.',
-            });
-            
-            // Redirigir después de un breve delay para que se vea el toast
+            notify.success({ title: 'Sesión cerrada' });
             setTimeout(() => {
                 window.location.replace('/');
             }, 500);
         } catch (err) {
             console.error('Error en logout:', err);
-            // Incluso si falla el logout del backend, continuar con el logout del cliente
             await signOut({ redirect: false });
-            notify.success({
-                title: 'Sesión cerrada',
-                description: 'Has cerrado sesión correctamente.',
-            });
+            notify.success({ title: 'Sesión cerrada' });
             setTimeout(() => {
                 window.location.replace('/');
             }, 500);

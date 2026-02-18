@@ -315,8 +315,11 @@ export function useOrder(orderId, onChange) {
         };
         await notify.promise(doExport(), {
             loading: `Exportando ${documentLabel}.${type}`,
-            success: 'Exportación exitosa',
-            error: 'Error al exportar',
+            success: 'Exportación completada',
+            error: (error) => {
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo completar la exportación. Intente de nuevo.';
+                return { title: 'Error al exportar', description: desc };
+            },
         });
     };
 

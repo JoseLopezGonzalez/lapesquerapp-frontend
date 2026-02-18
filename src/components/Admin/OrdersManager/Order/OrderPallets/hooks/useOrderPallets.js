@@ -169,8 +169,8 @@ export function useOrderPallets() {
           error.data?.userMessage ||
           error.response?.data?.userMessage ||
           error.message ||
-          'Error al clonar el palet';
-        notify.error({ title: msg });
+          'No se pudo clonar el palet. Intente de nuevo.';
+        notify.error({ title: 'Error al clonar el palet', description: msg });
       } finally {
         setIsCloning(false);
       }
@@ -355,8 +355,8 @@ export function useOrderPallets() {
           error.data?.userMessage ||
           error.response?.data?.userMessage ||
           error.message ||
-          'Error al buscar palets';
-        notify.error({ title: msg });
+          'No se pudieron buscar los palets. Intente de nuevo.';
+        notify.error({ title: 'Error al buscar palets', description: msg });
       } finally {
         setIsSearching(false);
       }
@@ -572,8 +572,8 @@ export function useOrderPallets() {
         err.data?.userMessage ||
         err.response?.data?.userMessage ||
         err.message ||
-        'Error al crear el palet desde previsión';
-      notify.error({ title: msg });
+        'No se pudo crear el palet desde la previsión. Intente de nuevo.';
+      notify.error({ title: 'Error al crear el palet desde previsión', description: msg });
     } finally {
       setIsCreatingFromForecast(false);
     }

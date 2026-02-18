@@ -50,7 +50,7 @@ export function useLoginActions({
         setAccessRequested(true);
       } catch (err) {
         const msg = (err as AuthErrorLike).message || "Error al solicitar acceso.";
-        notify.error({ title: msg });
+        notify.error({ title: "Error al solicitar acceso", description: msg });
       } finally {
         setLoading(false);
       }
@@ -86,7 +86,7 @@ export function useLoginActions({
           e.data?.userMessage ||
           e.data?.message ||
           "Error al verificar el código.";
-        notify.error({ title: msg });
+        notify.error({ title: "Error al verificar el código", description: msg });
       } finally {
         setLoading(false);
       }

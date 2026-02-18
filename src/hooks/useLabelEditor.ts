@@ -437,7 +437,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
                 setLabelId(data.data.id);
                 setSelectedLabel(data.data);
             }
-            notify.success({ title: `Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente.` });
+            notify.success({ title: `Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente` });
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
         onError: (err: Error) => {
@@ -450,7 +450,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
     const deleteMutation = useMutation({
         mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
         onSuccess: () => {
-            notify.success({ title: "Etiqueta eliminada correctamente." });
+            notify.success({ title: "Etiqueta eliminada correctamente" });
             clearEditor();
             queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
         },
@@ -470,7 +470,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
             return;
         }
         if (hasDuplicateFieldKeys(elements)) {
-            notify.error({ title: 'Error: hay campos con el mismo nombre.' });
+            notify.error({ title: 'Error: hay campos con el mismo nombre' });
             return;
         }
         if (hasAnyElementValidationErrors(elements)) {
@@ -487,7 +487,7 @@ export function useLabelEditor(dataContext: DataContext = defaultDataContext): U
 
     const handleDeleteLabel = async () => {
         if (!labelId) {
-            notify.error({ title: "No hay etiqueta seleccionada para eliminar." });
+            notify.error({ title: "No hay etiqueta seleccionada para eliminar" });
             return;
         }
         deleteMutation.mutate({ labelId, token: session?.user?.accessToken });

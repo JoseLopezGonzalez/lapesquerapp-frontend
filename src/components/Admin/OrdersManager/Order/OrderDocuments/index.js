@@ -147,9 +147,12 @@ const OrderDocuments = () => {
         }
 
         notify.promise(sendDocuments.customDocuments(json), {
-            loading: "Enviando documentos a multiples destinatarios...",
+            loading: "Enviando documentos a múltiples destinatarios...",
             success: 'Documentos enviados correctamente',
-            error: 'Error al enviar documentos',
+            error: (error) => {
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
+                return { title: 'Error al enviar documentos', description: desc };
+            },
         });
     };
 
@@ -176,7 +179,10 @@ const OrderDocuments = () => {
         notify.promise(sendDocuments.customDocuments(json), {
             loading: "Enviando documentos...",
             success: 'Documentos enviados correctamente',
-            error: 'Error al enviar documentos',
+            error: (error) => {
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
+                return { title: 'Error al enviar documentos', description: desc };
+            },
         }).then(() => handleOnClickResetSelectedDocs());
     };
 
@@ -184,7 +190,10 @@ const OrderDocuments = () => {
         notify.promise(sendDocuments.standardDocuments(), {
             loading: "Enviando documentos estándar...",
             success: 'Documentos enviados correctamente',
-            error: 'Error al enviar documentos',
+            error: (error) => {
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
+                return { title: 'Error al enviar documentos', description: desc };
+            },
         });
     };
 

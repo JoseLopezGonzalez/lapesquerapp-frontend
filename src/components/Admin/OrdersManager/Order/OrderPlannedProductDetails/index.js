@@ -173,11 +173,12 @@ const OrderPlannedProductDetails = () => {
         if (!detail.id) {
             detail.orderId = order.id;
             notify.promise(plannedProductDetailActions.create(detail), {
-                loading: 'Creando nueva linea...',
-                success: 'Linea creada correctamente',
+                loading: 'Creando nueva línea...',
+                success: 'Línea creada correctamente',
                 error: (error) => {
-                    console.error('Error al crear la linea:', error);
-                    return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al crear nueva linea';
+                    console.error('Error al crear la línea:', error);
+                    const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo crear la línea. Intente de nuevo.';
+                    return { title: 'Error al crear la línea', description: desc };
                 },
             }).then(() => {
                 setTemporaryDetails(prev => prev.filter(temp => temp.tempId !== detail.tempId));
@@ -187,11 +188,12 @@ const OrderPlannedProductDetails = () => {
         }
 
         notify.promise(plannedProductDetailActions.update(detail.id, detail), {
-            loading: 'Actualizando linea...',
-            success: 'Linea actualizada correctamente',
+            loading: 'Actualizando línea...',
+            success: 'Línea actualizada correctamente',
             error: (error) => {
-                console.error('Error al actualizar la linea:', error);
-                return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al actualizar la linea';
+                console.error('Error al actualizar la línea:', error);
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo actualizar la línea. Intente de nuevo.';
+                return { title: 'Error al actualizar la línea', description: desc };
             },
         }).then(() => setEditIndex(null));
     };
@@ -208,11 +210,12 @@ const OrderPlannedProductDetails = () => {
         if (!detail?.id) return;
 
         notify.promise(plannedProductDetailActions.delete(detail.id), {
-            loading: 'Eliminando linea...',
-            success: 'Linea eliminada correctamente',
+            loading: 'Eliminando línea...',
+            success: 'Línea eliminada correctamente',
             error: (error) => {
-                console.error('Error al eliminar la linea:', error);
-                return error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'Error al eliminar la linea';
+                console.error('Error al eliminar la línea:', error);
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo eliminar la línea. Intente de nuevo.';
+                return { title: 'Error al eliminar la línea', description: desc };
             },
         }).then(() => setEditIndex(null));
     };

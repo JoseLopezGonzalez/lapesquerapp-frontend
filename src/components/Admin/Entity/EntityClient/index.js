@@ -192,7 +192,7 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
+            notify.error({ title: 'No se encontró el servicio para esta entidad' });
             return;
         }
 
@@ -261,7 +261,7 @@ export default function EntityClient({ config }) {
         const entityService = getEntityService(config.endpoint);
         
         if (!entityService) {
-            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
+            notify.error({ title: 'No se encontró el servicio para esta entidad' });
             setData((prevData) => ({ ...prevData, loading: false }));
             return;
         }
@@ -402,7 +402,7 @@ export default function EntityClient({ config }) {
 
         const entityService = getEntityService(config.endpoint);
         if (!entityService) {
-            notify.error({ title: 'No se encontró el servicio para esta entidad.' });
+            notify.error({ title: 'No se encontró el servicio para esta entidad' });
             return;
         }
 
@@ -491,12 +491,14 @@ export default function EntityClient({ config }) {
             await notify.promise(downloadFile(url, fileName, type), {
                 loading: waitingMessage || 'Generando exportación...',
                 success: 'Exportación generada correctamente',
-                error: (error) =>
-                    error instanceof Response && error.status === 403
+                error: (error) => {
+                    const desc = error instanceof Response && error.status === 403
                         ? 'No tienes permiso para generar esta exportación.'
                         : error instanceof Error
                             ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
-                            : 'Error: ocurrió algo inesperado al generar la exportación.',
+                            : 'Ocurrió algo inesperado al generar la exportación. Intente de nuevo.';
+                    return { title: 'Error al generar exportación', description: desc };
+                },
             });
         } finally {
             setIsExporting(false);
@@ -516,12 +518,14 @@ export default function EntityClient({ config }) {
             await notify.promise(downloadFile(url, fileName, type || 'pdf'), {
                 loading: waitingMessage || 'Generando reporte...',
                 success: 'Reporte generado correctamente',
-                error: (error) =>
-                    error instanceof Response && error.status === 403
+                error: (error) => {
+                    const desc = error instanceof Response && error.status === 403
                         ? 'No tienes permiso para generar este reporte.'
                         : error instanceof Error
                             ? (error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Error desconocido')
-                            : 'Error: ocurrió algo inesperado al generar el reporte.',
+                            : 'Ocurrió algo inesperado al generar el reporte. Intente de nuevo.';
+                    return { title: 'Error al generar reporte', description: desc };
+                },
             });
         } finally {
             setIsGeneratingReport(false);

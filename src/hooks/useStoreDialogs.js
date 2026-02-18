@@ -137,13 +137,16 @@ export function useStoreDialogs({
     try {
       const originalPallet = await notify.promise(getPallet(palletId, token), {
         loading: 'Duplicando...',
-        success: 'Listo',
-        error: (error) =>
-          error?.userMessage ||
-          error?.data?.userMessage ||
-          error?.response?.data?.userMessage ||
-          error?.message ||
-          'Error al duplicar el palet',
+        success: 'Datos del palet cargados',
+        error: (error) => {
+          const desc =
+            error?.userMessage ||
+            error?.data?.userMessage ||
+            error?.response?.data?.userMessage ||
+            error?.message ||
+            'No se pudo cargar el palet. Intente de nuevo.';
+          return { title: 'Error al duplicar el palet', description: desc };
+        },
       });
 
       const clonedPallet = {

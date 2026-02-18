@@ -66,7 +66,7 @@ export default function OperatorLayoutClient({ children }) {
       console.error('Error en logout del backend:', err);
     }
     await signOut({ redirect: false });
-    notify.success({ title: 'Sesión cerrada', description: 'Has cerrado sesión correctamente.' });
+    notify.success({ title: 'Sesión cerrada' });
     setTimeout(() => window.location.replace('/'), 500);
   }, []);
 

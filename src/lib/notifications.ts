@@ -116,7 +116,7 @@ export const notify = {
       position: DEFAULT_POSITION,
       loading: loadingContent,
       success: successFn == null
-        ? { title: "Listo" }
+        ? { title: "Operación completada" }
         : typeof successFn === "function"
           ? (data) => {
               const out = successFn(data);
@@ -126,7 +126,7 @@ export const notify = {
             ? { title: successFn }
             : successFn,
       error: errorFn == null
-        ? { title: "Error" }
+        ? { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
         : typeof errorFn === "function"
           ? (err) => {
               const out = errorFn(err);
