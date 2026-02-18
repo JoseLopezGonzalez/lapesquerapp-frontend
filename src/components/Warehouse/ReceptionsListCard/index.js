@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   Card,
@@ -37,13 +36,24 @@ const PER_PAGE = 9;
 
 export default function ReceptionsListCard({ storeId = null }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [page, setPage] = useState(1);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { data, total, isLoading: loading } = useReceptionsList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [loadingPrintId, setLoadingPrintId] = useState(null);
   const [showAllQuantities, setShowAllQuantities] = useState(false);
   const [revealedRowIds, setRevealedRowIds] = useState(() => new Set());
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
+
+  const handleNavigateToCreate = () => {
+    setIsNavigating(true);
+    router.push(operatorRoutes.receptionsCreate);
+  };
 
   const isQuantityVisible = (rowId) => showAllQuantities || revealedRowIds.has(rowId);
   const toggleRowQuantity = (rowId) => {
@@ -113,10 +123,20 @@ export default function ReceptionsListCard({ storeId = null }) {
               <Eye className="h-4 w-4" />
             )}
           </Button>
-          <Button asChild size="sm" variant="default">
-            <Link href={operatorRoutes.receptionsCreate}>
-              Nueva Recepción +
-            </Link>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={handleNavigateToCreate}
+            disabled={isNavigating}
+          >
+            {isNavigating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Cargando...
+              </>
+            ) : (
+              "Nueva Recepción +"
+            )}
           </Button>
         </div>
       </CardHeader>
@@ -150,7 +170,7 @@ export default function ReceptionsListCard({ storeId = null }) {
                             description="Aún no se ha registrado ninguna recepción de materia prima. Crea la primera desde el botón superior."
                             button={{
                               name: "Nueva recepción",
-                              onClick: () => router.push(operatorRoutes.receptionsCreate),
+                              onClick: handleNavigateToCreate,
                             }}
                           />
                         </div>

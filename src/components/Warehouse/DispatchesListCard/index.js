@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -27,7 +26,9 @@ import Loader from "@/components/Utilities/Loader";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { notify } from "@/lib/notifications";
 import { operatorRoutes } from "@/configs/roleRoutesConfig";
-import DispatchPrintDialog from "../DispatchPrintDialog";function getDispatchNetWeight(dispatch) {
+import DispatchPrintDialog from "../DispatchPrintDialog";
+
+function getDispatchNetWeight(dispatch) {
   if (dispatch.netWeight != null) return Number(dispatch.netWeight);
   const details = dispatch.details ?? [];
   const sum = details.reduce((acc, d) => acc + (Number(d.netWeight) || 0), 0);
@@ -38,13 +39,24 @@ const PER_PAGE = 9;
 
 export default function DispatchesListCard({ storeId = null }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [page, setPage] = useState(1);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { data, total, isLoading: loading } = useDispatchesList(page);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [loadingPrintId, setLoadingPrintId] = useState(null);
   const [showAllQuantities, setShowAllQuantities] = useState(false);
   const [revealedRowIds, setRevealedRowIds] = useState(() => new Set());
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
+
+  const handleNavigateToCreate = () => {
+    setIsNavigating(true);
+    router.push(operatorRoutes.dispatchesCreate);
+  };
 
   const isQuantityVisible = (rowId) => showAllQuantities || revealedRowIds.has(rowId);
   const toggleRowQuantity = (rowId) => {
@@ -107,10 +119,20 @@ export default function DispatchesListCard({ storeId = null }) {
               <Eye className="h-4 w-4" />
             )}
           </Button>
-          <Button asChild size="sm" variant="default">
-            <Link href={operatorRoutes.dispatchesCreate}>
-              Nueva Salida +
-            </Link>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={handleNavigateToCreate}
+            disabled={isNavigating}
+          >
+            {isNavigating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Cargando...
+              </>
+            ) : (
+              "Nueva Salida +"
+            )}
           </Button>
         </div>
       </CardHeader>
@@ -143,7 +165,7 @@ export default function DispatchesListCard({ storeId = null }) {
                             description="Aún no se ha registrado ninguna salida de cebo. Crea la primera desde el botón superior."
                             button={{
                               name: "Nueva salida",
-                              onClick: () => router.push(operatorRoutes.dispatchesCreate),
+                              onClick: handleNavigateToCreate,
                             }}
                           />
                         </div>

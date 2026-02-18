@@ -108,14 +108,6 @@ export default function OperarioCreateReceptionForm({
     }
   }, [step, speciesValue, speciesLoading]);
 
-  if (speciesLoading || suppliersLoading) {
-    return (
-      <div className="w-full flex-1 min-h-[280px] flex items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
   const getProductLabel = (val) => {
     if (val == null) return '-';
     const id = typeof val === 'object' ? val?.id ?? val?.value : val;
