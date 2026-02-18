@@ -138,6 +138,11 @@
   z-index: 9999;
 }
 
+/* Sileo toasts por encima de diálogos, sheets y overlays (Radix usa z-50) */
+[data-sileo-viewport] {
+  z-index: 9999 !important;
+}
+
 /* Scrollbar hide utility */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

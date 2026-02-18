@@ -1,9 +1,10 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { Toaster } from "sileo";
 import "sileo/styles.css";
 import { SessionProvider } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/queryClient";
@@ -41,14 +42,35 @@ function SileoToaster() {
   return <Toaster position="top-center" offset={16} options={options} />;
 }
 
+const TOASTER_PORTAL_STYLES = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 9999,
+  pointerEvents: "none",
+};
+
 export default function ClientLayout({ children }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Registrar Service Worker solo en producción
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
       registerServiceWorker();
     }
-    
   }, []);
+
+  const toasterNode = mounted && typeof document !== "undefined"
+    ? createPortal(
+        <div style={TOASTER_PORTAL_STYLES}>
+          <SileoToaster />
+        </div>,
+        document.body
+      )
+    : null;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -58,8 +80,7 @@ export default function ClientLayout({ children }) {
             <SettingsProvider>
             <LogoutProvider>
               <AuthErrorInterceptor />
-              {/* Toaster una vez (doc Sileo). Opciones según tema para no pisar el aspecto por defecto en light. */}
-              <SileoToaster />
+              {toasterNode}
               {children}
               {/* Install Prompt Banner - Mobile */}
               <InstallPromptBanner />

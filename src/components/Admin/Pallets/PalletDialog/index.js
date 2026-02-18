@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ExternalLink, Package } from "lucide-react";
@@ -50,7 +50,7 @@ export default function PalletDialog({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
-                <DialogContent className="w-full max-w-[95vw] max-h-[90vh] overflow-hidden">
+                <DialogContent className="w-full max-w-[95vw] max-h-[90vh] overflow-hidden" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 flex-wrap">
                             <span>

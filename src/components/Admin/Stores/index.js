@@ -14,7 +14,7 @@ import TabItem from './Tab/TabItem'; */
 
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { useStores } from "@/hooks/useStores";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StoreCard from "./StoresManager/StoreCard";
 import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
 import LoadingStoresHeader from "./StoresManager/LoadingStoresHeader";
@@ -49,6 +49,17 @@ export default function StoresManager() {
     setSelectedStoreId(id);
   }
 
+  const horizontalScrollRef = useRef(null);
+  useEffect(() => {
+    const el = horizontalScrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
 
   return (
     <>
@@ -59,11 +70,8 @@ export default function StoresManager() {
           /* Content */
           <div className="h-full w-full gap-6 flex flex-col items-center justify-center">
             <div
+              ref={horizontalScrollRef}
               className="overflow-x-auto overflow-y-hidden w-full min-h-36 py-2 rounded-xl flex gap-3"
-              onWheel={(e) => {
-                e.preventDefault();
-                e.currentTarget.scrollLeft += e.deltaY;
-              }}
             >
               {stores && stores.length > 0 && stores.map((store) => (
                     <StoreCard 
