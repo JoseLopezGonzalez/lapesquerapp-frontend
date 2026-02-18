@@ -438,7 +438,7 @@ Cada módulo sigue una estructura similar:
   │   └── page.js
   ├── [id]/                # Ver/Editar
   │   └── page.js
-  └── loading.js           # Loading state (opcional)
+  └── loading.js           # Loading state (obligatorio según estándar; ver docs/estandar-loading-rutas.md)
 ```
 
 ### Componentes por Módulo
