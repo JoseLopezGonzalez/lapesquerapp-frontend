@@ -152,11 +152,11 @@ El número total de pasos puede variar según la implementación (ej. si se comb
 
 #### 4.3.2 Cajas y escaneo QR
 
-- **Formato QR**: Verificar si el formato es el mismo que en [usePallet.js](src/hooks/usePallet.js) (GS1-128 con estructura `01{GTIN}3100{peso}10{lote}`) o si es un formato específico de autoventa (ej. solo ID de caja).
-- **Endpoint de escaneo**: Si las cajas existen en el sistema, puede existir (o crearse) un endpoint tipo:
-  - `GET /api/v2/boxes/by-code?code={qr_code}` que devuelva `{ product, netWeight, lot, ... }`
-  - O `POST /api/v2/autoventa/scan` con payload `{ code: "..." }` que devuelva la misma información.
-- **Si no hay endpoint**: El frontend puede parsear el QR según formato conocido y crear objetos temporales en memoria hasta persistir la autoventa.
+**No existe endpoint de escaneo** en el backend. El frontend debe:
+
+- **Parsear** el código QR en formato GS1-128 (mismo que en [usePallet.js](src/hooks/usePallet.js): `01{GTIN}3100{peso}10{lote}` o 3200 para libras) para obtener: identificador de producto (p. ej. GTIN mapeado a `productId`), peso neto y lote.
+- Mantener en estado del wizard una **lista de cajas** (cada una con `productId`, `lot`, `netWeight`, `gs1128` opcional).
+- **Agrupar por producto** para el paso de precios (`items`) y, al enviar `POST /api/v2/orders`, construir `items[]` (agregado por producto) y `boxes[]` (una entrada por caja física) según el contrato en [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md) (sección 1, "Códigos QR (GS1-128)" y sección 3).
 
 #### 4.3.3 Impresión
 
@@ -168,200 +168,49 @@ El número total de pasos puede variar según la implementación (ej. si se comb
 
 ---
 
-## 5. API a implementar en backend
+## 5. API de autoventa (backend implementado)
 
-### 5.1 Endpoints existentes (reutilizar)
+El **backend ya está implementado**. La referencia de contrato (campos, ejemplos, códigos de error) es [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md).
 
-- **Clientes**:
-  - `GET /api/v2/customers/options` — Lista de clientes para selector (ya existe).
-  - `POST /api/v2/customers` — Crear cliente (ya existe); para creación rápida en autoventa, aceptar payload mínimo: `{ name }`. El comercial se asocia por token; no se envían NIF ni otros campos.
-- **Productos**: Endpoints de productos ya existen si se necesitan para validar/obtener info de productos tras escaneo.
+### 5.1 Endpoints usados en el flujo Autoventa
 
-### 5.2 Endpoints nuevos a implementar
+| Método | Ruta | Uso |
+|--------|------|-----|
+| GET | `/api/v2/customers/options` | Selector de cliente (filtrado por comercial en backend) |
+| POST | `/api/v2/customers` | Creación rápida de cliente; body mínimo `{ name }`; comercial asignado por backend desde el token |
+| POST | `/api/v2/orders` | Crear autoventa; body con `orderType: "autoventa"`, `customer`, `entryDate`, `loadDate`, `invoiceRequired`, `observations`, `items`, `boxes` (estructura exacta en doc 71) |
+| GET | `/api/v2/orders?orderType=autoventa` | Listar autoventas del comercial (opcional; para futura pantalla de listado) |
+| GET | `/api/v2/orders/{id}` | Ver detalle de una autoventa (resumen, reimpresión de ticket) |
 
-#### 5.2.1 Escaneo de cajas
+### 5.2 Sin endpoint de escaneo
 
-**Opción A: Endpoint genérico de cajas**
-```http
-GET /api/v2/boxes/by-code?code={qr_code}
-```
-**Headers**: `Authorization: Bearer {token}`, `X-Tenant: {subdomain}`
+**No hay endpoint de escaneo** de cajas. El frontend debe parsear el código GS1-128 (mismo formato que en [usePallet.js](src/hooks/usePallet.js): `01{GTIN}3100{peso}10{lote}` o 3200 para libras) y construir en memoria las listas que luego se envían en `items` (agregado por producto) y `boxes` (una entrada por caja). Ver doc 71, sección 1 "Códigos QR (GS1-128)" y sección 3 para el body de creación.
 
-**Response (200)**:
-```json
-{
-  "id": 123,
-  "product": {
-    "id": 45,
-    "name": "Merluza",
-    "code": "MER-001"
-  },
-  "netWeight": 12.50,
-  "lot": "LOT-2024-001",
-  "scannedCode": "01...3100...10..."
-}
-```
+### 5.3 Mapeo estado del wizard -> body API
 
-**Response (404)**: Caja no encontrada o código inválido.
+Al confirmar (Terminar), el estado del flujo se transforma en el body de `POST /api/v2/orders` según la siguiente correspondencia. El **comercial no se envía** en el body; el backend lo toma del token.
 
-**Opción B: Endpoint específico de autoventa**
-```http
-POST /api/v2/autoventa/scan
-```
-**Body**:
-```json
-{
-  "code": "01...3100...10..."
-}
-```
+| Origen en el wizard | Campo API (doc 71) | Notas |
+|---------------------|--------------------|-------|
+| Paso 1: cliente seleccionado | `customer` | ID numérico del cliente |
+| Paso 1: fecha autoventa | `entryDate`, `loadDate` | Formato `Y-m-d`; puede ser la misma fecha |
+| Paso 4: toggle factura | `invoiceRequired` | boolean |
+| Paso 5: texto observaciones | `observations` | string; máx. 1000 caracteres; backend concatena "Con factura"/"Sin factura" en accountingNotes |
+| Paso 3: líneas (producto, cajas, peso, precio) | `items[]` | Cada línea: productId, boxesCount, totalWeight, unitPrice, subtotal (opcional), tax (opcional) |
+| Paso 2: lista de cajas escaneadas | `boxes[]` | Cada caja: productId, lot (opcional), netWeight, gs1128 (opcional), grossWeight (opcional) |
+| Fijo | `orderType` | Siempre `"autoventa"` |
 
-**Response**: Mismo formato que Opción A.
-
-**Recomendación**: Opción A es más genérica y reutilizable; Opción B permite lógica específica de autoventa (ej. validar que la caja esté disponible para venta).
-
-#### 5.2.2 Crear autoventa / pedido
-
-**Opción A: Usar endpoint de pedidos existente**
-```http
-POST /api/v2/orders
-```
-**Body**:
-```json
-{
-  "customer_id": 10,
-  "entry_date": "2026-02-18",
-  "load_date": "2026-02-18",
-  "buyer_reference": "Autoventa",
-  "salesperson_id": 5,
-  "planned_products": [
-    {
-      "product_id": 45,
-      "quantity": 3,
-      "net_weight": 37.50,
-      "unit_price": 15.00,
-      "total_price": 562.50
-    }
-  ],
-  "accounting_notes": "Con factura\nObservaciones adicionales...",
-  "production_notes": "",
-  "transportation_notes": ""
-}
-```
-
-**Ventajas**: Reutiliza modelo existente, aparece en listado de pedidos.
-
-**Desventajas**: Difícil filtrar autoventas vs pedidos normales; `buyer_reference` es texto libre, puede haber inconsistencias.
-
-**Opción B: Endpoint específico de autoventa**
-```http
-POST /api/v2/autoventas
-```
-**Body**:
-```json
-{
-  "customer_id": 10,
-  "date": "2026-02-18",
-  "invoice_required": true,
-  "observations": "Observaciones adicionales...",
-  "items": [
-    {
-      "product_id": 45,
-      "boxes_count": 3,
-      "total_weight": 37.50,
-      "unit_price": 15.00,
-      "subtotal": 562.50
-    }
-  ]
-}
-```
-
-**Response (201)**:
-```json
-{
-  "id": 789,
-  "customer": { "id": 10, "name": "Cliente X" },
-  "date": "2026-02-18",
-  "invoice_required": true,
-  "total_amount": 562.50,
-  "created_at": "2026-02-18T10:30:00Z"
-}
-```
-
-**Ventajas**: Modelo específico, fácil filtrar y reportar, puede tener campos propios (ej. `invoice_required` booleano).
-
-**Desventajas**: Requiere nueva tabla/entidad en BD, más trabajo inicial.
-
-**Recomendación**: Valorar Opción B para una implementación más robusta (ver sección 6).
-
-### 5.3 Filtrado por comercial
-
-Todas las peticiones deben incluir el token del usuario comercial. El backend debe:
-- Asociar automáticamente el `salesperson_id` del usuario autenticado a la autoventa/pedido.
-- Filtrar clientes en `GET /api/v2/customers/options` para mostrar solo los asignados al comercial (si aplica política de negocio).
-- Validar que el comercial tenga permisos para crear autoventas.
+Quien implemente el wizard puede llamar a [createOrder](src/services/orderService.ts) con este payload, o encapsular la construcción del body en una función/módulo (p. ej. `autoventaService`) que invoque `createOrder`.
 
 ---
 
-## 6. Modelo de datos y alternativas
+## 6. Modelo de datos
 
-### 6.1 Situación actual (app deprecada)
+**Decisión ya tomada**: se utiliza el modelo de pedido con **tipo de pedido** `orderType: "autoventa"` (no `buyer_reference` libre ni entidad separada). El backend implementado así lo refleja (ver [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md)).
 
-En la implementación anterior, al terminar una autoventa se creaba un **pedido normal** (`Order`) con:
-- `buyer_reference: "Autoventa"` (texto fijo)
-- Resto de campos como un pedido estándar (cliente, fecha, productos, precios, observaciones)
-
-**Ventajas**:
-- Reutiliza modelo existente
-- Aparece en listado de pedidos
-- Sin cambios en BD
-
-**Desventajas**:
-- Difícil distinguir autoventas de pedidos normales (depende de texto en `buyer_reference`)
-- No hay campos específicos (ej. `invoice_required` booleano)
-- Puede haber inconsistencias si alguien crea un pedido manual con `buyer_reference: "Autoventa"`
-
-### 6.2 Alternativa más robusta
-
-#### Opción A: Tipo de pedido
-Añadir campo `order_type` o `order_source` al modelo `Order`:
-- Valores: `"standard"`, `"autoventa"`, etc.
-- Filtrar por `order_type = "autoventa"` en queries
-- Mantener misma tabla, solo añadir campo
-
-**Ventajas**: Fácil implementar, mantiene modelo unificado.
-
-**Desventajas**: Sigue mezclando conceptos en misma entidad.
-
-#### Opción B: Entidad Autoventa separada
-Crear nueva entidad `Autoventa` (o `SelfSale`) con:
-- Relación a `Customer`
-- Campo `invoice_required` (booleano)
-- Campo `date`
-- Relación a `Salesperson` (del usuario que la crea)
-- Líneas (`AutoventaItem`) con producto, cantidad, peso, precio
-- Campo `observations`
-
-**Ventajas**:
-- Modelo específico y claro
-- Fácil filtrar y reportar autoventas
-- Puede evolucionar independientemente (ej. estados específicos, integraciones)
-- Mejor trazabilidad
-
-**Desventajas**:
-- Requiere nueva tabla/entidad en BD
-- Más trabajo inicial de backend
-- Posible duplicación de lógica si autoventa y pedido comparten comportamiento
-
-**Recomendación**: Valorar Opción B si se prevé que autoventas necesiten funcionalidad específica (reportes, estados, integraciones) o si se quiere mantener separación clara de conceptos. Si solo es un "pedido rápido", Opción A puede ser suficiente.
-
-### 6.3 Decisión pendiente
-
-**Antes de implementar backend**, decidir:
-1. ¿Persistir como pedido con convención (`buyer_reference: "Autoventa"`)?
-2. ¿Añadir tipo de pedido (`order_type: "autoventa"`)?
-3. ¿Crear entidad Autoventa separada?
-
-El documento debe reflejar esta decisión una vez tomada.
+- Crear autoventa: `POST /api/v2/orders` con `orderType: "autoventa"` y el body descrito en doc 71.
+- Listar autoventas: `GET /api/v2/orders?orderType=autoventa`.
+- Detalle y reimpresión: `GET /api/v2/orders/{id}`.
 
 ---
 
@@ -476,7 +325,7 @@ flowchart TD
 - `src/components/Comercial/Autoventa/CreateCustomerQuickForm/index.js` — Formulario rápido de creación de cliente
 - `src/components/Comercial/Autoventa/AutoventaTicketPrint/index.js` — Contenido imprimible del ticket
 - `src/hooks/useAutoventa.js` — Hook para manejar estado del flujo y persistencia
-- `src/services/autoventaService.js` — Servicio para llamadas API de autoventa (si se crea endpoint específico)
+- Servicio de creación: puede ser una función que construya el payload de autoventa según doc 71 y llame a [createOrder](src/services/orderService.ts) (mismo `POST /api/v2/orders`), o un módulo `autoventaService` que encapsule ese payload y la llamada.
 
 ### 9.2 Archivos a modificar
 
@@ -484,27 +333,22 @@ flowchart TD
 - `src/configs/navgationConfig.js` — Añadir ítem "Autoventa" para rol comercial
 - `src/configs/roleConfig.ts` — Asegurar que `/comercial/autoventa` está permitido para comercial (ya debería estar cubierto por `/comercial`)
 
-### 9.3 Backend (a implementar)
+### 9.3 Backend
 
-- Endpoint de escaneo: `GET /api/v2/boxes/by-code` o `POST /api/v2/autoventa/scan`
-- Endpoint de creación: `POST /api/v2/orders` (con `buyer_reference: "Autoventa"`) o `POST /api/v2/autoventas` (nuevo)
-- Posible migración BD: Si se elige entidad Autoventa separada, crear tabla `autoventas` y `autoventa_items`
+Backend ya implementado (ver [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md)). No se requiere endpoint de escaneo; el frontend parsea GS1-128 y construye `items` y `boxes`.
 
 ---
 
 ## 10. Checklist de implementación
 
 ### Fase 1: Preparación y decisiones
-- [ ] Decidir modelo de datos (pedido con convención vs tipo vs entidad autoventa)
-- [ ] Definir formato exacto del QR
+- [x] Modelo de datos: pedido con `orderType: "autoventa"` (doc 71)
+- [x] Formato QR: GS1-128; sin endpoint de escaneo (frontend parsea)
 - [x] Creación rápida de cliente: solo nombre (ver sección 7.2)
 - [ ] Decidir requisitos de impresión (navegador vs térmica)
 
 ### Fase 2: Backend
-- [ ] Implementar endpoint de escaneo QR (si aplica)
-- [ ] Implementar endpoint de creación de autoventa/pedido
-- [ ] Asegurar filtrado por comercial en endpoints de clientes
-- [ ] Crear migraciones BD si se elige entidad autoventa
+- [x] Backend implementado; ver [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md). Validar en frontend filtrado por comercial y códigos 422.
 
 ### Fase 3: Frontend — Configuración
 - [ ] Actualizar `roleRoutesConfig.js` y `navgationConfig.js`
@@ -516,7 +360,7 @@ flowchart TD
 - [ ] Implementar `CreateCustomerQuickForm`
 - [ ] Implementar `AutoventaTicketPrint` con estilos de impresión
 - [ ] Crear hook `useAutoventa` para lógica de negocio
-- [ ] Crear servicio `autoventaService` (si aplica)
+- [ ] Crear función o módulo que construya payload según doc 71 y llame a `createOrder`
 
 ### Fase 5: Integración y pruebas
 - [ ] Integrar con API de backend
@@ -529,10 +373,12 @@ flowchart TD
 
 ## 11. Referencias
 
+- **API de autoventa (contrato backend)**: [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md)
 - Dashboard comercial: [docs/68-dashboard-rol-comercial-especificacion.md](docs/68-dashboard-rol-comercial-especificacion.md)
 - Patrón de rutas por rol: [docs/arquitectura/patron-rutas-por-rol.md](docs/arquitectura/patron-rutas-por-rol.md)
 - Layout comercial: [src/app/comercial/ComercialLayoutClient.jsx](src/app/comercial/ComercialLayoutClient.jsx)
 - Servicio de clientes: [src/services/customerService.ts](src/services/customerService.ts)
+- Servicio de pedidos (createOrder): [src/services/orderService.ts](src/services/orderService.ts)
 - Hook de impresión: [src/hooks/usePrintElement.ts](src/hooks/usePrintElement.ts)
 - Ejemplo de impresión: [src/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent.js](src/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent.js)
-- Escaneo QR en palets: [src/hooks/usePallet.js](src/hooks/usePallet.js) (líneas 730-780 aproximadamente)
+- Escaneo QR en palets (GS1-128): [src/hooks/usePallet.js](src/hooks/usePallet.js) (líneas 730-780 aproximadamente)
