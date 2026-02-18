@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 import { notify } from "@/lib/notifications";
+import { parseGs1128Line, normalizeScannedCodeToGs1128 } from "@/lib/gs1128Parser";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
@@ -317,24 +318,6 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         const boxGtin = getBoxGtinById(productId);
         const formattedNetWeight = netWeightInPounds.toFixed(2).replace('.', '').padStart(6, '0');
         return `(01)${boxGtin}(3200)${formattedNetWeight}(10)${lot}`;
-    }
-
-    const convertScannedCodeToGs1128 = (scannedCode) => {
-        // Intentar primero con 3100 - kg
-        let match = scannedCode.match(/01(\d{14})3100(\d{6})10(.+)/);
-        if (match) {
-            const [, gtin, weightStr, lot] = match;
-            return `(01)${gtin}(3100)${weightStr}(10)${lot}`;
-        }
-        
-        // Si no coincide, intentar con 3200 - libras
-        match = scannedCode.match(/01(\d{14})3200(\d{6})10(.+)/);
-        if (match) {
-            const [, gtin, weightStr, lot] = match;
-            return `(01)${gtin}(3200)${weightStr}(10)${lot}`;
-        }
-        
-        return null; // No se pudo convertir
     }
 
     /* ----------------- */
@@ -843,51 +826,26 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 return;
             }
 
-            // Intentar primero con 3100 - kg
-            let match = scannedCode.match(/01(\d{14})3100(\d{6})10(.+)/);
-            let isPounds = false;
-            
-            // Si no coincide, intentar con 3200 - libras
-            if (!match) {
-                match = scannedCode.match(/01(\d{14})3200(\d{6})10(.+)/);
-                isPounds = true;
-            }
-            
-            if (!match) {
-                notify.error({ title: 'Código no válido', description: 'Se espera formato GS1-128 con 3100 (kg) o 3200 (libras). Revisa el código escaneado.' });
+            const parsed = parseGs1128Line(scannedCode, productsOptions);
+            if (!parsed) {
+                let match = scannedCode.match(/01(\d{14})3100(\d{6})10(.+)/) || scannedCode.match(/01(\d{14})3200(\d{6})10(.+)/);
+                if (!match) {
+                    notify.error({ title: 'Código no válido', description: 'Se espera formato GS1-128 con 3100 (kg) o 3200 (libras). Revisa el código escaneado.' });
+                } else {
+                    const [, gtin] = match;
+                    notify.error({ title: 'Producto no encontrado', description: `No hay ningún producto con GTIN ${gtin}. Comprueba que el código corresponda a un producto dado de alta.` });
+                }
                 return;
             }
 
-            const [, gtin, weightStr, lotFromCode] = match;
-            let netWeight = parseFloat(weightStr) / 100;
-            
-            // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
-            if (isPounds) {
-                netWeight = netWeight * 0.453592;
-            }
-            
-            // Redondear a 2 decimales
-            netWeight = roundToTwoDecimals(netWeight);
-
-            const product = productsOptions.find(p => p.boxGtin === gtin);
-            if (!product) {
-                notify.error({ title: 'Producto no encontrado', description: `No hay ningún producto con GTIN ${gtin}. Comprueba que el código corresponda a un producto dado de alta.` });
-                return;
-            }
-
-            const newBox = {
-                product: {
-                    id: product.value,
-                    name: product.label
-                },
-                lot: lotFromCode,
-                netWeight,
-                scannedCode,
-                isPounds,
-                originalWeightInPounds: isPounds ? parseFloat(weightStr) / 100 : null
-            };
-
-            addBox(newBox);
+            addBox({
+                product: { id: parsed.productId, name: parsed.productName },
+                lot: parsed.lot,
+                netWeight: parsed.netWeight,
+                scannedCode: parsed.gs1128,
+                isPounds: parsed.isPounds,
+                originalWeightInPounds: parsed.originalWeightInPounds ?? null
+            });
             notify.success({ title: 'Caja añadida', description: 'La caja se ha añadido al palet correctamente desde el código escaneado.' });
         } else if (method === 'gs1') {
             const { gs1codes } = boxCreationData;
@@ -906,46 +864,18 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             const failedLines = [];
 
             for (const line of lines) {
-                // Intentar primero con 3100 - kg
-                let match = line.match(/01(\d{14})3100(\d{6})10(.+)/);
-                let isPounds = false;
-                
-                // Si no coincide, intentar con 3200 - libras
-                if (!match) {
-                    match = line.match(/01(\d{14})3200(\d{6})10(.+)/);
-                    isPounds = true;
-                }
-                
-                if (!match) {
+                const parsed = parseGs1128Line(line, productsOptions);
+                if (!parsed) {
                     failedLines.push(line);
                     continue;
                 }
-
-                const [, gtin, weightStr, lot] = match;
-                let netWeight = parseFloat(weightStr) / 100;
-                
-                // Convertir libras a kg si es necesario (1 libra = 0.453592 kg)
-                if (isPounds) {
-                    netWeight = netWeight * 0.453592;
-                }
-                
-                // Redondear a 2 decimales
-                netWeight = roundToTwoDecimals(netWeight);
-
-                const product = productsOptions.find(p => p.boxGtin === gtin);
-
-                if (!product) {
-                    failedLines.push(line);
-                    continue;
-                }
-
                 parsedBoxes.push({
-                    product: { id: product.value, name: product.label },
-                    lot,
-                    netWeight,
-                    scannedCode: line,
-                    isPounds,
-                    originalWeightInPounds: isPounds ? parseFloat(weightStr) / 100 : null
+                    product: { id: parsed.productId, name: parsed.productName },
+                    lot: parsed.lot,
+                    netWeight: parsed.netWeight,
+                    scannedCode: parsed.gs1128,
+                    isPounds: parsed.isPounds,
+                    originalWeightInPounds: parsed.originalWeightInPounds ?? null
                 });
             }
 
@@ -986,7 +916,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         }
 
         // Convertir el código escaneado sin paréntesis al formato con paréntesis
-        const gs1128Code = convertScannedCodeToGs1128(scannedCode);
+        const gs1128Code = normalizeScannedCodeToGs1128(scannedCode);
         if (!gs1128Code) {
             notify.error({ title: 'Código no válido', description: 'El formato del código escaneado no es válido para eliminar. Usa un código GS1-128 de una caja del palet.' });
             return;
