@@ -47,24 +47,15 @@ export default function Step2QRScan({
     const parsed = parseGs1128Line(code, productsOptions);
     if (parsed) {
       addBox(parsed);
-      notify.success(
-        { title: 'Caja añadida', description: 'La caja se ha añadido correctamente desde el código escaneado.' },
-        { duration: 1500 }
-      );
+      notify.success({ title: 'Caja añadida' }, { duration: 1500 });
     } else {
-      notify.error(
-        {
-          title: 'Código no válido',
-          description: 'Se espera formato GS1-128 con 3100 (kg) o 3200 (libras). Revisa el código escaneado.',
-        },
-        { duration: 1500 }
-      );
+      notify.error({ title: 'Código no válido' }, { duration: 1500 });
     }
   };
 
   const handleScannerError = (message) => {
     notify.error(
-      { title: 'Cámara', description: message || 'No se pudo acceder a la cámara.' },
+      { title: message || 'No se pudo acceder a la cámara.' },
       { duration: 1500 }
     );
     setScannerOpen(false);

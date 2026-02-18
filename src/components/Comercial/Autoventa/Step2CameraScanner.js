@@ -29,18 +29,6 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="absolute top-0 left-0 right-0 z-10 flex justify-end p-4">
-        <Button
-          type="button"
-          variant="secondary"
-          size="icon"
-          onClick={onClose}
-          className="rounded-full"
-          aria-label="Cerrar escáner"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
       <div className="flex-1 min-h-0 w-full">
         <Scanner
           onScan={handleScan}
@@ -62,6 +50,19 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
             video: { width: '100%', height: '100%', objectFit: 'cover', overflow: 'hidden' },
           }}
         />
+      </div>
+      <div className="shrink-0 w-full p-4">
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="w-full"
+          onClick={onClose}
+          aria-label="Cerrar escáner"
+        >
+          <X className="h-5 w-5 mr-2" />
+          Cerrar
+        </Button>
       </div>
     </div>
   );
