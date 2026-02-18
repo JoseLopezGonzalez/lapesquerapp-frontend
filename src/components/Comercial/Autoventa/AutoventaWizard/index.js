@@ -33,7 +33,6 @@ export default function AutoventaWizard() {
     state,
     setStep,
     setCustomer,
-    setDates,
     addBox,
     removeAllBoxes,
     setItemsFromBoxes,
@@ -66,7 +65,7 @@ export default function AutoventaWizard() {
   const goBack = () => setStep(Math.max(1, step - 1));
 
   const canGoNext = () => {
-    if (step === 1) return state.customerId != null && state.customerName != null && state.entryDate && state.loadDate;
+    if (step === 1) return state.customerId != null && state.customerName != null;
     if (step === 2) return (state.boxes?.length ?? 0) >= 1;
     if (step === 3) {
       const items = state.items ?? [];
@@ -107,76 +106,90 @@ export default function AutoventaWizard() {
     <div className="w-full h-full flex flex-col min-h-0">
       <div className="shrink-0 flex flex-col items-center gap-3 pb-4 px-2">
         <h2 className="text-lg font-semibold">Nueva autoventa</h2>
-        <div className="flex items-center gap-1 w-full max-w-[min(100%,420px)] overflow-x-auto">
-          {STEPS.map((s, i) => {
-            const stepNum = i + 1;
-            return (
-              <React.Fragment key={s.id}>
-                <motion.button
-                  type="button"
-                  onClick={() => canGoToStep(i) && setStep(stepNum)}
-                  disabled={!canGoToStep(i)}
-                  className={cn(
-                    'flex items-center justify-center min-w-9 h-9 shrink-0 rounded-full text-xs font-medium touch-manipulation',
-                    step === stepNum
-                      ? 'bg-primary text-primary-foreground'
-                      : step > stepNum
-                        ? 'bg-primary/20 text-primary'
-                        : 'bg-muted text-muted-foreground',
-                    !canGoToStep(i) && 'cursor-not-allowed opacity-60'
-                  )}
-                  aria-label={`Paso ${stepNum}: ${s.title}${!canGoToStep(i) ? ' (completa el paso anterior)' : ''}`}
-                  initial={false}
-                  animate={{
-                    scale: step === stepNum ? 1.08 : 1,
-                    transition: { type: 'spring', stiffness: 400, damping: 25 },
-                  }}
-                  whileTap={{ scale: 0.96 }}
-                >
-                  <AnimatePresence mode="wait">
-                    {step > stepNum ? (
-                      <motion.span
-                        key="check"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      >
-                        <Check className="h-4 w-4" />
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="num"
-                        initial={{ scale: 0.8, opacity: 0.8 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      >
-                        {stepNum}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-                {i < STEPS.length - 1 && (
-                  <motion.div
-                    className="flex-1 h-1.5 rounded-full min-w-[0.25rem] overflow-hidden bg-muted shrink min-w-[4px]"
-                    initial={false}
-                    animate={{ opacity: 1 }}
-                  >
-                    <motion.div
-                      className="h-full rounded-full bg-primary/30"
+        {/* Stepper: solo nodo anterior, actual y siguiente */}
+        {(() => {
+          const start = Math.max(1, step - 1);
+          const end = Math.min(STEPS.length, step + 1);
+          const visibleSteps = [];
+          for (let n = start; n <= end; n++) visibleSteps.push(n);
+          return (
+            <div className="flex items-center gap-2 w-full max-w-[min(100%,280px)]">
+              {visibleSteps.map((stepNum, idx) => {
+                const s = STEPS[stepNum - 1];
+                const isCurrent = step === stepNum;
+                const isCompleted = step > stepNum;
+                const canGo = stepNum <= step;
+                const showBarAfter = idx < visibleSteps.length - 1;
+                const barFilled = step > stepNum;
+                return (
+                  <React.Fragment key={stepNum}>
+                    <motion.button
+                      type="button"
+                      onClick={() => canGo && setStep(stepNum)}
+                      disabled={!canGo}
+                      className={cn(
+                        'flex items-center justify-center min-w-10 h-10 shrink-0 rounded-full text-sm font-medium touch-manipulation transition-colors',
+                        isCurrent && 'bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-2 ring-offset-background',
+                        isCompleted && !isCurrent && 'bg-primary/20 text-primary',
+                        !isCurrent && !isCompleted && 'bg-muted text-muted-foreground',
+                        !canGo && 'cursor-not-allowed opacity-60'
+                      )}
+                      aria-label={`Paso ${stepNum}: ${s?.title}${!canGo ? ' (completa el paso anterior)' : ''}`}
                       initial={false}
                       animate={{
-                        width: step > stepNum ? '100%' : '0%',
+                        scale: isCurrent ? 1.05 : 1,
+                        transition: { type: 'spring', stiffness: 400, damping: 25 },
                       }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
-                    />
-                  </motion.div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-        <p className="text-sm text-muted-foreground text-center">{STEPS[step - 1]?.description}</p>
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      <AnimatePresence mode="wait">
+                        {isCompleted ? (
+                          <motion.span
+                            key="check"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                          >
+                            <Check className="h-4 w-4" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="num"
+                            initial={{ scale: 0.8, opacity: 0.8 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                          >
+                            {stepNum}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                    {showBarAfter && (
+                      <motion.div
+                        className="flex-1 h-1.5 rounded-full min-w-[12px] overflow-hidden bg-muted"
+                        initial={false}
+                        animate={{ opacity: 1 }}
+                      >
+                        <motion.div
+                          className="h-full rounded-full bg-primary/30"
+                          initial={false}
+                          animate={{ width: barFilled ? '100%' : '0%' }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                        />
+                      </motion.div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          );
+        })()}
+        <p className="text-sm text-muted-foreground text-center">
+          <span className="font-medium text-foreground/80">Paso {step} de {STEPS.length}</span>
+          {' · '}
+          {STEPS[step - 1]?.description}
+        </p>
       </div>
 
       <div className={cn('flex flex-col flex-1 min-h-0 overflow-y-auto w-full mx-auto px-4', contentMaxWidth)}>
@@ -184,7 +197,6 @@ export default function AutoventaWizard() {
           <Step1ClientSelection
             state={state}
             setCustomer={setCustomer}
-            setDates={setDates}
           />
         )}
         {step === 2 && (

@@ -7,26 +7,14 @@ import { createOrder } from '@/services/orderService';
 import { ApiError } from '@/lib/api/apiHelpers';
 
 /**
- * Convierte Date o string a Y-m-d
- */
-function toYmd(date) {
-  if (!date) return null;
-  if (typeof date === 'string') {
-    const d = new Date(date);
-    return isNaN(d.getTime()) ? date : d.toISOString().slice(0, 10);
-  }
-  if (date instanceof Date) return date.toISOString().slice(0, 10);
-  return null;
-}
-
-/**
  * Construye el payload para POST /api/v2/orders (autoventa).
  * @param {Object} state - Estado del wizard useAutoventa
  * @returns {Object} Body según doc 71
  */
 export function buildAutoventaPayload(state) {
-  const entryDate = toYmd(state.entryDate);
-  const loadDate = toYmd(state.loadDate) || entryDate;
+  const today = new Date().toISOString().slice(0, 10);
+  const entryDate = today;
+  const loadDate = today;
   const observations =
     typeof state.observations === 'string'
       ? state.observations.slice(0, 1000)

@@ -126,7 +126,8 @@ export function useAutoventa() {
   }, []);
 
   const reset = useCallback(() => {
-    setState({ ...initialState, entryDate: todayStr, loadDate: todayStr });
+    const today = new Date().toISOString().slice(0, 10);
+    setState({ ...initialState, entryDate: today, loadDate: today });
   }, []);
 
   const totalAmount = (state.items || []).reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);

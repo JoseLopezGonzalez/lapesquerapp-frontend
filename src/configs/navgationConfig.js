@@ -281,6 +281,12 @@ export const navigationManagerConfig = [
         href: '/admin/label-editor',
     },
     {
+        name: 'CMR Manual',
+        icon: FileText,
+        allowedRoles: ["administrador", "direccion", "tecnico"],
+        href: '/admin/cmr-manual',
+    },
+    {
         name: 'Recepciones de Materia Prima',
         icon: TbFishHook,
         allowedRoles: ["administrador", "direccion", "tecnico"],

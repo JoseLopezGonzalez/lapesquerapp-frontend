@@ -1,0 +1,444 @@
+/* CMR Manual — plantilla idéntica al diseño de referencia (A4, dos columnas, cabecera 3 zonas) */
+
+.cmr-page {
+  width: 210mm;
+  height: 297mm;
+  box-sizing: border-box;
+  padding: 6mm;
+  background: white;
+  position: relative;
+  page-break-after: always;
+  page-break-inside: avoid;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+}
+
+.cmr-page:last-child {
+  page-break-after: auto;
+}
+
+/* --- Cabecera: una fila, tres zonas (como en el documento original) --- */
+.cmr-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 6px 8px 8px;
+  border-bottom: 3px solid var(--cmr-color, #b91c1c);
+}
+
+.cmr-header-copy {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Número de copia (1-4): cuadrado relleno color acento */
+.cmr-header-copy .cmr-num-box {
+  width: 24px;
+  height: 24px;
+  background: var(--cmr-color, #b91c1c);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cmr-header-copy-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.cmr-header-copy-text strong {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cmr-color, #b91c1c);
+}
+
+.cmr-header-copy-text span {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--cmr-color, #b91c1c);
+}
+
+/* Centro: checkbox con X (borde color acento, fondo blanco, X negra) + C.M.R. */
+.cmr-header-cmr {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.cmr-header-cmr .cmr-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--cmr-color, #b91c1c);
+  background: white;
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cmr-header-cmr-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmr-header-cmr-text strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cmr-color, #b91c1c);
+}
+
+.cmr-header-cmr-text span {
+  font-size: 8px;
+  color: #555;
+}
+
+.cmr-header-cmr-empty {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--cmr-color, #b91c1c);
+  background: white;
+  flex-shrink: 0;
+}
+
+/* Derecha: DOCUMENTO DE CONTROL + ref + No # */
+.cmr-header-doc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 0;
+}
+
+.cmr-header-doc-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cmr-header-doc-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cmr-header-doc-title.accent {
+  color: var(--cmr-color, #b91c1c);
+}
+
+.cmr-header-doc-title.black {
+  color: #000;
+}
+
+.cmr-header-doc-ref {
+  font-size: 7px;
+  color: #555;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.cmr-header-doc-num-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cmr-header-doc-num {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cmr-header-doc-num.accent {
+  color: var(--cmr-color, #b91c1c);
+}
+
+.cmr-header-doc-num.black {
+  color: #000;
+}
+
+.cmr-header-doc-num.red {
+  color: #b91c1c;
+}
+
+.cmr-header-doc-num-bordered {
+  border: 1px solid var(--cmr-color, #b91c1c);
+  padding: 2px 6px;
+}
+
+/* Cuadrado número genérico (casillas 1-24) */
+.cmr-num-box {
+  width: 20px;
+  height: 20px;
+  background: var(--cmr-color, #b91c1c);
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Caja legal CMR (texto convenio) */
+.cmr-legal-box {
+  border-top: 2px solid var(--cmr-color, #b91c1c);
+  border-bottom: 2px solid var(--cmr-color, #b91c1c);
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.cmr-legal-box-title {
+  font-size: 9px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.cmr-legal-box p {
+  font-size: 7px;
+  line-height: 1.3;
+  margin: 0;
+  color: #333;
+}
+
+/* --- Cuerpo: dos columnas --- */
+.cmr-body {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 6px;
+}
+
+.cmr-col-left,
+.cmr-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cmr-col-left {
+  flex: 1;
+}
+
+.cmr-col-right {
+  flex: 1;
+}
+
+/* --- Casilla genérica --- */
+.cmr-cell {
+  border: 1px solid var(--cmr-color, #b91c1c);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cmr-cell-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--cmr-color, #b91c1c);
+}
+
+.cmr-cell-header .cmr-num-box {
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+}
+
+.cmr-cell-label {
+  font-size: 8px;
+  font-weight: 600;
+  color: #000;
+}
+
+.cmr-cell-label-en {
+  font-size: 7px;
+  color: #555;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.cmr-cell-value {
+  flex: 1;
+  padding: 4px 6px;
+  background: #f5f5f5;
+  min-height: 20px;
+  word-break: break-word;
+  font-size: 9px;
+}
+
+/* Casillas 4 y 21: lugar | fecha */
+.cmr-cell-place-date {
+  display: flex;
+  gap: 0;
+}
+
+.cmr-cell-place-date .cmr-cell-value {
+  flex: 1;
+}
+
+.cmr-cell-place-date .cmr-cell-value:first-child {
+  border-right: 1px solid #ccc;
+}
+
+/* Casillas más altas */
+.cmr-cell-1 .cmr-cell-value,
+.cmr-cell-2 .cmr-cell-value,
+.cmr-cell-3 .cmr-cell-value,
+.cmr-cell-16 .cmr-cell-value,
+.cmr-cell-22 .cmr-cell-value {
+  min-height: 36px;
+}
+
+/* Fila horizontal 6-9 y 10-12 */
+.cmr-row-cells {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px;
+}
+
+.cmr-row-cells-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* --- Tablas --- */
+.cmr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7px;
+  margin-top: 2px;
+}
+
+.cmr-table th,
+.cmr-table td {
+  border: 1px solid var(--cmr-color, #b91c1c);
+  padding: 2px 4px;
+  background: #fafafa;
+}
+
+.cmr-table th {
+  background: #eee;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Tabla bajo 6-9 (palets) */
+.cmr-table-palets th {
+  font-size: 6px;
+}
+
+/* Tabla 17 Bis */
+.cmr-block-17bis {
+  border: 1px solid var(--cmr-color, #b91c1c);
+  padding: 4px;
+}
+
+.cmr-block-17bis .cmr-cell-header {
+  border-bottom: none;
+  margin-bottom: 2px;
+}
+
+.cmr-block-17bis .cmr-cell-label {
+  color: var(--cmr-color, #b91c1c);
+}
+
+/* Tabla 20 (A pagar por) */
+.cmr-table-payment th,
+.cmr-table-payment td {
+  text-align: center;
+}
+
+.cmr-table-payment th:first-child,
+.cmr-table-payment td:first-child {
+  text-align: left;
+}
+
+/* Bloque ADR / Temperatura */
+.cmr-block-adr {
+  border: 1px solid var(--cmr-color, #b91c1c);
+  padding: 4px;
+  margin-bottom: 4px;
+}
+
+.cmr-block-adr-title {
+  font-size: 7px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* Documentos anexos texto */
+.cmr-docs-precision {
+  font-size: 7px;
+  margin-bottom: 2px;
+  color: #333;
+}
+
+/* Casilla 15 COD con checkbox */
+.cmr-cell-15 .cmr-cell-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cmr-cell-15 input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--cmr-color, #b91c1c);
+}
+
+/* Casilla 24 (recibo): lugar, fecha, firma */
+.cmr-cell-24 .cmr-cell-value {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cmr-cell-24 .cmr-place-date-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Impresión */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .cmr-page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    box-shadow: none;
+  }
+
+  .cmr-page:last-child {
+    page-break-after: auto;
+  }
+}
