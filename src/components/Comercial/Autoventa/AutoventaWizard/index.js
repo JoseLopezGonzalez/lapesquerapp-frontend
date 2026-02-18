@@ -96,18 +96,19 @@ export default function AutoventaWizard() {
     try {
       await submitAutoventa();
     } catch (err) {
-      const message = err?.message ?? 'Error al crear la autoventa.';
-      setStep7Error(message);
-      let description = message;
+      let description = err?.message ?? 'Error al crear la autoventa.';
       if (err instanceof ApiError && err.data) {
         const d = err.data;
-        if (d?.errors && typeof d.errors === 'object') {
+        if (d?.userMessage) {
+          description = d.userMessage;
+        } else if (d?.errors && typeof d.errors === 'object') {
           const parts = Object.values(d.errors).flat().filter(Boolean);
           if (parts.length) description = parts.join(' ');
-        } else if (d?.message && d.message !== message) {
-          description = [message, d.message].filter(Boolean).join(' — ');
+        } else if (d?.message) {
+          description = d.message;
         }
       }
+      setStep7Error(description);
       notify.error(
         { title: 'Error al crear la autoventa', description },
         { duration: 8000 }
