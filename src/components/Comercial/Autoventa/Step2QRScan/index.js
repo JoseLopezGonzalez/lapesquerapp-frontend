@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ export default function Step2QRScan({
   const [productsOptions, setProductsOptions] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const lastScannedRef = useRef({ code: '', at: 0 });
+  const DEBOUNCE_MS = 2500;
 
   useEffect(() => {
     if (!token) return;
@@ -44,6 +46,11 @@ export default function Step2QRScan({
   const handleScannedCode = (rawValue) => {
     const code = String(rawValue ?? '').trim();
     if (!code) return;
+    const now = Date.now();
+    const { code: lastCode, at: lastAt } = lastScannedRef.current;
+    if (code === lastCode && now - lastAt < DEBOUNCE_MS) return;
+    lastScannedRef.current = { code, at: now };
+
     const parsed = parseGs1128Line(code, productsOptions);
     if (parsed) {
       addBox(parsed);

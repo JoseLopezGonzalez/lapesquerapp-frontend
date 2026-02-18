@@ -8,7 +8,6 @@ export default function Step7Confirmation({
   totalAmount,
   setInvoiceRequired,
   onCancel,
-  error,
   isSubmitting,
 }) {
   const checked = Boolean(state?.invoiceRequired);
@@ -34,7 +33,6 @@ export default function Step7Confirmation({
       <p className="text-lg font-semibold">
         Total: {Number(totalAmount ?? 0).toFixed(2)} €
       </p>
-      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

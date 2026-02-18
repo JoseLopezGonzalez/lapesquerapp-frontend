@@ -81,17 +81,14 @@ export default function AutoventaWizard() {
     return s <= step;
   };
 
-  const [step7Error, setStep7Error] = useState(null);
   const [step7Loading, setStep7Loading] = useState(false);
 
   const handleCancelStep7 = () => {
-    setStep7Error(null);
     reset();
     setStep(1);
   };
 
   const handleStep7Submit = async () => {
-    setStep7Error(null);
     setStep7Loading(true);
     try {
       await submitAutoventa();
@@ -108,7 +105,6 @@ export default function AutoventaWizard() {
           description = d.message;
         }
       }
-      setStep7Error(description);
       notify.error(
         { title: 'Error al crear la autoventa', description },
         { duration: 8000 }
@@ -264,7 +260,6 @@ export default function AutoventaWizard() {
               totalAmount={totalAmount}
               setInvoiceRequired={setInvoiceRequired}
               onCancel={handleCancelStep7}
-              error={step7Error}
               isSubmitting={step7Loading}
             />
           </div>
