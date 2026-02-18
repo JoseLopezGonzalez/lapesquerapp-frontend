@@ -7,6 +7,8 @@ import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { useAutoventa } from '@/hooks/useAutoventa';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { notify } from '@/lib/notifications';
+import { ApiError } from '@/lib/api/apiHelpers';
 import Step1ClientSelection from '../Step1ClientSelection';
 import Step2QRScan from '../Step2QRScan';
 import Step3Pricing from '../Step3Pricing';
@@ -94,7 +96,22 @@ export default function AutoventaWizard() {
     try {
       await submitAutoventa();
     } catch (err) {
-      setStep7Error(err?.message ?? 'Error al crear la autoventa.');
+      const message = err?.message ?? 'Error al crear la autoventa.';
+      setStep7Error(message);
+      let description = message;
+      if (err instanceof ApiError && err.data) {
+        const d = err.data;
+        if (d?.errors && typeof d.errors === 'object') {
+          const parts = Object.values(d.errors).flat().filter(Boolean);
+          if (parts.length) description = parts.join(' ');
+        } else if (d?.message && d.message !== message) {
+          description = [message, d.message].filter(Boolean).join(' — ');
+        }
+      }
+      notify.error(
+        { title: 'Error al crear la autoventa', description },
+        { duration: 8000 }
+      );
     } finally {
       setStep7Loading(false);
     }
