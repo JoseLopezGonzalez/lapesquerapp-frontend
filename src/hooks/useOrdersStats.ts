@@ -147,29 +147,40 @@ interface SalesBySalespersonParams {
   range?: { from?: Date; to?: Date };
 }
 
+function parseSalesBySalespersonResponse(raw: unknown): SalesBySalespersonItem[] {
+  const arr = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as { data: unknown[] }).data)
+      ? (raw as { data: unknown[] }).data
+      : [];
+  return arr.map((item: Record<string, unknown>, index: number) => ({
+    ...item,
+    name: (item.salesperson_name ?? item.name) as string,
+    quantity: Number(item.total_weight ?? item.quantity ?? item.value ?? 0),
+    fill: PIE_COLORS[index % PIE_COLORS.length],
+  }));
+}
+
 /**
  * Hook para obtener ventas por comercial usando React Query.
  */
 export function useSalesBySalesperson(params: SalesBySalespersonParams) {
-  const { range } = params;
-  const { data: session } = useSession();
+  const { range } = params ?? {};
+  const { data: session, status } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
-  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const enabled = !!token && !!dateFrom && !!dateTo && status !== 'loading';
 
   const { data: rawData, isLoading, error } = useQuery({
-    queryKey: ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getSalesBySalesperson({ dateFrom: dateFrom!, dateTo: dateTo! }, token as string),
-    enabled: !!token && !!tenantId && !!dateFrom && !!dateTo,
+    queryKey: ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo, status],
+    queryFn: () => getSalesBySalesperson({ dateFrom, dateTo }, token as string),
+    enabled,
   });
 
-  const data: SalesBySalespersonItem[] = Array.isArray(rawData)
-    ? (rawData as SalesBySalespersonItem[]).map((item, index) => ({
-        ...item,
-        fill: PIE_COLORS[index % PIE_COLORS.length],
-      }))
-    : [];
+  const data = parseSalesBySalespersonResponse(rawData);
 
   return {
     data,

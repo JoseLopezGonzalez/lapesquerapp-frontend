@@ -28,8 +28,8 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="flex-1 min-h-0 w-full">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-background">
+      <div className="flex-1 min-h-0 w-full pb-24">
         <Scanner
           onScan={handleScan}
           onError={handleError}
@@ -51,12 +51,15 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
           }}
         />
       </div>
-      <div className="shrink-0 w-full p-4">
+      <div
+        className="fixed bottom-0 left-0 right-0 z-[110] w-full bg-background/95 backdrop-blur-sm p-4 pt-3"
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      >
         <Button
           type="button"
           variant="secondary"
           size="lg"
-          className="w-full"
+          className="w-full min-h-12"
           onClick={onClose}
           aria-label="Cerrar escáner"
         >
