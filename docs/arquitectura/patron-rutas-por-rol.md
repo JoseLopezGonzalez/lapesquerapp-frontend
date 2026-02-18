@@ -1,7 +1,7 @@
 # Patrón: Rutas por rol (role-based routing)
 
 **Estado**: Aplicado  
-**Última actualización**: 2025-02-17
+**Última actualización**: 2026-02-18
 
 ---
 
@@ -16,6 +16,7 @@ Separar la URL por **rol** de forma clara: cada rol tiene su propio segmento en 
 | Rol           | Segmento base | Uso actual |
 |---------------|---------------|------------|
 | **operario**  | `/operator`   | Dashboard, Nueva recepción, Nueva salida de cebo |
+| **comercial** | `/comercial`  | Dashboard (5 cards: cantidad/importe ventas, ranking pedidos, ranking ventas, ventas y empresas de transporte) |
 | **administrador, dirección, técnico** | `/admin` | Resto de la aplicación (listados, CRUD, gestores, etc.) |
 
 En el futuro se pueden añadir, por ejemplo:
@@ -59,14 +60,24 @@ El **mismo layout** que el área de administración (sidebar + TopBar + BottomNa
 
 ---
 
+## Rutas del comercial (`/comercial`)
+
+| Ruta | Descripción |
+|------|-------------|
+| `GET /comercial` | Dashboard comercial (5 cards: cantidad total de ventas, importe total de ventas, ranking de pedidos, ranking de ventas, ventas y empresas de transporte) |
+
+El layout reutiliza el mismo shell que operario/admin (ResponsiveLayout). La navegación muestra solo "Inicio" para el rol comercial. Si un usuario con rol comercial intenta acceder a `/admin`, el middleware lo redirige a `/comercial`. Tras el login, el comercial va a `/comercial` (ver `getRedirectUrl` en `src/utils/loginUtils.ts`).
+
+---
+
 ## Archivos implicados
 
 | Archivo | Responsabilidad |
 |---------|------------------|
-| `src/configs/roleRoutesConfig.js` | Constantes de rutas por rol (`OPERATOR_BASE`, `operatorRoutes`, `adminRoutes`) |
-| `src/configs/navgationConfig.js` | Tres ítems con `allowedRoles: ["operario"]` (Inicio /operator, Nueva recepción, Nueva salida de cebo) |
+| `src/configs/roleRoutesConfig.js` | Constantes de rutas por rol (`OPERATOR_BASE`, `operatorRoutes`, `COMERCIAL_BASE`, `comercialRoutes`, `adminRoutes`) |
+| `src/configs/navgationConfig.js` | Ítems por rol: operario (Inicio /operator, Nueva recepción, Nueva salida de cebo), comercial (Inicio /comercial), admin/dirección/técnico |
 | `src/configs/roleConfig.ts` | Mapa ruta → roles permitidos (middleware) |
-| `src/middleware.ts` | Redirige operario desde `/admin` a `/operator`; protege `/operator` solo para operario |
+| `src/middleware.ts` | Redirige operario desde `/admin` a `/operator`; redirige comercial desde `/admin` a `/comercial`; protege `/operator` y `/comercial` por rol |
 | `src/app/operator/layout.js` + `OperatorLayoutClient.jsx` | Mismo ResponsiveLayout que admin; nav filtrada por rol (solo 3 ítems para operario) |
 | `src/app/operator/page.js` | Página dashboard operario |
 | `src/app/operator/receptions/create/page.js` | Crear recepción (operario) |
@@ -74,7 +85,10 @@ El **mismo layout** que el área de administración (sidebar + TopBar + BottomNa
 | `src/app/operator/orquestador/page.js` | Preparación de pedidos (reutiliza `OrquestadorView`) |
 | `src/app/operator/stores-manager/page.js` | Almacenes interactivos (reutiliza `StoresManager`) |
 | `src/app/operator/nfc-punch-manager/page.js` | Fichaje NFC (reutiliza `NFCPunchManager`) |
-| `src/utils/loginUtils.ts` | Redirección post-login (operario → `/operator`) |
+| `src/utils/loginUtils.ts` | Redirección post-login (operario → `/operator`, comercial → `/comercial`) |
+| `src/app/comercial/layout.js` + `ComercialLayoutClient.jsx` | Layout comercial; ComercialRouteProtection y ResponsiveLayout con nav filtrada por rol comercial |
+| `src/app/comercial/page.js` | Página dashboard comercial |
+| `src/components/Admin/Dashboard/ComercialDashboard/index.js` | Dashboard con 5 cards (TotalQuantitySoldCard, TotalAmountSoldCard, OrderRankingChart, SalesBySalespersonPieChart, TransportRadarChart) |
 | `src/components/AdminRouteProtection/index.tsx` | Redirige operario que llegue a admin hacia `/operator` |
 
 Componentes que enlazan a flujos operario (usan `operatorRoutes`):

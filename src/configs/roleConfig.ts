@@ -11,6 +11,7 @@ export type RoleKey =
 
 export const roleConfig: Record<string, RoleKey[]> = {
   "/operator": ["operario"],
+  "/comercial": ["comercial"],
   "/admin": ["administrador", "direccion", "tecnico"],
   "/admin/home": ["administrador", "direccion", "tecnico"],
   "/admin/raw-material-receptions": ["administrador", "direccion", "tecnico"],

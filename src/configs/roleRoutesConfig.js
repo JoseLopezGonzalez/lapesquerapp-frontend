@@ -13,6 +13,13 @@ export const operatorRoutes = {
   dispatchesCreate: `${OPERATOR_BASE}/dispatches/create`,
 };
 
+/** Base URL para el rol comercial (dashboard con 5 cards) */
+export const COMERCIAL_BASE = '/comercial';
+
+export const comercialRoutes = {
+  dashboard: COMERCIAL_BASE,
+};
+
 /** Rutas de admin para otros roles (referencia; no incluye operario para flujos propios) */
 export const ADMIN_BASE = '/admin';
 

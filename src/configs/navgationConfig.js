@@ -20,6 +20,12 @@ export const navigationConfig = [
     {
         name: 'Inicio',
         icon: HomeIcon,
+        href: '/comercial',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Inicio',
+        icon: HomeIcon,
         href: '/admin/home',
         allowedRoles: ["administrador", "direccion", "tecnico"],
     },

@@ -129,6 +129,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(operatorUrl);
   }
 
+  // Comercial: todo /admin redirige a /comercial
+  if (userRole === "comercial" && pathname.startsWith("/admin")) {
+    const comercialUrl = new URL("/comercial", req.url);
+    return NextResponse.redirect(comercialUrl);
+  }
+
   if (!rolesAllowed.length || !hasAccess) {
     const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);
@@ -138,5 +144,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/operator/:path*", "/production/:path*", "/warehouse/:path*"],
+  matcher: ["/admin/:path*", "/operator/:path*", "/comercial/:path*", "/production/:path*", "/warehouse/:path*"],
 };
