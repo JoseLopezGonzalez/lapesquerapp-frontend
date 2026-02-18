@@ -14,7 +14,7 @@ import { getCustomersOptions } from '@/services/customerService';
 import CreateCustomerQuickForm from '../CreateCustomerQuickForm';
 import Loader from '@/components/Utilities/Loader';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import { UserRound } from 'lucide-react';
+import { UserRound, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Step1ClientSelection({
@@ -58,39 +58,36 @@ export default function Step1ClientSelection({
   const selectedId = state.customerId != null ? String(state.customerId) : null;
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Sheet open={newCustomerOpen} onOpenChange={setNewCustomerOpen}>
-          <SheetTrigger asChild>
-            <Button type="button" variant="outline">
-              + Nuevo cliente
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Nuevo cliente</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
-              <CreateCustomerQuickForm
-                onSuccess={handleNewCustomerSuccess}
-                onCancel={() => setNewCustomerOpen(false)}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+    <div className="w-full max-w-[420px] flex flex-col flex-1 min-h-0 gap-4">
+      <Sheet open={newCustomerOpen} onOpenChange={setNewCustomerOpen}>
+        <SheetTrigger asChild>
+          <Button type="button" className="w-full shrink-0" size="lg">
+            <Plus className="h-5 w-5 shrink-0" />
+            Nuevo cliente
+          </Button>
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Nuevo cliente</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <CreateCustomerQuickForm
+              onSuccess={handleNewCustomerSuccess}
+              onCancel={() => setNewCustomerOpen(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
-      <div
-        className="w-full max-w-[420px] h-[min(480px,72vh)] rounded-lg border overflow-y-auto overflow-x-hidden"
-        style={{ minHeight: 0 }}
-      >
+      <div className="w-full flex-1 min-h-0 rounded-lg border overflow-y-auto overflow-x-hidden flex flex-col">
+        {loadingCustomers ? (
+          <div className="flex flex-1 items-center justify-center w-full min-h-0">
+            <Loader />
+          </div>
+        ) : (
         <div className="flex flex-col gap-2 p-3 pr-4">
-          {loadingCustomers ? (
-            <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full">
-              <Loader />
-            </div>
-          ) : customerOptions.length === 0 ? (
-            <div className="flex items-center justify-center min-h-[min(400px,65vh)] w-full py-6">
+          {customerOptions.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center w-full py-6 min-h-0">
               <EmptyState
                 icon={<UserRound className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                 title="No hay clientes"
@@ -118,6 +115,7 @@ export default function Step1ClientSelection({
             })
           )}
         </div>
+        )}
       </div>
     </div>
   );

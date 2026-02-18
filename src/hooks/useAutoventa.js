@@ -112,7 +112,7 @@ export function useAutoventa() {
       ...s,
       createdOrderId: order?.id ?? null,
       createdOrder: order ?? null,
-      step: 8,
+      step: 7,
     }));
     return order;
   }, [state]);

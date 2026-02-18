@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import Step1ClientSelection from '../Step1ClientSelection';
 import Step2QRScan from '../Step2QRScan';
 import Step3Pricing from '../Step3Pricing';
-import Step4Invoice from '../Step4Invoice';
 import Step5Observations from '../Step5Observations';
 import Step6Summary from '../Step6Summary';
 import Step7Confirmation from '../Step7Confirmation';
@@ -20,11 +19,9 @@ const STEPS = [
   { id: 1, title: 'Cliente', description: 'Seleccione cliente y fechas' },
   { id: 2, title: 'Cajas', description: 'Escanea o pega códigos GS1-128' },
   { id: 3, title: 'Precios', description: 'Indique precios por producto' },
-  { id: 4, title: 'Factura', description: 'Con factura o solo recibo' },
-  { id: 5, title: 'Observaciones', description: 'Observaciones (opcional)' },
-  { id: 6, title: 'Resumen', description: 'Revise el resumen' },
-  { id: 7, title: 'Confirmar', description: 'Confirmar y crear autoventa' },
-  { id: 8, title: 'Ticket', description: 'Imprimir ticket' },
+  { id: 4, title: 'Observaciones', description: 'Observaciones (opcional)' },
+  { id: 5, title: 'Resumen', description: 'Revise el resumen' },
+  { id: 6, title: 'Confirmar', description: 'Confirmar y crear autoventa' },
 ];
 
 export default function AutoventaWizard() {
@@ -59,19 +56,21 @@ export default function AutoventaWizard() {
     if (step === 3) setStep(4);
     else if (step === 4) setStep(5);
     else if (step === 5) setStep(6);
-    else if (step === 6) setStep(7);
   };
 
   const goBack = () => setStep(Math.max(1, step - 1));
 
   const canGoNext = () => {
+    // Paso 1: obligatorio seleccionar un cliente
     if (step === 1) return state.customerId != null && state.customerName != null;
+    // Paso 2: obligatorio tener al menos una caja
     if (step === 2) return (state.boxes?.length ?? 0) >= 1;
+    // Paso 3: obligatorio indicar precio > 0 para todos los productos
     if (step === 3) {
       const items = state.items ?? [];
-      return items.length > 0 && items.every((i) => Number(i.unitPrice) >= 0);
+      return items.length > 0 && items.every((i) => Number(i.unitPrice) > 0);
     }
-    return step >= 4 && step <= 6;
+    return step >= 4 && step <= 5;
   };
 
   const canGoToStep = (stepIndex) => {
@@ -100,14 +99,18 @@ export default function AutoventaWizard() {
     }
   };
 
-  const contentMaxWidth = [1, 2, 4, 5].includes(step) ? 'max-w-[420px]' : 'max-w-[min(800px,95vw)]';
+  const contentMaxWidth = [1, 2, 4].includes(step) ? 'max-w-[420px]' : 'max-w-[min(800px,95vw)]';
+
+  const isSuccessScreen = step === 7;
 
   return (
     <div className="w-full h-full flex flex-col min-h-0">
-      <div className="shrink-0 flex flex-col items-center gap-3 pb-4 px-2">
-        <h2 className="text-lg font-semibold">Nueva autoventa</h2>
-        {/* Stepper: solo nodo anterior, actual y siguiente */}
-        {(() => {
+      <div className="shrink-0 flex flex-col items-center gap-3 pb-6 pt-2 sm:pb-4 sm:pt-0 px-2">
+        <h2 className="text-lg font-semibold">
+          {isSuccessScreen ? 'Autoventa creada' : 'Nueva autoventa'}
+        </h2>
+        {/* Stepper: solo en pasos 1-6; en pantalla de éxito no se muestra */}
+        {!isSuccessScreen && (() => {
           const start = Math.max(1, step - 1);
           const end = Math.min(STEPS.length, step + 1);
           const visibleSteps = [];
@@ -185,59 +188,68 @@ export default function AutoventaWizard() {
             </div>
           );
         })()}
-        <p className="text-sm text-muted-foreground text-center">
-          <span className="font-medium text-foreground/80">Paso {step} de {STEPS.length}</span>
-          {' · '}
-          {STEPS[step - 1]?.description}
-        </p>
+        {!isSuccessScreen && (
+          <p className="text-sm text-muted-foreground text-center">
+            <span className="font-medium text-foreground/80">Paso {step} de {STEPS.length}</span>
+            {' · '}
+            {STEPS[step - 1]?.description}
+          </p>
+        )}
       </div>
 
-      <div className={cn('flex flex-col flex-1 min-h-0 overflow-y-auto w-full mx-auto px-4', contentMaxWidth)}>
+      <div className={cn('flex flex-col flex-1 min-h-0 overflow-y-auto w-full mx-auto px-4 pt-8 sm:pt-6', contentMaxWidth)}>
         {step === 1 && (
-          <Step1ClientSelection
-            state={state}
-            setCustomer={setCustomer}
-          />
+          <div className="flex flex-1 min-h-0 w-full justify-center overflow-y-auto">
+            <Step1ClientSelection
+              state={state}
+              setCustomer={setCustomer}
+            />
+          </div>
         )}
         {step === 2 && (
-          <Step2QRScan
-            state={state}
-            addBox={addBox}
-            removeAllBoxes={removeAllBoxes}
-          />
+          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+            <Step2QRScan
+              state={state}
+              addBox={addBox}
+              removeAllBoxes={removeAllBoxes}
+            />
+          </div>
         )}
         {step === 3 && (
-          <Step3Pricing
-            state={state}
-            setItemPrice={setItemPrice}
-            totalAmount={totalAmount}
-          />
+          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+            <Step3Pricing
+              state={state}
+              setItemPrice={setItemPrice}
+              totalAmount={totalAmount}
+            />
+          </div>
         )}
         {step === 4 && (
-          <Step4Invoice
-            state={state}
-            setInvoiceRequired={setInvoiceRequired}
-          />
+          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+            <Step5Observations
+              state={state}
+              setObservations={setObservations}
+            />
+          </div>
         )}
         {step === 5 && (
-          <Step5Observations
-            state={state}
-            setObservations={setObservations}
-          />
+          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+            <Step6Summary state={state} totalAmount={totalAmount} />
+          </div>
         )}
         {step === 6 && (
-          <Step6Summary state={state} totalAmount={totalAmount} />
+          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+            <Step7Confirmation
+              state={state}
+              totalAmount={totalAmount}
+              setInvoiceRequired={setInvoiceRequired}
+              onCancel={handleCancelStep7}
+              error={step7Error}
+              isSubmitting={step7Loading}
+            />
+          </div>
         )}
         {step === 7 && (
-          <Step7Confirmation
-            state={state}
-            totalAmount={totalAmount}
-            onCancel={handleCancelStep7}
-            error={step7Error}
-            isSubmitting={step7Loading}
-          />
-        )}
-        {step === 8 && (
           <Step8PrintTicket
             state={state}
             onFinish={() => {
@@ -252,10 +264,10 @@ export default function AutoventaWizard() {
         )}
       </div>
 
-      {step < 8 && (
+      {step < 7 && (
         <div className="shrink-0 flex gap-2 pt-4 pb-4 w-full justify-center px-4">
           <div className="flex gap-2 w-full max-w-[420px]">
-            {step === 7 ? (
+            {step === 6 ? (
               <>
                 <Button
                   type="button"

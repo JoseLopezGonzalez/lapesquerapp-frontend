@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Package } from 'lucide-react';
+import { Package, Scan } from 'lucide-react';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
 import { parseGs1128Line } from '@/lib/gs1128Parser';
+
+const Step2CameraScanner = dynamic(() => import('../Step2CameraScanner'), { ssr: false });
 
 export default function Step2QRScan({
   state,
@@ -20,6 +23,7 @@ export default function Step2QRScan({
   const [productsOptions, setProductsOptions] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [manualCode, setManualCode] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -109,26 +113,67 @@ export default function Step2QRScan({
     }
   };
 
+  const handleScannedCode = (rawValue) => {
+    const code = String(rawValue ?? '').trim();
+    if (!code) return;
+    const parsed = parseGs1128Line(code, productsOptions);
+    if (parsed) {
+      addBox(parsed);
+      notify.success({ title: 'Caja añadida', description: 'La caja se ha añadido correctamente desde el código escaneado.' });
+      setScannerOpen(false);
+    } else {
+      notify.error({
+        title: 'Código no válido',
+        description: 'Se espera formato GS1-128 con 3100 (kg) o 3200 (libras). Revisa el código escaneado.',
+      });
+    }
+  };
+
+  const handleScannerError = (message) => {
+    notify.error({ title: 'Cámara', description: message || 'No se pudo acceder a la cámara.' });
+    setScannerOpen(false);
+  };
+
   const boxes = state.boxes ?? [];
 
   return (
     <div className="space-y-6 w-full">
       <div className="space-y-2">
         <Label htmlFor="gs1-code">Código GS1-128 (pegado o escaneado; varios códigos, uno por línea)</Label>
-        <div className="flex gap-2">
-          <Input
-            id="gs1-code"
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCode())}
-            placeholder="01(GTIN)3100(peso)10(lote) o 3200 para libras"
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex gap-2 flex-1">
+            <Input
+              id="gs1-code"
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCode())}
+              placeholder="01(GTIN)3100(peso)10(lote) o 3200 para libras"
+              disabled={loadingProducts}
+            />
+            <Button type="button" onClick={handleAddCode} disabled={loadingProducts || !manualCode?.trim()}>
+              Añadir
+            </Button>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setScannerOpen(true)}
             disabled={loadingProducts}
-          />
-          <Button type="button" onClick={handleAddCode} disabled={loadingProducts || !manualCode?.trim()}>
-            Añadir
+            className="shrink-0"
+          >
+            <Scan className="h-4 w-4 mr-2" />
+            Escanear con cámara
           </Button>
         </div>
       </div>
+
+      {scannerOpen && (
+        <Step2CameraScanner
+          onScan={handleScannedCode}
+          onClose={() => setScannerOpen(false)}
+          onError={handleScannerError}
+        />
+      )}
 
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">Cajas añadidas ({boxes.length})</span>
@@ -157,7 +202,6 @@ export default function Step2QRScan({
             <li key={idx} className="px-3 py-2 text-sm flex justify-between">
               <span>
                 {box.productName ?? box.productId} — {Number(box.netWeight).toFixed(2)} kg
-                {box.lot ? ` — ${box.lot}` : ''}
               </span>
             </li>
           ))}
