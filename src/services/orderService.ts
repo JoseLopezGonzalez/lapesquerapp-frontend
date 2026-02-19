@@ -109,7 +109,7 @@ export function updateOrder(
       }
       return response.json();
     })
-    .then((data: { data?: Order }) => data.data)
+    .then((data: { data?: Order } | Order) => (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined)
     .catch((error) => {
       throw error;
     });
@@ -124,9 +124,7 @@ export function getActiveOrders(token: AuthToken): Promise<Order[]> {
     return Promise.reject(new Error('No se proporcionó token de autenticación'));
   }
 
-  const url = `${API_URL_V2}orders/active`;
-
-  return fetchWithTenant(url, {
+  return fetchWithTenant(`${API_URL_V2}orders/active`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

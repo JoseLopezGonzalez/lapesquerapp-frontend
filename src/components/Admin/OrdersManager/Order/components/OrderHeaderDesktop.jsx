@@ -1,6 +1,6 @@
 'use client';
 
-import { Printer, MoreVertical } from 'lucide-react';
+import { Printer, MoreVertical, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -26,11 +26,19 @@ export default function OrderHeaderDesktop({
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2">
       <div className="space-y-1 flex-1">
-        <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
-        <h3 className="text-lg sm:text-xl font-medium">
-          #{order.id}
-          {order?.orderType === 'autoventa' ? ' · Autoventa' : ''}
-        </h3>
+        <div className="flex items-center gap-2 flex-wrap">
+          <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
+          {(order?.orderType ?? order?.order_type) === 'autoventa' && (
+            <span
+              className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium px-2.5 py-0.5 rounded-full border border-slate-400 dark:border-slate-500"
+              aria-label="Tipo de pedido: Autoventa"
+            >
+              <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+              Autoventa
+            </span>
+          )}
+        </div>
+        <h3 className="text-lg sm:text-xl font-medium">#{order.id}</h3>
         <div>
           <p>
             <span className="font-light text-2xl sm:text-3xl">{order.customer?.name ?? '—'}</span>

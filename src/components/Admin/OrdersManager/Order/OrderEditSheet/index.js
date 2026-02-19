@@ -262,7 +262,15 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                 }
             >
                 <SheetHeader className={isMobile ? "pb-3 flex-shrink-0" : ""}>
-                    <SheetTitle className={isMobile ? "text-lg" : ""}>Editar Pedido #{order?.id || 'N/A'}</SheetTitle>
+                    <SheetTitle className={isMobile ? "text-lg" : ""}>
+                        Editar Pedido #{order?.id || 'N/A'}
+                        {(order?.orderType ?? order?.order_type) === 'autoventa' ? ' · Autoventa' : ''}
+                    </SheetTitle>
+                    {(order?.orderType ?? order?.order_type) === 'autoventa' && (
+                        <p className="text-sm text-muted-foreground font-normal mt-1">
+                            Pedido tipo autoventa. Algunos campos pueden estar vacíos.
+                        </p>
+                    )}
                 </SheetHeader>
                 <form onSubmit={handleFormSubmit} className={`flex flex-col w-full ${isMobile ? 'flex-1 min-h-0' : 'h-full'}`} noValidate>
                     {isMobile ? (

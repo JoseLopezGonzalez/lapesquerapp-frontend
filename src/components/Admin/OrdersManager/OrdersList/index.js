@@ -25,8 +25,6 @@ import { cn } from '@/lib/utils';
 
 /* convertir examples a objeto js */
 
-
-
 const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesProp, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode }) => {
     const visibleCategories = visibleCategoriesProp ?? categories;
 

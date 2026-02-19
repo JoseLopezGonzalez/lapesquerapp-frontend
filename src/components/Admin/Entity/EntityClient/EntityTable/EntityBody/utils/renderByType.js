@@ -28,6 +28,12 @@ export function renderByType(header, value, safeValue, cellCtx, onEdit, cellClas
         case "boolean":
             return safeValue === true ? "Sí" : safeValue === false ? "No" : "-";
         case "text":
+            if (header.options && value != null && value !== "N/A" && header.options[value]?.label != null) {
+                return header.options[value].label;
+            }
+            if (header.options?.default?.label != null && (value == null || value === "N/A" || value === "")) {
+                return header.options.default.label;
+            }
             return safeValue === "N/A" ? "-" : safeValue;
         default:
             return safeValue;

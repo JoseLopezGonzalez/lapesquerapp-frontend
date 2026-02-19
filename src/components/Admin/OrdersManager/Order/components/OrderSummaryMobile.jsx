@@ -1,6 +1,6 @@
 'use client';
 
-import { ThermometerSnowflake } from 'lucide-react';
+import { ThermometerSnowflake, ShoppingBag } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,14 +31,22 @@ export default function OrderSummaryMobile({
 }) {
   return (
     <div className="space-y-5 px-4 pt-6 text-center flex-shrink-0">
-      <div>
-        <p className="text-xl font-semibold">{order.customer?.name ?? '—'}</p>
-        <p className="text-base text-muted-foreground mt-1">
-          Cliente Nº {order.customer?.id ?? '—'}
-        </p>
-        {order?.orderType === 'autoventa' && (
-          <p className="text-xs font-medium text-muted-foreground mt-1">Autoventa</p>
+      <div className="flex flex-col items-center gap-2">
+        {(order?.orderType ?? order?.order_type) === 'autoventa' && (
+          <span
+            className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium px-2.5 py-1 rounded-full border border-slate-400 dark:border-slate-500"
+            aria-label="Tipo de pedido: Autoventa"
+          >
+            <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+            Autoventa
+          </span>
         )}
+        <div>
+          <p className="text-xl font-semibold">{order.customer?.name ?? '—'}</p>
+          <p className="text-base text-muted-foreground mt-1">
+            Cliente Nº {order.customer?.id ?? '—'}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2">

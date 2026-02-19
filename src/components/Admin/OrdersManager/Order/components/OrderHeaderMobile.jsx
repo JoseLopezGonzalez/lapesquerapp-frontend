@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, MoreVertical, Printer, Pencil } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Printer, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -40,9 +40,20 @@ export default function OrderHeaderMobile({
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h2 className="text-xl font-normal dark:text-white text-center">
-          #{order.id}
-        </h2>
+        <div className="flex flex-col items-center gap-1">
+          <h2 className="text-xl font-normal dark:text-white text-center">
+            #{order.id}
+          </h2>
+          {(order?.orderType ?? order?.order_type) === 'autoventa' && (
+            <span
+              className="inline-flex items-center gap-1 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-[10px] font-medium px-2 py-0.5 rounded-full border border-slate-400 dark:border-slate-500"
+              aria-label="Tipo de pedido: Autoventa"
+            >
+              <ShoppingBag className="h-3 w-3" aria-hidden />
+              Autoventa
+            </span>
+          )}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

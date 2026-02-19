@@ -3,6 +3,7 @@ import { useOrderFormOptions } from './useOrderFormOptions';
 import { useEffect, useState, useMemo } from 'react';
 
 const initialDefaultValues = {
+    orderType: 'standard',
     entryDate: null, // Cambiado de '' a objeto Date
     loadDate: null, // Cambiado de '' a null
     salesperson: '',
@@ -19,7 +20,25 @@ const initialDefaultValues = {
 
 };
 
+const ORDER_TYPE_OPTIONS = [
+    { value: 'standard', label: 'Pedido estándar' },
+    { value: 'autoventa', label: 'Autoventa' },
+];
+
 const initialFormGroups = [
+    {
+        group: 'Tipo de pedido',
+        grid: 'grid-cols-1 gap-4',
+        fields: [
+            {
+                name: 'orderType',
+                label: 'Tipo de pedido',
+                component: 'Select',
+                options: ORDER_TYPE_OPTIONS,
+                props: { placeholder: 'Seleccionar tipo' },
+            },
+        ],
+    },
     {
         group: 'Fechas',
         grid: 'grid-cols-2 gap-4',
@@ -237,6 +256,7 @@ export function useOrderFormConfig({ orderData }) {
     useEffect(() => {
         if (orderData) {
             setDefaultValues({
+                orderType: (orderData.orderType ?? orderData.order_type) === 'autoventa' ? 'autoventa' : 'standard',
                 entryDate: parseDate(orderData.entryDate),
                 loadDate: parseDate(orderData.loadDate),
                 salesperson: `${orderData.salesperson?.id || ''}`,

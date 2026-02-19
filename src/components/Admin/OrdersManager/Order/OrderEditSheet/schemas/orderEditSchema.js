@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export const orderEditSchema = z.object({
+    orderType: z.enum(['standard', 'autoventa']).default('standard'),
     entryDate: z.date({ required_error: 'La fecha de entrada es obligatoria' }).nullable().refine((val) => val != null, 'La fecha de entrada es obligatoria'),
     loadDate: z.date({ required_error: 'La fecha de carga es obligatoria' }).nullable().refine((val) => val != null, 'La fecha de carga es obligatoria'),
     salesperson: z.string().min(1, 'Seleccione un comercial'),

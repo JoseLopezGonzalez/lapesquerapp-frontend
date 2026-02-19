@@ -10,6 +10,8 @@
 
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
+import { getUserAgent } from '@/lib/utils/getUserAgent';
 import { 
     fetchEntitiesGeneric, 
     deleteEntityGeneric, 
@@ -135,6 +137,32 @@ export const rawMaterialReceptionService = {
         const token = await getAuthToken();
         const url = `${API_URL_V2}${ENDPOINT}`;
         return deleteEntityGeneric(url, { ids }, token);
+    },
+
+    /**
+     * Obtiene el desglose diario de pesos por calibre (producto) para una fecha y opcionalmente una especie.
+     * Requiere permiso viewAny sobre RawMaterialReception.
+     * @param {string} date - Fecha en formato Y-m-d (ej. 2026-02-18)
+     * @param {number|null|undefined} [speciesId] - ID de la especie (tenant); si es null/undefined, el backend devuelve todas las especies
+     * @returns {Promise<{ total_weight_kg: number, calibers: Array<{ product_id: number, name: string, weight_kg: number, percentage: number }> }>}
+     */
+    async getDailyCalibersBySpecies(date, speciesId) {
+        const token = await getAuthToken();
+        const params = new URLSearchParams({ date });
+        if (speciesId != null && speciesId !== '') {
+            params.append('speciesId', String(speciesId));
+        }
+        const url = `${API_URL_V2}${ENDPOINT}/daily-calibers-by-species?${params.toString()}`;
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'User-Agent': getUserAgent(),
+        };
+        const response = await fetchWithTenant(url, {
+            method: 'GET',
+            headers,
+        });
+        return response.json();
     },
 };
 

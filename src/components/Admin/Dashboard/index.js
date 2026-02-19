@@ -17,6 +17,7 @@ import { SalesChart } from "./SalesChart";
 import { ReceptionChart } from "./ReceptionChart";
 import { DispatchChart } from "./DispatchChart";
 import { TransportRadarChart } from "./TransportRadarChart";
+import { DailyCalibersBySpeciesCard } from "./DailyCalibersBySpeciesCard";
 import Masonry from "react-masonry-css";
 
 const breakpointColumnsObj = {
@@ -76,6 +77,9 @@ export default function Dashboard() {
                         className="masonry-grid"
                         columnClassName="masonry-grid_column"
                     >
+                        <div>
+                            <DailyCalibersBySpeciesCard />
+                        </div>
                         <div>
                             <OrderRankingChart />
                         </div>

@@ -238,6 +238,15 @@ export const configs = {
                 { name: "pending", label: "Pendiente", value: false },
                 { name: "finished", label: "Finalizado", value: false }
               ],
+            },
+            {
+              name: "orderType",
+              label: "Tipo de pedido",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "standard", label: "Pedido estándar", value: false },
+                { name: "autoventa", label: "Autoventa", value: false }
+              ],
             }
           ],
         },
@@ -348,13 +357,13 @@ export const configs = {
         {
           name: "orderType",
           label: "Tipo",
-          type: "badge",
+          type: "text",
           path: "orderType",
           hideOnMobile: true,
           options: {
-            autoventa: { label: "Autoventa", color: "neutral", outline: true },
-            standard: { label: "Pedido", color: "neutral", outline: true },
-            default: { label: "—", color: "neutral", outline: true },
+            standard: { label: "Estándar" },
+            autoventa: { label: "Autoventa" },
+            default: { label: "—" },
           },
         },
         { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight", hideOnMobile: true },

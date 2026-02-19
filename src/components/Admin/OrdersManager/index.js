@@ -241,7 +241,7 @@ export default function OrdersManager() {
         setSearchText('');
         setOnCreatingNewOrder(true);
     }, []);
-    
+
     const handleCloseDetail = useCallback(() => {
         setSelectedOrder(null);
         setOnCreatingNewOrder(false);

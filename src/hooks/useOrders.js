@@ -15,7 +15,6 @@ export function useOrders() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-
   const queryKey = ['orders', tenantId ?? 'unknown'];
 
   const {
