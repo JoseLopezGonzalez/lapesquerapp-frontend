@@ -46,11 +46,10 @@ import {
 } from '@/hooks/useOperarioReceptionForm';
 
 const TARE_OPTIONS = [
-  { value: '1', label: '1 kg' },
-  { value: '2', label: '2 kg' },
-  { value: '3', label: '3 kg' },
-  { value: '4', label: '4 kg' },
-  { value: '5', label: '5 kg' },
+  { value: '3', label: '3kg' },
+  { value: '2.7', label: '2,70kg' },
+  { value: '1.4', label: '1,40kg' },
+  { value: '1.5', label: '1,50kg' },
 ];
 
 export default function OperarioCreateReceptionForm({
