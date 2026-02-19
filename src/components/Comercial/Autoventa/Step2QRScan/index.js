@@ -90,6 +90,7 @@ export default function Step2QRScan({
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={handleScannerError}
+          boxesCount={boxes.length}
         />
       )}
 

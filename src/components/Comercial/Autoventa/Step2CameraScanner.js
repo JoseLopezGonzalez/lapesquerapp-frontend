@@ -12,7 +12,7 @@ const CAMERA_CONSTRAINTS = {
   frameRate: { ideal: 30, min: 15 },
 };
 
-export default function Step2CameraScanner({ onScan, onClose, onError }) {
+export default function Step2CameraScanner({ onScan, onClose, onError, boxesCount = 0 }) {
   const handleScan = (detectedCodes) => {
     const rawValue = detectedCodes?.[0]?.rawValue;
     if (rawValue) onScan?.(rawValue);
@@ -52,20 +52,29 @@ export default function Step2CameraScanner({ onScan, onClose, onError }) {
         />
       </div>
       <div
-        className="fixed bottom-0 left-0 right-0 z-[110] w-full bg-background/95 backdrop-blur-sm p-4 pt-3"
+        className="fixed bottom-0 left-0 right-0 z-[110] w-full bg-background/95 backdrop-blur-sm p-4 pt-3 flex flex-col gap-2"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          className="w-full min-h-12"
-          onClick={onClose}
-          aria-label="Cerrar escáner"
-        >
-          <X className="h-5 w-5 mr-2" />
-          Cerrar
-        </Button>
+        <div className="flex items-center justify-between gap-3 min-h-8">
+          <span className="text-sm font-medium text-muted-foreground">
+            {boxesCount === 0
+              ? 'Ninguna caja añadida'
+              : boxesCount === 1
+                ? '1 caja añadida'
+                : `${boxesCount} cajas añadidas`}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="min-h-10 shrink-0"
+            onClick={onClose}
+            aria-label="Cerrar escáner"
+          >
+            <X className="h-5 w-5 mr-2" />
+            Cerrar
+          </Button>
+        </div>
       </div>
     </div>
   );
