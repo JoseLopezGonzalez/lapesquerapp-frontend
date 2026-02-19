@@ -20,6 +20,7 @@ export interface OrderPayload {
 /** Order data from API */
 export interface Order {
   id: number | string;
+  orderType?: 'standard' | 'autoventa';
   [key: string]: unknown;
 }
 

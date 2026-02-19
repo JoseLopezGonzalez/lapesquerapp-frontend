@@ -13,16 +13,21 @@ const OrderMap = () => {
 
     const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
     const origin = !loading && settings?.["company.name"] ? settings["company.name"] : COMPANY_NAME;
+    const hasShippingAddress = Boolean(order?.shippingAddress);
 
-    const mapContent = (
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        loading="lazy"
-                        allowFullScreen
-                        src={`https://www.google.com/maps/embed/v1/directions?key=${googleApiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(order.shippingAddress)}&mode=driving`}
-                    />
+    const mapContent = hasShippingAddress ? (
+        <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            src={`https://www.google.com/maps/embed/v1/directions?key=${googleApiKey}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(order.shippingAddress)}&mode=driving`}
+        />
+    ) : (
+        <div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm p-4">
+            Sin dirección de envío
+        </div>
     );
 
     return (

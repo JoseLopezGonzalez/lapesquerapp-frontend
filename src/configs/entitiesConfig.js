@@ -345,6 +345,18 @@ export const configs = {
             default: { label: "Desconocido", color: "secondary", outline: true },
           },
         },
+        {
+          name: "orderType",
+          label: "Tipo",
+          type: "badge",
+          path: "orderType",
+          hideOnMobile: true,
+          options: {
+            autoventa: { label: "Autoventa", color: "neutral", outline: true },
+            standard: { label: "Pedido", color: "neutral", outline: true },
+            default: { label: "—", color: "neutral", outline: true },
+          },
+        },
         { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight", hideOnMobile: true },
         { name: "totalBoxes", label: "Cajas", type: "text", path: "totalBoxes", hideOnMobile: true },
         { name: "pallets", label: "Palets", type: "text", path: "pallets", hideOnMobile: true },
@@ -1854,9 +1866,6 @@ export const configs = {
         label: "NIF",
         type: "text",
         placeholder: "Introduce el NIF",
-        validation: {
-          required: "El NIF es obligatorio",
-        },
         cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
@@ -1864,9 +1873,6 @@ export const configs = {
         path: "billingAddress",
         label: "Dirección de facturación",
         type: "textarea",
-        validation: {
-          required: "La dirección de facturación es obligatoria",
-        },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
@@ -1874,9 +1880,6 @@ export const configs = {
         path: "shippingAddress",
         label: "Dirección de envío",
         type: "textarea",
-        validation: {
-          required: "La dirección de envío es obligatoria",
-        },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
@@ -1905,9 +1908,6 @@ export const configs = {
         label: "Emails",
         type: "emailList",
         placeholder: "Introduce correos electrónicos y pulsa Enter",
-        validation: {
-          required: "Al menos un correo electrónico es obligatorio",
-        },
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       /* ccEmails */
@@ -1916,9 +1916,6 @@ export const configs = {
         label: "Emails en copia (CC)",
         type: "emailList",
         placeholder: "Introduce correos electrónicos en copia y pulsa Enter",
-        validation: {
-          required: "Al menos un correo electrónico en copia es obligatorio",
-        },
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
@@ -1927,9 +1924,6 @@ export const configs = {
         label: "Información de contacto",
         type: "textarea",
         placeholder: "Introduce teléfonos u otra información de contacto",
-        validation: {
-          required: "La información de contacto es obligatoria",
-        },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {

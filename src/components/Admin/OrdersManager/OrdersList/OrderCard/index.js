@@ -61,7 +61,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
             onClick={() => !disabled && onClick()}
             role="button"
             tabIndex={disabled ? -1 : 0}
-            aria-label={`Pedido ${orderId} - ${order.customer.name}`}
+            aria-label={`Pedido ${orderId} - ${order.customer?.name ?? '—'}`}
             onKeyDown={(e) => {
                 if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault();
@@ -73,31 +73,38 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
                 <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
                     <div className="flex-1 min-w-0 space-y-1">
-                        <p className="font-semibold text-lg truncate leading-tight" title={order.customer.name}>
-                            {order.customer.name}
+                        <p className="font-semibold text-lg truncate leading-tight" title={order.customer?.name ?? '—'}>
+                            {order.customer?.name ?? '—'}
                         </p>
                         <p className="text-sm text-muted-foreground tabular-nums">
                             #{orderId} · {loadDate}
                             {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
                         </p>
-                        <span
-                            className={cn(
-                                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                                order.status === 'pending' && 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
-                                order.status === 'finished' && 'bg-green-500/15 text-green-700 dark:text-green-300',
-                                order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
-                            )}
-                        >
+                        <div className="flex items-center gap-1.5 flex-wrap">
                             <span
                                 className={cn(
-                                    'h-1.5 w-1.5 rounded-full',
-                                    order.status === 'pending' && 'bg-orange-500',
-                                    order.status === 'finished' && 'bg-green-500',
-                                    order.status === 'incident' && 'bg-red-500'
+                                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                                    order.status === 'pending' && 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                                    order.status === 'finished' && 'bg-green-500/15 text-green-700 dark:text-green-300',
+                                    order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
                                 )}
-                            />
-                            {statusLabel}
-                        </span>
+                            >
+                                <span
+                                    className={cn(
+                                        'h-1.5 w-1.5 rounded-full',
+                                        order.status === 'pending' && 'bg-orange-500',
+                                        order.status === 'finished' && 'bg-green-500',
+                                        order.status === 'incident' && 'bg-red-500'
+                                    )}
+                                />
+                                {statusLabel}
+                            </span>
+                            {order?.orderType === 'autoventa' && (
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
+                                    Autoventa
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
                 </div>
@@ -114,10 +121,17 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                             </span>
                         )}
                     </div>
-                    <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
+                        {order?.orderType === 'autoventa' && (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
+                                Autoventa
+                            </span>
+                        )}
+                    </div>
                     <div>
-                        <p className="font-semibold truncate text-base sm:text-lg font-medium" title={order.customer.name}>
-                            {order.customer.name}
+                        <p className="font-semibold truncate text-base sm:text-lg font-medium" title={order.customer?.name ?? '—'}>
+                            {order.customer?.name ?? '—'}
                         </p>
                     </div>
                     <div className="flex items-center gap-4 flex-wrap">

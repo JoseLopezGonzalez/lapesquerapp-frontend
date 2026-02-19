@@ -48,8 +48,8 @@ const OrderDocuments = () => {
             name: "customer",
             label: "Cliente",
             icon: <User className="h-4 w-4" />,
-            email: order.emails,
-            copyEmail: order.ccEmails,
+            email: order.emails ?? [],
+            copyEmail: order.ccEmails ?? [],
             documents: [
                 { name: "loading-note", label: "Nota de carga" },
                 { name: "packing-list", label: "Packing List" },
@@ -57,33 +57,40 @@ const OrderDocuments = () => {
                 { name: "order-confirmation", label: "Confirmación de pedido" },
             ],
         },
-        {
-            name: "transport",
-            label: "Transporte",
-            icon: <Truck className="h-4 w-4" />,
-            email: order.transport.emails,
-            copyEmail: order.transport.ccEmails,
-            documents: [
-                { name: "loading-note", label: "Nota de carga" },
-                { name: "packing-list", label: "Packing List" },
-                { name: "CMR", label: "Documento de transporte (CMR)" },
-                { name: "transport-pickup-request", label: "Solicitud de recogida" },
-
-            ],
-        },
-        {
-            name: "salesperson",
-            label: "Comercial",
-            icon: <Users className="h-4 w-4" />,
-            email: order.salesperson.emails,
-            copyEmail: order.salesperson.ccEmails,
-            documents: [
-                { name: "loading-note", label: "Nota de carga" },
-                { name: "packing-list", label: "Packing List" },
-                { name: "valued-loading-note", label: "Nota de carga valorada" },
-                { name: "order-confirmation", label: "Confirmación de pedido" },
-            ],
-        },
+        ...(order.transport != null
+            ? [
+                  {
+                      name: "transport",
+                      label: "Transporte",
+                      icon: <Truck className="h-4 w-4" />,
+                      email: order.transport?.emails ?? [],
+                      copyEmail: order.transport?.ccEmails ?? [],
+                      documents: [
+                          { name: "loading-note", label: "Nota de carga" },
+                          { name: "packing-list", label: "Packing List" },
+                          { name: "CMR", label: "Documento de transporte (CMR)" },
+                          { name: "transport-pickup-request", label: "Solicitud de recogida" },
+                      ],
+                  },
+              ]
+            : []),
+        ...(order.salesperson != null
+            ? [
+                  {
+                      name: "salesperson",
+                      label: "Comercial",
+                      icon: <Users className="h-4 w-4" />,
+                      email: order.salesperson?.emails ?? [],
+                      copyEmail: order.salesperson?.ccEmails ?? [],
+                      documents: [
+                          { name: "loading-note", label: "Nota de carga" },
+                          { name: "packing-list", label: "Packing List" },
+                          { name: "valued-loading-note", label: "Nota de carga valorada" },
+                          { name: "order-confirmation", label: "Confirmación de pedido" },
+                      ],
+                  },
+              ]
+            : []),
     ];
 
     const availableDocuments = [

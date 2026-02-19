@@ -27,12 +27,15 @@ export default function OrderHeaderDesktop({
     <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2">
       <div className="space-y-1 flex-1">
         <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
-        <h3 className="text-lg sm:text-xl font-medium">#{order.id}</h3>
+        <h3 className="text-lg sm:text-xl font-medium">
+          #{order.id}
+          {order?.orderType === 'autoventa' ? ' · Autoventa' : ''}
+        </h3>
         <div>
           <p>
-            <span className="font-light text-2xl sm:text-3xl">{order.customer.name}</span>
+            <span className="font-light text-2xl sm:text-3xl">{order.customer?.name ?? '—'}</span>
             <br />
-            <span className="text-base sm:text-lg font-medium">Cliente Nº {order.customer.id}</span>
+            <span className="text-base sm:text-lg font-medium">Cliente Nº {order.customer?.id ?? '—'}</span>
           </p>
         </div>
         <div>

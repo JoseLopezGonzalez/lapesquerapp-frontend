@@ -32,10 +32,13 @@ export default function OrderSummaryMobile({
   return (
     <div className="space-y-5 px-4 pt-6 text-center flex-shrink-0">
       <div>
-        <p className="text-xl font-semibold">{order.customer.name}</p>
+        <p className="text-xl font-semibold">{order.customer?.name ?? '—'}</p>
         <p className="text-base text-muted-foreground mt-1">
-          Cliente Nº {order.customer.id}
+          Cliente Nº {order.customer?.id ?? '—'}
         </p>
+        {order?.orderType === 'autoventa' && (
+          <p className="text-xs font-medium text-muted-foreground mt-1">Autoventa</p>
+        )}
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2">

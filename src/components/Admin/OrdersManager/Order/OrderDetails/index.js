@@ -42,15 +42,15 @@ const OrderDetails = () => {
                     <div className="space-y-3">
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Vendedor</div>
-                            <div className="font-medium">{order.salesperson.name}</div>
+                            <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Forma de pago</div>
-                            <div className="font-medium">{order.paymentTerm.name}</div>
+                            <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Incoterm</div>
-                            <div className="font-medium">{`${order.incoterm.code} - ${order.incoterm.description}`}</div>
+                            <div className="font-medium">{order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}</div>
                         </div>
                     </div>
                 </div>
@@ -74,7 +74,7 @@ const OrderDetails = () => {
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Referencia Cliente</div>
-                            <div className="font-medium">{order.buyerReference}</div>
+                            <div className="font-medium">{order.buyerReference ?? '—'}</div>
                         </div>
                     </div>
                 </div>
@@ -118,21 +118,21 @@ const OrderDetails = () => {
                     <div className="space-y-4">
                         <div className="text-center">
                             <div className="text-base font-semibold mb-1.5">Dirección de entrega</div>
-                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress}</p>
+                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
                         </div>
                         <div className="text-center">
                             <div className="text-base font-semibold mb-1.5">Transporte</div>
-                            <div className="text-sm font-medium mb-2">{order.transport.name}</div>
+                            <div className="text-sm font-medium mb-2">{order.transport?.name ?? '—'}</div>
                             <div className="text-sm text-muted-foreground whitespace-pre-line mt-2">
                                 <ul className="list-none flex flex-col items-center gap-1">
-                                    {order.transport.emails.map((email) => (
+                                    {(order.transport?.emails ?? []).map((email) => (
                                         <li key={email} className="text-xs font-medium">
                                             <a href={`mailto:${email}`} className="hover:underline">
                                                 {email}
                                             </a>
                                         </li>
                                     ))}
-                                    {order.transport.ccEmails.map((copyEmail) => (
+                                    {(order.transport?.ccEmails ?? []).map((copyEmail) => (
                                         <li key={copyEmail} className="text-xs font-medium">
                                             <div className="flex gap-1 items-center justify-center">
                                                 <Badge variant="outline" className="px-1">CC</Badge>
@@ -148,7 +148,7 @@ const OrderDetails = () => {
                         <div className="text-center">
                             <div className="text-base font-semibold mb-1.5">Observaciones</div>
                             <div className="text-sm text-muted-foreground">
-                                {order.transportationNotes}
+                                {order.transportationNotes ?? '—'}
                             </div>
                         </div>
                     </div>
@@ -187,15 +187,15 @@ const OrderDetails = () => {
                 <CardContent className="grid gap-3">
                     <div>
                         <div className="text-sm text-muted-foreground">Vendedor</div>
-                        <div className="font-medium">{order.salesperson.name}</div>
+                        <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Forma de pago</div>
-                        <div className="font-medium">{order.paymentTerm.name}</div>
+                        <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Incoterm</div>
-                        <div className="font-medium">{`${order.incoterm.code} - ${order.incoterm.description}`}</div>
+                        <div className="font-medium">{order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}</div>
                     </div>
                 </CardContent>
             </Card>
@@ -217,7 +217,7 @@ const OrderDetails = () => {
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Referencia Cliente</div>
-                        <div className="font-medium">{order.buyerReference}</div>
+                        <div className="font-medium">{order.buyerReference ?? '—'}</div>
                     </div>
                 </CardContent>
             </Card>
@@ -305,21 +305,21 @@ const OrderDetails = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <div className="text-sm font-medium mb-1.5">Dirección de entrega</div>
-                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress}</p>
+                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
                         </div>
                         <div>
                             <div className="text-sm font-medium mb-1.5">Transporte</div>
-                            <div className="text-sm">{order.transport.name}</div>
+                            <div className="text-sm">{order.transport?.name ?? '—'}</div>
                             <div className="text-sm text-muted-foreground whitespace-pre-line">
                                 <ul className="list-disc px-5 pl-8">
-                                    {order.transport.emails.map((email) => (
+                                    {(order.transport?.emails ?? []).map((email) => (
                                         <li key={email} className="text-xs font-medium">
                                             <a href={`mailto:${email}`} className=" hover:underline">
                                                 {email}
                                             </a>
                                         </li>
                                     ))}
-                                    {order.transport.ccEmails.map((copyEmail) => (
+                                    {(order.transport?.ccEmails ?? []).map((copyEmail) => (
                                         <li key={copyEmail} className="text-xs font-medium">
                                             <div className="flex gap-1 items-center">
                                                 <Badge variant="outline" className="px-1">CC</Badge>
@@ -338,7 +338,7 @@ const OrderDetails = () => {
                         <div>
                             <div className="text-sm font-medium mb-1.5">Observaciones</div>
                             <div className="text-sm text-muted-foreground">
-                                {order.transportationNotes}
+                                {order.transportationNotes ?? '—'}
                             </div>
                         </div>
 
