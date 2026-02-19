@@ -23,7 +23,7 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 // Import domain services and mapper
 import { getEntityService } from '@/services/domain/entityServiceMapper';
-import { isoToDateTimeLocal, datetimeLocalToIso } from '@/helpers/production/dateFormatters';
+import { isoToDateTimeLocal, datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -177,11 +177,11 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 }
             });
             
-            // Convertir campos datetime-local a ISO antes de enviar
+            // Convertir campos datetime-local a ISO 8601 con zona antes de enviar (contrato API timezone UTC)
             const fields = config.fields || config.editForm?.fields || [];
             fields.forEach(field => {
                 if (field.type === "datetime-local" && processedData[field.name]) {
-                    const isoValue = datetimeLocalToIso(processedData[field.name]);
+                    const isoValue = datetimeLocalToIsoWithZone(processedData[field.name]);
                     if (isoValue) {
                         processedData[field.name] = isoValue;
                     }

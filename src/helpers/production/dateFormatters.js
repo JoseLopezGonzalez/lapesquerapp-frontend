@@ -143,6 +143,29 @@ export const datetimeLocalToIso = (datetimeLocal) => {
 }
 
 /**
+ * Convierte una fecha datetime-local a formato ISO 8601 con zona (UTC).
+ * Interpreta el string como hora local del usuario y devuelve el instante en UTC.
+ * Usar para enviar datetime al API (contrato: ISO 8601 con zona).
+ * @param {string|null|undefined} datetimeLocal - Fecha en formato YYYY-MM-DDTHH:mm o YYYY-MM-DDTHH:mm:ss
+ * @returns {string|null} - Fecha en formato ISO con zona (p. ej. YYYY-MM-DDTHH:mm:ss.sssZ) o null
+ */
+export const datetimeLocalToIsoWithZone = (datetimeLocal) => {
+    if (!datetimeLocal || datetimeLocal.trim() === '') {
+        return null
+    }
+    try {
+        const date = new Date(datetimeLocal)
+        if (isNaN(date.getTime())) {
+            return null
+        }
+        return date.toISOString()
+    } catch (error) {
+        console.error('Error converting datetime-local to ISO with zone:', error)
+        return null
+    }
+}
+
+/**
  * Convierte múltiples campos de fecha de ISO a datetime-local
  * @param {object} record - Objeto con fechas en formato ISO
  * @param {string[]} fields - Array de nombres de campos a convertir
@@ -180,7 +203,7 @@ export const convertFormDatesToIso = (formData, fields = ['started_at', 'finishe
     fields.forEach(field => {
         const value = formData[field]
         if (value && value.trim() !== '') {
-            const isoValue = datetimeLocalToIso(value)
+            const isoValue = datetimeLocalToIsoWithZone(value)
             if (isoValue) {
                 // Mantener ambos formatos para compatibilidad
                 converted[field] = value

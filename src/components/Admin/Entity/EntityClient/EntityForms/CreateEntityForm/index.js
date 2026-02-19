@@ -23,8 +23,10 @@ import { format } from "date-fns"
 import { Loader2 } from "lucide-react";
 
 // Import domain services and mapper
-import { getEntityService } from '@/services/domain/entityServiceMapper';import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { getEntityService } from '@/services/domain/entityServiceMapper';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
+import { datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
 
 
 function prepareValidations(fields) {
@@ -123,6 +125,16 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
             Object.keys(processedData).forEach(key => {
                 if (processedData[key] instanceof Date) {
                     processedData[key] = format(processedData[key], 'yyyy-MM-dd');
+                }
+            });
+
+            // Convertir campos datetime-local a ISO 8601 con zona (contrato API timezone UTC)
+            fields.forEach(field => {
+                if (field.type === "datetime-local" && processedData[field.name]) {
+                    const isoValue = datetimeLocalToIsoWithZone(processedData[field.name]);
+                    if (isoValue) {
+                        processedData[field.name] = isoValue;
+                    }
                 }
             });
 

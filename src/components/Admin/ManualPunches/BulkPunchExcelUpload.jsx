@@ -495,7 +495,7 @@ export default function BulkPunchExcelUpload() {
   const punchesFromParsed = parsedData.map((row) => ({
     employee_id: parseInt(row.employee_id),
     event_type: row.event_type,
-    timestamp: row.timestamp,
+    timestamp: new Date(row.timestamp).toISOString(),
     device_id: 'manual-admin',
   }));
 

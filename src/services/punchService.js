@@ -731,54 +731,7 @@ export async function getPunchesByMonth(year, month, token, filters = {}) {
 
         const data = await response.json();
         const result = data.data || data;
-        
-        // Normalizar timestamps del backend (formato MySQL datetime a ISO 8601)
-        if (result.punches_by_day) {
-            Object.keys(result.punches_by_day).forEach(day => {
-                const dayData = result.punches_by_day[day];
-                
-                // Nueva estructura: { punches: [], incidents: [], anomalies: [] }
-                if (dayData && typeof dayData === 'object' && !Array.isArray(dayData)) {
-                    // Normalizar timestamps de fichajes
-                    if (dayData.punches && Array.isArray(dayData.punches)) {
-                        dayData.punches = dayData.punches.map(punch => {
-                            if (punch.timestamp && typeof punch.timestamp === 'string' && !punch.timestamp.includes('T')) {
-                                punch.timestamp = punch.timestamp.replace(' ', 'T') + '.000Z';
-                            }
-                            return punch;
-                        });
-                    }
-                    
-                    // Normalizar timestamps de incidencias
-                    if (dayData.incidents && Array.isArray(dayData.incidents)) {
-                        dayData.incidents = dayData.incidents.map(incident => {
-                            // Normalizar entry_timestamp si existe
-                            if (incident.entry_timestamp && typeof incident.entry_timestamp === 'string' && !incident.entry_timestamp.includes('T')) {
-                                incident.entry_timestamp = incident.entry_timestamp.replace(' ', 'T') + '.000Z';
-                            }
-                            // Normalizar exit_timestamp si existe
-                            if (incident.exit_timestamp && typeof incident.exit_timestamp === 'string' && !incident.exit_timestamp.includes('T')) {
-                                incident.exit_timestamp = incident.exit_timestamp.replace(' ', 'T') + '.000Z';
-                            }
-                            return incident;
-                        });
-                    }
-                } else if (Array.isArray(dayData)) {
-                    // Estructura antigua (solo array de fichajes) - mantener compatibilidad
-                    result.punches_by_day[day] = {
-                        punches: dayData.map(punch => {
-                            if (punch.timestamp && typeof punch.timestamp === 'string' && !punch.timestamp.includes('T')) {
-                                punch.timestamp = punch.timestamp.replace(' ', 'T') + '.000Z';
-                            }
-                            return punch;
-                        }),
-                        incidents: [],
-                        anomalies: []
-                    };
-                }
-            });
-        }
-        
+        // Backend devuelve timestamps en ISO 8601 con zona; no normalizar.
         return result;
     } catch (error) {
         // Si es un error de red o 404, usar mock
