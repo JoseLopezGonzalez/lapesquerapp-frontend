@@ -34,7 +34,7 @@ import {
 import { normalizeDate } from '@/helpers/receptionCalculations';
 import { useAdminCeboForm } from '@/hooks/useAdminCeboForm';
 import Loader from '@/components/Utilities/Loader';
-import { CEBO_EXPORT_TYPE_OPTIONS } from '@/constants/ceboExportTypes';
+import { CEBO_EXPORT_TYPE_OPTIONS, CEBO_EXPORT_TYPE_SENTINEL } from '@/constants/ceboExportTypes';
 
 const TARE_OPTIONS = [
   { value: '1', label: '1kg' },
@@ -172,13 +172,16 @@ export default function CreateCeboForm({ onSuccess }) {
                 name="exportType"
                 control={control}
                 render={({ field: { onChange, value } }) => (
-                  <Select value={value ?? ''} onValueChange={onChange}>
+                  <Select
+                    value={value === null || value === '' ? CEBO_EXPORT_TYPE_SENTINEL : value}
+                    onValueChange={(v) => onChange(v === CEBO_EXPORT_TYPE_SENTINEL ? null : v)}
+                  >
                     <SelectTrigger id="exportType" className="w-full">
                       <SelectValue placeholder="Por defecto del proveedor" />
                     </SelectTrigger>
                     <SelectContent>
                       {CEBO_EXPORT_TYPE_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value || 'default'} value={opt.value}>
+                        <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </SelectItem>
                       ))}
