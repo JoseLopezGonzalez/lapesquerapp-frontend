@@ -38,8 +38,9 @@ function mapDispatchToFormValues(dispatch) {
   const details = Array.isArray(dispatch.details)
     ? dispatch.details.map((d) => {
         const netWeight = d.netWeight != null ? String(d.netWeight) : '';
+        const productId = d.product && typeof d.product === 'object' ? d.product?.id : d.product;
         return {
-          product: d.product && typeof d.product === 'object' ? d.product : { id: d.product },
+          product: productId != null ? String(productId) : null,
           grossWeight: netWeight,
           boxes: 0,
           tare: '3',
