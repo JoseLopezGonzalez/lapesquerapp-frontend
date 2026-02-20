@@ -2853,10 +2853,11 @@ export const configs = {
 
   /* ceboDispatches*/
   'cebo-dispatches': {
-    hideEditButton: true,
+    hideEditButton: false,
     hideCreateButton: false,
     hideViewButton: true,
     createRedirect: "/admin/cebo-dispatches/create",
+    editRedirect: "/admin/cebo-dispatches/:id/edit",
     title: "Salidas de cebo",
     description: "Gestiona, edita y consulta salidas de cebo.",
     emptyState: {

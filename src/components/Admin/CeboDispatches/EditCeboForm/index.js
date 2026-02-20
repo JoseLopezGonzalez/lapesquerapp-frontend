@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Save } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -32,7 +32,7 @@ import {
   formatDecimalCurrency,
 } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeDate } from '@/helpers/receptionCalculations';
-import { useAdminCeboForm } from '@/hooks/useAdminCeboForm';
+import { useAdminCeboFormEdit } from '@/hooks/useAdminCeboFormEdit';
 import Loader from '@/components/Utilities/Loader';
 import { CEBO_EXPORT_TYPE_OPTIONS } from '@/constants/ceboExportTypes';
 
@@ -44,14 +44,12 @@ const TARE_OPTIONS = [
   { value: '5', label: '5kg' },
 ];
 
-export default function CreateCeboForm({ onSuccess }) {
-  const form = useAdminCeboForm({ onSuccess });
+export default function EditCeboForm({ dispatchId, onSuccess }) {
+  const form = useAdminCeboFormEdit({ dispatchId, onSuccess });
   const {
     register,
     handleSubmit,
     control,
-    watch,
-    setValue,
     errors,
     isSubmitting,
     fields,
@@ -66,8 +64,17 @@ export default function CreateCeboForm({ onSuccess }) {
     productsLoading,
     supplierOptions,
     suppliersLoading,
+    loading,
     Announcer,
   } = form;
+
+  if (loading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   if (suppliersLoading) {
     return (
@@ -82,13 +89,13 @@ export default function CreateCeboForm({ onSuccess }) {
       <Announcer />
 
       <div className="flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-semibold mb-4">Nueva salida de cebo</h1>
+        <h1 className="text-2xl font-semibold mb-4">Editar salida de cebo</h1>
         <Button
           type="button"
           onClick={handleSaveClick}
           disabled={isSubmitting}
-          aria-label="Guardar salida de cebo"
-          title="Guardar salida de cebo (Ctrl+S)"
+          aria-label="Guardar cambios"
+          title="Guardar cambios (Ctrl+S)"
         >
           {isSubmitting ? (
             <>
@@ -97,8 +104,8 @@ export default function CreateCeboForm({ onSuccess }) {
             </>
           ) : (
             <>
-              Aceptar
-              <ArrowRight className="ml-2 h-4 w-4" />
+              Guardar
+              <Save className="ml-2 h-4 w-4" />
             </>
           )}
         </Button>

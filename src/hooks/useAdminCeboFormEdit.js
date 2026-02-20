@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
@@ -27,13 +26,48 @@ const DEFAULT_DETAIL = {
   lot: '',
 };
 
-export function useAdminCeboForm({ onSuccess }) {
-  const router = useRouter();
+/**
+ * Maps API dispatch response to form defaultValues.
+ * API shape: { id, supplier: { id, name }, date, notes, details: [ { product: { id, ... }, netWeight, price } ] }
+ */
+function mapDispatchToFormValues(dispatch) {
+  if (!dispatch) return null;
+  const supplierId = dispatch.supplier?.id ?? dispatch.supplier;
+  const date = normalizeDate(dispatch.date || new Date());
+  const notes = dispatch.notes ?? '';
+  const details = Array.isArray(dispatch.details)
+    ? dispatch.details.map((d) => {
+        const netWeight = d.netWeight != null ? String(d.netWeight) : '';
+        return {
+          product: d.product && typeof d.product === 'object' ? d.product : { id: d.product },
+          grossWeight: netWeight,
+          boxes: 0,
+          tare: '3',
+          netWeight,
+          price: d.price != null && d.price !== '' ? String(d.price) : '',
+          lot: '',
+        };
+      })
+    : [{ ...DEFAULT_DETAIL }];
+  if (details.length === 0) details.push({ ...DEFAULT_DETAIL });
+  const exportType = dispatch.exportType ?? dispatch.export_type ?? null;
+  return {
+    supplier: supplierId,
+    date,
+    notes,
+    exportType: exportType === 'a3erp' || exportType === 'facilcom' ? exportType : null,
+    details,
+  };
+}
+
+export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
   const { productOptions, loading: productsLoading } = useProductOptions();
   const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
   const { announce, Announcer } = useAccessibilityAnnouncer();
 
+  const [loading, setLoading] = useState(true);
   const [recalcKey, setRecalcKey] = useState(0);
+  const loadedIdRef = useRef(null);
 
   const {
     register,
@@ -42,6 +76,7 @@ export function useAdminCeboForm({ onSuccess }) {
     watch,
     setValue,
     getValues,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -126,7 +161,46 @@ export function useAdminCeboForm({ onSuccess }) {
     return { totalKg, totalAmount };
   }, [currentDetails, recalcKey]);
 
-  const handleCreate = useCallback(
+  // Load dispatch by id and reset form
+  useEffect(() => {
+    if (!dispatchId) {
+      setLoading(false);
+      return;
+    }
+    if (loadedIdRef.current === dispatchId) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    loadedIdRef.current = null;
+
+    ceboDispatchService
+      .getById(dispatchId)
+      .then((dispatch) => {
+        if (cancelled) return;
+        const values = mapDispatchToFormValues(dispatch);
+        if (values) {
+          reset(values);
+        }
+        loadedIdRef.current = dispatchId;
+      })
+      .catch(() => {
+        if (!cancelled) {
+          notify.error({ title: 'No se pudo cargar la salida de cebo' });
+          loadedIdRef.current = dispatchId;
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatchId, reset]);
+
+  const handleUpdate = useCallback(
     async (data) => {
       try {
         const supplierError = validateSupplier(data.supplier);
@@ -147,7 +221,12 @@ export function useAdminCeboForm({ onSuccess }) {
           return;
         }
 
-        const transformedDetails = transformDetailsToApiFormat(data.details);
+        // Normalize product to id for transform (form may have product as object when loaded from API)
+        const detailsWithProductId = data.details.map((d) => ({
+          ...d,
+          product: d.product?.id ?? d.product,
+        }));
+        const transformedDetails = transformDetailsToApiFormat(detailsWithProductId);
 
         if (transformedDetails.length === 0) {
           notify.error({
@@ -156,7 +235,6 @@ export function useAdminCeboForm({ onSuccess }) {
           return;
         }
 
-        // Cebo: no enviamos lot ni boxes (no se gestionan)
         const detailsForCebo = transformedDetails.map(({ product, netWeight, price }) => ({
           product,
           netWeight,
@@ -173,32 +251,30 @@ export function useAdminCeboForm({ onSuccess }) {
           payload.exportType = data.exportType;
         }
 
-        const created = await ceboDispatchService.create(payload);
+        const updated = await ceboDispatchService.update(dispatchId, payload);
 
-        notify.success({ title: 'Salida de cebo creada correctamente' });
+        notify.success({ title: 'Salida de cebo actualizada correctamente' });
 
         if (onSuccess) {
-          onSuccess(created);
-        } else {
-          router.push(`/admin/cebo-dispatches/${created.id}/edit`);
+          onSuccess(updated);
         }
       } catch (error) {
-        const message = error?.message || error?.response?.data?.message || 'No se pudo crear la salida de cebo';
-        notify.error({ title: 'Error al crear la salida de cebo', description: message });
+        const message = error?.message || error?.response?.data?.message || 'No se pudo actualizar la salida de cebo';
+        notify.error({ title: 'Error al actualizar la salida de cebo', description: message });
       }
     },
-    [onSuccess, router]
+    [dispatchId, onSuccess]
   );
 
   const handleSaveClick = useCallback(() => {
-    handleSubmit(handleCreate, (submitErrors) => {
+    handleSubmit(handleUpdate, (submitErrors) => {
       if (submitErrors && Object.keys(submitErrors).length > 0) {
         notify.error({ title: 'Por favor, complete todos los campos requeridos' });
       } else {
-        handleCreate(getValues());
+        handleUpdate(getValues());
       }
     })();
-  }, [handleSubmit, handleCreate, getValues]);
+  }, [handleSubmit, handleUpdate, getValues]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -238,7 +314,7 @@ export function useAdminCeboForm({ onSuccess }) {
     currentDetails,
     linesTotals,
     triggerRecalc,
-    handleCreate,
+    handleCreate: handleUpdate,
     handleSaveClick,
     productOptions,
     productsLoading,
@@ -246,5 +322,6 @@ export function useAdminCeboForm({ onSuccess }) {
     suppliersLoading,
     announce,
     Announcer,
+    loading,
   };
 }
