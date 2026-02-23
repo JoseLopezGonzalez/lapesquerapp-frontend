@@ -26,6 +26,24 @@ export function filterNavigationByRoles(items, userRoles) {
 }
 
 /**
+ * Filtra elementos de navegación basándose en los feature flags del usuario
+ * @param {Array} items - Array de items de navegación
+ * @param {Array} userFeatures - Features habilitadas para el usuario
+ * @returns {Array} - Array de items filtrados
+ */
+export function filterNavigationByFeatures(items, userFeatures) {
+    const features = userFeatures ?? [];
+    return items
+        .filter((item) => !item.requiredFeature || features.includes(item.requiredFeature))
+        .map((item) => ({
+            ...item,
+            childrens: item.childrens
+                ? item.childrens.filter((c) => !c.requiredFeature || features.includes(c.requiredFeature))
+                : null,
+        }));
+}
+
+/**
  * Verifica si una ruta está activa (incluye rutas anidadas)
  * @param {string} itemHref - Href del item de navegación
  * @param {string} currentPath - Ruta actual

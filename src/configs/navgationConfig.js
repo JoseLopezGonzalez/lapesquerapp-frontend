@@ -39,6 +39,7 @@ export const navigationConfig = [
         name: 'Almacenes',
         icon: ArchiveBoxIcon,
         allowedRoles: ["administrador", "direccion", "tecnico"],
+        requiredFeature: 'module.inventory',
         childrens: [
             {
                 name: 'Cajas',
@@ -61,11 +62,13 @@ export const navigationConfig = [
         name: 'Recepciones',
         icon: TbFishHook,
         allowedRoles: ["administrador", "direccion", "tecnico"],
+        requiredFeature: 'module.raw_material',
         childrens: [
             {
                 name: 'Materia Prima',
                 href: '/admin/raw-material-receptions',
                 allowedRoles: ["administrador", "direccion", "tecnico"],
+                requiredFeature: 'module.raw_material',
             },
         ],
     },
@@ -80,13 +83,14 @@ export const navigationConfig = [
         icon: Factory,
         allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/productions',
+        requiredFeature: 'module.production',
     },
     {
         name: 'Pedidos',
         icon: PencilSquareIcon,
         allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/orders',
-
+        requiredFeature: 'module.sales',
     },
     {
         name: 'Productos',
@@ -180,6 +184,7 @@ export const navigationConfig = [
                 name: 'Liquidación de Proveedores',
                 href: '/admin/supplier-liquidations',
                 allowedRoles: ["administrador", "direccion", "tecnico"],
+                requiredFeature: 'module.supplier_liquidations',
             },
         ],
     },
@@ -218,6 +223,7 @@ export const navigationConfig = [
             name: 'Gestión Horaria',
             icon: Clock,
             allowedRoles: ["administrador", "direccion", "tecnico"],
+            requiredFeature: 'module.punch_events',
             childrens: [
                 {
                     name: 'Empleados',
@@ -279,6 +285,7 @@ export const navigationManagerConfig = [
         icon: IoReceiptOutline,
         allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/label-editor',
+        requiredFeature: 'module.labels',
     },
     {
         name: 'CMR Manual',

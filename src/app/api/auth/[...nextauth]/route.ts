@@ -94,6 +94,8 @@ export const authOptions: NextAuthOptions = {
             if ((currentUser as { company_logo_url?: string }).company_logo_url) {
               token.companyLogoUrl = (currentUser as { company_logo_url: string }).company_logo_url;
             }
+            const features = (currentUser as { features?: string[] }).features;
+            if (Array.isArray(features)) token.features = features;
             token.lastRefresh = Date.now();
           }
         } catch (error) {
@@ -108,7 +110,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (!token) return null as unknown as Session;
       const role = Array.isArray(token.role) ? token.role[0] ?? null : token.role;
-      session.user = { ...token, role };
+      session.user = { ...token, role, features: (token.features as string[]) ?? [] };
       return session;
     },
   },

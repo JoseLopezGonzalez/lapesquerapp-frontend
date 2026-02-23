@@ -24,7 +24,7 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig"
 import { useSettings } from '@/context/SettingsContext';
 import { notify } from '@/lib/notifications';
-import { filterNavigationByRoles, isActiveRoute } from "@/utils/navigationUtils"
+import { filterNavigationByRoles, filterNavigationByFeatures, isActiveRoute } from "@/utils/navigationUtils"
 
 
 export function AppSidebar() {
@@ -62,15 +62,23 @@ export function AppSidebar() {
         }
     }, []);
 
-    // Filtrar navegación por roles
+    const features = session?.user?.features ?? [];
+
+    // Filtrar navegación por roles y features
     const filteredNavigationConfig = React.useMemo(() => 
-        filterNavigationByRoles(navigationConfig, roles),
-        [roles]
+        filterNavigationByFeatures(
+            filterNavigationByRoles(navigationConfig, roles),
+            features
+        ),
+        [roles, features]
     );
 
     const filteredNavigationManagerConfig = React.useMemo(() => 
-        filterNavigationByRoles(navigationManagerConfig, roles),
-        [roles]
+        filterNavigationByFeatures(
+            filterNavigationByRoles(navigationManagerConfig, roles),
+            features
+        ),
+        [roles, features]
     );
 
     // Marcar rutas activas y preparar datos

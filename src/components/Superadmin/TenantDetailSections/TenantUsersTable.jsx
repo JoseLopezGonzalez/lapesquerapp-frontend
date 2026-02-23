@@ -27,7 +27,6 @@ function formatDate(dateStr) {
   try {
     return new Intl.DateTimeFormat("es-ES", {
       day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
     }).format(new Date(dateStr));
   } catch { return dateStr; }
 }
@@ -97,7 +96,7 @@ export default function TenantUsersTable({ tenant }) {
               <TableHead className="hidden sm:table-cell">Email</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead className="hidden md:table-cell">Activo</TableHead>
-              <TableHead className="hidden lg:table-cell">Ultimo acceso</TableHead>
+              <TableHead className="hidden lg:table-cell">Creado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,7 +136,7 @@ export default function TenantUsersTable({ tenant }) {
                     )}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                    {formatDate(u.last_login_at)}
+                    {formatDate(u.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     {u.role === "administrador" && (

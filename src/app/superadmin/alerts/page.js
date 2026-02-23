@@ -1,0 +1,221 @@
+"use client";
+
+import React, { useEffect, useState, useCallback } from "react";
+import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
+import { notify } from "@/lib/notifications";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronLeft, ChevronRight, CheckCircle2, Loader2 } from "lucide-react";
+import Link from "next/link";
+
+const SEVERITY_TABS = [
+  { key: "", label: "Todas" },
+  { key: "critical", label: "Critica" },
+  { key: "warning", label: "Advertencia" },
+  { key: "info", label: "Info" },
+  { key: "resolved", label: "Resueltas" },
+];
+
+const SEVERITY_COLORS = {
+  critical: "border-destructive/30 bg-destructive/10 text-destructive",
+  warning: "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+  info: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+};
+
+function SeverityBadge({ severity }) {
+  return (
+    <Badge variant="outline" className={SEVERITY_COLORS[severity] || ""}>
+      {severity}
+    </Badge>
+  );
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "-";
+  try {
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "2-digit", month: "2-digit", year: "2-digit",
+      hour: "2-digit", minute: "2-digit",
+    }).format(new Date(dateStr));
+  } catch { return dateStr; }
+}
+
+export default function AlertsPage() {
+  const [alerts, setAlerts] = useState([]);
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("");
+  const [page, setPage] = useState(1);
+  const [resolvingId, setResolvingId] = useState(null);
+
+  const fetchAlerts = useCallback(async (params = {}) => {
+    setLoading(true);
+    try {
+      const qp = new URLSearchParams();
+      qp.set("page", String(params.page || 1));
+      qp.set("per_page", "20");
+      if (params.tab === "resolved") {
+        qp.set("resolved", "true");
+      } else {
+        qp.set("resolved", "false");
+        if (params.tab) qp.set("severity", params.tab);
+      }
+      const res = await fetchSuperadmin(`/alerts?${qp}`);
+      const json = await res.json();
+      setAlerts(json.data || []);
+      setMeta(json.meta || null);
+    } catch { setAlerts([]); } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAlerts({ tab: activeTab, page });
+  }, [activeTab, page, fetchAlerts]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+
+  const handleResolve = async (alertId) => {
+    setResolvingId(alertId);
+    try {
+      await fetchSuperadmin(`/alerts/${alertId}/resolve`, { method: "POST" });
+      notify.success({ title: "Alerta resuelta" });
+      fetchAlerts({ tab: activeTab, page });
+    } catch (err) {
+      if (err instanceof SuperadminApiError && err.status === 422) {
+        notify.info({ title: "Ya estaba resuelta" });
+        fetchAlerts({ tab: activeTab, page });
+      } else {
+        notify.error({ title: err.message || "Error al resolver la alerta" });
+      }
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-lg font-semibold">Alertas del sistema</h1>
+
+      <div className="flex flex-wrap gap-1">
+        {SEVERITY_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => handleTabChange(tab.key)}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              activeTab === tab.key
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Tenant</TableHead>
+                <TableHead className="hidden sm:table-cell">Tipo</TableHead>
+                <TableHead>Severidad</TableHead>
+                <TableHead className="hidden md:table-cell">Mensaje</TableHead>
+                <TableHead className="text-right">Accion</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 6 }).map((__, j) => (
+                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : alerts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    No hay alertas.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                alerts.map((alert) => (
+                  <TableRow key={alert.id} className={alert.resolved_at ? "opacity-60" : ""}>
+                    <TableCell className="text-sm whitespace-nowrap">{formatDate(alert.created_at)}</TableCell>
+                    <TableCell>
+                      {alert.tenant ? (
+                        <Link href={`/superadmin/tenants/${alert.tenant.id}`} className="text-primary hover:underline text-sm">
+                          {alert.tenant.subdomain}
+                        </Link>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                      {alert.type}
+                    </TableCell>
+                    <TableCell>
+                      <SeverityBadge severity={alert.severity} />
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-sm max-w-[300px] truncate" title={alert.message}>
+                      {alert.message}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {alert.resolved_at ? (
+                        <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                          Resuelta
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleResolve(alert.id)}
+                          disabled={resolvingId === alert.id}
+                        >
+                          {resolvingId === alert.id
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : "Resolver"}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {meta && meta.last_page > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Pagina {meta.current_page} de {meta.last_page} ({meta.total} alertas)
+          </span>
+          <div className="flex gap-1">
+            <Button variant="outline" size="icon-sm" disabled={meta.current_page <= 1} onClick={() => setPage(meta.current_page - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon-sm" disabled={meta.current_page >= meta.last_page} onClick={() => setPage(meta.current_page + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

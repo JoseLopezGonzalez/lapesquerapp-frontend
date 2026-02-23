@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SuperadminAuthProvider, useSuperadminAuth } from "@/context/SuperadminAuthContext";
+import { fetchSuperadmin } from "@/lib/superadminApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   LayoutDashboard,
@@ -11,19 +12,24 @@ import {
   LogOut,
   Fish,
   ChevronsUpDown,
+  History,
+  Bell,
+  Server,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-  SidebarGroup,
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -37,15 +43,84 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-const NAV_ITEMS = [
+const NAV_MAIN = [
   { href: "/superadmin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/superadmin/tenants", label: "Tenants", icon: Building2 },
 ];
+
+const NAV_GESTION = [
+  { href: "/superadmin/impersonation", label: "Impersonaciones", icon: History },
+  { href: "/superadmin/alerts", label: "Alertas", icon: Bell, alertBadge: true },
+];
+
+const NAV_SISTEMA = [
+  { href: "/superadmin/system", label: "Sistema", icon: Server },
+];
+
+function useAlertCounts() {
+  const [counts, setCounts] = useState({ total: 0, hasCritical: false });
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await fetchSuperadmin("/alerts?resolved=false&per_page=100");
+        const json = await res.json();
+        const data = json.data || [];
+        const total = json.meta?.total ?? data.length;
+        const hasCritical = data.some((a) => a.severity === "critical");
+        setCounts({ total, hasCritical });
+      } catch { /* silent */ }
+    };
+    fetch();
+    intervalRef.current = setInterval(fetch, 60000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  return counts;
+}
+
+function NavGroup({ items, pathname, alertCounts }) {
+  return (
+    <SidebarMenu>
+      {items.map((item) => {
+        const isActive =
+          item.href === "/superadmin"
+            ? pathname === "/superadmin"
+            : pathname.startsWith(item.href);
+
+        const badge = item.alertBadge && alertCounts.total > 0 ? alertCounts.total : null;
+        const badgeColor = item.alertBadge
+          ? alertCounts.hasCritical
+            ? "bg-destructive text-destructive-foreground"
+            : "bg-orange-500 text-white"
+          : "";
+
+        return (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+              <Link href={item.href}>
+                <item.icon />
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
+            {badge !== null && (
+              <SidebarMenuBadge className={badgeColor}>
+                {badge}
+              </SidebarMenuBadge>
+            )}
+          </SidebarMenuItem>
+        );
+      })}
+    </SidebarMenu>
+  );
+}
 
 function SuperadminSidebar() {
   const pathname = usePathname();
   const { user, logout } = useSuperadminAuth();
   const { isMobile } = useSidebar();
+  const alertCounts = useAlertCounts();
 
   const displayName = user?.name || user?.email || "Superadmin";
   const displayEmail = user?.email || "";
@@ -78,29 +153,17 @@ function SuperadminSidebar() {
 
       <SidebarContent>
         <SidebarGroup className="pt-0">
-          <SidebarMenu>
-            {NAV_ITEMS.map((item) => {
-              const isActive =
-                item.href === "/superadmin"
-                  ? pathname === "/superadmin"
-                  : pathname.startsWith(item.href);
+          <NavGroup items={NAV_MAIN} pathname={pathname} alertCounts={alertCounts} />
+        </SidebarGroup>
 
-              return (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
+        <SidebarGroup>
+          <SidebarGroupLabel>Gestion</SidebarGroupLabel>
+          <NavGroup items={NAV_GESTION} pathname={pathname} alertCounts={alertCounts} />
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
+          <NavGroup items={NAV_SISTEMA} pathname={pathname} alertCounts={alertCounts} />
         </SidebarGroup>
       </SidebarContent>
 
@@ -114,14 +177,10 @@ function SuperadminSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg">
-                      {initials}
-                    </AvatarFallback>
+                    <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {displayName}
-                    </span>
+                    <span className="truncate font-semibold">{displayName}</span>
                     <span className="truncate text-xs">{displayEmail}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -136,14 +195,10 @@ function SuperadminSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarFallback className="rounded-lg">
-                        {initials}
-                      </AvatarFallback>
+                      <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {displayName}
-                      </span>
+                      <span className="truncate font-semibold">{displayName}</span>
                       <span className="truncate text-xs">{displayEmail}</span>
                     </div>
                   </div>
