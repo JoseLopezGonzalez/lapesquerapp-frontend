@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { fetchSuperadmin } from "@/lib/superadminApi";
 
@@ -21,19 +22,18 @@ export default function SubdomainField({ value, onChange, error: externalError }
       return;
     }
     if (!SUBDOMAIN_RE.test(v)) {
-      setFormatError("Solo letras minúsculas, números y guiones. No puede empezar/terminar con guión.");
+      setFormatError("Solo letras minusculas, numeros y guiones. No puede empezar/terminar con guion.");
       setAvailable(null);
       return;
     }
     if (v.length > 63) {
-      setFormatError("Máximo 63 caracteres.");
+      setFormatError("Maximo 63 caracteres.");
       setAvailable(null);
       return;
     }
     setFormatError("");
   };
 
-  // Check availability with debounce
   useEffect(() => {
     clearTimeout(debounceRef.current);
     setAvailable(null);
@@ -68,8 +68,8 @@ export default function SubdomainField({ value, onChange, error: externalError }
   const displayError = externalError || formatError;
 
   return (
-    <div>
-      <label className="mb-1 block text-sm font-medium">Subdominio</label>
+    <div className="grid w-full items-center gap-1.5">
+      <Label>Subdominio</Label>
       <div className="relative">
         <Input
           type="text"
@@ -86,15 +86,15 @@ export default function SubdomainField({ value, onChange, error: externalError }
         </div>
       </div>
       {value && !displayError && (
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {value}.lapesquerapp.es
         </p>
       )}
       {displayError && (
-        <p className="mt-1 text-xs text-destructive">{displayError}</p>
+        <p className="text-xs text-destructive">{displayError}</p>
       )}
       {!checking && available === false && !displayError && (
-        <p className="mt-1 text-xs text-destructive">Este subdominio ya está en uso.</p>
+        <p className="text-xs text-destructive">Este subdominio ya esta en uso.</p>
       )}
     </div>
   );

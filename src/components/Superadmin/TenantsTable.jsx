@@ -7,6 +7,7 @@ import { fetchSuperadmin } from "@/lib/superadminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -79,7 +80,6 @@ export default function TenantsTable() {
     fetchTenants({ status, search, page });
   }, [status, page, fetchTenants]);
 
-  // Debounced search
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -96,7 +96,6 @@ export default function TenantsTable() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-lg font-semibold">Tenants</h1>
         <Button asChild size="sm">
@@ -107,7 +106,6 @@ export default function TenantsTable() {
         </Button>
       </div>
 
-      {/* Status tabs */}
       <div className="flex flex-wrap gap-1">
         {STATUS_TABS.map((tab) => (
           <button
@@ -124,7 +122,6 @@ export default function TenantsTable() {
         ))}
       </div>
 
-      {/* Search */}
       <div className="relative max-w-xs">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -135,67 +132,67 @@ export default function TenantsTable() {
         />
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-card shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="hidden sm:table-cell">Subdominio</TableHead>
-              <TableHead className="hidden md:table-cell">Plan</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden lg:table-cell">Última actividad</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-14" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-16" /></TableCell>
-                </TableRow>
-              ))
-            ) : tenants.length === 0 ? (
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No se encontraron tenants.
-                </TableCell>
+                <TableHead>Nombre</TableHead>
+                <TableHead className="hidden sm:table-cell">Subdominio</TableHead>
+                <TableHead className="hidden md:table-cell">Plan</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Ultima actividad</TableHead>
               </TableRow>
-            ) : (
-              tenants.map((t) => (
-                <TableRow
-                  key={t.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/superadmin/tenants/${t.id}`)}
-                >
-                  <TableCell className="font-medium">{t.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">
-                    {t.subdomain}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground capitalize">
-                    {t.plan || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={t.status} />
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
-                    {formatRelativeDate(t.last_activity_at)}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-14" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-16" /></TableCell>
+                  </TableRow>
+                ))
+              ) : tenants.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No se encontraron tenants.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : (
+                tenants.map((t) => (
+                  <TableRow
+                    key={t.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/superadmin/tenants/${t.id}`)}
+                  >
+                    <TableCell className="font-medium">{t.name}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-muted-foreground">
+                      {t.subdomain}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground capitalize">
+                      {t.plan || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={t.status} />
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
+                      {formatRelativeDate(t.last_activity_at)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      {/* Pagination */}
       {meta && meta.last_page > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Página {meta.current_page} de {meta.last_page} ({meta.total} tenants)
+            Pagina {meta.current_page} de {meta.last_page} ({meta.total} tenants)
           </span>
           <div className="flex gap-1">
             <Button

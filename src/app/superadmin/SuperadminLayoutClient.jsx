@@ -1,65 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SuperadminAuthProvider, useSuperadminAuth } from "@/context/SuperadminAuthContext";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   LayoutDashboard,
   Building2,
   LogOut,
-  Menu,
-  X,
   Fish,
+  ChevronsUpDown,
 } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+  SidebarGroup,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const NAV_ITEMS = [
   { href: "/superadmin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/superadmin/tenants", label: "Tenants", icon: Building2 },
 ];
 
-function SidebarContent({ onItemClick }) {
+function SuperadminSidebar() {
   const pathname = usePathname();
+  const { user, logout } = useSuperadminAuth();
+  const { isMobile } = useSidebar();
+
+  const displayName = user?.name || user?.email || "Superadmin";
+  const displayEmail = user?.email || "";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
-    <nav className="flex flex-col gap-1 px-3 py-2">
-      {NAV_ITEMS.map((item) => {
-        const Icon = item.icon;
-        const isActive =
-          item.href === "/superadmin"
-            ? pathname === "/superadmin"
-            : pathname.startsWith(item.href);
+    <Sidebar collapsible="icon" variant="floating">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/superadmin">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <Fish className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">PesquerApp</span>
+                  <span className="truncate text-xs">Superadmin</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onItemClick}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              isActive
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
+      <SidebarContent>
+        <SidebarGroup className="pt-0">
+          <SidebarMenu>
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                item.href === "/superadmin"
+                  ? pathname === "/superadmin"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.label}
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarFallback className="rounded-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {displayName}
+                    </span>
+                    <span className="truncate text-xs">{displayEmail}</span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                side={isMobile ? "bottom" : "right"}
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarFallback className="rounded-lg">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">
+                        {displayName}
+                      </span>
+                      <span className="truncate text-xs">{displayEmail}</span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="focus:bg-transparent hover:bg-transparent"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <span>Tema</span>
+                  <ThemeToggle className="ml-auto" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                  <LogOut />
+                  Cerrar sesion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
   );
 }
 
 function AuthenticatedLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, logout, token } = useSuperadminAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { loading, token } = useSuperadminAuth();
 
   const isLoginPage = pathname === "/superadmin/login";
-
   if (isLoginPage) return <>{children}</>;
 
   if (loading) {
@@ -78,105 +196,24 @@ function AuthenticatedLayout({ children }) {
     return null;
   }
 
+  const styleSidebar = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-mobile": "16rem",
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-60 md:flex-col border-r bg-card">
-        <div className="flex h-14 items-center gap-2 border-b px-4">
-          <Fish className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-sm">PesquerApp Admin</span>
-        </div>
-        <div className="flex-1 overflow-y-auto py-2">
-          <SidebarContent />
-        </div>
-        <div className="border-t p-3">
-          <div className="mb-2 truncate px-3 text-xs text-muted-foreground">
-            {user?.name || user?.email || "Superadmin"}
+    <div className="h-screen overflow-hidden">
+      <SidebarProvider className="h-full" style={styleSidebar}>
+        <SuperadminSidebar />
+        <main className="flex flex-col h-full overflow-hidden w-full p-2">
+          <div className="p-1">
+            <SidebarTrigger />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 text-muted-foreground"
-            onClick={logout}
-          >
-            <LogOut className="h-4 w-4" />
-            Cerrar sesión
-          </Button>
-        </div>
-      </aside>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-60 flex-col border-r bg-card transition-transform md:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-14 items-center justify-between border-b px-4">
-          <div className="flex items-center gap-2">
-            <Fish className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-sm">PesquerApp Admin</span>
+          <div className="flex-1 w-full h-full overflow-y-auto p-2">
+            {children}
           </div>
-          <button onClick={() => setMobileOpen(false)} className="text-muted-foreground">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto py-2">
-          <SidebarContent onItemClick={() => setMobileOpen(false)} />
-        </div>
-        <div className="border-t p-3">
-          <div className="mb-2 truncate px-3 text-xs text-muted-foreground">
-            {user?.name || user?.email || "Superadmin"}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 text-muted-foreground"
-            onClick={logout}
-          >
-            <LogOut className="h-4 w-4" />
-            Cerrar sesión
-          </Button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Mobile header */}
-        <header className="flex h-14 items-center justify-between border-b px-4 md:hidden">
-          <button onClick={() => setMobileOpen(true)} className="text-muted-foreground">
-            <Menu className="h-5 w-5" />
-          </button>
-          <span className="text-sm font-semibold">PesquerApp Admin</span>
-          <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-            {user?.name || ""}
-          </span>
-        </header>
-
-        {/* Desktop header */}
-        <header className="hidden md:flex h-14 items-center justify-end border-b px-6">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              {user?.name || user?.email || ""}
-            </span>
-            <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Cerrar sesión
-            </Button>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {children}
         </main>
-      </div>
+      </SidebarProvider>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchSuperadmin } from "@/lib/superadminApi";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -81,55 +82,57 @@ export default function DashboardCards() {
 
   return (
     <div className="space-y-6">
-      {/* Stat cards */}
       <div className={`grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-${visibleCards.length}`}>
         {visibleCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div
-              key={card.key}
-              className="flex flex-col gap-2 rounded-lg border bg-card p-4 shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <Icon className={`h-4 w-4 ${card.color}`} />
-                <span className="text-sm text-muted-foreground">{card.label}</span>
-              </div>
-              <span className="text-2xl font-bold">{data[card.key] ?? 0}</span>
-            </div>
+            <Card key={card.key}>
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-4 w-4 ${card.color}`} />
+                  <span className="text-sm text-muted-foreground">{card.label}</span>
+                </div>
+                <span className="text-2xl font-bold mt-2 block">{data[card.key] ?? 0}</span>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
 
-      {/* Last onboarding */}
       {lastOnboarding && (
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h2 className="text-sm font-semibold">Último tenant en onboarding</h2>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Subdominio</TableHead>
-                <TableHead>Paso</TableHead>
-                <TableHead>Fecha</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">{lastOnboarding.name}</TableCell>
-                <TableCell className="text-muted-foreground">{lastOnboarding.subdomain}</TableCell>
-                <TableCell>{lastOnboarding.onboarding_step}/8</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(lastOnboarding.created_at)}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Ultimo tenant en onboarding</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Subdominio</TableHead>
+                  <TableHead>Paso</TableHead>
+                  <TableHead>Fecha</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">{lastOnboarding.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{lastOnboarding.subdomain}</TableCell>
+                  <TableCell>
+                    {lastOnboarding.onboarding
+                      ? `${lastOnboarding.onboarding.step}/${lastOnboarding.onboarding.total_steps}`
+                      : `${lastOnboarding.onboarding_step ?? 0}/8`}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatDate(lastOnboarding.created_at)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-3">
         <Button asChild>
           <Link href="/superadmin/tenants/new">

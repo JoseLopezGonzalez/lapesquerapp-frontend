@@ -7,6 +7,8 @@ import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
 import { notify } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SubdomainField from "./SubdomainField";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -81,104 +83,106 @@ export default function TenantForm() {
         <h1 className="text-lg font-semibold">Crear tenant</h1>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="max-w-lg space-y-4 rounded-lg border bg-card p-6 shadow-sm"
-      >
-        {/* Name */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Nombre empresa</label>
-          <Input
-            {...register("name", { required: "El nombre es obligatorio" })}
-            placeholder="Mi Empresa S.L."
-            maxLength={255}
-          />
-          {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
-        </div>
+      <Card className="max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-base">Datos del tenant</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="tf-name">Nombre empresa</Label>
+              <Input
+                id="tf-name"
+                {...register("name", { required: "El nombre es obligatorio" })}
+                placeholder="Mi Empresa S.L."
+                maxLength={255}
+              />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            </div>
 
-        {/* Subdomain */}
-        <Controller
-          name="subdomain"
-          control={control}
-          rules={{ required: "El subdominio es obligatorio" }}
-          render={({ field }) => (
-            <SubdomainField
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.subdomain?.message}
+            <Controller
+              name="subdomain"
+              control={control}
+              rules={{ required: "El subdominio es obligatorio" }}
+              render={({ field }) => (
+                <SubdomainField
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.subdomain?.message}
+                />
+              )}
             />
-          )}
-        />
 
-        {/* Admin email */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Email administrador</label>
-          <Input
-            type="email"
-            {...register("admin_email", { required: "El email es obligatorio" })}
-            placeholder="admin@empresa.es"
-          />
-          {errors.admin_email && (
-            <p className="mt-1 text-xs text-destructive">{errors.admin_email.message}</p>
-          )}
-        </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="tf-email">Email administrador</Label>
+              <Input
+                id="tf-email"
+                type="email"
+                {...register("admin_email", { required: "El email es obligatorio" })}
+                placeholder="admin@empresa.es"
+              />
+              {errors.admin_email && (
+                <p className="text-xs text-destructive">{errors.admin_email.message}</p>
+              )}
+            </div>
 
-        {/* Plan */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Plan</label>
-          <select
-            {...register("plan")}
-            className="flex h-12 md:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            {PLAN_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {p.charAt(0).toUpperCase() + p.slice(1)}
-              </option>
-            ))}
-          </select>
-          {errors.plan && <p className="mt-1 text-xs text-destructive">{errors.plan.message}</p>}
-        </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="tf-plan">Plan</Label>
+              <select
+                id="tf-plan"
+                {...register("plan")}
+                className="flex h-12 md:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {PLAN_OPTIONS.map((p) => (
+                  <option key={p} value={p}>
+                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                  </option>
+                ))}
+              </select>
+              {errors.plan && <p className="text-xs text-destructive">{errors.plan.message}</p>}
+            </div>
 
-        {/* Timezone */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Zona horaria</label>
-          <select
-            {...register("timezone")}
-            className="flex h-12 md:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            {TIMEZONE_OPTIONS.map((tz) => (
-              <option key={tz} value={tz}>{tz}</option>
-            ))}
-          </select>
-        </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="tf-tz">Zona horaria</Label>
+              <select
+                id="tf-tz"
+                {...register("timezone")}
+                className="flex h-12 md:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {TIMEZONE_OPTIONS.map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
+            </div>
 
-        {/* Logo URL */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">URL logo (opcional)</label>
-          <Input
-            type="url"
-            {...register("branding_image_url")}
-            placeholder="https://..."
-          />
-          {errors.branding_image_url && (
-            <p className="mt-1 text-xs text-destructive">{errors.branding_image_url.message}</p>
-          )}
-        </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="tf-logo">URL logo (opcional)</Label>
+              <Input
+                id="tf-logo"
+                type="url"
+                {...register("branding_image_url")}
+                placeholder="https://..."
+              />
+              {errors.branding_image_url && (
+                <p className="text-xs text-destructive">{errors.branding_image_url.message}</p>
+              )}
+            </div>
 
-        {/* Submit */}
-        <div className="flex justify-end gap-2 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/superadmin/tenants")}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={saving}>
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear tenant"}
-          </Button>
-        </div>
-      </form>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/superadmin/tenants")}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Crear tenant"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

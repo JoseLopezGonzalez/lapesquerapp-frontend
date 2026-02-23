@@ -76,7 +76,7 @@ export default function TenantDetailPage() {
       <StatusActions tenant={tenant} onRefresh={fetchTenant} />
 
       {/* Users */}
-      <TenantUsersTable tenantId={tenant.id} />
+      <TenantUsersTable tenant={tenant} />
     </div>
   );
 }
