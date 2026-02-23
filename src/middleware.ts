@@ -30,6 +30,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/superadmin")) {
+    return NextResponse.next();
+  }
+
   let token: JWTToken | null = null;
   try {
     const requestForToken = {
