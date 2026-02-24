@@ -5,6 +5,13 @@ import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
 import { notify } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,18 +24,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Loader2, Zap, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Zap, RefreshCw, History } from "lucide-react";
+import EmptyState from "@/components/Superadmin/EmptyState";
 import Link from "next/link";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
+import { formatDateTime } from "@/utils/superadminDateUtils";
 
 function ModeBadge({ mode }) {
   if (mode === "silent") return (
@@ -64,10 +63,10 @@ function ActiveSessions() {
     setEndingId(logId);
     try {
       await fetchSuperadmin(`/impersonation/logs/${logId}/end`, { method: "POST" });
-      notify.success({ title: "Sesion terminada" });
+      notify.success({ title: "Sesión terminada" });
       fetchActive();
     } catch (err) {
-      notify.error({ title: err.message || "Error al terminar la sesion" });
+      notify.error({ title: err.message || "Error al terminar la sesión" });
     } finally {
       setEndingId(null);
     }
@@ -79,8 +78,12 @@ function ActiveSessions() {
   return (
     <Alert className="border-orange-500/40 bg-orange-50 dark:bg-orange-950/20">
       <Zap className="h-4 w-4 text-orange-500" />
-      <AlertTitle className="text-orange-700 dark:text-orange-400">
-        {sessions.length} sesion{sessions.length !== 1 ? "es" : ""} activa{sessions.length !== 1 ? "s" : ""}
+      <AlertTitle className="text-orange-700 dark:text-orange-400 flex items-center justify-between gap-2">
+        <span>{sessions.length} sesión{sessions.length !== 1 ? "es" : ""} activa{sessions.length !== 1 ? "s" : ""}</span>
+        <Button variant="ghost" size="sm" onClick={fetchActive} className="text-orange-700 dark:text-orange-400 h-8">
+          <RefreshCw className="h-3.5 w-3.5" />
+          Actualizar
+        </Button>
       </AlertTitle>
       <AlertDescription>
         <div className="mt-2 space-y-2">
@@ -118,7 +121,23 @@ function HistoryTable() {
   const [page, setPage] = useState(1);
   const [tenantFilter, setTenantFilter] = useState("");
   const [fromFilter, setFromFilter] = useState("");
+  const [tenantOptions, setTenantOptions] = useState([]);
+  const [tenantsLoading, setTenantsLoading] = useState(true);
   const debounceRef = useRef(null);
+
+  const fetchTenants = useCallback(async () => {
+    setTenantsLoading(true);
+    try {
+      const res = await fetchSuperadmin("/tenants?per_page=500");
+      const json = await res.json();
+      const list = json.data || [];
+      setTenantOptions(list.map((t) => ({ value: String(t.id), label: `${t.name} (${t.subdomain})` })));
+    } catch { setTenantOptions([]); } finally {
+      setTenantsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchTenants(); }, [fetchTenants]);
 
   const fetchLogs = useCallback(async (params = {}) => {
     setLoading(true);
@@ -126,7 +145,7 @@ function HistoryTable() {
       const qp = new URLSearchParams();
       qp.set("page", String(params.page || 1));
       qp.set("per_page", "20");
-      if (params.tenant_id) qp.set("tenant_id", params.tenant_id);
+      if (params.tenant_id && params.tenant_id !== "") qp.set("tenant_id", params.tenant_id);
       if (params.from) qp.set("from", params.from);
       const res = await fetchSuperadmin(`/impersonation/logs?${qp}`);
       const json = await res.json();
@@ -156,22 +175,31 @@ function HistoryTable() {
         <CardTitle className="text-sm">Historial de impersonaciones</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-3">
-          <Input
-            placeholder="ID del tenant..."
-            value={tenantFilter}
-            onChange={(e) => setTenantFilter(e.target.value.replace(/\D/g, ""))}
-            className="max-w-[140px]"
-            type="number"
-            min="1"
-          />
+        <div className="flex flex-wrap gap-3 items-center">
+          <Select
+            value={tenantFilter || "all"}
+            onValueChange={(v) => setTenantFilter(v === "all" ? "" : v)}
+            disabled={tenantsLoading}
+          >
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Tenant..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los tenants</SelectItem>
+              {tenantOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             type="datetime-local"
             value={fromFilter}
             onChange={(e) => setFromFilter(e.target.value)}
             className="max-w-[220px]"
           />
-          <Button variant="ghost" size="sm" onClick={() => { setTenantFilter(""); setFromFilter(""); }}>
+          <Button variant="ghost" size="sm" onClick={() => { setTenantFilter(""); setFromFilter(""); setPage(1); }}>
             Limpiar
           </Button>
         </div>
@@ -186,7 +214,7 @@ function HistoryTable() {
                 <TableHead className="hidden md:table-cell">Modo</TableHead>
                 <TableHead className="hidden lg:table-cell">Motivo</TableHead>
                 <TableHead className="hidden lg:table-cell">Fin</TableHead>
-                <TableHead className="hidden xl:table-cell">Duracion</TableHead>
+                <TableHead className="hidden xl:table-cell">Duración</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -200,14 +228,19 @@ function HistoryTable() {
                 ))
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Sin registros.
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState
+                      icon={History}
+                      title="Sin registros"
+                      description="No hay impersonaciones en el historial con los filtros actuales."
+                      compact
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 logs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-sm whitespace-nowrap">{formatDate(log.started_at)}</TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">{formatDateTime(log.started_at)}</TableCell>
                     <TableCell className="hidden sm:table-cell text-sm">{log.superadmin}</TableCell>
                     <TableCell>
                       <Link href={`/superadmin/tenants/${log.tenant_id}`} className="text-primary hover:underline text-sm">
@@ -221,7 +254,7 @@ function HistoryTable() {
                       {log.reason || "-"}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                      {log.ended_at ? formatDate(log.ended_at) : <span className="text-orange-500">Activa</span>}
+                      {log.ended_at ? formatDateTime(log.ended_at) : <span className="text-orange-500">Activa</span>}
                     </TableCell>
                     <TableCell className="hidden xl:table-cell text-sm text-muted-foreground whitespace-nowrap">
                       {log.duration_minutes != null ? `${log.duration_minutes}m` : "-"}
@@ -236,7 +269,7 @@ function HistoryTable() {
         {meta && meta.last_page > 1 && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Pagina {meta.current_page} de {meta.last_page} ({meta.total} registros)
+              Página {meta.current_page} de {meta.last_page} ({meta.total} registros)
             </span>
             <div className="flex gap-1">
               <Button variant="outline" size="icon-sm" disabled={meta.current_page <= 1} onClick={() => setPage(meta.current_page - 1)}>

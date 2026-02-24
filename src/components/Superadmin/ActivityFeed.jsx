@@ -5,7 +5,10 @@ import Link from "next/link";
 import { fetchSuperadmin } from "@/lib/superadminApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserCheck, Database, AlertTriangle, Building2, Activity } from "lucide-react";
+import { formatRelative } from "@/utils/superadminDateUtils";
+import { Button } from "@/components/ui/button";
+import { UserCheck, Database, AlertTriangle, Building2, Activity, RefreshCw } from "lucide-react";
+import EmptyState from "./EmptyState";
 
 const TYPE_ICONS = {
   impersonation: UserCheck,
@@ -19,21 +22,6 @@ const SEVERITY_COLORS = {
   warning: "text-orange-500",
   info: "text-blue-500",
 };
-
-function formatRelative(dateStr) {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    const diff = Date.now() - date;
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "ahora";
-    if (mins < 60) return `hace ${mins}m`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `hace ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `hace ${days}d`;
-  } catch { return ""; }
-}
 
 export default function ActivityFeed() {
   const [items, setItems] = useState([]);
@@ -53,11 +41,14 @@ export default function ActivityFeed() {
 
   return (
     <Card className="h-fit">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm flex items-center gap-2">
           <Activity className="h-4 w-4" />
           Actividad reciente
         </CardTitle>
+        <Button variant="ghost" size="sm" onClick={fetchFeed} disabled={loading} aria-label="Actualizar">
+          <RefreshCw className="h-3.5 w-3.5" />
+        </Button>
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
@@ -67,7 +58,11 @@ export default function ActivityFeed() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="px-4 pb-4 text-sm text-muted-foreground">Sin actividad reciente.</p>
+          <EmptyState
+            icon={Activity}
+            title="Sin actividad reciente"
+            description="Los eventos del sistema aparecerán aquí."
+          />
         ) : (
           <div className="divide-y">
             {items.map((item, i) => {

@@ -16,6 +16,7 @@ import FeatureFlagsTab from "@/components/Superadmin/TenantDetailSections/Featur
 import BlocklistTab from "@/components/Superadmin/TenantDetailSections/BlocklistTab";
 import ErrorLogsTab from "@/components/Superadmin/TenantDetailSections/ErrorLogsTab";
 import { ArrowLeft } from "lucide-react";
+import StatusBadge from "@/components/Superadmin/StatusBadge";
 
 export default function TenantDetailPage() {
   const { id } = useParams();
@@ -64,11 +65,19 @@ export default function TenantDetailPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/superadmin/tenants")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-lg font-semibold">{tenant.name}</h1>
+      <div className="space-y-1">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon-sm" onClick={() => router.push("/superadmin/tenants")} aria-label="Volver a la lista">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-semibold">{tenant.name}</h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground pl-11">
+          <StatusBadge status={tenant.status} />
+          <span>{tenant.plan ? String(tenant.plan) : "-"}</span>
+          <span aria-hidden>•</span>
+          <span>{tenant.subdomain ? `${tenant.subdomain}.pesquerapp.com` : "-"}</span>
+        </div>
       </div>
 
       <Tabs defaultValue="general" className="w-full">

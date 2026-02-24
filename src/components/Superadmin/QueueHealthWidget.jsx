@@ -13,13 +13,16 @@ export default function QueueHealthWidget({ showRefresh = false }) {
   const [refreshing, setRefreshing] = useState(false);
   const intervalRef = useRef(null);
 
+  const [error, setError] = useState(false);
+
   const fetchHealth = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
+    setError(false);
     try {
       const res = await fetchSuperadmin("/system/queue-health");
       const json = await res.json();
       setHealth(json.data || json);
-    } catch { /* silent */ } finally {
+    } catch { setError(true); setHealth(null); } finally {
       setLoading(false);
       if (manual) setRefreshing(false);
     }
@@ -32,7 +35,16 @@ export default function QueueHealthWidget({ showRefresh = false }) {
   }, [fetchHealth]);
 
   if (loading) return <Skeleton className="h-20 rounded-lg" />;
-  if (!health) return null;
+  if (error || !health) {
+    return (
+      <Card className="border-muted">
+        <CardContent className="flex items-center gap-2 pt-4 pb-4 text-sm text-muted-foreground">
+          <Server className="h-4 w-4 shrink-0" />
+          No se pudo cargar el estado de la cola.
+        </CardContent>
+      </Card>
+    );
+  }
 
   const isHealthy = health.healthy && health.failed_jobs === 0;
   const hasFailedJobs = health.failed_jobs > 0;

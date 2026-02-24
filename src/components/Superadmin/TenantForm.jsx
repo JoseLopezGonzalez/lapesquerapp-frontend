@@ -77,7 +77,7 @@ export default function TenantForm() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/superadmin/tenants")}>
+        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/superadmin/tenants")} aria-label="Volver a la lista">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-lg font-semibold">Crear tenant</h1>

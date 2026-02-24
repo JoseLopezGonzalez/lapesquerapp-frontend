@@ -25,17 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus, Trash2 } from "lucide-react";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "Indefinido";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
+import { Loader2, Plus, Trash2, ShieldCheck } from "lucide-react";
+import { formatDateTime } from "@/utils/superadminDateUtils";
+import EmptyState from "../EmptyState";
 
 const TYPE_COLORS = {
   ip: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
@@ -139,8 +131,13 @@ export default function BlocklistTab({ tenantId }) {
                 ))
               ) : blocks.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                    Sin bloqueos activos.
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState
+                      icon={ShieldCheck}
+                      title="Sin bloqueos activos"
+                      description="No hay entradas en la lista de bloqueo para este tenant."
+                      compact
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -159,7 +156,7 @@ export default function BlocklistTab({ tenantId }) {
                       {b.blocked_by?.name || "-"}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                      {formatDate(b.expires_at)}
+                      {b.expires_at ? formatDateTime(b.expires_at) : "Indefinido"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

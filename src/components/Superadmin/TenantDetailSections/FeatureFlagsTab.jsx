@@ -24,7 +24,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Pencil, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Pencil, RotateCcw, CheckCircle2, XCircle, Flag } from "lucide-react";
+import EmptyState from "../EmptyState";
+
+const FLAG_DESCRIPTIONS = {
+  // Mapeo opcional key → descripción corta si la API no devuelve description
+};
+
+function flagDescription(flag) {
+  return flag.description ?? FLAG_DESCRIPTIONS[flag.flag_key] ?? null;
+}
 
 export default function FeatureFlagsTab({ tenantId }) {
   const [flags, setFlags] = useState([]);
@@ -105,6 +114,7 @@ export default function FeatureFlagsTab({ tenantId }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Flag</TableHead>
+                <TableHead className="hidden sm:table-cell">Descripción</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="hidden md:table-cell">Override</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -114,15 +124,20 @@ export default function FeatureFlagsTab({ tenantId }) {
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 4 }).map((__, j) => (
+                    {Array.from({ length: 5 }).map((__, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : flags.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
-                    Sin flags.
+                  <TableCell colSpan={5} className="p-0">
+                    <EmptyState
+                      icon={Flag}
+                      title="Sin flags"
+                      description="Este plan no tiene feature flags definidos."
+                      compact
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -132,6 +147,9 @@ export default function FeatureFlagsTab({ tenantId }) {
                       <div>
                         <span className="text-sm font-mono">{flag.flag_key}</span>
                       </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground max-w-[200px]">
+                      {flagDescription(flag) || "-"}
                     </TableCell>
                     <TableCell>
                       {flag.enabled ? (
@@ -197,7 +215,7 @@ export default function FeatureFlagsTab({ tenantId }) {
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Se guardara un override para este tenant. El cambio se aplicara de inmediato.
+              Se guardará un override para este tenant. El cambio se aplicará de inmediato.
             </p>
             <div className="grid gap-1.5">
               <Label htmlFor="ff-reason">Motivo (opcional)</Label>

@@ -16,29 +16,41 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Loader2, Play, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ChevronLeft, ChevronRight, Loader2, Play, ChevronDown, ChevronUp, AlertTriangle, History } from "lucide-react";
+import EmptyState from "../EmptyState";
+import { formatDateTimeFull, formatDurationSeconds } from "@/utils/superadminDateUtils";
 
 function MigrationSummary({ summary, onRun, running }) {
   if (!summary) return <Skeleton className="h-20 rounded" />;
+
+  const runDisabled = running || summary.pending === 0;
+  const runButton = (
+    <Button size="sm" onClick={onRun} disabled={runDisabled}>
+      {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+      Ejecutar migraciones
+    </Button>
+  );
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">Estado de migraciones</CardTitle>
-        <Button size="sm" onClick={onRun} disabled={running || summary.pending === 0}>
-          {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-          Ejecutar migraciones
-        </Button>
+        {summary.pending === 0 && !running ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{runButton}</TooltipTrigger>
+              <TooltipContent>No hay migraciones pendientes</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          runButton
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center gap-4">
@@ -51,7 +63,7 @@ function MigrationSummary({ summary, onRun, running }) {
           )}
           {summary.pending === 0 && (
             <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400">
-              Al dia
+              Al día
             </Badge>
           )}
         </div>
@@ -59,7 +71,7 @@ function MigrationSummary({ summary, onRun, running }) {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Hay {summary.pending} migracion{summary.pending !== 1 ? "es" : ""} pendiente{summary.pending !== 1 ? "s" : ""}.
+              Hay {summary.pending} migración{summary.pending !== 1 ? "es" : ""} pendiente{summary.pending !== 1 ? "s" : ""}.
               Ejecuta las migraciones para aplicarlas.
             </AlertDescription>
           </Alert>
@@ -156,7 +168,7 @@ export default function MigrationsTab({ tenantId }) {
                 <TableHead>Fecha</TableHead>
                 <TableHead>Aplicadas</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead className="hidden md:table-cell">Duracion</TableHead>
+                <TableHead className="hidden md:table-cell">Duración</TableHead>
                 <TableHead className="text-right">Output</TableHead>
               </TableRow>
             </TableHeader>
@@ -171,20 +183,28 @@ export default function MigrationsTab({ tenantId }) {
                 ))
               ) : history.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                    Sin historial.
+                  <TableCell colSpan={5} className="p-0">
+                    <EmptyState
+                      icon={History}
+                      title="Sin historial"
+                      description="Aún no se ha ejecutado ninguna migración en este tenant."
+                      compact
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 history.map((run) => {
-                  const duration = run.started_at && run.finished_at
-                    ? `${Math.round((new Date(run.finished_at) - new Date(run.started_at)) / 1000)}s`
+                  const durationSeconds = run.started_at && run.finished_at
+                    ? (new Date(run.finished_at) - new Date(run.started_at)) / 1000
+                    : null;
+                  const durationDisplay = durationSeconds != null
+                    ? formatDurationSeconds(durationSeconds)
                     : run.finished_at ? "-" : <span className="text-orange-500 text-xs">En curso...</span>;
 
                   return (
-                    <>
-                      <TableRow key={run.id}>
-                        <TableCell className="text-sm whitespace-nowrap">{formatDate(run.started_at)}</TableCell>
+                    <React.Fragment key={run.id}>
+                      <TableRow>
+                        <TableCell className="text-sm whitespace-nowrap">{formatDateTimeFull(run.started_at)}</TableCell>
                         <TableCell className="text-sm">{run.migrations_applied}</TableCell>
                         <TableCell>
                           {run.finished_at ? (
@@ -192,7 +212,7 @@ export default function MigrationsTab({ tenantId }) {
                               ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
                               : "border-destructive/30 bg-destructive/10 text-destructive"
                             }>
-                              {run.success ? "Exito" : "Fallo"}
+                              {run.success ? "Éxito" : "Fallo"}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400">
@@ -201,7 +221,7 @@ export default function MigrationsTab({ tenantId }) {
                           )}
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                          {duration}
+                          {durationDisplay}
                         </TableCell>
                         <TableCell className="text-right">
                           {run.output && (
@@ -216,7 +236,7 @@ export default function MigrationsTab({ tenantId }) {
                         </TableCell>
                       </TableRow>
                       {expandedId === run.id && run.output && (
-                        <TableRow key={`${run.id}-output`}>
+                        <TableRow>
                           <TableCell colSpan={5} className="bg-muted/50 p-0">
                             <pre className="p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all">
                               {run.output}
@@ -224,7 +244,7 @@ export default function MigrationsTab({ tenantId }) {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })
               )}
@@ -234,7 +254,7 @@ export default function MigrationsTab({ tenantId }) {
           {histMeta && histMeta.last_page > 1 && (
             <div className="flex items-center justify-between p-4 border-t">
               <span className="text-sm text-muted-foreground">
-                Pagina {histMeta.current_page} de {histMeta.last_page}
+                Página {histMeta.current_page} de {histMeta.last_page}
               </span>
               <div className="flex gap-1">
                 <Button variant="outline" size="icon-sm" disabled={histMeta.current_page <= 1} onClick={() => setHistPage(histMeta.current_page - 1)}>

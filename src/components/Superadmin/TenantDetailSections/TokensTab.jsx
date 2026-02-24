@@ -23,17 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Trash2 } from "lucide-react";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
+import { Loader2, Trash2, Key } from "lucide-react";
+import { formatDateTime } from "@/utils/superadminDateUtils";
+import EmptyState from "../EmptyState";
 
 export default function TokensTab({ tenantId }) {
   const [tokens, setTokens] = useState([]);
@@ -126,8 +118,13 @@ export default function TokensTab({ tenantId }) {
               ))
             ) : tokens.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                  No hay tokens activos.
+                <TableCell colSpan={6} className="p-0">
+                  <EmptyState
+                    icon={Key}
+                    title="No hay tokens activos"
+                    description="Los tokens de API y sesión aparecerán aquí cuando se generen."
+                    compact
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -145,10 +142,10 @@ export default function TokensTab({ tenantId }) {
                     )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                    {formatDate(t.last_used_at)}
+                    {formatDateTime(t.last_used_at)}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                    {formatDate(t.created_at)}
+                    {formatDateTime(t.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

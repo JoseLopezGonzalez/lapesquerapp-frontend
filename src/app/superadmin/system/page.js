@@ -46,28 +46,38 @@ export default function SystemPage() {
 
       <QueueHealthWidget showRefresh />
 
-      <Card>
+      <Card className="border-orange-500/30">
         <CardHeader>
-          <CardTitle className="text-sm">Migraciones globales</CardTitle>
+          <CardTitle className="text-sm text-orange-700 dark:text-orange-400">Acciones avanzadas</CardTitle>
           <CardDescription>
-            Ejecuta las migraciones pendientes en todos los tenants activos. Las migraciones se encolan y se ejecutan de forma asincrona.
+            Operaciones que afectan a todos los tenants. Úsalas con precaución.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {result && (
-            <div className="rounded-md bg-muted px-4 py-3 text-sm">
-              <span className="font-medium">{result.message}</span>
-              {result.tenants_queued != null && (
-                <span className="ml-2 text-muted-foreground">
-                  ({result.tenants_queued} tenant{result.tenants_queued !== 1 ? "s" : ""} en cola)
-                </span>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Migraciones globales</CardTitle>
+              <CardDescription>
+                Ejecuta las migraciones pendientes en todos los tenants activos. Las migraciones se encolan y se ejecutan de forma asíncrona.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {result && (
+                <div className="rounded-md bg-muted px-4 py-3 text-sm">
+                  <span className="font-medium">{result.message}</span>
+                  {result.tenants_queued != null && (
+                    <span className="ml-2 text-muted-foreground">
+                      ({result.tenants_queued} tenant{result.tenants_queued !== 1 ? "s" : ""} en cola)
+                    </span>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          <Button onClick={() => setConfirmOpen(true)}>
-            <Play className="h-4 w-4" />
-            Ejecutar migraciones en todos los tenants
-          </Button>
+              <Button onClick={() => setConfirmOpen(true)}>
+                <Play className="h-4 w-4" />
+                Ejecutar migraciones en todos los tenants
+              </Button>
+            </CardContent>
+          </Card>
         </CardContent>
       </Card>
 
@@ -76,8 +86,8 @@ export default function SystemPage() {
           <DialogHeader>
             <DialogTitle>Confirmar migraciones globales</DialogTitle>
             <DialogDescription>
-              Se encolaran las migraciones pendientes en TODOS los tenants activos.
-              Esta operacion puede tardar varios minutos dependiendo del numero de tenants.
+              Se encolarán las migraciones pendientes en TODOS los tenants activos.
+              Esta operación puede tardar varios minutos dependiendo del número de tenants.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

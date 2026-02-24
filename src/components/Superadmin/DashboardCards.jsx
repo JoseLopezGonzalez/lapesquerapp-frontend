@@ -15,7 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import StatusBadge from "./StatusBadge";
-import { Building2, CheckCircle2, PauseCircle, Clock, XCircle, Plus, ArrowRight } from "lucide-react";
+import { formatDate } from "@/utils/superadminDateUtils";
+import { Building2, CheckCircle2, PauseCircle, Clock, XCircle } from "lucide-react";
 
 const STAT_CARDS = [
   { key: "total", label: "Total", icon: Building2, color: "text-foreground" },
@@ -24,15 +25,6 @@ const STAT_CARDS = [
   { key: "pending", label: "Pendientes", icon: Clock, color: "text-blue-600 dark:text-blue-400" },
   { key: "cancelled", label: "Cancelados", icon: XCircle, color: "text-red-600 dark:text-red-400" },
 ];
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
-  }
-}
 
 export default function DashboardCards() {
   const [data, setData] = useState(null);
@@ -85,16 +77,19 @@ export default function DashboardCards() {
       <div className={`grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-${visibleCards.length}`}>
         {visibleCards.map((card) => {
           const Icon = card.icon;
+          const href = card.key === "total" ? "/superadmin/tenants" : `/superadmin/tenants?status=${card.key}`;
           return (
-            <Card key={card.key}>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <Icon className={`h-4 w-4 ${card.color}`} />
-                  <span className="text-sm text-muted-foreground">{card.label}</span>
-                </div>
-                <span className="text-2xl font-bold mt-2 block">{data[card.key] ?? 0}</span>
-              </CardContent>
-            </Card>
+            <Link key={card.key} href={href} className="block">
+              <Card className="transition-colors hover:bg-muted/50">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-4 w-4 ${card.color}`} />
+                    <span className="text-sm text-muted-foreground">{card.label}</span>
+                  </div>
+                  <span className="text-2xl font-bold mt-2 block">{data[card.key] ?? 0}</span>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>
@@ -102,7 +97,7 @@ export default function DashboardCards() {
       {lastOnboarding && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Ultimo tenant en onboarding</CardTitle>
+            <CardTitle className="text-sm">Último en onboarding</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -132,21 +127,6 @@ export default function DashboardCards() {
           </CardContent>
         </Card>
       )}
-
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/superadmin/tenants/new">
-            <Plus className="h-4 w-4" />
-            Crear tenant
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/superadmin/tenants">
-            Ver todos
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 }

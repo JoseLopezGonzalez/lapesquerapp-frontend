@@ -15,12 +15,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Loader2, ChevronDown, ChevronUp, BellOff } from "lucide-react";
 import Link from "next/link";
+import EmptyState from "@/components/Superadmin/EmptyState";
+import { formatDateTime } from "@/utils/superadminDateUtils";
+import FilterTabs from "@/components/Superadmin/FilterTabs";
 
 const SEVERITY_TABS = [
   { key: "", label: "Todas" },
-  { key: "critical", label: "Critica" },
+  { key: "critical", label: "Crítica" },
   { key: "warning", label: "Advertencia" },
   { key: "info", label: "Info" },
   { key: "resolved", label: "Resueltas" },
@@ -40,16 +43,6 @@ function SeverityBadge({ severity }) {
   );
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
-
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -57,6 +50,7 @@ export default function AlertsPage() {
   const [activeTab, setActiveTab] = useState("");
   const [page, setPage] = useState(1);
   const [resolvingId, setResolvingId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const fetchAlerts = useCallback(async (params = {}) => {
     setLoading(true);
@@ -108,23 +102,14 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">Alertas del sistema</h1>
+      <h1 className="text-lg font-semibold">
+        Alertas del sistema
+        {meta != null && activeTab !== "resolved" && (
+          <span className="ml-2 text-muted-foreground font-normal">({meta.total} activas)</span>
+        )}
+      </h1>
 
-      <div className="flex flex-wrap gap-1">
-        {SEVERITY_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => handleTabChange(tab.key)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <FilterTabs tabs={SEVERITY_TABS} activeKey={activeTab} onChange={handleTabChange} />
 
       <Card>
         <CardContent className="p-0">
@@ -136,7 +121,7 @@ export default function AlertsPage() {
                 <TableHead className="hidden sm:table-cell">Tipo</TableHead>
                 <TableHead>Severidad</TableHead>
                 <TableHead className="hidden md:table-cell">Mensaje</TableHead>
-                <TableHead className="text-right">Accion</TableHead>
+                <TableHead className="text-right">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,50 +135,76 @@ export default function AlertsPage() {
                 ))
               ) : alerts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    No hay alertas.
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState
+                      icon={BellOff}
+                      title="No hay alertas"
+                      description="No hay alertas pendientes en el sistema."
+                      compact
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
                 alerts.map((alert) => (
-                  <TableRow key={alert.id} className={alert.resolved_at ? "opacity-60" : ""}>
-                    <TableCell className="text-sm whitespace-nowrap">{formatDate(alert.created_at)}</TableCell>
-                    <TableCell>
-                      {alert.tenant ? (
-                        <Link href={`/superadmin/tenants/${alert.tenant.id}`} className="text-primary hover:underline text-sm">
-                          {alert.tenant.subdomain}
-                        </Link>
-                      ) : "-"}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                      {alert.type}
-                    </TableCell>
-                    <TableCell>
-                      <SeverityBadge severity={alert.severity} />
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-sm max-w-[300px] truncate" title={alert.message}>
-                      {alert.message}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {alert.resolved_at ? (
-                        <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                          Resuelta
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleResolve(alert.id)}
-                          disabled={resolvingId === alert.id}
-                        >
-                          {resolvingId === alert.id
-                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            : "Resolver"}
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  <React.Fragment key={alert.id}>
+                    <TableRow className={alert.resolved_at ? "opacity-60" : ""}>
+                      <TableCell className="text-sm whitespace-nowrap">{formatDateTime(alert.created_at)}</TableCell>
+                      <TableCell>
+                        {alert.tenant ? (
+                          <Link href={`/superadmin/tenants/${alert.tenant.id}`} className="text-primary hover:underline text-sm">
+                            {alert.tenant.subdomain}
+                          </Link>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                        {alert.type}
+                      </TableCell>
+                      <TableCell>
+                        <SeverityBadge severity={alert.severity} />
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-sm max-w-[300px] truncate" title={alert.message}>
+                        {alert.message}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {alert.message && (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => setExpandedId(expandedId === alert.id ? null : alert.id)}
+                              aria-label={expandedId === alert.id ? "Ocultar mensaje" : "Ver mensaje completo"}
+                            >
+                              {expandedId === alert.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                            </Button>
+                          )}
+                          {alert.resolved_at ? (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                              Resuelta
+                            </span>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleResolve(alert.id)}
+                              disabled={resolvingId === alert.id}
+                            >
+                              {resolvingId === alert.id
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : "Resolver"}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {expandedId === alert.id && alert.message && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="bg-muted/50 p-4">
+                          <p className="text-sm whitespace-pre-wrap break-words">{alert.message}</p>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </TableBody>
@@ -204,7 +215,7 @@ export default function AlertsPage() {
       {meta && meta.last_page > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Pagina {meta.current_page} de {meta.last_page} ({meta.total} alertas)
+            Página {meta.current_page} de {meta.last_page} ({meta.total} alertas)
           </span>
           <div className="flex gap-1">
             <Button variant="outline" size="icon-sm" disabled={meta.current_page <= 1} onClick={() => setPage(meta.current_page - 1)}>

@@ -14,7 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import { formatDateTime } from "@/utils/superadminDateUtils";
+import FilterTabs from "../FilterTabs";
+import EmptyState from "../EmptyState";
 
 const METHOD_COLORS = {
   GET: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
@@ -24,17 +27,11 @@ const METHOD_COLORS = {
   DELETE: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
-const DAYS_OPTIONS = [7, 30, 90];
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-      hour: "2-digit", minute: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
+const DAYS_TABS = [
+  { key: "7", label: "7d" },
+  { key: "30", label: "30d" },
+  { key: "90", label: "90d" },
+];
 
 function shortUrl(url) {
   try {
@@ -57,7 +54,7 @@ export default function ErrorLogsTab({ tenantId }) {
       const qp = new URLSearchParams();
       qp.set("page", String(params.page || 1));
       qp.set("per_page", "20");
-      qp.set("days", String(params.days || 30));
+      qp.set("days", String(params.days ?? 30));
       const res = await fetchSuperadmin(`/tenants/${tenantId}/error-logs?${qp}`);
       const json = await res.json();
       setLogs(json.data || []);
@@ -72,7 +69,7 @@ export default function ErrorLogsTab({ tenantId }) {
   }, [page, days, fetchLogs]);
 
   const handleDaysChange = (newDays) => {
-    setDays(newDays);
+    setDays(Number(newDays));
     setPage(1);
   };
 
@@ -82,21 +79,7 @@ export default function ErrorLogsTab({ tenantId }) {
         <CardTitle className="text-sm">
           Error logs {meta ? `(${meta.total} errores)` : ""}
         </CardTitle>
-        <div className="flex gap-1">
-          {DAYS_OPTIONS.map((d) => (
-            <button
-              key={d}
-              onClick={() => handleDaysChange(d)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                days === d
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              {d}d
-            </button>
-          ))}
-        </div>
+        <FilterTabs tabs={DAYS_TABS} activeKey={String(days)} onChange={handleDaysChange} />
       </CardHeader>
       <CardContent className="p-0">
         <Table>
@@ -120,15 +103,20 @@ export default function ErrorLogsTab({ tenantId }) {
               ))
             ) : logs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                  Sin errores en los ultimos {days} dias.
+                <TableCell colSpan={5} className="p-0">
+                  <EmptyState
+                    icon={ShieldCheck}
+                    title={`Sin errores en los últimos ${days} días`}
+                    description="No se han registrado errores en este período."
+                    compact
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               logs.map((log) => (
                 <>
                   <TableRow key={log.id}>
-                    <TableCell className="text-sm whitespace-nowrap">{formatDate(log.occurred_at)}</TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">{formatDateTime(log.occurred_at)}</TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <Badge variant="outline" className={METHOD_COLORS[log.method] || ""}>
                         {log.method}
@@ -174,7 +162,7 @@ export default function ErrorLogsTab({ tenantId }) {
         {meta && meta.last_page > 1 && (
           <div className="flex items-center justify-between p-4 border-t">
             <span className="text-sm text-muted-foreground">
-              Pagina {meta.current_page} de {meta.last_page}
+              Página {meta.current_page} de {meta.last_page}
             </span>
             <div className="flex gap-1">
               <Button variant="outline" size="icon-sm" disabled={meta.current_page <= 1} onClick={() => setPage(meta.current_page - 1)}>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
 import { notify } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import StatusBadge from "../StatusBadge";
 import { Loader2, Play, Pause, XCircle, RotateCw, Trash2, AlertTriangle } from "lucide-react";
 
 function getOnboarding(tenant) {
@@ -63,7 +65,7 @@ function getActions(tenant) {
           icon: Play,
           variant: "default",
           hint: !onboardingComplete
-            ? `Onboarding incompleto (${ob.step}/${ob.total_steps}). El backend rechazara esta accion.`
+            ? `Onboarding incompleto (${ob.step}/${ob.total_steps}). El backend rechazará esta acción.`
             : null,
         },
         { action: "delete", label: "Eliminar tenant", icon: Trash2, variant: "destructive" },
@@ -76,10 +78,10 @@ function getActions(tenant) {
 }
 
 const CONFIRM_MESSAGES = {
-  activate: "Activar este tenant? Se habilitara el acceso de los usuarios.",
-  suspend: "Suspender este tenant? Los usuarios no podran acceder mientras este suspendido.",
-  cancel: "Cancelar este tenant? Se desactivara el acceso.",
-  "retry-onboarding": "Reintentar el proceso de onboarding desde el paso actual?",
+  activate: "¿Activar este tenant? Se habilitará el acceso de los usuarios.",
+  suspend: "¿Suspender este tenant? Los usuarios no podrán acceder mientras esté suspendido.",
+  cancel: "¿Cancelar este tenant? Se desactivará el acceso.",
+  "retry-onboarding": "¿Reintentar el proceso de onboarding desde el paso actual?",
 };
 
 export default function StatusActions({ tenant, onRefresh }) {
@@ -160,40 +162,60 @@ export default function StatusActions({ tenant, onRefresh }) {
 
   const currentActionDef = actions.find((a) => a.action === confirmAction);
 
+  const safeActions = actions.filter((a) => a.variant !== "destructive");
+  const destructiveActions = actions.filter((a) => a.variant === "destructive");
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-sm">Acciones</CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          Estado actual: <StatusBadge status={tenant.status} />
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap items-start gap-2">
-          {actions.map((a) => {
-            const Icon = a.icon;
-            return (
-              <div key={a.action} className="flex flex-col gap-1">
-                <Button
-                  variant={a.variant}
-                  size="sm"
-                  onClick={() => openAction(a.action)}
-                >
-                  <Icon className="h-4 w-4" />
-                  {a.label}
-                </Button>
-                {a.hint && (
-                  <span className="max-w-[200px] text-[10px] leading-tight text-muted-foreground">
-                    {a.hint}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <CardContent className="space-y-4">
+        {safeActions.length > 0 && (
+          <div className="flex flex-wrap items-start gap-2">
+            {safeActions.map((a) => {
+              const Icon = a.icon;
+              return (
+                <div key={a.action} className="flex flex-col gap-1">
+                  <Button variant={a.variant} size="sm" onClick={() => openAction(a.action)}>
+                    <Icon className="h-4 w-4" />
+                    {a.label}
+                  </Button>
+                  {a.hint && (
+                    <span className="max-w-[200px] text-xs leading-tight text-muted-foreground">
+                      {a.hint}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {destructiveActions.length > 0 && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+            <p className="text-xs font-medium text-destructive">Zona de peligro</p>
+            <div className="flex flex-wrap items-start gap-2">
+              {destructiveActions.map((a) => {
+                const Icon = a.icon;
+                return (
+                  <Button key={a.action} variant="destructive" size="sm" onClick={() => openAction(a.action)}>
+                    <Icon className="h-4 w-4" />
+                    {a.label}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </CardContent>
 
       <Dialog open={!!confirmAction} onOpenChange={(open) => { if (!open) { setConfirmAction(null); setActionError(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar accion</DialogTitle>
+            <DialogTitle>Confirmar acción</DialogTitle>
             <DialogDescription>
               {confirmAction && CONFIRM_MESSAGES[confirmAction]}
             </DialogDescription>
@@ -228,24 +250,24 @@ export default function StatusActions({ tenant, onRefresh }) {
           <DialogHeader>
             <DialogTitle>Eliminar tenant</DialogTitle>
             <DialogDescription>
-              Esta accion eliminara permanentemente el tenant <strong>{tenant.name}</strong> ({tenant.subdomain}).
-              Esta operacion no se puede deshacer.
+              Esta acción eliminará permanentemente el tenant <strong>{tenant.name}</strong> ({tenant.subdomain}).
+              Esta operación no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
-              <input
-                type="checkbox"
+              <Checkbox
+                id="drop-db"
                 checked={dropDatabase}
-                onChange={(e) => setDropDatabase(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-input"
+                onCheckedChange={(checked) => setDropDatabase(checked === true)}
+                className="mt-0.5"
               />
               <div>
-                <span className="text-sm font-medium">Eliminar tambien la base de datos</span>
+                <span className="text-sm font-medium">Eliminar también la base de datos</span>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Se borrara la base de datos MySQL <code className="text-xs">{tenant.database || `tenant_${tenant.subdomain}`}</code>.
-                  Si no marcas esta opcion, solo se elimina el registro del tenant.
+                  Se borrará la base de datos MySQL <code className="text-xs">{tenant.database || `tenant_${tenant.subdomain}`}</code>.
+                  Si no marcas esta opción, solo se elimina el registro del tenant.
                 </p>
               </div>
             </label>

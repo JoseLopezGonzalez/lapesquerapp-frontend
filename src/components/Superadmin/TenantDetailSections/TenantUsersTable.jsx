@@ -14,22 +14,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import ImpersonationButtons from "./ImpersonationButtons";
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import { formatDate } from "@/utils/superadminDateUtils";
+import { CheckCircle2, XCircle, Clock, Users } from "lucide-react";
+import EmptyState from "../EmptyState";
 
 const ROLE_COLORS = {
   administrador: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
   operario: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
   comercial: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
 };
-
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit", month: "2-digit", year: "2-digit",
-    }).format(new Date(dateStr));
-  } catch { return dateStr; }
-}
 
 function isOnboardingIncomplete(tenant) {
   if (tenant.onboarding) {
@@ -114,8 +107,13 @@ export default function TenantUsersTable({ tenant }) {
               ))
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                  No hay usuarios.
+                <TableCell colSpan={6} className="p-0">
+                  <EmptyState
+                    icon={Users}
+                    title="No hay usuarios"
+                    description="Aún no hay usuarios registrados en este tenant."
+                    compact
+                  />
                 </TableCell>
               </TableRow>
             ) : (

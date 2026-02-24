@@ -7,6 +7,14 @@ import { SuperadminAuthProvider, useSuperadminAuth } from "@/context/SuperadminA
 import { fetchSuperadmin } from "@/lib/superadminApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
   LayoutDashboard,
   Building2,
   LogOut,
@@ -42,6 +50,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+
+function SuperadminBreadcrumb() {
+  const pathname = usePathname();
+  const segments = pathname.replace(/^\/superadmin\/?/, "").split("/").filter(Boolean);
+  const labels = {
+    tenants: "Tenants",
+    new: "Nuevo",
+    impersonation: "Impersonaciones",
+    alerts: "Alertas",
+    system: "Sistema",
+    login: "Login",
+  };
+  const pathSoFar = ["/superadmin"];
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          {segments.length === 0 ? (
+            <BreadcrumbPage>Dashboard</BreadcrumbPage>
+          ) : (
+            <BreadcrumbLink asChild>
+              <Link href="/superadmin">Dashboard</Link>
+            </BreadcrumbLink>
+          )}
+        </BreadcrumbItem>
+        {segments.map((seg, i) => {
+          pathSoFar.push(seg);
+          const href = pathSoFar.join("/");
+          const label = labels[seg] ?? (seg.match(/^\d+$/) ? "Detalle" : seg);
+          const isLast = i === segments.length - 1;
+          return (
+            <React.Fragment key={href}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link href={href}>{label}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </React.Fragment>
+          );
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
 
 const NAV_MAIN = [
   { href: "/superadmin", label: "Dashboard", icon: LayoutDashboard },
@@ -157,7 +214,7 @@ function SuperadminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Gestion</SidebarGroupLabel>
+          <SidebarGroupLabel>Gestión</SidebarGroupLabel>
           <NavGroup items={NAV_GESTION} pathname={pathname} alertCounts={alertCounts} />
         </SidebarGroup>
 
@@ -214,7 +271,7 @@ function SuperadminSidebar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="cursor-pointer">
                   <LogOut />
-                  Cerrar sesion
+                  Cerrar sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -260,11 +317,12 @@ function AuthenticatedLayout({ children }) {
     <div className="h-screen overflow-hidden">
       <SidebarProvider className="h-full" style={styleSidebar}>
         <SuperadminSidebar />
-        <main className="flex flex-col h-full overflow-hidden w-full p-2">
-          <div className="p-1">
+        <main className="flex flex-col h-full overflow-hidden w-full">
+          <header className="flex shrink-0 items-center gap-4 border-b px-4 py-2 md:px-6">
             <SidebarTrigger />
-          </div>
-          <div className="flex-1 w-full h-full overflow-y-auto p-2">
+            <SuperadminBreadcrumb />
+          </header>
+          <div className="flex-1 w-full h-full overflow-y-auto p-4 md:p-6">
             {children}
           </div>
         </main>

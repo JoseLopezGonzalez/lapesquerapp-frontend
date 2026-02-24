@@ -11,8 +11,10 @@ import { AlertTriangle, Bell, ArrowRight } from "lucide-react";
 export default function AlertsWidget() {
   const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchAlerts = useCallback(async () => {
+    setError(false);
     try {
       const res = await fetchSuperadmin("/alerts?resolved=false&per_page=100");
       const json = await res.json();
@@ -21,7 +23,7 @@ export default function AlertsWidget() {
       const warning = data.filter((a) => a.severity === "warning").length;
       const info = data.filter((a) => a.severity === "info").length;
       setCounts({ critical, warning, info, total: json.meta?.total ?? data.length });
-    } catch { /* silent */ } finally {
+    } catch { setError(true); } finally {
       setLoading(false);
     }
   }, []);
@@ -29,6 +31,16 @@ export default function AlertsWidget() {
   useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
 
   if (loading) return <Skeleton className="h-24 rounded-lg" />;
+  if (error) {
+    return (
+      <Card className="border-muted">
+        <CardContent className="flex items-center gap-2 pt-4 pb-4 text-sm text-muted-foreground">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          No se pudo cargar el estado de alertas.
+        </CardContent>
+      </Card>
+    );
+  }
   if (!counts || counts.total === 0) return null;
 
   return (

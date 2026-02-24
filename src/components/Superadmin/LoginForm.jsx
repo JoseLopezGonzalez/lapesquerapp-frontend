@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Fish, Loader2, Mail, KeyRound } from "lucide-react";
+import { Fish, Loader2, Mail } from "lucide-react";
 
 const RESEND_COOLDOWN = 60;
 const OTP_SLOT_CLASS = "rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-11 w-10 text-base";
@@ -83,14 +83,15 @@ export default function LoginForm() {
     }
   }, [email]);
 
-  const handleVerifyOtp = useCallback(async () => {
-    if (otp.length < 6) return;
+  const handleVerifyOtp = useCallback(async (codeOverride) => {
+    const code = codeOverride ?? otp;
+    if (code.length < 6) return;
     setError("");
     setSubmitting(true);
     try {
       const res = await fetchSuperadmin("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email, code: otp }),
+        body: JSON.stringify({ email, code }),
       });
       const data = await res.json();
       login(data.access_token, data.user);
@@ -118,7 +119,8 @@ export default function LoginForm() {
 
   const handleOtpChange = useCallback((value) => {
     setOtp(value);
-  }, []);
+    if (value.length === 6) handleVerifyOtp(value);
+  }, [handleVerifyOtp]);
 
   if (step === "verifying") {
     return (
@@ -172,25 +174,20 @@ export default function LoginForm() {
           {/* OTP step */}
           {step === "otp" && (
             <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <Alert>
+              <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                <p className="flex items-center gap-2 font-medium text-foreground">
                   <Mail className="h-4 w-4" />
-                  <AlertTitle>Revisa tu correo</AlertTitle>
-                  <AlertDescription>
-                    Te hemos enviado un enlace para acceder.
-                  </AlertDescription>
-                </Alert>
-                <Alert>
-                  <KeyRound className="h-4 w-4" />
-                  <AlertDescription>
-                    O bien introduce aquí el código de 6 dígitos que aparece en el correo.
-                  </AlertDescription>
-                </Alert>
+                  Revisa tu correo
+                </p>
+                <p className="mt-1">
+                  Te hemos enviado un enlace para acceder. O bien introduce aquí el código de 6 dígitos que aparece en el correo.
+                </p>
               </div>
 
-              <div className="flex flex-col items-center gap-2 w-full">
-                <Label className="text-center w-full">Código de 6 dígitos</Label>
+              <div className="grid w-full items-center gap-1.5">
+                <Label htmlFor="sa-otp">Código de 6 dígitos</Label>
                 <InputOTP
+                  id="sa-otp"
                   maxLength={6}
                   pattern={REGEXP_ONLY_DIGITS}
                   value={otp}

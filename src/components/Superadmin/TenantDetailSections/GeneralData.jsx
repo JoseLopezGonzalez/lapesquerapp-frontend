@@ -26,7 +26,7 @@ const FIELD_LABELS = {
   database: "Base de datos",
   status: "Estado",
   plan: "Plan",
-  renewal_at: "Renovacion",
+  renewal_at: "Renovación",
   timezone: "Zona horaria",
   branding_image_url: "Logo URL",
   admin_email: "Email admin",
@@ -41,6 +41,13 @@ const DISPLAY_ORDER = [
 ];
 
 const EDITABLE_FIELDS = ["name", "plan", "renewal_at", "timezone", "branding_image_url", "admin_email"];
+
+const PLAN_OPTIONS = ["basic", "pro", "enterprise"];
+const TIMEZONE_OPTIONS = [
+  "Europe/Madrid", "Atlantic/Canary", "Europe/London", "Europe/Lisbon",
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "America/Sao_Paulo", "America/Mexico_City",
+];
 
 function formatValue(key, value) {
   if (value === null || value === undefined) return "-";
@@ -100,8 +107,9 @@ export default function GeneralData({ tenant, onRefresh }) {
         <div className="divide-y">
           {DISPLAY_ORDER.map((key) => {
             const value = tenant[key];
+            const isReadonly = READONLY_FIELDS.includes(key);
             return (
-              <div key={key} className="flex items-center gap-4 px-6 py-2.5">
+              <div key={key} className={`flex items-center gap-4 px-6 py-2.5 ${isReadonly ? "bg-muted/50" : ""}`}>
                 <span className="w-36 shrink-0 text-sm text-muted-foreground">
                   {FIELD_LABELS[key] || key}
                 </span>
@@ -129,11 +137,33 @@ export default function GeneralData({ tenant, onRefresh }) {
                 <Label htmlFor={`edit-${field}`}>
                   {FIELD_LABELS[field] || field}
                 </Label>
-                <Input
-                  id={`edit-${field}`}
-                  type={field === "admin_email" ? "email" : field === "renewal_at" ? "date" : "text"}
-                  {...register(field)}
-                />
+                {field === "plan" ? (
+                  <select
+                    id={`edit-${field}`}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    {...register(field)}
+                  >
+                    {PLAN_OPTIONS.map((p) => (
+                      <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                    ))}
+                  </select>
+                ) : field === "timezone" ? (
+                  <select
+                    id={`edit-${field}`}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    {...register(field)}
+                  >
+                    {TIMEZONE_OPTIONS.map((tz) => (
+                      <option key={tz} value={tz}>{tz}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    id={`edit-${field}`}
+                    type={field === "admin_email" ? "email" : field === "renewal_at" ? "date" : "text"}
+                    {...register(field)}
+                  />
+                )}
                 {errors[field] && (
                   <p className="text-xs text-destructive">{errors[field].message}</p>
                 )}

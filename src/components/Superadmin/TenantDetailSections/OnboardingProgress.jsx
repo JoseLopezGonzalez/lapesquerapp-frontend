@@ -50,6 +50,8 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
     ob.status !== "completed" &&
     ob.step < totalSteps;
 
+  const completed = (ob.status === "completed" || ob.step >= totalSteps) && totalSteps > 0;
+
   useEffect(() => {
     if (!visible) return;
 
@@ -137,7 +139,18 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
     }
   }, [tenant.id, totalSteps, onRefresh]);
 
-  if (!visible) return null;
+  if (!visible && !completed) return null;
+
+  if (completed) {
+    return (
+      <Card className="border-green-500/30">
+        <CardContent className="flex items-center gap-2 py-4">
+          <span className="text-sm font-medium text-green-600 dark:text-green-400">Onboarding completado</span>
+          <span className="text-xs text-muted-foreground">Paso {totalSteps}/{totalSteps}</span>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const isFailed = current.status === "failed";
   const labels = STEP_LABELS.slice(0, totalSteps);
