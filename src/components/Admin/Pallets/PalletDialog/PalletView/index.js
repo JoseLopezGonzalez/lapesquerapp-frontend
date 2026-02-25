@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus, History } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -30,9 +30,10 @@ import Loader from "@/components/Utilities/Loader";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
-import { formatDateShort } from "@/helpers/formats/dates/formatDates";
+import { formatDateShort, formatDateHour } from "@/helpers/formats/dates/formatDates";
 
 import { usePallet, saveDiscountPreferences } from "@/hooks/usePallet";
+import { usePalletTimeline } from "@/hooks/usePalletTimeline";
 import { usePrintElement } from "@/hooks/usePrintElement";import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
 import { notify } from "@/lib/notifications";
@@ -66,6 +67,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         setBoxPrinted,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
 
+    const { timeline, loading: timelineLoading, error: timelineError } = usePalletTimeline(palletId);
+    const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
 
     const orderIdBlocked = initialOrderId !== null;
 
@@ -356,6 +359,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> Etiquetas Cajas
                                     </TabsTrigger>
+                                    {showHistorialTab && (
+                                        <TabsTrigger value="historial" className="flex items-center gap-2">
+                                            <History className="h-4 w-4" /> Historial
+                                        </TabsTrigger>
+                                    )}
                                     <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300" disabled={isReadOnly}>
                                         <Trash2 className="h-4 w-4" /> Eliminar
                                     </TabsTrigger>
@@ -1698,6 +1706,61 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 <TabsContent value="boxesLabels" className="mt-0 w-full">
                                     <BoxesLabels pallet={temporalPallet} setBoxPrinted={setBoxPrinted} />
                                 </TabsContent>
+
+                                {showHistorialTab && (
+                                    <TabsContent value="historial" className="mt-0">
+                                        <div className="space-y-4 max-h-[calc(90vh-200px)] overflow-y-auto">
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                                        <History className="h-5 w-5" /> Historial del palet
+                                                    </CardTitle>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Eventos más recientes primero.
+                                                    </p>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    {timelineLoading ? (
+                                                        <div className="flex items-center justify-center py-12">
+                                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                                        </div>
+                                                    ) : timelineError ? (
+                                                        <Alert variant="destructive">
+                                                            <CloudAlert className="h-4 w-4" />
+                                                            <AlertDescription>
+                                                                {timelineError.message || "No se pudo cargar el historial."}
+                                                            </AlertDescription>
+                                                        </Alert>
+                                                    ) : timeline.length === 0 ? (
+                                                        <EmptyState
+                                                            title="Sin historial"
+                                                            description="Este palet aún no tiene eventos registrados."
+                                                        />
+                                                    ) : (
+                                                        <ul className="space-y-3">
+                                                            {timeline.map((entry, index) => (
+                                                                <li
+                                                                    key={`${entry.timestamp}-${index}`}
+                                                                    className="flex gap-3 rounded-lg border p-3 text-sm"
+                                                                >
+                                                                    <span className="shrink-0 text-muted-foreground whitespace-nowrap">
+                                                                        {formatDateHour(entry.timestamp)}
+                                                                    </span>
+                                                                    <span className="shrink-0 font-medium text-muted-foreground">
+                                                                        {entry.userName}
+                                                                    </span>
+                                                                    <span className="min-w-0 flex-1">
+                                                                        {entry.action}
+                                                                    </span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    </TabsContent>
+                                )}
 
                                 <TabsContent value="eliminar" className="mt-0 ">
                                     <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">

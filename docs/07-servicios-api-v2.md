@@ -294,10 +294,11 @@ Y similares para records, inputs, outputs, consumptions, etc.
 
 ### 4. PalletService - Gestión de Pallets
 
-**Archivo**: `/src/services/palletService.js`
+**Archivo**: `/src/services/palletService.ts`
 
 **Endpoints v2 utilizados**:
 - `GET /api/v2/pallets/{id}` - Obtener pallet
+- `GET /api/v2/pallets/{id}/timeline` - Obtener historial de modificaciones del palet (véase [pallet-timeline-api.md](../implementaciones/pallet-timeline-api.md))
 - `PUT /api/v2/pallets/{id}` - Actualizar pallet
 - `POST /api/v2/pallets` - Crear pallet
 - `POST /api/v2/pallets/assign-to-position` - Asignar a posición
@@ -312,6 +313,11 @@ Y similares para records, inputs, outputs, consumptions, etc.
 - **Método**: GET
 - **Endpoint**: `/api/v2/pallets/{palletId}`
 - **Retorna**: `Promise<Object>` - Datos del pallet con cajas
+
+##### `getPalletTimeline(palletId, token)`
+- **Método**: GET
+- **Endpoint**: `/api/v2/pallets/{palletId}/timeline`
+- **Retorna**: `Promise<PalletTimelineResponse>` - `{ timeline: PalletTimelineEntry[] }` (eventos más recientes primero). Especificación completa en [docs/implementaciones/pallet-timeline-api.md](../implementaciones/pallet-timeline-api.md).
 
 ##### `updatePallet(palletId, palletData, token)`
 - **Método**: PUT

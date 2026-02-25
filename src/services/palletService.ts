@@ -42,6 +42,23 @@ export interface LinkPalletPayload {
   orderId: number | string;
 }
 
+// --- Pallet Timeline (GET /api/v2/pallets/{id}/timeline) ---
+
+/** Single timeline entry; details shape depends on type */
+export interface PalletTimelineEntry {
+  timestamp: string;
+  userId: number | null;
+  userName: string;
+  type: string;
+  action: string;
+  details: Record<string, unknown>;
+}
+
+/** Response from GET /api/v2/pallets/{id}/timeline */
+export interface PalletTimelineResponse {
+  timeline: PalletTimelineEntry[];
+}
+
 export function getPallet(
   palletId: number | string,
   token: AuthToken
@@ -68,6 +85,44 @@ export function getPallet(
     .catch((error) => {
       throw error;
     });
+}
+
+export async function getPalletTimeline(
+  palletId: number | string,
+  token: AuthToken
+): Promise<PalletTimelineResponse> {
+  const response = await fetchWithTenant(
+    `${API_URL_V2}pallets/${palletId}/timeline`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({})) as { message?: string };
+    const message =
+      response.status === 401
+        ? 'No autenticado'
+        : response.status === 403
+          ? 'Sin permiso para ver el palet'
+          : response.status === 404
+            ? 'Palet no encontrado'
+            : getErrorMessage(errorData) || 'Error al obtener el historial del palet';
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as PalletTimelineResponse;
+  return {
+    timeline: Array.isArray(data?.timeline) ? data.timeline : [],
+  };
 }
 
 export function updatePallet(
