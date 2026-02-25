@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getPalletTimeline,
   type PalletTimelineEntry,
@@ -18,9 +18,10 @@ function isValidPalletId(palletId: string | number | null | undefined): boolean 
 /**
  * Hook to fetch the timeline (history) of a pallet.
  * Only fetches when palletId is valid (not 'new', not temporary) and user is authenticated.
+ * Call refetch() when the user opens the Historial tab to reload events.
  *
  * @param palletId - Pallet ID (number or string); skipped if 'new' or temp-*
- * @returns { timeline, loading, error }
+ * @returns { timeline, loading, error, refetch }
  */
 export function usePalletTimeline(
   palletId: string | number | null | undefined
@@ -28,6 +29,7 @@ export function usePalletTimeline(
   timeline: PalletTimelineEntry[];
   loading: boolean;
   error: Error | null;
+  refetch: () => void;
 } {
   const { data: session } = useSession();
   const token = session?.user?.accessToken as string | undefined;
@@ -35,8 +37,35 @@ export function usePalletTimeline(
   const [timeline, setTimeline] = useState<PalletTimelineEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const requestIdRef = useRef(0);
 
   const shouldFetch = !!token && isValidPalletId(palletId);
+
+  const fetchTimeline = useCallback(() => {
+    if (!token || !isValidPalletId(palletId) || palletId == null) return;
+    requestIdRef.current += 1;
+    const currentId = requestIdRef.current;
+    setLoading(true);
+    setError(null);
+
+    getPalletTimeline(palletId, token)
+      .then((res) => {
+        if (currentId === requestIdRef.current) {
+          setTimeline(res.timeline ?? []);
+        }
+      })
+      .catch((err) => {
+        if (currentId === requestIdRef.current) {
+          setError(err instanceof Error ? err : new Error(String(err)));
+          setTimeline([]);
+        }
+      })
+      .finally(() => {
+        if (currentId === requestIdRef.current) {
+          setLoading(false);
+        }
+      });
+  }, [palletId, token]);
 
   useEffect(() => {
     if (!shouldFetch || palletId == null) {
@@ -45,33 +74,33 @@ export function usePalletTimeline(
       setError(null);
       return;
     }
-
-    let cancelled = false;
+    requestIdRef.current += 1;
+    const currentId = requestIdRef.current;
     setLoading(true);
     setError(null);
 
     getPalletTimeline(palletId, token)
       .then((res) => {
-        if (!cancelled) {
+        if (currentId === requestIdRef.current) {
           setTimeline(res.timeline ?? []);
         }
       })
       .catch((err) => {
-        if (!cancelled) {
+        if (currentId === requestIdRef.current) {
           setError(err instanceof Error ? err : new Error(String(err)));
           setTimeline([]);
         }
       })
       .finally(() => {
-        if (!cancelled) {
+        if (currentId === requestIdRef.current) {
           setLoading(false);
         }
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, [shouldFetch, palletId, token]);
 
-  return { timeline, loading, error };
+  const refetch = useCallback(() => {
+    fetchTimeline();
+  }, [fetchTimeline]);
+
+  return { timeline, loading, error, refetch };
 }

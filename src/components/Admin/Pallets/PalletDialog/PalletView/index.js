@@ -38,6 +38,7 @@ import { usePrintElement } from "@/hooks/usePrintElement";import PalletLabel fro
 import SummaryPieChart from "./SummaryPieChart";
 import { notify } from "@/lib/notifications";
 import BoxesLabels from "./BoxesLabels";
+import { PalletTimeline } from "./PalletTimeline";
 
 
 export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null }) {
@@ -67,8 +68,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         setBoxPrinted,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
 
-    const { timeline, loading: timelineLoading, error: timelineError } = usePalletTimeline(palletId);
+    const { timeline, loading: timelineLoading, error: timelineError, refetch: refetchTimeline } = usePalletTimeline(palletId);
     const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
+    const [mainTab, setMainTab] = useState("edicion");
 
     const orderIdBlocked = initialOrderId !== null;
 
@@ -342,7 +344,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                             </Alert>
                         )}
                         <div className="flex justify-center w-full">
-                            <Tabs defaultValue="edicion" className="w-full">
+                            <Tabs value={mainTab} onValueChange={(v) => { setMainTab(v); if (v === 'historial') refetchTimeline(); }} className="w-full">
                                 <TabsList className="mx-auto mb-4">
                                     <TabsTrigger value="edicion" className="flex items-center gap-2">
                                         <Edit className="h-4 w-4" /> Edición
@@ -1716,46 +1718,15 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                         <History className="h-5 w-5" /> Historial del palet
                                                     </CardTitle>
                                                     <p className="text-sm text-muted-foreground">
-                                                        Eventos más recientes primero.
+                                                        Eventos más recientes primero. Haz clic en la flecha para ver el detalle.
                                                     </p>
                                                 </CardHeader>
                                                 <CardContent>
-                                                    {timelineLoading ? (
-                                                        <div className="flex items-center justify-center py-12">
-                                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                                        </div>
-                                                    ) : timelineError ? (
-                                                        <Alert variant="destructive">
-                                                            <CloudAlert className="h-4 w-4" />
-                                                            <AlertDescription>
-                                                                {timelineError.message || "No se pudo cargar el historial."}
-                                                            </AlertDescription>
-                                                        </Alert>
-                                                    ) : timeline.length === 0 ? (
-                                                        <EmptyState
-                                                            title="Sin historial"
-                                                            description="Este palet aún no tiene eventos registrados."
-                                                        />
-                                                    ) : (
-                                                        <ul className="space-y-3">
-                                                            {timeline.map((entry, index) => (
-                                                                <li
-                                                                    key={`${entry.timestamp}-${index}`}
-                                                                    className="flex gap-3 rounded-lg border p-3 text-sm"
-                                                                >
-                                                                    <span className="shrink-0 text-muted-foreground whitespace-nowrap">
-                                                                        {formatDateHour(entry.timestamp)}
-                                                                    </span>
-                                                                    <span className="shrink-0 font-medium text-muted-foreground">
-                                                                        {entry.userName}
-                                                                    </span>
-                                                                    <span className="min-w-0 flex-1">
-                                                                        {entry.action}
-                                                                    </span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
+                                                    <PalletTimeline
+                                                        timeline={timeline}
+                                                        loading={timelineLoading}
+                                                        error={timelineError}
+                                                    />
                                                 </CardContent>
                                             </Card>
                                         </div>
