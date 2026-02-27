@@ -7,7 +7,6 @@ import { useStores } from '../../../../hooks/stores/useStores'
 import { useStore } from '../../../../hooks/stores/useStore'
 import numeral from 'numeral';
 import 'numeral/locales/es';
-import { ScrollShadow } from '@nextui-org/react';
 import { EmptyState } from '../../../Utilities/EmptyState';
 import SkeletonTab from './Skeleton/SkeletonTab';
 import TabItem from './Tab/TabItem'; */

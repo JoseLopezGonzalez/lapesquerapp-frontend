@@ -1,7 +1,6 @@
 'use client'
 
 import { Card } from "@/components/ui/card";
-import { ScrollShadow } from "@nextui-org/react";
 import SkeletonStoreCard from "./StoreCard/SkeletonStoreCard";
 import { Loader2, Database, Package, MapPin } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
@@ -39,14 +38,13 @@ const LoadingStoresHeader = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full gap-6">
-      <ScrollShadow 
-        orientation="horizontal" 
-        className="space-x-3 rounded-xl flex overflow-x-auto w-full scrollbar-none py-2"
+      <div
+        className="flex gap-3 rounded-xl overflow-x-auto w-full py-2 scrollbar-none"
       >
         {[1, 2, 3, 4, 5, 6, 7].map((i) => (
           <SkeletonStoreCard key={i} />
         ))}
-      </ScrollShadow>
+      </div>
       <Card className='grow w-full flex items-center justify-center p-8'>
         <div className="flex flex-col items-center justify-center gap-2 max-w-lg w-full">
           <div className="flex flex-col items-center justify-center gap-4">

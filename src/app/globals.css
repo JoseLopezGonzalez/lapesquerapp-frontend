@@ -76,13 +76,15 @@
 
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.62 0.19 250);
+  /* azul turquesa (antes 217.2 91.2% 59.8% HSL) */
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Charts: paleta Sky (azul cian), como theme('colors.sky.*') antes de v4 */
+  --chart-1: oklch(0.746 0.16 232.661);
+  --chart-2: oklch(0.685 0.169 237.323);
+  --chart-3: oklch(0.588 0.158 241.966);
+  --chart-4: oklch(0.5 0.134 242.749);
+  --chart-5: oklch(0.443 0.11 240.79);
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -91,7 +93,8 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.62 0.19 250);
+  /* azul turquesa (antes 217.2 91.2% 59.8% HSL) */
 
   /* compat por si aún tienes referencias antiguas */
   --sidebar-background: var(--sidebar);
@@ -104,7 +107,7 @@
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
 
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.269 0 0);
   --popover-foreground: oklch(0.985 0 0);
 
   --primary: oklch(0.922 0 0);
@@ -113,11 +116,10 @@
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
 
-  /* TabsList: un poco más claro que --background para que el tab activo (bg-background) destaque */
-  --muted: oklch(0.3 0 0);
+  --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
 
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.371 0 0);
   --accent-foreground: oklch(0.985 0 0);
 
   --destructive: oklch(0.704 0.191 22.216);
@@ -125,22 +127,26 @@
 
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.68 0.17 250);
+  /* azul turquesa (visible en fondo oscuro) */
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  /* Charts: Sky (dark), como theme('colors.sky.300'..'sky.700') antes de v4 */
+  --chart-1: oklch(0.828 0.111 230.318);
+  --chart-2: oklch(0.746 0.16 232.661);
+  --chart-3: oklch(0.685 0.169 237.323);
+  --chart-4: oklch(0.588 0.158 241.966);
+  --chart-5: oklch(0.5 0.134 242.749);
 
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.52 0.2 238);
+  /* azul turquesa (antes 224.3 76.3% 48% HSL en dark) */
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.68 0.17 250);
+  /* azul turquesa */
 
   --sidebar-background: var(--sidebar);
 }
@@ -155,10 +161,15 @@
 }
 
 :focus-visible {
-  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  @apply outline-none;
 }
 
-/* Combobox/Command: no aplicar ring global al input de búsqueda (evita doble borde) */
+/* Sin ring de focus en ningún input (estándar y personalizados) */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="combobox"]:focus-visible,
+[role="listbox"]:focus-visible,
 .command-input-wrapper input:focus-visible,
 [cmdk-input-wrapper] input:focus-visible,
 [cmdk-input]:focus-visible {
