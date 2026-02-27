@@ -124,6 +124,5 @@ module.exports = {
   darkMode: ["class"], /* Next UI */
   plugins: [
     nextui(),
-    require("tailwindcss-animate"),
   ], /* Next UI */
 };
