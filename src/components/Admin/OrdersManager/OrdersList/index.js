@@ -238,6 +238,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                         <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-0' : 'mt-5 mb-5'}>
                             {isMobile ? (
                                 <div className="relative -mx-4 px-4">
+                                    {/* Variante móvil: TabsList bg-transparent p-0 + triggers pill; look distinto a la doc */}
                                     <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
                                     <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
                                     <div className="overflow-x-auto scrollbar-hide">
