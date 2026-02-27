@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus, History } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, ChevronsUpDown, ListChevronsUpDown, ListChevronsDownUp, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus, History } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -68,12 +68,37 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         onSavingChanges,
         onClose,
         setBoxPrinted,
+        hasPalletChanges = false,
     } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
 
     const { timeline, loading: timelineLoading, error: timelineError, refetch: refetchTimeline } = usePalletTimeline(palletId);
     const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
     const [mainTab, setMainTab] = useState("edicion");
     const [deletingTimeline, setDeletingTimeline] = useState(false);
+
+    // Estado de expansión de los eventos del historial
+    const [timelineOpenStates, setTimelineOpenStates] = useState(() =>
+        timeline?.length ? timeline.map(() => true) : []
+    );
+
+    useEffect(() => {
+        if (!timeline?.length) {
+            setTimelineOpenStates([]);
+            return;
+        }
+        setTimelineOpenStates((prev) => {
+            if (prev.length !== timeline.length) {
+                return timeline.map((_, i) => prev[i] ?? true);
+            }
+            return prev;
+        });
+    }, [timeline?.length]);
+
+    const allTimelineOpen = timelineOpenStates.length > 0 && timelineOpenStates.every(Boolean);
+
+    const handleToggleAllTimeline = () => {
+        setTimelineOpenStates((prev) => prev.map(() => !allTimelineOpen));
+    };
 
     const { data: session } = useSession();
     const rawRole = session?.user?.role;
@@ -292,7 +317,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
         <>
             <div
                 className={`
-                ${!wrappedInDialog && "rounded-2xl border bg-card text-card-foreground shadow p-5 overflow-auto mb-4"}
+                ${!wrappedInDialog && "rounded-2xl border bg-card text-card-foreground shadow px-5 pt-5 pb-3 overflow-auto mb-4"}
                 w-full h-full
                 `}
             >
@@ -316,7 +341,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                         )}
                     </div>
                 ) : (
-                    <div className="w-full h-full ">
+                    <div className="w-full h-full flex flex-col min-h-0">
                         {!wrappedInDialog && (
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -367,9 +392,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </AlertDescription>
                             </Alert>
                         )}
-                        <div className="flex justify-center w-full">
-                            <Tabs value={mainTab} onValueChange={(v) => { setMainTab(v); if (v === 'historial') refetchTimeline(); }} className="w-full">
-                                <TabsList className="mx-auto mb-4">
+                        <div className="flex flex-col flex-1 min-h-0 w-full">
+                            <Tabs value={mainTab} onValueChange={(v) => { setMainTab(v); if (v === 'historial') refetchTimeline(); }} className="flex flex-col flex-1 min-h-0 w-full">
+                                <TabsList className="mb-4 w-fit self-start justify-start">
                                     <TabsTrigger value="edicion" className="flex items-center gap-2">
                                         <Edit className="h-4 w-4" /> Edición
                                     </TabsTrigger>
@@ -1237,14 +1262,15 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                 <CardContent className="space-y-4">
                                                     <div className="space-y-2">
                                                         <Label>Selecciona la acción a realizar</Label>
-                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             <Button
                                                                 variant={bulkActionType === 'lot' ? 'default' : 'outline'}
                                                                 onClick={() => {
                                                                     setBulkActionType('lot');
                                                                     setBulkActionValue('');
                                                                 }}
-                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                size="sm"
+                                                                className="h-8 px-3 flex items-center justify-center gap-2 text-xs"
                                                                 disabled={isReadOnly}
                                                             >
                                                                 <FileText className="h-5 w-5" />
@@ -1256,7 +1282,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     setBulkActionType('weight');
                                                                     setBulkActionValue('');
                                                                 }}
-                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                size="sm"
+                                                                className="h-8 px-3 flex items-center justify-center gap-2 text-xs"
                                                                 disabled={isReadOnly}
                                                             >
                                                                 <Weight className="h-5 w-5" />
@@ -1269,7 +1296,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     setBulkActionValue('');
                                                                     setWeightOperation('add');
                                                                 }}
-                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                size="sm"
+                                                                className="h-8 px-3 flex items-center justify-center gap-2 text-xs"
                                                                 disabled={isReadOnly}
                                                             >
                                                                 <Plus className="h-5 w-5" />
@@ -1282,7 +1310,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     setOldProductId('');
                                                                     setNewProductId('');
                                                                 }}
-                                                                className="h-auto py-3 flex flex-col items-center gap-2"
+                                                                size="sm"
+                                                                className="h-8 px-3 flex items-center justify-center gap-2 text-xs"
                                                                 disabled={isReadOnly}
                                                             >
                                                                 <Package className="h-5 w-5" />
@@ -1382,9 +1411,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 </div>
                                                             )}
 
-                                                            <Alert className="border-blue-200 bg-blue-50">
-                                                                <AlertCircle className="h-4 w-4 text-blue-600" />
-                                                                <AlertDescription className="text-blue-800 text-sm">
+                                                            <Alert className="border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-500/60 dark:bg-blue-900/40 dark:text-blue-100">
+                                                                <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                                                                <AlertDescription className="text-blue-800 dark:text-blue-100 text-sm">
                                                                     Los cambios se aplicarán únicamente a las cajas disponibles (no en producción).
                                                                 </AlertDescription>
                                                             </Alert>
@@ -1734,10 +1763,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 </TabsContent>
 
                                 {showHistorialTab && (
-                                    <TabsContent value="historial" className="mt-0">
-                                        <div className="space-y-4 max-h-[calc(90vh-200px)] overflow-y-auto">
-                                            <Card>
-                                                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                                    <TabsContent value="historial" className="mt-0 flex-1 flex flex-col min-h-0 data-[state=inactive]:hidden">
+                                        <div className="flex flex-col flex-1 min-h-0">
+                                            <Card className="flex flex-col flex-1 min-h-0">
+                                                <CardHeader className="flex flex-row items-start justify-between gap-4 shrink-0">
                                                     <div>
                                                         <CardTitle className="flex items-center gap-2 text-lg">
                                                             <History className="h-5 w-5" /> Historial del palet
@@ -1746,24 +1775,49 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             Eventos más recientes primero. Haz clic en la flecha para ver el detalle.
                                                         </p>
                                                     </div>
-                                                    {canDeleteTimeline && (
+                                                    <div className="flex items-center gap-2">
                                                         <Button
+                                                            type="button"
                                                             variant="outline"
-                                                            size="sm"
-                                                            className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                                            onClick={handleDeleteTimeline}
-                                                            disabled={deletingTimeline}
+                                                            size="icon"
+                                                            className="shrink-0"
+                                                            onClick={handleToggleAllTimeline}
+                                                            disabled={timelineLoading || !timeline || timeline.length === 0}
+                                                            aria-label={allTimelineOpen ? "Colapsar todo" : "Expandir todo"}
                                                         >
-                                                            {deletingTimeline ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                                            <span className="ml-1.5">Borrar historial</span>
+                                                            {allTimelineOpen ? (
+                                                                <ListChevronsUpDown className="h-4 w-4" />
+                                                            ) : (
+                                                                <ListChevronsDownUp className="h-4 w-4" />
+                                                            )}
                                                         </Button>
-                                                    )}
+                                                        {canDeleteTimeline && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                                onClick={handleDeleteTimeline}
+                                                                disabled={deletingTimeline}
+                                                            >
+                                                                {deletingTimeline ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                                                <span className="ml-1.5">Borrar historial</span>
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </CardHeader>
-                                                <CardContent>
+                                                <CardContent className="flex-1 min-h-0 overflow-y-auto">
                                                     <PalletTimeline
                                                         timeline={timeline}
                                                         loading={timelineLoading}
                                                         error={timelineError}
+                                                        openStates={timelineOpenStates}
+                                                        onItemOpenChange={(index, open) => {
+                                                            setTimelineOpenStates((prev) => {
+                                                                const next = [...prev];
+                                                                next[index] = open;
+                                                                return next;
+                                                            });
+                                                        }}
                                                     />
                                                 </CardContent>
                                             </Card>
@@ -1923,11 +1977,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
                             </Tabs>
                         </div>
-                                                        <div className="flex justify-end gap-3 pt-4 pb-6 border-t mt-4 mb-4">
+                                                        <div className="flex justify-end gap-3 pt-3 pb-3 border-t mt-3">
                             <Button variant="outline" onClick={handleOnClickReset} disabled={saving || isReadOnly}>
                                 Deshacer
                             </Button>
-                            <Button onClick={handleOnClickSaveChanges} disabled={saving || isReadOnly}>
+                            <Button onClick={handleOnClickSaveChanges} disabled={saving || isReadOnly || !hasPalletChanges}>
                                 {saving ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

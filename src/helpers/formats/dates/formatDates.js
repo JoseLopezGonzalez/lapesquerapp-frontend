@@ -24,3 +24,18 @@ export const formatDateShort = (dateString) => {
         year: "numeric",
     }); // Resultado: 26 feb 2025
 };
+
+/** Formato corto para timeline: "Lun 23 feb - 18:25" (día semana + día + mes + hora) */
+export const formatDateHourShort = (date) => {
+    const d = new Date(date);
+    const datePart = d.toLocaleDateString("es-ES", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+    });
+    const timePart = d.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+    return `${datePart} - ${timePart}`;
+};

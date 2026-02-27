@@ -128,8 +128,68 @@ const emptyPallet = {
 
 };
 
+/**
+ * Normalizes numeric value for comparison (handles string/number and null/undefined).
+ */
+function normNum(v) {
+    if (v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isNaN(n) ? null : n;
+}
 
+/**
+ * Returns true if two boxes have the same "saveable" content (product, lot, netWeight, grossWeight).
+ */
+function boxContentEqual(origBox, tempBox) {
+    const oProductId = origBox.product?.id ?? origBox.product;
+    const tProductId = tempBox.product?.id ?? tempBox.product;
+    if (normNum(oProductId) !== normNum(tProductId)) return false;
+    if (String(origBox.lot ?? '') !== String(tempBox.lot ?? '')) return false;
+    if (normNum(origBox.netWeight) !== normNum(tempBox.netWeight)) return false;
+    if (normNum(origBox.grossWeight) !== normNum(tempBox.grossWeight)) return false;
+    return true;
+}
 
+/**
+ * Returns true if original and temporal pallet data are equal for the purposes of "has changes".
+ * Compares observations, state, store, orderId, and boxes (by id and content).
+ */
+function palletDataEqual(original, temporal) {
+    if (!original && !temporal) return true;
+    if (!original || !temporal) return false;
+
+    if ((original.observations ?? '') !== (temporal.observations ?? '')) return false;
+
+    const oStateId = original.state?.id ?? original.state;
+    const tStateId = temporal.state?.id ?? temporal.state;
+    if (normNum(oStateId) !== normNum(tStateId)) return false;
+
+    const oStoreId = original.store?.id ?? null;
+    const tStoreId = temporal.store?.id ?? null;
+    if (normNum(oStoreId) !== normNum(tStoreId)) return false;
+
+    const oOrderId = normNum(original.orderId) || null;
+    const tOrderId = normNum(temporal.orderId) || null;
+    if (oOrderId !== tOrderId) return false;
+
+    const origBoxes = original.boxes ?? [];
+    const tempBoxes = temporal.boxes ?? [];
+    if (origBoxes.length !== tempBoxes.length) return false;
+    if (origBoxes.length === 0) return true;
+
+    const originalById = new Map(origBoxes.map((b) => [b.id, b]));
+    const originalIds = new Set(originalById.keys());
+    const temporalIds = new Set(tempBoxes.map((b) => b.id));
+    if (originalIds.size !== temporalIds.size || temporalIds.size !== tempBoxes.length) return false;
+    for (const id of temporalIds) {
+        if (!originalIds.has(id)) return false; // new box
+    }
+    for (const tempBox of tempBoxes) {
+        const origBox = originalById.get(tempBox.id);
+        if (!origBox || !boxContentEqual(origBox, tempBox)) return false;
+    }
+    return true;
+}
 
 export function usePallet({ id, onChange, initialStoreId = null, initialOrderId = null, skipBackendSave = false, initialPallet = null }) {
 
@@ -1050,8 +1110,14 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         }));
     };
 
-
-
+    const hasPalletChanges = !temporalPallet
+        ? false
+        : temporalPallet.id === null
+            ? (temporalPallet.boxes?.length > 0) ||
+              (String(temporalPallet.observations ?? '').trim() !== '') ||
+              (temporalPallet.store != null) ||
+              (temporalPallet.orderId != null)
+            : !palletDataEqual(pallet, temporalPallet);
 
 
 
@@ -1082,6 +1148,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
         onSavingChanges,
         onClose,
         setBoxPrinted,
+        hasPalletChanges,
     };
 
 }
