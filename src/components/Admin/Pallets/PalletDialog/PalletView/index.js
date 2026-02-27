@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
@@ -37,6 +38,7 @@ import { usePalletTimeline } from "@/hooks/usePalletTimeline";
 import { usePrintElement } from "@/hooks/usePrintElement";import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
 import { notify } from "@/lib/notifications";
+import { deletePalletTimeline } from "@/services/palletService";
 import BoxesLabels from "./BoxesLabels";
 import { PalletTimeline } from "./PalletTimeline";
 
@@ -71,6 +73,12 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const { timeline, loading: timelineLoading, error: timelineError, refetch: refetchTimeline } = usePalletTimeline(palletId);
     const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
     const [mainTab, setMainTab] = useState("edicion");
+    const [deletingTimeline, setDeletingTimeline] = useState(false);
+
+    const { data: session } = useSession();
+    const rawRole = session?.user?.role;
+    const roles = Array.isArray(rawRole) ? rawRole : (rawRole ? [rawRole] : []);
+    const canDeleteTimeline = roles.some((r) => r === "administrador" || r === "tecnico");
 
     const orderIdBlocked = initialOrderId !== null;
 
@@ -84,6 +92,22 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const handleOnClickPrintLabel = () => {
         onPrint();
+    }
+
+    const handleDeleteTimeline = async () => {
+        if (!palletId || deletingTimeline || !session?.user?.accessToken) return;
+        const confirmed = window.confirm("¿Borrar todo el historial de este palet? Esta acción no se puede deshacer.");
+        if (!confirmed) return;
+        setDeletingTimeline(true);
+        try {
+            const res = await deletePalletTimeline(palletId, session.user.accessToken);
+            notify.success({ title: res?.message || "Historial borrado correctamente" });
+            refetchTimeline();
+        } catch (err) {
+            notify.error({ title: err?.message || "Error al borrar el historial" });
+        } finally {
+            setDeletingTimeline(false);
+        }
     }
 
     const [selectedBox, setSelectedBox] = useState(null);
@@ -1713,13 +1737,27 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     <TabsContent value="historial" className="mt-0">
                                         <div className="space-y-4 max-h-[calc(90vh-200px)] overflow-y-auto">
                                             <Card>
-                                                <CardHeader>
-                                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                                        <History className="h-5 w-5" /> Historial del palet
-                                                    </CardTitle>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Eventos más recientes primero. Haz clic en la flecha para ver el detalle.
-                                                    </p>
+                                                <CardHeader className="flex flex-row items-start justify-between gap-4">
+                                                    <div>
+                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                            <History className="h-5 w-5" /> Historial del palet
+                                                        </CardTitle>
+                                                        <p className="text-sm text-muted-foreground mt-1">
+                                                            Eventos más recientes primero. Haz clic en la flecha para ver el detalle.
+                                                        </p>
+                                                    </div>
+                                                    {canDeleteTimeline && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                            onClick={handleDeleteTimeline}
+                                                            disabled={deletingTimeline}
+                                                        >
+                                                            {deletingTimeline ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                                            <span className="ml-1.5">Borrar historial</span>
+                                                        </Button>
+                                                    )}
                                                 </CardHeader>
                                                 <CardContent>
                                                     <PalletTimeline

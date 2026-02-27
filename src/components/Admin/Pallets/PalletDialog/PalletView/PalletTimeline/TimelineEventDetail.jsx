@@ -7,16 +7,22 @@ import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 
 /**
  * Renders details card based on entry.type. Fallback: key-value list.
+ *
+ * Legacy types (box_added, box_removed, box_updated, observations_updated) are deprecated
+ * and kept only for compatibility with old timeline data; new saves emit pallet_updated.
  */
 export function TimelineEventDetail({ entry }) {
   const { type, details = {} } = entry;
 
   switch (type) {
     case "box_added":
+      // Legacy: solo compatibilidad con historiales antiguos.
       return <DetailBox d={details} variant="added" />;
     case "box_removed":
+      // Legacy: solo compatibilidad con historiales antiguos.
       return <DetailBox d={details} variant="removed" />;
     case "box_updated":
+      // Legacy: solo compatibilidad con historiales antiguos.
       return <DetailBoxUpdated d={details} />;
     case "state_changed":
     case "state_changed_auto":
@@ -33,7 +39,10 @@ export function TimelineEventDetail({ entry }) {
     case "pallet_created":
     case "pallet_created_from_reception":
       return <DetailPalletCreated d={details} fromReception={type === "pallet_created_from_reception"} />;
+    case "pallet_updated":
+      return <DetailPalletUpdated d={details} />;
     case "observations_updated":
+      // Legacy: solo compatibilidad con historiales antiguos.
       return <DetailObservations d={details} />;
     default:
       return <DetailGeneric d={details} action={entry.action} />;
@@ -199,6 +208,67 @@ function DetailPalletCreated({ d, fromReception }) {
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Detail for pallet_updated: one event per save with optional keys (observations, state, store, order, boxesAdded, boxesRemoved, boxesUpdated, fromReception, receptionId).
+ */
+function DetailPalletUpdated({ d }) {
+  const sections = [];
+
+  if (d.observations != null && (d.observations.from !== undefined || d.observations.to !== undefined)) {
+    sections.push(<DetailObservations key="obs" d={d.observations} />);
+  }
+  if (d.state != null && (d.state.from != null || d.state.to != null)) {
+    sections.push(<DetailState key="state" d={d.state} isAuto={false} />);
+  }
+  if (d.store != null) {
+    if (d.store.assigned != null) {
+      sections.push(<DetailStore key="store" d={d.store.assigned} isRemoved={false} />);
+    } else if (d.store.removed != null) {
+      sections.push(<DetailStore key="store" d={d.store.removed} isRemoved={true} />);
+    }
+  }
+  if (d.order != null) {
+    if (d.order.linked != null) {
+      sections.push(<DetailOrder key="order" d={d.order.linked} isUnlinked={false} />);
+    } else if (d.order.unlinked != null) {
+      sections.push(<DetailOrder key="order" d={d.order.unlinked} isUnlinked={true} />);
+    }
+  }
+  if (Array.isArray(d.boxesAdded) && d.boxesAdded.length > 0) {
+    d.boxesAdded.forEach((box, i) => {
+      sections.push(<DetailBox key={`added-${i}`} d={box} variant="added" />);
+    });
+  }
+  if (Array.isArray(d.boxesRemoved) && d.boxesRemoved.length > 0) {
+    d.boxesRemoved.forEach((box, i) => {
+      sections.push(<DetailBox key={`removed-${i}`} d={box} variant="removed" />);
+    });
+  }
+  if (Array.isArray(d.boxesUpdated) && d.boxesUpdated.length > 0) {
+    d.boxesUpdated.forEach((box, i) => {
+      sections.push(<DetailBoxUpdated key={`updated-${i}`} d={box} />);
+    });
+  }
+  if (d.fromReception === true) {
+    sections.push(
+      <div key="reception" className="flex items-center gap-2 flex-wrap">
+        <Badge variant="secondary">Desde recepción</Badge>
+        {d.receptionId != null && <span className="text-sm text-muted-foreground">Recepción #{d.receptionId}</span>}
+      </div>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <Card className="border-muted bg-muted/20">
+        <CardContent className="pt-3 pb-3 text-sm text-muted-foreground">Sin detalle</CardContent>
+      </Card>
+    );
+  }
+
+  return <div className="space-y-3">{sections}</div>;
 }
 
 function DetailObservations({ d }) {

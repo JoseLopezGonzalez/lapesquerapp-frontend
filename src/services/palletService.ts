@@ -125,6 +125,47 @@ export async function getPalletTimeline(
   };
 }
 
+/** Response from DELETE /api/v2/pallets/{id}/timeline */
+export interface DeletePalletTimelineResponse {
+  message: string;
+}
+
+export async function deletePalletTimeline(
+  palletId: number | string,
+  token: AuthToken
+): Promise<DeletePalletTimelineResponse> {
+  const response = await fetchWithTenant(
+    `${API_URL_V2}pallets/${palletId}/timeline`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({})) as { message?: string };
+    const message =
+      response.status === 401
+        ? 'No autenticado'
+        : response.status === 403
+          ? 'Sin permiso para borrar el historial'
+          : response.status === 404
+            ? 'Palet no encontrado'
+            : getErrorMessage(errorData) || 'Error al borrar el historial del palet';
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as DeletePalletTimelineResponse;
+  return data;
+}
+
 export function updatePallet(
   palletId: number | string,
   palletData: PalletPayload,

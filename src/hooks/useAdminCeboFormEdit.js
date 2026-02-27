@@ -53,7 +53,7 @@ function mapDispatchToFormValues(dispatch) {
   if (details.length === 0) details.push({ ...DEFAULT_DETAIL });
   const exportType = dispatch.exportType ?? dispatch.export_type ?? null;
   return {
-    supplier: supplierId,
+    supplier: supplierId != null ? String(supplierId) : null,
     date,
     notes,
     exportType: exportType === 'a3erp' || exportType === 'facilcom' ? exportType : null,
@@ -254,6 +254,12 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
 
         const updated = await ceboDispatchService.update(dispatchId, payload);
 
+        // Actualizar el formulario con la respuesta (el backend puede rellenar precios con el último conocido)
+        const nextValues = mapDispatchToFormValues(updated);
+        if (nextValues) {
+          reset(nextValues);
+        }
+
         notify.success({ title: 'Salida de cebo actualizada correctamente' });
 
         if (onSuccess) {
@@ -264,7 +270,7 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
         notify.error({ title: 'Error al actualizar la salida de cebo', description: message });
       }
     },
-    [dispatchId, onSuccess]
+    [dispatchId, onSuccess, reset]
   );
 
   const handleSaveClick = useCallback(() => {
