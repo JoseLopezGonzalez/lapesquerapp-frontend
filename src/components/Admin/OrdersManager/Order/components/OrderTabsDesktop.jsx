@@ -26,14 +26,13 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
   return (
     <div className="flex-1 w-full overflow-y-hidden">
       <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
-        <Tabs value={activeTab} onValueChange={onTabChange} className="h-full flex flex-col w-full">
+        <Tabs value={activeTab} onValueChange={onTabChange}>
           <div className="mb-4 flex justify-start">
-            <TabsList className="w-fit inline-flex">
+            <TabsList>
               {SECTIONS_CONFIG.map((section) => (
                 <TabsTrigger
                   key={section.id}
                   value={section.id}
-                  className="text-xs sm:text-sm whitespace-nowrap"
                 >
                   {TAB_LABELS[section.id] ?? section.title}
                 </TabsTrigger>

@@ -1,0 +1,453 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+
+
+.login-background {
+  position: relative;
+  z-index: 0;
+}
+
+.login-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/background-light-v2.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+/* Soporte para Tailwind darkMode: 'class' */
+.dark .login-background::before {
+  background-image: url('/images/background-dark.png');
+  opacity: 0.15;
+}
+
+
+
+
+
+
+.preserve-line-breaks {
+  white-space: pre-line;
+}
+
+.bold-first-line::first-line {
+  font-weight: bold;
+}
+
+/* Scrollbar estilo shadcn/ui */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+  min-height: 24px;
+  min-width: 24px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+::-webkit-scrollbar-track {
+  display: none;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-button:start {
+  display: none;
+}
+
+::-webkit-scrollbar-button:end {
+  display: none;
+}
+
+::-webkit-scrollbar-corner {
+  display: none;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+/* Truco para que no se impriman los modales de Headlessui */
+@media print {
+  #headlessui-portal-root {
+    display: none;
+  }
+}
+
+/* Estilo personalizado para el doblez */
+.postit::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255,
+      255,
+      255,
+      0.6);
+  /* Color para simular el doblez de papel */
+  border-bottom-left-radius: 12px;
+  box-shadow: -3px -3px 4px rgba(0, 0, 0, 0.2);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+
+/* Mas CSS */
+.flash {
+  animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.z-max {
+  z-index: 9999;
+}
+
+/* Sileo toasts por encima de diálogos, sheets y overlays (Radix usa z-50) */
+[data-sileo-viewport] {
+  z-index: 9999 !important;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+} */
+
+
+/* theme color shadcn */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    --primary: 0 0% 19%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 5%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 5%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 92%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 76%;
+
+    --radius: 0.5rem;
+  }
+
+  /* Dark theme - Sube el % de luminosidad para un tema más claro (menos oscuro) */
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 23%;
+    --muted-foreground: 0 0% 54%;
+
+    --accent: 0 0% 17%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 17%;
+    --input: 0 0% 21%;
+    --ring: 0 0% 44%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animación personalizada para el skeleton */
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+
+/* Sidebar */
+@layer base {
+  :root {
+    --sidebar-background: 0 0% 98%;
+    /* neutral-50 */
+    --sidebar-foreground: 0 0% 26.1%;
+    /* neutral-800 */
+    --sidebar-primary: 0 0% 10%;
+    /* neutral-900 */
+    --sidebar-primary-foreground: 0 0% 98%;
+    /* neutral-50 */
+    --sidebar-accent: 0 0% 95.9%;
+    /* neutral-100 */
+    --sidebar-accent-foreground: 0 0% 10%;
+    /* neutral-900 */
+    --sidebar-border: 0 0% 91%;
+    /* neutral-200 */
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* base ring color */
+  }
+
+  .dark {
+    --sidebar-background: 0 0% 11%;
+    --sidebar-foreground: 0 0% 95.9%;
+    /* neutral-100 */
+    --sidebar-primary: 224.3 76.3% 48%;
+    /* unchanged (e.g. blue-600) */
+    --sidebar-primary-foreground: 0 0% 100%;
+    /* white */
+    --sidebar-accent: 0 0% 15.9%;
+    /* neutral-800 */
+    --sidebar-accent-foreground: 0 0% 95.9%;
+    /* neutral-100 */
+    --sidebar-border: 0 0% 15.9%;
+    /* neutral-800 */
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* base ring color */
+  }
+}
+
+
+.lottie {
+  /* width: 250px; */
+  /* Define el tamaño del loader */
+  /* height: 250px;  */
+  /* Define el tamaño del loader */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* background-color: white; */
+  /* border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  /* Estilo para la caja */
+}
+
+
+@layer base {
+  :root {
+    --chart-1: theme('colors.sky.400');
+    --chart-2: theme('colors.sky.500');
+    --chart-3: theme('colors.sky.600');
+    --chart-4: theme('colors.sky.700');
+    --chart-5: theme('colors.sky.800');
+    --chart-6: theme('colors.sky.900');
+  }
+
+  .dark {
+    --chart-1: theme('colors.sky.300');
+    --chart-2: theme('colors.sky.400');
+    --chart-3: theme('colors.sky.500');
+    --chart-4: theme('colors.sky.600');
+    --chart-5: theme('colors.sky.700');
+    --chart-6: theme('colors.sky.800');
+  }
+}
+
+/* @layer base {
+  :root {
+    --chart-1: hsl(var(--primary) / 1);
+    --chart-2: hsl(var(--primary) / 0.9);
+    --chart-3: hsl(var(--primary) / 0.75);
+    --chart-4: hsl(var(--primary) / 0.6);
+    --chart-5: hsl(var(--primary) / 0.45);
+  }
+
+  .dark {
+    --chart-1: hsl(var(--primary) / 1);
+    --chart-2: hsl(var(--primary) / 0.9);
+    --chart-3: hsl(var(--primary) / 0.75);
+    --chart-4: hsl(var(--primary) / 0.6);
+    --chart-5: hsl(var(--primary) / 0.45);
+  }
+} */
+
+
+.masonry-column {
+  background-clip: padding-box;
+}
+
+/* Estilos para react-masonry-css */
+.masonry-grid {
+  display: flex;
+  width: auto;
+  margin-left: -1rem; /* Espacio negativo para compensar el padding de las columnas */
+}
+
+.masonry-grid_column {
+  padding-left: 1rem; /* Espacio entre columnas */
+  background-clip: padding-box;
+  min-width: 320px; /* Ancho mínimo para que los cards no sean demasiado estrechos */
+}
+
+/* Asegurar que los elementos dentro de las columnas no se rompan */
+.masonry-grid_column > div {
+  display: block;
+  margin-bottom: 1rem;
+}
+
