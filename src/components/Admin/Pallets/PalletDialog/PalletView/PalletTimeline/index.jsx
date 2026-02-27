@@ -37,16 +37,14 @@ export function PalletTimeline({ timeline = [], loading, error }) {
   }
 
   return (
-    <div className="relative pl-1">
-      <div className="space-y-0">
-        {timeline.map((entry, index) => (
-          <TimelineEventItem
-            key={`${entry.timestamp}-${index}`}
-            entry={entry}
-            formatDateHour={formatDateHour}
-          />
-        ))}
-      </div>
+    <div className="relative w-full max-w-lg">
+      {timeline.map((entry, index) => (
+        <TimelineEventItem
+          key={`${entry.timestamp}-${index}`}
+          entry={entry}
+          formatDateHour={formatDateHour}
+        />
+      ))}
     </div>
   );
 }
