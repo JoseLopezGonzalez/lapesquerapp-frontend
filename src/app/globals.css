@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -157,6 +156,14 @@
   @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
+/* Combobox/Command: no aplicar ring global al input de búsqueda (evita doble borde) */
+.command-input-wrapper input:focus-visible,
+[cmdk-input-wrapper] input:focus-visible,
+[cmdk-input]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* ---- TU CSS CUSTOM (igual que lo tenías) ---- */
 /* Login background */
 .login-background { position: relative; z-index: 0; }
@@ -234,6 +241,14 @@
   min-width: 320px;
 }
 .masonry-grid_column > div { display: block; margin-bottom: 1rem; }
+
+/* Sidebar layout: ensure spacer and fixed panel have width when expanded (Tailwind v4 compat) */
+[data-sidebar-root][data-state="expanded"] > div:first-child {
+  width: var(--sidebar-width);
+}
+[data-sidebar-root][data-state="expanded"] > div:nth-child(2) {
+  width: var(--sidebar-width);
+}
 
 @layer utilities {
   @keyframes shimmer { 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
