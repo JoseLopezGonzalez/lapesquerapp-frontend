@@ -60,11 +60,11 @@ const PalletDialog = dynamic(
 );
 
 const TARE_OPTIONS = [
-  { value: '1', label: '1kg' },
-  { value: '2', label: '2kg' },
+  { value: '0', label: '0kg' },
   { value: '3', label: '3kg' },
-  { value: '4', label: '4kg' },
-  { value: '5', label: '5kg' },
+  { value: '2.7', label: '2,70kg' },
+  { value: '1.4', label: '1,40kg' },
+  { value: '1.5', label: '1,50kg' },
 ];
 
 export default function CreateReceptionForm({ onSuccess }) {
@@ -350,9 +350,9 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   size="sm"
                                   onClick={() => {
                                     const currentBoxes =
-                                      parseInt(watch(`details.${index}.boxes`)) ||
-                                      1;
-                                    if (currentBoxes > 1) {
+                                      parseInt(watch(`details.${index}.boxes`), 10) ||
+                                      0;
+                                    if (currentBoxes > 0) {
                                       setValue(
                                         `details.${index}.boxes`,
                                         currentBoxes - 1
@@ -368,17 +368,7 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   name={`details.${index}.boxes`}
                                   control={control}
                                   rules={{
-                                    required:
-                                      mode === 'automatic'
-                                        ? 'Las cajas son obligatorias'
-                                        : false,
-                                    min:
-                                      mode === 'automatic'
-                                        ? {
-                                            value: 1,
-                                            message: 'Mínimo 1 caja',
-                                          }
-                                        : undefined,
+                                    // Cajas opcionales: solo se validan si hay valor
                                   }}
                                   render={({
                                     field: { onChange, value, ...field },
@@ -386,8 +376,8 @@ export default function CreateReceptionForm({ onSuccess }) {
                                     <Input
                                       {...field}
                                       type="number"
-                                      min="1"
-                                      value={value || 1}
+                                      min="0"
+                                      value={value ?? 0}
                                       onChange={(e) => onChange(e.target.value)}
                                       className="w-16 text-center"
                                       aria-label={`Número de cajas para línea ${index + 1}`}
@@ -402,8 +392,9 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   onClick={() => {
                                     const currentBoxes =
                                       parseInt(
-                                        watch(`details.${index}.boxes`)
-                                      ) || 1;
+                                        watch(`details.${index}.boxes`),
+                                        10
+                                      ) || 0;
                                     setValue(
                                       `details.${index}.boxes`,
                                       currentBoxes + 1
@@ -424,33 +415,54 @@ export default function CreateReceptionForm({ onSuccess }) {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Controller
-                                name={`details.${index}.tare`}
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                  <Select
-                                    value={value}
-                                    onValueChange={(newValue) => {
-                                      onChange(newValue);
-                                      setTimeout(() => triggerRecalc(), 0);
-                                    }}
-                                  >
-                                    <SelectTrigger className="w-24">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {TARE_OPTIONS.map((option) => (
-                                        <SelectItem
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              />
+                              {(() => {
+                                const boxesVal = watch(
+                                  `details.${index}.boxes`
+                                );
+                                const hasBoxes =
+                                  boxesVal != null &&
+                                  boxesVal !== '' &&
+                                  parseInt(boxesVal, 10) > 0;
+                                if (!hasBoxes) {
+                                  return (
+                                    <span className="text-xs text-muted-foreground">
+                                      Sin cajas
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <Controller
+                                    name={`details.${index}.tare`}
+                                    control={control}
+                                    render={({ field: { onChange, value } }) => (
+                                      <Select
+                                        value={value}
+                                        onValueChange={(newValue) => {
+                                          onChange(newValue);
+                                          setTimeout(
+                                            () => triggerRecalc(),
+                                            0
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-24">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {TARE_OPTIONS.map((option) => (
+                                            <SelectItem
+                                              key={option.value}
+                                              value={option.value}
+                                            >
+                                              {option.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  />
+                                );
+                              })()}
                             </TableCell>
                             <TableCell>
                               <Input

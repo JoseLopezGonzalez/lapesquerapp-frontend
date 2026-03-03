@@ -27,7 +27,7 @@ import {
 const DEFAULT_DETAIL = {
   product: null,
   grossWeight: '',
-  boxes: 1,
+  boxes: 0,
   tare: '3',
   netWeight: '',
   price: '',
@@ -112,7 +112,7 @@ export function useAdminReceptionForm({ onSuccess }) {
     return JSON.stringify(
       watchedDetails.map((d) => ({
         grossWeight: d?.grossWeight || '',
-        boxes: d?.boxes ?? 1,
+        boxes: d?.boxes ?? 0,
         tare: d?.tare ?? '3',
         netWeight: d?.netWeight || '',
         price: d?.price || '',
