@@ -279,10 +279,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 setCanEdit(finalCanEdit);
                 setCannotEditReason(canEditPartial ? null : cannotEditReason);
                 
-                // Si no se puede editar (y no es por cajas usadas), no cargar datos
+                // Siempre cargar datos para permitir visualización en solo lectura cuando !finalCanEdit
                 if (!finalCanEdit) {
-                    console.log('Recepción no se puede editar:', cannotEditReason);
-                    return;
+                    console.log('Recepción no se puede editar (solo lectura):', cannotEditReason);
                 }
                 
                 // Log para debugging
@@ -947,9 +946,24 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         );
     }
 
-    // Si no se puede editar, mostrar mensaje
-    // NOTA: Si el motivo es por cajas usadas, permitimos edición parcial (ya se maneja arriba)
+    // Si no se puede editar, mostrar vista de solo lectura (ojear)
     if (!canEdit) {
+        const readOnlySupplierId = watch('supplier');
+        const readOnlySupplier = supplierOptions.find(s => s.value === readOnlySupplierId || s.value === String(readOnlySupplierId));
+        const readOnlyDate = watch('date');
+        const readOnlyNotes = watch('notes');
+        const readOnlyDetails = watch('details') || [];
+        const readOnlyDeclaredAmount = watch('declaredTotalAmount');
+        const readOnlyDeclaredWeight = watch('declaredTotalNetWeight');
+        const readOnlyLinesTotals = readOnlyDetails.reduce(
+            (acc, d) => {
+                const nw = parseFloat(d?.netWeight) || 0;
+                const p = parseFloat(d?.price) || 0;
+                return { totalKg: acc.totalKg + nw, totalAmount: acc.totalAmount + nw * p };
+            },
+            { totalKg: 0, totalAmount: 0 }
+        );
+
         return (
             <div className="w-full h-full p-6">
                 <div className="flex justify-between items-start mb-6">
@@ -959,14 +973,190 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             <p className="text-sm text-muted-foreground">#{receptionId}</p>
                         )}
                     </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsPrintDialogOpen(true)}
+                    >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Imprimir
+                    </Button>
                 </div>
-                <Alert variant="destructive" className="mt-4">
+                <Alert variant="destructive" className="mt-4 mb-6">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>No se puede editar esta recepción</AlertTitle>
                     <AlertDescription>
                         {cannotEditReason || 'Esta recepción no se puede editar debido a restricciones del sistema.'}
                     </AlertDescription>
                 </Alert>
+
+                <div className="flex flex-col gap-6">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Proveedor</Label>
+                                    <p className="text-sm font-medium">{readOnlySupplier?.label ?? readOnlySupplierId ?? '—'}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Fecha</Label>
+                                    <p className="text-sm font-medium">{readOnlyDate ? format(readOnlyDate instanceof Date ? readOnlyDate : new Date(readOnlyDate), 'dd/MM/yyyy') : '—'}</p>
+                                </div>
+                            </div>
+                            {(readOnlyNotes != null && readOnlyNotes !== '') && (
+                                <div className="space-y-2 mt-4">
+                                    <Label className="text-muted-foreground">Observaciones / Lonja</Label>
+                                    <p className="text-sm whitespace-pre-wrap">{readOnlyNotes}</p>
+                                </div>
+                            )}
+                            <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Importe Total Declarado (€)</Label>
+                                    <p className="text-sm font-medium">{readOnlyDeclaredAmount != null && readOnlyDeclaredAmount !== '' ? formatDecimalCurrency(parseFloat(readOnlyDeclaredAmount)) : '—'}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-muted-foreground">Peso Neto Total Declarado (kg)</Label>
+                                    <p className="text-sm font-medium">{readOnlyDeclaredWeight != null && readOnlyDeclaredWeight !== '' ? formatDecimalWeight(parseFloat(readOnlyDeclaredWeight)) : '—'}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {creationMode !== 'pallets' && (
+                        <Card>
+                            <CardContent className="pt-6">
+                                <h3 className="font-medium mb-4">Líneas de producto</h3>
+                                {readOnlyDetails.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No hay líneas.</p>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Artículo</TableHead>
+                                                <TableHead>Peso Neto (kg)</TableHead>
+                                                <TableHead>Cajas</TableHead>
+                                                <TableHead>Precio (€/kg)</TableHead>
+                                                <TableHead>Importe</TableHead>
+                                                <TableHead>Lote</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {readOnlyDetails.map((detail, index) => {
+                                                const productId = detail?.product;
+                                                const product = productOptions.find(p => p.value === productId || p.value === String(productId));
+                                                const netWeight = parseFloat(detail?.netWeight) || 0;
+                                                const price = parseFloat(detail?.price) || 0;
+                                                return (
+                                                    <TableRow key={index}>
+                                                        <TableCell className="font-medium">{product?.label ?? product?.name ?? productId ?? '—'}</TableCell>
+                                                        <TableCell>{formatDecimalWeight(netWeight)}</TableCell>
+                                                        <TableCell>{detail?.boxes ?? '—'}</TableCell>
+                                                        <TableCell>{formatDecimal(price)}</TableCell>
+                                                        <TableCell>{formatDecimalCurrency(netWeight * price)}</TableCell>
+                                                        <TableCell>{detail?.lot ?? '—'}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TableCell className="text-right font-semibold">Total</TableCell>
+                                                <TableCell className="font-semibold">{formatDecimalWeight(readOnlyLinesTotals.totalKg)}</TableCell>
+                                                <TableCell colSpan={2} />
+                                                <TableCell className="font-semibold">{formatDecimalCurrency(readOnlyLinesTotals.totalAmount)}</TableCell>
+                                                <TableCell />
+                                            </TableRow>
+                                        </TableFooter>
+                                    </Table>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {creationMode === 'pallets' && (
+                        <Card>
+                            <CardContent className="pt-6">
+                                <h3 className="font-medium mb-4">Palets</h3>
+                                {temporalPallets.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No hay palets.</p>
+                                ) : (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>#</TableHead>
+                                                <TableHead>Observaciones</TableHead>
+                                                <TableHead>Cajas</TableHead>
+                                                <TableHead>Peso Neto</TableHead>
+                                                <TableHead>Producto - Lote / Precio (€/kg)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {palletsDisplayData.map((displayItem, index) => {
+                                                const { item, pallet, productLotCombinations } = displayItem;
+                                                const prices = item.prices || {};
+                                                return (
+                                                    <TableRow key={pallet?.id ?? index}>
+                                                        <TableCell className="font-medium">{pallet?.id ? `#${pallet.id}` : `Nuevo ${index + 1}`}</TableCell>
+                                                        <TableCell className="max-w-[200px]">
+                                                            {item.observations ? (
+                                                                <span className="text-sm">{item.observations}</span>
+                                                            ) : (
+                                                                <span className="text-sm text-muted-foreground italic">Sin observaciones</span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>{pallet?.numberOfBoxes ?? pallet?.boxes?.length ?? 0}</TableCell>
+                                                        <TableCell>{formatDecimalWeight(pallet?.netWeight ?? 0)}</TableCell>
+                                                        <TableCell>
+                                                            <div className="space-y-2">
+                                                                {productLotCombinations.length === 0 ? (
+                                                                    <span className="text-sm text-muted-foreground">No hay productos</span>
+                                                                ) : (
+                                                                    productLotCombinations.map((combo, comboIdx) => {
+                                                                        const priceKey = `${combo.productId}-${combo.lot}`;
+                                                                        const priceVal = prices[priceKey];
+                                                                        return (
+                                                                            <div key={comboIdx} className="flex items-center gap-3 py-1 border-b last:border-0 text-sm">
+                                                                                <span className="font-medium">{combo.productName}</span>
+                                                                                <span className="text-muted-foreground font-mono">({combo.lot})</span>
+                                                                                <span className="text-muted-foreground">{combo.boxesCount} cajas · {formatDecimalWeight(combo.totalNetWeight)}</span>
+                                                                                {priceVal != null && priceVal !== '' && (
+                                                                                    <span className="text-muted-foreground">{formatDecimal(parseFloat(priceVal))} €/kg</span>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+
+                <ReceptionPrintDialog
+                    isOpen={isPrintDialogOpen}
+                    onClose={() => setIsPrintDialogOpen(false)}
+                    receptionId={receptionId}
+                    supplier={readOnlySupplierId ? (readOnlySupplier ? { name: readOnlySupplier.label } : { name: readOnlySupplierId }) : null}
+                    date={readOnlyDate}
+                    notes={readOnlyNotes}
+                    details={readOnlyDetails.map(detail => {
+                        const productId = detail?.product;
+                        const product = productOptions.find(p => p.value === productId || p.value === String(productId));
+                        return {
+                            ...detail,
+                            productName: product?.label ?? product?.name ?? `Producto ${productId}`,
+                        };
+                    })}
+                    pallets={temporalPallets}
+                    creationMode={creationMode}
+                />
             </div>
         );
     }
