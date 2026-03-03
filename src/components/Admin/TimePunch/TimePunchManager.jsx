@@ -318,7 +318,7 @@ export default function TimePunchManager() {
 
             {/* Dialog de éxito - Usa contenido congelado para evitar cambios durante animación */}
             <Dialog open={!!lastSuccess} onOpenChange={() => {}}>
-                <DialogContent className="sm:max-w-md [&>button]:hidden">
+                <DialogContent size="md" className="[&>button]:hidden">
                     {dialogContent ? (
                         <>
                             <DialogTitle className="sr-only">

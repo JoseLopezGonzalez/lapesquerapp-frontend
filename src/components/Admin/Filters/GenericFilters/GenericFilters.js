@@ -179,7 +179,7 @@ export const GenericFilters = ({ data }) => {
                         )}
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent size="2xl">
                     <DialogHeader>
                         <DialogTitle>Filtros</DialogTitle>
                         <GenericFiltersModal

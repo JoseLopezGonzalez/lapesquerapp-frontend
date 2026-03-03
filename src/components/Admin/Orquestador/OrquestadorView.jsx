@@ -1059,7 +1059,7 @@ export default function OrquestadorView() {
       )}
 
       <Dialog open={addCajasDialogOpen} onOpenChange={setAddCajasDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>
               {addCajasStep === 1 && 'Selecciona el pedido'}

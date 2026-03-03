@@ -33,7 +33,7 @@ export default function MassiveLinkPurchasesDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto flex flex-col">
+            <DialogContent size="7xl" className="max-h-[90vh] overflow-y-auto flex flex-col">
                 <DialogHeader>
                     <DialogTitle>
                         {allLinkedSummary.length > 0 ? 'Enlaces de compra/recepción' : 'Enlazar Compras - Modo Masivo'}

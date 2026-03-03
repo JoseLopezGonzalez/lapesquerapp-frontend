@@ -48,7 +48,7 @@ export function TotalAmountSoldCard() {
         <Card className="p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
-                    <CardDescription className="text-sm text-muted-foreground">
+                    <CardDescription>
                         Importe Total de Ventas
                     </CardDescription>
                     {hasValidPercentage && (
@@ -63,16 +63,29 @@ export function TotalAmountSoldCard() {
                     )}
                 </div>
 
-                <CardTitle>
-                    {data?.value !== null ? (
-                        <div>
-                            <h1 className="text-3xl font-medium tracking-tight flex gap-2 items-center">
-                                {formatDecimalCurrency(data.subtotal)}
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Info className="w-4 h-4 cursor-pointer" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="text-sm p-5 w-64">
+                <div className="flex gap-2 items-start">
+                    <CardTitle>
+                        {data?.value !== null ? (
+                            <div>
+                                <h1 className="text-3xl font-medium tracking-tight">
+                                    {formatDecimalCurrency(data.subtotal)}
+                                </h1>
+                                <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 italic">
+                                    {formatDecimalCurrency(data.value)} con IVA
+                                </div>
+                            </div>
+                        ) : (
+                            <span className="text-muted-foreground text-base">Sin datos</span>
+                        )}
+                    </CardTitle>
+                    {data?.value !== null && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="cursor-pointer shrink-0 mt-1.5">
+                                    <Info className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="text-sm p-5 w-64">
                                         <div className="grid gap-2">
 
                                             <div className="flex flex-col gap-0.5">
@@ -130,16 +143,9 @@ export function TotalAmountSoldCard() {
 
                                         </div>
                                     </TooltipContent>
-                                </Tooltip>
-                            </h1>
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 italic">
-                                {formatDecimalCurrency(data.value)} con IVA
-                            </div>
-                        </div>
-                    ) : (
-                        <span className="text-muted-foreground text-base">Sin datos</span>
+                        </Tooltip>
                     )}
-                </CardTitle>
+                </div>
             </CardHeader>
         </Card >
     )

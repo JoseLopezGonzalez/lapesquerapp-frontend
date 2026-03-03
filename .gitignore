@@ -42,3 +42,4 @@ next-env.d.ts
 
 # VSCode local settings
 .vscode/settings.json
+\n# shadcn Nova preset dummy (not versioned)\nshadcn-preset/

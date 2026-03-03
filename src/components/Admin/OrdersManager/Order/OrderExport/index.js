@@ -85,10 +85,10 @@ const OrderExport = () => {
                     <p className="text-sm text-muted-foreground">Selecciona un documento específico para descargar</p>
                 </div>
                 <div className="border rounded-lg p-4 space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
+                            <div className="flex items-center gap-2 w-full">
+                                <div className="flex-1 min-w-0">
                                     <Select onValueChange={(value) => setSelectedDocument(value)} value={selectedDocument}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -100,9 +100,9 @@ const OrderExport = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="w-[150px]">
+                                <div className="w-[150px] shrink-0">
                                     <Select value={selectedType} onValueChange={(value) => setSelectedType(value)}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent align="end">

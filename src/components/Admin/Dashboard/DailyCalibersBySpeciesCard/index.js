@@ -5,6 +5,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -66,21 +67,21 @@ export function DailyCalibersBySpeciesCard() {
     if (speciesLoading) {
         return (
             <Card className="w-full max-w-full overflow-hidden">
-                <CardHeader>
+                <CardHeader className="pb-2 space-y-4">
                     <div>
-                        <CardTitle className="text-base">
+                        <CardTitle>
                             <Skeleton className="h-6 w-48" />
                         </CardTitle>
                         <CardDescription>
                             <Skeleton className="h-4 w-64 mt-2" />
                         </CardDescription>
                     </div>
-                    <div className="flex flex-row gap-2 mt-2">
+                    <div className="flex flex-row gap-2">
                         <Skeleton className="h-10 flex-1" />
                         <Skeleton className="h-10 flex-1" />
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4 mt-2 w-full mb-4">
+                <CardContent className="space-y-4">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="space-y-1">
                             <div className="flex justify-between items-center">
@@ -97,21 +98,16 @@ export function DailyCalibersBySpeciesCard() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden min-w-0 box-border">
-            <CardHeader className="p-3 md:p-6 space-y-3">
+            <CardHeader className="pb-2 space-y-4">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <div>
-                        <CardTitle className="text-base md:text-lg">
+                        <CardTitle>
                             Calibres diarios por especie
                         </CardTitle>
-                        <CardDescription className="text-sm mt-1">
-                            Desglose diario de pesos por calibre para la fecha seleccionada.
+                        <CardDescription>
+                            Desglose diario de pesos por calibre.
                         </CardDescription>
                     </div>
-                    {!error && (
-                        <p className="text-xl font-semibold tabular-nums text-foreground shrink-0 mt-1 sm:mt-0">
-                            {formatDecimalWeight(totalKg)}
-                        </p>
-                    )}
                 </div>
                 <div className="flex flex-row gap-2 w-full">
                     <Select
@@ -140,7 +136,7 @@ export function DailyCalibersBySpeciesCard() {
                 </div>
             </CardHeader>
 
-            <CardContent className="px-3 md:px-6 pb-4 md:pb-6 space-y-4">
+            <CardContent className="space-y-4">
                 {error && (
                     <div className="flex flex-col items-center justify-center py-8 min-h-[200px]">
                         <p className="text-destructive text-sm text-center px-4">
@@ -245,6 +241,12 @@ export function DailyCalibersBySpeciesCard() {
                     </div>
                 )}
             </CardContent>
+            {!error && (
+                <CardFooter className="flex flex-row items-center justify-between gap-2 border-t bg-muted/50 py-3 px-4 text-sm">
+                    <span className="text-muted-foreground">Total</span>
+                    <span className="font-semibold tabular-nums text-foreground">{formatDecimalWeight(totalKg)}</span>
+                </CardFooter>
+            )}
         </Card>
     );
 }

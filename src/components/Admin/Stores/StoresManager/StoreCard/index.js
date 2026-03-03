@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers";
 import { ThermometerSnowflake, Package, Sparkles } from "lucide-react";
 import { TbTruckLoading } from "react-icons/tb";
@@ -25,8 +26,9 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
         ? "border-l-yellow-500"
         : "border-l-red-600";
 
+  const isThisSelected = store.id === isSelected;
   const selectedClass =
-    isSelected &&
+    isThisSelected &&
     (occupancyStatus === "low"
       ? "bg-green-500/10 border-green-500/60"
       : occupancyStatus === "medium"
@@ -44,9 +46,9 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
       <Card
         key={store.id}
         className={cn(
-          "relative flex border-l-4 min-h-[96px] text-sm font-medium leading-5 transition-colors duration-150",
-          "min-w-56",
-          "p-4 sm:p-5",
+          "relative flex flex-col border-l-4 min-h-0 overflow-hidden text-sm font-medium leading-5 transition-colors duration-150",
+          "min-w-56 shrink-0",
+          "p-3",
           "border-slate-400 dark:border-slate-600",
           store.id === isSelected && "bg-slate-500/10 border-slate-500/70",
           disabled && "cursor-not-allowed pointer-events-none",
@@ -68,36 +70,30 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
           }
         }}
       >
-        <div className="flex h-full w-full">
-          <div className="flex flex-1 flex-col text-start w-full gap-1.5">
-            <p className="text-base sm:text-lg font-semibold truncate">
+        <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden">
+          <div className="flex flex-1 flex-col text-start w-full gap-1 min-h-0 overflow-hidden">
+            <p className="text-sm font-semibold truncate shrink-0">
               {store.name}
             </p>
-            <p className="mt-0.5 flex items-center font-light text-xs text-muted-foreground">
+            <p className="mt-0.5 flex items-center font-light text-xs text-muted-foreground shrink-0">
               <Package className="mr-1 h-4 w-4" aria-hidden="true" />
               Palets sin almacén asignado
             </p>
-            <p className="mt-1 text-xs font-light inline-flex items-center text-muted-foreground">
+            <p className="mt-0.5 text-xs font-light inline-flex items-center text-muted-foreground">
               <Sparkles className="mr-1 h-4 w-4" aria-hidden="true" />
               {(store?.content?.pallets?.length || 0)} palets en espera
             </p>
-            <div className="mt-2 flex items-center text-sm pr-1">
-              <div className="w-full bg-foreground-300 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className={cn(
-                    "h-2.5 rounded-full transition-all duration-200",
-                    (store?.content?.pallets?.length || 0) > 0
-                      ? "bg-slate-500/80 dark:bg-slate-400/90 animate-pulse"
-                      : "bg-transparent"
-                  )}
-                  style={{
-                    width:
-                      (store?.content?.pallets?.length || 0) > 0 ? "100%" : "0%",
-                  }}
-                />
-              </div>
+            <div className="mt-1.5 flex items-center text-sm pr-1">
+              <Progress
+                value={(store?.content?.pallets?.length || 0) > 0 ? 100 : 0}
+                className={cn(
+                  "h-2",
+                  (store?.content?.pallets?.length || 0) > 0 &&
+                    "[&_[data-slot=progress-indicator]]:bg-slate-500/80 [&_[data-slot=progress-indicator]]:dark:bg-slate-400/90 [&_[data-slot=progress-indicator]]:animate-pulse"
+                )}
+              />
             </div>
-            <p className="mt-2 text-sm font-semibold">
+            <p className="mt-auto text-xs font-semibold shrink-0">
               Total: {formatDecimalWeight(store.totalNetWeight || 0)}
             </p>
           </div>
@@ -110,9 +106,9 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
     <Card
       key={store.id}
       className={cn(
-        "relative flex border-l-4 min-h-[96px] text-sm font-medium leading-5 transition-colors duration-150",
-        "min-w-56",
-        "p-4 sm:p-5",
+        "relative flex flex-col border-l-4 min-h-0 overflow-hidden text-sm font-medium leading-5 transition-colors duration-150",
+        "min-w-56 shrink-0",
+        "p-3",
         "bg-card",
         borderLClass,
         selectedClass,
@@ -135,9 +131,9 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
         }
       }}
     >
-      <div className="flex h-full w-full">
-        <div className="flex flex-1 flex-col text-start w-full gap-1.5">
-          <p className="text-base sm:text-lg font-semibold truncate">
+      <div className="flex flex-1 flex-col w-full min-h-0 overflow-hidden">
+        <div className="flex flex-1 flex-col text-start w-full gap-1 min-h-0 overflow-hidden">
+          <p className="text-sm font-semibold truncate shrink-0">
             {store.name}
           </p>
 
@@ -152,27 +148,28 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
           )}
 
           {store.capacity !== null && store.capacity !== undefined && (
-            <p className="mt-1 text-xs font-light inline-flex items-center text-muted-foreground">
+            <p className="mt-0.5 text-xs font-light inline-flex items-center text-muted-foreground">
               <TbTruckLoading className="mr-1 h-4 w-4" aria-hidden="true" />
               Max: {formatDecimalWeight(store.capacity)}
             </p>
           )}
 
-          <div className="mt-2 flex items-center text-sm pr-1">
-            <div className="w-full bg-foreground-300 rounded-full h-2.5 overflow-hidden">
-              <div
-                className={cn(
-                  "h-2.5 rounded-full transition-all duration-200",
-                  occupancyStatus === "low" && "bg-green-500",
-                  occupancyStatus === "medium" && "bg-yellow-500",
-                  occupancyStatus === "high" && "bg-red-600 animate-pulse"
-                )}
-                style={{ width: `${Math.min(fillPercentage, 100)}%` }}
-              />
-            </div>
+          <div className="mt-1.5 flex items-center text-sm pr-1">
+            <Progress
+              value={Math.min(fillPercentage, 100)}
+              className={cn(
+                "h-2",
+                occupancyStatus === "low" &&
+                  "[&_[data-slot=progress-indicator]]:bg-green-500",
+                occupancyStatus === "medium" &&
+                  "[&_[data-slot=progress-indicator]]:bg-yellow-500",
+                occupancyStatus === "high" &&
+                  "[&_[data-slot=progress-indicator]]:bg-red-600 [&_[data-slot=progress-indicator]]:animate-pulse"
+              )}
+            />
           </div>
 
-          <p className="mt-2 text-sm font-semibold">
+          <p className="mt-auto text-xs font-semibold shrink-0">
             Total: {formatDecimalWeight(store.totalNetWeight || 0)}
           </p>
         </div>

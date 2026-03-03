@@ -192,7 +192,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent className="sm:max-w-[1200px] max-h-[90vh] flex flex-col">
+            <DialogContent size="7xl" className="max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Traspaso masivo de palets</DialogTitle>
                     <DialogDescription>

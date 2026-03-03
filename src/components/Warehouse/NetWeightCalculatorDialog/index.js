@@ -58,7 +58,7 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl w-[95vw] max-h-[90vh] overflow-y-auto gap-8 p-8">
+      <DialogContent size="xl" className="w-[95vw] max-h-[90vh] overflow-y-auto gap-8 p-8">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">

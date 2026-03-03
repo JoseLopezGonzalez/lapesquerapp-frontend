@@ -456,7 +456,8 @@ export default function OperarioCreateReceptionForm({
                 onOpenChange={(open) => !open && handleCloseLineDialog()}
               >
                 <DialogContent
-                  className="sm:max-w-md flex flex-col gap-4 min-h-[420px]"
+                  size="md"
+                  className="flex flex-col gap-4 min-h-[420px]"
                   hideClose
                 >
                   <div className="text-center space-y-1">

@@ -109,7 +109,7 @@ export default function MassiveExportModal({ documents }) {
                     Exportar y Enlazar
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent size="xl">
                 <DialogHeader>
                     <DialogTitle>Exportar y Enlazar Documentos</DialogTitle>
                     <DialogDescription>

@@ -25,7 +25,7 @@ export default function ReceptionPrintDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-2xl overflow-hidden flex flex-col">
+      <DialogContent size="2xl" className="w-full overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Imprimir Nota de Entrada</DialogTitle>
         </DialogHeader>

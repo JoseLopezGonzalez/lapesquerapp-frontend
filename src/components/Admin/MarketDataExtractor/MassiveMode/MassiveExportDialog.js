@@ -164,7 +164,7 @@ export default function MassiveExportDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[1000px] max-h-[90vh] flex flex-col p-0">
+            <DialogContent size="5xl" className="max-h-[90vh] flex flex-col p-0">
                 <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
                     <DialogTitle>Exportar Excel - Modo Masivo</DialogTitle>
                     <DialogDescription>

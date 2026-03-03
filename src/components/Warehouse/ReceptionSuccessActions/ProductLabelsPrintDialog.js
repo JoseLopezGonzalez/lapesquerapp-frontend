@@ -66,7 +66,7 @@ export function ProductLabelsPrintDialog({ receptionId, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Imprimir letreros</DialogTitle>
           <DialogDescription>

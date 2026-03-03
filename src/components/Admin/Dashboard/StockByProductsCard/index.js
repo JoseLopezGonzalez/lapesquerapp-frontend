@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDecimal, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
@@ -25,9 +25,9 @@ export function StockByProductsCard() {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle className="text-xl font-semibold">Inventario por productos</CardTitle>
-                        <CardDescription className="text-sm text-muted-foreground">
-                            Total: {formatDecimalWeight(totalKg)}
+                        <CardTitle>Inventario por productos</CardTitle>
+                        <CardDescription>
+                            Resumen del inventario por producto.
                         </CardDescription>
                     </div>
 
@@ -49,9 +49,9 @@ export function StockByProductsCard() {
                 />
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="min-h-0">
                 {isLoading ? (
-                    <ScrollArea className="h-[200px] pr-2">
+                    <ScrollArea className="max-h-[200px] min-h-0 pr-2">
                         <Table>
                             <TableBody>
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -81,7 +81,7 @@ export function StockByProductsCard() {
                         </p>
                     </div>
                 ) : filteredData.length > 0 ? (
-                    <ScrollArea className="h-[200px] pr-2">
+                    <div className="max-h-[200px] min-h-0 overflow-auto pr-2">
                         <Table>
                             <TableBody>
                                 {filteredData.map((item, i) => (
@@ -114,7 +114,7 @@ export function StockByProductsCard() {
                                 ))}
                             </TableBody>
                         </Table>
-                    </ScrollArea>
+                    </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-8 min-h-[200px]">
                         <div className="relative">
@@ -130,6 +130,10 @@ export function StockByProductsCard() {
                     </div>
                 )}
             </CardContent>
+            <CardFooter className="flex flex-row items-center justify-between gap-2 border-t bg-muted/50 py-3 px-4 text-sm">
+                <span className="text-muted-foreground">Total</span>
+                <span className="font-semibold tabular-nums text-foreground">{formatDecimalWeight(totalKg)}</span>
+            </CardFooter>
         </Card>
     )
 }

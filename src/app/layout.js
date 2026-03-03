@@ -1,5 +1,6 @@
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import {
   appName,
   appShortName,
@@ -9,6 +10,15 @@ import {
   ogImagePath,
   splashBasePath,
 } from "@/configs/branding";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 const defaultTitle = `${appName} | ERP para pequeñas y medianas empresas pesqueras`;
 const ogTitle = `${appName} | El ERP de la industria pesquera`;
@@ -137,7 +147,7 @@ export default function RootLayout({ children }) {
           href={appleTouchIconPath}
         />
       </head>
-      <body className="bg-background w-full">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background w-full`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

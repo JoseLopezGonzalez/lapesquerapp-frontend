@@ -357,7 +357,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
                 {/* Diálogo de confirmación al cancelar con cambios */}
                 <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent size="md">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <AlertTriangle className="h-5 w-5 text-orange-600" />

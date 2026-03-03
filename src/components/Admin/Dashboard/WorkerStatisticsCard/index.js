@@ -2,7 +2,7 @@
 
 import { notify } from "@/lib/notifications"
 import { useEffect, useState } from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePunchesStatistics } from "@/hooks/usePunches"
@@ -11,7 +11,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { startOfMonth, endOfMonth, format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { 
-    BarChart3, 
     Clock, 
     TrendingUp, 
     TrendingDown, 
@@ -145,14 +144,13 @@ export function WorkerStatisticsCard() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden min-w-0">
-            <CardHeader className="pb-3 min-w-0">
+            <CardHeader className="pb-2 space-y-4 min-w-0">
                 <div className="flex items-center justify-between gap-4 mb-3 min-w-0">
                     <div className="space-y-1 flex-1 min-w-0">
-                        <CardTitle className="text-base flex items-center gap-2 min-w-0">
-                            <BarChart3 className="w-4 h-4 text-primary flex-shrink-0" />
+                        <CardTitle className="min-w-0">
                             <span className="truncate">Estadísticas de Trabajadores</span>
                         </CardTitle>
-                        <CardDescription className="text-xs truncate">
+                        <CardDescription className="truncate">
                             {periodData.label || "Período seleccionado"}
                         </CardDescription>
                     </div>
@@ -528,18 +526,6 @@ export function WorkerStatisticsCard() {
                     )}
                 </div>
             </CardContent>
-
-            <CardFooter className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-3 border-t bg-muted/30 min-w-0">
-                <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="font-medium truncate">
-                        {periodData.date_start && periodData.date_end 
-                            ? `${periodData.date_start} - ${periodData.date_end}`
-                            : "Período seleccionado"
-                        }
-                    </span>
-                </div>
-            </CardFooter>
         </Card>
     )
 }

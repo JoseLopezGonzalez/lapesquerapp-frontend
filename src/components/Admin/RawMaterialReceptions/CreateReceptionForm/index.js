@@ -757,7 +757,7 @@ export default function CreateReceptionForm({ onSuccess }) {
         open={isModeChangeDialogOpen}
         onOpenChange={setIsModeChangeDialogOpen}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent size="md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />

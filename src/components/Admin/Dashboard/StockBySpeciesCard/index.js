@@ -11,17 +11,17 @@ export function StockBySpeciesCard() {
 
     if (isLoading) return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader>
+            <CardHeader className="pb-2 space-y-4">
                 <div>
-                    <CardTitle className=" text-base">
+                    <CardTitle>
                         <Skeleton className="h-6 w-40 mt-2" />
                     </CardTitle>
-                    <CardDescription className=" ">
+                    <CardDescription>
                         <Skeleton className="h-4 w-1/2 mt-2" />
                     </CardDescription>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 mt-2 w-full mb-4">
+            <CardContent className="space-y-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex flex-col gap-1 w-full">
                         <div className="flex justify-between items-center w-full">
@@ -37,17 +37,17 @@ export function StockBySpeciesCard() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="">
+            <CardHeader className="pb-2 space-y-4">
                 <div>
-                    <CardTitle className=" text-base">
+                    <CardTitle>
                         Stock por especie
                     </CardTitle>
-                    <CardDescription className=" ">
+                    <CardDescription>
                         Resumen del cantidad de stock por especie.
                     </CardDescription>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 mt-2 mb-4">
+            <CardContent className="space-y-4">
                 {stockData.length > 0 ? (
                     stockData.map((item) => (
                         <div key={item.id} className="space-y-1">

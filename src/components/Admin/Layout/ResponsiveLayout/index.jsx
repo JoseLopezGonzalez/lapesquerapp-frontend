@@ -74,11 +74,11 @@ function ResponsiveLayoutContent({
       <div className='h-screen overflow-hidden'>
         <SidebarProvider className='h-full' style={styleSidebar}>
           <AppSidebar />
-          <main className='flex flex-col h-full overflow-hidden w-full p-2'>
+          <main className='flex flex-col h-full overflow-hidden w-full p-1'>
             <div className='p-1'>
               <SidebarTrigger />
             </div>
-            <div className='flex-1 w-full h-full overflow-hidden p-2'>
+            <div className='flex-1 w-full h-full overflow-hidden p-1'>
               {children}
             </div>
           </main>
@@ -98,11 +98,11 @@ function ResponsiveLayoutContent({
       <div className='h-screen overflow-hidden'>
         <SidebarProvider className='h-full' style={styleSidebar}>
           <AppSidebar />
-          <main className='flex flex-col h-full overflow-hidden w-full p-2'>
+          <main className='flex flex-col h-full overflow-hidden w-full p-1'>
             <div className='p-1'>
               <SidebarTrigger />
             </div>
-            <div className='flex-1 w-full h-full overflow-hidden p-2'>
+            <div className='flex-1 w-full h-full overflow-hidden p-1'>
               {children}
             </div>
           </main>

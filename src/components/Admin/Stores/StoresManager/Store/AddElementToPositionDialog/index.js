@@ -163,7 +163,7 @@ export default function AddElementToPosition({ open }) {
 
     return (
         <Dialog open={open} onOpenChange={handleOnClose}>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+            <DialogContent size="lg" className="max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Seleccionar pallets para posición {position}</DialogTitle>
                     <DialogDescription>

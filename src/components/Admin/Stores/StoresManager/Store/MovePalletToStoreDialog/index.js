@@ -84,7 +84,7 @@ export default function MovePalletToStoreDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
+            <DialogContent size="lg" className="max-h-[85vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Traspaso de almacén - Palet #{palletId}</DialogTitle>
                 </DialogHeader>

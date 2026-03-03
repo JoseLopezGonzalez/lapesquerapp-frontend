@@ -47,11 +47,11 @@ export function SalesBySalespersonPieChart() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="items-start space-y-4 p-3 md:p-6">
+            <CardHeader className="items-start pb-2 space-y-4">
                 <div className="flex justify-between flex-col sm:flex-row w-full gap-4">
                     <div>
-                        <CardTitle className="text-base md:text-lg">Ranking ventas</CardTitle>
-                        <CardDescription className="text-sm">
+                        <CardTitle>Ranking ventas</CardTitle>
+                        <CardDescription>
                             Ranking de ventas por comercial
                         </CardDescription>
                     </div>

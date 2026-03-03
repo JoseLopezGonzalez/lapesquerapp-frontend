@@ -46,16 +46,16 @@ export function TransportRadarChart() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="items-center p-3 md:p-6">
+            <CardHeader className="items-center pb-2 space-y-4">
                 <div className="flex items-center gap-2 justify-between w-full">
                     <div className="flex flex-col items-start gap-2">
-                        <CardTitle className="text-base md:text-lg">Empresas de transporte</CardTitle>
-                        <CardDescription className="text-sm">Cantidades transportadas por transportistas</CardDescription>
+                        <CardTitle>Empresas de transporte</CardTitle>
+                        <CardDescription>Cantidades transportadas por transportistas</CardDescription>
                     </div>
                 </div>
             </CardHeader>
 
-            <CardContent className="flex flex-col items-center gap-4 px-3 md:px-6">
+            <CardContent className="flex flex-col items-center gap-4">
                 <div className="w-full">
                     <DateRangePicker dateRange={range} onChange={setRange} />
                 </div>

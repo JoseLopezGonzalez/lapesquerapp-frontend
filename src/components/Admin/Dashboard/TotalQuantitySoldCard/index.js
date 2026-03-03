@@ -38,7 +38,7 @@ export function TotalQuantitySoldCard() {
         <Card className="relative p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
             <CardHeader className="p-0 pb-2">
                 <div className="flex justify-between items-center">
-                    <CardDescription className="text-sm text-muted-foreground">
+                    <CardDescription>
                         Cantidad Total de Ventas
                     </CardDescription>
                     <div>
@@ -54,7 +54,7 @@ export function TotalQuantitySoldCard() {
                         )}
                     </div>
                 </div>
-                <CardTitle className=" ">
+                <CardTitle>
                     {data?.value !== null ? (
                         <div>
                             <h1 className="text-3xl font-medium tracking-tight">{formatDecimalWeight(data.value)}</h1>

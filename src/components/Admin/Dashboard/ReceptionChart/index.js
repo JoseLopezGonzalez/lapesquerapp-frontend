@@ -75,36 +75,23 @@ export function ReceptionChart() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden min-w-0 box-border">
-            <CardHeader className="w-full min-w-0 max-w-full p-3 md:p-6">
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:justify-between w-full min-w-0">
-                    <div className="grid flex-1 gap-1 min-w-0">
-                        <CardTitle className="text-base md:text-lg">Recepciones</CardTitle>
-                        <CardDescription className="text-sm">
-                            Comparativa de recepciones en {unit === "quantity" ? "kilogramos" : "euros"}.
-                        </CardDescription>
-                    </div>
-                    <Tabs onValueChange={setGroupBy} className="hidden 3xl:flex" value={groupBy}>
-                        <TabsList>
-                            <TabsTrigger value="day">Día</TabsTrigger>
-                            <TabsTrigger value="week">Semana</TabsTrigger>
-                            <TabsTrigger value="month">Mes</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+            <CardHeader className="w-full min-w-0 max-w-full pb-2 space-y-4">
+                <div className="flex flex-col gap-1 w-full min-w-0">
+                    <CardTitle>Recepciones</CardTitle>
+                    <CardDescription>
+                        Comparativa de recepciones en {unit === "quantity" ? "kilogramos" : "euros"}.
+                    </CardDescription>
                 </div>
-                <Tabs onValueChange={setGroupBy} className="3xl:hidden mt-3" value={groupBy}>
+            </CardHeader>
+
+            <CardContent className="w-full min-w-0 max-w-full overflow-x-hidden space-y-4">
+                <Tabs onValueChange={setGroupBy} value={groupBy}>
                     <TabsList className="w-auto">
                         <TabsTrigger value="day">Día</TabsTrigger>
                         <TabsTrigger value="week">Semana</TabsTrigger>
                         <TabsTrigger value="month">Mes</TabsTrigger>
                     </TabsList>
                 </Tabs>
-
-
-            </CardHeader>
-
-            <CardContent className="px-3 md:px-6 w-full min-w-0 max-w-full overflow-x-hidden">
-
-
 
                 <div className="flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-2 mb-6 3xl:grid-cols-6 w-full box-border">
                     <div className="w-full min-w-0 box-border md:col-span-6 3xl:col-span-4">
@@ -113,11 +100,11 @@ export function ReceptionChart() {
                         </div>
                     </div>
                 <div className="w-full min-w-0 box-border md:col-span-6 3xl:col-span-2">
-                    <Select value={speciesId} onValueChange={setSpeciesId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={speciesLoading}>
-                            <SelectValue placeholder="Seleccionar especie" loading={speciesLoading} />
+                    <Select value={speciesId} onValueChange={setSpeciesId} className="w-full box-border" disabled={speciesLoading}>
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
+                            <SelectValue placeholder="Seleccionar especie" />
                         </SelectTrigger>
-                        <SelectContent loading={speciesLoading}>
+                        <SelectContent>
                             <SelectItem value="all">Todas las especies</SelectItem>
                             {speciesOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
@@ -128,11 +115,11 @@ export function ReceptionChart() {
                     </Select>
                     </div>
                     <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
-                    <Select value={categoryId} onValueChange={setCategoryId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={categoryLoading}>
-                            <SelectValue placeholder="Seleccionar categoría" loading={categoryLoading} />
+                    <Select value={categoryId} onValueChange={setCategoryId} className="w-full box-border" disabled={categoryLoading}>
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
+                            <SelectValue placeholder="Seleccionar categoría" />
                         </SelectTrigger>
-                        <SelectContent loading={categoryLoading}>
+                        <SelectContent>
                             <SelectItem value="all">Todas las categorías</SelectItem>
                             {categoryOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
@@ -143,11 +130,11 @@ export function ReceptionChart() {
                     </Select>
                     </div>
                     <div className="w-full min-w-0 box-border md:col-span-3 3xl:col-span-3">
-                    <Select value={familyId} onValueChange={setFamilyId} className="w-full box-border">
-                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full" loading={familyLoading}>
-                            <SelectValue placeholder="Seleccionar familia" loading={familyLoading} />
+                    <Select value={familyId} onValueChange={setFamilyId} className="w-full box-border" disabled={familyLoading}>
+                        <SelectTrigger className="w-full min-w-0 box-border h-12 md:h-auto max-w-full">
+                            <SelectValue placeholder="Seleccionar familia" />
                         </SelectTrigger>
-                        <SelectContent loading={familyLoading}>
+                        <SelectContent>
                             <SelectItem value="all">Todas las familias</SelectItem>
                             {familyOptions.map((option) => (
                                 <SelectItem key={option.id} value={option.id}>
@@ -267,7 +254,7 @@ export function ReceptionChart() {
                     )}
                 </div>
             </CardContent>
-            <CardFooter className=" flex items-center justify-between flex-col xl-2xl:flex-row gap-2">
+            <CardFooter className="rounded-b-xl border-t bg-muted/50 p-4 flex items-center justify-between flex-row gap-2">
                 <span className="text-sm text-muted-foreground flex">
                     {!isLoading && unit === "quantity" && chartData.length > 0
                         ? `Total: ${formatDecimalWeight(totalKg)}`

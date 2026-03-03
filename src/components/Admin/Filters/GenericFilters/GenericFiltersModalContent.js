@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import TextAreaFilter from './Types/TextAreaFilter';
 import TextAccumulatorFilter from './Types/TextAccumulatorFilter';
 import NumberFilter from './Types/NumberFilter';
@@ -39,34 +38,14 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
             )}
 
             <div className="px-2">
-                <div className="pb-4 divide-y divide-foreground-200">
-                    <dl className="space-y-6 divide-y divide-foreground-200">
-                        {groups.map((group) => (
-                            <Disclosure key={group.name || group.label} as="div" className="pt-6">
-                                {({ open }) => (
-                                    <>
-                                        <dt>
-                                            <DisclosureButton className="flex w-full items-start justify-between text-left text-primary ">
-                                                <span className="text-lg font-light leading-7">
-                                                    {group.label || 'Grupo sin nombre'}
-                                                </span>
-                                                <span className="ml-6 flex p-1.5 items-center border-0 rounded-xl border-foreground-200 text-muted-foreground hover:bg-foreground-200">
-                                                    {open ? (
-                                                        <ChevronDownIcon
-                                                            className="h-4 w-4"
-                                                            aria-hidden="true"
-                                                        />
-                                                    ) : (
-                                                        <ChevronRightIcon
-                                                            className="h-4 w-4"
-                                                            aria-hidden="true"
-                                                        />
-                                                    )}
-                                                </span>
-                                            </DisclosureButton>
-                                        </dt>
-                                        <DisclosurePanel as="dd" className="mt-2 px-4 py-4 ">
-                                            <div>
+                <Accordion type="single" collapsible className="w-full">
+                    {groups.map((group, i) => (
+                        <AccordionItem key={group.name || group.label || i} value={group.name || group.label || `group-${i}`}>
+                            <AccordionTrigger className="text-left text-base font-medium text-primary py-3 hover:no-underline">
+                                {group.label || 'Grupo sin nombre'}
+                            </AccordionTrigger>
+                            <AccordionContent className="px-1 pb-3">
+                                <div className="space-y-4">
                                                 {group.filters.map((filter) => (
                                                     <div key={filter.name || filter.label} className="mb-4">
                                                         {filter.type === 'text' && (
@@ -191,14 +170,11 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
                                                         )}
                                                     </div>
                                                 ))}
-                                            </div>
-                                        </DisclosurePanel>
-                                    </>
-                                )}
-                            </Disclosure>
-                        ))}
-                    </dl>
-                </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
             </div>
         </div>
     );

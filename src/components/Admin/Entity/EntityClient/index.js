@@ -670,7 +670,7 @@ export default function EntityClient({ config }) {
             </EntityTable>
             {/* Modal de creación/edición */}
             <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
-                <DialogContent className="max-w-5xl w-full">
+                <DialogContent size="6xl">
                     <DialogHeader>
                         <DialogTitle>
                             {modal.mode === 'create' ? `Crear ${config.title}` : `Editar ${config.title}`}

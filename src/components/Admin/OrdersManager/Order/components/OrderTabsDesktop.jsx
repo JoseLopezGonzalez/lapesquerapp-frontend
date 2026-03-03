@@ -24,11 +24,11 @@ const TAB_LABELS = {
  */
 export default function OrderTabsDesktop({ activeTab, onTabChange }) {
   return (
-    <div className="flex-1 w-full overflow-y-hidden">
-      <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full w-full">
-        <Tabs value={activeTab} onValueChange={onTabChange}>
-          <div className="mb-4 flex justify-start">
-            <TabsList>
+    <div className="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
+      <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full min-h-0 w-full flex flex-col">
+        <Tabs value={activeTab} onValueChange={onTabChange} className="flex flex-col h-full min-h-0">
+          <div className="mb-4 flex justify-start shrink-0 overflow-x-auto">
+            <TabsList className="flex-nowrap w-fit">
               {SECTIONS_CONFIG.map((section) => (
                 <TabsTrigger
                   key={section.id}
@@ -39,7 +39,7 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
               ))}
             </TabsList>
           </div>
-          <div className="flex-1 overflow-y-hidden w-full">
+          <div className="flex-1 min-h-0 overflow-y-auto w-full">
             {SECTIONS_CONFIG.map((section) => {
               const Component = section.component;
               const isLazy = section.lazy;

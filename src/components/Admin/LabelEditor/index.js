@@ -517,7 +517,7 @@ export default function LabelEditor() {
 
                 {/* Diálogo de Atajos de Teclado */}
                 <Dialog open={showKeyboardShortcutsDialog} onOpenChange={setShowKeyboardShortcutsDialog}>
-                    <DialogContent className="max-w-md">
+                    <DialogContent size="md">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <Keyboard className="w-5 h-5" />

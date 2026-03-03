@@ -117,7 +117,7 @@ export function OrderRankingChart() {
             <CardHeader className="pb-2 space-y-4">
                 <div className="flex flex-row items-center justify-between gap-4">
                     <div>
-                        <CardTitle className="text-base">Ranking Pedidos</CardTitle>
+                        <CardTitle>Ranking Pedidos</CardTitle>
                         <CardDescription>
                             Agrupado por {valueType === "totalAmount" ? "importe total" : "cantidad total"}
                         </CardDescription>
@@ -143,12 +143,12 @@ export function OrderRankingChart() {
                     </Tabs>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 3xl:grid-cols-3">
-                    <div className="w-full col-span-1 sm:col-span-2">
+                <div className="grid grid-cols-1 gap-2 w-full">
+                    <div className="w-full min-w-0">
                         <DateRangePicker dateRange={range} onChange={setRange} />
                     </div>
                     <Select value={speciesId} onValueChange={setSpeciesId}>
-                        <SelectTrigger className="sm:col-span-2 3xl:col-span-1">
+                        <SelectTrigger className="w-full min-w-0">
                             <SelectValue placeholder="Todas las especies" />
                         </SelectTrigger>
                         <SelectContent>

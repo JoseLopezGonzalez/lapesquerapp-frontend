@@ -1,10 +1,10 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePunchesDashboard } from "@/hooks/usePunches"
-import { Users, Clock, UserCheck, LogIn, LogOut, TrendingUp, Coffee, PlayCircle, PauseCircle, XCircle, Activity, AlertTriangle, Calendar } from "lucide-react"
+import { Users, Clock, UserCheck, LogIn, LogOut, Coffee, PlayCircle, PauseCircle, XCircle, Activity, AlertTriangle, Calendar } from "lucide-react"
 import { formatDateHour } from "@/helpers/formats/dates/formatDates"
 
 export function WorkingEmployeesCard() {
@@ -13,9 +13,9 @@ export function WorkingEmployeesCard() {
     if (isLoading) {
         return (
             <Card className="w-full max-w-full overflow-hidden">
-                <CardHeader>
+                <CardHeader className="pb-2 space-y-4">
                     <div>
-                        <CardTitle className="text-base">
+                        <CardTitle>
                             <Skeleton className="h-6 w-40 mt-2" />
                         </CardTitle>
                         <CardDescription>
@@ -23,7 +23,7 @@ export function WorkingEmployeesCard() {
                         </CardDescription>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4 mt-2 w-full mb-4">
+                <CardContent className="space-y-4">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex flex-col gap-1 w-full">
                             <div className="flex justify-between items-center w-full">
@@ -112,14 +112,11 @@ export function WorkingEmployeesCard() {
 
     return (
         <Card className="w-full max-w-full overflow-hidden">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-2 space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <Users className="w-4 h-4 text-primary" />
-                            Trabajadores
-                        </CardTitle>
-                        <CardDescription className="text-xs">
+                        <CardTitle>Trabajadores</CardTitle>
+                        <CardDescription>
                             {totalWorking} de {totalEmployees} trabajadores activos
                         </CardDescription>
                     </div>
@@ -447,18 +444,6 @@ export function WorkingEmployeesCard() {
                     </div>
                 )}
             </CardContent>
-
-            <CardFooter className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-3 border-t bg-muted/30">
-                <div className="flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span className="font-medium">Actualizado en tiempo real</span>
-                </div>
-                {Object.keys(entriesByDevice).length > 0 && (
-                    <div className="text-[10px] font-medium">
-                        {Object.keys(entriesByDevice).length} dispositivo(s)
-                    </div>
-                )}
-            </CardFooter>
         </Card>
     )
 }

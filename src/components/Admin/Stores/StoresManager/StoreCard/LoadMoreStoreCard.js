@@ -11,13 +11,13 @@ const LoadMoreStoreCard = ({ onClick, loading }) => {
 
   return (
     <Card
-      className={`border-0 border-l-4 min-w-56 text-sm font-medium leading-5 border-neutral-200 ${
+      className={`border-0 border-l-4 min-w-56 shrink-0 text-sm font-medium leading-5 border-neutral-200 ${
         loading 
           ? 'bg-foreground-100 cursor-not-allowed' 
           : 'bg-foreground-100 hover:bg-foreground-200 cursor-pointer'
       }`}
     >
-      <div onClick={handleClick} className='flex p-4 h-full w-full items-center justify-center'>
+      <div onClick={handleClick} className='flex p-3 h-full w-full min-h-0 items-center justify-center'>
         <span className="flex flex-col items-center justify-center w-full">
           {loading ? (
             <Loader />
