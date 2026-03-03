@@ -44,8 +44,8 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
       <Card
         key={store.id}
         className={cn(
-          "relative flex border-l-4 min-h-[104px] text-sm font-medium leading-5 transition-colors duration-150",
-          "min-w-[18rem] max-w-[18rem]",
+          "relative flex border-l-4 min-h-[96px] text-sm font-medium leading-5 transition-colors duration-150",
+          "min-w-56",
           "p-4 sm:p-5",
           "border-slate-400 dark:border-slate-600",
           store.id === isSelected && "bg-slate-500/10 border-slate-500/70",
@@ -110,8 +110,8 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
     <Card
       key={store.id}
       className={cn(
-        "relative flex border-l-4 min-h-[104px] text-sm font-medium leading-5 transition-colors duration-150",
-        "min-w-[18rem] max-w-[18rem]",
+        "relative flex border-l-4 min-h-[96px] text-sm font-medium leading-5 transition-colors duration-150",
+        "min-w-56",
         "p-4 sm:p-5",
         "bg-card",
         borderLClass,
