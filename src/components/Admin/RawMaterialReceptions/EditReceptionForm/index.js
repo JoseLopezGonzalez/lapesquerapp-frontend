@@ -973,14 +973,26 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             <p className="text-sm text-muted-foreground">#{receptionId}</p>
                         )}
                     </div>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsPrintDialogOpen(true)}
-                    >
-                        <Printer className="h-4 w-4 mr-2" />
-                        Imprimir
-                    </Button>
+                    <div className="flex gap-2">
+                        {creationMode === 'pallets' && temporalPallets.length > 0 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsSummaryDialogOpen(true)}
+                            >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver Resumen
+                            </Button>
+                        )}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsPrintDialogOpen(true)}
+                        >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Imprimir
+                        </Button>
+                    </div>
                 </div>
                 <Alert variant="destructive" className="mt-4 mb-6">
                     <AlertTriangle className="h-4 w-4" />
@@ -1138,6 +1150,36 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         </Card>
                     )}
                 </div>
+
+                {creationMode === 'pallets' && (
+                    <ReceptionSummaryDialog
+                        isOpen={isSummaryDialogOpen}
+                        onClose={() => setIsSummaryDialogOpen(false)}
+                        pallets={temporalPallets}
+                        prices={(() => {
+                            const globalPriceMap = new Map();
+                            temporalPallets.forEach((item) => {
+                                const pallet = item.pallet;
+                                const pricesObj = item.prices || {};
+                                (pallet?.boxes || []).forEach(box => {
+                                    const lotIdentifier = box.lot || '';
+                                    if (box.product?.id && lotIdentifier !== undefined) {
+                                        const key = `${box.product.id}-${lotIdentifier}`;
+                                        const priceKey = `${box.product.id}-${lotIdentifier}`;
+                                        const priceValue = pricesObj[priceKey];
+                                        globalPriceMap.set(key, {
+                                            product: { id: box.product.id },
+                                            lot: lotIdentifier,
+                                            price: priceValue ? parseFloat(priceValue) : undefined,
+                                        });
+                                    }
+                                });
+                            });
+                            return Array.from(globalPriceMap.values());
+                        })()}
+                        onPriceChange={null}
+                    />
+                )}
 
                 <ReceptionPrintDialog
                     isOpen={isPrintDialogOpen}
