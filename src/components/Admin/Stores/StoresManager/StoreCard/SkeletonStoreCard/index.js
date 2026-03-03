@@ -11,7 +11,7 @@ const SkeletonStoreCard = () => {
 
 
   return (
-    <Card className='border-0 border-l-4  min-w-56  text-sm font-medium leading-5 py-2'>
+    <Card className='border-0 border-l-4 min-w-[18rem] max-w-[18rem] text-sm font-medium leading-5 py-2'>
       <div className='flex p-4 h-full w-full'>
         <span className="flex flex-1 text-start w-full">
           <span className="flex flex-col w-full">

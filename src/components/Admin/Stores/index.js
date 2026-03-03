@@ -85,7 +85,7 @@ export default function StoresManager() {
                 {realStores.length === 0 && (
                   <Card
                     onClick={() => router.push('/admin/stores/create')}
-                    className="border-2 border-dashed min-w-56 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors bg-background"
+                    className="border-2 border-dashed min-w-[18rem] max-w-[18rem] cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors bg-background"
                   >
                     <div className="flex flex-col items-center justify-center p-6 h-full w-full gap-3">
                       <div className="relative">
