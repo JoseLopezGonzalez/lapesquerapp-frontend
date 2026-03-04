@@ -48,10 +48,10 @@ const OrderProduction = () => {
                         <ScrollArea className="flex-1 min-h-0">
                             <div className="pb-0 space-y-4">
                                 {hasDiscrepancy && (
-                                    <Alert className='animate-pulse'>
-                                        <AlertTriangle className="h-4 w-4" />
+                                    <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+                                        <AlertTriangle />
                                         <AlertTitle>Discrepancia detectada</AlertTitle>
-                                        <AlertDescription>
+                                        <AlertDescription className="text-amber-800 dark:text-amber-200">
                                             Se han encontrado diferencias entre los productos registrados y los paletizados.
                                         </AlertDescription>
                                     </Alert>
@@ -179,10 +179,10 @@ const OrderProduction = () => {
                     </CardHeader>
                     <CardContent className="space-y-6 flex-1 overflow-y-auto">
                         {hasDiscrepancy && (
-                            <Alert className='animate-pulse'>
-                                <AlertTriangle className="h-4 w-4" />
+                            <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+                                <AlertTriangle />
                                 <AlertTitle>Discrepancia detectada</AlertTitle>
-                                <AlertDescription>
+                                <AlertDescription className="text-amber-800 dark:text-amber-200">
                                     Se han encontrado diferencias entre los productos registrados y los paletizados.
                                 </AlertDescription>
                             </Alert>
@@ -259,8 +259,6 @@ const OrderProduction = () => {
                                                             </Badge>
                                                         )}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

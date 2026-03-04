@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, Ban, CheckCircle, Delete, Trash } from "lucide-react"
+import { AlertCircle, Ban, CheckCircle } from "lucide-react"
 import { useOrderContext } from "@/context/OrderContext"
 import { formatDate } from "@/helpers/formats/dates/formatDates"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -92,12 +92,12 @@ export default function OrderIncidentPanel() {
                     <div className="flex justify-center">
                         {isOpen ? (
                             <Badge variant="outline" className="flex items-center gap-2 px-4 py-2 border-amber-500/50 bg-amber-50 text-amber-700 hover:bg-amber-50">
-                                <AlertCircle className="h-4 w-4" />
+                                <AlertCircle />
                                 <span className="font-medium">Incidencia Abierta</span>
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="flex items-center gap-2 px-4 py-2 border-emerald-500/50 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                <CheckCircle className="h-4 w-4" />
+                                <CheckCircle />
                                 <span className="font-medium">Incidencia Resuelta</span>
                             </Badge>
                         )}
@@ -106,12 +106,12 @@ export default function OrderIncidentPanel() {
                     {/* Información de la incidencia */}
                     <div className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fecha de creación</Label>
-                            <p className="text-base font-medium">{formatDate(incident.createdAt)}</p>
+                            <Label>Fecha de creación</Label>
+                            <p className="whitespace-pre-line">{formatDate(incident.createdAt)}</p>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Descripción</Label>
-                            <p className="text-sm leading-relaxed whitespace-pre-line">{incident.description}</p>
+                            <Label>Descripción</Label>
+                            <p className="whitespace-pre-line">{incident.description}</p>
                         </div>
                     </div>
 
@@ -120,20 +120,20 @@ export default function OrderIncidentPanel() {
                             <Separator />
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fecha de resolución</Label>
-                                    <p className="text-base font-medium">{formatDate(incident.resolvedAt)}</p>
+                                    <Label>Fecha de resolución</Label>
+                                    <p className="whitespace-pre-line">{formatDate(incident.resolvedAt)}</p>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tipo de resolución</Label>
-                                    <p className="text-base font-medium capitalize">
+                                    <Label>Tipo de resolución</Label>
+                                    <p>
                                         {incident.resolutionType === "returned" && "Devuelto"}
                                         {incident.resolutionType === "partially_returned" && "Parcialmente devuelto"}
                                         {incident.resolutionType === "compensated" && "Compensado"}
                                     </p>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notas de resolución</Label>
-                                    <p className="text-sm leading-relaxed whitespace-pre-line">{incident.resolutionNotes}</p>
+                                    <Label>Notas de resolución</Label>
+                                    <p className="whitespace-pre-line">{incident.resolutionNotes}</p>
                                 </div>
                             </div>
                         </>
@@ -144,9 +144,9 @@ export default function OrderIncidentPanel() {
                             <Separator />
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="resolution-type" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tipo de resolución</Label>
+                                    <Label htmlFor="resolution-type">Tipo de resolución</Label>
                                     <Select value={resolutionType} onValueChange={setResolutionType}>
-                                        <SelectTrigger id="resolution-type" className="h-11">
+                                        <SelectTrigger id="resolution-type">
                                             <SelectValue placeholder="Selecciona el tipo de resolución" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -157,13 +157,12 @@ export default function OrderIncidentPanel() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="resolution-notes" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notas de resolución</Label>
+                                    <Label htmlFor="resolution-notes">Notas de resolución</Label>
                                     <Textarea
                                         id="resolution-notes"
                                         placeholder="Añade notas sobre la resolución de la incidencia"
                                         value={resolutionNotes}
                                         onChange={(e) => setResolutionNotes(e.target.value)}
-                                        className="min-h-[120px] text-base"
                                     />
                                 </div>
                             </div>
@@ -173,13 +172,12 @@ export default function OrderIncidentPanel() {
             ) : (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="incident-description" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Descripción de la incidencia</Label>
+                        <Label htmlFor="incident-description">Descripción de la incidencia</Label>
                         <Textarea
                             id="incident-description"
                             placeholder="Describe la incidencia reportada por el cliente"
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
-                            className="min-h-[120px] text-base"
                         />
                     </div>
                 </div>
@@ -188,7 +186,7 @@ export default function OrderIncidentPanel() {
     );
 
     return (
-        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
                     <ScrollArea className="flex-1 min-h-0">
@@ -210,7 +208,7 @@ export default function OrderIncidentPanel() {
                                             size="sm"
                                             className="flex-1 min-h-[44px]"
                                         >
-                                            <Ban className="h-4 w-4 mr-2" />
+                                            <Ban />
                                             Cancelar Incidencia
                                         </Button>
                                         <Button 
@@ -219,7 +217,7 @@ export default function OrderIncidentPanel() {
                                             size="sm"
                                             className="flex-1 min-h-[44px]"
                                         >
-                                            <CheckCircle className="h-4 w-4 mr-2" />
+                                            <CheckCircle />
                                             Incidencia Resuelta
                                         </Button>
                                     </>
@@ -232,24 +230,24 @@ export default function OrderIncidentPanel() {
                                 size="sm"
                                 className="flex-1 min-h-[44px]"
                             >
-                                <AlertCircle className="h-4 w-4 mr-2" />
+                                <AlertCircle />
                                 Crear Incidencia
                             </Button>
                         )}
                     </div>
                 </div>
             ) : (
-                <Card className='h-full flex flex-col bg-transparent'>
+                <Card className="flex-1 flex flex-col min-h-0">
                         <CardHeader>
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div>
-                                    <CardTitle className="text-xl font-semibold">Incidencia</CardTitle>
+                                    <CardTitle>Incidencia</CardTitle>
                                     <CardDescription>Crea o resuelve la incidencia asociada al pedido</CardDescription>
                                 </div>
                                 <div className="flex gap-2">
                                     {incident && (
-                                        <Button onClick={handleDelete} disabled={loading} variant="">
-                                            <Ban className="h-5 w-5" />
+                                        <Button onClick={handleDelete} disabled={loading} variant="destructive">
+                                            <Ban />
                                             Cancelar Incidencia
                                         </Button>
                                     )}
@@ -258,12 +256,12 @@ export default function OrderIncidentPanel() {
                                     <div className="sm:hidden">
                                         {isOpen ? (
                                             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5 border-amber-500/50 bg-amber-50 text-amber-700 hover:bg-amber-50">
-                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertCircle />
                                                 <span className="font-medium">Incidencia Abierta</span>
                                             </Badge>
                                         ) : (
                                             <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5 border-emerald-500/50 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                                <CheckCircle className="h-4 w-4" />
+                                                <CheckCircle />
                                                 <span className="font-medium">Incidencia Resuelta</span>
                                             </Badge>
                                         )}
@@ -274,7 +272,7 @@ export default function OrderIncidentPanel() {
                         <CardContent className="flex-1 overflow-y-auto">
                             {content}
                         </CardContent>
-                        <CardFooter className="flex justify-end">
+                        <CardFooter className="justify-end">
                             {incident ? isOpen && <Button onClick={handleResolve} disabled={loading || !resolutionType}>Marcar como resuelta</Button>
                                 : (
                                     <Button onClick={handleCreate} disabled={loading || !newDescription}>Crear incidencia</Button>

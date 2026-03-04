@@ -22,34 +22,34 @@ const OrderPalletsToolbar = ({
                 style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
             >
                 <Button variant="outline" onClick={onLink} size="sm" className="flex-1 min-h-[44px]">
-                    <Link2 className="h-4 w-4 mr-2" />
+                    <Link2 />
                     Vincular
                 </Button>
                 <Button variant="outline" onClick={onCreateFromForecast} size="sm" className="flex-1 min-h-[44px]">
-                    <PackagePlus className="h-4 w-4 mr-2" />
+                    <PackagePlus />
                     Desde previsión
                 </Button>
                 <Button onClick={onCreate} size="sm" className="flex-1 min-h-[44px]">
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Crear
                 </Button>
                 {canUnlinkAll && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px]">
-                                <MoreVertical className="h-4 w-4" />
+                            <Button variant="outline" size="icon" aria-label="Menú acciones palets">
+                                <MoreVertical />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={onUnlinkAll} disabled={isUnlinkingAll}>
                                 {isUnlinkingAll ? (
                                     <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Loader2 className="animate-spin" />
                                         Desvinculando...
                                     </>
                                 ) : (
                                     <>
-                                        <Unlink className="h-4 w-4 mr-2" />
+                                        <Unlink />
                                         Desvincular todos
                                     </>
                                 )}
@@ -72,27 +72,27 @@ const OrderPalletsToolbar = ({
                     <Button variant="outline" onClick={onUnlinkAll} disabled={isUnlinkingAll}>
                         {isUnlinkingAll ? (
                             <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 className="animate-spin" />
                                 Desvinculando...
                             </>
                         ) : (
                             <>
-                                <Unlink className="h-4 w-4 mr-2" />
+                                <Unlink />
                                 Desvincular todos
                             </>
                         )}
                     </Button>
                 )}
                 <Button variant="outline" onClick={onLink}>
-                    <Link2 className="h-4 w-4 mr-2" />
+                    <Link2 />
                     Vincular palets existentes
                 </Button>
                 <Button variant="outline" onClick={onCreateFromForecast}>
-                    <PackagePlus className="h-4 w-4 mr-2" />
+                    <PackagePlus />
                     Crear desde previsión
                 </Button>
                 <Button onClick={onCreate}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Crear palet
                 </Button>
             </div>

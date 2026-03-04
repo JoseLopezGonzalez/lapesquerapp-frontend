@@ -29,8 +29,9 @@ import { cn } from '@/lib/utils';
 
 /* convertir examples a objeto js */
 
-const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesProp, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode }) => {
+const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesProp, totalActiveOrders, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode }) => {
     const visibleCategories = visibleCategoriesProp ?? categories;
+    const activeCount = totalActiveOrders ?? orders?.length ?? 0;
 
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
@@ -150,9 +151,9 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                             <h2 className="text-lg sm:text-xl font-semibold dark:text-white">
                                 Pedidos Activos
                             </h2>
-                    {orders.length > 0 && (
+                    {activeCount > 0 && (
                         <p className='text-xs sm:text-sm text-muted-foreground'>
-                            {orders.length} pedido{orders.length !== 1 ? 's' : ''} encontrado{orders.length !== 1 ? 's' : ''}
+                            {activeCount} pedido{activeCount !== 1 ? 's' : ''} activo{activeCount !== 1 ? 's' : ''}
                         </p>
                     )}
                 </div>
@@ -345,6 +346,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
 export default memo(OrdersList, (prevProps, nextProps) => {
     return (
         prevProps.orders === nextProps.orders &&
+        prevProps.totalActiveOrders === nextProps.totalActiveOrders &&
         prevProps.categories === nextProps.categories &&
         prevProps.visibleCategories === nextProps.visibleCategories &&
         prevProps.searchText === nextProps.searchText &&

@@ -64,10 +64,10 @@ export default function OrderCustomerHistory() {
               <Loader />
             </div>
           ) : (
-            <Card className="h-full flex flex-col bg-transparent">
-              <CardHeader className="pb-2 flex-shrink-0">
-                <CardTitle className="text-base font-medium">Histórico de Pedidos</CardTitle>
-                <CardDescription className="text-xs">Análisis completo del historial de compras del cliente</CardDescription>
+            <Card className="flex-1 flex flex-col min-h-0">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle>Histórico de Pedidos</CardTitle>
+                <CardDescription>Análisis completo del historial de compras del cliente.</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex items-center justify-center min-h-0">
                 <Loader />
@@ -86,20 +86,20 @@ export default function OrderCustomerHistory() {
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <AlertCircle className="h-8 w-8" />
+                <AlertCircle />
                 <p className="text-sm">{error}</p>
               </div>
             </div>
           </div>
         ) : (
-          <Card className="h-full flex flex-col bg-transparent">
+          <Card className="flex-1 flex flex-col min-h-0">
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Históricos de productos</CardTitle>
-              <CardDescription>Histórico de productos del cliente</CardDescription>
+              <CardTitle>Histórico de Pedidos</CardTitle>
+              <CardDescription>Análisis completo del historial de compras del cliente.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <AlertCircle className="h-8 w-8" />
+                <AlertCircle />
                 <p className="text-sm">{error}</p>
               </div>
             </CardContent>
@@ -123,14 +123,14 @@ export default function OrderCustomerHistory() {
             </div>
           </div>
         ) : (
-          <Card className="h-full flex flex-col bg-transparent">
+          <Card className="flex-1 flex flex-col min-h-0">
             <CardHeader>
-              <CardTitle className="text-lg font-medium">Históricos de productos</CardTitle>
-              <CardDescription>Histórico de productos del cliente</CardDescription>
+              <CardTitle>Histórico de Pedidos</CardTitle>
+              <CardDescription>Análisis completo del historial de compras del cliente.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto py-2 flex items-center justify-center">
               <EmptyState
-                icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                icon={<Calendar className="text-primary" strokeWidth={1.5} />}
                 title="No hay historial de pedidos"
                 description="Este cliente aún no tiene pedidos registrados."
               />
@@ -146,8 +146,8 @@ export default function OrderCustomerHistory() {
       <div>
         {!isMobile && (
           <>
-            <CardTitle className="text-base font-medium">Histórico de Pedidos</CardTitle>
-            <CardDescription className="text-xs">Análisis completo del historial de compras del cliente</CardDescription>
+            <CardTitle>Histórico de Pedidos</CardTitle>
+            <CardDescription>Análisis completo del historial de compras del cliente.</CardDescription>
           </>
         )}
       </div>
@@ -199,7 +199,7 @@ export default function OrderCustomerHistory() {
         ) : hasNoData ? (
           <div className="py-2 flex items-center justify-center flex-1">
             <EmptyState
-              icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+              icon={<Calendar className="text-primary" strokeWidth={1.5} />}
               title="No hay historial de pedidos"
               description="Este cliente no tiene pedidos en el período seleccionado. Prueba con otro rango de fechas."
             />
@@ -270,21 +270,21 @@ export default function OrderCustomerHistory() {
             {mainContentMobile}
           </div>
         ) : (
-          <Card className="h-full flex flex-col bg-transparent">
-            <CardHeader className="pb-2 flex-shrink-0">{headerContent}</CardHeader>
+          <Card className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="flex-shrink-0">{headerContent}</CardHeader>
             {generalMetrics && !loadingData && (
-              <CardContent className="pb-3 pt-0 flex-shrink-0">
+              <CardContent className="flex-shrink-0 pb-3 pt-0">
                 <GeneralMetricsGrid metrics={generalMetrics} variant="desktop" />
               </CardContent>
             )}
             <CardContent
-              className={`flex-1 py-2 min-h-0 ${loadingData || hasNoData ? "flex items-center justify-center" : "overflow-y-auto"}`}
+              className={`flex-1 min-h-0 py-2 ${loadingData || hasNoData ? "flex items-center justify-center" : "overflow-y-auto"}`}
             >
               {loadingData ? (
                 <Loader />
               ) : hasNoData ? (
                 <EmptyState
-                  icon={<Calendar className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                  icon={<Calendar className="text-primary" strokeWidth={1.5} />}
                   title="No hay historial de pedidos"
                   description="Este cliente no tiene pedidos en el período seleccionado. Prueba con otro rango de fechas."
                 />

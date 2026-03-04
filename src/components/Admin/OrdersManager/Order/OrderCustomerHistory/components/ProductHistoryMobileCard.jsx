@@ -22,8 +22,8 @@ export default function ProductHistoryMobileCard({
   ChartTooltipComponent = ChartTooltip,
 }) {
   return (
-    <Card className="border-2 rounded-lg shadow-md">
-      <CardContent className="p-5 space-y-4">
+    <Card>
+      <CardContent className="space-y-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-lg">{product.product.name}</h3>
@@ -81,11 +81,11 @@ export default function ProductHistoryMobileCard({
         </div>
 
         <div className="flex flex-col gap-4 w-full pt-2">
-          <Card className="w-full h-48 border-2 flex flex-col overflow-hidden">
-            <CardHeader className="pb-2 px-4 pt-3 flex-shrink-0">
+          <Card className="w-full h-48 flex flex-col overflow-hidden">
+            <CardHeader className="flex-shrink-0 pb-2">
               <CardTitle className="text-sm font-semibold">Evolución de precio</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0 pt-0 px-3 w-full text-primary/50">
+            <CardContent className="flex-1 min-h-0 pt-0 text-primary/50">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
@@ -109,11 +109,11 @@ export default function ProductHistoryMobileCard({
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          <Card className="w-full h-48 border-2 flex flex-col overflow-hidden">
-            <CardHeader className="pb-2 px-4 pt-3 flex-shrink-0">
+          <Card className="w-full h-48 flex flex-col overflow-hidden">
+            <CardHeader className="flex-shrink-0 pb-2">
               <CardTitle className="text-sm font-semibold">Evolución de peso</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0 pt-0 px-3 text-primary/50">
+            <CardContent className="flex-1 min-h-0 pt-0 text-primary/50">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
@@ -141,7 +141,7 @@ export default function ProductHistoryMobileCard({
         </div>
 
         {product.lines?.length > 0 && (
-          <Card className="overflow-x-auto border-2">
+          <Card className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -270,6 +270,7 @@ export default function OrdersManager() {
             onClickAddNewOrder={handleOnClickAddNewOrder}
             onClickOrderCard={handleOnClickOrderCard}
             orders={sortedOrders}
+            totalActiveOrders={orders.length}
             categories={categories}
             visibleCategories={visibleCategoriesForTabs}
             onClickCategory={handleOnClickCategory}
@@ -282,7 +283,7 @@ export default function OrdersManager() {
             viewMode={viewMode}
             onToggleViewMode={toggleViewMode}
         />
-    ), [sortedOrders, categories, visibleCategoriesForTabs, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
+    ), [sortedOrders, orders.length, categories, visibleCategoriesForTabs, searchText, isOrderLoading, error, selectedOrder, viewMode, toggleViewMode, handleOnClickAddNewOrder, handleOnClickOrderCard, handleOnClickCategory, handleOnChangeSearch, reloadOrders]);
 
     // Memoizar la función onLoading para evitar re-renders infinitos
     const handleOrderLoading = useCallback((value) => {

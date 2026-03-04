@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Printer, FileText } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -206,7 +206,7 @@ const OrderLabels = () => {
 
 
     return (
-        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
                     <ScrollArea className="flex-1 min-h-0">
@@ -221,7 +221,7 @@ const OrderLabels = () => {
                                         </p>
                                     </div>
                                     <Button variant="outline" size="sm" onClick={handlePrintGroupedLabels} disabled={selectedGroupedLines.length === 0}>
-                                        <Printer className="h-4 w-4 mr-2" />
+                                        <Printer />
                                         Imprimir
                                     </Button>
                                 </div>
@@ -252,8 +252,8 @@ const OrderLabels = () => {
                                 {/* Cards de grupos */}
                                 <div className="space-y-2">
                                     {groupedBoxes.map((group, index) => (
-                                        <Card key={index} className="border">
-                                            <CardContent className="p-3">
+                                        <Card key={index}>
+                                            <CardContent>
                                                 <div className="flex items-start gap-3">
                                                     <Checkbox
                                                         checked={isGroupedLineSelected(group)}
@@ -286,7 +286,7 @@ const OrderLabels = () => {
                                         </p>
                                     </div>
                                     <Button variant="outline" size="sm" onClick={handlePrintIndividualLabels} disabled={selectedIndividualLines.length === 0}>
-                                        <Printer className="h-4 w-4 mr-2" />
+                                        <Printer />
                                         Imprimir
                                     </Button>
                                 </div>
@@ -362,8 +362,8 @@ const OrderLabels = () => {
                                 {/* Cards de cajas individuales */}
                                 <div className="space-y-2">
                                     {filteredBoxes.map((box) => (
-                                        <Card key={box.id} className="border">
-                                            <CardContent className="p-3">
+                                        <Card key={box.id}>
+                                            <CardContent>
                                                 <div className="flex items-start gap-3">
                                                     <Checkbox
                                                         checked={isIndividualLineSelected(box)}
@@ -401,28 +401,21 @@ const OrderLabels = () => {
                     </ScrollArea>
                 </div>
             ) : (
-                <Card className='h-full flex flex-col bg-transparent'>
+                <Card className="flex-1 flex flex-col min-h-0">
                     <CardContent className="flex-1 overflow-y-auto py-6 flex flex-col gap-6">
                         {/* Agrupadas */}
-                        <Card className='flex flex-col bg-transparent'>
+                        <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg font-medium">Etiquetas Agrupadas</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="text-sm font-medium">Etiquetas por lote y producto</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Puedes imprimir un número determinado de etiquetas por cada grupo
-                                        </div>
-                                    </div>
-
-                                    <Button variant="outline" size="sm" onClick={handlePrintGroupedLabels}>
-                                        <Printer className="h-4 w-4" />
+                                <CardTitle>Etiquetas Agrupadas</CardTitle>
+                                <CardDescription>Etiquetas por lote y producto. Puedes imprimir un número determinado de etiquetas por cada grupo.</CardDescription>
+                                <CardAction>
+                                    <Button variant="outline" size="sm" onClick={handlePrintGroupedLabels} disabled={selectedGroupedLines.length === 0}>
+                                        <Printer />
                                         Imprimir
                                     </Button>
-
-                                </div>
+                                </CardAction>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
 
                                 <div className="rounded-lg border">
                                     <Table>
@@ -467,25 +460,18 @@ const OrderLabels = () => {
                         </Card>
 
                         {/* Individuales */}
-                        <Card className="flex flex-col">
+                        <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg font-medium">Etiquetas Individuales</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="text-sm font-medium">Etiquetas por caja individual</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Puedes imprimir etiquetas para cada caja individual, filtrando por Pallet, Lote o Producto
-                                        </div>
-                                    </div>
-
-                                    <Button variant="outline" size="sm" onClick={handlePrintIndividualLabels}>
-                                        <Printer className="h-4 w-4" />
+                                <CardTitle>Etiquetas Individuales</CardTitle>
+                                <CardDescription>Etiquetas por caja individual. Puedes imprimir etiquetas para cada caja, filtrando por Pallet, Lote o Producto.</CardDescription>
+                                <CardAction>
+                                    <Button variant="outline" size="sm" onClick={handlePrintIndividualLabels} disabled={selectedIndividualLines.length === 0}>
+                                        <Printer />
                                         Imprimir
                                     </Button>
-
-                                </div>
+                                </CardAction>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
 
                                 {/* Filtros */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

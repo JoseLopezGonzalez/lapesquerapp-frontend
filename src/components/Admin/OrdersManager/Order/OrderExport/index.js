@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 
@@ -46,88 +45,89 @@ const OrderExport = () => {
     const content = (
         <div className={isMobile ? "space-y-6" : "grid md:grid-cols-2 gap-6"}>
             {/* Descarga rápida */}
-            <div className="space-y-4">
-                <div className={isMobile ? "text-center" : ""}>
-                    <h3 className="text-base font-semibold mb-1">Descarga rápida</h3>
-                    <p className="text-sm text-muted-foreground">Descarga documentos comunes con un solo clic</p>
-                </div>
-                        <div className="border rounded-lg p-4 space-y-3">
-                            <div className="grid gap-2">
-                                {
-                                    fastExportDocuments.map((doc) => (
-                                        <Button
-                                            key={doc.name}
-                                            variant="outline"
-                                            className="justify-start"
-                                            onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
-                                        >
-                                            {doc.type === 'pdf' && <BsFileEarmarkPdf className="h-4 w-4 mr-2" />}
-                                            {doc.type === 'excel' && <RiFileExcel2Line className="h-4 w-4 mr-2" />}
-                                            {doc.label}
-                                        </Button>
-                                    ))
-                                }
-                            </div>
-                            <Button className="w-full" onClick={handleOnClickExportAll}>
-                        <Layers className="h-4 w-4 mr-2" />
-                                Descargar todos
-                            </Button>
-                        </div>
-            </div>
-
-            {/* Separador en mobile */}
-            {isMobile && <Separator />}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Descarga rápida</CardTitle>
+                    <CardDescription>Descarga documentos comunes con un solo clic</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <div className="grid gap-2">
+                        {
+                            fastExportDocuments.map((doc) => (
+                                <Button
+                                    key={doc.name}
+                                    variant="outline"
+                                    className="justify-start"
+                                    onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
+                                >
+                                    {doc.type === 'pdf' && <BsFileEarmarkPdf />}
+                                    {doc.type === 'excel' && <RiFileExcel2Line />}
+                                    {doc.label}
+                                </Button>
+                            ))
+                        }
+                    </div>
+                    <div className="flex justify-end">
+                        <Button onClick={handleOnClickExportAll}>
+                            <Layers />
+                            Descargar todos
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Descarga por selección */}
-                        <div className="space-y-4">
-                <div className={isMobile ? "text-center" : ""}>
-                    <h3 className="text-base font-semibold mb-1">Descarga por selección</h3>
-                    <p className="text-sm text-muted-foreground">Selecciona un documento específico para descargar</p>
-                </div>
-                <div className="border rounded-lg p-4 space-y-4">
-                            <div className="flex items-center gap-2 w-full">
-                                <div className="flex-1 min-w-0">
-                                    <Select onValueChange={(value) => setSelectedDocument(value)} value={selectedDocument}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {exportDocuments.map((doc) => (
-                                                <SelectItem key={doc.name} value={doc.name}>
-                                                    {doc.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="w-[150px] shrink-0">
-                                    <Select value={selectedType} onValueChange={(value) => setSelectedType(value)}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent align="end">
-                                            {exportDocuments.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
-                                                <SelectItem key={type} value={type} >
-                                                    {type}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                    {!isMobile && (
-                            <div className="flex flex-wrap gap-2">
-                                {exportDocuments.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
-                                    <Badge key={field} variant="outline">{field}</Badge>
-                                ))}
-                            </div>
-                    )}
-                            <Button className="w-full" onClick={handleOnClickSelectExport}>
-                        <Download className="h-4 w-4 mr-2" />
-                                Descargar selección
-                            </Button>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Descarga por selección</CardTitle>
+                    <CardDescription>Selecciona un documento específico para descargar</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2 w-full">
+                        <div className="flex-1 min-w-0">
+                            <Select onValueChange={(value) => setSelectedDocument(value)} value={selectedDocument}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {exportDocuments.map((doc) => (
+                                        <SelectItem key={doc.name} value={doc.name}>
+                                            {doc.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="w-[150px] shrink-0">
+                            <Select value={selectedType} onValueChange={(value) => setSelectedType(value)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent align="end">
+                                    {exportDocuments.find((doc) => doc.name === selectedDocument)?.types.map((type) => (
+                                        <SelectItem key={type} value={type} >
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
+                    {!isMobile && (
+                        <div className="flex flex-wrap gap-2">
+                            {exportDocuments.find((doc) => doc.name === selectedDocument)?.fields.map((field) => (
+                                <Badge key={field} variant="outline">{field}</Badge>
+                            ))}
+                        </div>
+                    )}
+                    <div className="flex justify-end">
+                        <Button onClick={handleOnClickSelectExport}>
+                            <Download />
+                            Descargar selección
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 
@@ -142,11 +142,15 @@ const OrderExport = () => {
                     </ScrollArea>
                 </div>
             ) : (
-                <Card className='h-full flex flex-col bg-transparent'>
-                    <CardContent className="flex-1 overflow-y-auto py-2">
+                <Card className="flex-1 flex flex-col min-h-0">
+                    <CardHeader>
+                        <CardTitle>Exportar</CardTitle>
+                        <CardDescription>Descarga documentos del pedido con un solo clic o por selección</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-y-auto">
                         {content}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
             )}
         </div>
     )

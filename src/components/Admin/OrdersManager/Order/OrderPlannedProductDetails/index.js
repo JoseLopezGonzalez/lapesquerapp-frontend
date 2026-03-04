@@ -380,22 +380,22 @@ const OrderPlannedProductDetails = () => {
                                                     {editIndex === index ? (
                                                         <>
                                                             <Button onClick={handleOnClickSaveLine} size="sm" className="flex-1">
-                                                                <Check size={16} className="mr-2" />
+                                                                <Check />
                                                                 Guardar
                                                             </Button>
                                                             <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm" className="flex-1">
-                                                                <X size={16} className="mr-2" />
+                                                                <X />
                                                                 Cancelar
                                                             </Button>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <Button onClick={() => handleEditLine(index)} size="sm" variant="outline" className="flex-1">
-                                                                <Edit2 size={16} className="mr-2" />
+                                                                <Edit2 />
                                                                 Editar
                                                             </Button>
                                                             <Button variant="destructive" onClick={() => handleOnClickDeleteLine(detail)} size="sm" className="flex-1">
-                                                                <Trash2 size={16} className="mr-2" />
+                                                                <Trash2 />
                                                                 Eliminar
                                                             </Button>
                                                         </>
@@ -487,13 +487,13 @@ const OrderPlannedProductDetails = () => {
                         </p>
                     </div>
                     <div className="space-x-2">
-                            <Button onClick={handleOnClickAddLine} size="default">
-                                <Plus size={16} className="mr-2" />
+                        <Button onClick={handleOnClickAddLine}>
+                            <Plus />
                             Añadir línea
                         </Button>
                         {isSomeProductDetected && (
-                                <Button variant="secondary" className="animate-pulse" onClick={handleOnClickAddDetectedProducts} size="default">
-                                    <GitBranchPlus size={16} className="mr-2" />
+                            <Button variant="secondary" onClick={handleOnClickAddDetectedProducts}>
+                                <GitBranchPlus />
                                 Añadir productos detectados
                             </Button>
                         )}
@@ -602,20 +602,20 @@ const OrderPlannedProductDetails = () => {
                                                     <TableCell className="text-right whitespace-nowrap">
                                                 {editIndex === index ? (
                                                     <div className="flex flex-nowrap items-center justify-end gap-2">
-                                                        <Button onClick={handleOnClickSaveLine} size="sm">
-                                                            <Check size={16} />
+                                                        <Button onClick={handleOnClickSaveLine} size="icon-sm" aria-label="Guardar línea">
+                                                            <Check />
                                                         </Button>
-                                                        <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="sm">
-                                                            <X size={16} />
+                                                        <Button variant="secondary" onClick={() => handleOnClickCloseLine(detail)} size="icon-sm" aria-label="Cancelar">
+                                                            <X />
                                                         </Button>
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-nowrap items-center justify-end gap-2">
-                                                        <Button onClick={() => handleEditLine(index)} size="sm" variant="outline">
-                                                            <Edit2 size={16} />
+                                                        <Button onClick={() => handleEditLine(index)} size="icon-sm" variant="outline" aria-label="Editar línea">
+                                                            <Edit2 />
                                                         </Button>
-                                                        <Button onClick={() => handleOnClickDeleteLine(detail)} size="sm" variant="destructive">
-                                                            <Trash2 size={16} />
+                                                        <Button onClick={() => handleOnClickDeleteLine(detail)} size="icon-sm" variant="destructive" aria-label="Eliminar línea">
+                                                            <Trash2 />
                                                         </Button>
                                                     </div>
                                                 )}

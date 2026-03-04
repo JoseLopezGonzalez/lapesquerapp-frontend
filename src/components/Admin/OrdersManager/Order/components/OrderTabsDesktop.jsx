@@ -47,7 +47,7 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
               const tabClass = section.id === 'details'
                 ? 'space-y-4 w-full h-full overflow-y-auto'
                 : compactTabs.includes(section.id)
-                  ? 'h-full'
+                  ? 'h-full min-h-0 flex flex-col'
                   : 'space-y-4 w-full h-full';
               return (
                 <TabsContent

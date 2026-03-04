@@ -192,7 +192,7 @@ export default function LinkPalletsDialog({
             )}
           </div>
         )}
-        <DialogFooter className="flex flex-row flex-wrap items-center gap-2">
+        <DialogFooter>
           <div className="flex items-center gap-2 mr-auto">
             {paginationMeta && paginationMeta.last_page > 1 && (() => {
               const totalPages = paginationMeta.last_page;
@@ -236,28 +236,26 @@ export default function LinkPalletsDialog({
               );
             })()}
           </div>
-          <div className="flex flex-row gap-2 flex-1 sm:flex-initial justify-end">
+          <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={handleClose}
               disabled={isLinking}
-              className={isMobile ? "flex-1" : ""}
             >
               Cancelar
             </Button>
             <Button
               onClick={onLinkSelected}
               disabled={selectedPalletIds.length === 0 || isLinking}
-              className={isMobile ? "flex-1" : ""}
             >
               {isLinking ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="animate-spin" />
                   Vinculando...
                 </>
               ) : (
                 <>
-                  <Link2 className="h-4 w-4 mr-2" />
+                  <Link2 />
                   Vincular {selectedPalletIds.length > 0 ? `(${selectedPalletIds.length})` : ''}
                 </>
               )}

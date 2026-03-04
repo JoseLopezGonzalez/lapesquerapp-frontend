@@ -61,28 +61,26 @@ export default function CreateFromForecastDialog({
             </div>
           </div>
         </div>
-        <DialogFooter className={isMobile ? "flex-col gap-2" : ""}>
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={onCancel}
             disabled={isCreating}
-            className={isMobile ? "w-full" : ""}
           >
             Cancelar
           </Button>
           <Button
             onClick={onCreate}
             disabled={isCreating}
-            className={isMobile ? "w-full" : ""}
           >
             {isCreating ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="animate-spin" />
                 Creando...
               </>
             ) : (
               <>
-                <PackagePlus className="h-4 w-4 mr-2" />
+                <PackagePlus />
                 Crear palet
               </>
             )}

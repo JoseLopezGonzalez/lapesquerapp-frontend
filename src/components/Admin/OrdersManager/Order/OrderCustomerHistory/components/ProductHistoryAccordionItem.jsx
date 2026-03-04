@@ -26,7 +26,7 @@ export default function ProductHistoryAccordionItem({
   const triggerClass = isMobile
     ? 'px-5 py-4 hover:bg-muted/50 transition-colors [&>svg]:transition-transform no-underline hover:no-underline'
     : 'px-4 py-3 hover:bg-muted/50 transition-colors [&>svg]:transition-transform no-underline hover:no-underline';
-  const itemClass = isMobile ? 'border-2 rounded-lg overflow-hidden shadow-md' : 'border rounded-lg overflow-hidden shadow-sm';
+  const itemClass = 'rounded-lg overflow-hidden';
   const titleClass = isMobile ? 'font-semibold text-lg' : 'font-medium text-base';
   const badgeClass = isMobile ? 'flex items-center gap-1 text-xs h-6 px-2.5 cursor-help' : 'flex items-center gap-1 text-xs h-5 cursor-help';
   const iconSize = isMobile ? 'h-3 w-3' : 'h-2.5 w-2.5';
@@ -34,8 +34,8 @@ export default function ProductHistoryAccordionItem({
   const metricsValueClass = isMobile ? 'font-semibold text-base' : 'font-medium text-sm';
   const contentClass = isMobile ? 'p-4 space-y-3 w-full' : 'p-3 space-y-3 w-full';
   const chartGapClass = isMobile ? 'gap-4' : 'gap-3';
-  const chartHeight = isMobile ? 'h-48 border-2' : 'h-40 shadow-sm';
-  const chartHeaderClass = isMobile ? 'pb-2 px-4 pt-3' : 'pb-1 px-3 pt-2';
+  const chartHeight = isMobile ? 'h-48' : 'h-40';
+  const chartHeaderClass = 'pb-2 flex-shrink-0';
   const chartTitleClass = isMobile ? 'text-sm font-semibold' : 'text-xs font-medium';
   const chartContentClass = isMobile ? 'px-3' : 'px-2';
 
@@ -106,7 +106,7 @@ export default function ProductHistoryAccordionItem({
             <CardHeader className={chartHeaderClass}>
               <CardTitle className={chartTitleClass}>Evolución de precio</CardTitle>
             </CardHeader>
-            <CardContent className={`h-full pt-0 ${chartContentClass} w-full text-primary/50`}>
+            <CardContent className={`h-full pt-0 ${chartContentClass} text-primary/50`}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
@@ -166,7 +166,7 @@ export default function ProductHistoryAccordionItem({
             </CardContent>
           </Card>
         </div>
-        <Card className={isMobile ? 'overflow-x-auto border-2' : 'overflow-x-auto'}>
+        <Card className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

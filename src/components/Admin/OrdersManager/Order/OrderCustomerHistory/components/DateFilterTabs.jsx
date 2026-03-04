@@ -39,7 +39,7 @@ export default function DateFilterTabs({
       >
         <ScrollArea orientation="horizontal" className="w-full">
           <div className="flex">
-            <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto pl-2 pr-2">
+            <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto">
               <TabsTrigger value="month" className={MOBILE_TAB_CLASS}>
                 Mes
               </TabsTrigger>
@@ -86,19 +86,19 @@ export default function DateFilterTabs({
             gridTemplateColumns: `repeat(${2 + (hasCurrentYear ? 1 : 0) + (hasYear1 ? 1 : 0)}, minmax(0, 1fr))`,
           }}
         >
-          <TabsTrigger value="month" className="text-xs px-2">
+          <TabsTrigger value="month">
             Mes
           </TabsTrigger>
-          <TabsTrigger value="quarter" className="text-xs px-2">
+          <TabsTrigger value="quarter">
             Trimestre
           </TabsTrigger>
           {hasCurrentYear && (
-            <TabsTrigger value="year" className="text-xs px-2">
+            <TabsTrigger value="year">
               {currentYear}
             </TabsTrigger>
           )}
           {hasYear1 && (
-            <TabsTrigger value="year-1" className="text-xs px-2">
+            <TabsTrigger value="year-1">
               {currentYear - 1}
             </TabsTrigger>
           )}
@@ -107,8 +107,8 @@ export default function DateFilterTabs({
       {yearsForSelector.length > 0 && (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Más años">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant="outline" size="icon" aria-label="Más años">
+              <MoreVertical />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-3" align="end">

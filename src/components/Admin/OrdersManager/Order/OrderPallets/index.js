@@ -125,7 +125,7 @@ const OrderPallets = () => {
                     />
                 </div>
             ) : (
-            <Card className='h-full flex flex-col bg-transparent'>
+            <Card className='flex-1 flex flex-col min-h-0 bg-transparent'>
                 <OrderPalletsToolbar
                     isMobile={isMobile}
                     pallets={pallets}
