@@ -22,6 +22,7 @@ import {
     SelectItem,
 } from "@/components/ui/select";
 import BoxLabelPrintDialog from '@/components/Admin/Labels/BoxLabelPrintDialog';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 
 const OrderLabels = () => {
     const { pallets } = useOrderContext();
@@ -206,7 +207,7 @@ const OrderLabels = () => {
 
 
     return (
-        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 pb-2"}>
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 overflow-hidden pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
                     <ScrollArea className="flex-1 min-h-0">
@@ -401,10 +402,10 @@ const OrderLabels = () => {
                     </ScrollArea>
                 </div>
             ) : (
-                <Card className="flex-1 flex flex-col min-h-0">
-                    <CardContent className="flex-1 overflow-y-auto py-6 flex flex-col gap-6">
+                <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <CardContent className="flex-1 min-h-0 overflow-y-auto py-6 flex flex-col gap-6">
                         {/* Agrupadas */}
-                        <Card>
+                        <Card className="shrink-0">
                             <CardHeader>
                                 <CardTitle>Etiquetas Agrupadas</CardTitle>
                                 <CardDescription>Etiquetas por lote y producto. Puedes imprimir un número determinado de etiquetas por cada grupo.</CardDescription>
@@ -416,51 +417,58 @@ const OrderLabels = () => {
                                 </CardAction>
                             </CardHeader>
                             <CardContent className="space-y-4">
-
-                                <div className="rounded-lg border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[50px]">
-                                                    <Checkbox
-                                                        onCheckedChange={(checked) => {
-                                                            if (checked) {
-                                                                handleSelectAllGrouped();
-                                                            } else {
-                                                                handleUnselectAllGrouped();
-                                                            }
-                                                        }}
-                                                        checked={isAllGroupedSelected}
-                                                    />
-                                                </TableHead>
-                                                <TableHead>Producto</TableHead>
-                                                <TableHead>Cajas</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {groupedBoxes.map((group, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>
+                                {groupedBoxes.length === 0 ? (
+                                    <EmptyState
+                                        className="py-8"
+                                        title="No hay grupos de etiquetas"
+                                        description="Añade palets con cajas al pedido para ver grupos por producto y lote."
+                                    />
+                                ) : (
+                                    <div className="rounded-lg border">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="w-[50px]">
                                                         <Checkbox
-                                                            checked={isGroupedLineSelected(group)}
-                                                            onCheckedChange={() => handleSelectGroupedLine(group)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    handleSelectAllGrouped();
+                                                                } else {
+                                                                    handleUnselectAllGrouped();
+                                                                }
+                                                            }}
+                                                            checked={isAllGroupedSelected}
                                                         />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="font-medium">{group.product?.name}</div>
-                                                        <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
-                                                    </TableCell>
-                                                    <TableCell>{group.count}</TableCell>
+                                                    </TableHead>
+                                                    <TableHead>Producto</TableHead>
+                                                    <TableHead>Cajas</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {groupedBoxes.map((group, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={isGroupedLineSelected(group)}
+                                                                onCheckedChange={() => handleSelectGroupedLine(group)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="font-medium">{group.product?.name}</div>
+                                                            <div className="text-sm text-muted-foreground">Lote: {group.lot}</div>
+                                                        </TableCell>
+                                                        <TableCell>{group.count}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
                         {/* Individuales */}
-                        <Card>
+                        <Card className="shrink-0">
                             <CardHeader>
                                 <CardTitle>Etiquetas Individuales</CardTitle>
                                 <CardDescription>Etiquetas por caja individual. Puedes imprimir etiquetas para cada caja, filtrando por Pallet, Lote o Producto.</CardDescription>
@@ -522,48 +530,56 @@ const OrderLabels = () => {
                                 </div>
 
                                 {/* Tabla */}
-                                <div className="rounded-lg border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[50px]">
-                                                    <Checkbox
-                                                        onCheckedChange={(checked) => {
-                                                            if (checked) {
-                                                                handleSelectAllIndividual();
-                                                            } else {
-                                                                handleUnselectAllIndividual();
-                                                            }
-                                                        }}
-                                                        checked={isAllIndividualSelected}
-                                                    />
-                                                </TableHead>
-                                                <TableHead>Pallet ID</TableHead>
-                                                <TableHead>Caja ID</TableHead>
-                                                <TableHead>Producto</TableHead>
-                                                <TableHead>Lote</TableHead>
-                                                <TableHead className="text-right">Peso neto (kg)</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {filteredBoxes.map((box) => (
-                                                <TableRow key={box.id}>
-                                                    <TableCell>
+                                {filteredBoxes.length === 0 ? (
+                                    <EmptyState
+                                        className="py-8"
+                                        title="No hay cajas para mostrar"
+                                        description={pallets?.length ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar pallet, lote o producto.' : 'Añade palets con cajas al pedido para imprimir etiquetas individuales.'}
+                                    />
+                                ) : (
+                                    <div className="rounded-lg border">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="w-[50px]">
                                                         <Checkbox
-                                                            checked={isIndividualLineSelected(box)}
-                                                            onCheckedChange={() => handleSelectIndividualLine(box)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    handleSelectAllIndividual();
+                                                                } else {
+                                                                    handleUnselectAllIndividual();
+                                                                }
+                                                            }}
+                                                            checked={isAllIndividualSelected}
                                                         />
-                                                    </TableCell>
-                                                    <TableCell>{box.palletId}</TableCell>
-                                                    <TableCell>{box.id}</TableCell>
-                                                    <TableCell>{box.product?.name}</TableCell>
-                                                    <TableCell>{box.lot}</TableCell>
-                                                    <TableCell className="text-right">{box.netWeight}</TableCell>
+                                                    </TableHead>
+                                                    <TableHead>Pallet ID</TableHead>
+                                                    <TableHead>Caja ID</TableHead>
+                                                    <TableHead>Producto</TableHead>
+                                                    <TableHead>Lote</TableHead>
+                                                    <TableHead className="text-right">Peso neto (kg)</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {filteredBoxes.map((box) => (
+                                                    <TableRow key={box.id}>
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={isIndividualLineSelected(box)}
+                                                                onCheckedChange={() => handleSelectIndividualLine(box)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{box.palletId}</TableCell>
+                                                        <TableCell>{box.id}</TableCell>
+                                                        <TableCell>{box.product?.name}</TableCell>
+                                                        <TableCell>{box.lot}</TableCell>
+                                                        <TableCell className="text-right">{box.netWeight}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </CardContent>

@@ -470,7 +470,7 @@ const OrderDocuments = () => {
     );
 
     return (
-        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "h-full pb-2"}>
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 overflow-hidden pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
                     <ScrollArea className="flex-1 min-h-0">
@@ -480,11 +480,11 @@ const OrderDocuments = () => {
                     </ScrollArea>
                 </div>
             ) : (
-                <Card className="flex-1 flex flex-col min-h-0">
-                    <CardContent className="flex-1 overflow-y-auto py-6">
+                <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <CardContent className="flex-1 min-h-0 overflow-y-auto py-6">
                         {content}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
             )}
         </div>
     );
