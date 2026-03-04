@@ -28,6 +28,7 @@ const ORDER_TYPE_OPTIONS = [
 const initialFormGroups = [
     {
         group: 'Tipo de pedido',
+        description: 'Estándar o autoventa según el tipo de operación.',
         grid: 'grid-cols-1 gap-4',
         fields: [
             {
@@ -41,6 +42,7 @@ const initialFormGroups = [
     },
     {
         group: 'Fechas',
+        description: 'Fecha de entrada en sistema y fecha prevista de carga.',
         grid: 'grid-cols-2 gap-4',
         fields: [
             {
@@ -61,6 +63,7 @@ const initialFormGroups = [
     },
     {
         group: 'Información Comercial',
+        description: 'Comercial, forma de pago, incoterm y referencia del comprador.',
         grid: 'grid-cols-2 gap-4',
         fields: [
             {
@@ -99,6 +102,7 @@ const initialFormGroups = [
     },
     {
         group: 'Transporte',
+        description: 'Empresa de transporte, matrículas y observaciones de envío.',
         grid: 'grid-cols-2 gap-4',
         fields: [
             {
@@ -144,6 +148,7 @@ const initialFormGroups = [
     },
     {
         group: 'Direcciones',
+        description: 'Dirección de facturación y dirección de entrega.',
         grid: 'grid-cols-2 gap-4',
         fields: [
             {
@@ -172,6 +177,7 @@ const initialFormGroups = [
     },
     {
         group: 'Observaciones',
+        description: 'Notas para producción y contabilidad.',
         grid: 'grid-cols-1 gap-4',
         fields: [
             {
@@ -201,6 +207,7 @@ const initialFormGroups = [
     },
     {
         group: 'Emails',
+        description: 'Destinatarios y copia para envío de documentación.',
         grid: 'grid-cols-1  gap-4',
         fields: [
             {

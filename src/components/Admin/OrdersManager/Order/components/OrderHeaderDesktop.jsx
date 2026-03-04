@@ -1,11 +1,14 @@
 'use client';
 
-import { Printer, MoreVertical, ShoppingBag } from 'lucide-react';
+import { Printer, MoreVertical, Bookmark, Copy, Ban, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
@@ -24,34 +27,31 @@ export default function OrderHeaderDesktop({
   onPrint,
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mt-0 sm:-mt-6 lg:-mt-2">
+    <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
       <div className="space-y-1 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
           {(order?.orderType ?? order?.order_type) === 'autoventa' && (
-            <span
-              className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium px-2.5 py-0.5 rounded-full border border-slate-400 dark:border-slate-500"
-              aria-label="Tipo de pedido: Autoventa"
-            >
-              <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+            <Badge variant="outline" aria-label="Tipo de pedido: Autoventa">
               Autoventa
-            </span>
+              <Bookmark data-icon="inline-end" />
+            </Badge>
           )}
         </div>
-        <h3 className="text-lg sm:text-xl font-medium">#{order.id}</h3>
+        <h3 className="text-base font-medium">#{order.id}</h3>
         <div>
           <p>
-            <span className="font-light text-2xl sm:text-3xl">{order.customer?.name ?? '—'}</span>
+            <span className="text-base font-medium">{order.customer?.name ?? '—'}</span>
             <br />
-            <span className="text-base sm:text-lg font-medium">Cliente Nº {order.customer?.id ?? '—'}</span>
+            <span className="text-sm text-muted-foreground">Cliente Nº {order.customer?.id ?? '—'}</span>
           </p>
         </div>
         <div>
-          <p className="font-medium text-xs text-muted-foreground">Fecha de Carga:</p>
-          <p className="font-medium text-lg">{formatDate(order.loadDate)}</p>
+          <p className="text-sm text-muted-foreground">Fecha de Carga</p>
+          <p className="text-sm font-medium">{formatDate(order.loadDate)}</p>
         </div>
         <div>
-          <p className="font-medium text-xs text-muted-foreground">Temperatura:</p>
+          <p className="text-sm text-muted-foreground">Temperatura</p>
           <OrderTemperatureDropdown
             temperature={order.temperature}
             onTemperatureChange={onTemperatureChange}
@@ -63,19 +63,33 @@ export default function OrderHeaderDesktop({
           <div className="flex gap-2">
             <OrderEditSheet />
             <Button variant="outline" onClick={onPrint}>
-              <Printer className="h-4 w-4 mr-2" />
+              <Printer />
               Imprimir
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <MoreVertical className="h-4 w-4" />
+                <Button variant="outline" size="icon" aria-label="Abrir menú de acciones">
+                  <MoreVertical />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>Duplicar pedido</DropdownMenuItem>
-                <DropdownMenuItem>Cancelar pedido</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">Eliminar pedido</DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <Copy />
+                    Duplicar pedido
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Ban />
+                    Cancelar pedido
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem variant="destructive">
+                    <Trash2 />
+                    Eliminar pedido
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -85,7 +99,7 @@ export default function OrderHeaderDesktop({
               src={transportImage}
               alt={`Transporte ${order.transport?.name || ''}`}
             />
-            <h3 className="text-3xl font-light">{order.transport?.name || '-'}</h3>
+            <p className="text-base font-medium">{order.transport?.name || '-'}</p>
           </div>
         </div>
       </div>

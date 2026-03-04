@@ -6,11 +6,14 @@ import { PackageSearch, SearchX, ArrowLeft, CheckCircle2, Clock, AlertCircle, Pa
 import { useRouter } from 'next/navigation';
 
 import OrderCard from './OrderCard';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Download, Plus, LayoutGrid } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Download, Plus, LayoutGrid, Search } from 'lucide-react';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from '@/components/ui/input-group';
 import { API_URL_V2 } from '@/configs/config';import { useSession } from 'next-auth/react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useBackButton } from '@/hooks/use-back-button';
@@ -21,6 +24,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { cn } from '@/lib/utils';
 
 /* convertir examples a objeto js */
@@ -208,61 +212,33 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                 <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
                     {/* Barra de búsqueda (siempre visible) + tabs con efecto badge y scroll con fade */}
                     <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-3 pt-1 space-y-4' : 'mb-5 pt-2'}`}>
-                        <div className="relative w-full">
-                            <Input
-                                onChange={(e) => onChangeSearch(e.target.value)}
-                                value={searchText}
+                        <InputGroup className="w-full">
+                            <InputGroupInput
                                 type="text"
+                                value={searchText}
+                                onChange={(e) => onChangeSearch(e.target.value)}
                                 placeholder={isMobile ? 'Buscar por ID o cliente' : 'Buscar por id o cliente'}
-                                className={cn(
-                                    'w-full pr-10 text-base rounded-md',
-                                    isMobile ? 'h-12 pl-4 pr-12 rounded-lg' : 'py-2 px-4 sm:px-5 pr-10 sm:pr-12 text-sm sm:text-base'
-                                )}
                             />
-                            <button
-                                className={cn(
-                                    'absolute right-0 top-0 h-full flex items-center justify-center touch-manipulation',
-                                    isMobile ? 'w-12' : 'w-10 sm:w-12'
-                                )}
-                                onClick={() => searchText.length > 0 && onChangeSearch('')}
-                                aria-label={searchText.length > 0 ? 'Limpiar búsqueda' : 'Buscar'}
-                            >
-                                {searchText.length > 0 ? (
-                                    <XMarkIcon className={cn('text-muted-foreground hover:text-foreground', isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5')} />
-                                ) : (
-                                    <MagnifyingGlassIcon className={cn('text-muted-foreground', isMobile ? 'h-5 w-5' : 'h-4 w-4 sm:h-5 sm:w-5')} />
-                                )}
-                            </button>
-                        </div>
+                            <InputGroupAddon>
+                                <Search className="size-4" />
+                            </InputGroupAddon>
+                        </InputGroup>
 
                         <Tabs value={activeTab} onValueChange={onClickCategory} className={isMobile ? 'mt-0' : 'mt-5 mb-5'}>
                             {isMobile ? (
-                                <div className="relative -mx-4 px-4">
-                                    {/* Variante móvil: TabsList bg-transparent p-0 + triggers pill; look distinto a la doc */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
-                                    <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
-                                    <div className="overflow-x-auto scrollbar-hide">
-                                        <TabsList className="w-max min-w-full inline-flex gap-2 bg-transparent p-0 h-auto pl-3 pr-3">
-                                            {visibleCategories.map((category) => (
-                                                <TabsTrigger
-                                                    key={category.name}
-                                                    value={category.name}
-                                                    className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium min-h-[36px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm data-[state=inactive]:bg-muted data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted/80 flex-shrink-0"
-                                                >
-                                                    {category.label}
-                                                </TabsTrigger>
-                                            ))}
-                                        </TabsList>
-                                    </div>
+                                <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                                    <TabsList className="w-max">
+                                        {visibleCategories.map((category) => (
+                                            <TabsTrigger key={category.name} value={category.name}>
+                                                {category.label}
+                                            </TabsTrigger>
+                                        ))}
+                                    </TabsList>
                                 </div>
                             ) : (
-                                <TabsList className="w-fit inline-flex bg-muted p-1 h-9">
+                                <TabsList>
                                     {visibleCategories.map((category) => (
-                                        <TabsTrigger
-                                            key={category.name}
-                                            value={category.name}
-                                            className="whitespace-nowrap px-3 py-1 text-sm rounded-md"
-                                        >
+                                        <TabsTrigger key={category.name} value={category.name}>
                                             {category.label}
                                         </TabsTrigger>
                                     ))}
@@ -298,7 +274,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                                 ref={scrollAreaRef}
                                 className="h-full w-full"
                             >
-                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-2 pb-6' : 'gap-3 pt-2 pr-2 pb-4'}`}>
+                                <div className={`flex flex-col ${isMobile ? 'gap-4 pt-2 pb-6 pl-2 pr-2' : 'gap-3 pt-2 pl-2 pr-2 pb-4'}`}>
                                 {orders.map((order) => (
                                         <div key={order.id}>
                                         <OrderCard
@@ -313,84 +289,48 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                         </ScrollArea>
                         </div>
                     ) : (
-                        <div className={`flex flex-col items-center justify-center gap-4 h-full w-full ${isMobile ? 'py-6' : 'py-8'}`}>
+                        <div className="h-full w-full">
                             {!error && (
-                                <div className="flex flex-col items-center justify-center w-full h-full px-4">
-                                    <div className="relative">
-                                        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl opacity-70" />
-                                        <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-background border shadow-xs">
-                                            {(() => {
-                                                if (searchText) {
-                                                    return <SearchX className="h-6 w-6 text-primary" strokeWidth={1.5} />;
-                                                }
-                                                switch (activeTab) {
-                                                    case 'finished':
-                                                        return <CheckCircle2 className="h-6 w-6 text-green-500" strokeWidth={1.5} />;
-                                                    case 'pending':
-                                                        return <Clock className="h-6 w-6 text-orange-500" strokeWidth={1.5} />;
-                                                    case 'incident':
-                                                        return <AlertCircle className="h-6 w-6 text-red-500" strokeWidth={1.5} />;
-                                                    case 'today':
-                                                        return <Clock className="h-6 w-6 text-primary" strokeWidth={1.5} />;
-                                                    case 'tomorrow':
-                                                        return <Package className="h-6 w-6 text-primary" strokeWidth={1.5} />;
-                                                    default:
-                                                        return <Package className="h-6 w-6 text-primary" strokeWidth={1.5} />;
-                                                }
-                                            })()}
-                                        </div>
-                                    </div>
-                                    <h2 className="mt-4 text-lg font-medium tracking-tight">
-                                        {(() => {
-                                            if (searchText) {
-                                                return 'No se encontraron pedidos';
-                                            }
-                                            switch (activeTab) {
-                                                case 'finished':
-                                                    return 'No hay pedidos terminados';
-                                                case 'pending':
-                                                    return 'No hay pedidos en producción';
-                                                case 'incident':
-                                                    return 'No hay pedidos con incidentes';
-                                                case 'today':
-                                                    return 'No hay pedidos para hoy';
-                                                case 'tomorrow':
-                                                    return 'No hay pedidos para mañana';
-                                                default:
-                                                    return 'No hay pedidos activos';
-                                            }
-                                        })()}
-                                    </h2>
-                                    <p className="mt-2 text-center text-muted-foreground max-w-[300px] text-xs whitespace-normal">
-                                        {(() => {
-                                            if (searchText) {
-                                                return 'Intenta con otros parámetros de búsqueda o ajusta los filtros.';
-                                            }
-                                            switch (activeTab) {
-                                                case 'finished':
-                                                    return 'Los pedidos terminados aparecerán aquí una vez que se completen.';
-                                                case 'pending':
-                                                    return 'Los pedidos en producción aparecerán aquí cuando estén en proceso.';
-                                                case 'incident':
-                                                    return 'Los pedidos con incidentes aparecerán aquí cuando se reporten problemas.';
-                                                case 'today':
-                                                    return 'No hay pedidos con fecha de carga hoy. Cambia el filtro o crea un pedido.';
-                                                case 'tomorrow':
-                                                    return 'No hay pedidos con fecha de carga mañana. Cambia el filtro o crea un pedido.';
-                                                default:
-                                                    return 'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.';
-                                            }
-                                        })()}
-                                    </p>
-                                    {!searchText && activeTab === 'all' && (
-                                        <button
-                                            onClick={onClickAddNewOrder}
-                                            className="mt-4 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                                        >
-                                            Crear nuevo pedido
-                                        </button>
-                                    )}
-                                </div>
+                                <EmptyState
+                                    icon={
+                                        searchText ? (
+                                            <SearchX />
+                                        ) : activeTab === 'finished' ? (
+                                            <CheckCircle2 />
+                                        ) : activeTab === 'pending' || activeTab === 'incident' ? (
+                                            activeTab === 'incident' ? <AlertCircle /> : <Clock />
+                                        ) : (
+                                            <Package />
+                                        )
+                                    }
+                                    title={
+                                        searchText
+                                            ? 'No se encontraron pedidos'
+                                            : {
+                                                  finished: 'No hay pedidos terminados',
+                                                  pending: 'No hay pedidos en producción',
+                                                  incident: 'No hay pedidos con incidentes',
+                                                  today: 'No hay pedidos para hoy',
+                                                  tomorrow: 'No hay pedidos para mañana',
+                                              }[activeTab] ?? 'No hay pedidos activos'
+                                    }
+                                    description={
+                                        searchText
+                                            ? 'Intenta con otros parámetros de búsqueda o ajusta los filtros.'
+                                            : {
+                                                  finished: 'Los pedidos terminados aparecerán aquí una vez que se completen.',
+                                                  pending: 'Los pedidos en producción aparecerán aquí cuando estén en proceso.',
+                                                  incident: 'Los pedidos con incidentes aparecerán aquí cuando se reporten problemas.',
+                                                  today: 'No hay pedidos con fecha de carga hoy. Cambia el filtro o crea un pedido.',
+                                                  tomorrow: 'No hay pedidos con fecha de carga mañana. Cambia el filtro o crea un pedido.',
+                                              }[activeTab] ?? 'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.'
+                                    }
+                                    button={
+                                        !searchText && activeTab === 'all'
+                                            ? { name: 'Crear nuevo pedido', onClick: onClickAddNewOrder }
+                                            : undefined
+                                    }
+                                />
                             )}
                         </div>
                     )}

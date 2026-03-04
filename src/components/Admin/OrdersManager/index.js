@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query';
 import OrdersList from './OrdersList';
-import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import Order from './Order';
 import { useOrders } from '@/hooks/useOrders';
-import { Loader2, Package, PlusCircle, Plus, Download, LayoutGrid, List } from 'lucide-react';
+import { Loader2, Package, Plus, Download, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Card } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
@@ -311,15 +311,12 @@ export default function OrdersManager() {
             );
         }
         return (
-            <Card className='h-full p-4 sm:p-7 flex flex-col justify-center items-center'>
+            <Card className="h-full flex flex-col p-4 sm:p-7">
                 <EmptyState
-                    icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-                    title='Seleccione un pedido'
-                    description='Selecciona un pedido para ver los detalles y realizar cambios.'
-                    button={{
-                        name: 'Crear pedido nuevo',
-                        onClick: handleOnClickAddNewOrder,
-                    }}
+                    title="Seleccione un pedido"
+                    description="Selecciona un pedido para ver los detalles y realizar cambios."
+                    icon={<Package />}
+                    button={{ name: 'Crear pedido nuevo', onClick: handleOnClickAddNewOrder }}
                 />
             </Card>
         );

@@ -1,7 +1,7 @@
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChevronRight } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 
@@ -25,38 +25,23 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 : null
         : null;
 
-    // Borde izquierdo por estado (sin cambiar fondo base)
-    const borderLClass =
-        order.status === 'incident'
-            ? 'border-l-red-500'
-            : order.status === 'finished'
-                ? 'border-l-green-500'
-                : 'border-l-orange-500';
-
-    // Resaltar pedido seleccionado (fondo más marcado)
-    const selectedClass = isSelected
-        ? order.status === 'incident'
-            ? 'bg-red-500/10 border-red-500/50'
-            : order.status === 'finished'
-                ? 'bg-green-500/10 border-green-500/50'
-                : 'bg-orange-500/10 border-orange-500/50'
-        : '';
-
     const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente';
+
+    const ringColor = order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red';
+    const ringColorClass = ringColor === 'orange' ? 'ring-orange-500' : ringColor === 'green' ? 'ring-green-500' : 'ring-red-500';
+    const focusRingClass = ringColor === 'orange' ? 'focus-visible:ring-orange-500' : ringColor === 'green' ? 'focus-visible:ring-green-500' : 'focus-visible:ring-red-500';
 
     return (
         <Card
             className={cn(
-                'relative flex border-l-4 min-h-[120px] transition-colors duration-150',
-                'p-4 sm:p-5',
-                borderLClass,
-                selectedClass,
                 disabled && 'cursor-not-allowed pointer-events-none',
                 !disabled && [
                     'cursor-pointer',
-                    isMobile && 'hover:bg-accent/50 hover:border-accent active:bg-accent/70 active:scale-[0.99]',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                ]
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    focusRingClass,
+                ],
+                isSelected && 'ring-2',
+                isSelected && ringColorClass
             )}
             onClick={() => !disabled && onClick()}
             role="button"
@@ -69,11 +54,12 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 }
             }}
         >
+            <CardContent className="py-0">
             {isMobile ? (
                 /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
                 <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
                     <div className="flex-1 min-w-0 space-y-1">
-                        <p className="font-semibold text-lg truncate leading-tight" title={order.customer?.name ?? '—'}>
+                        <p className="font-medium text-base truncate leading-tight" title={order.customer?.name ?? '—'}>
                             {order.customer?.name ?? '—'}
                         </p>
                         <p className="text-sm text-muted-foreground tabular-nums">
@@ -122,7 +108,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                         )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base sm:text-lg font-semibold">#{orderId}</h3>
+                        <h3 className="text-base font-medium">#{orderId}</h3>
                         {order?.orderType === 'autoventa' && (
                             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
                                 Autoventa
@@ -130,24 +116,25 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                         )}
                     </div>
                     <div>
-                        <p className="font-semibold truncate text-base sm:text-lg font-medium" title={order.customer?.name ?? '—'}>
+                        <p className="font-medium text-base truncate" title={order.customer?.name ?? '—'}>
                             {order.customer?.name ?? '—'}
                         </p>
                     </div>
                     <div className="flex items-center gap-4 flex-wrap">
                         <div>
-                            <p className={`${isSelected ? 'text-foreground/80' : 'text-muted-foreground'} mb-1 text-xs`}>Fecha de Carga</p>
-                            <p className="font-semibold text-base sm:text-lg font-medium">{loadDate}</p>
+                            <p className="text-muted-foreground mb-1 text-xs">Fecha de Carga</p>
+                            <p className="text-sm font-medium">{loadDate}</p>
                         </div>
                         {order.numberOfBoxes != null && (
                             <div>
                                 <p className="text-xs text-muted-foreground mb-1">Cajas</p>
-                                <p className="font-semibold text-base">{order.numberOfBoxes}</p>
+                                <p className="text-sm font-medium">{order.numberOfBoxes}</p>
                             </div>
                         )}
                     </div>
                 </div>
             )}
+            </CardContent>
         </Card>
     )
 }

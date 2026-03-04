@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-
+/* radix-nova: componentes que usan data-active: (ej. Tabs) reciben estilos cuando Radix pone data-state="active" */
+@custom-variant data-active (&[data-state="active"]);
 
 @theme inline {
   --font-sans: var(--font-geist-sans);

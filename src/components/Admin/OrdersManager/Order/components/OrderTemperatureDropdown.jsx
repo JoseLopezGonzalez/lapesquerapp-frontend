@@ -20,9 +20,9 @@ export default function OrderTemperatureDropdown({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={`focus:outline-none ${className ?? ''}`}>
-        <span className="font-medium text-lg flex gap-1 items-center hover:text-muted-foreground">
-          <ThermometerSnowflake className="h-5 w-5 inline-block" />
+      <DropdownMenuTrigger className={className ? `focus:outline-none ${className}` : 'focus:outline-none'}>
+        <span className="text-sm font-medium flex gap-1.5 items-center hover:text-muted-foreground">
+          <ThermometerSnowflake className="size-4" />
           {temperature ?? '0'} ºC
         </span>
       </DropdownMenuTrigger>

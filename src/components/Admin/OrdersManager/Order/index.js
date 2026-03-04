@@ -5,7 +5,7 @@ import { ArrowLeft, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';import OrderSkeleton from './OrderSkeleton';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -140,19 +140,22 @@ const OrderContent = ({ onLoading, onClose }) => {
               </div>
             )
           ) : (
-            <Card className="h-full w-full relative p-4 sm:p-6 lg:p-9">
-              <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
-                {/* Vista Desktop: Estructura original */}
-            <OrderHeaderDesktop
-              order={order}
-              transportImage={transportImage}
-              onStatusChange={handleStatusChange}
-              onTemperatureChange={handleTemperatureChange}
-              onPrint={handleOnClickPrint}
-            />
-            <OrderTabsDesktop activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
-        </Card>
+            <Card className="h-full w-full relative">
+              <CardHeader>
+                <OrderHeaderDesktop
+                  order={order}
+                  transportImage={transportImage}
+                  onStatusChange={handleStatusChange}
+                  onTemperatureChange={handleTemperatureChange}
+                  onPrint={handleOnClickPrint}
+                />
+              </CardHeader>
+              <CardContent className="flex-1 min-h-0 flex flex-col py-0">
+                <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
+                  <OrderTabsDesktop activeTab={activeTab} onTabChange={setActiveTab} />
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
