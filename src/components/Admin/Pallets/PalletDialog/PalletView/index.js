@@ -420,9 +420,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="edicion" className="mt-0 ">
-                                    <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">
-                                        <div className="space-y-6 overflow-y-auto pr-2 pb-2 col-span-2 max-h-[calc(90vh-200px)]">
+                                <TabsContent value="edicion" className="mt-0 flex-1 min-h-0">
+                                    <div className="grid grid-cols-5 gap-6 h-full min-h-0">
+                                        <div className="space-y-6 pr-2 pb-2 col-span-2 h-full min-h-0 overflow-y-auto">
                                             <Card className="border-2 border-muted bg-foreground-50 w-full">
                                                 <CardHeader className="pb-4  w-full">
                                                     <CardTitle className="flex items-center justify-between gap-2 text-lg w-full">
@@ -433,22 +433,27 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
-                                                    <Tabs defaultValue="lector" className="w-full">
-                                                        <TabsList className="grid w-full grid-cols-5"> {/* Cambiar de 6 a 5 columnas */}
-                                                            <TabsTrigger value="lector" className="flex items-center gap-2">
-                                                                <Scan className="h-4 w-4" /> Lector
+                                                    <Tabs defaultValue="lector">
+                                                        <TabsList>
+                                                            <TabsTrigger value="lector">
+                                                                <Scan />
+                                                                Lector
                                                             </TabsTrigger>
-                                                            <TabsTrigger value="manual" className="flex items-center gap-2">
-                                                                <Plus className="h-4 w-4" /> Manual
+                                                            <TabsTrigger value="manual">
+                                                                <Plus />
+                                                                Manual
                                                             </TabsTrigger>
-                                                            <TabsTrigger value="masiva" className="flex items-center gap-2">
-                                                                <Upload className="h-4 w-4" /> Masiva
+                                                            <TabsTrigger value="masiva">
+                                                                <Upload />
+                                                                Masiva
                                                             </TabsTrigger>
-                                                            <TabsTrigger value="promedio" className="flex items-center gap-2">
-                                                                <Package className="h-4 w-4" /> Promedio
+                                                            <TabsTrigger value="promedio">
+                                                                <Package />
+                                                                Promedio
                                                             </TabsTrigger>
-                                                            <TabsTrigger value="codes" className="flex items-center gap-2">
-                                                                <Package className="h-4 w-4" /> Codigos GS1
+                                                            <TabsTrigger value="codes">
+                                                                <Package />
+                                                                Codigos GS1
                                                             </TabsTrigger>
                                                         </TabsList>
                                                         {/* IGNORAR */}
