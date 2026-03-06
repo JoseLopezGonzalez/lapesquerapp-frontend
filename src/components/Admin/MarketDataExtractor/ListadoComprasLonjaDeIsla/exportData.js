@@ -1481,6 +1481,7 @@ export const barcos = [
     barco: "MAPE",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
     codVendiduria: 'IS',
+    cod: '496',
     codBrisapp: '211',
   },
   {
