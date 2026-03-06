@@ -1479,8 +1479,9 @@ export const barcos = [
   },
   {
     barco: "MAPE",
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'IS',
+    codBrisapp: '211',
   },
   {
     barco: "FLOR DEL CONCHENAL",
