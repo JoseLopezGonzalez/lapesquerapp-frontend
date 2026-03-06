@@ -271,7 +271,7 @@ const OrderPlannedProductDetails = () => {
     totals.averageUnitPrice = totals.quantity ? (totals.totalAmount / totals.quantity) : 0;
 
     return (
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className={isMobile ? "flex-1 flex flex-col min-h-0" : "flex-1 flex flex-col min-h-0 overflow-hidden pb-2"}>
             {isMobile ? (
                 <div className="flex-1 flex flex-col min-h-0">
                     {details.length === 0 ? (
@@ -478,8 +478,8 @@ const OrderPlannedProductDetails = () => {
                     </Dialog>
                 </div>
             ) : (
-            <Card className='h-full flex flex-col bg-transparent'>
-                <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between shrink-0">
                     <div>
                         <CardTitle className="text-lg font-medium">Previsión de productos</CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -499,16 +499,16 @@ const OrderPlannedProductDetails = () => {
                         )}
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-6 flex-1 overflow-y-auto">
+                <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-6">
                     {details.length === 0 ? (
-                        <div className="h-full flex items-center justify-center">
+                        <div className="flex-1 flex items-center justify-center min-h-[200px]">
                             <EmptyState
                                 title={'No existen productos previstos'}
                                 description={'Añade productos a la previsión del pedido'}
                             />
                         </div>
                     ) : (
-                            <div className="border rounded-md max-h-[500px] overflow-y-auto">
+                            <div className="border rounded-md">
                             <Table>
                                 <TableHeader>
                                         <TableRow>

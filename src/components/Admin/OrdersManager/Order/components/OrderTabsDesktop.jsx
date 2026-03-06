@@ -43,7 +43,7 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
             {SECTIONS_CONFIG.map((section) => {
               const Component = section.component;
               const isLazy = section.lazy;
-              const compactTabs = ['pallets', 'documents', 'export', 'labels', 'map', 'incident', 'customer-history'];
+              const compactTabs = ['products', 'productDetails', 'production', 'pallets', 'documents', 'export', 'labels', 'map', 'incident', 'customer-history'];
               const tabClass = section.id === 'details'
                 ? 'space-y-4 w-full h-full overflow-y-auto'
                 : compactTabs.includes(section.id)
