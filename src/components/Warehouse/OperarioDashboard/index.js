@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Calendar, Calculator } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Calendar, Calculator, RotateCw } from "lucide-react";
 import { formatDate } from "@/helpers/formats/dates/formatDates";
 import ReceptionsListCard from "../ReceptionsListCard";
 import DispatchesListCard from "../DispatchesListCard";
@@ -32,19 +34,46 @@ function useCurrentDateTime() {
 
 export default function OperarioDashboard({ storeId = null }) {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [greeting] = useState(() => getGreeting());
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const userName = session?.user?.name || "Usuario";
   const now = useCurrentDateTime();
   const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
   const dateStr = formatDate(now);
   const dayStr = DAY_NAMES[now.getDay()];
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["receptions", "list"] }),
+        queryClient.invalidateQueries({ queryKey: ["dispatches", "list"] }),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-full h-full flex flex-col min-h-0 gap-4">
-      <div className="flex flex-col items-start justify-center shrink-0 mb-2 md:mb-4">
-        <p className="text-lg md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
-        <h1 className="text-3xl md:text-4xl font-light">{userName}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shrink-0 mb-2 md:mb-4">
+        <div>
+          <p className="text-lg md:text-md text-neutral-500 dark:text-neutral-400">{greeting}</p>
+          <h1 className="text-3xl md:text-4xl font-light">{userName}</h1>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="shrink-0 self-start sm:self-center"
+          title="Actualizar recepciones y salidas de cebo"
+        >
+          <RotateCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+          {isRefreshing ? "Recargando…" : "Recargar"}
+        </Button>
       </div>
 
       {/* Grid de 4 cards: Hora, Fecha, Día, Acciones — mismo estilo que dashboard normal */}
