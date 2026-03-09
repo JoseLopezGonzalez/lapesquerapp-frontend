@@ -67,7 +67,7 @@ export default function ProductionInputsAddDialog({ api }) {
     } = api
 
     return (
-        <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col p-0">
+        <DialogContent className="max-w-[95vw] lg:max-w-[95vw] h-[90vh] flex flex-col p-0">
             <div className="relative flex-1 flex flex-col min-h-0 p-6">
                 {/* Loader overlay */}
                 {(loadingPallet || savingInputs) && (
