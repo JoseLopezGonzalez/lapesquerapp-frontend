@@ -164,7 +164,7 @@ export default function ReceptionSummaryDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent size="6xl" className="max-h-[90vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Resumen de Recepción</DialogTitle>
                 </DialogHeader>

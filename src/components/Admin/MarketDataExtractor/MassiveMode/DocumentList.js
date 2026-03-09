@@ -117,7 +117,7 @@ export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll
                                                         Ver detalles
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                                                <DialogContent size="6xl" className="max-h-[90vh] overflow-y-auto">
                                                     <DialogHeader>
                                                         <DialogTitle>{doc.file.name}</DialogTitle>
                                                     </DialogHeader>

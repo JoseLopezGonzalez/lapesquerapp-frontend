@@ -456,7 +456,7 @@ export default function NFCPunchManager() {
 
             {/* Dialog de registro (solo durante el procesamiento) */}
             <Dialog open={!!dialogContent && !dialogContent.isError && !dialogContent.isSuccess} onOpenChange={() => {}}>
-                <DialogContent className="sm:max-w-md [&>button]:hidden">
+                <DialogContent size="md" className="[&>button]:hidden">
                     {dialogContent && !dialogContent.isError && !dialogContent.isSuccess && (
                         <>
                             <DialogTitle className="sr-only">

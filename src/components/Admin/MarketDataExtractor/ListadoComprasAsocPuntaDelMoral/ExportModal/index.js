@@ -353,7 +353,7 @@ const ExportModal = ({ document }) => {
 
 
     return (
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+        <DialogContent size="2xl" className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
                 <DialogTitle>Exportar Datos de Factura</DialogTitle>
                 <DialogDescription>

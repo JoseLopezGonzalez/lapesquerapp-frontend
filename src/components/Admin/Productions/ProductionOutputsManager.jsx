@@ -106,7 +106,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     // Diálogo de selección de fuente
     const sourceSelectionDialog = (
         <Dialog open={sourceSelectionDialogOpen} onOpenChange={setSourceSelectionDialogOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent size="md">
                 <DialogHeader>
                     <DialogTitle>Seleccionar Fuente de Datos</DialogTitle>
                     <DialogDescription>
@@ -196,7 +196,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 setWasManageDialogOpen(false)
             }
         }}>
-            <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogContent size="4xl" className="max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>Productos Disponibles para Salidas</DialogTitle>
                     <DialogDescription>
@@ -445,7 +445,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             }
             setManageDialogOpen(open)
         }}>
-            <DialogContent className="max-w-5xl max-h-[90vh]">
+            <DialogContent size="5xl" className="max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>Gestionar Salidas</DialogTitle>
                     <DialogDescription>
@@ -963,7 +963,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     // Dialog de desglose de costes
     const breakdownDialog = (
         <Dialog open={breakdownDialogOpen} onOpenChange={setBreakdownDialogOpen}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent size="4xl" className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Desglose de Costes</DialogTitle>
                     <DialogDescription>

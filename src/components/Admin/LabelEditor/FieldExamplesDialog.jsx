@@ -41,7 +41,7 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent size="2xl">
         <DialogHeader>
           <DialogTitle>Editar Valores de Ejemplo de Campos Dinámicos</DialogTitle>
         </DialogHeader>

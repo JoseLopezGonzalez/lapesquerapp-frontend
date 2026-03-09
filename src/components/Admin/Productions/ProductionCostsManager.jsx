@@ -202,7 +202,7 @@ export default function ProductionCostsManager({
                             Añadir Coste
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent size="2xl" className="max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
                                 {editingCost ? 'Editar Coste' : 'Nuevo Coste'}

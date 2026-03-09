@@ -329,7 +329,7 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
     // Diálogo para ver detalles de lotes (separado para que esté disponible en ambos renders)
     const lotsDialog = (
         <Dialog open={lotsDialogOpen} onOpenChange={setLotsDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogContent size="2xl" className="max-h-[80vh]">
                 <DialogHeader>
                     <DialogTitle>Lotes - {selectedProductLots?.productName}</DialogTitle>
                     <DialogDescription>
@@ -400,8 +400,8 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         const palletCount = pallets.length
         if (palletCount === 0) return null
         return (
-            <Dialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0">
+        <Dialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen}>
+                <DialogContent size="4xl" className="max-h-[85vh] flex flex-col p-0">
                     <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
                         <DialogTitle>Detalle de Palets</DialogTitle>
                         <DialogDescription>

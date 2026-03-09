@@ -101,7 +101,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                 })
             }
         }}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent size="2xl">
                 <DialogHeader>
                     <DialogTitle>Consumir Output del Proceso Padre</DialogTitle>
                     <DialogDescription>
@@ -408,7 +408,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             }
             setManageDialogOpen(open)
         }}>
-            <DialogContent className="max-w-5xl max-h-[90vh]">
+            <DialogContent size="5xl" className="max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>Gestionar consumos de proceso anterior</DialogTitle>
                     <DialogDescription>

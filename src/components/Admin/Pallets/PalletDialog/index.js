@@ -50,7 +50,7 @@ export default function PalletDialog({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
-                <DialogContent size="full" className="w-full max-w-[95vw] max-h-[90vh] overflow-hidden" aria-describedby={undefined}>
+                <DialogContent size="full" className="max-h-[90vh] overflow-hidden" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 flex-wrap">
                             <span>

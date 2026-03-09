@@ -16,7 +16,7 @@ export function ProductSummaryDialog() {
                     Productos
                 </Button>
             </DialogTrigger>
-            <DialogContent className=" w-fit max-w-none">
+            <DialogContent size="xl">
                 <DialogHeader>
                     <DialogTitle>Productos</DialogTitle>
                 </DialogHeader>

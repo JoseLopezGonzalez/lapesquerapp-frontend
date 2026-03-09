@@ -404,7 +404,7 @@ const ProductionRecordImagesManager = ({
 
             {/* Dialog para agregar imágenes */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent className="max-w-md">
+                <DialogContent size="md">
                     <DialogHeader>
                         <DialogTitle>Agregar imágenes</DialogTitle>
                         <DialogDescription>
@@ -464,7 +464,7 @@ const ProductionRecordImagesManager = ({
 
             {/* Dialog para vista ampliada */}
             <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
-                <DialogContent className="max-w-4xl">
+                <DialogContent size="4xl">
                     <DialogHeader>
                         <DialogTitle>Vista previa de imagen</DialogTitle>
                         <DialogDescription>

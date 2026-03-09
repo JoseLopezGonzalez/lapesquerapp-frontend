@@ -143,7 +143,7 @@ export function PalletsListDialog() {
                 </Button>
                 {/* <Button variant="outline">Palets</Button> */}
             </DialogTrigger>
-            <DialogContent className="w-full max-w-6xl ">
+            <DialogContent size="6xl">
                 <DialogHeader>
                     <DialogTitle>Palets</DialogTitle>
                 </DialogHeader>

@@ -320,7 +320,7 @@ const ProductionView = ({ productionId }) => {
                                                                 Detalle
                                                             </Button>
                                                         </DialogTrigger>
-                                                        <DialogContent className="max-w-6xl max-h-[90vh]">
+                                                        <DialogContent size="6xl" className="max-h-[90vh]">
                                                             <DialogHeader>
                                                                 <DialogTitle className="flex items-center gap-2">
                                                                     {production.reconciliation.summary?.overallStatus === 'error' ? (

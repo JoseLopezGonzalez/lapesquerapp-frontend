@@ -212,7 +212,7 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='max-w-5xl max-h-[90vh] flex flex-col'>
+        <DialogContent size="5xl" className='max-h-[90vh] flex flex-col'>
           <DialogHeader>
             <DialogTitle>Editor de Texto</DialogTitle>
           </DialogHeader>
