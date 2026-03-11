@@ -267,17 +267,21 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     (cannotEditReason.toLowerCase().includes('caja') || 
                      cannotEditReason.toLowerCase().includes('siendo usada') ||
                      cannotEditReason.toLowerCase().includes('usada en producción'));
+                // Permitir editar aunque el motivo sea "palet vinculado a un pedido"; el backend validará al guardar
+                const isBlockedByLinkedPallet = cannotEditReason &&
+                    (cannotEditReason.toLowerCase().includes('vinculado') && cannotEditReason.toLowerCase().includes('pedido'));
                 
                 // Permitir edición parcial si el bloqueo es solo por cajas usadas
                 // El backend ahora debería retornar canEdit: true, pero por compatibilidad
                 // también manejamos el caso donde canEdit es false pero es por cajas usadas
                 const canEditPartial = isBlockedByUsedBoxes && mode === 'pallets';
                 const canEditFull = reception.canEdit !== false;
+                const canEditDespiteLinkedPallet = isBlockedByLinkedPallet;
                 
-                // Si podemos editar (total o parcial), permitir la carga
-                const finalCanEdit = canEditFull || canEditPartial;
+                // Si podemos editar (total o parcial o por palet vinculado), permitir la carga
+                const finalCanEdit = canEditFull || canEditPartial || canEditDespiteLinkedPallet;
                 setCanEdit(finalCanEdit);
-                setCannotEditReason(canEditPartial ? null : cannotEditReason);
+                setCannotEditReason(canEditPartial || canEditDespiteLinkedPallet ? null : cannotEditReason);
                 
                 // Siempre cargar datos para permitir visualización en solo lectura cuando !finalCanEdit
                 if (!finalCanEdit) {
