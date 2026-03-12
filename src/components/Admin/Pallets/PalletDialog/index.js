@@ -18,7 +18,8 @@ export default function PalletDialog({
     initialOrderId = null, 
     onCloseDialog,
     onSaveTemporal = null,
-    initialPallet = null
+    initialPallet = null,
+    readOnly = false
 }) {
     // Get pallet data to check for receptionId
     const { temporalPallet } = usePallet({ 
@@ -55,7 +56,7 @@ export default function PalletDialog({
                         <DialogTitle className="flex items-center gap-2 flex-wrap">
                             <span>
                                 {palletId && palletId !== 'new' && !palletId?.toString().startsWith('temp-') 
-                                    ? (belongsToReception ? `Ver Palet #${palletId}` : `Editar Palet #${palletId}`)
+                                    ? (belongsToReception || readOnly ? `Ver Palet #${palletId}` : `Editar Palet #${palletId}`)
                                     : "Nuevo Palet"}
                             </span>
                             {belongsToReception && receptionId && (
@@ -93,6 +94,7 @@ export default function PalletDialog({
                             wrappedInDialog={true}
                             onSaveTemporal={onSaveTemporal ? handleSaveTemporal : null}
                             initialPallet={initialPallet}
+                            readOnly={readOnly}
                         />
                     </div>
                 </DialogContent>

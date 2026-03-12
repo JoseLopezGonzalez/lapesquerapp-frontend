@@ -125,6 +125,8 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     // Store initial state of pallets to detect changes
     const [initialPalletsState, setInitialPalletsState] = useState(null);
     const [initialFormState, setInitialFormState] = useState(null);
+    // IDs de palets vinculados a pedidos (solo lectura en UI; backend los ignora si se envían sin cambios)
+    const [lockedPalletIds, setLockedPalletIds] = useState([]);
     
     // Ref para evitar recargas innecesarias cuando se hace focus en la pestaña
     const hasLoadedRef = useRef(false);
@@ -260,6 +262,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 // Detectar el modo de creación y si se puede editar
                 const mode = reception.creationMode || null;
                 setCreationMode(mode);
+                setLockedPalletIds(Array.isArray(reception.lockedPalletIds) ? reception.lockedPalletIds : []);
                 
                 // Verificar si el motivo de no edición es por cajas usadas (permitir edición parcial)
                 const cannotEditReason = reception.cannotEditReason || null;
@@ -372,6 +375,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 }
                             });
                             
+                            const lockedIds = Array.isArray(reception.lockedPalletIds) ? reception.lockedPalletIds : [];
                             return {
                                 pallet: {
                                     id: pallet.id,
@@ -382,6 +386,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                 },
                                 prices: palletPricesObj, // Prices filtered for this pallet's boxes
                                 observations: pallet.observations || '',
+                                isLocked: lockedIds.includes(pallet.id),
                             };
                         });
                         
@@ -834,10 +839,13 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                     Array.from(globalPriceMap.entries()).map(([key, value]) => [key, value.price])
                 );
                 
+                const updatedLockedIds = Array.isArray(updatedReception.lockedPalletIds) ? updatedReception.lockedPalletIds : [];
+                setLockedPalletIds(updatedLockedIds);
                 const updatedTemporalPallets = mapBackendPalletsToTemporal(
                     updatedReception.pallets,
                     temporalPallets,
-                    globalPricesObj
+                    globalPricesObj,
+                    updatedLockedIds
                 );
                 
                 // Normalizar los pallets para asegurar consistencia en la comparación
@@ -1696,11 +1704,13 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             renderRow={(displayItem, index) => {
                                 const { item, pallet, productLotCombinations } = displayItem;
                                 const prices = item.prices || {};
-                                
+                                const isLocked = item.isLocked === true;
+
                                 return (
                                     <>
                                         <TableCell className="font-medium">
                                             {pallet.id ? `#${pallet.id}` : `Nuevo ${index + 1}`}
+                                            {isLocked ? <span className="ml-1 text-xs text-muted-foreground" title="Vinculado a un pedido">(solo lectura)</span> : null}
                                         </TableCell>
                                         <TableCell className="max-w-[200px]">
                                             <div className="text-sm">
@@ -1736,7 +1746,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                                     step="0.01"
                                                                     min="0"
                                                                     value={currentPrice}
+                                                                    disabled={isLocked}
                                                                     onChange={(e) => {
+                                                                        if (isLocked) return;
                                                                         const newPrice = e.target.value;
                                                                         // Update price in current pallet first
                                                                         setTemporalPallets(prev => {
@@ -1777,7 +1789,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                         setPalletMetadata({ prices: item.prices || {}, observations: item.observations || '' });
                                                         setIsPalletDialogOpen(true);
                                                     }}
-                                                    aria-label={`Editar palet ${pallet.id || index + 1}`}
+                                                    aria-label={isLocked ? `Ver palet ${pallet.id || index + 1} (solo lectura)` : `Editar palet ${pallet.id || index + 1}`}
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -1813,19 +1825,21 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                                         <Printer className="h-4 w-4" />
                                                     </Button>
                                                 )}
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                                    onClick={() => {
-                                                        setTemporalPallets(prev => prev.filter((_, i) => i !== index));
-                                                        announce(`Palet ${pallet.id || index + 1} eliminado`, 'polite');
-                                                    }}
-                                                    aria-label={`Eliminar palet ${pallet.id || index + 1}`}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                {!isLocked && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                                        onClick={() => {
+                                                            setTemporalPallets(prev => prev.filter((_, i) => i !== index));
+                                                            announce(`Palet ${pallet.id || index + 1} eliminado`, 'polite');
+                                                        }}
+                                                        aria-label={`Eliminar palet ${pallet.id || index + 1}`}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </TableCell>
                                     </>
@@ -1843,6 +1857,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 palletId={selectedPalletId}
                 isOpen={isPalletDialogOpen}
                 initialPallet={editingPalletIndex !== null ? temporalPallets[editingPalletIndex]?.pallet : null}
+                readOnly={editingPalletIndex !== null && temporalPallets[editingPalletIndex]?.isLocked === true}
                 onSaveTemporal={(pallet) => {
                     if (editingPalletIndex !== null) {
                         setTemporalPallets(prev => {
@@ -2061,6 +2076,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 })()}
                 pallets={temporalPallets}
                 creationMode={creationMode}
+            />
+        </div>
+    );
+};
+
+export default EditReceptionForm;
+
+reationMode={creationMode}
             />
         </div>
     );

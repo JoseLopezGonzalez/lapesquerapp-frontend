@@ -43,7 +43,7 @@ import BoxesLabels from "./BoxesLabels";
 import { PalletTimeline } from "./PalletTimeline";
 
 
-export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null }) {
+export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null, readOnly: readOnlyProp = false }) {
 
     const {
         productsOptions,
@@ -107,10 +107,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
 
     const orderIdBlocked = initialOrderId !== null;
 
-    // Check if pallet belongs to a reception
+    // Check if pallet belongs to a reception or is locked (e.g. linked to order)
     const receptionId = temporalPallet?.receptionId;
     const belongsToReception = receptionId !== null && receptionId !== undefined;
-    const isReadOnly = belongsToReception;
+    const isReadOnly = belongsToReception || readOnlyProp;
 
     const { onPrint } = usePrintElement({ id: 'print-area-id', width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height });
 

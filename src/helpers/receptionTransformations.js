@@ -205,9 +205,10 @@ export const buildProductLotSummary = (pallet) => {
  * @param {Array} backendPallets - Array of pallets from backend response
  * @param {Array} currentTemporalPallets - Current temporalPallets to preserve metadata
  * @param {Object} globalPricesObj - Global prices object from reception
- * @returns {Array} Updated temporalPallets with backend IDs
+ * @param {number[]} [lockedPalletIds] - IDs of pallets linked to orders (read-only in UI)
+ * @returns {Array} Updated temporalPallets with backend IDs and isLocked flag
  */
-export const mapBackendPalletsToTemporal = (backendPallets, currentTemporalPallets = [], globalPricesObj = {}) => {
+export const mapBackendPalletsToTemporal = (backendPallets, currentTemporalPallets = [], globalPricesObj = {}, lockedPalletIds = []) => {
     if (!Array.isArray(backendPallets)) return [];
     
     // Create a map of current temporal pallets by index for quick lookup
@@ -256,6 +257,7 @@ export const mapBackendPalletsToTemporal = (backendPallets, currentTemporalPalle
             };
         }
         
+        const lockedIds = Array.isArray(lockedPalletIds) ? lockedPalletIds : [];
         updatedTemporalPallets.push({
             pallet: {
                 id: backendPallet.id, // Update with backend ID
@@ -266,6 +268,7 @@ export const mapBackendPalletsToTemporal = (backendPallets, currentTemporalPalle
             },
             prices: preservedMetadata.prices,
             observations: preservedMetadata.observations,
+            isLocked: lockedIds.includes(backendPallet.id),
         });
     });
     
