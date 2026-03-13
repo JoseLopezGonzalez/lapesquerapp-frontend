@@ -2083,11 +2083,3 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
 export default EditReceptionForm;
 
-reationMode={creationMode}
-            />
-        </div>
-    );
-};
-
-export default EditReceptionForm;
-

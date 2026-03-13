@@ -552,20 +552,21 @@ export default function CreateReceptionForm({ onSuccess }) {
                                 aria-label={`Lote para línea ${index + 1}`}
                               />
                             </TableCell>
-                            <TableCell>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => remove(index)}
-                                className="text-destructive hover:text-destructive"
-                                aria-label={`Eliminar línea ${index + 1}`}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                          <TableCell>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => remove(index)}
+                              className="text-destructive hover:text-destructive"
+                              aria-label={`Eliminar línea ${index + 1}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        );
+                      })}
                       </TableBody>
                       <TableFooter>
                         <TableRow>
