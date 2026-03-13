@@ -120,10 +120,9 @@ export async function middleware(req: NextRequest) {
           | { data?: Record<string, unknown> }
           | Record<string, unknown>
           | null;
-      currentUser =
-        verifyData && "data" in verifyData && verifyData.data
-          ? verifyData.data
-          : verifyData;
+      currentUser = (verifyData && "data" in verifyData && verifyData.data
+        ? verifyData.data
+        : verifyData) as Record<string, unknown> | null;
     }
 
     const actorType =
