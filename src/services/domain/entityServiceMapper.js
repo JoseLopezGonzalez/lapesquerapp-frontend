@@ -36,6 +36,7 @@ import { punchService } from './punches/punchService';
 import { roleService } from './roles/roleService';
 import { sessionService } from './sessions/sessionService';
 import { userService } from './users/userService';
+import { externalUserService } from './external-users/externalUserService';
 
 /**
  * Mapa de nombres de entidades a servicios de dominio
@@ -71,6 +72,7 @@ const entityServiceMap = {
     'roles': roleService,
     'sessions': sessionService,
     'users': userService,
+    'external-users': externalUserService,
 };
 
 /**
@@ -123,4 +125,3 @@ export function getAvailableEntities() {
  * Exportar el mapa completo (útil para debugging)
  */
 export { entityServiceMap };
-

@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Utilities/Loader";
 import { baseDomain, isGenericBranding } from "@/configs/branding";
+import { getDefaultAuthenticatedRoute } from "@/lib/auth/actor";
 
 export default function HomePage() {
   // ✅ CRÍTICO: Todos los hooks DEBEN ejecutarse ANTES de cualquier return condicional
@@ -42,13 +43,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isSubdomain && status === "authenticated" && session?.user) {
-      const rawRole = session.user.role;
-      const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
-      if (userRole === "operario") {
-        router.replace("/admin/home");
-      } else {
-        router.replace("/admin/home");
-      }
+      router.replace(getDefaultAuthenticatedRoute(session.user));
     }
   }, [isSubdomain, status, session, router]);
 

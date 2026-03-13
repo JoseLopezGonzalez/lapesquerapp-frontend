@@ -21,6 +21,7 @@ import { useSession } from 'next-auth/react'
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability'
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores'
+import { isExternalActor } from '@/lib/auth/actor'
 
 export default function PalletCard({ pallet }) {
     const { data: session } = useSession();
@@ -74,6 +75,7 @@ export default function PalletCard({ pallet }) {
     // Operario no puede reubicar pallets (normalizar por si role viene como array)
     const rawRole = session?.user?.role;
     const isStoreOperator = (Array.isArray(rawRole) ? rawRole[0] : rawRole) === 'operario';
+    const externalActor = isExternalActor(session?.user);
 
 
     return (
@@ -86,7 +88,7 @@ export default function PalletCard({ pallet }) {
                     <h3 className="font-medium text-xl text-foreground">
                         Palet #{pallet.id}
                     </h3>
-                    {pallet.receptionId && (
+                    {pallet.receptionId && !externalActor && (
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -110,7 +112,7 @@ export default function PalletCard({ pallet }) {
                             </Tooltip>
                         </TooltipProvider>
                     )}
-                    {pallet.orderId && (
+                    {pallet.orderId && !externalActor && (
                         <Badge
                             variant="outline"
                             className="bg-muted text-muted-foreground text-xs mt-0.5"
@@ -259,6 +261,5 @@ export default function PalletCard({ pallet }) {
         </Card>
     )
 }
-
 
 

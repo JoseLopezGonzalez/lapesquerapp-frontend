@@ -199,6 +199,11 @@ export const navigationConfig = [
                 href: '/admin/users',
                 allowedRoles: ["administrador", "direccion", "tecnico"],
             },
+            {
+                name: 'Usuarios externos',
+                href: '/admin/external-users',
+                allowedRoles: ["administrador", "direccion", "tecnico"],
+            },
         ],
     },
     {

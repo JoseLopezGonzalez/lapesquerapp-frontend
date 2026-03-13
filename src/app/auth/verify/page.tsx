@@ -64,7 +64,7 @@ function VerifyContent() {
         const e = err as { status?: number; message?: string; data?: { message?: string; userMessage?: string } };
         const msg =
           e.status === 403
-            ? "Usuario desactivado."
+            ? e.data?.userMessage || e.message || "Usuario desactivado."
             : e.message || e.data?.message || e.data?.userMessage || "Enlace no válido o expirado.";
         setErrorMessage(msg);
       }

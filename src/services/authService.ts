@@ -51,7 +51,8 @@ export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthRes
   };
   if (!response.ok) {
     const msg =
-      data.message || data.userMessage || "Enlace no válido o expirado.";
+      (response.status === 403 ? data.userMessage || data.message : data.message || data.userMessage) ||
+      "Enlace no válido o expirado.";
     const err = new Error(msg) as AuthApiError;
     err.status = response.status;
     err.data = data as unknown as Record<string, unknown>;
@@ -102,7 +103,8 @@ export async function verifyOtp(
   };
   if (!response.ok) {
     const msg =
-      data.message || data.userMessage || "Código no válido o expirado.";
+      (response.status === 403 ? data.userMessage || data.message : data.message || data.userMessage) ||
+      "Código no válido o expirado.";
     const err = new Error(msg) as AuthApiError;
     err.status = response.status;
     err.data = data as unknown as Record<string, unknown>;

@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { isExternalActor } from '@/lib/auth/actor';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getStores, getRegisteredPallets } from '@/services/storeService';
 
@@ -41,9 +42,11 @@ function extractNextPage(links) {
 export function useStores() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
+  const externalActor = isExternalActor(session?.user);
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const queryClient = useQueryClient();
   const [isStoreLoading, setIsStoreLoading] = useState(false);
+  const storesQueryKey = ['stores', tenantId ?? 'unknown', externalActor ? 'external' : 'internal'];
 
   const {
     data,
@@ -53,11 +56,11 @@ export function useStores() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['stores', tenantId ?? 'unknown'],
+    queryKey: storesQueryKey,
     queryFn: async ({ pageParam = 1 }) => {
       const [storesResponse, registeredPalletsData] = await Promise.all([
         getStores(token, pageParam),
-        pageParam === 1
+        pageParam === 1 && !externalActor
           ? getRegisteredPallets(token).catch(() => ({
               id: null,
               name: 'En espera',
@@ -73,7 +76,9 @@ export function useStores() {
 
       const storesData = storesResponse.data || storesResponse || [];
       const ghostStore =
-        pageParam === 1 ? buildGhostStore(registeredPalletsData) : null;
+        pageParam === 1 && !externalActor
+          ? buildGhostStore(registeredPalletsData)
+          : null;
 
       return {
         ghostStore,
@@ -99,7 +104,7 @@ export function useStores() {
   const hasMoreStores = !!extractNextPage(lastPage?.links);
 
   const onUpdateCurrentStoreTotalNetWeight = (storeId, totalNetWeight) => {
-    queryClient.setQueryData(['stores', tenantId ?? 'unknown'], (old) => {
+    queryClient.setQueryData(storesQueryKey, (old) => {
       if (!old?.pages) return old;
       return {
         ...old,
@@ -118,7 +123,7 @@ export function useStores() {
   };
 
   const onAddNetWeightToStore = (storeId, netWeight) => {
-    queryClient.setQueryData(['stores', tenantId ?? 'unknown'], (old) => {
+    queryClient.setQueryData(storesQueryKey, (old) => {
       if (!old?.pages) return old;
       return {
         ...old,

@@ -20,6 +20,8 @@ import LoadingStoresHeader from "./StoresManager/LoadingStoresHeader";
 import { Store } from "./StoresManager/Store";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { isExternalActor } from "@/lib/auth/actor";
 
 
 // Configurar Numeral.js para usar el formato español
@@ -28,8 +30,10 @@ import { useRouter } from "next/navigation";
 export default function StoresManager() {
 
   const { stores, loading, error, onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, isStoreLoading, setIsStoreLoading, loadMoreStores, hasMoreStores, loadingMore } = useStores();
+  const { data: session } = useSession();
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const router = useRouter();
+  const externalActor = isExternalActor(session?.user);
   
   // Filtrar el almacén "registered" (ghost store) para contar solo almacenes reales
   const realStores = stores?.filter(store => store.id !== 'registered') || [];
@@ -84,7 +88,7 @@ export default function StoresManager() {
                       block={loadingStore} 
                     />
                   ))}
-                {realStores.length === 0 && (
+                {realStores.length === 0 && !externalActor && (
                   <Card
                     onClick={() => router.push('/admin/stores/create')}
                     className="border-2 border-dashed min-w-56 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors bg-background"

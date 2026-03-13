@@ -9,6 +9,7 @@ import { log as devLog, error as logError } from "./lib/logger";
 interface JWTToken {
   accessToken?: string;
   role?: string | string[] | null;
+  actorType?: "internal_user" | "external_user" | null;
   exp?: number;
   assignedStoreId?: number | null;
   [key: string]: unknown;
@@ -16,6 +17,13 @@ interface JWTToken {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const isExternalRoute = pathname.startsWith("/external");
+  const isInternalProtectedRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/operator") ||
+    pathname.startsWith("/comercial") ||
+    pathname.startsWith("/production") ||
+    pathname.startsWith("/warehouse");
 
   if (
     pathname.startsWith("/_next") ||
@@ -31,6 +39,10 @@ export async function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith("/superadmin")) {
+    return NextResponse.next();
+  }
+
+  if (!isExternalRoute && !isInternalProtectedRoute) {
     return NextResponse.next();
   }
 
@@ -90,6 +102,8 @@ export async function middleware(req: NextRequest) {
       req.headers
     );
 
+    let currentUser: Record<string, unknown> | null = null;
+
     if (!verifyResponse.ok) {
       const errorText = await verifyResponse.text().catch(() => "");
       devLog(
@@ -100,6 +114,39 @@ export async function middleware(req: NextRequest) {
         loginUrl.searchParams.set("from", pathname);
         return NextResponse.redirect(loginUrl);
       }
+    } else {
+      const verifyData =
+        (await verifyResponse.json().catch(() => null)) as
+          | { data?: Record<string, unknown> }
+          | Record<string, unknown>
+          | null;
+      currentUser =
+        verifyData && "data" in verifyData && verifyData.data
+          ? verifyData.data
+          : verifyData;
+    }
+
+    const actorType =
+      (currentUser?.actorType as JWTToken["actorType"] | undefined) ??
+      token.actorType ??
+      "internal_user";
+    const rawRole =
+      (currentUser?.role as string | string[] | null | undefined) ?? token.role;
+    const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
+
+    if (isExternalRoute) {
+      if (actorType !== "external_user") {
+        const internalUrl = new URL("/admin/home", req.url);
+        if (userRole === "operario") internalUrl.pathname = "/operator";
+        if (userRole === "comercial") internalUrl.pathname = "/comercial";
+        return NextResponse.redirect(internalUrl);
+      }
+      return NextResponse.next();
+    }
+
+    if (actorType === "external_user") {
+      const externalUrl = new URL("/external/stores-manager", req.url);
+      return NextResponse.redirect(externalUrl);
     }
   } catch (error) {
     const err = error as { message?: string; name?: string };
@@ -148,5 +195,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/operator/:path*", "/comercial/:path*", "/production/:path*", "/warehouse/:path*"],
+  matcher: ["/admin/:path*", "/operator/:path*", "/comercial/:path*", "/production/:path*", "/warehouse/:path*", "/external/:path*"],
 };

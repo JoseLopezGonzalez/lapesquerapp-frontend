@@ -19,14 +19,20 @@ export const fetchAutocompleteFilterOptions = async (endpoint) => {
     }
 
     try {
-        const response = await fetchWithTenant(`${API_URL_V2}${endpoint}`, {
+        const requestOptions = {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${session.user.accessToken}`,
                 'User-Agent': getUserAgent(),
             },
-        });
+        };
+
+        let response = await fetchWithTenant(`${API_URL_V2}${endpoint}`, requestOptions);
+
+        if (!response.ok && response.status === 404 && endpoint === 'external-users/options') {
+            response = await fetchWithTenant(`${API_URL_V2}external-users?page=1&perPage=100`, requestOptions);
+        }
 
         if (!response.ok) {
             // Si la respuesta no es OK, intentamos parsear el error del servidor.
@@ -35,9 +41,10 @@ export const fetchAutocompleteFilterOptions = async (endpoint) => {
         }
 
         const data = await response.json();
+        const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
         
         // Eliminar duplicados basándose en el ID
-        const uniqueData = data.filter((item, index, self) => 
+        const uniqueData = rows.filter((item, index, self) => 
             index === self.findIndex(t => t.id === item.id)
         );
         

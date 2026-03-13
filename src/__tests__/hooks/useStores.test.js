@@ -9,8 +9,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStores, REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 
+const { mockUseSession } = vi.hoisted(() => ({
+  mockUseSession: vi.fn(() => ({ data: { user: { accessToken: 'test-token' } } })),
+}));
+
 vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({ data: { user: { accessToken: 'test-token' } } })),
+  useSession: mockUseSession,
 }));
 
 vi.mock('@/services/storeService', () => ({
@@ -30,8 +34,10 @@ const createWrapper = () => {
       queries: { retry: false },
     },
   });
-  return ({ children }) =>
+  const Wrapper = ({ children }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
+  Wrapper.displayName = 'UseStoresTestWrapper';
+  return Wrapper;
 };
 
 describe('useStores', () => {
@@ -53,6 +59,7 @@ describe('useStores', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseSession.mockReturnValue({ data: { user: { accessToken: 'test-token' } } });
     getStores.mockResolvedValue(mockStoresResponse);
     getRegisteredPallets.mockResolvedValue(mockGhostStore);
   });
@@ -102,5 +109,22 @@ describe('useStores', () => {
 
     expect(typeof result.current.loadMoreStores).toBe('function');
     expect(typeof result.current.hasMoreStores).toBe('boolean');
+  });
+
+  it('does not fetch ghost store for external actor', async () => {
+    mockUseSession.mockReturnValue({
+      data: { user: { accessToken: 'test-token', actorType: 'external_user' } },
+    });
+
+    const { result } = renderHook(() => useStores(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.stores[0].id).toBe(1);
+    expect(getRegisteredPallets).not.toHaveBeenCalled();
   });
 });

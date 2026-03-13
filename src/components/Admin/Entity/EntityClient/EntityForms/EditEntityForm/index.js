@@ -41,6 +41,10 @@ export function mapApiDataToFormValues(fields, data) {
         if (field.type === "date" && result[key]) {
             result[key] = typeof result[key] === 'string' ? new Date(result[key]) : result[key];
         }
+
+        if (field.type === "select" && result[key] !== null && result[key] !== undefined) {
+            result[key] = String(result[key]);
+        }
         
         // Convertir timestamps ISO a datetime-local si el campo es de tipo datetime-local
         if (field.type === "datetime-local" && result[key]) {
@@ -76,13 +80,17 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const fields = config.fields;
 
     const {
-        register, handleSubmit, control, reset, setError,
+        register, handleSubmit, control, watch, reset, setError,
         formState: { errors, isSubmitting },
     } = useForm({ mode: "onChange" });
 
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState({});
     const [loading, setLoading] = useState(true);
+    const watchedValues = watch();
+    const preparedFields = prepareValidations(fields).filter((field) =>
+        typeof field.displayWhen === "function" ? field.displayWhen(watchedValues) : true
+    );
 
     // Function to fetch and set entity data
     const loadEntityData = useCallback(async () => {
@@ -218,7 +226,12 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 return;
             }
 
-            await entityService.update(id, finalData);
+            const finalPayload =
+                typeof config.beforeSubmit === "function"
+                    ? config.beforeSubmit(finalData, { mode: "edit" })
+                    : finalData;
+
+            await entityService.update(id, finalPayload);
             notify.success({
               title: 'Cambios guardados',
               description: successMessage,
@@ -359,7 +372,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                     onSubmit={handleSubmit(onSubmit)}
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 "
                 >
-                    {prepareValidations(fields).map((field, index) => (
+                    {preparedFields.map((field, index) => (
                         <div
                             key={`${field.name}-${index}`}
                             className={`p-2 sm:col-span-${field.cols?.sm || 6} md:col-span-${field.cols?.md || 6} lg:col-span-${field.cols?.lg || 6} xl:col-span-${field.cols?.xl || 6}`}

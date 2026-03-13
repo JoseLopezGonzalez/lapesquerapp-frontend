@@ -14,6 +14,9 @@ export interface AuthUser {
   email?: string | null;
   name?: string | null;
   role?: string | string[] | null;
+  actorType?: "internal_user" | "external_user" | null;
+  externalUserType?: "maquilador" | null;
+  allowedStoreIds?: number[];
   assigned_store_id?: number | null;
   company_name?: string | null;
   company_logo_url?: string | null;

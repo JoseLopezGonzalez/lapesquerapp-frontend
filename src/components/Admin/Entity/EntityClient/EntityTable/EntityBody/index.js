@@ -21,6 +21,7 @@ export const EntityBody = ({
     onSelectionChange,
     onEdit,
     onView,
+    onCustomAction,
     isBlocked = false,
     config
 }) => {
@@ -93,6 +94,7 @@ export const EntityBody = ({
                 onSelectionChange={onSelectionChange}
                 onEdit={onEdit}
                 onView={onView}
+                onCustomAction={onCustomAction}
                 isBlocked={isBlocked}
                 config={config}
             />

@@ -59,10 +59,20 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = (user as { accessToken?: string }).accessToken;
         const rawRole = (user as { role?: string | string[] }).role;
         token.role = Array.isArray(rawRole) ? rawRole[0] ?? null : rawRole ?? null;
-        const u = user as { assignedStoreId?: number; companyName?: string; companyLogoUrl?: string };
+        const u = user as {
+          assignedStoreId?: number;
+          companyName?: string;
+          companyLogoUrl?: string;
+          actorType?: "internal_user" | "external_user" | null;
+          externalUserType?: "maquilador" | null;
+          allowedStoreIds?: number[];
+        };
         if (u.assignedStoreId != null) token.assignedStoreId = u.assignedStoreId;
         if (u.companyName) token.companyName = u.companyName;
         if (u.companyLogoUrl) token.companyLogoUrl = u.companyLogoUrl;
+        token.actorType = u.actorType ?? "internal_user";
+        token.externalUserType = u.externalUserType ?? null;
+        token.allowedStoreIds = Array.isArray(u.allowedStoreIds) ? u.allowedStoreIds : [];
       }
 
       if (token.accessToken) {
@@ -85,6 +95,15 @@ export const authOptions: NextAuthOptions = {
             const currentUser = (userData as { data?: Record<string, unknown> }).data ?? userData;
             const rawRole = (currentUser as { role?: string | string[] }).role ?? token.role;
             token.role = Array.isArray(rawRole) ? rawRole[0] ?? null : rawRole;
+            if ((currentUser as { actorType?: "internal_user" | "external_user" | null }).actorType !== undefined) {
+              token.actorType = (currentUser as { actorType?: "internal_user" | "external_user" | null }).actorType ?? "internal_user";
+            }
+            if ((currentUser as { externalUserType?: "maquilador" | null }).externalUserType !== undefined) {
+              token.externalUserType = (currentUser as { externalUserType?: "maquilador" | null }).externalUserType ?? null;
+            }
+            if (Array.isArray((currentUser as { allowedStoreIds?: number[] }).allowedStoreIds)) {
+              token.allowedStoreIds = (currentUser as { allowedStoreIds: number[] }).allowedStoreIds;
+            }
             if ((currentUser as { assigned_store_id?: number }).assigned_store_id !== undefined) {
               token.assignedStoreId = (currentUser as { assigned_store_id: number }).assigned_store_id;
             }
@@ -110,7 +129,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (!token) return null as unknown as Session;
       const role = Array.isArray(token.role) ? token.role[0] ?? null : token.role;
-      session.user = { ...token, role, features: (token.features as string[]) ?? [] };
+      session.user = {
+        ...token,
+        role,
+        actorType: (token.actorType as "internal_user" | "external_user" | null | undefined) ?? "internal_user",
+        externalUserType: (token.externalUserType as "maquilador" | null | undefined) ?? null,
+        allowedStoreIds: Array.isArray(token.allowedStoreIds) ? (token.allowedStoreIds as number[]) : [],
+        features: (token.features as string[]) ?? [],
+      };
       return session;
     },
   },

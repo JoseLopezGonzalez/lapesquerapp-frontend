@@ -597,11 +597,42 @@ export default function EntityClient({ config }) {
         }
     }, [config.endpoint, currentPage, filters, queryResult?.refetch]);
 
+    const handleCustomRowAction = useCallback(async (action, id, row) => {
+        const entityService = getEntityService(config.endpoint);
+        if (!entityService || !action?.serviceMethod || typeof entityService[action.serviceMethod] !== 'function') {
+            notify.error({ title: 'Acción no disponible' });
+            return;
+        }
+
+        const confirmationText =
+            typeof action.confirmation === 'function'
+                ? action.confirmation(row)
+                : action.confirmation;
+
+        if (confirmationText && !window.confirm(confirmationText)) return;
+
+        try {
+            await entityService[action.serviceMethod](id, row);
+            notify.success({ title: action.successMessage || 'Acción ejecutada correctamente.' });
+            if (isQueryDriven && queryResult?.refetch) await queryResult.refetch();
+            else await fetchData(currentPage, filters);
+        } catch (err) {
+            const errorMessage =
+                err?.data?.userMessage ||
+                err?.userMessage ||
+                err?.message ||
+                action.errorMessage ||
+                'No se pudo ejecutar la acción.';
+            notify.error({ title: errorMessage });
+        }
+    }, [config.endpoint, currentPage, filters, isQueryDriven, queryResult?.refetch, fetchData]);
+
     // Preparar columns y rows para EntityTable
     const columns = generateColumns2(config.table.headers, { 
       onEdit: handleOpenEdit, 
       onView: handleOpenView,
       onResendInvitation: config.endpoint === 'users' ? handleResendInvitation : undefined,
+      onCustomAction: handleCustomRowAction,
       config: config 
     });
     const rows = dataForTable.rows;
@@ -653,6 +684,7 @@ export default function EntityClient({ config }) {
                         onSelectionChange={handleOnSelectionChange}
                         onEdit={handleOpenEdit}
                         onView={handleOpenView}
+                        onCustomAction={handleCustomRowAction}
                         isBlocked={isRefreshing || isDeleting || isGeneratingReport || isExporting}
                         config={config}
                     />

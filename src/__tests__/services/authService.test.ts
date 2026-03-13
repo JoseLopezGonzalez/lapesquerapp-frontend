@@ -149,6 +149,21 @@ describe("authService", () => {
         expect(e.data).toBeDefined();
       }
     });
+
+    it("prefers userMessage for 403 responses", async () => {
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
+        mockJsonResponse(
+          { message: "Acción no autorizada.", userMessage: "Tu acceso externo está desactivado." },
+          false,
+          403
+        )
+      );
+
+      await expect(verifyOtp("u@e.com", "000000")).rejects.toMatchObject({
+        message: "Tu acceso externo está desactivado.",
+        status: 403,
+      });
+    });
   });
 
   describe("verifyMagicLinkToken", () => {

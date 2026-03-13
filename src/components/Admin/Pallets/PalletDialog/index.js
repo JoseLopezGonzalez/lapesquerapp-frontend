@@ -8,6 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { usePallet } from "@/hooks/usePallet";
 import PalletView from "./PalletView";
+import { useSession } from "next-auth/react";
+import { isExternalActor } from "@/lib/auth/actor";
 
 
 export default function PalletDialog({ 
@@ -21,6 +23,8 @@ export default function PalletDialog({
     initialPallet = null,
     readOnly = false
 }) {
+    const { data: session } = useSession();
+    const externalActor = isExternalActor(session?.user);
     // Get pallet data to check for receptionId
     const { temporalPallet } = usePallet({ 
         id: palletId && !palletId?.toString().startsWith('temp-') ? palletId : (palletId === 'new' ? 'new' : null), 
@@ -59,7 +63,7 @@ export default function PalletDialog({
                                     ? (belongsToReception || readOnly ? `Ver Palet #${palletId}` : `Editar Palet #${palletId}`)
                                     : "Nuevo Palet"}
                             </span>
-                            {belongsToReception && receptionId && (
+                            {belongsToReception && receptionId && !externalActor && (
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>

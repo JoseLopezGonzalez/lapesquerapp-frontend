@@ -21,6 +21,7 @@ export const AccordionBody = ({
     onSelectionChange,
     onEdit,
     onView,
+    onCustomAction,
     isBlocked = false,
     config
 }) => {
@@ -82,6 +83,7 @@ export const AccordionBody = ({
     const hideEditButton = config?.hideEditButton || false;
     const hideActions = (config?.hideActions || false) || (hideEditButton && hideViewButton);
     const showActions = !hideActions && (onView || onEdit);
+    const customRowActions = config?.rowActions || [];
 
     // Handle select all
     const handleSelectAll = (checked) => {
@@ -185,7 +187,7 @@ export const AccordionBody = ({
                                     })}
                                     
                                     {/* Acciones */}
-                                    {showActions && (
+                                    {(showActions || customRowActions.length > 0) && (
                                         <div className={`col-span-full flex gap-2 justify-end pt-2 ${secondaryFields.length > 0 ? 'border-t' : ''}`}>
                                             {onEdit && !hideEditButton && (
                                                 <Button 
@@ -214,6 +216,28 @@ export const AccordionBody = ({
                                                     Ver
                                                 </Button>
                                             )}
+                                            {customRowActions.map((action) => {
+                                                const hidden =
+                                                    typeof action.hidden === "function"
+                                                        ? action.hidden(row)
+                                                        : false;
+                                                if (hidden) return null;
+
+                                                return (
+                                                    <Button
+                                                        key={action.key}
+                                                        variant={action.variant || "outline"}
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onCustomAction?.(action, row.id, row);
+                                                        }}
+                                                        disabled={isBlocked}
+                                                    >
+                                                        {action.label}
+                                                    </Button>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                     
@@ -232,4 +256,3 @@ export const AccordionBody = ({
         </div>
     );
 };
-

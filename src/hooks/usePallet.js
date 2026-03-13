@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 import { notify } from "@/lib/notifications";
 import { parseGs1128Line, normalizeScannedCodeToGs1128 } from "@/lib/gs1128Parser";
+import { isExternalActor } from "@/lib/auth/actor";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
@@ -201,6 +202,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
     const [reload, setReload] = useState(false);
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
+    const externalActor = isExternalActor(session?.user);
 
     const [activeOrdersOptions, setActiveOrdersOptions] = useState([])
     const [activeOrdersLoading, setActiveOrdersLoading] = useState(true)
@@ -259,17 +261,22 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 });
         }
 
-        setActiveOrdersLoading(true)
-        getActiveOrdersOptions(token)
-            .then((data) => {
-                setActiveOrdersOptions(data);
-            })
-            .catch((err) => {
-                console.error('Error al cargar las opciones de pedidos:', err);
-            })
-            .finally(() => {
-                setActiveOrdersLoading(false);
-            });
+        if (externalActor) {
+            setActiveOrdersOptions([]);
+            setActiveOrdersLoading(false);
+        } else {
+            setActiveOrdersLoading(true)
+            getActiveOrdersOptions(token)
+                .then((data) => {
+                    setActiveOrdersOptions(data);
+                })
+                .catch((err) => {
+                    console.error('Error al cargar las opciones de pedidos:', err);
+                })
+                .finally(() => {
+                    setActiveOrdersLoading(false);
+                });
+        }
         setProductsLoading(true);
         getProductOptions(token)
             .then((data) => {
@@ -287,7 +294,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             .finally(() => {
                 setProductsLoading(false);
             });
-    }, [id, token, reload, initialStoreId, initialOrderId]);
+    }, [id, token, reload, initialStoreId, initialOrderId, externalActor]);
 
     const onClose = () => {
         setTimeout(() => {

@@ -41,6 +41,7 @@ import { notify } from "@/lib/notifications";
 import { deletePalletTimeline } from "@/services/palletService";
 import BoxesLabels from "./BoxesLabels";
 import { PalletTimeline } from "./PalletTimeline";
+import { canDeletePallet, isExternalActor } from "@/lib/auth/actor";
 
 
 export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null, readOnly: readOnlyProp = false }) {
@@ -103,7 +104,9 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const { data: session } = useSession();
     const rawRole = session?.user?.role;
     const roles = Array.isArray(rawRole) ? rawRole : (rawRole ? [rawRole] : []);
-    const canDeleteTimeline = roles.some((r) => r === "administrador" || r === "tecnico");
+    const externalActor = isExternalActor(session?.user);
+    const canDeleteTimeline = !externalActor && roles.some((r) => r === "administrador" || r === "tecnico");
+    const canDeletePalletData = canDeletePallet(session?.user);
 
     const orderIdBlocked = initialOrderId !== null;
 
@@ -348,7 +351,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     <h1 className="text-lg font-medium">
                                         {palletId && palletId !== 'new' ? `Editar Palet #${palletId}` : "Nuevo Palet"}
                                     </h1>
-                                    {belongsToReception && receptionId && (
+                                    {belongsToReception && receptionId && !externalActor && (
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -380,7 +383,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                 <AlertCircle className="h-4 w-4 text-orange-600" />
                                 <AlertDescription className="flex items-center gap-2">
                                     <span className="text-orange-800">Este palet pertenece a una recepción. Puedes visualizar el contenido pero no editarlo.</span>
-                                    {receptionId && (
+                                    {receptionId && !externalActor && (
                                         <Link 
                                             href={`/admin/raw-material-receptions/${receptionId}/edit`}
                                             className="text-orange-700 hover:text-orange-900 underline flex items-center gap-1 text-sm font-medium"
@@ -415,9 +418,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                             <History className="h-4 w-4" /> Historial
                                         </TabsTrigger>
                                     )}
-                                    <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300" disabled={isReadOnly}>
-                                        <Trash2 className="h-4 w-4" /> Eliminar
-                                    </TabsTrigger>
+                                    {canDeletePalletData && (
+                                        <TabsTrigger value="eliminar" className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300" disabled={isReadOnly}>
+                                            <Trash2 className="h-4 w-4" /> Eliminar
+                                        </TabsTrigger>
+                                    )}
                                 </TabsList>
 
                                 <TabsContent value="edicion" className="mt-0 flex-1 min-h-0">
@@ -793,37 +798,39 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             className="min-h-[80px]"
                                                         />
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <Label>Pedido vinculado (opcional)</Label>
-                                                        <Select disabled={orderIdBlocked} value={temporalPallet.orderId} onValueChange={(value) => editPallet.orderId(value)}>
-                                                            <SelectTrigger loading={activeOrdersLoading}>
-                                                                <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
-                                                            </SelectTrigger>
-                                                            <SelectContent loading={activeOrdersLoading}>
-                                                                {activeOrdersOptions?.map((order) => (
-                                                                    <SelectItem key={order.id} value={order.id}>
-                                                                        #{order.name} - {formatDateShort(order.load_date)}
-                                                                    </SelectItem>
-                                                                ))}
-                                                                {temporalPallet.orderId &&
-                                                                    !activeOrdersOptions?.some((order) => order.id === temporalPallet.orderId) && (
-                                                                        <SelectItem value={temporalPallet.orderId}>
-                                                                            #{temporalPallet.orderId} - Pedido Actual
+                                                    {!externalActor && (
+                                                        <div className="space-y-2">
+                                                            <Label>Pedido vinculado (opcional)</Label>
+                                                            <Select disabled={orderIdBlocked} value={temporalPallet.orderId} onValueChange={(value) => editPallet.orderId(value)}>
+                                                                <SelectTrigger loading={activeOrdersLoading}>
+                                                                    <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
+                                                                </SelectTrigger>
+                                                                <SelectContent loading={activeOrdersLoading}>
+                                                                    {activeOrdersOptions?.map((order) => (
+                                                                        <SelectItem key={order.id} value={order.id}>
+                                                                            #{order.name} - {formatDateShort(order.load_date)}
                                                                         </SelectItem>
-                                                                    )}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {temporalPallet.orderId && !orderIdBlocked && !isReadOnly && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => editPallet.orderId(null)}
-                                                                className="text-xs text-destructive  hover:text-red-600 flex items-center gap-1"
-                                                            >
+                                                                    ))}
+                                                                    {temporalPallet.orderId &&
+                                                                        !activeOrdersOptions?.some((order) => order.id === temporalPallet.orderId) && (
+                                                                            <SelectItem value={temporalPallet.orderId}>
+                                                                                #{temporalPallet.orderId} - Pedido Actual
+                                                                            </SelectItem>
+                                                                        )}
+                                                                </SelectContent>
+                                                            </Select>
+                                                            {temporalPallet.orderId && !orderIdBlocked && !isReadOnly && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => editPallet.orderId(null)}
+                                                                    className="text-xs text-destructive  hover:text-red-600 flex items-center gap-1"
+                                                                >
                                                                 <Link2Off className="inline h-4 w-4" />
                                                                 Desvincular del pedido
                                                             </button>
-                                                        )}
-                                                    </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </CardContent>
                                             </Card>
                                         </div>
@@ -1830,6 +1837,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                     </TabsContent>
                                 )}
 
+                                {canDeletePalletData && (
                                 <TabsContent value="eliminar" className="mt-0 ">
                                     <div className="grid grid-cols-5 gap-6 max-h-[calc(90vh-200px)]">
                                         {/* Columna izquierda: opciones de eliminación */}
@@ -1979,6 +1987,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                         </div>
                                     </div>
                                 </TabsContent>
+                                )}
 
                             </Tabs>
                         </div>

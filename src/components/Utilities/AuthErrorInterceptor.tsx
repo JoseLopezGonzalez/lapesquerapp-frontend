@@ -10,8 +10,9 @@ export default function AuthErrorInterceptor() {
   useEffect(() => {
     let isRedirecting = false;
     const originalFetch = window.fetch;
+    const disabledExternalUserPattern = /acceso externo.*desactivad/i;
 
-    const handleAuthError = () => {
+    const handleAuthError = (customMessage?: string) => {
       if (isRedirecting) return;
       const pathname = window.location.pathname;
       const alreadyOnLogin = pathname === "/" || pathname === "/auth/verify";
@@ -28,8 +29,8 @@ export default function AuthErrorInterceptor() {
         return;
       }
       notify.error({
-        title: 'Sesión expirada',
-        description: 'Tu sesión ha expirado. Redirigiendo al login...',
+        title: customMessage ? "Acceso bloqueado" : 'Sesión expirada',
+        description: customMessage || 'Tu sesión ha expirado. Redirigiendo al login...',
       });
       setTimeout(async () => {
         await clearSession();
@@ -46,6 +47,22 @@ export default function AuthErrorInterceptor() {
         else if (first instanceof URL) url = first.href;
         if (url.includes("/logout")) return await originalFetch(...args);
         const response = await originalFetch(...args);
+        if (response.status === 403) {
+          const responseClone = response.clone();
+          const contentType = response.headers.get("content-type");
+          const isJson = contentType?.includes("application/json");
+          if (isJson) {
+            const errorData = (await responseClone.json().catch(() => ({}))) as {
+              message?: string;
+              userMessage?: string;
+            };
+            const userMessage = errorData.userMessage || errorData.message || "";
+            if (disabledExternalUserPattern.test(userMessage)) {
+              handleAuthError(userMessage);
+            }
+          }
+          return response;
+        }
         // Solo 401 → signOut + redirect. 403 = sin permiso para la acción; no redirigir (evitar bucle login → misma ruta → 403 → login).
         if (isUnauthorizedStatusCode(response.status)) {
           const responseClone = response.clone();

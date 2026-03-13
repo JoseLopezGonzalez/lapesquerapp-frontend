@@ -59,6 +59,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
         register,
         handleSubmit,
         control,
+        watch,
         reset,
         setError,
         formState: { errors, isSubmitting },
@@ -66,6 +67,10 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
 
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState({});
+    const watchedValues = watch();
+    const preparedFields = prepareValidations(fields).filter((field) =>
+        typeof field.displayWhen === "function" ? field.displayWhen(watchedValues) : true
+    );
 
     // Cargar dinámicamente los options de los campos con endpoint
     const loadAutocompleteOptions = useCallback(async () => {
@@ -165,6 +170,11 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 }
             });
 
+            const finalPayload =
+                typeof config.beforeSubmit === "function"
+                    ? config.beforeSubmit(finalData, { mode: "create" })
+                    : finalData;
+
             const entityService = getEntityService(endpoint);
             if (!entityService) {
                 notify.error({
@@ -175,7 +185,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
             }
 
             try {
-                const createdEntity = await entityService.create(finalData);
+                const createdEntity = await entityService.create(finalPayload);
                 const createdId = createdEntity?.id || createdEntity?.data?.id || null;
 
                 notify.success({
@@ -333,7 +343,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     onSubmit={handleSubmit(onSubmit)}
                     className="grid grid-cols-1 sm:grid-cols-6 gap-x-0 gap-y-3 "
                 >
-                    {prepareValidations(fields).map((field, index) => (
+                    {preparedFields.map((field, index) => (
                         <div
                             key={`${field.name}-${index}`}
                             className={`p-2 sm:col-span-${field.cols?.sm || 6} md:col-span-${field.cols?.md || 6} lg:col-span-${field.cols?.lg || 6} xl:col-span-${field.cols?.xl || 6}`}

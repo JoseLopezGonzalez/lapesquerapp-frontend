@@ -760,6 +760,173 @@ export const configs = {
       ]
     }
   },
+  'external-users': {
+    title: "Usuarios externos",
+    description: "Gestiona, edita y consulta accesos externos.",
+    emptyState: {
+      title: "No existen usuarios externos según los filtros",
+      description: "Ajusta los filtros o crea un nuevo usuario externo.",
+    },
+    endpoint: "external-users",
+    viewRoute: "/admin/external-users/:id",
+    deleteEndpoint: "external-users/:id",
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "search",
+            label: "Buscar",
+            type: "search",
+            placeholder: "Buscar por nombre, email o empresa",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "type",
+              label: "Tipo",
+              type: "text",
+              placeholder: "maquilador",
+            },
+            {
+              name: "is_active",
+              label: "Activo",
+              type: "text",
+              placeholder: "1 o 0",
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "companyName", label: "Empresa", type: "text", path: "companyName" },
+        { name: "email", label: "Email", type: "text", path: "email", hideOnMobile: true },
+        { name: "type", label: "Tipo", type: "text", path: "type" },
+        { name: "isActive", label: "Activo", type: "badge", path: "isActive", options: {
+          true: { label: "Activo", color: "success", outline: true },
+          false: { label: "Inactivo", color: "secondary", outline: true },
+        } },
+        { name: "storesCount", label: "Almacenes", type: "text", path: "storesCount", hideOnMobile: true },
+        { name: "created_at", label: "Creado", type: "date", path: "created_at", hideOnMobile: true },
+      ],
+    },
+    rowActions: [
+      {
+        key: "resend-access",
+        label: "Reenviar acceso",
+        shortLabel: "R",
+        serviceMethod: "resendAccess",
+        successMessage: "Acceso reenviado correctamente.",
+        confirmation: (row) => `¿Reenviar acceso a ${row.name || "este usuario externo"}?`,
+      },
+      {
+        key: "activate",
+        label: "Activar",
+        shortLabel: "A",
+        serviceMethod: "activate",
+        successMessage: "Usuario externo activado.",
+        confirmation: (row) => `¿Activar a ${row.name || "este usuario externo"}?`,
+        hidden: (row) => row.isActive === true,
+      },
+      {
+        key: "deactivate",
+        label: "Desactivar",
+        shortLabel: "D",
+        serviceMethod: "deactivate",
+        successMessage: "Usuario externo desactivado.",
+        confirmation: (row) => `¿Desactivar a ${row.name || "este usuario externo"}?`,
+        hidden: (row) => row.isActive === false,
+      },
+    ],
+    createForm: {
+      title: "Crear usuario externo",
+      endpoint: "external-users",
+      method: "POST",
+      successMessage: "Usuario externo creado con éxito",
+      errorMessage: "Error al crear el usuario externo",
+    },
+    editForm: {
+      title: "Editar usuario externo",
+      endpoint: "external-users",
+      method: "PUT",
+      successMessage: "Usuario externo actualizado con éxito",
+      errorMessage: "Error al actualizar el usuario externo",
+    },
+    beforeSubmit: (data) => ({
+      ...data,
+      type: data.type || "maquilador",
+      is_active: String(data.is_active) === "1",
+    }),
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Nombre del usuario externo",
+        validation: { required: "El nombre es obligatorio" },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "company_name",
+        path: "companyName",
+        label: "Empresa",
+        type: "text",
+        placeholder: "Empresa del colaborador",
+        validation: { required: "La empresa es obligatoria" },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "email",
+        label: "Email",
+        type: "text",
+        placeholder: "correo@empresa.com",
+        validation: {
+          required: "El email es obligatorio",
+          pattern: {
+            value: "^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+            message: "Formato de email no válido"
+          }
+        },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "type",
+        label: "Tipo",
+        type: "select",
+        placeholder: "Selecciona el tipo",
+        options: [{ value: "maquilador", label: "Maquilador" }],
+        validation: { required: "El tipo es obligatorio" },
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "is_active",
+        path: "isActive",
+        label: "Activo",
+        type: "select",
+        placeholder: "Estado",
+        options: [
+          { value: "1", label: "Activo" },
+          { value: "0", label: "Inactivo" },
+        ],
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "notes",
+        label: "Notas",
+        type: "textarea",
+        placeholder: "Notas internas",
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+  },
   /* Transports */
   transports: {
     title: "Transportes",
@@ -1167,6 +1334,19 @@ export const configs = {
               label: "Nombre",
               type: "text",
               placeholder: "Buscar por nombre",
+            },
+            {
+              name: "store_type",
+              label: "Tipo",
+              type: "text",
+              placeholder: "interno o externo",
+            },
+            {
+              name: "external_user_id",
+              label: "Usuario externo",
+              type: "autocomplete",
+              placeholder: "Filtrar por usuario externo",
+              endpoint: "external-users/options",
             }
           ],
         }
@@ -1176,6 +1356,8 @@ export const configs = {
       headers: [
         { name: "id", label: "ID", type: "id", path: "id" },
         { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "storeType", label: "Tipo", type: "text", path: "storeType" },
+        { name: "externalUser", label: "Usuario externo", type: "text", path: "externalUser.name" },
         /* temperatur */
         { name: "temperature", label: "Temperatura", type: "text", path: "temperature" },
         /* totalNetWeight */
@@ -1197,6 +1379,17 @@ export const configs = {
       method: "PUT",
       successMessage: "Almacén actualizado con éxito",
       errorMessage: "Error al actualizar el almacén",
+    },
+    beforeSubmit: (data) => {
+      const nextData = { ...data, store_type: data.storeType };
+      delete nextData.storeType;
+      if (data.storeType === "interno") {
+        nextData.external_user_id = null;
+      }
+      if (data.storeType === "externo" && !nextData.external_user_id) {
+        throw new Error("Debes seleccionar un usuario externo para un almacén externo.");
+      }
+      return nextData;
     },
     fields: [
       {
@@ -1253,6 +1446,35 @@ export const configs = {
             message: "Debe ser un valor mayor o igual a 0",
           },
         },
+        cols: {
+          sm: 3, md: 3, lg: 3, xl: 3,
+        },
+      },
+      {
+        name: "storeType",
+        label: "Tipo de almacén",
+        type: "select",
+        placeholder: "Selecciona el tipo",
+        options: [
+          { value: "interno", label: "Interno" },
+          { value: "externo", label: "Externo" },
+        ],
+        validation: {
+          required: "El tipo de almacén es obligatorio",
+        },
+        cols: {
+          sm: 3, md: 3, lg: 3, xl: 3,
+        },
+      },
+      {
+        name: "external_user_id",
+        path: "externalUser.id",
+        label: "Usuario externo",
+        type: "Autocomplete",
+        placeholder: "Selecciona un usuario externo",
+        endpoint: "external-users/options",
+        validation: {},
+        displayWhen: (values) => values.storeType === "externo",
         cols: {
           sm: 3, md: 3, lg: 3, xl: 3,
         },
@@ -3847,6 +4069,3 @@ export const configs = {
   },
 
 };
-
-
-

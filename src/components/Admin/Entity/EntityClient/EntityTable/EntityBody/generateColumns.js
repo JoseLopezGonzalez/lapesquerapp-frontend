@@ -1,9 +1,9 @@
 import { getSafeValue } from "./utils/getSafeValue";
 import { renderByType } from "./utils/renderByType";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Edit, Pencil, Send } from "lucide-react";
+import { ArrowRight, Pencil, Send } from "lucide-react";
 
-export function generateColumns2(headers, { onEdit, onView, onResendInvitation, config } = {}) {
+export function generateColumns2(headers, { onEdit, onView, onResendInvitation, onCustomAction, config } = {}) {
   // Generate columns from headers
   const baseColumns = headers.map((header) => {
     const cellClass = header.hideOnMobile ? "hidden md:table-cell" : "";
@@ -27,7 +27,9 @@ export function generateColumns2(headers, { onEdit, onView, onResendInvitation, 
   const hideActions = (config?.hideActions || false) || (hideEditButton && hideViewButton);
   const hasResendInvitation = config?.endpoint === "users" && typeof onResendInvitation === "function";
 
-  const hasAnyAction = onView || onEdit || hasResendInvitation;
+  const customRowActions = config?.rowActions || [];
+  const hasCustomActions = customRowActions.length > 0 && typeof onCustomAction === "function";
+  const hasAnyAction = onView || onEdit || hasResendInvitation || hasCustomActions;
   if (!hasAnyAction || (hideActions && !hasResendInvitation)) {
     return baseColumns;
   }
@@ -59,6 +61,23 @@ export function generateColumns2(headers, { onEdit, onView, onResendInvitation, 
               <Send className="h-4 w-4" />
             </Button>
           )}
+          {customRowActions.map((action) => {
+            const Icon = action.icon;
+            const hidden = typeof action.hidden === "function" ? action.hidden(row.original) : false;
+            if (hidden) return null;
+
+            return (
+              <Button
+                key={action.key}
+                variant={action.variant || "outline"}
+                size="icon"
+                onClick={() => onCustomAction(action, id, row.original)}
+                title={action.label}
+              >
+                {Icon ? <Icon className="h-4 w-4" /> : action.shortLabel || action.label?.slice(0, 1)}
+              </Button>
+            );
+          })}
         </div>
       );
     },
