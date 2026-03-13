@@ -63,7 +63,11 @@ export function generateColumns2(headers, { onEdit, onView, onResendInvitation, 
           )}
           {customRowActions.map((action) => {
             const Icon = action.icon;
-            const hidden = typeof action.hidden === "function" ? action.hidden(row.original) : false;
+            const hidden = action.hiddenWhen
+              ? row.original[action.hiddenWhen.path] === action.hiddenWhen.value
+              : typeof action.hidden === "function"
+                ? action.hidden(row.original)
+                : false;
             if (hidden) return null;
 
             return (

@@ -226,10 +226,25 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 return;
             }
 
-            const finalPayload =
-                typeof config.beforeSubmit === "function"
-                    ? config.beforeSubmit(finalData, { mode: "edit" })
-                    : finalData;
+            const finalPayload = (() => {
+                const bs = config.beforeSubmit;
+                if (typeof bs === "function") return bs(finalData, { mode: "edit" });
+                if (bs && typeof bs === "object" && (bs.defaults || bs.booleanFields)) {
+                    const payload = { ...finalData };
+                    if (bs.defaults) {
+                        for (const [k, v] of Object.entries(bs.defaults)) {
+                            if (payload[k] == null || payload[k] === "") payload[k] = v;
+                        }
+                    }
+                    if (Array.isArray(bs.booleanFields)) {
+                        for (const k of bs.booleanFields) {
+                            payload[k] = String(payload[k]) === "1";
+                        }
+                    }
+                    return payload;
+                }
+                return finalData;
+            })();
 
             await entityService.update(id, finalPayload);
             notify.success({

@@ -604,10 +604,13 @@ export default function EntityClient({ config }) {
             return;
         }
 
-        const confirmationText =
+        let confirmationText =
             typeof action.confirmation === 'function'
                 ? action.confirmation(row)
                 : action.confirmation;
+        if (typeof confirmationText === 'string' && confirmationText.includes('{{name}}')) {
+            confirmationText = confirmationText.replace(/\{\{name\}\}/g, row?.name || 'este usuario externo');
+        }
 
         if (confirmationText && !window.confirm(confirmationText)) return;
 

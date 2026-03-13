@@ -217,8 +217,9 @@ export const AccordionBody = ({
                                                 </Button>
                                             )}
                                             {customRowActions.map((action) => {
-                                                const hidden =
-                                                    typeof action.hidden === "function"
+                                                const hidden = action.hiddenWhen
+                                                    ? row[action.hiddenWhen.path] === action.hiddenWhen.value
+                                                    : typeof action.hidden === "function"
                                                         ? action.hidden(row)
                                                         : false;
                                                 if (hidden) return null;

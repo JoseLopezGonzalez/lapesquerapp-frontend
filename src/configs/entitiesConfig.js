@@ -825,7 +825,7 @@ export const configs = {
         shortLabel: "R",
         serviceMethod: "resendAccess",
         successMessage: "Acceso reenviado correctamente.",
-        confirmation: (row) => `¿Reenviar acceso a ${row.name || "este usuario externo"}?`,
+        confirmation: "¿Reenviar acceso a {{name}}?",
       },
       {
         key: "activate",
@@ -833,8 +833,8 @@ export const configs = {
         shortLabel: "A",
         serviceMethod: "activate",
         successMessage: "Usuario externo activado.",
-        confirmation: (row) => `¿Activar a ${row.name || "este usuario externo"}?`,
-        hidden: (row) => row.isActive === true,
+        confirmation: "¿Activar a {{name}}?",
+        hiddenWhen: { path: "isActive", value: true },
       },
       {
         key: "deactivate",
@@ -842,8 +842,8 @@ export const configs = {
         shortLabel: "D",
         serviceMethod: "deactivate",
         successMessage: "Usuario externo desactivado.",
-        confirmation: (row) => `¿Desactivar a ${row.name || "este usuario externo"}?`,
-        hidden: (row) => row.isActive === false,
+        confirmation: "¿Desactivar a {{name}}?",
+        hiddenWhen: { path: "isActive", value: false },
       },
     ],
     createForm: {
@@ -860,11 +860,10 @@ export const configs = {
       successMessage: "Usuario externo actualizado con éxito",
       errorMessage: "Error al actualizar el usuario externo",
     },
-    beforeSubmit: (data) => ({
-      ...data,
-      type: data.type || "maquilador",
-      is_active: String(data.is_active) === "1",
-    }),
+    beforeSubmit: {
+      defaults: { type: "maquilador" },
+      booleanFields: ["is_active"],
+    },
     fields: [
       {
         name: "name",
