@@ -24,6 +24,7 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 // Import domain services and mapper
 import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { isoToDateTimeLocal, datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
+import { transformStoresPayload } from '@/lib/entityFormTransforms';
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -88,9 +89,14 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const [loadingOptions, setLoadingOptions] = useState({});
     const [loading, setLoading] = useState(true);
     const watchedValues = watch();
-    const preparedFields = prepareValidations(fields).filter((field) =>
-        typeof field.displayWhen === "function" ? field.displayWhen(watchedValues) : true
-    );
+    const preparedFields = prepareValidations(fields).filter((field) => {
+        const dw = field.displayWhen;
+        if (typeof dw === "function") return dw(watchedValues);
+        if (dw && typeof dw === "object" && "field" in dw && "eq" in dw) {
+            return watchedValues[dw.field] === dw.eq;
+        }
+        return true;
+    });
 
     // Function to fetch and set entity data
     const loadEntityData = useCallback(async () => {
@@ -227,8 +233,9 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
             }
 
             const finalPayload = (() => {
+                const endpointKey = config.editForm?.endpoint || config.endpoint;
+                if (endpointKey === "stores") return transformStoresPayload(finalData);
                 const bs = config.beforeSubmit;
-                if (typeof bs === "function") return bs(finalData, { mode: "edit" });
                 if (bs && typeof bs === "object" && (bs.defaults || bs.booleanFields)) {
                     const payload = { ...finalData };
                     if (bs.defaults) {

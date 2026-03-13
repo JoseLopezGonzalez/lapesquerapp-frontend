@@ -156,9 +156,13 @@ export function useStores() {
     }
   };
 
+  const isInitialLoading =
+    isLoading || (!!token && !!tenantId && data === undefined);
+
   return {
     stores,
     loading: isLoading,
+    isInitialLoading,
     error: error ?? null,
     onUpdateCurrentStoreTotalNetWeight,
     onAddNetWeightToStore,

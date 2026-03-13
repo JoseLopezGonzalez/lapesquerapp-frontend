@@ -1,13 +1,13 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { getSettings } from '@/services/settingsService';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { invalidateSettingsCache } from '@/helpers/getSettingValue';
 import { isAuthError } from '@/configs/authConfig';
-import { signOut } from 'next-auth/react';
+import { isExternalActor } from '@/lib/auth/actor';
 
 const SETTINGS_QUERY_KEY = 'settings';
 
@@ -43,7 +43,13 @@ export function useSettingsData() {
     };
   }, []);
 
-  const enabled = Boolean(tenantId && status !== 'loading' && accessToken);
+  const externalUser = isExternalActor(session?.user);
+  const enabled = Boolean(
+    tenantId &&
+    status !== 'loading' &&
+    accessToken &&
+    !externalUser
+  );
 
   const query = useQuery({
     queryKey: [SETTINGS_QUERY_KEY, tenantId],

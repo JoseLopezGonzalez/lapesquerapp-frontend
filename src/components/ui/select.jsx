@@ -25,6 +25,7 @@ function SelectGroup({
 }
 
 function SelectValue({
+  loading,
   ...props
 }) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
@@ -34,6 +35,7 @@ function SelectTrigger({
   className,
   size = "default",
   children,
+  loading,
   ...props
 }) {
   return (
@@ -58,6 +60,7 @@ function SelectContent({
   children,
   position = "item-aligned",
   align = "center",
+  loading,
   ...props
 }) {
   return (

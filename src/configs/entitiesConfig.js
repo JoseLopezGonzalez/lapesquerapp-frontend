@@ -1379,17 +1379,7 @@ export const configs = {
       successMessage: "Almacén actualizado con éxito",
       errorMessage: "Error al actualizar el almacén",
     },
-    beforeSubmit: (data) => {
-      const nextData = { ...data, store_type: data.storeType };
-      delete nextData.storeType;
-      if (data.storeType === "interno") {
-        nextData.external_user_id = null;
-      }
-      if (data.storeType === "externo" && !nextData.external_user_id) {
-        throw new Error("Debes seleccionar un usuario externo para un almacén externo.");
-      }
-      return nextData;
-    },
+    // beforeSubmit para stores se aplica en cliente (entityFormTransforms.js) para que la config sea serializable
     fields: [
       {
         name: "name",
@@ -1473,7 +1463,7 @@ export const configs = {
         placeholder: "Selecciona un usuario externo",
         endpoint: "external-users/options",
         validation: {},
-        displayWhen: (values) => values.storeType === "externo",
+        displayWhen: { field: "storeType", eq: "externo" },
         cols: {
           sm: 3, md: 3, lg: 3, xl: 3,
         },

@@ -1,41 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import * as React from "react";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Home, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Building2,
+  Warehouse,
+} from "lucide-react";
+import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
+import { BottomNav } from "@/components/Admin/Layout/BottomNav";
+import { ExternalSidebar } from "@/components/External/ExternalSidebar";
+import { ExternalUserMenuDialog } from "@/components/External/ExternalUserMenuDialog";
+import { useIsMobileSafe } from "@/hooks/use-mobile";
 import { notify } from "@/lib/notifications";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
-function getUserInitials(name) {
-  if (!name) return "U";
-  return name
-    .split(" ")
-    .map((chunk) => chunk[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-export default function ExternalLayoutClient({ children }) {
+function ExternalLayoutContent({ children }) {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const [logoError, setLogoError] = useState(false);
+  const { isMobile, mounted } = useIsMobileSafe();
+  const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const mainRef = React.useRef(null);
 
-  const navigationItems = useMemo(
-    () => [
-      {
-        href: "/external/stores-manager",
-        label: "Almacenes",
-        icon: Home,
-      },
-    ],
-    []
+  const allowedStoreIds = React.useMemo(
+    () =>
+      Array.isArray(session?.user?.allowedStoreIds)
+        ? session.user.allowedStoreIds
+        : [],
+    [session?.user?.allowedStoreIds]
   );
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
     try {
       const { logout: logoutBackend } = await import("@/services/authService");
       await logoutBackend();
@@ -44,84 +41,138 @@ export default function ExternalLayoutClient({ children }) {
     }
 
     await signOut({ redirect: false });
-    notify.success({ title: "Sesión cerrada" });
+    notify.success({ title: "Sesion cerrada" });
     window.location.replace("/");
+  }, []);
+
+  React.useEffect(() => {
+    if (sheetOpen) {
+      setSheetOpen(false);
+    }
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const navigationItems = React.useMemo(
+    () => [
+      {
+        name: "Almacenes",
+        href: "/external/stores-manager",
+        icon: Warehouse,
+      },
+    ],
+    []
+  );
+
+  const bottomNavItems = React.useMemo(
+    () => [
+      {
+        name: "Almacenes",
+        href: "/external/stores-manager",
+        icon: Warehouse,
+      },
+    ],
+    []
+  );
+
+  const user = React.useMemo(
+    () => ({
+      name: session?.user?.name || "Usuario externo",
+      email: session?.user?.email || "",
+      image: session?.user?.image || "",
+      companyName: session?.user?.companyName || "PesquerApp",
+      companyLogoUrl: session?.user?.companyLogoUrl || "",
+      externalUserType: session?.user?.externalUserType || null,
+      allowedStoreIds,
+      logout: handleLogout,
+    }),
+    [allowedStoreIds, handleLogout, session]
+  );
+
+  const apps = React.useMemo(
+    () => [
+      {
+        name: user.companyName,
+        logo: Building2,
+        description: "Acceso externo",
+        current: true,
+      },
+    ],
+    [user.companyName]
+  );
+
+  const styleSidebar = {
+    "--sidebar-width": "18rem",
+    "--sidebar-width-mobile": "18rem",
   };
 
+  if (!mounted || !isMobile) {
+    return (
+      <div className="h-screen overflow-hidden bg-muted/30">
+        <SidebarProvider className="h-full" style={styleSidebar}>
+          <ExternalSidebar
+            user={user}
+            apps={apps}
+            navigationItems={navigationItems}
+          />
+          <main className="flex h-full w-full flex-col min-h-0 overflow-hidden p-1">
+            <div className="shrink-0 p-1">
+              <SidebarTrigger />
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-1">
+              {children}
+            </div>
+          </main>
+        </SidebarProvider>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-5">
-            <div>
-              <div className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                Acceso externo
-              </div>
-              <div className="text-lg font-semibold text-slate-900">
-                {session?.user?.companyName || "PesquerApp"}
-              </div>
-            </div>
-
-            <nav className="flex items-center gap-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
-                      isActive
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-700 hover:bg-slate-100"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden items-center gap-3 sm:flex">
-              {session?.user?.companyLogoUrl && !logoError ? (
-                <img
-                  src={session.user.companyLogoUrl}
-                  alt={session.user.companyName || "Logo empresa"}
-                  className="h-10 w-auto rounded-md"
-                  onError={() => setLogoError(true)}
-                />
-              ) : null}
-              <div className="text-right">
-                <div className="text-sm font-medium text-slate-900">
-                  {session?.user?.name || "Usuario"}
-                </div>
-                <div className="text-xs text-slate-500">
-                  {session?.user?.email || ""}
-                </div>
-              </div>
-              <Avatar className="h-9 w-9 rounded-xl">
-                <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
-                <AvatarFallback className="rounded-xl bg-slate-200 text-slate-700">
-                  {getUserInitials(session?.user?.name)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-
-            <Button variant="outline" onClick={handleLogout} className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Cerrar sesión
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {children}
+    <div
+      className={cn(
+        "relative flex h-screen flex-col overflow-hidden bg-background"
+      )}
+      vaul-drawer-wrapper=""
+    >
+      <main
+        ref={mainRef}
+        className={cn(
+          "relative w-full overflow-hidden",
+          bottomNavItems.length > 0
+            ? "h-[calc(100vh-5rem-env(safe-area-inset-bottom))]"
+            : "flex-1 min-h-0"
+        )}
+      >
+        <div className="h-full w-full">{children}</div>
       </main>
+
+      <BottomNav
+        items={bottomNavItems}
+        sheetOpen={sheetOpen}
+        onSheetOpenChange={setSheetOpen}
+      />
+
+      <ExternalUserMenuDialog
+        open={userMenuOpen}
+        onOpenChange={setUserMenuOpen}
+        user={user}
+      />
+
+      <NavigationSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        navigationItems={navigationItems}
+        navigationManagersItems={[]}
+        apps={apps}
+        user={user}
+        onUserMenuOpen={() => {
+          setSheetOpen(false);
+          setUserMenuOpen(true);
+        }}
+      />
     </div>
   );
+}
+
+export default function ExternalLayoutClient({ children }) {
+  return <ExternalLayoutContent>{children}</ExternalLayoutContent>;
 }

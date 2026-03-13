@@ -27,6 +27,7 @@ import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
+import { transformStoresPayload } from '@/lib/entityFormTransforms';
 
 
 function prepareValidations(fields) {
@@ -68,9 +69,14 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState({});
     const watchedValues = watch();
-    const preparedFields = prepareValidations(fields).filter((field) =>
-        typeof field.displayWhen === "function" ? field.displayWhen(watchedValues) : true
-    );
+    const preparedFields = prepareValidations(fields).filter((field) => {
+        const dw = field.displayWhen;
+        if (typeof dw === "function") return dw(watchedValues);
+        if (dw && typeof dw === "object" && "field" in dw && "eq" in dw) {
+            return watchedValues[dw.field] === dw.eq;
+        }
+        return true;
+    });
 
     // Cargar dinámicamente los options de los campos con endpoint
     const loadAutocompleteOptions = useCallback(async () => {
@@ -171,8 +177,9 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
             });
 
             const finalPayload = (() => {
+                const endpointKey = config.createForm?.endpoint || config.endpoint;
+                if (endpointKey === "stores") return transformStoresPayload(finalData);
                 const bs = config.beforeSubmit;
-                if (typeof bs === "function") return bs(finalData, { mode: "create" });
                 if (bs && typeof bs === "object" && (bs.defaults || bs.booleanFields)) {
                     const payload = { ...finalData };
                     if (bs.defaults) {
