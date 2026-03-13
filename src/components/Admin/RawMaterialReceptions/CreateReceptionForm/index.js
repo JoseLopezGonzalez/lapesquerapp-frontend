@@ -264,41 +264,56 @@ export default function CreateReceptionForm({ onSuccess }) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {fields.map((field, index) => (
-                          <TableRow key={field.id}>
-                            <TableCell>
-                              <Controller
-                                name={`details.${index}.product`}
-                                control={control}
-                                rules={{
-                                  required:
-                                    mode === 'automatic'
-                                      ? 'El producto es obligatorio'
-                                      : false,
-                                }}
-                                render={({ field: { onChange, value } }) => (
-                                  <Combobox
-                                    options={productOptions}
-                                    value={value}
-                                    onChange={onChange}
-                                    placeholder="Seleccionar producto"
-                                    searchPlaceholder="Buscar producto..."
-                                    notFoundMessage="No se encontraron productos"
-                                    className="min-w-[200px]"
-                                    aria-label={`Producto para línea ${index + 1}`}
-                                    aria-required={mode === 'automatic'}
-                                    loading={productsLoading}
-                                  />
+                        {fields.map((field, index) => {
+                          // Evitar seleccionar el mismo producto en más de una línea
+                          const usedProductIds = (currentDetails || [])
+                            .map((detail, detailIndex) =>
+                              detailIndex !== index ? detail?.product : null
+                            )
+                            .filter((id) => id != null && id !== '');
+
+                          const availableProductOptions = productOptions.filter(
+                            (opt) =>
+                              !usedProductIds
+                                .map((id) => String(id))
+                                .includes(String(opt.value))
+                          );
+
+                          return (
+                            <TableRow key={field.id}>
+                              <TableCell>
+                                <Controller
+                                  name={`details.${index}.product`}
+                                  control={control}
+                                  rules={{
+                                    required:
+                                      mode === 'automatic'
+                                        ? 'El producto es obligatorio'
+                                        : false,
+                                  }}
+                                  render={({ field: { onChange, value } }) => (
+                                    <Combobox
+                                      options={availableProductOptions}
+                                      value={value}
+                                      onChange={onChange}
+                                      placeholder="Seleccionar producto"
+                                      searchPlaceholder="Buscar producto..."
+                                      notFoundMessage="No se encontraron productos"
+                                      className="min-w-[200px]"
+                                      aria-label={`Producto para línea ${index + 1}`}
+                                      aria-required={mode === 'automatic'}
+                                      loading={productsLoading}
+                                    />
+                                  )}
+                                />
+                                {errors.details?.[index]?.product && (
+                                  <p className="text-destructive text-xs mt-1">
+                                    {
+                                      errors.details[index].product.message
+                                    }
+                                  </p>
                                 )}
-                              />
-                              {errors.details?.[index]?.product && (
-                                <p className="text-destructive text-xs mt-1">
-                                  {
-                                    errors.details[index].product.message
-                                  }
-                                </p>
-                              )}
-                            </TableCell>
+                              </TableCell>
                             <TableCell>
                               <Controller
                                 name={`details.${index}.grossWeight`}

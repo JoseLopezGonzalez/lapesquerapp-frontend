@@ -479,13 +479,43 @@ export default function OperarioCreateReceptionForm({
                             typeof value === 'object'
                               ? value?.id ?? value?.value
                               : value;
+
+                          // Evitar seleccionar el mismo producto en más de una línea
+                          const usedProductIds = new Set(
+                            (watchedDetails || [])
+                              .map((d, i) => {
+                                if (i === formIndex) return null;
+                                const v = d?.product;
+                                if (v == null) return null;
+                                const id =
+                                  typeof v === 'object'
+                                    ? v?.id ?? v?.value
+                                    : v;
+                                return id != null && id !== ''
+                                  ? String(id)
+                                  : null;
+                              })
+                              .filter(Boolean)
+                          );
+
+                          if (productValue != null && productValue !== '') {
+                            usedProductIds.delete(String(productValue));
+                          }
+
+                          const filteredProductOptionsBySpecies =
+                            (productOptionsBySpecies || []).filter(
+                              (o) =>
+                                !usedProductIds.has(String(o.value))
+                            );
+
                           const quickPickIds = getQuickPickProductIds(
                             speciesValue,
-                            productOptionsBySpecies
+                            filteredProductOptionsBySpecies
                           );
+
                           const quickPickOpts = quickPickIds
                             .map((id) =>
-                              productOptionsBySpecies?.find(
+                              filteredProductOptionsBySpecies.find(
                                 (o) => String(o.value) === id
                               )
                             )
@@ -513,7 +543,7 @@ export default function OperarioCreateReceptionForm({
                                       <div className="flex items-center justify-center min-h-[200px] w-full">
                                         <Loader />
                                       </div>
-                                    ) : (productOptionsBySpecies || []).length ===
+                                    ) : filteredProductOptionsBySpecies.length ===
                                       0 ? (
                                       <div className="flex items-center justify-center min-h-[200px] w-full py-6">
                                         <EmptyState
@@ -523,7 +553,7 @@ export default function OperarioCreateReceptionForm({
                                         />
                                       </div>
                                     ) : (
-                                      (productOptionsBySpecies || []).map(
+                                      filteredProductOptionsBySpecies.map(
                                         (opt, idx) => {
                                           const isSelected =
                                             productValue != null &&
