@@ -11,8 +11,5 @@ export function transformStoresPayload(data) {
   if (data.storeType === "interno") {
     nextData.external_user_id = null;
   }
-  if (data.storeType === "externo" && !nextData.external_user_id) {
-    throw new Error("Debes seleccionar un usuario externo para un almacén externo.");
-  }
   return nextData;
 }

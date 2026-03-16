@@ -88,8 +88,8 @@ export default function UnallocatedPositionSlideover() {
                 </SheetHeader>
                 
 
-                <ScrollArea className="flex-1 gap-2 py-4 px-2">
-                    <div className=" space-y-4">
+                <div className="flex-1 min-h-0 overflow-y-auto py-4 px-2">
+                    <div className="space-y-4">
                         {pallets.length === 0 ? (
                             <Card className="bg-muted/30 border-dashed flex flex-col items-center justify-center p-6 text-center">
                                 <Layers className="h-10 w-10 text-muted-foreground mb-3" />
@@ -101,11 +101,10 @@ export default function UnallocatedPositionSlideover() {
                                 </Button>
                             </Card>
                         ) : (
-
                             pallets.map((pallet) => <PalletCard key={pallet.id} pallet={pallet} />)
                         )}
                     </div>
-                </ScrollArea>
+                </div>
             </SheetContent>
         </Sheet>
     )
