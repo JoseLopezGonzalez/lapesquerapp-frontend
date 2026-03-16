@@ -202,8 +202,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   if (isLoading) {
     return (
-      <div className="h-full w-full flex flex-col overflow-hidden">
-        <ScrollArea className="flex-1 w-full">
+      <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
+        <ScrollArea className="flex-1 min-h-0 w-full h-full">
           <div className="p-6 flex justify-center items-center min-h-[400px]">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
@@ -214,8 +214,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   if (error || !data) {
     return (
-      <div className="h-full w-full flex flex-col overflow-hidden">
-        <ScrollArea className="flex-1 w-full">
+      <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
+        <ScrollArea className="flex-1 min-h-0 w-full h-full">
           <div className="p-6">
             <Card>
               <CardContent className="pt-6">
@@ -247,7 +247,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
+    <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
       <div className="flex items-center justify-between p-6 pb-2 flex-shrink-0">
         <Button
           variant="outline"
@@ -360,7 +360,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </div>
       )}
 
-      <ScrollArea className="flex-1 w-full">
+      <ScrollArea className="flex-1 min-h-0 w-full h-full">
         <div className="p-6 pt-2 space-y-6">
           <Card>
             <CardHeader>
