@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ArrowLeft, MoreVertical, Printer, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ export default function OrderHeaderMobile({
   onNavigateSection,
   onEdit,
   onPrint,
+  readOnly = false,
 }) {
   if (!onClose) return null;
 
@@ -53,6 +55,11 @@ export default function OrderHeaderMobile({
               Autoventa
             </span>
           )}
+          {order?.offerId && (
+            <Link href={`/comercial/ofertas/${order.offerId}`} className="text-xs text-primary hover:underline">
+              Ver oferta #{order.offerId}
+            </Link>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -79,10 +86,12 @@ export default function OrderHeaderMobile({
               );
             })}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onEdit}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Editar pedido
-            </DropdownMenuItem>
+            {!readOnly && (
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar pedido
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onPrint}>
               <Printer className="h-4 w-4 mr-2" />
               Imprimir

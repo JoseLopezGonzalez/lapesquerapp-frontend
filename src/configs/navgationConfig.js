@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio, LayoutDashboard, ShoppingCart } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio, LayoutDashboard, ShoppingCart, Users, BriefcaseBusiness, ClipboardList, PackageOpen } from 'lucide-react';
 
 export const navigationConfig = [
     /* Solo operario: acceso desde dashboard (/operator) */
@@ -27,6 +27,30 @@ export const navigationConfig = [
         name: 'Autoventa',
         icon: ShoppingCart,
         href: '/comercial/autoventa',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Prospectos',
+        icon: BriefcaseBusiness,
+        href: '/comercial/prospectos',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Clientes',
+        icon: Users,
+        href: '/comercial/clientes',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Ofertas',
+        icon: ClipboardList,
+        href: '/comercial/ofertas',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Pedidos',
+        icon: PackageOpen,
+        href: '/comercial/pedidos',
         allowedRoles: ["comercial"],
     },
     {

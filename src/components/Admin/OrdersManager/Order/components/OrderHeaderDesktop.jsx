@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Printer, MoreVertical, Bookmark, Copy, Ban, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,12 +26,17 @@ export default function OrderHeaderDesktop({
   onStatusChange,
   onTemperatureChange,
   onPrint,
+  readOnly = false,
 }) {
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
       <div className="space-y-1 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
+          {readOnly ? (
+            <Badge variant="outline">{order.status}</Badge>
+          ) : (
+            <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
+          )}
           {(order?.orderType ?? order?.order_type) === 'autoventa' && (
             <Badge variant="outline" aria-label="Tipo de pedido: Autoventa">
               Autoventa
@@ -52,46 +58,58 @@ export default function OrderHeaderDesktop({
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Temperatura</p>
-          <OrderTemperatureDropdown
-            temperature={order.temperature}
-            onTemperatureChange={onTemperatureChange}
-          />
+          {readOnly ? <p className="text-sm font-medium">{order.temperature ?? '-'}</p> : (
+            <OrderTemperatureDropdown
+              temperature={order.temperature}
+              onTemperatureChange={onTemperatureChange}
+            />
+          )}
         </div>
+        {order?.offerId && (
+          <div>
+            <p className="text-sm text-muted-foreground">Oferta vinculada</p>
+            <Link href={`/comercial/ofertas/${order.offerId}`} className="text-sm font-medium text-primary hover:underline">
+              Ver oferta #{order.offerId}
+            </Link>
+          </div>
+        )}
       </div>
       <div className="hidden lg:flex flex-row gap-2 h-fit pt-2">
         <div className="flex flex-col max-w-sm justify-end items-end gap-3">
           <div className="flex gap-2">
-            <OrderEditSheet />
+            {!readOnly && <OrderEditSheet />}
             <Button variant="outline" onClick={onPrint}>
               <Printer />
               Imprimir
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="Abrir menú de acciones">
-                  <MoreVertical />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <Copy />
-                    Duplicar pedido
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Ban />
-                    Cancelar pedido
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem variant="destructive">
-                    <Trash2 />
-                    Eliminar pedido
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!readOnly && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Abrir menú de acciones">
+                    <MoreVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                      <Copy />
+                      Duplicar pedido
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Ban />
+                      Cancelar pedido
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem variant="destructive">
+                      <Trash2 />
+                      Eliminar pedido
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           <div className="flex flex-col items-end justify-center">
             <img

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { OrderRankingChart } from "../OrderRanking";
-import { SalesBySalespersonPieChart } from "../SalesBySalespersonPieChart";
 import { TotalQuantitySoldCard } from "../TotalQuantitySoldCard";
 import { TotalAmountSoldCard } from "../TotalAmountSoldCard";
 import { TransportRadarChart } from "../TransportRadarChart";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Masonry from "react-masonry-css";
+import CrmDashboardWidgets from "@/components/Comercial/CRM/CrmDashboardWidgets";
+import CommercialSalesSummaryCard from "@/components/Comercial/CRM/CommercialSalesSummaryCard";
 
 const breakpointColumnsObj = {
     default: 3,
@@ -42,6 +43,8 @@ export default function ComercialDashboard() {
                         </div>
                     </div>
 
+                    <CrmDashboardWidgets />
+
                     <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="w-full h-full overflow-hidden">
                             <TotalQuantitySoldCard />
@@ -60,7 +63,7 @@ export default function ComercialDashboard() {
                             <OrderRankingChart />
                         </div>
                         <div>
-                            <SalesBySalespersonPieChart />
+                            <CommercialSalesSummaryCard />
                         </div>
                         <div>
                             <TransportRadarChart />

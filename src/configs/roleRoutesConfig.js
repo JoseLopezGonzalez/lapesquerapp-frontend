@@ -19,6 +19,12 @@ export const COMERCIAL_BASE = '/comercial';
 export const comercialRoutes = {
   dashboard: COMERCIAL_BASE,
   autoventa: `${COMERCIAL_BASE}/autoventa`,
+  prospects: `${COMERCIAL_BASE}/prospectos`,
+  prospectsCreate: `${COMERCIAL_BASE}/prospectos/create`,
+  customers: `${COMERCIAL_BASE}/clientes`,
+  offers: `${COMERCIAL_BASE}/ofertas`,
+  offersCreate: `${COMERCIAL_BASE}/ofertas/create`,
+  orders: `${COMERCIAL_BASE}/pedidos`,
 };
 
 /** Rutas de admin para otros roles (referencia; no incluye operario para flujos propios) */

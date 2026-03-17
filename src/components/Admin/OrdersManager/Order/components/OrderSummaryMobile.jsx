@@ -28,6 +28,7 @@ export default function OrderSummaryMobile({
   transportImage,
   onStatusChange,
   onTemperatureChange,
+  readOnly = false,
 }) {
   return (
     <div className="space-y-5 px-4 pt-6 text-center flex-shrink-0">
@@ -59,34 +60,41 @@ export default function OrderSummaryMobile({
       </div>
 
       <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="focus:outline-none">
-            <StatusBadge
-              color={STATUS_COLORS[order.status]}
-              label={STATUS_LABELS[order.status]}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="flex flex-col items-end">
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => onStatusChange('pending')}
-            >
-              <StatusBadge color="orange" label="En producción" />
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => onStatusChange('finished')}
-            >
-              <StatusBadge color="green" label="Terminado" />
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => onStatusChange('incident')}
-            >
-              <StatusBadge color="red" label="Incidencia" />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {readOnly ? (
+          <StatusBadge
+            color={STATUS_COLORS[order.status]}
+            label={STATUS_LABELS[order.status]}
+          />
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="focus:outline-none">
+              <StatusBadge
+                color={STATUS_COLORS[order.status]}
+                label={STATUS_LABELS[order.status]}
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="flex flex-col items-end">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => onStatusChange('pending')}
+              >
+                <StatusBadge color="orange" label="En producción" />
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => onStatusChange('finished')}
+              >
+                <StatusBadge color="green" label="Terminado" />
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => onStatusChange('incident')}
+              >
+                <StatusBadge color="red" label="Incidencia" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-6 flex-wrap">
@@ -96,25 +104,32 @@ export default function OrderSummaryMobile({
         </div>
         <div>
           <p className="text-sm text-muted-foreground mb-1">Temperatura</p>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="focus:outline-none">
-              <span className="text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors">
-                <ThermometerSnowflake className="h-5 w-5" />
-                {order.temperature ?? '0'} ºC
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {TEMPERATURE_OPTIONS.map((temp) => (
-                <DropdownMenuItem
-                  key={temp}
-                  className="cursor-pointer"
-                  onClick={() => onTemperatureChange(temp)}
-                >
-                  {temp} ºC
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {readOnly ? (
+            <span className="text-lg font-semibold flex gap-1.5 items-center justify-center">
+              <ThermometerSnowflake className="h-5 w-5" />
+              {order.temperature ?? '0'} ºC
+            </span>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <span className="text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors">
+                  <ThermometerSnowflake className="h-5 w-5" />
+                  {order.temperature ?? '0'} ºC
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {TEMPERATURE_OPTIONS.map((temp) => (
+                  <DropdownMenuItem
+                    key={temp}
+                    className="cursor-pointer"
+                    onClick={() => onTemperatureChange(temp)}
+                  >
+                    {temp} ºC
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 

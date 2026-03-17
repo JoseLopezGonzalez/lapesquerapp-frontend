@@ -23,7 +23,7 @@ import OrderTabsDesktop from './components/OrderTabsDesktop';
 import { notify } from '@/lib/notifications';
 import OrderSectionContentMobile from './components/OrderSectionContentMobile';
 
-const OrderContent = ({ onLoading, onClose }) => {
+const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
   const isMobile = useIsMobile();
   const { order, loading, error, updateOrderStatus, exportDocument, activeTab, setActiveTab, updateTemperatureOrder } = useOrderContext();
   const [activeSection, setActiveSection] = useState(null);
@@ -94,6 +94,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                   onNavigateSection={setActiveSection}
                   onEdit={() => setEditSheetOpen(true)}
                   onPrint={handleOnClickPrint}
+                  readOnly={readOnly}
                 />
                 
                 {/* Vista principal del pedido con lista de secciones */}
@@ -103,6 +104,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                   transportImage={transportImage}
                   onStatusChange={handleStatusChange}
                   onTemperatureChange={handleTemperatureChange}
+                  readOnly={readOnly}
                 />
                 <OrderSectionList
                   onSelectSection={setActiveSection}
@@ -111,7 +113,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                 </div>
 
                 {/* Sheet de edición controlado desde menú ⋮ (mobile): sin barra inferior para pantalla más limpia */}
-                {onClose && (
+                {onClose && !readOnly && (
                   <OrderEditSheet open={editSheetOpen} onOpenChange={setEditSheetOpen} />
                 )}
               </>
@@ -148,6 +150,7 @@ const OrderContent = ({ onLoading, onClose }) => {
                   onStatusChange={handleStatusChange}
                   onTemperatureChange={handleTemperatureChange}
                   onPrint={handleOnClickPrint}
+                  readOnly={readOnly}
                 />
               </CardHeader>
               <CardContent className="flex-1 min-h-0 flex flex-col py-0">
@@ -164,18 +167,16 @@ const OrderContent = ({ onLoading, onClose }) => {
 }
 
 
-const Order = ({ orderId, onChange, onLoading, onClose }) => {
+const Order = ({ orderId, onChange, onLoading, onClose, readOnly = false }) => {
 
 
   return (
     <OrderProvider orderId={orderId} onChange={onChange} >
-      <OrderContent onLoading={onLoading} onClose={onClose} />
+      <OrderContent onLoading={onLoading} onClose={onClose} readOnly={readOnly} />
     </OrderProvider>
   )
 }
 
 export default Order
-
-
 
 

@@ -90,6 +90,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                                     Autoventa
                                 </span>
                             )}
+                            {order?.offerId && (
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/50 dark:border-blue-500/50">
+                                    Desde oferta
+                                </span>
+                            )}
                         </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
@@ -112,6 +117,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                         {order?.orderType === 'autoventa' && (
                             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
                                 Autoventa
+                            </span>
+                        )}
+                        {order?.offerId && (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/50 dark:border-blue-500/50">
+                                Desde oferta
                             </span>
                         )}
                     </div>
