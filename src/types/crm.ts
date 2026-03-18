@@ -6,6 +6,7 @@ export type CommercialInteractionType = 'call' | 'email' | 'whatsapp' | 'visit' 
 export type CommercialInteractionResult = 'interested' | 'no_response' | 'not_interested' | 'pending';
 export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 export type OfferSendChannel = 'email' | 'pdf' | 'whatsapp_text';
+export type AgendaStatus = 'pending' | 'done' | 'cancelled';
 
 export interface CrmWarning {
   type: string;
@@ -47,6 +48,26 @@ export interface CommercialInteraction {
   result: CommercialInteractionResult;
   nextActionNote?: string | null;
   nextActionAt?: string | null;
+}
+
+export interface AgendaTarget {
+  type: 'prospect' | 'customer';
+  id: number | string;
+}
+
+export interface AgendaAction {
+  agendaActionId: number | string;
+  scheduledAt: string;
+  description?: string | null;
+  status: AgendaStatus;
+  target: AgendaTarget;
+  label: string;
+}
+
+export interface AgendaSummaryData {
+  overdue: AgendaAction[];
+  today: AgendaAction[];
+  next: AgendaAction[];
 }
 
 export interface OfferLine {
@@ -100,6 +121,7 @@ export interface Prospect {
   customer?: Customer | null;
   customerId?: number | string | null;
   nextActionAt?: string | null;
+  nextActionNote?: string | null;
   notes?: string | null;
   commercialInterestNotes?: string | null;
   lastContactAt?: string | null;
@@ -117,8 +139,9 @@ export interface Prospect {
 }
 
 export interface CrmReminderItem {
-  type: 'prospect' | 'interaction';
+  type: 'prospect' | 'customer';
   id: number | string;
+  agendaActionId: number | string;
   label: string;
   nextActionAt: string;
   daysOverdue: number;
@@ -165,6 +188,7 @@ export interface ProspectPayload {
   notes?: string | null;
   commercialInterestNotes?: string | null;
   nextActionAt?: string | null;
+  nextActionNote?: string | null;
   lostReason?: string | null;
   salespersonId?: number | string | null;
   primaryContact?: {
@@ -186,6 +210,7 @@ export interface ProspectContactPayload {
 export interface CommercialInteractionPayload {
   prospectId?: number | string;
   customerId?: number | string;
+  agendaActionId?: number | string;
   type: CommercialInteractionType;
   occurredAt: string;
   summary: string;

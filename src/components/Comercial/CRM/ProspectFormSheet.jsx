@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
 import { useCountriesList } from '@/hooks/useCountriesList';
@@ -22,10 +22,11 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   const [form, setForm] = useState({
     companyName: '',
     countryId: '',
-    origin: 'direct',
+    origin: 'inbound_call',
     notes: '',
     commercialInterestNotes: '',
     nextActionAt: null,
+    nextActionNote: '',
     speciesInterest: '',
     primaryContactName: '',
     primaryContactRole: '',
@@ -41,10 +42,11 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     setForm({
       companyName: initialData?.companyName ?? '',
       countryId: initialData?.country?.id ? String(initialData.country.id) : initialData?.countryId ? String(initialData.countryId) : '',
-      origin: initialData?.origin ?? 'direct',
+      origin: initialData?.origin ?? 'inbound_call',
       notes: initialData?.notes ?? '',
       commercialInterestNotes: initialData?.commercialInterestNotes ?? '',
       nextActionAt: initialData?.nextActionAt ? new Date(initialData.nextActionAt) : null,
+      nextActionNote: initialData?.nextActionNote ?? '',
       speciesInterest: Array.isArray(initialData?.speciesInterest) ? initialData.speciesInterest.join(', ') : '',
       primaryContactName: initialData?.primaryContact?.name ?? '',
       primaryContactRole: initialData?.primaryContact?.role ?? '',
@@ -74,6 +76,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
       notes: form.notes.trim() || null,
       commercialInterestNotes: form.commercialInterestNotes.trim() || null,
       nextActionAt: form.nextActionAt ? format(form.nextActionAt, 'yyyy-MM-dd') : null,
+      nextActionNote: form.nextActionNote.trim().slice(0, 255) || null,
       speciesInterest: form.speciesInterest
         .split(',')
         .map((value) => value.trim())
@@ -105,14 +108,14 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-2xl p-0">
-        <SheetHeader className="border-b">
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>Alta y edición de prospectos con contacto principal y agenda comercial.</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent size="5xl" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>Alta y edición de prospectos con contacto principal y agenda comercial.</DialogDescription>
+        </DialogHeader>
 
-        <ScrollArea className="flex-1 h-[calc(100vh-144px)]">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="grid gap-4 p-4">
             {warnings.length > 0 && (
               <Alert>
@@ -133,7 +136,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                 id="company-name"
                 value={form.companyName}
                 onChange={(event) => handleChange('companyName', event.target.value)}
-                placeholder="Acme Seafood"
+                placeholder="Nombre de la empresa"
               />
             </div>
 
@@ -141,7 +144,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
               <div className="grid gap-2">
                 <Label>País</Label>
                 <Select value={form.countryId} onValueChange={(value) => handleChange('countryId', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona un país" />
                   </SelectTrigger>
                   <SelectContent>
@@ -156,7 +159,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
               <div className="grid gap-2">
                 <Label>Origen</Label>
                 <Select value={form.origin} onValueChange={(value) => handleChange('origin', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Origen del lead" />
                   </SelectTrigger>
                   <SelectContent>
@@ -193,17 +196,22 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
 
             <div className="grid gap-2">
               <Label htmlFor="notes">Notas</Label>
-              <Textarea
-                id="notes"
-                rows={4}
-                value={form.notes}
-                onChange={(event) => handleChange('notes', event.target.value)}
-              />
+              <Textarea id="notes" rows={4} value={form.notes} onChange={(event) => handleChange('notes', event.target.value)} />
             </div>
 
             <div className="grid gap-2">
               <Label>Próxima acción</Label>
               <DatePicker date={form.nextActionAt} onChange={(value) => handleChange('nextActionAt', value)} formatStyle="short" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="next-action-note">Descripción de la próxima acción (opcional)</Label>
+              <Input
+                id="next-action-note"
+                value={form.nextActionNote}
+                onChange={(e) => handleChange('nextActionNote', e.target.value)}
+                placeholder="Enviar oferta, volver a llamar, preparar muestra..."
+                maxLength={255}
+              />
             </div>
 
             <div className="rounded-xl border p-4">
@@ -250,15 +258,15 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
           </div>
         </ScrollArea>
 
-        <SheetFooter className="border-t bg-background">
+        <div className="flex flex-col-reverse gap-2 border-t bg-background p-4 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={createProspect.isPending || updateProspect.isPending}>
             Guardar
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

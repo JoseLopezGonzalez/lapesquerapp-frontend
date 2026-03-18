@@ -2,19 +2,21 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { EmptyState } from '@/components/Utilities/EmptyState';
+import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProspectsList } from '@/hooks/useProspects';
 import ProspectFormSheet from './ProspectFormSheet';
 import ProspectDetail from './ProspectDetail';
 import StatusPill from './StatusPill';
-import { formatDateValue, isOverdueDate, prospectStatusLabels } from './utils';
+import { isOverdueDate, prospectStatusLabels } from './utils';
 
 const FILTER_TABS = [
   { label: 'Todos', value: 'all' },
@@ -28,23 +30,46 @@ function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
 
   return (
-    <button
-      type="button"
+    <Card
+      className={cn(
+        'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring transition-colors hover:bg-accent/50',
+        selected && 'ring-2 ring-offset-2 ring-primary',
+        overdue && !selected && 'border-destructive/50'
+      )}
       onClick={onClick}
-      className={`w-full rounded-2xl border p-4 text-left transition ${selected ? 'border-primary bg-primary/5' : ''} ${overdue ? 'border-red-300 bg-red-50/40 dark:border-red-900 dark:bg-red-950/10' : 'hover:bg-accent/40'}`}
+      role="button"
+      tabIndex={0}
+      aria-label={`${prospect.companyName}${prospect.country?.name ? ` - ${prospect.country.name}` : ''}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate font-medium">{prospect.companyName}</p>
-          <p className="text-sm text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+      <CardContent className="py-0">
+        <div className="grow w-full space-y-2 sm:space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-base font-medium truncate">{prospect.companyName}</h3>
+          </div>
+
+          <div>
+            <p className="text-sm text-muted-foreground truncate">{prospect.country?.name ?? 'Sin país'}</p>
+          </div>
+
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="min-w-0">
+              <p className="text-muted-foreground mb-1 text-xs">Contacto principal</p>
+              <p className="text-sm font-medium truncate">{prospect.primaryContact?.name ?? 'Sin contacto principal'}</p>
+            </div>
+          </div>
         </div>
-        <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
-      </div>
-      <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-        <p>{prospect.primaryContact?.name ?? 'Sin contacto principal'}</p>
-        <p>{prospect.nextActionAt ? `Próxima acción: ${formatDateValue(prospect.nextActionAt)}` : 'Sin acción programada'}</p>
-      </div>
-    </button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -82,12 +107,34 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   return (
     <>
       <div className="flex h-full flex-col gap-4 px-4 py-3 md:px-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-light">Prospectos</h1>
-            <p className="text-sm text-muted-foreground">Seguimiento comercial ligero para cartera propia.</p>
+        <div className="w-full md:max-w-md">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-light">Prospectos</h1>
+
+              <div className="mt-2 md:hidden">
+                <Button onClick={() => setFormOpen(true)}>
+                  <Plus data-icon="inline-start" />
+                  Nuevo prospecto
+                </Button>
+              </div>
+
+              <p className="mt-2 md:mt-0 text-sm text-muted-foreground">
+                Seguimiento comercial ligero para cartera propia.
+              </p>
+            </div>
+
+            <div className="hidden md:flex">
+              <Button
+                size="icon"
+                variant="default"
+                onClick={() => setFormOpen(true)}
+                aria-label="Nuevo prospecto"
+              >
+                <Plus />
+              </Button>
+            </div>
           </div>
-          <Button onClick={() => setFormOpen(true)}>Nuevo prospecto</Button>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -102,8 +149,14 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
             </InputGroupAddon>
           </InputGroup>
 
-          <Tabs value={status} onValueChange={setStatus}>
-            <TabsList className="w-full justify-start overflow-x-auto">
+          <Tabs
+            value={status}
+            onValueChange={(value) => {
+              setStatus(value);
+              setSelectedId(null);
+            }}
+          >
+            <TabsList>
               {FILTER_TABS.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value}>
                   {tab.label}
@@ -114,41 +167,41 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <Card className="min-h-0 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="space-y-3 p-4">
-                {!isLoading && orderedProspects.length === 0 ? (
-                  <Empty className="border bg-muted/20 min-h-[260px]">
-                    <EmptyHeader>
-                      <EmptyTitle>Aún no tienes prospectos registrados</EmptyTitle>
-                      <EmptyDescription>Crea el primero para empezar a alimentar la agenda comercial.</EmptyDescription>
-                    </EmptyHeader>
-                    <Button onClick={() => setFormOpen(true)}>Nuevo prospecto</Button>
-                  </Empty>
-                ) : (
-                  orderedProspects.map((prospect) => (
-                    <ProspectCard
-                      key={prospect.id}
-                      prospect={prospect}
-                      selected={!isMobile && String(selectedId) === String(prospect.id)}
-                      onClick={() => handleSelect(prospect.id)}
-                    />
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </Card>
+          <ScrollArea className="h-full min-h-0">
+            <div className="space-y-3 p-4">
+              {isLoading ? (
+                <div className="flex min-h-[260px] w-full items-center justify-center">
+                  <Loader />
+                </div>
+              ) : orderedProspects.length === 0 ? (
+                <EmptyState
+                  title="Aún no tienes prospectos registrados"
+                  description="Crea el primero para empezar a alimentar la agenda comercial."
+                  className="border bg-muted/20 min-h-[260px]"
+                  button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
+                />
+              ) : (
+                orderedProspects.map((prospect) => (
+                  <ProspectCard
+                    key={prospect.id}
+                    prospect={prospect}
+                    selected={!isMobile && String(selectedId) === String(prospect.id)}
+                    onClick={() => handleSelect(prospect.id)}
+                  />
+                ))
+              )}
+            </div>
+          </ScrollArea>
 
           {!isMobile && (
             selectedId ? (
               <ProspectDetail prospectId={selectedId} embedded />
             ) : (
-              <Empty className="border bg-muted/20 min-h-[360px]">
-                <EmptyHeader>
-                  <EmptyTitle>Selecciona un prospecto</EmptyTitle>
-                  <EmptyDescription>En desktop el detalle se abre en este panel sin salir de la lista.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Selecciona un prospecto"
+                description="En desktop el detalle se abre en este panel sin salir de la lista."
+                className="border bg-muted/20 min-h-[360px]"
+              />
             )
           )}
         </div>

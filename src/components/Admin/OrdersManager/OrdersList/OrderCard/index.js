@@ -25,7 +25,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                 : null
         : null;
 
-    const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidente';
+    const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidencia';
 
     const ringColor = order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red';
     const ringColorClass = ringColor === 'orange' ? 'ring-orange-500' : ringColor === 'green' ? 'ring-green-500' : 'ring-red-500';

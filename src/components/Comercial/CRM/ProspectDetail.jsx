@@ -2,39 +2,52 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useProspect, useProspectContacts, useProspectMutations } from '@/hooks/useProspects';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
 import ProspectFormSheet from './ProspectFormSheet';
 import QuickInteractionModal from './QuickInteractionModal';
 import StatusPill from './StatusPill';
-import { formatDateTimeValue, formatDateValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels, prospectStatusLabels } from './utils';
+import { formatDateTimeValue, formatDateValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels, prospectOriginOptions, prospectStatusLabels } from './utils';
 import { notify } from '@/lib/notifications';
+import Loader from '@/components/Utilities/Loader';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+const interactionTypeIcons = {
+  call: Phone,
+  email: Mail,
+  whatsapp: MessageCircle,
+  visit: MapPin,
+  other: CircleDot,
+};
 
 function SectionEmpty({ title, description }) {
   return (
-    <Empty className="border bg-muted/20 min-h-[180px]">
-      <EmptyHeader>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
+    <EmptyState title={title} description={description} className="border bg-muted/20 min-h-[180px]" />
   );
 }
 
 export default function ProspectDetail({ prospectId, embedded = false }) {
   const { data: prospect, isLoading } = useProspect(prospectId);
-  const { data: contacts } = useProspectContacts(prospectId);
-  const { data: interactions } = useCommercialInteractions({ prospectId, perPage: 50 });
-  const { data: offers } = useOffersList({ prospectId, perPage: 50 });
+  const { data: contacts, isLoading: contactsLoading } = useProspectContacts(prospectId);
+  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({ prospectId, perPage: 50 });
+  const { data: offers, isLoading: offersLoading } = useOffersList({ prospectId, perPage: 50 });
   const { convertProspect, updateProspect, createContact, updateContact, deleteContact } = useProspectMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
@@ -42,62 +55,121 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const [lostReason, setLostReason] = useState('');
   const [contactDraft, setContactDraft] = useState({ name: '', role: '', phone: '', email: '', isPrimary: false });
   const [editingContactId, setEditingContactId] = useState(null);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('data');
 
   const content = useMemo(() => {
     if (isLoading) {
-      return <div className="p-4 text-sm text-muted-foreground">Cargando prospecto...</div>;
+      return (
+        <div className="flex min-h-[360px] w-full items-center justify-center">
+          <Loader />
+        </div>
+      );
     }
 
     if (!prospect) {
       return <div className="p-4 text-sm text-muted-foreground">No se ha encontrado el prospecto.</div>;
     }
 
+    const originLabel =
+      prospectOriginOptions.find((option) => option.value === prospect.origin)?.label ??
+      (prospect.origin ? String(prospect.origin) : 'Sin origen');
+
+    const orderedContacts = [...contacts].sort((a, b) => {
+      const primaryDiff = Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary));
+      if (primaryDiff !== 0) return primaryDiff;
+      return String(a.name ?? '').localeCompare(String(b.name ?? ''), 'es');
+    });
+
     return (
       <>
-        <CardHeader className="border-b">
+        <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="text-2xl">{prospect.companyName}</CardTitle>
-                <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
+                  {!embedded && (
+                    <StatusPill
+                      label={prospectStatusLabels[prospect.status] ?? prospect.status}
+                      status={prospect.status}
+                    />
+                  )}
               </div>
               <p className="text-sm text-muted-foreground">
                 {prospect.country?.name ?? 'Sin país'} · {prospect.primaryContact?.name ?? 'Sin contacto principal'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => setEditOpen(true)}>
-                Editar
-              </Button>
-              <Button variant="outline" onClick={() => setInteractionOpen(true)}>
+              <Button onClick={() => setInteractionOpen(true)}>
+                <Plus data-icon="inline-start" />
                 Nueva interacción
               </Button>
-              {prospect.status === 'offer_sent' && (
-                <Button
-                  onClick={async () => {
-                    try {
-                      await notify.promise(convertProspect.mutateAsync(prospect.id), {
-                        loading: 'Convirtiendo prospecto...',
-                        success: 'Prospecto convertido en cliente',
-                        error: (error) => error?.message || 'No se pudo convertir el prospecto',
-                      });
-                    } catch {}
-                  }}
-                >
-                  Convertir a cliente
-                </Button>
-              )}
-              {prospect.status !== 'discarded' && (
-                <Button variant="destructive" onClick={() => setDiscardOpen(true)}>
-                  Descartar
-                </Button>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Acciones sobre el prospecto"
+                    data-slot="button"
+                  >
+                    <MoreVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-52">
+                  <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                    <Pencil />
+                    Editar prospecto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setActiveTab('contacts');
+                      setEditingContactId(null);
+                      setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+                      setContactFormOpen(true);
+                    }}
+                  >
+                    <UserRound />
+                    Añadir contacto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/comercial/ofertas/create?prospectId=${prospect.id}`}>
+                      <FilePlus />
+                      Nueva oferta
+                    </Link>
+                  </DropdownMenuItem>
+                  {prospect.status === 'offer_sent' && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        try {
+                          await notify.promise(convertProspect.mutateAsync(prospect.id), {
+                            loading: 'Convirtiendo prospecto...',
+                            success: 'Prospecto convertido en cliente',
+                            error: (error) => error?.message || 'No se pudo convertir el prospecto',
+                          });
+                        } catch {}
+                      }}
+                    >
+                      <UserPlus />
+                      Convertir a cliente
+                    </DropdownMenuItem>
+                  )}
+                  {prospect.status !== 'discarded' && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setDiscardOpen(true)}
+                    >
+                      <Trash2 />
+                      Descartar prospecto
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
         <CardContent className="py-4">
-          <Tabs defaultValue="data" className="w-full">
-            <TabsList className="mb-4 flex w-full flex-wrap justify-start">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList>
               <TabsTrigger value="data">Datos</TabsTrigger>
               <TabsTrigger value="contacts">Contactos</TabsTrigger>
               <TabsTrigger value="interactions">Interacciones</TabsTrigger>
@@ -108,11 +180,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-xl border p-4">
                   <p className="text-sm text-muted-foreground">Origen</p>
-                  <p className="font-medium">{prospect.origin}</p>
+                  <p className="font-medium">{originLabel}</p>
                 </div>
                 <div className="rounded-xl border p-4">
                   <p className="text-sm text-muted-foreground">Próxima acción</p>
-                  <p className="font-medium">{prospect.nextActionAt ? formatDateValue(prospect.nextActionAt) : 'Sin agenda'}</p>
+                  <p className="font-medium">{prospect.nextActionAt ? formatDateValue(prospect.nextActionAt) : 'Sin agenda'}{prospect.nextActionNote ? ` · ${prospect.nextActionNote}` : ''}</p>
                 </div>
               </div>
               <div className="rounded-xl border p-4">
@@ -130,191 +202,181 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             </TabsContent>
 
             <TabsContent value="contacts">
-              <div className="mb-4 rounded-xl border p-4">
-                <div className="mb-3">
-                  <h3 className="font-medium">{editingContactId ? 'Editar contacto' : 'Añadir contacto'}</h3>
-                  <p className="text-sm text-muted-foreground">Puedes registrar varios contactos. Solo uno quedará como principal.</p>
+              {contactsLoading ? (
+                <div className="flex min-h-[220px] w-full items-center justify-center">
+                  <Loader />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="contact-name">Nombre</Label>
-                    <Input id="contact-name" value={contactDraft.name} onChange={(event) => setContactDraft((current) => ({ ...current, name: event.target.value }))} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="contact-role">Cargo</Label>
-                    <Input id="contact-role" value={contactDraft.role} onChange={(event) => setContactDraft((current) => ({ ...current, role: event.target.value }))} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="contact-phone">Teléfono</Label>
-                    <Input id="contact-phone" value={contactDraft.phone} onChange={(event) => setContactDraft((current) => ({ ...current, phone: event.target.value }))} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="contact-email">Email</Label>
-                    <Input id="contact-email" value={contactDraft.email} onChange={(event) => setContactDraft((current) => ({ ...current, email: event.target.value }))} />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={contactDraft.isPrimary}
-                      onChange={(event) => setContactDraft((current) => ({ ...current, isPrimary: event.target.checked }))}
-                    />
-                    Marcar como principal
-                  </label>
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      if (!contactDraft.name.trim()) {
-                        notify.error({ title: 'El nombre del contacto es obligatorio' });
-                        return;
-                      }
-                      try {
-                        const payload = {
-                          name: contactDraft.name.trim(),
-                          role: contactDraft.role.trim() || null,
-                          phone: contactDraft.phone.trim() || null,
-                          email: contactDraft.email.trim() || null,
-                          isPrimary: contactDraft.isPrimary,
-                        };
-                        await notify.promise(
-                          editingContactId
-                            ? updateContact.mutateAsync({
-                                prospectId: prospect.id,
-                                contactId: editingContactId,
-                                payload,
-                              })
-                            : createContact.mutateAsync({
-                                prospectId: prospect.id,
-                                payload,
-                              }),
-                          {
-                            loading: editingContactId ? 'Actualizando contacto...' : 'Guardando contacto...',
-                            success: editingContactId ? 'Contacto actualizado' : 'Contacto guardado',
-                            error: (error) => error?.message || 'No se pudo guardar el contacto',
-                          }
-                        );
-                        setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-                        setEditingContactId(null);
-                      } catch {}
-                    }}
-                  >
-                    {editingContactId ? 'Actualizar contacto' : 'Guardar contacto'}
-                  </Button>
-                  {editingContactId && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setEditingContactId(null);
-                        setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-                      }}
-                    >
-                      Cancelar edición
-                    </Button>
+              ) : (
+                <div className="mb-4">
+                  {contacts.length === 0 ? (
+                    contactFormOpen ? null : (
+                      <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
+                    )
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Cargo</TableHead>
+                          <TableHead>Teléfono</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead className="w-24">Principal</TableHead>
+                          <TableHead className="w-[1%] text-right">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orderedContacts.map((contact) => (
+                          <TableRow key={contact.id}>
+                            <TableCell className="font-medium">{contact.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{contact.role || '—'}</TableCell>
+                            <TableCell className="text-muted-foreground">{contact.phone || '—'}</TableCell>
+                            <TableCell className="text-muted-foreground">{contact.email || '—'}</TableCell>
+                            <TableCell>
+                              {contact.isPrimary ? (
+                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                  Principal
+                                </span>
+                              ) : (
+                                '—'
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="icon-sm"
+                                  aria-label="Editar contacto"
+                                  onClick={() => {
+                                    setEditingContactId(contact.id);
+                                    setContactDraft({
+                                      name: contact.name ?? '',
+                                      role: contact.role ?? '',
+                                      phone: contact.phone ?? '',
+                                      email: contact.email ?? '',
+                                      isPrimary: Boolean(contact.isPrimary),
+                                    });
+                                    setContactFormOpen(true);
+                                  }}
+                                >
+                                  <Pencil />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="icon-sm"
+                                  aria-label="Eliminar contacto"
+                                  onClick={async () => {
+                                    try {
+                                      await notify.promise(
+                                        deleteContact.mutateAsync({
+                                          prospectId: prospect.id,
+                                          contactId: contact.id,
+                                        }),
+                                        {
+                                          loading: 'Eliminando contacto...',
+                                          success: 'Contacto eliminado',
+                                          error: (error) => error?.message || 'No se pudo eliminar el contacto',
+                                        }
+                                      );
+                                      if (String(editingContactId) === String(contact.id)) {
+                                        setEditingContactId(null);
+                                        setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+                                      }
+                                    } catch {}
+                                  }}
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   )}
                 </div>
-              </div>
-              {contacts.length === 0 ? (
-                <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
-              ) : (
-                <div className="space-y-3">
-                  {contacts.map((contact) => (
-                    <div key={contact.id} className="rounded-xl border p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium">{contact.name}</p>
-                          {contact.isPrimary && (
-                            <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                              Principal
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setEditingContactId(contact.id);
-                              setContactDraft({
-                                name: contact.name ?? '',
-                                role: contact.role ?? '',
-                                phone: contact.phone ?? '',
-                                email: contact.email ?? '',
-                                isPrimary: Boolean(contact.isPrimary),
-                              });
-                            }}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                await notify.promise(
-                                  deleteContact.mutateAsync({
-                                    prospectId: prospect.id,
-                                    contactId: contact.id,
-                                  }),
-                                  {
-                                    loading: 'Eliminando contacto...',
-                                    success: 'Contacto eliminado',
-                                    error: (error) => error?.message || 'No se pudo eliminar el contacto',
-                                  }
-                                );
-                                if (String(editingContactId) === String(contact.id)) {
-                                  setEditingContactId(null);
-                                  setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-                                }
-                              } catch {}
-                            }}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{contact.role || 'Sin cargo'}</p>
-                      <p className="text-sm">{contact.phone || 'Sin teléfono'} · {contact.email || 'Sin email'}</p>
-                    </div>
-                  ))}
-                </div>
               )}
+
             </TabsContent>
 
             <TabsContent value="interactions">
-              <div className="mb-4 flex justify-end">
-                <Button onClick={() => setInteractionOpen(true)}>Registrar interacción</Button>
-              </div>
-              {interactions.length === 0 ? (
-                <SectionEmpty title="Sin interacciones" description="Registra seguimiento para alimentar la agenda del dashboard." />
+              {interactionsLoading ? (
+                <div className="flex min-h-[220px] w-full items-center justify-center">
+                  <Loader />
+                </div>
+              ) : interactions.length === 0 ? (
+                <SectionEmpty
+                  title="Sin interacciones"
+                  description="Registra seguimiento para alimentar la agenda comercial."
+                />
               ) : (
-                <div className="space-y-3">
-                  {interactions.map((interaction) => (
-                    <div key={interaction.id} className="rounded-xl border p-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium">{interactionTypeLabels[interaction.type] ?? interaction.type}</p>
-                        <StatusPill label={interactionResultLabels[interaction.result] ?? interaction.result} status={interaction.result} />
-                      </div>
-                      <p className="mt-2 text-sm">{interaction.summary}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{formatDateTimeValue(interaction.occurredAt)}</p>
-                      {interaction.nextActionAt && (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Próxima acción: {formatDateValue(interaction.nextActionAt)} {interaction.nextActionNote ? `· ${interaction.nextActionNote}` : ''}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  <div className="relative w-full pl-1 py-2 space-y-4">
+                    {interactions
+                      .slice()
+                      .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
+                      .map((interaction, index, array) => {
+                      const isLast = index === array.length - 1;
+                      const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
+                      const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
+                      const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
+
+                        return (
+                          <div key={interaction.id} className="flex gap-2 items-stretch">
+                          {/* columna pista */}
+                          <div className="flex flex-col items-center shrink-0 w-6 self-stretch">
+                            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground border-0 shadow-sm">
+                              <TypeIcon className="size-3 stroke-[2]" />
+                            </div>
+                            {!isLast && <div className="w-0.5 flex-1 min-h-0 mt-1 bg-muted-foreground/50" aria-hidden />}
+                          </div>
+
+                          {/* columna contenido */}
+                          <div className={`flex-1 min-w-0 ${!isLast ? 'pb-4' : ''}`}>
+                            <div className="flex flex-col gap-0.5">
+                              <p className="text-xs text-muted-foreground font-normal">
+                                {formatDateTimeValue(interaction.occurredAt)}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm font-semibold leading-tight text-foreground truncate">
+                                  {typeLabel}
+                                </span>
+                                <StatusPill label={resultLabel} status={interaction.result} />
+                              </div>
+                            </div>
+
+                            <div className="mt-2 rounded-xl border bg-card p-3 space-y-3">
+                              <p className="text-sm text-foreground leading-snug">
+                                {interaction.summary}
+                              </p>
+                              {interaction.nextActionAt && (
+                                <div className="pt-2 border-t border-border/60 space-y-1">
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                    <CalendarClock className="size-3 shrink-0" />
+                                    <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
+                                  </p>
+                                  {interaction.nextActionNote && (
+                                    <p className="text-xs text-muted-foreground whitespace-pre-line pl-4">
+                                      {interaction.nextActionNote}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        );
+                      })}
+                  </div>
                 </div>
               )}
             </TabsContent>
 
             <TabsContent value="offers">
-              <div className="mb-4 flex justify-end">
-                <Button asChild>
-                  <Link href={`/comercial/ofertas/create?prospectId=${prospect.id}`}>Nueva oferta</Link>
-                </Button>
-              </div>
-              {offers.length === 0 ? (
+              {offersLoading ? (
+                <div className="flex min-h-[220px] w-full items-center justify-center">
+                  <Loader />
+                </div>
+              ) : offers.length === 0 ? (
                 <SectionEmpty title="Sin ofertas" description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada." />
               ) : (
                 <div className="space-y-3">
@@ -338,7 +400,23 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
         </CardContent>
       </>
     );
-  }, [contacts, convertProspect, createContact, deleteContact, editingContactId, interactions, isLoading, offers, prospect, updateContact, updateProspect, contactDraft]);
+  }, [
+    contacts,
+    contactsLoading,
+    convertProspect,
+    createContact,
+    deleteContact,
+    editingContactId,
+    interactions,
+    interactionsLoading,
+    isLoading,
+    offers,
+    offersLoading,
+    prospect,
+    updateContact,
+    updateProspect,
+    contactDraft,
+  ]);
 
   return (
     <>
@@ -352,7 +430,127 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
         onOpenChange={setInteractionOpen}
         prospectId={prospect?.id ?? prospectId}
         defaultNextActionDate={prospect?.nextActionAt ?? null}
+        defaultNextActionNote={prospect?.nextActionNote ?? ''}
       />
+
+      <Dialog
+        open={contactFormOpen}
+        onOpenChange={(open) => {
+          setContactFormOpen(open);
+          if (!open) {
+            setEditingContactId(null);
+            setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+          }
+        }}
+      >
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>{editingContactId ? 'Editar contacto' : 'Añadir contacto'}</DialogTitle>
+            <DialogDescription>
+              Puedes registrar varios contactos. Solo uno quedará como principal.
+            </DialogDescription>
+          </DialogHeader>
+          {prospect && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-name">Nombre</Label>
+                  <Input
+                    id="contact-name"
+                    value={contactDraft.name}
+                    onChange={(event) => setContactDraft((current) => ({ ...current, name: event.target.value }))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-role">Cargo</Label>
+                  <Input
+                    id="contact-role"
+                    value={contactDraft.role}
+                    onChange={(event) => setContactDraft((current) => ({ ...current, role: event.target.value }))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-phone">Teléfono</Label>
+                  <Input
+                    id="contact-phone"
+                    value={contactDraft.phone}
+                    onChange={(event) => setContactDraft((current) => ({ ...current, phone: event.target.value }))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="contact-email">Email</Label>
+                  <Input
+                    id="contact-email"
+                    value={contactDraft.email}
+                    onChange={(event) => setContactDraft((current) => ({ ...current, email: event.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={contactDraft.isPrimary}
+                    onChange={(event) => setContactDraft((current) => ({ ...current, isPrimary: event.target.checked }))}
+                  />
+                  Marcar como principal
+                </label>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingContactId(null);
+                    setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+                    setContactFormOpen(false);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!contactDraft.name.trim()) {
+                      notify.error({ title: 'El nombre del contacto es obligatorio' });
+                      return;
+                    }
+                    try {
+                      const payload = {
+                        name: contactDraft.name.trim(),
+                        role: contactDraft.role.trim() || null,
+                        phone: contactDraft.phone.trim() || null,
+                        email: contactDraft.email.trim() || null,
+                        isPrimary: contactDraft.isPrimary,
+                      };
+                      await notify.promise(
+                        editingContactId
+                          ? updateContact.mutateAsync({
+                              prospectId: prospect.id,
+                              contactId: editingContactId,
+                              payload,
+                            })
+                          : createContact.mutateAsync({
+                              prospectId: prospect.id,
+                              payload,
+                            }),
+                        {
+                          loading: editingContactId ? 'Actualizando contacto...' : 'Guardando contacto...',
+                          success: editingContactId ? 'Contacto actualizado' : 'Contacto guardado',
+                          error: (error) => error?.message || 'No se pudo guardar el contacto',
+                        }
+                      );
+                      setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+                      setEditingContactId(null);
+                      setContactFormOpen(false);
+                    } catch {}
+                  }}
+                >
+                  {editingContactId ? 'Actualizar contacto' : 'Guardar contacto'}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <AlertDialogContent>
@@ -393,6 +591,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                         notes: prospect.notes ?? null,
                         commercialInterestNotes: prospect.commercialInterestNotes ?? null,
                         nextActionAt: prospect.nextActionAt ?? null,
+                        nextActionNote: prospect.nextActionNote ?? null,
                         lostReason: lostReason.trim(),
                         primaryContact: prospect.primaryContact
                           ? {

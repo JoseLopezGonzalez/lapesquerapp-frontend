@@ -67,8 +67,11 @@ export function useProspectMutations() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'offers', 'list', tenantId] }),
       id ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, id] }) : Promise.resolve(),
+      id ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'contacts', tenantId, id] }) : Promise.resolve(),
     ]);
   };
 
@@ -90,7 +93,8 @@ export function useProspectMutations() {
       onSuccess: (_, id) => invalidate(id),
     }),
     scheduleAction: useMutation({
-      mutationFn: ({ id, nextActionAt }) => crmService.scheduleProspectAction(id, nextActionAt),
+      mutationFn: ({ id, nextActionAt, nextActionNote }) =>
+        crmService.scheduleProspectAction(id, nextActionAt, nextActionNote),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
     clearAction: useMutation({

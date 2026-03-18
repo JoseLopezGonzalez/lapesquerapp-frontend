@@ -12,13 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useOffer, useOfferMutations } from '@/hooks/useOffers';
 import { crmService } from '@/services/crmService';
 import OfferFormSheet from './OfferFormSheet';
 import StatusPill from './StatusPill';
 import { formatCurrency, formatDateValue, offerStatusLabels } from './utils';
 import { notify } from '@/lib/notifications';
+import Loader from '@/components/Utilities/Loader';
 
 function ActionDialog({ open, onOpenChange, title, description, children, footer }) {
   return (
@@ -158,7 +159,9 @@ export default function OfferDetail({ offerId, embedded = false }) {
   };
 
   const body = isLoading ? (
-    <div className="p-4 text-sm text-muted-foreground">Cargando oferta...</div>
+    <div className="flex min-h-[360px] w-full items-center justify-center">
+      <Loader />
+    </div>
   ) : !offer ? (
     <div className="p-4 text-sm text-muted-foreground">No se ha encontrado la oferta.</div>
   ) : (
@@ -253,12 +256,11 @@ export default function OfferDetail({ offerId, embedded = false }) {
             )}
 
             {(offer.lines ?? []).length === 0 ? (
-              <Empty className="border bg-muted/20 min-h-[220px]">
-                <EmptyHeader>
-                  <EmptyTitle>Sin líneas</EmptyTitle>
-                  <EmptyDescription>Esta oferta no tiene líneas visibles.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Sin líneas"
+                description="Esta oferta no tiene líneas visibles."
+                className="border bg-muted/20 min-h-[220px]"
+              />
             ) : (
               <div className="space-y-3">
                 {offer.lines.map((line, index) => (

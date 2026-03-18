@@ -1,4 +1,4 @@
-import { format, formatDistanceToNowStrict, isBefore, parseISO } from 'date-fns';
+import { format, formatDistanceToNowStrict, isBefore, parseISO, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const prospectStatusLabels = {
@@ -32,11 +32,26 @@ export const interactionResultLabels = {
   pending: 'Pendiente',
 };
 
+export const agendaStatusLabels = {
+  pending: 'Pendiente',
+  done: 'Hecha',
+  cancelled: 'Cancelada',
+};
+
 export const prospectOriginOptions = [
-  { value: 'conxemar', label: 'Conxemar' },
-  { value: 'direct', label: 'Llamada directa' },
+  { value: 'inbound_call', label: 'Llamada entrante' },
+  { value: 'email', label: 'Email' },
+  { value: 'web_form', label: 'Formulario web' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'event', label: 'Feria / evento' },
   { value: 'referral', label: 'Referido' },
-  { value: 'web', label: 'Web' },
+  { value: 'agent', label: 'Distribuidor / agente' },
+  { value: 'marketing_campaign', label: 'Campaña marketing (ads/newsletter)' },
+  { value: 'reactivation', label: 'Reactivación (ex-cliente / lead antiguo)' },
+  { value: 'online_search', label: 'Búsqueda online (Internet)' },
+  { value: 'google_maps', label: 'Google Maps' },
+  { value: 'ai_sourced', label: 'IA (p.ej. ChatGPT / herramientas IA)' },
   { value: 'other', label: 'Otro' },
 ];
 
@@ -90,7 +105,7 @@ export function formatRelativeDays(value) {
 export function isOverdueDate(value) {
   if (!value) return false;
   try {
-    return isBefore(parseISO(value), new Date());
+    return isBefore(startOfDay(parseISO(value)), startOfDay(new Date()));
   } catch {
     return false;
   }
@@ -121,6 +136,8 @@ export function getStatusTone(status) {
     no_response: 'amber',
     not_interested: 'red',
     pending: 'blue',
+    done: 'green',
+    cancelled: 'red',
   };
   return map[status] ?? 'slate';
 }

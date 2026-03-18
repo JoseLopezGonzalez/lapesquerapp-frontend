@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import { useOrderFormOptions } from '@/hooks/useOrderFormOptions';
 import { useOfferMutations } from '@/hooks/useOffers';
 import { useProspectsList, useProspect } from '@/hooks/useProspects';
@@ -111,18 +112,20 @@ export default function OfferFormSheet({
       return;
     }
 
+    const productLabelById = new Map(productOptions.map((option) => [String(option.value), option.label]));
+
     const cleanedLines = lines
-      .filter((line) => line.description.trim())
       .map((line) => ({
         productId: line.productId ? Number(line.productId) : null,
-        description: line.description.trim(),
+        description: (line.description.trim() || productLabelById.get(String(line.productId)) || '').trim(),
         quantity: Number(line.quantity || 0),
         unit: line.unit || 'kg',
         unitPrice: Number(line.unitPrice || 0),
         taxId: line.taxId ? Number(line.taxId) : null,
         boxes: line.boxes === '' ? null : Number(line.boxes),
         currency: line.currency || currency,
-      }));
+      }))
+      .filter((line) => line.productId != null || line.description);
 
     if (cleanedLines.length === 0) {
       notify.error({ title: 'Añade al menos una línea de oferta' });
@@ -158,14 +161,14 @@ export default function OfferFormSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-4xl p-0">
-        <SheetHeader className="border-b">
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>Condiciones comerciales, líneas y destino de la oferta.</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent size="6xl" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="border-b p-4">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>Condiciones comerciales, líneas y destino de la oferta.</DialogDescription>
+        </DialogHeader>
 
-        <ScrollArea className="flex-1 h-[calc(100vh-144px)]">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="grid gap-4 p-4">
             {linkedProspect && (
               <div className="rounded-xl border bg-muted/20 p-4">
@@ -181,7 +184,7 @@ export default function OfferFormSheet({
               <div className="grid gap-2">
                 <Label>Tipo de destinatario</Label>
                 <Select value={targetType} onValueChange={setTargetType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -195,7 +198,7 @@ export default function OfferFormSheet({
             <div className="grid gap-2">
               <Label>Destinatario</Label>
               <Select value={targetId} onValueChange={setTargetId} disabled={isFixedTarget}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder={targetType === 'prospect' ? 'Selecciona un prospecto' : 'Selecciona un cliente'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +215,7 @@ export default function OfferFormSheet({
               <div className="grid gap-2">
                 <Label>Incoterm</Label>
                 <Select value={incotermId} onValueChange={setIncotermId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona incoterm" />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,7 +230,7 @@ export default function OfferFormSheet({
               <div className="grid gap-2">
                 <Label>Forma de pago</Label>
                 <Select value={paymentTermId} onValueChange={setPaymentTermId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona forma de pago" />
                   </SelectTrigger>
                   <SelectContent>
@@ -275,84 +278,90 @@ export default function OfferFormSheet({
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {lines.map((line, index) => (
-                <div key={`line-${index}`} className="rounded-xl border p-4">
-                  <div className="mb-4 flex items-center justify-between">
-                    <p className="font-medium">Línea {index + 1}</p>
-                    {lines.length > 1 && (
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(index)}>
-                        <Trash2 className="size-4" />
-                      </Button>
-                    )}
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                      <Label>Producto</Label>
-                      <Select value={line.productId} onValueChange={(value) => updateLine(index, 'productId', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={productsLoading ? 'Cargando productos...' : 'Selecciona producto'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {productOptions.map((option) => (
-                            <SelectItem key={option.value} value={String(option.value)}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Descripción</Label>
-                      <Input value={line.description} onChange={(event) => updateLine(index, 'description', event.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Cantidad</Label>
-                      <Input type="number" value={line.quantity} onChange={(event) => updateLine(index, 'quantity', event.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Unidad</Label>
-                      <Input value={line.unit} onChange={(event) => updateLine(index, 'unit', event.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Precio unitario</Label>
-                      <Input type="number" value={line.unitPrice} onChange={(event) => updateLine(index, 'unitPrice', event.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Impuesto</Label>
-                      <Select value={line.taxId} onValueChange={(value) => updateLine(index, 'taxId', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona impuesto" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {taxOptions.map((option) => (
-                            <SelectItem key={option.value} value={String(option.value)}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Cajas</Label>
-                      <Input type="number" value={line.boxes} onChange={(event) => updateLine(index, 'boxes', event.target.value)} />
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[260px]">Producto</TableHead>
+                    <TableHead className="min-w-[260px]">Descripción</TableHead>
+                    <TableHead className="w-[120px]">Cajas</TableHead>
+                    <TableHead className="w-[120px]">Cantidad</TableHead>
+                    <TableHead className="w-[120px]">Unidad</TableHead>
+                    <TableHead className="w-[160px]">Precio unit.</TableHead>
+                    <TableHead className="w-[220px]">Impuesto</TableHead>
+                    <TableHead className="w-[56px] text-right"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lines.map((line, index) => (
+                    <TableRow key={`line-${index}`}>
+                      <TableCell className="align-top">
+                        <Select value={line.productId} onValueChange={(value) => updateLine(index, 'productId', value)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={productsLoading ? 'Cargando…' : 'Producto'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {productOptions.map((option) => (
+                              <SelectItem key={option.value} value={String(option.value)}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input value={line.description} onChange={(event) => updateLine(index, 'description', event.target.value)} />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input type="number" value={line.boxes} onChange={(event) => updateLine(index, 'boxes', event.target.value)} />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input type="number" value={line.quantity} onChange={(event) => updateLine(index, 'quantity', event.target.value)} />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input value={line.unit} onChange={(event) => updateLine(index, 'unit', event.target.value)} />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input type="number" value={line.unitPrice} onChange={(event) => updateLine(index, 'unitPrice', event.target.value)} />
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Select value={line.taxId} onValueChange={(value) => updateLine(index, 'taxId', value)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Impuesto" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {taxOptions.map((option) => (
+                              <SelectItem key={option.value} value={String(option.value)}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="align-top text-right">
+                        {lines.length > 1 && (
+                          <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(index)}>
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </ScrollArea>
 
-        <SheetFooter className="border-t bg-background">
+        <div className="flex flex-col-reverse gap-2 border-t bg-background p-4 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={createOffer.isPending || updateOffer.isPending || optionsLoading}>
             Guardar
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

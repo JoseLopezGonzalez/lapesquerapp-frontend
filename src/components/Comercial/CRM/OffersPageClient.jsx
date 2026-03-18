@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOffersList } from '@/hooks/useOffers';
 import OfferFormSheet from './OfferFormSheet';
@@ -113,13 +113,12 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
             <ScrollArea className="h-full">
               <div className="space-y-3 p-4">
                 {!isLoading && orderedOffers.length === 0 ? (
-                  <Empty className="border bg-muted/20 min-h-[260px]">
-                    <EmptyHeader>
-                      <EmptyTitle>Aún no has creado ninguna oferta</EmptyTitle>
-                      <EmptyDescription>Empieza con una oferta vinculada a prospecto o cliente.</EmptyDescription>
-                    </EmptyHeader>
-                    <Button onClick={() => setFormOpen(true)}>Nueva oferta</Button>
-                  </Empty>
+                  <EmptyState
+                    title="Aún no has creado ninguna oferta"
+                    description="Empieza con una oferta vinculada a prospecto o cliente."
+                    className="border bg-muted/20 min-h-[260px]"
+                    button={{ name: 'Nueva oferta', onClick: () => setFormOpen(true) }}
+                  />
                 ) : (
                   orderedOffers.map((offer) => (
                     <OfferCard
@@ -138,12 +137,11 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
             selectedId ? (
               <OfferDetail offerId={selectedId} embedded />
             ) : (
-              <Empty className="border bg-muted/20 min-h-[360px]">
-                <EmptyHeader>
-                  <EmptyTitle>Selecciona una oferta</EmptyTitle>
-                  <EmptyDescription>El detalle se abrirá aquí manteniendo la lista visible en desktop.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Selecciona una oferta"
+                description="El detalle se abrirá aquí manteniendo la lista visible en desktop."
+                className="border bg-muted/20 min-h-[360px]"
+              />
             )
           )}
         </div>

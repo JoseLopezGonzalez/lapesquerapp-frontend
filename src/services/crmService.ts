@@ -2,6 +2,8 @@ import { API_URL_V2 } from '@/configs/config';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { getSession } from 'next-auth/react';
 import type {
+  AgendaAction,
+  AgendaSummaryData,
   CommercialInteraction,
   CommercialInteractionPayload,
   CrmDashboardData,
@@ -90,6 +92,21 @@ export const crmService = {
   getDashboard() {
     return getJson<{ data: CrmDashboardData }>('crm/dashboard');
   },
+  listAgenda(params: Record<string, unknown> = {}) {
+    return getJson<{ data: { events: AgendaAction[] } }>('crm/agenda', params);
+  },
+  getAgendaSummary(params: Record<string, unknown> = {}) {
+    return getJson<{ data: AgendaSummaryData }>('crm/agenda/summary', params);
+  },
+  rescheduleAgendaAction(
+    id: number | string,
+    payload: { nextActionAt: string; nextActionNote?: string | null; sourceInteractionId?: number | string | null }
+  ) {
+    return sendJson<{ data: AgendaAction }>(`crm/agenda/${id}/reschedule`, 'POST', payload);
+  },
+  cancelAgendaAction(id: number | string) {
+    return sendJson<{ data: AgendaAction; message?: string }>(`crm/agenda/${id}/cancel`, 'POST');
+  },
   listProspects(params: Record<string, unknown> = {}) {
     return getJson<CrmPaginatedResponse<Prospect>>('prospects', params);
   },
@@ -124,8 +141,10 @@ export const crmService = {
   convertProspectToCustomer(id: number | string) {
     return sendJson<CrmWriteResponse<Prospect>>(`prospects/${id}/convert-to-customer`, 'POST');
   },
-  scheduleProspectAction(id: number | string, nextActionAt: string) {
-    return sendJson<CrmWriteResponse<Prospect>>(`prospects/${id}/schedule-action`, 'POST', { nextActionAt });
+  scheduleProspectAction(id: number | string, nextActionAt: string, nextActionNote?: string | null) {
+    const body: { nextActionAt: string; nextActionNote?: string | null } = { nextActionAt };
+    if (nextActionNote !== undefined) body.nextActionNote = nextActionNote || null;
+    return sendJson<CrmWriteResponse<Prospect>>(`prospects/${id}/schedule-action`, 'POST', body);
   },
   clearProspectAction(id: number | string) {
     return sendJson<{ message?: string }>(`prospects/${id}/next-action`, 'DELETE');

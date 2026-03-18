@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CalendarCheck2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/datePicker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
 import { useCommercialInteractionMutations } from '@/hooks/useCommercialInteractions';
 import { format } from 'date-fns';
-import { interactionResultOptions, interactionTypeOptions } from './utils';
+import { formatDateValue, interactionResultOptions, interactionTypeOptions } from './utils';
 
 function ToggleGroup({ value, onChange, options }) {
   return (
@@ -35,16 +36,21 @@ export default function QuickInteractionModal({
   onOpenChange,
   prospectId = null,
   customerId = null,
+  agendaActionId = null,
   defaultNextActionDate = null,
+  defaultNextActionNote = '',
   title = 'Registrar interacción',
+  mode = 'create',
 }) {
   const { createInteraction } = useCommercialInteractionMutations();
+  const isCompleteMode = mode === 'complete';
   const [type, setType] = useState('call');
   const [occurredAt, setOccurredAt] = useState(new Date());
   const [summary, setSummary] = useState('');
   const [result, setResult] = useState('pending');
-  const [nextActionNote, setNextActionNote] = useState('');
+  const [nextActionNote, setNextActionNote] = useState(defaultNextActionNote);
   const [nextActionAt, setNextActionAt] = useState(defaultNextActionDate ? new Date(defaultNextActionDate) : null);
+  const [noNextAction, setNoNextAction] = useState(isCompleteMode);
 
   useEffect(() => {
     if (!open) return;
@@ -52,9 +58,27 @@ export default function QuickInteractionModal({
     setOccurredAt(new Date());
     setSummary('');
     setResult('pending');
-    setNextActionNote('');
+    setNextActionNote(defaultNextActionNote ?? '');
     setNextActionAt(defaultNextActionDate ? new Date(defaultNextActionDate) : null);
-  }, [open, defaultNextActionDate]);
+    setNoNextAction(isCompleteMode);
+  }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode]);
+
+  const getErrorText = (error) => {
+    if (error?.status !== 422) {
+      return error?.message || 'No se pudo registrar la interacción';
+    }
+
+    const baseMessage = String(error?.message || '').toLowerCase();
+    if (baseMessage.includes('agendaactionid')) {
+      return 'No se pudo cerrar la tarea porque falta la referencia de agenda. Recarga la agenda e inténtalo de nuevo.';
+    }
+
+    if (baseMessage.includes('pending') || baseMessage.includes('agenda') || baseMessage.includes('next action')) {
+      return 'Ya existe una acción pendiente activa para este target. Reprograma o cancela la pendiente actual antes de crear otra.';
+    }
+
+    return error?.message || 'La agenda no aceptó la operación solicitada.';
+  };
 
   const handleSubmit = async () => {
     if (!summary.trim()) {
@@ -62,22 +86,33 @@ export default function QuickInteractionModal({
       return;
     }
 
+    if (!prospectId && !customerId) {
+      notify.error({ title: 'No se ha encontrado el destino de la interacción' });
+      return;
+    }
+
+    if (isCompleteMode && !agendaActionId) {
+      notify.error({ title: 'No se ha encontrado la acción de agenda a cerrar' });
+      return;
+    }
+
     const payload = {
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
+      ...(agendaActionId ? { agendaActionId } : {}),
       type,
       occurredAt: occurredAt.toISOString(),
       summary: summary.trim(),
       result,
-      nextActionNote: nextActionNote.trim() || null,
-      nextActionAt: nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
+      nextActionNote: !isCompleteMode && !noNextAction ? nextActionNote.trim() || null : null,
+      nextActionAt: !isCompleteMode && !noNextAction && nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
     };
 
     try {
       await notify.promise(createInteraction.mutateAsync(payload), {
-        loading: 'Registrando interacción...',
-        success: 'Interacción registrada',
-        error: (error) => error?.message || 'No se pudo registrar la interacción',
+        loading: isCompleteMode ? 'Cerrando tarea y registrando interacción...' : 'Registrando interacción...',
+        success: isCompleteMode ? 'Tarea cerrada e interacción registrada' : 'Interacción registrada',
+        error: (error) => getErrorText(error),
       });
       onOpenChange(false);
     } catch {}
@@ -88,10 +123,30 @@ export default function QuickInteractionModal({
       <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Registra seguimiento comercial y, si hace falta, deja la siguiente acción programada.</DialogDescription>
+          <DialogDescription>
+            {isCompleteMode
+              ? 'Cierra la tarea pendiente registrando la interacción que la resuelve.'
+              : 'Registra seguimiento comercial y, si hace falta, deja la siguiente acción programada.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
+          {isCompleteMode && (
+            <div className="rounded-xl border bg-muted/10 p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-primary/10 p-2 text-primary">
+                  <CalendarCheck2 className="size-4" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Se cerrará la acción pendiente actual</p>
+                  <p className="text-sm text-muted-foreground">
+                    {defaultNextActionDate ? formatDateValue(defaultNextActionDate) : 'Sin fecha'} {defaultNextActionNote ? `· ${defaultNextActionNote}` : ''}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-2">
             <Label>Tipo</Label>
             <ToggleGroup value={type} onChange={setType} options={interactionTypeOptions} />
@@ -118,27 +173,43 @@ export default function QuickInteractionModal({
             <ToggleGroup value={result} onChange={setResult} options={interactionResultOptions} />
           </div>
 
-          {result !== 'not_interested' && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="next-action-note">Próxima acción</Label>
-                <Input
-                  id="next-action-note"
-                  value={nextActionNote}
-                  onChange={(event) => setNextActionNote(event.target.value)}
-                  placeholder="Enviar oferta, volver a llamar, preparar muestra..."
+          {!isCompleteMode && result !== 'not_interested' && (
+            <>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Checkbox
+                  checked={noNextAction}
+                  onCheckedChange={(checked) => {
+                    const value = Boolean(checked);
+                    setNoNextAction(value);
+                    if (value) {
+                      setNextActionAt(null);
+                      setNextActionNote('');
+                    }
+                  }}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label>Fecha próxima acción</Label>
-                <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
-                <div>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setNextActionAt(null)}>
-                    Sin próxima acción
-                  </Button>
+                Sin próxima acción
+              </label>
+
+              {!noNextAction && (
+                <div className="grid gap-4 rounded-xl border bg-muted/10 p-4">
+                  <div className="grid gap-2">
+                    <Label>Fecha próxima acción</Label>
+                    <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="next-action-note">Descripción de la acción</Label>
+                    <Textarea
+                      id="next-action-note"
+                      rows={2}
+                      value={nextActionNote}
+                      onChange={(event) => setNextActionNote(event.target.value)}
+                      placeholder="Enviar oferta, volver a llamar, preparar muestra..."
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
         </div>
 
@@ -147,7 +218,7 @@ export default function QuickInteractionModal({
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={createInteraction.isPending}>
-            Guardar
+            {isCompleteMode ? 'Cerrar tarea' : 'Guardar'}
           </Button>
         </DialogFooter>
       </DialogContent>

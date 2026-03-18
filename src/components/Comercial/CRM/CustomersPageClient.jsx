@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
@@ -20,6 +20,7 @@ import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
 import { formatCurrency, formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
 import StatusPill from './StatusPill';
+import Loader from '@/components/Utilities/Loader';
 
 function useCustomerDetail(customerId) {
   const { data: session } = useSession();
@@ -51,7 +52,9 @@ function CustomerDetail({ customerId, embedded = false }) {
   const [interactionOpen, setInteractionOpen] = useState(false);
 
   const content = isLoading ? (
-    <div className="p-4 text-sm text-muted-foreground">Cargando cliente...</div>
+    <div className="flex min-h-[360px] w-full items-center justify-center">
+      <Loader />
+    </div>
   ) : !customer ? (
     <div className="p-4 text-sm text-muted-foreground">No se ha encontrado el cliente.</div>
   ) : (
@@ -93,12 +96,11 @@ function CustomerDetail({ customerId, embedded = false }) {
 
           <TabsContent value="orders">
             {!history?.data?.length ? (
-              <Empty className="border bg-muted/20 min-h-[220px]">
-                <EmptyHeader>
-                  <EmptyTitle>Sin pedidos</EmptyTitle>
-                  <EmptyDescription>Este cliente no tiene historial visible en el periodo actual.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Sin pedidos"
+                description="Este cliente no tiene historial visible en el periodo actual."
+                className="border bg-muted/20 min-h-[220px]"
+              />
             ) : (
               <div className="space-y-3">
                 {history.data.map((item, index) => (
@@ -118,12 +120,11 @@ function CustomerDetail({ customerId, embedded = false }) {
 
           <TabsContent value="interactions">
             {interactions.length === 0 ? (
-              <Empty className="border bg-muted/20 min-h-[220px]">
-                <EmptyHeader>
-                  <EmptyTitle>Sin interacciones</EmptyTitle>
-                  <EmptyDescription>Registra seguimientos desde esta ficha para dejar contexto al comercial.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Sin interacciones"
+                description="Registra seguimientos desde esta ficha para dejar contexto al comercial."
+                className="border bg-muted/20 min-h-[220px]"
+              />
             ) : (
               <div className="space-y-3">
                 {interactions.map((interaction) => (
@@ -142,12 +143,11 @@ function CustomerDetail({ customerId, embedded = false }) {
 
           <TabsContent value="offers">
             {offers.length === 0 ? (
-              <Empty className="border bg-muted/20 min-h-[220px]">
-                <EmptyHeader>
-                  <EmptyTitle>Sin ofertas</EmptyTitle>
-                  <EmptyDescription>No hay ofertas vinculadas a este cliente.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <EmptyState
+                title="Sin ofertas"
+                description="No hay ofertas vinculadas a este cliente."
+                className="border bg-muted/20 min-h-[220px]"
+              />
             ) : (
               <div className="space-y-3">
                 {offers.map((offer) => (
@@ -174,16 +174,46 @@ function CustomerDetail({ customerId, embedded = false }) {
 }
 
 function CustomerCard({ customer, selected, onClick }) {
+  const contact =
+    customer?.contactInfo ?? customer?.contact_info ?? null;
+
   return (
-    <button
-      type="button"
+    <Card
+      className={`w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring transition-colors hover:bg-accent/50 ${
+        selected ? 'ring-2 ring-offset-2 ring-primary' : ''
+      }`}
       onClick={onClick}
-      className={`w-full rounded-2xl border p-4 text-left transition ${selected ? 'border-primary bg-primary/5' : 'hover:bg-accent/40'}`}
+      role="button"
+      tabIndex={0}
+      aria-label={customer.name}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
-      <p className="font-medium">{customer.name}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{customer.emails || customer.contact_info || 'Sin contacto'}</p>
-    </button>
+      <CardContent className="py-0">
+        <div className="grow w-full space-y-2 sm:space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-base font-medium truncate">{customer.name}</h3>
+          </div>
+
+          <div>
+            <p className="text-sm text-muted-foreground truncate">{customer.country?.name ?? 'Sin país'}</p>
+          </div>
+
+          {contact && (
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-muted-foreground mb-1 text-xs">Contacto</p>
+                <p className="text-sm font-medium truncate">{contact}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -225,12 +255,11 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
           <ScrollArea className="h-full">
             <div className="space-y-3 p-4">
               {!isLoading && filteredCustomers.length === 0 ? (
-                <Empty className="border bg-muted/20 min-h-[260px]">
-                  <EmptyHeader>
-                    <EmptyTitle>Aún no tienes clientes asignados</EmptyTitle>
-                    <EmptyDescription>Cuando existan clientes vinculados a tu comercial aparecerán aquí.</EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+                <EmptyState
+                  title="Aún no tienes clientes asignados"
+                  description="Cuando existan clientes vinculados a tu comercial aparecerán aquí."
+                  className="border bg-muted/20 min-h-[260px]"
+                />
               ) : (
                 filteredCustomers.map((customer) => (
                   <CustomerCard
@@ -249,12 +278,11 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
           selectedId ? (
             <CustomerDetail customerId={selectedId} embedded />
           ) : (
-            <Empty className="border bg-muted/20 min-h-[360px]">
-              <EmptyHeader>
-                <EmptyTitle>Selecciona un cliente</EmptyTitle>
-                <EmptyDescription>El panel derecho mostrará sus pedidos, ofertas e interacciones.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
+            <EmptyState
+              title="Selecciona un cliente"
+              description="El panel derecho mostrará sus pedidos, ofertas e interacciones."
+              className="border bg-muted/20 min-h-[360px]"
+            />
           )
         )}
       </div>

@@ -29,7 +29,7 @@ function EmptyWidget({ icon: Icon, title, description }) {
 
 function LoadingWidget() {
   return (
-    <Card className="h-full">
+    <Card className="w-full max-w-full overflow-hidden">
       <CardHeader>
         <Skeleton className="h-4 w-36" />
         <Skeleton className="h-3 w-28" />
@@ -76,7 +76,7 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
       </div>
       {item.prospectId && (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => onReschedule(item.prospectId)}>
+          <Button variant="outline" size="sm" onClick={() => onReschedule(item)}>
             Aplazar
           </Button>
           <Button variant="ghost" size="sm" onClick={() => onClear(item.prospectId)}>
@@ -106,17 +106,31 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
 export default function CrmDashboardWidgets() {
   const { data, isLoading, refetch } = useCrmDashboard();
   const { scheduleAction, clearAction } = useProspectMutations();
-  const [interactionModal, setInteractionModal] = React.useState({ open: false, prospectId: null, customerId: null, nextActionAt: null });
+  const [interactionModal, setInteractionModal] = React.useState({
+    open: false,
+    prospectId: null,
+    customerId: null,
+    nextActionAt: null,
+    nextActionNote: null,
+  });
 
-  const handleReschedule = async (prospectId) => {
+  const handleReschedule = async (item) => {
     const date = window.prompt('Nueva fecha (YYYY-MM-DD)');
     if (!date) return;
+    const note = window.prompt('Descripción (opcional):', item?.nextActionNote ?? '');
     try {
-      await notify.promise(scheduleAction.mutateAsync({ id: prospectId, nextActionAt: date }), {
-        loading: 'Reprogramando acción...',
-        success: 'Acción reprogramada',
-        error: (error) => error?.message || 'No se pudo reprogramar la acción',
-      });
+      await notify.promise(
+        scheduleAction.mutateAsync({
+          id: item.prospectId,
+          nextActionAt: date,
+          nextActionNote: note != null && note.trim() ? note.trim() : (item?.nextActionNote ?? null),
+        }),
+        {
+          loading: 'Reprogramando acción...',
+          success: 'Acción reprogramada',
+          error: (error) => error?.message || 'No se pudo reprogramar la acción',
+        }
+      );
       refetch();
     } catch {}
   };
@@ -138,6 +152,7 @@ export default function CrmDashboardWidgets() {
       prospectId: item.prospectId ?? null,
       customerId: item.customerId ?? null,
       nextActionAt: item.nextActionAt ?? null,
+      nextActionNote: item.nextActionNote ?? null,
     });
   };
 
@@ -145,10 +160,8 @@ export default function CrmDashboardWidgets() {
     return (
       <>
         <LoadingWidget />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <LoadingWidget />
-          <LoadingWidget />
-        </div>
+        <LoadingWidget />
+        <LoadingWidget />
       </>
     );
   }
@@ -157,7 +170,7 @@ export default function CrmDashboardWidgets() {
 
   return (
     <>
-      <Card>
+      <Card className="w-full max-w-full overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="size-5" />
@@ -188,85 +201,83 @@ export default function CrmDashboardWidgets() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserRoundX className="size-5" />
-              Clientes inactivos
-            </CardTitle>
-            <CardDescription>Clientes sin pedido en más de 30 días.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {(data?.inactive_customers ?? []).length === 0 ? (
-              <EmptyWidget
-                icon={UserRoundX}
-                title="Sin alertas de clientes"
-                description="Todos tus clientes tienen actividad reciente."
-              />
-            ) : (
-              <div className="space-y-3">
-                {data.inactive_customers.map((customer) => (
-                  <Link
-                    key={customer.id}
-                    href={`/comercial/clientes/${customer.id}`}
-                    className="block rounded-xl border p-3 hover:bg-accent/40"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{customer.name}</p>
-                        <p className="text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
-                      </div>
-                      <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
-                        {customer.daysSinceLastOrder} días
-                      </span>
+      <Card className="w-full max-w-full overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserRoundX className="size-5" />
+            Clientes inactivos
+          </CardTitle>
+          <CardDescription>Clientes sin pedido en más de 30 días.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(data?.inactive_customers ?? []).length === 0 ? (
+            <EmptyWidget
+              icon={UserRoundX}
+              title="Sin alertas de clientes"
+              description="Todos tus clientes tienen actividad reciente."
+            />
+          ) : (
+            <div className="space-y-3">
+              {data.inactive_customers.map((customer) => (
+                <Link
+                  key={customer.id}
+                  href={`/comercial/clientes/${customer.id}`}
+                  className="block rounded-xl border p-3 hover:bg-accent/40"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{customer.name}</p>
+                      <p className="text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
+                      {customer.daysSinceLastOrder} días
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CircleAlert className="size-5" />
-              Prospectos sin actividad
-            </CardTitle>
-            <CardDescription>Prospectos sin interacción en más de 7 días.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {(data?.prospects_without_activity ?? []).length === 0 ? (
-              <EmptyWidget
-                icon={CircleAlert}
-                title="Sin prospectos parados"
-                description="No hay prospectos pendientes de seguimiento."
-              />
-            ) : (
-              <div className="space-y-3">
-                {data.prospects_without_activity.map((prospect) => (
-                  <Link
-                    key={prospect.id}
-                    href={`/comercial/prospectos/${prospect.id}`}
-                    className="block rounded-xl border p-3 hover:bg-accent/40"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{prospect.companyName}</p>
-                        <p className="text-sm text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
-                      </div>
-                      <span className="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                        {prospect.daysWithoutActivity} días
-                      </span>
+      <Card className="w-full max-w-full overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CircleAlert className="size-5" />
+            Prospectos sin actividad
+          </CardTitle>
+          <CardDescription>Prospectos sin interacción en más de 7 días.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(data?.prospects_without_activity ?? []).length === 0 ? (
+            <EmptyWidget
+              icon={CircleAlert}
+              title="Sin prospectos parados"
+              description="No hay prospectos pendientes de seguimiento."
+            />
+          ) : (
+            <div className="space-y-3">
+              {data.prospects_without_activity.map((prospect) => (
+                <Link
+                  key={prospect.id}
+                  href={`/comercial/prospectos/${prospect.id}`}
+                  className="block rounded-xl border p-3 hover:bg-accent/40"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{prospect.companyName}</p>
+                      <p className="text-sm text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                      {prospect.daysWithoutActivity} días
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <QuickInteractionModal
         open={interactionModal.open}
@@ -274,6 +285,7 @@ export default function CrmDashboardWidgets() {
         prospectId={interactionModal.prospectId}
         customerId={interactionModal.customerId}
         defaultNextActionDate={interactionModal.nextActionAt}
+        defaultNextActionNote={interactionModal.nextActionNote ?? ''}
         title="Registrar seguimiento"
       />
     </>

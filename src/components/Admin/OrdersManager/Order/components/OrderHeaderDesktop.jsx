@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Printer, MoreVertical, Bookmark, Copy, Ban, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import StatusBadge from '../../StatusBadge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,13 @@ import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderEditSheet from '../OrderEditSheet';
 import OrderStatusDropdown from './OrderStatusDropdown';
 import OrderTemperatureDropdown from './OrderTemperatureDropdown';
+
+const STATUS_COLORS = { pending: 'orange', finished: 'green', incident: 'red' };
+const STATUS_LABELS = {
+  pending: 'En producción',
+  finished: 'Terminado',
+  incident: 'Incidencia',
+};
 
 /**
  * Header desktop: estado, id, cliente, fecha, temperatura; botones Editar/Imprimir/⋮; imagen transporte
@@ -33,7 +41,10 @@ export default function OrderHeaderDesktop({
       <div className="space-y-1 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           {readOnly ? (
-            <Badge variant="outline">{order.status}</Badge>
+            <StatusBadge
+              color={STATUS_COLORS[order.status] ?? 'green'}
+              label={STATUS_LABELS[order.status] ?? order.status}
+            />
           ) : (
             <OrderStatusDropdown status={order.status} onStatusChange={onStatusChange} />
           )}
