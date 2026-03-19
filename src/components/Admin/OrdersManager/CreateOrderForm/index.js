@@ -180,8 +180,6 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             if (error?.status === 422 && error?.data?.errors) {
                 setErrorsFrom422(setError, error.data.errors);
             }
-        } finally {
-            setSaving(false);
         }
     };
 

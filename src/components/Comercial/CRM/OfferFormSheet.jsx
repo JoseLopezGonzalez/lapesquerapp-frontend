@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,8 +39,8 @@ export default function OfferFormSheet({
   initialData = null,
   fixedProspectId = null,
   fixedCustomerId = null,
+  onSaved = null,
 }) {
-  const router = useRouter();
   const { options, loading: optionsLoading } = useOrderFormOptions();
   const { productOptions, loading: productsLoading } = useProductOptions();
   const { taxOptions } = useTaxOptions();
@@ -154,9 +153,7 @@ export default function OfferFormSheet({
         }
       );
       onOpenChange(false);
-      if (response?.data?.id) {
-        router.push(`/comercial/ofertas/${response.data.id}`);
-      }
+      onSaved?.(response?.data ?? response ?? null);
     } catch {}
   };
 

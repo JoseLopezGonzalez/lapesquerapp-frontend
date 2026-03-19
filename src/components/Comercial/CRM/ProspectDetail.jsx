@@ -10,7 +10,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useProspect, useProspectContacts, useProspectMutations } from '@/hooks/useProspects';
@@ -39,7 +38,7 @@ const interactionTypeIcons = {
 
 function SectionEmpty({ title, description }) {
   return (
-    <EmptyState title={title} description={description} className="border bg-muted/20 min-h-[180px]" />
+    <EmptyState title={title} description={description} className="h-full w-full border bg-muted/20 !min-h-0" />
   );
 }
 
@@ -58,17 +57,17 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const [contactFormOpen, setContactFormOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('data');
 
-  const content = useMemo(() => {
+  const body = useMemo(() => {
     if (isLoading) {
       return (
-        <div className="flex min-h-[360px] w-full items-center justify-center">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
           <Loader />
         </div>
       );
     }
 
     if (!prospect) {
-      return <div className="p-4 text-sm text-muted-foreground">No se ha encontrado el prospecto.</div>;
+      return <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">No se ha encontrado el prospecto.</div>;
     }
 
     const originLabel =
@@ -83,7 +82,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
 
     return (
       <>
-        <CardHeader>
+        <CardHeader className="w-full min-w-0">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -167,8 +166,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="py-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
             <TabsList>
               <TabsTrigger value="data">Datos</TabsTrigger>
               <TabsTrigger value="contacts">Contactos</TabsTrigger>
@@ -176,7 +175,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               <TabsTrigger value="offers">Ofertas</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="data" className="space-y-4">
+            <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-xl border p-4">
                   <p className="text-sm text-muted-foreground">Origen</p>
@@ -201,13 +200,13 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </div>
             </TabsContent>
 
-            <TabsContent value="contacts">
+            <TabsContent value="contacts" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
               {contactsLoading ? (
-                <div className="flex min-h-[220px] w-full items-center justify-center">
+                <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
                 </div>
               ) : (
-                <div className="mb-4">
+                <div className="mb-4 flex-1 min-h-0 overflow-y-auto">
                   {contacts.length === 0 ? (
                     contactFormOpen ? null : (
                       <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
@@ -298,9 +297,9 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
 
             </TabsContent>
 
-            <TabsContent value="interactions">
+            <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
               {interactionsLoading ? (
-                <div className="flex min-h-[220px] w-full items-center justify-center">
+                <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
                 </div>
               ) : interactions.length === 0 ? (
@@ -309,7 +308,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                   description="Registra seguimiento para alimentar la agenda comercial."
                 />
               ) : (
-                <div className="space-y-4">
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                  <div className="space-y-4">
                   <div className="relative w-full pl-1 py-2 space-y-4">
                     {interactions
                       .slice()
@@ -368,18 +368,19 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                       })}
                   </div>
                 </div>
+                </div>
               )}
             </TabsContent>
 
-            <TabsContent value="offers">
+            <TabsContent value="offers" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
               {offersLoading ? (
-                <div className="flex min-h-[220px] w-full items-center justify-center">
+                <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
                 </div>
               ) : offers.length === 0 ? (
                 <SectionEmpty title="Sin ofertas" description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada." />
               ) : (
-                <div className="space-y-3">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-3">
                   {offers.map((offer) => (
                     <Link key={offer.id} href={`/comercial/ofertas/${offer.id}`} className="block rounded-xl border p-4 hover:bg-accent/40">
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -401,27 +402,26 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
       </>
     );
   }, [
+    activeTab,
     contacts,
     contactsLoading,
+    contactFormOpen,
     convertProspect,
-    createContact,
     deleteContact,
     editingContactId,
+    embedded,
     interactions,
     interactionsLoading,
     isLoading,
     offers,
     offersLoading,
     prospect,
-    updateContact,
-    updateProspect,
-    contactDraft,
   ]);
 
   return (
     <>
-      <Card className="h-full overflow-hidden">
-        {embedded ? <ScrollArea className="h-full">{content}</ScrollArea> : content}
+      <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+        {body}
       </Card>
 
       <ProspectFormSheet open={editOpen} onOpenChange={setEditOpen} initialData={prospect} />

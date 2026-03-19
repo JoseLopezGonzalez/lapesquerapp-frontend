@@ -3,15 +3,16 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, FileDown, Mail, MessageSquare, ShoppingCart } from 'lucide-react';
+import { Check, Copy, FileDown, Mail, MessageSquare, MoreVertical, Pencil, ShoppingCart, X, Clock3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useOffer, useOfferMutations } from '@/hooks/useOffers';
 import { crmService } from '@/services/crmService';
@@ -58,6 +59,13 @@ export default function OfferDetail({ offerId, embedded = false }) {
     ccEmails: '',
     plannedProducts: '',
   });
+  const isMutatingOffer =
+    acceptOffer.isPending ||
+    rejectOffer.isPending ||
+    expireOffer.isPending ||
+    sendOffer.isPending ||
+    sendOfferEmail.isPending ||
+    createOrderFromOffer.isPending;
 
   const incompleteLinesForOrder = (offer?.lines ?? []).filter(
     (line) => !line.product?.id && !line.productId || !line.tax?.id && !line.taxId || line.boxes == null || line.boxes === ''
@@ -159,14 +167,14 @@ export default function OfferDetail({ offerId, embedded = false }) {
   };
 
   const body = isLoading ? (
-    <div className="flex min-h-[360px] w-full items-center justify-center">
+    <div className="flex min-h-0 flex-1 items-center justify-center">
       <Loader />
     </div>
   ) : !offer ? (
-    <div className="p-4 text-sm text-muted-foreground">No se ha encontrado la oferta.</div>
+    <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">No se ha encontrado la oferta.</div>
   ) : (
     <>
-      <CardHeader className="border-b">
+      <CardHeader className="w-full min-w-0">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -178,53 +186,84 @@ export default function OfferDetail({ offerId, embedded = false }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {offer.status === 'draft' && <Button variant="outline" onClick={() => setEditOpen(true)}>Editar</Button>}
-            {offer.status === 'draft' && <Button onClick={() => setSendOpen(true)}>Enviar</Button>}
-            {offer.status === 'sent' && (
-              <Button
-                onClick={async () => {
-                  try {
-                    await notify.promise(acceptOffer.mutateAsync(offer.id), {
-                      loading: 'Aceptando oferta...',
-                      success: 'Oferta aceptada',
-                      error: (error) => error?.message || 'No se pudo aceptar la oferta',
-                    });
-                  } catch {}
-                }}
-              >
-                Aceptar
-              </Button>
-            )}
-            {offer.status === 'sent' && <Button variant="outline" onClick={() => setRejectOpen(true)}>Rechazar</Button>}
-            {['draft', 'sent', 'rejected'].includes(offer.status) && (
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  try {
-                    await notify.promise(expireOffer.mutateAsync(offer.id), {
-                      loading: 'Expirando oferta...',
-                      success: 'Oferta expirada',
-                      error: (error) => error?.message || 'No se pudo expirar la oferta',
-                    });
-                  } catch {}
-                }}
-              >
-                Expirar
-              </Button>
-            )}
-            {offer.status === 'accepted' && <Button onClick={() => setCreateOrderOpen(true)}>Crear pedido</Button>}
+            {offer.status === 'draft' && <Button variant="outline" onClick={() => setEditOpen(true)} disabled={isMutatingOffer}>Editar</Button>}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Acciones sobre la oferta"
+                  data-slot="button"
+                  disabled={isMutatingOffer}
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-52">
+                {offer.status === 'draft' && (
+                  <DropdownMenuItem onClick={() => setSendOpen(true)}>
+                    <Mail />
+                    Enviar
+                  </DropdownMenuItem>
+                )}
+                {offer.status === 'sent' && (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        await notify.promise(acceptOffer.mutateAsync(offer.id), {
+                          loading: 'Aceptando oferta...',
+                          success: 'Oferta aceptada',
+                          error: (error) => error?.message || 'No se pudo aceptar la oferta',
+                        });
+                      } catch {}
+                    }}
+                  >
+                    <Check />
+                    Aceptar
+                  </DropdownMenuItem>
+                )}
+                {offer.status === 'sent' && (
+                  <DropdownMenuItem onClick={() => setRejectOpen(true)}>
+                    <X />
+                    Rechazar
+                  </DropdownMenuItem>
+                )}
+                {['draft', 'sent', 'rejected'].includes(offer.status) && (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        await notify.promise(expireOffer.mutateAsync(offer.id), {
+                          loading: 'Expirando oferta...',
+                          success: 'Oferta expirada',
+                          error: (error) => error?.message || 'No se pudo expirar la oferta',
+                        });
+                      } catch {}
+                    }}
+                  >
+                    <Clock3 />
+                    Expirar
+                  </DropdownMenuItem>
+                )}
+                {offer.status === 'accepted' && (
+                  <DropdownMenuItem onClick={() => setCreateOrderOpen(true)}>
+                    <ShoppingCart />
+                    Crear pedido
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="py-4">
-        <Tabs defaultValue="offer">
-          <TabsList className="mb-4 flex w-full flex-wrap justify-start">
+      <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
+        <Tabs defaultValue="offer" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+          <TabsList>
             <TabsTrigger value="offer">Oferta</TabsTrigger>
             <TabsTrigger value="send">Envío</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="offer" className="space-y-4">
+          <TabsContent value="offer" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border p-4">
                 <p className="text-sm text-muted-foreground">Incoterm</p>
@@ -256,37 +295,77 @@ export default function OfferDetail({ offerId, embedded = false }) {
             )}
 
             {(offer.lines ?? []).length === 0 ? (
-              <EmptyState
-                title="Sin líneas"
-                description="Esta oferta no tiene líneas visibles."
-                className="border bg-muted/20 min-h-[220px]"
-              />
+              <div className="flex min-h-0 flex-1">
+                <EmptyState
+                  title="Sin líneas"
+                  description="Esta oferta no tiene líneas visibles."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
-                {offer.lines.map((line, index) => (
-                  <div key={line.id ?? `${line.description}-${index}`} className="rounded-xl border p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{line.description}</p>
-                        <p className="text-sm text-muted-foreground">{line.product?.name ?? 'Sin producto vinculado'}</p>
-                      </div>
-                      <p className="font-medium">{formatCurrency(line.unitPrice, line.currency ?? offer.currency ?? 'EUR')}</p>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {line.quantity} {line.unit} · {line.boxes ?? 'Sin'} cajas · Impuesto {line.tax?.rate ?? '—'}
-                    </p>
-                    {((!line.product?.id && !line.productId) || (!line.tax?.id && !line.taxId) || line.boxes == null || line.boxes === '') && (
-                      <p className="mt-2 text-sm font-medium text-amber-700 dark:text-amber-300">
-                        Incompleta para crear pedido: requiere producto, impuesto y cajas.
-                      </p>
-                    )}
-                  </div>
-                ))}
+              <div className="rounded-xl border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Descripcion</TableHead>
+                      <TableHead>Producto</TableHead>
+                      <TableHead className="text-right">Cantidad</TableHead>
+                      <TableHead>Unidad</TableHead>
+                      <TableHead>Cajas</TableHead>
+                      <TableHead>Impuesto</TableHead>
+                      <TableHead className="text-right">Precio unit.</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {offer.lines.map((line, index) => {
+                      const isIncomplete =
+                        ((!line.product?.id && !line.productId) || (!line.tax?.id && !line.taxId) || line.boxes == null || line.boxes === '');
+
+                      return (
+                        <TableRow key={line.id ?? `${line.description}-${index}`}>
+                          <TableCell className="align-top whitespace-normal">
+                            <div className="min-w-0">
+                              <p className="font-medium">{line.description}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top whitespace-normal text-muted-foreground">
+                            {line.product?.name ?? 'Sin producto vinculado'}
+                          </TableCell>
+                          <TableCell className="align-top text-right">
+                            {line.quantity}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            {line.unit || 'kg'}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            {line.boxes ?? 'Sin'}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            {line.tax?.rate ?? '—'}
+                          </TableCell>
+                          <TableCell className="align-top text-right">
+                            {formatCurrency(line.unitPrice, line.currency ?? offer.currency ?? 'EUR')}
+                          </TableCell>
+                          <TableCell className="align-top whitespace-normal">
+                            {isIncomplete ? (
+                              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                                Incompleta para crear pedido
+                              </span>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">Completa</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="send" className="space-y-4">
+          <TabsContent value="send" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             <div className="grid gap-3">
               <Button variant="outline" className="justify-start" onClick={handleDownloadPdf}>
                 <FileDown className="mr-2 size-4" />
@@ -335,8 +414,8 @@ export default function OfferDetail({ offerId, embedded = false }) {
 
   return (
     <>
-      <Card className="h-full overflow-hidden">
-        {embedded ? <ScrollArea className="h-full">{body}</ScrollArea> : body}
+      <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+        {body}
       </Card>
 
       <OfferFormSheet open={editOpen} onOpenChange={setEditOpen} initialData={offer} />
@@ -348,8 +427,8 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Registra el canal de envío y, si aplica, los datos del email."
         footer={
           <>
-            <Button variant="outline" onClick={() => setSendOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSend}>Enviar</Button>
+            <Button variant="outline" onClick={() => setSendOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
+            <Button onClick={handleSend} disabled={isMutatingOffer}>Enviar</Button>
           </>
         }
       >
@@ -388,9 +467,10 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Registra el motivo para mantener histórico comercial útil."
         footer={
           <>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
             <Button
               variant="destructive"
+              disabled={isMutatingOffer}
               onClick={async () => {
                 try {
                   await notify.promise(rejectOffer.mutateAsync({ id: offer.id, reason: rejectionReason }), {
@@ -420,8 +500,8 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Completa los campos que exige el flujo estándar de pedidos y añade líneas extra si hace falta."
         footer={
           <>
-            <Button variant="outline" onClick={() => setCreateOrderOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateOrder}>Crear pedido</Button>
+            <Button variant="outline" onClick={() => setCreateOrderOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
+            <Button onClick={handleCreateOrder} disabled={isMutatingOffer}>Crear pedido</Button>
           </>
         }
       >

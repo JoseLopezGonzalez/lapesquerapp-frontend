@@ -56,6 +56,14 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
     return Array.from(resultMap.values());
 };
 
+const getOrderExportUrl = ({ orderId, documentName, type }) => {
+    if (documentName === 'restricted-order-signs' && type === 'pdf') {
+        return `${API_URL_V2}orders/${orderId}/pdf/restricted-order-signs`;
+    }
+
+    return `${API_URL_V2}orders/${orderId}/${type}/${documentName}`;
+};
+
 export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
     const queryClient = useQueryClient();
@@ -295,7 +303,11 @@ export function useOrder(orderId, onChange) {
 
     const exportDocument = async (documentName, type, documentLabel) => {
         const doExport = async () => {
-            const response = await fetchWithTenant(`${API_URL_V2}orders/${order.id}/${type}/${documentName}`, {
+            const response = await fetchWithTenant(getOrderExportUrl({
+                orderId: order.id,
+                documentName,
+                type,
+            }), {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${session.user.accessToken}`,
@@ -419,6 +431,12 @@ export function useOrder(orderId, onChange) {
             fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Fechas', 'Lotes', 'Transportes'],
         },
         {
+            name: 'restricted-order-signs',
+            label: 'Letreros de transporte (Restringidos)',
+            types: ['pdf'],
+            fields: ['Expedidor', 'Información del palet', 'QR del palet', 'QR del pedido'],
+        },
+        {
             name: 'order-packing-list',
             label: 'Packing List',
             types: ['pdf'],
@@ -502,6 +520,11 @@ export function useOrder(orderId, onChange) {
         {
             name: 'order-signs',
             label: 'Letreros de transporte',
+            type: 'pdf',
+        },
+        {
+            name: 'restricted-order-signs',
+            label: 'Letreros de transporte (Restringidos)',
             type: 'pdf',
         },
         {

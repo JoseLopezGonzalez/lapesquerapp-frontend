@@ -68,16 +68,17 @@ vi.mock('@/lib/notifications', () => ({
 const mockBlob = new Blob(['test'], { type: 'application/pdf' });
 const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
 const mockRevokeObjectURL = vi.fn();
+const NativeURL = global.URL;
 Object.defineProperty(global, 'URL', {
-  value: {
-    createObjectURL: mockCreateObjectURL,
-    revokeObjectURL: mockRevokeObjectURL,
-  },
+  value: class extends NativeURL {},
   writable: true,
 });
+global.URL.createObjectURL = mockCreateObjectURL;
+global.URL.revokeObjectURL = mockRevokeObjectURL;
 
 import { getOrder, setOrderStatus } from '@/services/orderService';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { notify } from '@/lib/notifications';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -163,7 +164,7 @@ describe('useOrder', () => {
     });
 
     expect(fetchWithTenant).toHaveBeenCalledWith(
-      expect.stringContaining('/orders/1/'),
+      'https://api.test/v2/orders/1/pdf/loading-note',
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
@@ -171,6 +172,111 @@ describe('useOrder', () => {
         }),
       })
     );
+  });
+
+  it('exportDocument keeps order-signs endpoint unchanged', async () => {
+    fetchWithTenant.mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: { get: () => null },
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.exportDocument('order-signs', 'pdf', 'Letreros de transporte');
+    });
+
+    expect(fetchWithTenant).toHaveBeenCalledWith(
+      'https://api.test/v2/orders/1/pdf/order-signs',
+      expect.any(Object)
+    );
+  });
+
+  it('exportDocument resolves restricted-order-signs endpoint', async () => {
+    fetchWithTenant.mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: { get: () => null },
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.exportDocument('restricted-order-signs', 'pdf', 'Letreros de transporte (Restringidos)');
+    });
+
+    expect(fetchWithTenant).toHaveBeenCalledWith(
+      'https://api.test/v2/orders/1/pdf/restricted-order-signs',
+      expect.any(Object)
+    );
+  });
+
+  it('exposes restricted-order-signs in export catalogs', async () => {
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.exportDocuments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'restricted-order-signs',
+          label: 'Letreros de transporte (Restringidos)',
+          types: ['pdf'],
+        }),
+      ])
+    );
+
+    expect(result.current.fastExportDocuments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'restricted-order-signs',
+          label: 'Letreros de transporte (Restringidos)',
+          type: 'pdf',
+        }),
+      ])
+    );
+  });
+
+  it('propagates export errors so notify.promise can handle 403 responses', async () => {
+    fetchWithTenant.mockResolvedValue({
+      ok: false,
+      status: 403,
+      blob: () => Promise.resolve(mockBlob),
+      headers: { get: () => null },
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.exportDocument('restricted-order-signs', 'pdf', 'Letreros de transporte (Restringidos)');
+      })
+    ).rejects.toThrow('Error al exportar');
+
+    expect(notify.promise).toHaveBeenCalled();
   });
 
   it('sets error when getOrder fails with 401', async () => {

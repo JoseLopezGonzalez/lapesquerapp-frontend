@@ -83,6 +83,7 @@ const LABEL_FORMAT_OPTIONS = [
 
 const ORDER_EXPORT_DOCUMENTS = [
   { id: 'order-signs', label: 'Letrero de transporte', type: 'pdf' },
+  { id: 'restricted-order-signs', label: 'Letrero de transporte restringido', type: 'pdf' },
   { id: 'order-cmr', label: 'CMR', type: 'pdf' },
   { id: 'restricted-loading-note', label: 'Nota de Carga Restringida', type: 'pdf' },
   { id: 'loading-note', label: 'Nota de Carga', type: 'pdf' },

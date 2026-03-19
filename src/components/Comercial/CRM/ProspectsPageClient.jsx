@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
@@ -79,22 +78,43 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const [status, setStatus] = useState('all');
   const [formOpen, setFormOpen] = useState(forceCreate);
   const { data: prospects, isLoading } = useProspectsList({
-    search: search || undefined,
     status: status !== 'all' ? [status] : undefined,
     perPage: 100,
   });
   const [selectedId, setSelectedId] = useState(initialProspectId);
+  const normalizedSearch = search.trim().toLowerCase();
 
   const orderedProspects = useMemo(
     () =>
-      [...prospects].sort((a, b) => {
+      prospects
+        .filter((prospect) => {
+          if (!normalizedSearch) return true;
+
+          const searchableValues = [
+            prospect.companyName,
+            prospect.primaryContact?.name,
+            prospect.country?.name,
+          ];
+
+          return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(normalizedSearch));
+        })
+        .sort((a, b) => {
         if (a.nextActionAt && !b.nextActionAt) return -1;
         if (!a.nextActionAt && b.nextActionAt) return 1;
         if (a.nextActionAt && b.nextActionAt) return a.nextActionAt.localeCompare(b.nextActionAt);
         return a.companyName.localeCompare(b.companyName);
       }),
-    [prospects]
+    [prospects, normalizedSearch]
   );
+
+  useEffect(() => {
+    if (isMobile || !selectedId) return;
+
+    const selectedProspectStillVisible = orderedProspects.some((prospect) => String(prospect.id) === String(selectedId));
+    if (!selectedProspectStillVisible) {
+      setSelectedId(null);
+    }
+  }, [isMobile, orderedProspects, selectedId]);
 
   const handleSelect = (prospectId) => {
     setSelectedId(prospectId);
@@ -105,7 +125,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
   return (
     <>
-      <div className="flex h-full flex-col gap-4 px-4 py-3 md:px-6">
+      <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
         <div className="w-full md:max-w-md">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col">
@@ -165,32 +185,36 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
           </Tabs>
         </div>
 
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <ScrollArea className="h-full min-h-0">
-            <div className="space-y-3 p-4">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
+          <Card className="min-h-0 overflow-hidden">
+            <div className="h-full overflow-y-auto">
               {isLoading ? (
-                <div className="flex min-h-[260px] w-full items-center justify-center">
+                <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
                   <Loader />
                 </div>
               ) : orderedProspects.length === 0 ? (
-                <EmptyState
-                  title="Aún no tienes prospectos registrados"
-                  description="Crea el primero para empezar a alimentar la agenda comercial."
-                  className="border bg-muted/20 min-h-[260px]"
-                  button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
-                />
-              ) : (
-                orderedProspects.map((prospect) => (
-                  <ProspectCard
-                    key={prospect.id}
-                    prospect={prospect}
-                    selected={!isMobile && String(selectedId) === String(prospect.id)}
-                    onClick={() => handleSelect(prospect.id)}
+                <div className="flex h-full min-h-0 w-full p-4">
+                  <EmptyState
+                    title="Aún no tienes prospectos registrados"
+                    description={normalizedSearch ? 'No hay prospectos que coincidan con la búsqueda actual.' : 'Crea el primero para empezar a alimentar la agenda comercial.'}
+                    className="h-full w-full border bg-muted/20 !min-h-0"
+                    button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
                   />
-                ))
+                </div>
+              ) : (
+                <div className="space-y-3 p-4">
+                  {orderedProspects.map((prospect) => (
+                    <ProspectCard
+                      key={prospect.id}
+                      prospect={prospect}
+                      selected={!isMobile && String(selectedId) === String(prospect.id)}
+                      onClick={() => handleSelect(prospect.id)}
+                    />
+                  ))}
+                </div>
               )}
             </div>
-          </ScrollArea>
+          </Card>
 
           {!isMobile && (
             selectedId ? (
@@ -199,7 +223,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
               <EmptyState
                 title="Selecciona un prospecto"
                 description="En desktop el detalle se abre en este panel sin salir de la lista."
-                className="border bg-muted/20 min-h-[360px]"
+                className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
               />
             )
           )}

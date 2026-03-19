@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Plus } from 'lucide-react';
+import { CalendarClock, CircleDot, MapPin, Mail, MessageCircle, Phone, Search, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,6 +20,14 @@ import QuickInteractionModal from './QuickInteractionModal';
 import { formatCurrency, formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
 import StatusPill from './StatusPill';
 import Loader from '@/components/Utilities/Loader';
+
+const interactionTypeIcons = {
+  call: Phone,
+  email: Mail,
+  whatsapp: MessageCircle,
+  visit: MapPin,
+  other: CircleDot,
+};
 
 function useCustomerDetail(customerId) {
   const { data: session } = useSession();
@@ -47,19 +54,21 @@ function useCustomerOrderHistory(customerId) {
 function CustomerDetail({ customerId, embedded = false }) {
   const { data: customer, isLoading } = useCustomerDetail(customerId);
   const { data: history } = useCustomerOrderHistory(customerId);
-  const { data: interactions } = useCommercialInteractions({ customerId, perPage: 50 });
+  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({ customerId, perPage: 50 });
   const { data: offers } = useOffersList({ customerId, perPage: 50 });
   const [interactionOpen, setInteractionOpen] = useState(false);
 
-  const content = isLoading ? (
-    <div className="flex min-h-[360px] w-full items-center justify-center">
+  const body = isLoading ? (
+    <div className="flex min-h-0 flex-1 items-center justify-center">
       <Loader />
     </div>
   ) : !customer ? (
-    <div className="p-4 text-sm text-muted-foreground">No se ha encontrado el cliente.</div>
+    <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
+      No se ha encontrado el cliente.
+    </div>
   ) : (
     <>
-      <CardHeader className="border-b">
+      <CardHeader className="w-full min-w-0">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle className="text-2xl">{customer.name}</CardTitle>
@@ -71,8 +80,8 @@ function CustomerDetail({ customerId, embedded = false }) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="py-4 flex-1 min-h-0 flex flex-col">
-        <Tabs defaultValue="data" className="h-full w-full flex-1 min-h-0 flex flex-col">
+      <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
+        <Tabs defaultValue="data" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
           <TabsList>
             <TabsTrigger value="data">Datos</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
@@ -80,7 +89,7 @@ function CustomerDetail({ customerId, embedded = false }) {
             <TabsTrigger value="offers">Ofertas</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="data" className="h-full w-full flex-1 min-h-0 overflow-y-auto space-y-4">
+          <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border p-4">
                 <p className="text-sm text-muted-foreground">Email</p>
@@ -97,7 +106,7 @@ function CustomerDetail({ customerId, embedded = false }) {
             </div>
           </TabsContent>
 
-          <TabsContent value="orders" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+          <TabsContent value="orders" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
             {!history?.data?.length ? (
               <div className="flex-1 min-h-0 flex">
                 <EmptyState
@@ -125,34 +134,79 @@ function CustomerDetail({ customerId, embedded = false }) {
             )}
           </TabsContent>
 
-          <TabsContent value="interactions" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
-            {interactions.length === 0 ? (
+          <TabsContent value="interactions" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+            {interactionsLoading ? (
+              <div className="flex min-h-0 flex-1 items-center justify-center">
+                <Loader />
+              </div>
+            ) : interactions.length === 0 ? (
               <div className="flex-1 min-h-0 flex">
                 <EmptyState
                   title="Sin interacciones"
-                  description="Registra seguimientos desde esta ficha para dejar contexto al comercial."
+                  description="Registra seguimiento para alimentar la agenda comercial."
                   className="h-full w-full border bg-muted/20 !min-h-0"
                 />
               </div>
             ) : (
-              <div className="h-full w-full flex flex-col min-h-0">
-                <div className="space-y-3 flex-1 overflow-y-auto pr-2">
-                  {interactions.map((interaction) => (
-                    <div key={interaction.id} className="rounded-xl border p-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium">{interactionTypeLabels[interaction.type] ?? interaction.type}</p>
-                        <StatusPill label={interactionResultLabels[interaction.result] ?? interaction.result} status={interaction.result} />
-                      </div>
-                      <p className="mt-2 text-sm">{interaction.summary}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{formatDateTimeValue(interaction.occurredAt)}</p>
-                    </div>
-                  ))}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="relative w-full pl-1 py-2 space-y-4">
+                    {interactions
+                      .slice()
+                      .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
+                      .map((interaction, index, array) => {
+                        const isLast = index === array.length - 1;
+                        const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
+                        const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
+                        const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
+
+                        return (
+                          <div key={interaction.id} className="flex gap-2 items-stretch">
+                            {/* columna pista */}
+                            <div className="flex flex-col items-center shrink-0 w-6 self-stretch">
+                              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground border-0 shadow-sm">
+                                <TypeIcon className="size-3 stroke-[2]" />
+                              </div>
+                              {!isLast && <div className="w-0.5 flex-1 min-h-0 mt-1 bg-muted-foreground/50" aria-hidden />}
+                            </div>
+
+                            {/* columna contenido */}
+                            <div className={`flex-1 min-w-0 ${!isLast ? 'pb-4' : ''}`}>
+                              <div className="flex flex-col gap-0.5">
+                                <p className="text-xs text-muted-foreground font-normal">{formatDateTimeValue(interaction.occurredAt)}</p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-sm font-semibold leading-tight text-foreground truncate">{typeLabel}</span>
+                                  <StatusPill label={resultLabel} status={interaction.result} />
+                                </div>
+                              </div>
+
+                              <div className="mt-2 rounded-xl border bg-card p-3 space-y-3">
+                                <p className="text-sm text-foreground leading-snug">{interaction.summary}</p>
+
+                                {interaction.nextActionAt && (
+                                  <div className="pt-2 border-t border-border/60 space-y-1">
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                      <CalendarClock className="size-3 shrink-0" />
+                                      <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
+                                    </p>
+
+                                    {interaction.nextActionNote && (
+                                      <p className="text-xs text-muted-foreground whitespace-pre-line pl-4">{interaction.nextActionNote}</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </div>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="offers" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+          <TabsContent value="offers" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
             {offers.length === 0 ? (
               <div className="flex-1 min-h-0 flex">
                 <EmptyState
@@ -189,11 +243,20 @@ function CustomerDetail({ customerId, embedded = false }) {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <QuickInteractionModal open={interactionOpen} onOpenChange={setInteractionOpen} customerId={customerId} />
     </>
   );
 
-  return embedded ? <Card className="h-full overflow-hidden"><ScrollArea className="h-full">{content}</ScrollArea></Card> : <Card>{content}</Card>;
+  return embedded ? (
+    <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+      {body}
+      <QuickInteractionModal open={interactionOpen} onOpenChange={setInteractionOpen} customerId={customerId} />
+    </Card>
+  ) : (
+    <Card className="w-full max-w-none min-w-0">
+      {body}
+      <QuickInteractionModal open={interactionOpen} onOpenChange={setInteractionOpen} customerId={customerId} />
+    </Card>
+  );
 }
 
 function CustomerCard({ customer, selected, onClick }) {
@@ -244,13 +307,34 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   const isMobile = useIsMobile();
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { data: customers, isLoading } = useCustomersList({ filters: { search }, perPage: 100 });
+  const { data: customers, isLoading } = useCustomersList({ perPage: 100 });
   const [selectedId, setSelectedId] = useState(initialCustomerId);
-
+  const normalizedSearch = search.trim().toLowerCase();
   const filteredCustomers = useMemo(
-    () => customers.filter((customer) => !search || customer.name?.toLowerCase().includes(search.toLowerCase())),
-    [customers, search]
+    () =>
+      customers.filter((customer) => {
+        if (!normalizedSearch) return true;
+
+        const searchableValues = [
+          customer.name,
+          customer.contactInfo,
+          customer.contact_info,
+          customer.country?.name,
+        ];
+
+        return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(normalizedSearch));
+      }),
+    [customers, normalizedSearch]
   );
+
+  useEffect(() => {
+    if (isMobile || !selectedId) return;
+
+    const selectedCustomerStillVisible = filteredCustomers.some((customer) => String(customer.id) === String(selectedId));
+    if (!selectedCustomerStillVisible) {
+      setSelectedId(null);
+    }
+  }, [filteredCustomers, isMobile, selectedId]);
 
   const handleSelect = (customerId) => {
     setSelectedId(customerId);
@@ -260,7 +344,7 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 px-4 py-3 md:px-6">
+    <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
       <div>
         <h1 className="text-3xl font-light">Mis clientes</h1>
         <p className="text-sm text-muted-foreground">Solo lectura sobre clientes asignados y seguimiento CRM.</p>
@@ -273,28 +357,34 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
         </InputGroupAddon>
       </InputGroup>
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
         <Card className="min-h-0 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="space-y-3 p-4">
-              {!isLoading && filteredCustomers.length === 0 ? (
+          <div className="h-full overflow-y-auto">
+            {isLoading ? (
+              <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
+                <Loader />
+              </div>
+            ) : filteredCustomers.length === 0 ? (
+              <div className="flex h-full min-h-0 w-full p-4">
                 <EmptyState
                   title="Aún no tienes clientes asignados"
-                  description="Cuando existan clientes vinculados a tu comercial aparecerán aquí."
-                  className="border bg-muted/20 min-h-[260px]"
+                  description={normalizedSearch ? 'No hay clientes que coincidan con la búsqueda actual.' : 'Cuando existan clientes vinculados a tu comercial aparecerán aquí.'}
+                  className="h-full w-full border bg-muted/20 !min-h-0"
                 />
-              ) : (
-                filteredCustomers.map((customer) => (
+              </div>
+            ) : (
+              <div className="space-y-3 p-4">
+                {filteredCustomers.map((customer) => (
                   <CustomerCard
                     key={customer.id}
                     customer={customer}
                     selected={!isMobile && String(selectedId) === String(customer.id)}
                     onClick={() => handleSelect(customer.id)}
                   />
-                ))
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+              </div>
+            )}
+          </div>
         </Card>
 
         {!isMobile && (
@@ -304,7 +394,7 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
             <EmptyState
               title="Selecciona un cliente"
               description="El panel derecho mostrará sus pedidos, ofertas e interacciones."
-              className="border bg-muted/20 min-h-[360px]"
+              className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
             />
           )
         )}

@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,6 +14,7 @@ import OfferFormSheet from './OfferFormSheet';
 import OfferDetail from './OfferDetail';
 import StatusPill from './StatusPill';
 import { formatCurrency, formatDateValue, offerStatusLabels } from './utils';
+import Loader from '@/components/Utilities/Loader';
 
 const FILTER_TABS = [
   { label: 'Todos', value: 'all' },
@@ -71,6 +71,15 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
     [offers]
   );
 
+  useEffect(() => {
+    if (isMobile || !selectedId) return;
+
+    const selectedOfferStillVisible = orderedOffers.some((offer) => String(offer.id) === String(selectedId));
+    if (!selectedOfferStillVisible) {
+      setSelectedId(null);
+    }
+  }, [isMobile, orderedOffers, selectedId]);
+
   const handleSelect = (offerId) => {
     setSelectedId(offerId);
     if (isMobile) {
@@ -78,15 +87,28 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
     }
   };
 
+  const handleOfferSaved = (savedOffer) => {
+    const savedOfferId = savedOffer?.id;
+    setSearch('');
+    setStatus('all');
+
+    if (savedOfferId && !isMobile) {
+      setSelectedId(savedOfferId);
+    }
+  };
+
   return (
     <>
-      <div className="flex h-full flex-col gap-4 px-4 py-3 md:px-6">
+      <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-light">Ofertas</h1>
             <p className="text-sm text-muted-foreground">Histórico comercial por prospecto o cliente.</p>
           </div>
-          <Button onClick={() => setFormOpen(true)}>Nueva oferta</Button>
+          <Button onClick={() => setFormOpen(true)}>
+            <Plus className="mr-2 size-4" />
+            Nueva oferta
+          </Button>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -97,8 +119,14 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
             </InputGroupAddon>
           </InputGroup>
 
-          <Tabs value={status} onValueChange={setStatus}>
-            <TabsList className="w-full justify-start overflow-x-auto">
+          <Tabs
+            value={status}
+            onValueChange={(value) => {
+              setStatus(value);
+              setSelectedId(null);
+            }}
+          >
+            <TabsList>
               {FILTER_TABS.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value}>
                   {tab.label}
@@ -108,29 +136,35 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
           </Tabs>
         </div>
 
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
           <Card className="min-h-0 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="space-y-3 p-4">
-                {!isLoading && orderedOffers.length === 0 ? (
+            <div className="h-full overflow-y-auto">
+              {isLoading ? (
+                <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
+                  <Loader />
+                </div>
+              ) : orderedOffers.length === 0 ? (
+                <div className="flex h-full min-h-0 w-full p-4">
                   <EmptyState
                     title="Aún no has creado ninguna oferta"
                     description="Empieza con una oferta vinculada a prospecto o cliente."
-                    className="border bg-muted/20 min-h-[260px]"
+                    className="h-full w-full border bg-muted/20 !min-h-0"
                     button={{ name: 'Nueva oferta', onClick: () => setFormOpen(true) }}
                   />
-                ) : (
-                  orderedOffers.map((offer) => (
+                </div>
+              ) : (
+                <div className="space-y-3 p-4">
+                  {orderedOffers.map((offer) => (
                     <OfferCard
                       key={offer.id}
                       offer={offer}
                       selected={!isMobile && String(selectedId) === String(offer.id)}
                       onClick={() => handleSelect(offer.id)}
                     />
-                  ))
-                )}
-              </div>
-            </ScrollArea>
+                  ))}
+                </div>
+              )}
+            </div>
           </Card>
 
           {!isMobile && (
@@ -140,7 +174,7 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
               <EmptyState
                 title="Selecciona una oferta"
                 description="El detalle se abrirá aquí manteniendo la lista visible en desktop."
-                className="border bg-muted/20 min-h-[360px]"
+                className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
               />
             )
           )}
@@ -151,6 +185,7 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
         open={formOpen}
         onOpenChange={setFormOpen}
         fixedProspectId={fixedProspectId ? Number(fixedProspectId) : null}
+        onSaved={handleOfferSaved}
       />
     </>
   );
