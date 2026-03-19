@@ -8,7 +8,15 @@ import { API_URL_V2 } from '@/configs/config';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 
-async function fetchCommercialOrders(token, params = {}) {
+type CommercialOrder = Record<string, unknown> & {
+  offerId?: unknown;
+  offer_id?: unknown;
+};
+
+async function fetchCommercialOrders(
+  token: string,
+  params: Record<string, unknown> = {}
+) {
   const query = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -37,20 +45,23 @@ async function fetchCommercialOrders(token, params = {}) {
   return response.json();
 }
 
-export function useComercialOrders(params = {}) {
+export function useComercialOrders(params: Record<string, unknown> = {}) {
   const { data: session } = useSession();
-  const token = session?.user?.accessToken;
+  const token = session?.user?.accessToken as string | undefined;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['crm', 'orders', 'list', tenantId ?? 'unknown', params],
-    queryFn: () => fetchCommercialOrders(token, params),
-    enabled: !!tenantId && !!token,
+    queryFn: () => {
+      if (!token) throw new Error('Missing access token');
+      return fetchCommercialOrders(token, params);
+    },
+    enabled: Boolean(tenantId) && typeof token === 'string' && token.length > 0,
   });
 
   return {
     data: Array.isArray(data?.data)
-      ? data.data.map((order) => ({
+      ? data.data.map((order: CommercialOrder) => ({
           ...order,
           offerId: order.offerId ?? order.offer_id ?? null,
         }))

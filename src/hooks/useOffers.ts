@@ -3,8 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
+import type { OfferPayload } from '@/types/crm';
 
-export function useOffersList(params = {}) {
+type UseOffersListParams = Record<string, unknown> & {
+  enabled?: boolean;
+};
+
+export function useOffersList(params: UseOffersListParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const queryKey = ['crm', 'offers', 'list', tenantId ?? 'unknown', queryParams];
@@ -24,14 +29,17 @@ export function useOffersList(params = {}) {
   };
 }
 
-export function useOffer(id) {
+export function useOffer(id: number | string | null | undefined) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const queryKey = ['crm', 'offer', 'detail', tenantId ?? 'unknown', id];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,
-    queryFn: () => crmService.getOffer(id),
-    enabled: !!tenantId && !!id,
+    queryFn: () => {
+      if (id == null) throw new Error('Missing offer id');
+      return crmService.getOffer(id);
+    },
+    enabled: !!tenantId && id != null,
   });
 
   return {
@@ -46,7 +54,7 @@ export function useOfferMutations() {
   const queryClient = useQueryClient();
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
 
-  const invalidate = async (id) => {
+  const invalidate = async (id?: number | string) => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['crm', 'offers', 'list', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
@@ -57,39 +65,59 @@ export function useOfferMutations() {
 
   return {
     createOffer: useMutation({
-      mutationFn: (payload) => crmService.createOffer(payload),
+      mutationFn: (payload: OfferPayload) => crmService.createOffer(payload),
       onSuccess: () => invalidate(),
     }),
     updateOffer: useMutation({
-      mutationFn: ({ id, payload }) => crmService.updateOffer(id, payload),
+      mutationFn: ({ id, payload }: { id: number | string; payload: OfferPayload }) =>
+        crmService.updateOffer(id, payload),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
     deleteOffer: useMutation({
-      mutationFn: (id) => crmService.deleteOffer(id),
+      mutationFn: (id: number | string) => crmService.deleteOffer(id),
       onSuccess: () => invalidate(),
     }),
     sendOffer: useMutation({
-      mutationFn: ({ id, payload }) => crmService.sendOffer(id, payload),
+      mutationFn: ({
+        id,
+        payload,
+      }: {
+        id: number | string;
+        payload: { channel: string; email?: string; subject?: string };
+      }) => crmService.sendOffer(id, payload),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
     sendOfferEmail: useMutation({
-      mutationFn: ({ id, payload }) => crmService.sendOfferEmail(id, payload),
+      mutationFn: ({
+        id,
+        payload,
+      }: {
+        id: number | string;
+        payload: { email: string; subject?: string };
+      }) => crmService.sendOfferEmail(id, payload),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
     acceptOffer: useMutation({
-      mutationFn: (id) => crmService.acceptOffer(id),
+      mutationFn: (id: number | string) => crmService.acceptOffer(id),
       onSuccess: (_, id) => invalidate(id),
     }),
     rejectOffer: useMutation({
-      mutationFn: ({ id, reason }) => crmService.rejectOffer(id, reason),
+      mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
+        crmService.rejectOffer(id, reason),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
     expireOffer: useMutation({
-      mutationFn: (id) => crmService.expireOffer(id),
+      mutationFn: (id: number | string) => crmService.expireOffer(id),
       onSuccess: (_, id) => invalidate(id),
     }),
     createOrderFromOffer: useMutation({
-      mutationFn: ({ id, payload }) => crmService.createOrderFromOffer(id, payload),
+      mutationFn: ({
+        id,
+        payload,
+      }: {
+        id: number | string;
+        payload: Record<string, unknown>;
+      }) => crmService.createOrderFromOffer(id, payload),
       onSuccess: (_, variables) => invalidate(variables.id),
     }),
   };
