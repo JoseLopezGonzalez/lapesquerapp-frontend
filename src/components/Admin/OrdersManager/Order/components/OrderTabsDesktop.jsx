@@ -22,14 +22,17 @@ const TAB_LABELS = {
 /**
  * Tabs desktop: TabsList + TabsContent para todas las secciones del pedido
  */
-export default function OrderTabsDesktop({ activeTab, onTabChange }) {
+export default function OrderTabsDesktop({ activeTab, onTabChange, blockedTabIds = [], palletsReadOnly = false }) {
+  // Secciones bloqueadas para comercial cuando el pedido está en curso
+  const allowedSections = SECTIONS_CONFIG.filter((section) => !blockedTabIds.includes(section.id));
+
   return (
     <div className="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
       <div className="container mx-auto py-3 space-y-4 sm:space-y-8 h-full min-h-0 w-full flex flex-col">
         <Tabs value={activeTab} onValueChange={onTabChange} className="flex flex-col h-full min-h-0">
           <div className="mb-4 flex justify-start shrink-0 overflow-x-auto">
             <TabsList className="flex-nowrap w-fit">
-              {SECTIONS_CONFIG.map((section) => (
+              {allowedSections.map((section) => (
                 <TabsTrigger
                   key={section.id}
                   value={section.id}
@@ -40,7 +43,7 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
             </TabsList>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto w-full">
-            {SECTIONS_CONFIG.map((section) => {
+            {allowedSections.map((section) => {
               const Component = section.component;
               const isLazy = section.lazy;
               const compactTabs = ['products', 'productDetails', 'production', 'pallets', 'documents', 'export', 'labels', 'map', 'incident', 'customer-history'];
@@ -49,6 +52,8 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
                 : compactTabs.includes(section.id)
                   ? 'h-full min-h-0 flex flex-col'
                   : 'space-y-4 w-full h-full';
+              const componentProps = section.id === 'pallets' ? { readOnly: palletsReadOnly } : {};
+
               return (
                 <TabsContent
                   key={section.id}
@@ -63,10 +68,10 @@ export default function OrderTabsDesktop({ activeTab, onTabChange }) {
                         </div>
                       }
                     >
-                      <Component />
+                      <Component {...componentProps} />
                     </Suspense>
                   ) : (
-                    <Component />
+                    <Component {...componentProps} />
                   )}
                 </TabsContent>
               );

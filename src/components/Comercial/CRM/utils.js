@@ -34,6 +34,7 @@ export const interactionResultLabels = {
 
 export const agendaStatusLabels = {
   pending: 'Pendiente',
+  reprogrammed: 'Reprogramada',
   done: 'Hecha',
   cancelled: 'Cancelada',
 };
@@ -136,6 +137,7 @@ export function getStatusTone(status) {
     no_response: 'amber',
     not_interested: 'red',
     pending: 'blue',
+    reprogrammed: 'amber',
     done: 'green',
     cancelled: 'red',
   };

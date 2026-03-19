@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 
 /* convertir examples a objeto js */
 
-const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesProp, totalActiveOrders, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode }) => {
+const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesProp, totalActiveOrders, onClickCategory, onChangeSearch, searchText, onClickOrderCard, onClickAddNewOrder, disabled, error, onRetry, selectedOrderId, viewMode, onToggleViewMode, readOnly = false }) => {
     const visibleCategories = visibleCategoriesProp ?? categories;
     const activeCount = totalActiveOrders ?? orders?.length ?? 0;
 
@@ -159,20 +159,22 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                 </div>
                         {/* Botones de acción en desktop */}
                         <div className="flex items-center gap-2">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={onToggleViewMode}
-                                    >
-                                        <LayoutGrid className="h-4 w-4" />
+                    {!readOnly && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={onToggleViewMode}
+                            >
+                              <LayoutGrid className="h-4 w-4" />
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                                    <p>Vista de Producción</p>
-                        </TooltipContent>
-                    </Tooltip>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Vista de Producción</p>
+                          </TooltipContent>
+                        </Tooltip>
+                    )}
                     <Tooltip>
                         <TooltipTrigger asChild>
                                     <Button
@@ -188,18 +190,18 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
-                        <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={handleExportActivePlannedProducts}
-                                    >
-                                        <Download className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                                    <p>Exportar productos planificados activos</p>
-                        </TooltipContent>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleExportActivePlannedProducts}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Exportar productos planificados activos</p>
+                      </TooltipContent>
                     </Tooltip>
                 </div>
                     </div>
@@ -358,6 +360,7 @@ export default memo(OrdersList, (prevProps, nextProps) => {
         prevProps.onChangeSearch === nextProps.onChangeSearch &&
         prevProps.onClickAddNewOrder === nextProps.onClickAddNewOrder &&
         prevProps.onRetry === nextProps.onRetry &&
+        prevProps.readOnly === nextProps.readOnly &&
         prevProps.viewMode === nextProps.viewMode &&
         prevProps.onToggleViewMode === nextProps.onToggleViewMode
     );

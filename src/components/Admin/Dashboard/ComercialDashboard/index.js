@@ -20,7 +20,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/datePicker";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -169,12 +168,10 @@ function ReminderRow({ item, onReschedule, onCancel, onComplete }) {
 
 function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }) {
     const [nextActionAt, setNextActionAt] = React.useState(null);
-    const [nextActionNote, setNextActionNote] = React.useState("");
 
     React.useEffect(() => {
         if (!open) return;
         setNextActionAt(item?.nextActionAt ? new Date(item.nextActionAt) : null);
-        setNextActionNote(item?.nextActionNote ?? "");
     }, [open, item]);
 
     return (
@@ -182,22 +179,14 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
             <DialogContent size="md">
                 <DialogHeader>
                     <DialogTitle>Reprogramar acción</DialogTitle>
-                    <DialogDescription>Cambia la fecha y la descripción de la acción pendiente.</DialogDescription>
+                    <DialogDescription>
+                        Cambia solo la fecha. Si no se envía nota, la nueva acción pendiente conservará automáticamente el detalle actual.
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
                         <Label>Fecha nueva</Label>
                         <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="agenda-next-action-note">Descripción</Label>
-                        <Textarea
-                            id="agenda-next-action-note"
-                            rows={3}
-                            value={nextActionNote}
-                            onChange={(event) => setNextActionNote(event.target.value)}
-                            placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-                        />
                     </div>
                 </div>
                 <DialogFooter>
@@ -208,7 +197,6 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
                         onClick={() =>
                             onConfirm({
                                 nextActionAt: nextActionAt ? format(nextActionAt, "yyyy-MM-dd") : null,
-                                nextActionNote: nextActionNote.trim() || null,
                             })
                         }
                         disabled={loading || !nextActionAt}
@@ -253,7 +241,6 @@ export default function ComercialDashboard() {
                     id: rescheduleDialog.item.agendaActionId,
                     payload: {
                         nextActionAt: payload.nextActionAt,
-                        nextActionNote: payload.nextActionNote,
                     },
                 }),
                 {

@@ -63,7 +63,6 @@ function ProspectCard({ prospect, selected, onClick }) {
 
           <div className="flex items-center gap-4 flex-wrap">
             <div className="min-w-0">
-              <p className="text-muted-foreground mb-1 text-xs">Contacto principal</p>
               <p className="text-sm font-medium truncate">{prospect.primaryContact?.name ?? 'Sin contacto principal'}</p>
             </div>
           </div>

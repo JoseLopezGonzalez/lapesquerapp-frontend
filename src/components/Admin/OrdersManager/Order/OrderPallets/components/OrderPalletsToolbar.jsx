@@ -12,10 +12,12 @@ const OrderPalletsToolbar = ({
     onLink,
     onCreateFromForecast,
     onUnlinkAll,
+    readOnly = false,
 }) => {
     const canUnlinkAll = pallets && pallets.length > 0
 
     if (isMobile) {
+    if (readOnly) return null;
         return (
             <div
                 className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center gap-2 z-50"
@@ -67,6 +69,7 @@ const OrderPalletsToolbar = ({
                 <CardTitle className="text-lg font-medium">Gestión de Palets</CardTitle>
                 <CardDescription>Modifica los palets de la orden</CardDescription>
             </div>
+        {!readOnly && (
             <div className="flex gap-2">
                 {canUnlinkAll && (
                     <Button variant="outline" onClick={onUnlinkAll} disabled={isUnlinkingAll}>
@@ -96,6 +99,7 @@ const OrderPalletsToolbar = ({
                     Crear palet
                 </Button>
             </div>
+        )}
         </CardHeader>
     )
 }

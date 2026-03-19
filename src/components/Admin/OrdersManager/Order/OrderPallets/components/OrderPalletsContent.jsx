@@ -10,6 +10,7 @@ const EMPTY_STATE_DESCRIPTION = 'No se han añadido palets a este pedido'
 const OrderPalletsContent = ({
     pallets,
     isMobile,
+    readOnly = false,
     onEdit,
     onClone,
     onUnlink,
@@ -33,6 +34,7 @@ const OrderPalletsContent = ({
                     <OrderPalletCard
                         key={pallet.id}
                         pallet={pallet}
+                        readOnly={readOnly}
                         onEdit={onEdit}
                         onClone={onClone}
                         onUnlink={onUnlink}
@@ -65,6 +67,7 @@ const OrderPalletsContent = ({
                         <OrderPalletTableRow
                             key={pallet.id}
                             pallet={pallet}
+                            readOnly={readOnly}
                             onEdit={onEdit}
                             onClone={onClone}
                             onUnlink={onUnlink}

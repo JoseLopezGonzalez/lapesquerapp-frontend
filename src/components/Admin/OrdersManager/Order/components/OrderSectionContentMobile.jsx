@@ -32,7 +32,7 @@ function getFallback(activeSection) {
 /**
  * Contenido de sección móvil: renderiza el componente de SECTIONS_CONFIG según activeSection
  */
-export default function OrderSectionContentMobile({ activeSection }) {
+export default function OrderSectionContentMobile({ activeSection, palletsReadOnly = false }) {
   const section = SECTIONS_CONFIG.find((s) => s.id === activeSection);
   if (!section) return null;
 
@@ -53,10 +53,10 @@ export default function OrderSectionContentMobile({ activeSection }) {
     <div className={SECTION_CONTAINER_CLASS}>
       {isLazy ? (
         <Suspense fallback={getFallback(activeSection)}>
-          <Component />
+          {activeSection === 'pallets' ? <Component readOnly={palletsReadOnly} /> : <Component />}
         </Suspense>
       ) : (
-        <Component />
+        activeSection === 'pallets' ? <Component readOnly={palletsReadOnly} /> : <Component />
       )}
     </div>
   );

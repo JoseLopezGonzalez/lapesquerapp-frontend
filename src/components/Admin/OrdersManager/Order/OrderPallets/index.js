@@ -12,7 +12,7 @@ import OrderPalletsToolbar from './components/OrderPalletsToolbar';
 import OrderPalletsContent from './components/OrderPalletsContent';
 import { useOrderPallets } from './hooks/useOrderPallets';
 
-const OrderPallets = () => {
+const OrderPallets = ({ readOnly = false }) => {
     const isMobile = useIsMobile();
     const api = useOrderPallets();
     const {
@@ -89,6 +89,7 @@ const OrderPallets = () => {
                         <OrderPalletsContent
                             pallets={pallets}
                             isMobile={isMobile}
+                            readOnly={readOnly}
                             onEdit={handleOpenEditPallet}
                             onClone={handleClonePallet}
                             onUnlink={handleUnlinkPallet}
@@ -103,6 +104,7 @@ const OrderPallets = () => {
                                 <OrderPalletsContent
                                     pallets={pallets}
                                     isMobile={isMobile}
+                                    readOnly={readOnly}
                                     onEdit={handleOpenEditPallet}
                                     onClone={handleClonePallet}
                                     onUnlink={handleUnlinkPallet}
@@ -117,6 +119,7 @@ const OrderPallets = () => {
                     <OrderPalletsToolbar
                         isMobile={isMobile}
                         pallets={pallets}
+                        readOnly={readOnly}
                         isUnlinkingAll={isUnlinkingAll}
                         onCreate={handleOpenNewPallet}
                         onLink={handleOpenLinkPalletsDialog}
@@ -130,6 +133,7 @@ const OrderPallets = () => {
                     isMobile={isMobile}
                     pallets={pallets}
                     isUnlinkingAll={isUnlinkingAll}
+                    readOnly={readOnly}
                     onCreate={handleOpenNewPallet}
                     onLink={handleOpenLinkPalletsDialog}
                     onCreateFromForecast={handleOpenCreateFromForecastDialog}
@@ -139,6 +143,7 @@ const OrderPallets = () => {
                     <OrderPalletsContent
                         pallets={pallets}
                         isMobile={isMobile}
+                        readOnly={readOnly}
                         onEdit={handleOpenEditPallet}
                         onClone={handleClonePallet}
                         onUnlink={handleUnlinkPallet}

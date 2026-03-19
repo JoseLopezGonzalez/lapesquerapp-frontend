@@ -259,6 +259,7 @@ export default function ComercialOrdersManager() {
         selectedOrderId={selectedOrder}
         viewMode={viewMode}
         onToggleViewMode={toggleViewMode}
+        readOnly
       />
     ),
     [

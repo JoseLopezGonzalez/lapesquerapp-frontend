@@ -26,8 +26,17 @@ export default function OrderHeaderMobile({
 }) {
   if (!onClose) return null;
 
+  // En modo comercial con pedido en curso, ocultar secciones sensibles en el menú overflow.
+  const commercialInProgressBlockedTabIds =
+    readOnly && order?.status && order.status !== 'finished'
+      ? ['labels', 'documents', 'incident', 'export']
+      : [];
+
   const overflowSections = SECTIONS_CONFIG.filter(
     (s) => !PRIMARY_SECTION_IDS_MOBILE.includes(s.id)
+  );
+  const visibleOverflowSections = overflowSections.filter(
+    (s) => !commercialInProgressBlockedTabIds.includes(s.id)
   );
 
   return (
@@ -73,7 +82,7 @@ export default function OrderHeaderMobile({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            {overflowSections.map((section) => {
+            {visibleOverflowSections.map((section) => {
               const Icon = section.icon;
               return (
                 <DropdownMenuItem

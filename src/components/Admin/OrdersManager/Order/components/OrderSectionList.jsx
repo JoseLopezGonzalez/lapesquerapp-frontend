@@ -9,10 +9,11 @@ import { SECTIONS_CONFIG, PRIMARY_SECTION_IDS_MOBILE } from '../config/sectionsC
  * Lista de secciones principales móvil (centrada, card estrecha)
  * Secciones: Previsión, Producción, Envío de Documentos
  */
-export default function OrderSectionList({ onSelectSection, hasSafeAreaPadding }) {
+export default function OrderSectionList({ onSelectSection, hasSafeAreaPadding, blockedTabIds = [] }) {
   const primarySections = SECTIONS_CONFIG.filter((s) =>
     PRIMARY_SECTION_IDS_MOBILE.includes(s.id)
   );
+  const visiblePrimarySections = primarySections.filter((s) => !blockedTabIds.includes(s.id));
 
   return (
     <div className="flex-1 w-full overflow-hidden min-h-0">
@@ -24,7 +25,7 @@ export default function OrderSectionList({ onSelectSection, hasSafeAreaPadding }
           <Card className="w-full max-w-[280px] overflow-hidden">
             <CardContent className="p-0">
               <div className="divide-y divide-border/60">
-                {primarySections.map((section) => {
+                {visiblePrimarySections.map((section) => {
                   const Icon = section.icon;
                   return (
                     <button

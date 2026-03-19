@@ -33,6 +33,9 @@ export function useCommercialInteractionMutations() {
       queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] }),
+      // La creación de una interacción puede cambiar el estado del prospecto (ej: new -> following),
+      // por lo que hay que refrescar el listado para que cambien los badges y la pestaña activa.
+      queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
       queryClient.invalidateQueries({ queryKey: ['crm', 'interactions', 'list', tenantId] }),
       payload.prospectId
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, payload.prospectId] })

@@ -6,7 +6,7 @@ export type CommercialInteractionType = 'call' | 'email' | 'whatsapp' | 'visit' 
 export type CommercialInteractionResult = 'interested' | 'no_response' | 'not_interested' | 'pending';
 export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 export type OfferSendChannel = 'email' | 'pdf' | 'whatsapp_text';
-export type AgendaStatus = 'pending' | 'done' | 'cancelled';
+export type AgendaStatus = 'pending' | 'reprogrammed' | 'done' | 'cancelled';
 
 export interface CrmWarning {
   type: string;

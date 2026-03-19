@@ -48,6 +48,37 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
     onLoading(loading);
   }, [loading, onLoading])
 
+  // Lógica de negocio (comercial + pedido en curso):
+  // cuando el pedido está en "en producción" (pending) ocultar secciones sensibles:
+  // - Etiquetas
+  // - Envío de Documentos
+  // - Incidencia
+  const commercialInProgressBlockedTabIds =
+    readOnly && order?.status && order.status !== 'finished'
+      ? ['labels', 'documents', 'incident', 'export']
+      : [];
+
+  // Palets: en modo comercial read-only (pedido en curso) solo vista (lista vinculada),
+  // sin acciones de crear/editar/eliminar/desvincular/vincular desde previsión.
+  const palletsReadOnly = Boolean(readOnly && order?.status && order.status !== 'finished');
+
+  useEffect(() => {
+    if (commercialInProgressBlockedTabIds.length === 0) return;
+    if (!commercialInProgressBlockedTabIds.includes(activeTab)) return;
+    // Volver a una sección permitida para evitar que quede una vista vacía
+    setActiveTab('details');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commercialInProgressBlockedTabIds, activeTab, setActiveTab]);
+
+  // Refuerzo en móvil: si se intenta entrar a una sección bloqueada vía navegación,
+  // redirigir a "details" para que no se renderice.
+  useEffect(() => {
+    if (!activeSection) return;
+    if (commercialInProgressBlockedTabIds.length === 0) return;
+    if (!commercialInProgressBlockedTabIds.includes(activeSection)) return;
+    setActiveSection('details');
+  }, [activeSection, commercialInProgressBlockedTabIds]);
+
   // Función para cambiar el estado del pedido - memoizada con useCallback
   const handleStatusChange = useCallback(async (newStatus) => {
     await notify.promise(updateOrderStatus(newStatus), {
@@ -109,6 +140,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
                 <OrderSectionList
                   onSelectSection={setActiveSection}
                   hasSafeAreaPadding={!!onClose}
+                  blockedTabIds={commercialInProgressBlockedTabIds}
                 />
                 </div>
 
@@ -138,7 +170,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
                     <div className="absolute right-4 w-12 h-12" />
                   </div>
                 </div>
-                <OrderSectionContentMobile activeSection={activeSection} />
+                <OrderSectionContentMobile activeSection={activeSection} palletsReadOnly={palletsReadOnly} />
               </div>
             )
           ) : (
@@ -155,7 +187,12 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
               </CardHeader>
               <CardContent className="flex-1 min-h-0 flex flex-col py-0">
                 <div className="h-full flex flex-col w-full pb-16 lg:pb-0">
-                  <OrderTabsDesktop activeTab={activeTab} onTabChange={setActiveTab} />
+                    <OrderTabsDesktop
+                      activeTab={activeTab}
+                      onTabChange={setActiveTab}
+                      blockedTabIds={commercialInProgressBlockedTabIds}
+                      palletsReadOnly={palletsReadOnly}
+                    />
                 </div>
               </CardContent>
             </Card>

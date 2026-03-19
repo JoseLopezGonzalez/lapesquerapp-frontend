@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Calendar, Check, ChevronLeft, ChevronRight, ExternalLink, Filter, MoreVertical, XCircle } from 'lucide-react';
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, getDay, isSameMonth, isToday, startOfMonth, startOfWeek } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -17,10 +18,8 @@ import { DatePicker } from '@/components/ui/datePicker';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import Loader from '@/components/Utilities/Loader';
 import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
@@ -28,7 +27,7 @@ import { useAgenda, useAgendaMutations, useAgendaSummary } from '@/hooks/useAgen
 import QuickInteractionModal from './QuickInteractionModal';
 import { agendaStatusLabels, formatDateValue, getStatusTone, isOverdueDate, toneClasses } from './utils';
 
-const STATUS_OPTIONS = ['pending', 'done', 'cancelled'];
+const STATUS_OPTIONS = ['pending', 'reprogrammed', 'done', 'cancelled'];
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const TARGET_OPTIONS = [
   { value: 'all', label: 'Todos' },
@@ -176,12 +175,10 @@ function AgendaEventRow({ item, onReschedule, onCancel, onComplete }) {
 
 function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }) {
   const [nextActionAt, setNextActionAt] = React.useState(null);
-  const [nextActionNote, setNextActionNote] = React.useState('');
 
   React.useEffect(() => {
     if (!open) return;
     setNextActionAt(item?.scheduledAt ? new Date(item.scheduledAt) : null);
-    setNextActionNote(item?.description ?? '');
   }, [open, item]);
 
   return (
@@ -189,22 +186,14 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
       <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Reprogramar acción</DialogTitle>
-          <DialogDescription>Ajusta fecha y descripción para esta acción pendiente.</DialogDescription>
+          <DialogDescription>
+            Selecciona la nueva fecha. Si no envías una nota, el backend conservará automáticamente la descripción actual.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label>Fecha nueva</Label>
             <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="agenda-page-description">Descripción</Label>
-            <Textarea
-              id="agenda-page-description"
-              rows={3}
-              value={nextActionNote}
-              onChange={(event) => setNextActionNote(event.target.value)}
-              placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-            />
           </div>
         </div>
         <DialogFooter>
@@ -216,7 +205,6 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
             onClick={() =>
               onConfirm({
                 nextActionAt: nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
-                nextActionNote: nextActionNote.trim() || null,
               })
             }
           >
@@ -261,6 +249,7 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
           const dateKey = format(day, 'yyyy-MM-dd');
           const items = groupedEvents.get(dateKey) ?? [];
           const pendingCount = items.filter((item) => item.status === 'pending').length;
+          const reprogrammedCount = items.filter((item) => item.status === 'reprogrammed').length;
           const doneCount = items.filter((item) => item.status === 'done').length;
           const cancelledCount = items.filter((item) => item.status === 'cancelled').length;
           const hasItems = items.length > 0;
@@ -318,6 +307,14 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
                         </span>
                       </div>
                     )}
+                    {reprogrammedCount > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <div className="h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400 flex-shrink-0" />
+                        <span className="text-amber-700 dark:text-amber-300 font-medium leading-tight">
+                          {reprogrammedCount} reprog.
+                        </span>
+                      </div>
+                    )}
                     {cancelledCount > 0 && (
                       <div className="flex items-center gap-1.5 text-xs">
                         <div className="h-2 w-2 rounded-full bg-red-600 dark:bg-red-500 flex-shrink-0" />
@@ -339,21 +336,18 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
 
 function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedule, onCancel, onComplete }) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="flex flex-col gap-4 sm:max-w-2xl"
-      >
-        <SheetHeader>
-          <SheetTitle>{date ? `Agenda del ${formatDateValue(date)}` : 'Detalle del día'}</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent size="lg" className="max-h-[88vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>{date ? `Agenda del ${formatDateValue(date)}` : 'Detalle del día'}</DialogTitle>
+          <DialogDescription>
             {loading
               ? 'Cargando acciones del día seleccionado.'
               : `${items.length} ${items.length === 1 ? 'acción' : 'acciones'} para la fecha seleccionada.`}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <ScrollArea className="flex-1 px-4">
+        <ScrollArea className="max-h-[65vh] pr-4">
           <div className="space-y-3 pb-2">
             {loading ? (
               <div className="flex min-h-[220px] items-center justify-center">
@@ -378,8 +372,8 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
             )}
           </div>
         </ScrollArea>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -388,7 +382,7 @@ export default function AgendaPageClient() {
   const [selectedDate, setSelectedDate] = React.useState(null);
   const [dayDialogOpen, setDayDialogOpen] = React.useState(false);
   const [targetType, setTargetType] = React.useState('all');
-  const [statuses, setStatuses] = React.useState(['pending', 'done', 'cancelled']);
+  const [statuses, setStatuses] = React.useState(['pending', 'reprogrammed', 'done', 'cancelled']);
   const [filtersDialogOpen, setFiltersDialogOpen] = React.useState(false);
   const [rescheduleDialog, setRescheduleDialog] = React.useState({ open: false, item: null });
   const [cancelDialog, setCancelDialog] = React.useState({ open: false, item: null });
@@ -508,15 +502,15 @@ export default function AgendaPageClient() {
                   size="sm"
                   onClick={() => setFiltersDialogOpen(true)}
                 >
-                  <Filter className="size-4" />
-                  <span className="ml-2">Filtro</span>
+                  <Filter />
+                  <span>Filtro</span>
                 </Button>
 
-                <div className="rounded-lg border p-1">
+                <ButtonGroup orientation="horizontal" aria-label="Navegación de mes">
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="icon-sm"
                     onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
                   >
                     <ChevronLeft />
@@ -524,12 +518,12 @@ export default function AgendaPageClient() {
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="icon-sm"
                     onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
                   >
                     <ChevronRight />
                   </Button>
-                </div>
+                </ButtonGroup>
               </div>
             </div>
 

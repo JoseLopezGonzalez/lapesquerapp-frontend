@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,19 +65,22 @@ function CustomerDetail({ customerId, embedded = false }) {
             <CardTitle className="text-2xl">{customer.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'} · Comercial #{customer.salesperson?.id ?? '-'}</p>
           </div>
-          <Button onClick={() => setInteractionOpen(true)}>Nueva interacción</Button>
+          <Button onClick={() => setInteractionOpen(true)}>
+            <Plus data-icon="inline-start" />
+            Nueva interacción
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="py-4">
-        <Tabs defaultValue="data">
-          <TabsList className="mb-4 flex w-full flex-wrap justify-start">
+      <CardContent className="py-4 flex-1 min-h-0 flex flex-col">
+        <Tabs defaultValue="data" className="h-full w-full flex-1 min-h-0 flex flex-col">
+          <TabsList>
             <TabsTrigger value="data">Datos</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
             <TabsTrigger value="interactions">Interacciones</TabsTrigger>
             <TabsTrigger value="offers">Ofertas</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="data" className="space-y-4">
+          <TabsContent value="data" className="h-full w-full flex-1 min-h-0 overflow-y-auto space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border p-4">
                 <p className="text-sm text-muted-foreground">Email</p>
@@ -94,73 +97,93 @@ function CustomerDetail({ customerId, embedded = false }) {
             </div>
           </TabsContent>
 
-          <TabsContent value="orders">
+          <TabsContent value="orders" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
             {!history?.data?.length ? (
-              <EmptyState
-                title="Sin pedidos"
-                description="Este cliente no tiene historial visible en el periodo actual."
-                className="border bg-muted/20 min-h-[220px]"
-              />
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Sin pedidos"
+                  description="Este cliente no tiene historial visible en el periodo actual."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
-                {history.data.map((item, index) => (
-                  <div key={`${item.product?.id ?? index}-${index}`} className="rounded-xl border p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{item.product?.name ?? 'Producto'}</p>
-                        <p className="text-sm text-muted-foreground">{item.lines?.length ?? 0} líneas</p>
+              <div className="h-full w-full flex flex-col min-h-0">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2">
+                  {history.data.map((item, index) => (
+                    <div key={`${item.product?.id ?? index}-${index}`} className="rounded-xl border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{item.product?.name ?? 'Producto'}</p>
+                          <p className="text-sm text-muted-foreground">{item.lines?.length ?? 0} líneas</p>
+                        </div>
+                        <p className="font-medium">{formatCurrency(item.total_amount ?? 0)}</p>
                       </div>
-                      <p className="font-medium">{formatCurrency(item.total_amount ?? 0)}</p>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="interactions">
+          <TabsContent value="interactions" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
             {interactions.length === 0 ? (
-              <EmptyState
-                title="Sin interacciones"
-                description="Registra seguimientos desde esta ficha para dejar contexto al comercial."
-                className="border bg-muted/20 min-h-[220px]"
-              />
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Sin interacciones"
+                  description="Registra seguimientos desde esta ficha para dejar contexto al comercial."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
-                {interactions.map((interaction) => (
-                  <div key={interaction.id} className="rounded-xl border p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium">{interactionTypeLabels[interaction.type] ?? interaction.type}</p>
-                      <StatusPill label={interactionResultLabels[interaction.result] ?? interaction.result} status={interaction.result} />
+              <div className="h-full w-full flex flex-col min-h-0">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2">
+                  {interactions.map((interaction) => (
+                    <div key={interaction.id} className="rounded-xl border p-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{interactionTypeLabels[interaction.type] ?? interaction.type}</p>
+                        <StatusPill label={interactionResultLabels[interaction.result] ?? interaction.result} status={interaction.result} />
+                      </div>
+                      <p className="mt-2 text-sm">{interaction.summary}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{formatDateTimeValue(interaction.occurredAt)}</p>
                     </div>
-                    <p className="mt-2 text-sm">{interaction.summary}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{formatDateTimeValue(interaction.occurredAt)}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="offers">
+          <TabsContent value="offers" className="h-full w-full flex flex-col flex-1 min-h-0 overflow-hidden">
             {offers.length === 0 ? (
-              <EmptyState
-                title="Sin ofertas"
-                description="No hay ofertas vinculadas a este cliente."
-                className="border bg-muted/20 min-h-[220px]"
-              />
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Sin ofertas"
+                  description="No hay ofertas vinculadas a este cliente."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
-                {offers.map((offer) => (
-                  <Link key={offer.id} href={`/comercial/ofertas/${offer.id}`} className="block rounded-xl border p-4 hover:bg-accent/40">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">Oferta #{offer.id}</p>
-                        <p className="text-sm text-muted-foreground">{offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin validez definida'}</p>
+              <div className="h-full w-full flex flex-col min-h-0">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2">
+                  {offers.map((offer) => (
+                    <Link
+                      key={offer.id}
+                      href={`/comercial/ofertas/${offer.id}`}
+                      className="block rounded-xl border p-4 hover:bg-accent/40"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">Oferta #{offer.id}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {offer.validUntil
+                              ? `Validez: ${formatDateValue(offer.validUntil)}`
+                              : 'Sin validez definida'}
+                          </p>
+                        </div>
+                        <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
                       </div>
-                      <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>

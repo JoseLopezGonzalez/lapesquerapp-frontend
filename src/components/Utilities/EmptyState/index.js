@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
     Empty,
     EmptyContent,
@@ -21,7 +22,7 @@ import { Package } from 'lucide-react';
  */
 export function EmptyState({ title, description, icon, button, className }) {
     return (
-        <Empty className={className ?? 'h-full bg-muted/30'}>
+        <Empty className={cn(className ?? 'h-full bg-muted/30', '!min-h-0')}>
             <EmptyHeader>
                 <EmptyMedia variant="icon">
                     {icon ?? <Package />}
