@@ -408,7 +408,7 @@ const ExportModal = ({ document }) => {
                 LINBULTOS: 1,
                 LINUNIDADES: 1,
                 LINPRCMONEDA: importeBase * 0.015,
-                LINTIPIVA: 'SUPLIDO',
+                LINTIPIVA: 'SUPLIDOS',
             });
             ventaRows.push({
                 CABSERIE: CABSERIE,
