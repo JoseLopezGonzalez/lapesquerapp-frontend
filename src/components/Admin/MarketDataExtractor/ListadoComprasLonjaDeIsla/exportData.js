@@ -5185,6 +5185,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Adan de las LLagas Orta',
       codA3erp: '56334',
+      codA3erpCliente: '56334',
     }
   },
   {
@@ -5194,6 +5195,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Pesquera Los Guachi, S.L.',
       codA3erp: '691012',
+      codA3erpCliente: '988243',
     }
   },
   {
@@ -5202,6 +5204,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Jose Manuel Evangelista Cordero',
       codA3erp: '485871',
+      codA3erpCliente: '485871',
     }
   },
   {
@@ -5210,6 +5213,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Andres Lopez Barro',
       codA3erp: '988312',
+      codA3erpCliente: '988259',
     }
   },
   {
@@ -5218,6 +5222,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Adrimar C.B.',
       codA3erp: '988214',
+      codA3erpCliente: '988250',
     }
   },
   {
@@ -5226,6 +5231,7 @@ export const barcosVentaDirecta = [
     armador: {
       codA3erp: '988231',
       nombre: 'Paymogo',
+      codA3erpCliente: '988229',
     },
   },
   {
@@ -5234,6 +5240,7 @@ export const barcosVentaDirecta = [
     armador: {
       codA3erp: '143',
       nombre: 'Simon el Fortuna',
+      codA3erpCliente: '114',
     },
   },
   {
@@ -5242,6 +5249,7 @@ export const barcosVentaDirecta = [
     armador: {
       codA3erp: '148',
       nombre: 'Domingo Cale',
+      codA3erpCliente: '988217',
     },
   },
   {
@@ -5250,6 +5258,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Manuel Jesus Yaque Camacho',
       codA3erp: '988285',
+      codA3erpCliente: '988265',
     }
   },
   {
@@ -5258,6 +5267,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Juan Jesus Araujo Lopez',
       codA3erp: '988258',
+      codA3erpCliente: '988239',
     }
   },
   {
@@ -5266,6 +5276,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'MARIA BELLA PEREZ RIVERO',
       codA3erp: '781809',
+      codA3erpCliente: '988264',
     }
   },
   {
@@ -5274,6 +5285,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Juan Mirabent Serrano',
       codA3erp: '988293',
+      codA3erpCliente: '',
     }
   },
   {
@@ -5282,6 +5294,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Alejandra Gómez Ceada',
       codA3erp: '611721',
+      codA3erpCliente: '',
     }
   },
   /* BRASILIA */
@@ -5291,6 +5304,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Prumaudaz-Pescas Unipessoal Lda',
       codA3erp: '988299',
+      codA3erpCliente: '',
     }
   },
   

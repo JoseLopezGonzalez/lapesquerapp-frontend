@@ -27,7 +27,7 @@ import {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
-    const { CABSERIE: baseCABSERIE = "LI", startSequence = 1 } = options;
+    const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
     const { details: { fecha }, tables: { ventas, vendidurias } } = document;
     // Extraer año de la fecha (últimos 2 dígitos)
     // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
@@ -43,7 +43,9 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     const CABSERIE = `${baseCABSERIE}${año}`;
     const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
     let albaranSequence = startSequence;
+    let ventaAlbaranSequence = startSequenceVenta ?? startSequence;
     const processedRows = [];
+    const ventaRows = [];
 
     // Helper functions
     const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
@@ -138,6 +140,45 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     // Generate rows for ventasDirectas
     Object.values(ventasDirectas).forEach(barco => {
         const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDocVenta = `${fechaSoloNumeros}${ventaAlbaranSequence}`;
+
+        // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
+        const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
+        const codCliente = barco.armador?.codA3erpCliente;
+
+        // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
+        if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
+            throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
+        }
+
+            ventaRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDocVenta,
+            CABFECHA: fecha,
+            CABCODCLI: codCliente,
+            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+            LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
+            LINDESCLIN: 'Suplido lonja',
+            LINBULTOS: 1,
+            LINUNIDADES: 1,
+            LINPRCMONEDA: importeBase * 0.015,
+            LINTIPIVA: 'SUPLIDO',
+        });
+        ventaRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDocVenta,
+            CABFECHA: fecha,
+            CABCODCLI: codCliente,
+            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+            LINCODART: 9998, // Gasto gestión (iva normal 21%)
+            LINDESCLIN: 'Gasto gestion',
+            LINBULTOS: 1,
+            LINUNIDADES: 1,
+            LINPRCMONEDA: importeBase * 0.01,
+            LINTIPIVA: 'ORD21',
+        });
+        ventaAlbaranSequence++;
+
         barco.lineas.forEach(linea => {
             const producto = productos.find(p => p.nombre == linea.especie);
             processedRows.push({
@@ -214,7 +255,9 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
 
     return {
         rows: processedRows,
-        nextSequence: albaranSequence
+        nextSequence: albaranSequence,
+        ventaRows,
+        nextVentaSequence: ventaAlbaranSequence
     };
 }
 

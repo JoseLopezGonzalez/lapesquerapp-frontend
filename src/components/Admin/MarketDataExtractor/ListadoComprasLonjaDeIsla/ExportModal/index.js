@@ -200,7 +200,14 @@ const ExportModal = ({ document }) => {
         // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
 
         if (software === "A3ERP") {
-            generateExcelForA3erp();
+            try {
+                generateExcelForA3erp();
+            } catch (error) {
+                notify.error({
+                    title: 'Error al exportar',
+                    description: error.message || 'Error desconocido al generar el Excel',
+                });
+            }
         } else if (software === "Facilcom") {
             // generateExcelForFacilcom();
         } else {
@@ -360,6 +367,7 @@ const ExportModal = ({ document }) => {
 
     const generateExcelForA3erp = () => {
         const processedRows = [];
+        const ventaRows = [];
         // Extraer año de la fecha (últimos 2 dígitos)
         // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
         let año = null;
@@ -375,9 +383,48 @@ const ExportModal = ({ document }) => {
         // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
         const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
         let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
+        let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
 
         ventasDirectas.forEach(barco => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+            const cabNumDocVenta = `${fechaSoloNumeros}${ventaAlbaranSequence}`;
+            const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
+            const codCliente = barco.armador?.codA3erpCliente;
+
+            // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
+            if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
+                throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
+            }
+
+            // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
+            ventaRows.push({
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocVenta,
+                CABFECHA: fecha,
+                CABCODCLI: codCliente,
+                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
+                LINDESCLIN: 'Suplido lonja',
+                LINBULTOS: 1,
+                LINUNIDADES: 1,
+                LINPRCMONEDA: importeBase * 0.015,
+                LINTIPIVA: 'SUPLIDO',
+            });
+            ventaRows.push({
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocVenta,
+                CABFECHA: fecha,
+                CABCODCLI: codCliente,
+                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                LINCODART: 9998, // Gasto gestión (iva normal 21%)
+                LINDESCLIN: 'Gasto gestion',
+                LINBULTOS: 1,
+                LINUNIDADES: 1,
+                LINPRCMONEDA: importeBase * 0.01,
+                LINTIPIVA: 'ORD21',
+            });
+            ventaAlbaranSequence++;
+
             barco.lineas.forEach(linea => {
                 processedRows.push({
                     CABSERIE: CABSERIE,
@@ -453,6 +500,11 @@ const ExportModal = ({ document }) => {
         const worksheet = XLSX.utils.json_to_sheet(processedRows);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
+
+        if (ventaRows.length > 0) {
+            const worksheetVenta = XLSX.utils.json_to_sheet(ventaRows);
+            XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
+        }
 
         // Guardar archivo
         const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });

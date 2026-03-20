@@ -34,8 +34,10 @@ export function generateMassiveExcel(documents, options = {}) {
         'listadoComprasAsocArmadoresPuntaDelMoral': generateAsocExcelRows,
     };
 
-    const allRows = [];
-    let currentSequence = 1;
+    const allCompraRows = [];
+    const allVentaRows = [];
+    let currentSequenceCompra = 1;
+    let currentSequenceVenta = 1;
 
     // Process each document
     documents.forEach(({ document, documentType }) => {
@@ -48,21 +50,38 @@ export function generateMassiveExcel(documents, options = {}) {
 
         // Generate rows for this document with continuing sequence
         const result = helper(document, {
-            startSequence: currentSequence
+            startSequence: currentSequenceCompra,
+            startSequenceVenta: currentSequenceVenta,
         });
 
-        allRows.push(...result.rows);
-        currentSequence = result.nextSequence;
+        if (result?.rows?.length > 0) {
+            allCompraRows.push(...result.rows);
+        }
+        if (typeof result?.nextSequence === 'number') {
+            currentSequenceCompra = result.nextSequence;
+        }
+
+        if (result?.ventaRows?.length > 0) {
+            allVentaRows.push(...result.ventaRows);
+        }
+        if (typeof result?.nextVentaSequence === 'number') {
+            currentSequenceVenta = result.nextVentaSequence;
+        }
     });
 
-    if (allRows.length === 0) {
+    if (allCompraRows.length === 0 && allVentaRows.length === 0) {
         throw new Error('No se generaron filas para exportar');
     }
 
     // Create Excel workbook
-    const worksheet = XLSX.utils.json_to_sheet(allRows);
+    const worksheet = XLSX.utils.json_to_sheet(allCompraRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
+
+    if (allVentaRows.length > 0) {
+        const worksheetVenta = XLSX.utils.json_to_sheet(allVentaRows);
+        XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
+    }
 
     // Generate filename with current date
     const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
