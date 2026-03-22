@@ -9,6 +9,7 @@ import Loader from "@/components/Utilities/Loader";
 
 /** El operario tiene su propio segmento /operator; si llega a /admin se redirige. */
 const OPERATOR_DASHBOARD = "/operator";
+const FIELD_DASHBOARD = "/field";
 
 interface AdminRouteProtectionProps {
   children: ReactNode;
@@ -26,6 +27,8 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       if (userRole === "operario") {
         router.replace(OPERATOR_DASHBOARD);
+      } else if (userRole === "repartidor_autoventa") {
+        router.replace(FIELD_DASHBOARD);
       }
     }
   }, [status, session, pathname, router]);
@@ -43,7 +46,7 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
   }
 
   const role = session?.user?.role != null ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role) : null;
-  if (status === "authenticated" && role === "operario") {
+  if (status === "authenticated" && (role === "operario" || role === "repartidor_autoventa")) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader />

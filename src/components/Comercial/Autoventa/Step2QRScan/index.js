@@ -16,6 +16,7 @@ export default function Step2QRScan({
   addBox,
   removeBox,
   removeAllBoxes,
+  loadProductOptions = getProductOptions,
 }) {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
@@ -28,7 +29,7 @@ export default function Step2QRScan({
   useEffect(() => {
     if (!token) return;
     setLoadingProducts(true);
-    getProductOptions(token)
+    loadProductOptions(token)
       .then((data) => {
         const raw = Array.isArray(data) ? data : data?.data ?? [];
         setProductsOptions(
@@ -41,7 +42,7 @@ export default function Step2QRScan({
       })
       .catch(() => setProductsOptions([]))
       .finally(() => setLoadingProducts(false));
-  }, [token]);
+  }, [token, loadProductOptions]);
 
   const handleScannedCode = (rawValue) => {
     const code = String(rawValue ?? '').trim();

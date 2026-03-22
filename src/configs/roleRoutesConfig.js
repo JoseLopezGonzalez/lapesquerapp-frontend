@@ -18,13 +18,23 @@ export const COMERCIAL_BASE = '/comercial';
 
 export const comercialRoutes = {
   dashboard: COMERCIAL_BASE,
-  autoventa: `${COMERCIAL_BASE}/autoventa`,
   prospects: `${COMERCIAL_BASE}/prospectos`,
   prospectsCreate: `${COMERCIAL_BASE}/prospectos/create`,
   customers: `${COMERCIAL_BASE}/clientes`,
   offers: `${COMERCIAL_BASE}/ofertas`,
   offersCreate: `${COMERCIAL_BASE}/ofertas/create`,
   orders: `${COMERCIAL_BASE}/pedidos`,
+  routes: `${COMERCIAL_BASE}/rutas`,
+  routeTemplates: `${COMERCIAL_BASE}/rutas/plantillas`,
+};
+
+export const FIELD_BASE = '/field';
+
+export const fieldRoutes = {
+  dashboard: FIELD_BASE,
+  routes: `${FIELD_BASE}/rutas`,
+  orders: `${FIELD_BASE}/pedidos`,
+  autoventa: `${FIELD_BASE}/autoventa`,
 };
 
 /** Rutas de admin para otros roles (referencia; no incluye operario para flujos propios) */

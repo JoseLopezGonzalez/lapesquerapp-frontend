@@ -22,6 +22,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/operator") ||
     pathname.startsWith("/comercial") ||
+    pathname.startsWith("/field") ||
     pathname.startsWith("/production") ||
     pathname.startsWith("/warehouse");
 
@@ -138,6 +139,7 @@ export async function middleware(req: NextRequest) {
         const internalUrl = new URL("/admin/home", req.url);
         if (userRole === "operario") internalUrl.pathname = "/operator";
         if (userRole === "comercial") internalUrl.pathname = "/comercial";
+        if (userRole === "repartidor_autoventa") internalUrl.pathname = "/field";
         return NextResponse.redirect(internalUrl);
       }
       return NextResponse.next();
@@ -185,6 +187,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(comercialUrl);
   }
 
+  if (userRole === "repartidor_autoventa" && pathname.startsWith("/admin")) {
+    const fieldUrl = new URL("/field", req.url);
+    return NextResponse.redirect(fieldUrl);
+  }
+
   if (!rolesAllowed.length || !hasAccess) {
     const unauthorizedUrl = new URL("/unauthorized", req.url);
     return NextResponse.redirect(unauthorizedUrl);
@@ -194,5 +201,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/operator/:path*", "/comercial/:path*", "/production/:path*", "/warehouse/:path*", "/external/:path*"],
+  matcher: ["/admin/:path*", "/operator/:path*", "/comercial/:path*", "/field/:path*", "/production/:path*", "/warehouse/:path*", "/external/:path*"],
 };

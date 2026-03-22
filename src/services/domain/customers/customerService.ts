@@ -52,4 +52,10 @@ export const customerService = {
     const token = await getAuthToken();
     return fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token) as Promise<CatalogOption[]>;
   },
+  async updateAssignment(id: number | string, data: Record<string, unknown>): Promise<Customer> {
+    const token = await getAuthToken();
+    const response = await submitEntityFormGeneric(`${API_URL_V2}${ENDPOINT}/${id}/assignment`, 'PUT', data, token);
+    const result = await response.json();
+    return (result.data ?? result) as Customer;
+  },
 };

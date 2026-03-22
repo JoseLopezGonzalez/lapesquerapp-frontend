@@ -7,11 +7,13 @@ export type RoleKey =
   | "tecnico"
   | "operario"
   | "administracion"
-  | "comercial";
+  | "comercial"
+  | "repartidor_autoventa";
 
 export const roleConfig: Record<string, RoleKey[]> = {
   "/operator": ["operario"],
   "/comercial": ["comercial"],
+  "/field": ["repartidor_autoventa"],
   "/admin": ["administrador", "direccion", "tecnico"],
   "/admin/home": ["administrador", "direccion", "tecnico"],
   "/admin/raw-material-receptions": ["administrador", "direccion", "tecnico"],

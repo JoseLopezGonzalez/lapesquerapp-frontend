@@ -26,5 +26,6 @@ export function getRedirectUrl(user: LoginRedirectUser, searchString = ""): stri
   const role = Array.isArray(user?.role) ? user?.role[0] : user?.role;
   if (role === "operario") return "/operator";
   if (role === "comercial") return "/comercial";
+  if (role === "repartidor_autoventa") return "/field";
   return safeFrom || "/admin/home";
 }

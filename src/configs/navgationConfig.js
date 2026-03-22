@@ -7,7 +7,7 @@ import { RiMapPinUserLine } from "react-icons/ri";
 import { IoReceiptOutline } from "react-icons/io5";
 import { PiFishSimpleDuotone } from "react-icons/pi";
 import { TbPlugConnected } from "react-icons/tb";
-import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio, LayoutDashboard, ShoppingCart, Users, BriefcaseBusiness, ClipboardList, PackageOpen, CalendarClock } from 'lucide-react';
+import { LandPlot, ScanSearch, Settings2, Factory, FileText, Clock, Radio, LayoutDashboard, ShoppingCart, Users, BriefcaseBusiness, ClipboardList, PackageOpen, CalendarClock, MapPinned } from 'lucide-react';
 
 export const navigationConfig = [
     /* Solo operario: acceso desde dashboard (/operator) */
@@ -21,12 +21,6 @@ export const navigationConfig = [
         name: 'Inicio',
         icon: HomeIcon,
         href: '/comercial',
-        allowedRoles: ["comercial"],
-    },
-    {
-        name: 'Autoventa',
-        icon: ShoppingCart,
-        href: '/comercial/autoventa',
         allowedRoles: ["comercial"],
     },
     {
@@ -58,6 +52,36 @@ export const navigationConfig = [
         icon: PackageOpen,
         href: '/comercial/pedidos',
         allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Rutas',
+        icon: MapPinned,
+        href: '/comercial/rutas',
+        allowedRoles: ["comercial"],
+    },
+    {
+        name: 'Inicio',
+        icon: HomeIcon,
+        href: '/field',
+        allowedRoles: ["repartidor_autoventa"],
+    },
+    {
+        name: 'Rutas',
+        icon: MapPinned,
+        href: '/field/rutas',
+        allowedRoles: ["repartidor_autoventa"],
+    },
+    {
+        name: 'Pedidos',
+        icon: PackageOpen,
+        href: '/field/pedidos',
+        allowedRoles: ["repartidor_autoventa"],
+    },
+    {
+        name: 'Autoventa',
+        icon: ShoppingCart,
+        href: '/field/autoventa',
+        allowedRoles: ["repartidor_autoventa"],
     },
     {
         name: 'Inicio',
@@ -177,6 +201,12 @@ export const navigationConfig = [
         icon: RiMapPinUserLine,
         allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/salespeople',
+    },
+    {
+        name: 'Operadores de campo',
+        icon: MapPinned,
+        allowedRoles: ["administrador", "direccion", "tecnico"],
+        href: '/admin/field-operators',
     },
     {
         name: 'Clientes',

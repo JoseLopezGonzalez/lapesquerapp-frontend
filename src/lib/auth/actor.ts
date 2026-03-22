@@ -33,5 +33,6 @@ export function getDefaultAuthenticatedRoute(
   const role = normalizeRole(user?.role);
   if (role === "operario") return "/operator";
   if (role === "comercial") return "/comercial";
+  if (role === "repartidor_autoventa") return "/field";
   return "/admin/home";
 }

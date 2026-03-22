@@ -1,0 +1,149 @@
+'use client';
+
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Loader from '@/components/Utilities/Loader';
+import { EmptyState } from '@/components/Utilities/EmptyState';
+import { useFieldOrders } from '@/hooks/useFieldOrders';
+import { useFieldRoutes } from '@/hooks/useFieldRoutes';
+import { getFieldStatusLabel } from '@/components/Field/labels';
+import { MapPinned, PackageOpen, ShoppingCart, ArrowRight, Activity, Clock3 } from 'lucide-react';
+
+function getTodayDateString() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+export default function FieldDashboard() {
+  const today = getTodayDateString();
+  const { data: routesData, isLoading: loadingRoutes } = useFieldRoutes({ routeDate: today, perPage: 5 });
+  const { data: ordersData, isLoading: loadingOrders } = useFieldOrders({ perPage: 20 });
+
+  const todayRoute = routesData?.items?.[0] ?? null;
+  const orders = ordersData?.items ?? [];
+  const pendingOrders = orders.filter((order) => order.status === 'pending').length;
+  const finishedOrders = orders.filter((order) => order.status === 'finished').length;
+  const routeStops = Array.isArray(todayRoute?.stops) ? todayRoute.stops : [];
+  const completedStops = routeStops.filter((stop) => stop.status === 'completed').length;
+  const skippedStops = routeStops.filter((stop) => stop.status === 'skipped').length;
+
+  if (loadingRoutes || loadingOrders) {
+    return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Operativa de calle</h1>
+        <p className="text-sm text-muted-foreground">
+          Resumen rápido de tu jornada operativa, con acceso a rutas, pedidos y autoventa.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-border/70 shadow-sm">
+          <CardHeader className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MapPinned className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle>Ruta de hoy</CardTitle>
+              <CardDescription className="mt-1">
+                La primera ruta activa planificada para la fecha actual.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {todayRoute ? (
+              <>
+                <div className="space-y-1">
+                  <p className="font-medium">{todayRoute.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {getFieldStatusLabel(todayRoute.status)} · {completedStops + skippedStops}/{routeStops.length || 0} paradas procesadas
+                  </p>
+                </div>
+                <Button asChild className="w-full justify-between">
+                  <Link href={`/field/rutas/${todayRoute.id}`}>
+                    Abrir ruta
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <EmptyState
+                icon={<Clock3 className="h-10 w-10 text-primary" />}
+                title="Sin ruta hoy"
+                description="Cuando tengas una ruta programada para hoy aparecerá aquí."
+                className="min-h-[180px] border bg-muted/20"
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70 shadow-sm">
+          <CardHeader className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <PackageOpen className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle>Pedidos operativos</CardTitle>
+              <CardDescription className="mt-1">
+                Conteo rápido de pedidos pendientes y ya cerrados.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border bg-muted/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Pendientes</p>
+                <p className="mt-2 text-2xl font-semibold">{pendingOrders}</p>
+              </div>
+              <div className="rounded-xl border bg-muted/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Finalizados</p>
+                <p className="mt-2 text-2xl font-semibold">{finishedOrders}</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/field/pedidos">
+                Ver pedidos
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70 shadow-sm">
+          <CardHeader className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Activity className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle>Actividad reciente</CardTitle>
+              <CardDescription className="mt-1">
+                Resumen operativo rápido para la jornada actual.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-xl border bg-muted/20 p-4 text-sm">
+              <p className="font-medium">Paradas completadas</p>
+              <p className="mt-1 text-muted-foreground">{completedStops} completadas · {skippedStops} omitidas</p>
+            </div>
+            <div className="rounded-xl border bg-muted/20 p-4 text-sm">
+              <p className="font-medium">Acción rápida</p>
+              <p className="mt-1 text-muted-foreground">Crea una autoventa rápida si surge una oportunidad en ruta.</p>
+            </div>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/field/autoventa">
+                Nueva autoventa
+                <ShoppingCart className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
