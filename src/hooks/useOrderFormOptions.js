@@ -4,6 +4,7 @@ import { getIncotermsOptions } from '@/services/incotermService';
 import { getPaymentTermsOptions } from '@/services/paymentTernService';
 import { getSalespeopleOptions } from '@/services/salespersonService';
 import { getTransportsOptions } from '@/services/transportService';
+import { getFieldOperatorsOptions } from '@/services/fieldOperatorService';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState, useRef } from 'react';
 
@@ -12,7 +13,7 @@ import { useEffect, useState, useRef } from 'react';
  * Carga todas las opciones en paralelo para mejor rendimiento
  * 
  * @returns {Object} { options, loading, error }
- *   - options: { salespeople, incoterms, paymentTerms, transports }
+ *   - options: { salespeople, fieldOperators, incoterms, paymentTerms, transports }
  *   - loading: boolean
  *   - error: Error | null
  */
@@ -20,6 +21,7 @@ export function useOrderFormOptions() {
     const { data: session } = useSession();
     const [options, setOptions] = useState({
         salespeople: [],
+        fieldOperators: [],
         incoterms: [],
         paymentTerms: [],
         transports: [],
@@ -55,6 +57,10 @@ export function useOrderFormOptions() {
                 console.error('Error loading salespeople:', err);
                 return [];
             }),
+            getFieldOperatorsOptions(token).catch((err) => {
+                console.error('Error loading field operators:', err);
+                return [];
+            }),
             getIncotermsOptions(token).catch((err) => {
                 console.error('Error loading incoterms:', err);
                 return [];
@@ -68,7 +74,7 @@ export function useOrderFormOptions() {
                 return [];
             }),
         ])
-            .then(([salespeople, incoterms, paymentTerms, transports]) => {
+            .then(([salespeople, fieldOperators, incoterms, paymentTerms, transports]) => {
                 // Verificar que el componente sigue montado antes de actualizar estado
                 if (!isMountedRef.current) {
                     return;
@@ -76,6 +82,7 @@ export function useOrderFormOptions() {
 
                 setOptions({
                     salespeople: salespeople || [],
+                    fieldOperators: fieldOperators || [],
                     incoterms: incoterms || [],
                     paymentTerms: paymentTerms || [],
                     transports: transports || [],
@@ -103,6 +110,7 @@ export function useOrderFormOptions() {
     useEffect(() => {
         // Si tenemos opciones cargadas y loading está en true, corregirlo inmediatamente
         const hasAnyOptions = options.salespeople.length > 0 || 
+                              options.fieldOperators.length > 0 ||
                               options.incoterms.length > 0 || 
                               options.paymentTerms.length > 0 || 
                               options.transports.length > 0;
@@ -115,10 +123,11 @@ export function useOrderFormOptions() {
                 hasLoadedRef.current = true;
             }
         }
-    }, [loading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
+    }, [loading, options.salespeople.length, options.fieldOperators.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
 
     // Calcular loading final: si tenemos opciones, no deberíamos estar en loading
     const hasAnyOptions = options.salespeople.length > 0 || 
+                          options.fieldOperators.length > 0 ||
                           options.incoterms.length > 0 || 
                           options.paymentTerms.length > 0 || 
                           options.transports.length > 0;

@@ -99,6 +99,8 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                 payload[fieldName] = fieldValue instanceof Date
                     ? format(fieldValue, 'yyyy-MM-dd')
                     : fieldValue;
+            } else if (fieldName === 'fieldOperator') {
+                payload[fieldName] = fieldValue ? parseInt(fieldValue, 10) : null;
             } else {
                 payload[fieldName] = fieldValue;
             }

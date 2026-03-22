@@ -45,6 +45,10 @@ const OrderDetails = () => {
                             <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
                         </div>
                         <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Repartidor</div>
+                            <div className="font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
+                        </div>
+                        <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Forma de pago</div>
                             <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
                         </div>
@@ -194,6 +198,10 @@ const OrderDetails = () => {
                     <div>
                         <div className="text-sm text-muted-foreground">Vendedor</div>
                         <div className="text-sm font-medium">{order.salesperson?.name ?? '—'}</div>
+                    </div>
+                    <div>
+                        <div className="text-sm text-muted-foreground">Repartidor</div>
+                        <div className="text-sm font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Forma de pago</div>

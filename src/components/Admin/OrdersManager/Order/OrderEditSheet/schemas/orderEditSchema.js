@@ -5,6 +5,7 @@ export const orderEditSchema = z.object({
     entryDate: z.date({ required_error: 'La fecha de entrada es obligatoria' }).nullable().refine((val) => val != null, 'La fecha de entrada es obligatoria'),
     loadDate: z.date({ required_error: 'La fecha de carga es obligatoria' }).nullable().refine((val) => val != null, 'La fecha de carga es obligatoria'),
     salesperson: z.string().min(1, 'Seleccione un comercial'),
+    fieldOperator: z.string().optional(),
     payment: z.string().optional(),
     incoterm: z.string().optional(),
     buyerReference: z.string().optional(),

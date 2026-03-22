@@ -19,6 +19,8 @@ const SETTINGS_QUERY_KEY = 'settings';
 export function useSettingsData() {
   const { data: session, status } = useSession();
   const accessToken = session?.user?.accessToken;
+  const rawRole = session?.user?.role;
+  const primaryRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
   const queryClient = useQueryClient();
 
   const [tenantId, setTenantId] = useState(() =>
@@ -44,11 +46,13 @@ export function useSettingsData() {
   }, []);
 
   const externalUser = isExternalActor(session?.user);
+  const isFieldOperator = primaryRole === 'repartidor_autoventa';
   const enabled = Boolean(
     tenantId &&
     status !== 'loading' &&
     accessToken &&
-    !externalUser
+    !externalUser &&
+    !isFieldOperator
   );
 
   const query = useQuery({

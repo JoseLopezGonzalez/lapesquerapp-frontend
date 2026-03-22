@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Package, Scan, Trash2 } from 'lucide-react';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
@@ -23,6 +24,7 @@ export default function Step2QRScan({
   const [productsOptions, setProductsOptions] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [manualCodes, setManualCodes] = useState('');
   const lastScannedRef = useRef({ code: '', at: 0 });
   const DEBOUNCE_MS = 2500;
 
@@ -69,6 +71,51 @@ export default function Step2QRScan({
     setScannerOpen(false);
   };
 
+  const handleManualCodesSubmit = () => {
+    const lines = manualCodes
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length === 0) {
+      notify.error({ title: 'Añade al menos un código' }, { duration: 1200 });
+      return;
+    }
+
+    let added = 0;
+    let invalid = 0;
+
+    lines.forEach((line) => {
+      const parsed = parseGs1128Line(line, productsOptions);
+      if (parsed) {
+        addBox(parsed);
+        added += 1;
+      } else {
+        invalid += 1;
+      }
+    });
+
+    if (added > 0) {
+      notify.success(
+        {
+          title: added === 1 ? 'Caja añadida' : `${added} cajas añadidas`,
+          description: invalid > 0 ? `${invalid} códigos no se pudieron leer.` : undefined,
+        },
+        { duration: 1800 }
+      );
+      setManualCodes('');
+      return;
+    }
+
+    notify.error(
+      {
+        title: 'No se pudo leer ningún código',
+        description: 'Revisa el formato GS1-128 e inténtalo de nuevo.',
+      },
+      { duration: 1800 }
+    );
+  };
+
   const boxes = state.boxes ?? [];
 
   return (
@@ -83,6 +130,24 @@ export default function Step2QRScan({
         >
           <Scan className="h-4 w-4 mr-2" />
           Escanear con cámara
+        </Button>
+      </div>
+
+      <div className="hidden w-full shrink-0 space-y-2 md:block">
+        <Textarea
+          value={manualCodes}
+          onChange={(event) => setManualCodes(event.target.value)}
+          placeholder="Pega uno o varios códigos GS1-128, uno por línea"
+          className="min-h-24 resize-none"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleManualCodesSubmit}
+          disabled={loadingProducts}
+        >
+          Añadir códigos pegados
         </Button>
       </div>
 

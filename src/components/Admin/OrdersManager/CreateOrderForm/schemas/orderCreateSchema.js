@@ -13,6 +13,7 @@ export const orderCreateSchema = z.object({
     entryDate: z.date({ required_error: 'La fecha de entrada es obligatoria' }),
     loadDate: z.date({ required_error: 'La fecha de carga es obligatoria' }),
     salesperson: z.string().min(1, 'Seleccione un comercial'),
+    fieldOperator: z.string().optional(),
     payment: z.string().min(1, 'Seleccione la forma de pago'),
     incoterm: z.string().min(1, 'Seleccione un incoterm'),
     buyerReference: z.string().min(1, 'La referencia del comprador es obligatoria'),

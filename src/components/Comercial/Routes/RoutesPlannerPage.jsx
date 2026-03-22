@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import {
@@ -173,6 +173,26 @@ function getTargetTypeLabel(value) {
   };
 
   return labels[value] ?? value ?? 'Sin objetivo';
+}
+
+function getRouteStatusLabel(value) {
+  const normalizedValue = typeof value === 'string' ? value.trim().toLowerCase() : value;
+  const labels = {
+    pending: 'Pendiente',
+    planned: 'Planificada',
+    draft: 'Borrador',
+    assigned: 'Asignada',
+    active: 'Activa',
+    in_progress: 'En curso',
+    completed: 'Completada',
+    finished: 'Finalizada',
+    cancelled: 'Cancelada',
+    canceled: 'Cancelada',
+    incident: 'Incidencia',
+    skipped: 'Omitida',
+  };
+
+  return labels[normalizedValue] ?? value ?? 'Pendiente';
 }
 
 async function enrichStopsWithCoordinates(stops) {
@@ -572,6 +592,8 @@ function CreatePlannerItemDialog({
 export default function RoutesPlannerPage({ initialTab = 'routes', routeId = null, templateId = null }) {
   const MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM = 9.5;
   const router = useRouter();
+  const loadedRouteIdRef = useRef(null);
+  const loadedTemplateIdRef = useRef(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
   const { options: fieldOperatorOptions } = useFieldOperatorOptions();
   const { data: customersData } = useCustomersList({ perPage: 250 });
@@ -674,6 +696,12 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   useEffect(() => {
     if (!routeId) return;
 
+    if (loadedRouteIdRef.current && String(loadedRouteIdRef.current) === String(routeId)) {
+      setLoadingSelectedItem(false);
+      setDetailNotFound(null);
+      return;
+    }
+
     const source = routeId
       ? routes.find((item) => String(item.id) === String(routeId))
       : null;
@@ -717,6 +745,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           stops,
         })
       );
+      loadedRouteIdRef.current = source.id;
       setLoadingSelectedItem(false);
     });
 
@@ -727,6 +756,12 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
 
   useEffect(() => {
     if (!templateId) return;
+
+    if (loadedTemplateIdRef.current && String(loadedTemplateIdRef.current) === String(templateId)) {
+      setLoadingSelectedItem(false);
+      setDetailNotFound(null);
+      return;
+    }
 
     const source = templateId
       ? templates.find((item) => String(item.id) === String(templateId))
@@ -759,6 +794,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           stops,
         })
       );
+      loadedTemplateIdRef.current = source.id;
       setLoadingSelectedItem(false);
     });
 
@@ -804,53 +840,19 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     };
   }, [currentDraft.stops]);
 
-  const handleSelectRoute = async (route) => {
+  const handleSelectRoute = (route) => {
     setLoadingSelectedItem(true);
     setDetailNotFound(null);
-    const stops = await enrichStopsWithCoordinates(normalizeStops(route.stops ?? []));
     setTab('routes');
     setDetailMode(true);
-    setRouteDraft(
-      createEmptyRouteDraft({
-        id: route.id,
-        name: route.name ?? '',
-        description: route.description ?? '',
-        routeDate: route.routeDate ?? '',
-        fieldOperatorId: route.fieldOperator?.id != null ? String(route.fieldOperator.id) : '',
-        routeTemplateId:
-          route.routeTemplateId != null
-            ? String(route.routeTemplateId)
-            : route.routeTemplate?.id != null
-              ? String(route.routeTemplate.id)
-              : '',
-        sourceMode:
-          route.routeTemplateId != null || route.routeTemplate?.id != null
-            ? 'template'
-            : 'manual',
-        stopsEdited: false,
-        stops,
-      })
-    );
-    setLoadingSelectedItem(false);
     router.push(`/comercial/rutas/${route.id}`);
   };
 
-  const handleSelectTemplate = async (template) => {
+  const handleSelectTemplate = (template) => {
     setLoadingSelectedItem(true);
     setDetailNotFound(null);
-    const stops = await enrichStopsWithCoordinates(normalizeStops(template.stops ?? []));
     setTab('templates');
     setDetailMode(true);
-    setTemplateDraft(
-      createEmptyTemplateDraft({
-        id: template.id,
-        name: template.name ?? '',
-        description: template.description ?? '',
-        fieldOperatorId: template.fieldOperator?.id != null ? String(template.fieldOperator.id) : '',
-        stops,
-      })
-    );
-    setLoadingSelectedItem(false);
     router.push(`/comercial/rutas/plantillas/${template.id}`);
   };
 
@@ -1004,11 +1006,13 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     setLoadingSelectedItem(false);
     setDetailNotFound(null);
     if (tab === 'routes') {
+      loadedRouteIdRef.current = null;
       setRouteDraft(createEmptyRouteDraft());
       router.push('/comercial/rutas');
       return;
     }
 
+    loadedTemplateIdRef.current = null;
     setTemplateDraft(createEmptyTemplateDraft());
     router.push('/comercial/rutas/plantillas');
   };
@@ -1023,6 +1027,8 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     setDetailMode(false);
     setLoadingSelectedItem(false);
     setDetailNotFound(null);
+    loadedRouteIdRef.current = null;
+    loadedTemplateIdRef.current = null;
     router.push(tab === 'routes' ? '/comercial/rutas' : '/comercial/rutas/plantillas');
   };
 
@@ -1053,6 +1059,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           stops: templateStops,
         })
       );
+      loadedRouteIdRef.current = null;
       setLoadingSelectedItem(false);
       router.push('/comercial/rutas');
     } else {
@@ -1064,6 +1071,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           stops: [],
         })
       );
+      loadedTemplateIdRef.current = null;
       setLoadingSelectedItem(false);
       router.push('/comercial/rutas/plantillas');
     }
@@ -1209,7 +1217,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
                 router.push(value === 'routes' ? '/comercial/rutas' : '/comercial/rutas/plantillas');
               }}
             >
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList>
                 <TabsTrigger value="routes">Rutas</TabsTrigger>
                 <TabsTrigger value="templates">Plantillas</TabsTrigger>
               </TabsList>
@@ -1263,7 +1271,9 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-medium">{item.name}</p>
-                        <Badge variant="secondary">{tab === 'routes' ? item.status || 'pending' : 'plantilla'}</Badge>
+                        <Badge variant="secondary">
+                          {tab === 'routes' ? getRouteStatusLabel(item.status) : 'Plantilla'}
+                        </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {tab === 'routes' ? item.routeDate || 'Sin fecha' : item.description || 'Sin descripción'}
@@ -1276,8 +1286,8 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           </CardContent>
         </Card>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
-          <div className="relative min-h-[72vh] flex-1 overflow-hidden rounded-[28px] border bg-muted/20 shadow-sm">
+        <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4">
+          <div className="relative min-h-[72vh] w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border bg-muted/20 shadow-sm">
             {loadingSelectedItem ? (
               <div className="flex h-full min-h-[72vh] items-center justify-center p-6">
                 <Loader />
@@ -1300,7 +1310,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
             )}
 
             <div className="absolute top-4 right-4 z-20">
-              <div className="rounded-2xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur">
+              <div className="rounded-2xl border bg-background/95 px-4 py-3 shadow-sm">
                 {isCalculatingRoute && (
                   <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1377,7 +1387,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
             )}
 
             {stopsPanelExpanded && (
-              <div className="absolute left-4 top-4 z-20 w-[360px] max-w-[calc(100%-2rem)] rounded-[24px] border bg-background/96 shadow-lg backdrop-blur">
+              <div className="absolute left-4 top-4 z-20 w-[360px] max-w-[calc(100%-2rem)] rounded-[24px] border bg-background/96 shadow-lg">
                 <div className="border-b p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -1432,6 +1442,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
             )}
 
             <RouteMap
+              mapKey={`${tab}-${currentDraft.id ?? 'draft'}`}
               stops={currentDraft.stops}
               routeGeometry={routeGeometry}
               className="h-full w-full"

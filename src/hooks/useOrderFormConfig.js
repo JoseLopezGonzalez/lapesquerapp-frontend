@@ -7,6 +7,7 @@ const initialDefaultValues = {
     entryDate: null, // Cambiado de '' a objeto Date
     loadDate: null, // Cambiado de '' a null
     salesperson: '',
+    fieldOperator: '',
     payment: '',
     incoterm: '',
     transport: '',
@@ -73,6 +74,13 @@ const initialFormGroups = [
                 rules: { required: 'Seleccione un comercial' },
                 options: [],
                 props: { placeholder: 'Seleccionar comercial' },
+            },
+            {
+                name: 'fieldOperator',
+                label: 'Repartidor',
+                component: 'Select',
+                options: [],
+                props: { placeholder: 'Seleccionar repartidor' },
             },
             {
                 name: 'payment',
@@ -267,6 +275,7 @@ export function useOrderFormConfig({ orderData }) {
                 entryDate: parseDate(orderData.entryDate),
                 loadDate: parseDate(orderData.loadDate),
                 salesperson: `${orderData.salesperson?.id || ''}`,
+                fieldOperator: `${orderData.fieldOperator?.id || orderData.fieldOperatorId || ''}`,
                 payment: `${orderData.paymentTerm?.id || ''}`,
                 incoterm: `${orderData.incoterm?.id || ''}`,
                 buyerReference: orderData.buyerReference || '',
@@ -292,6 +301,7 @@ export function useOrderFormConfig({ orderData }) {
         // Pero si ya tenemos opciones cargadas (aunque esté recargando), mantenerlas
         if (optionsLoading && 
             (!options.salespeople?.length && 
+             !options.fieldOperators?.length &&
              !options.paymentTerms?.length && 
              !options.incoterms?.length && 
              !options.transports?.length)) {
@@ -309,6 +319,15 @@ export function useOrderFormConfig({ orderData }) {
                                 options: options.salespeople.map((sp) => ({
                                     value: `${sp.id}`,
                                     label: `${sp.name}`,
+                                })),
+                            };
+                        }
+                        if (field.name === 'fieldOperator') {
+                            return {
+                                ...field,
+                                options: options.fieldOperators.map((operator) => ({
+                                    value: `${operator.id}`,
+                                    label: `${operator.name}`,
                                 })),
                             };
                         }
@@ -353,12 +372,13 @@ export function useOrderFormConfig({ orderData }) {
             }
             return group;
         });
-    }, [options.salespeople, options.paymentTerms, options.incoterms, options.transports, optionsLoading]);
+    }, [options.salespeople, options.fieldOperators, options.paymentTerms, options.incoterms, options.transports, optionsLoading]);
 
     // Asegurarse de que loading se actualice correctamente cuando optionsLoading cambia
     // Usar useMemo para calcular loading basándose en si realmente hay opciones
     const actualLoading = useMemo(() => {
         const hasOptions = options.salespeople.length > 0 || 
+                          options.fieldOperators.length > 0 ||
                           options.incoterms.length > 0 || 
                           options.paymentTerms.length > 0 || 
                           options.transports.length > 0;
@@ -366,7 +386,7 @@ export function useOrderFormConfig({ orderData }) {
         const calculatedLoading = hasOptions ? false : (optionsLoading && !hasOptions);
         
         return calculatedLoading;
-    }, [optionsLoading, options.salespeople.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
+    }, [optionsLoading, options.salespeople.length, options.fieldOperators.length, options.incoterms.length, options.paymentTerms.length, options.transports.length]);
 
     useEffect(() => {
         // Actualizar formGroups cuando las opciones cambien
@@ -380,5 +400,4 @@ export function useOrderFormConfig({ orderData }) {
 
     return { defaultValues, formGroups, loading, loadingProgress };
 }
-
 

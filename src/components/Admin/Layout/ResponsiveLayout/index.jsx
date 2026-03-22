@@ -64,12 +64,11 @@ function ResponsiveLayoutContent({
   // Regla crítica: Mientras isMobile === null, NO renderizar navegación mobile
   // Renderizar layout desktop por defecto hasta que esté montado
   if (!mounted) {
-    // Renderizar layout desktop por defecto (no afecta visualmente)
     const styleSidebar = {
       "--sidebar-width": "18rem",
       "--sidebar-width-mobile": "16rem",
     };
-    
+
     return (
       <div className='h-screen overflow-hidden'>
         <SidebarProvider className='h-full' style={styleSidebar}>
@@ -78,7 +77,8 @@ function ResponsiveLayoutContent({
             <div className='p-1'>
               <SidebarTrigger />
             </div>
-            <div className='flex-1 w-full h-full overflow-hidden p-1'>
+            {/* Sin key: primer paint; al pasar a mounted+desktop el branch !isMobile usa key y remonta {children} */}
+            <div className='flex-1 w-full min-h-0 overflow-hidden p-1'>
               {children}
             </div>
           </main>
@@ -87,13 +87,13 @@ function ResponsiveLayoutContent({
     );
   }
 
-  // Desktop layout (≥768px)
+  // Desktop layout (≥768px) — key fuerza remount del contenido cuando layout ya está estabilizado (Mapbox/WebGL)
   if (!isMobile) {
     const styleSidebar = {
       "--sidebar-width": "18rem",
       "--sidebar-width-mobile": "16rem",
     };
-    
+
     return (
       <div className='h-screen overflow-hidden'>
         <SidebarProvider className='h-full' style={styleSidebar}>
@@ -102,7 +102,7 @@ function ResponsiveLayoutContent({
             <div className='p-1'>
               <SidebarTrigger />
             </div>
-            <div className='flex-1 w-full h-full overflow-hidden p-1'>
+            <div key="content-active" className='flex-1 w-full min-h-0 overflow-hidden p-1'>
               {children}
             </div>
           </main>

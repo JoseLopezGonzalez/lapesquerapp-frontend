@@ -4,6 +4,7 @@ import { getPaymentTermsOptions } from '@/services/paymentTernService';
 import { getSalespeopleOptions } from '@/services/salespersonService';
 import { getTransportsOptions } from '@/services/transportService';
 import { getCustomer, getCustomersOptions } from '@/services/customerService';
+import { getFieldOperatorsOptions } from '@/services/fieldOperatorService';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +15,7 @@ const initialDefaultValues = {
     entryDate: today, // Cambiado de string a objeto Date
     loadDate: today, // Fecha de carga por defecto: fecha actual
     salesperson: '',
+    fieldOperator: '',
     payment: '',
     incoterm: '',
     buyerReference: '',
@@ -81,6 +83,13 @@ const initialFormGroups = [
                 rules: { required: 'Seleccione un comercial' },
                 options: [],
                 props: { placeholder: 'Seleccionar comercial' },
+            },
+            {
+                name: 'fieldOperator',
+                label: 'Repartidor',
+                component: 'Select',
+                options: [],
+                props: { placeholder: 'Seleccionar repartidor' },
             },
             {
                 name: 'payment',
@@ -263,12 +272,13 @@ export function useOrderCreateFormConfig() {
                     setLoading(false);
                     return;
                 }
-                const [salespeople, paymentTerms, incoterms, transports, customers] = await Promise.all([
+                const [salespeople, paymentTerms, incoterms, transports, customers, fieldOperators] = await Promise.all([
                     getSalespeopleOptions(token),
                     getPaymentTermsOptions(token),
                     getIncotermsOptions(token),
                     getTransportsOptions(token),
                     getCustomersOptions(token),
+                    getFieldOperatorsOptions(token),
                 ]);
 
                 setFormGroups((prev) =>
@@ -292,6 +302,9 @@ export function useOrderCreateFormConfig() {
                                     fields: group.fields.map((field) => {
                                         if (field.name === 'salesperson') {
                                             return { ...field, options: salespeople.map((sp) => ({ value: `${sp.id}`, label: sp.name })) };
+                                        }
+                                        if (field.name === 'fieldOperator') {
+                                            return { ...field, options: fieldOperators.map((operator) => ({ value: `${operator.id}`, label: operator.name })) };
                                         }
                                         if (field.name === 'payment') {
                                             return { ...field, options: paymentTerms.map((pt) => ({ value: `${pt.id}`, label: pt.name })) };

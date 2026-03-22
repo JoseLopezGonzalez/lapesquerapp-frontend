@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import { useFieldRoutes } from '@/hooks/useFieldRoutes';
@@ -14,7 +15,30 @@ function getProgress(route) {
   const stops = Array.isArray(route?.stops) ? route.stops : [];
   const completed = stops.filter((stop) => stop.status === 'completed').length;
   const skipped = stops.filter((stop) => stop.status === 'skipped').length;
-  return `${completed + skipped}/${stops.length || 0}`;
+  const processed = completed + skipped;
+  const total = stops.length || 0;
+  const percentage = total > 0 ? Math.round((processed / total) * 100) : 0;
+
+  return {
+    processed,
+    total,
+    percentage,
+  };
+}
+
+function formatRouteDate(value) {
+  if (!value) return 'Sin fecha';
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(parsed);
 }
 
 export default function FieldRoutesListPage() {
@@ -57,32 +81,43 @@ export default function FieldRoutesListPage() {
       </div>
 
       <div className="grid gap-4">
-        {routes.map((route) => (
+        {routes.map((route) => {
+          const progress = getProgress(route);
+
+          return (
           <Card key={route.id} className="border-border/70">
             <CardHeader className="gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <CardTitle className="text-lg">{route.name}</CardTitle>
-                  <CardDescription>
-                    {route.routeDate || 'Sin fecha'} · {route.fieldOperator?.name || 'Sin repartidor'}
-                  </CardDescription>
+                  <CardDescription>{formatRouteDate(route.routeDate)}</CardDescription>
+                  <CardDescription>{route.description || 'Ruta operativa'}</CardDescription>
                 </div>
                 <Badge variant="secondary">{getFieldStatusLabel(route.status || 'pending')}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="flex items-center justify-between gap-3">
-              <div className="text-sm text-muted-foreground">
-                Progreso: <span className="font-medium text-foreground">{getProgress(route)}</span>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">Progreso</span>
+                  <span className="font-medium text-foreground">
+                    {progress.processed}/{progress.total}
+                  </span>
+                </div>
+                <Progress value={progress.percentage} className="h-2" />
               </div>
-              <Button asChild>
-                <Link href={`/field/rutas/${route.id}`}>
-                  Abrir ruta
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+
+              <div className="flex items-center justify-end">
+                <Button asChild>
+                  <Link href={`/field/rutas/${route.id}`}>
+                    Abrir ruta
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        ))}
+        )})}
       </div>
     </div>
   );

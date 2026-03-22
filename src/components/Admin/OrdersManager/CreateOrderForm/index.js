@@ -84,6 +84,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         getCustomer(selectedCustomerId, session?.user?.accessToken) // Pasa el token si getCustomer lo espera
             .then((customer) => {
                 setValue('salesperson', customer.salesperson?.id?.toString() || '');
+                setValue('fieldOperator', customer.fieldOperator?.id?.toString() || customer.fieldOperatorId?.toString() || '');
                 setValue('payment', customer.paymentTerm?.id?.toString() || '');
                 setValue('incoterm', customer.incoterm?.id?.toString() || '');
                 setValue('billingAddress', customer.billingAddress || '');
@@ -128,6 +129,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
             entryDate: formData.entryDate ? format(formData.entryDate, 'yyyy-MM-dd') : null,
             loadDate: formData.loadDate ? format(formData.loadDate, 'yyyy-MM-dd') : null,
             salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
+            fieldOperator: formData.fieldOperator ? parseInt(formData.fieldOperator) : undefined,
             payment: formData.payment ? parseInt(formData.payment) : null,
             incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
             buyerReference: formData.buyerReference || null,

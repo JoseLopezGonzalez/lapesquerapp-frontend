@@ -2,11 +2,27 @@
 
 import Map, { Layer, Marker, Source } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { cn } from '@/lib/utils';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+function runResizeBurst(getMap) {
+  const resize = () => {
+    try {
+      const map = getMap();
+      map?.resize();
+      map?.triggerRepaint?.();
+    } catch {
+      /* ignore */
+    }
+  };
+  resize();
+  const delays = [32, 120, 280, 600];
+  return delays.map((delay) => window.setTimeout(resize, delay));
+}
 
 const routeLineLayer = {
   id: 'route-line',
@@ -28,13 +44,25 @@ function getStopColor(stop) {
 export function RouteMap({
   stops = [],
   routeGeometry = null,
+  disableFallbackLine = false,
+  mapKey = 'default',
   children,
   initialViewState = { longitude: -3.7038, latitude: 40.4168, zoom: 5.5 },
   onClick,
+  onStopClick,
   interactive = true,
   className,
 }) {
   const mapRef = useRef(null);
+  const containerRef = useRef(null);
+  const burstTimersRef = useRef([]);
+  const [mapLoadError, setMapLoadError] = useState('');
+
+  const surfaceClassName = cn(
+    'relative h-full min-h-0 w-full overflow-hidden rounded-xl border bg-muted/30',
+    className
+  );
+
   const fallbackLineData = useMemo(() => {
     const coordinates = stops
       .filter((stop) => stop?.lng != null && stop?.lat != null)
@@ -50,12 +78,51 @@ export function RouteMap({
       },
     };
   }, [stops]);
-  const lineData = routeGeometry ?? fallbackLineData;
+  const lineData = routeGeometry ?? (disableFallbackLine ? null : fallbackLineData);
 
   const positionedStops = useMemo(
     () => stops.filter((stop) => stop?.lng != null && stop?.lat != null),
     [stops]
   );
+
+  const clearBurstTimers = useCallback(() => {
+    burstTimersRef.current.forEach((id) => window.clearTimeout(id));
+    burstTimersRef.current = [];
+  }, []);
+
+  const scheduleBurst = useCallback(() => {
+    clearBurstTimers();
+    burstTimersRef.current = runResizeBurst(() => mapRef.current?.getMap?.());
+  }, [clearBurstTimers]);
+
+  useLayoutEffect(() => {
+    if (!MAPBOX_TOKEN) return;
+    const root = containerRef.current;
+    if (!root) return;
+
+    let roRaf = 0;
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            cancelAnimationFrame(roRaf);
+            roRaf = requestAnimationFrame(() => {
+              scheduleBurst();
+            });
+          })
+        : null;
+    ro?.observe(root);
+
+    const onWin = () => scheduleBurst();
+    window.addEventListener('resize', onWin);
+    scheduleBurst();
+
+    return () => {
+      cancelAnimationFrame(roRaf);
+      ro?.disconnect();
+      window.removeEventListener('resize', onWin);
+      clearBurstTimers();
+    };
+  }, [MAPBOX_TOKEN, mapKey, scheduleBurst, clearBurstTimers]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap?.();
@@ -91,9 +158,19 @@ export function RouteMap({
     );
   }, [positionedStops]);
 
+  const handleMapLoad = useCallback(() => {
+    setMapLoadError('');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        clearBurstTimers();
+        burstTimersRef.current = runResizeBurst(() => mapRef.current?.getMap?.());
+      });
+    });
+  }, [clearBurstTimers]);
+
   if (!MAPBOX_TOKEN) {
     return (
-      <div className={className ?? 'h-full w-full rounded-xl overflow-hidden border bg-muted/30'}>
+      <div className={surfaceClassName}>
         <EmptyState
           icon={<MapPin className="h-10 w-10 text-primary" />}
           title="Mapa no disponible"
@@ -105,13 +182,28 @@ export function RouteMap({
   }
 
   return (
-    <div className={className ?? 'h-full w-full rounded-xl overflow-hidden border bg-muted/30'}>
+    <div ref={containerRef} className={surfaceClassName}>
+      {mapLoadError ? (
+        <div className="pointer-events-none absolute inset-x-4 top-4 z-20 rounded-xl border border-destructive/30 bg-background/95 px-3 py-2 text-sm text-destructive shadow-sm backdrop-blur">
+          No se pudo cargar el mapa base. {mapLoadError}
+        </div>
+      ) : null}
       <Map
+        key={mapKey}
         ref={mapRef}
         mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle="mapbox://styles/mapbox/streets-v12"
         initialViewState={initialViewState}
         style={{ width: '100%', height: '100%' }}
+        onLoad={handleMapLoad}
+        onError={(event) => {
+          const message =
+            event?.error?.message ||
+            event?.error?.error?.message ||
+            'Revisa el token, permisos del style o la carga de tiles de Mapbox.';
+          console.error('Mapbox map load error:', event?.error ?? event);
+          setMapLoadError(message);
+        }}
         onClick={onClick}
         interactive={interactive}
       >
@@ -130,7 +222,14 @@ export function RouteMap({
               latitude={Number(stop.lat)}
               anchor="bottom"
             >
-              <div className="flex flex-col items-center gap-1">
+              <button
+                type="button"
+                className="flex flex-col items-center gap-1"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onStopClick?.(stop);
+                }}
+              >
                 <div
                   className="rounded-full border-2 border-background p-1 text-white shadow-lg"
                   style={{ backgroundColor: getStopColor(stop) }}
@@ -140,7 +239,7 @@ export function RouteMap({
                 <span className="rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm">
                   {stop.position}
                 </span>
-              </div>
+              </button>
             </Marker>
           );
         })}

@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import { GalleryVerticalEnd } from 'lucide-react';
 import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from '@/configs/navgationConfig';
-import { useSettings } from '@/context/SettingsContext';
 import { FieldOperatorProvider, useFieldOperator } from '@/context/FieldOperatorContext';
 import { filterNavigationByRoles } from '@/utils/navigationUtils';
 import { notify } from '@/lib/notifications';
@@ -59,7 +58,7 @@ export default function FieldLayoutClient({ children }) {
   const roles = React.useMemo(() => ['repartidor_autoventa'], []);
   const username = session?.user?.name || 'Desconocido';
   const email = session?.user?.email || 'Desconocido';
-  const { settings, loading } = useSettings();
+  const companyName = session?.user?.companyName || session?.user?.tenantName || 'Empresa';
 
   const handleLogout = React.useCallback(async () => {
     try {
@@ -99,11 +98,10 @@ export default function FieldLayoutClient({ children }) {
   );
 
   const apps = React.useMemo(() => {
-    const companyName = !loading && settings?.['company.name'] ? settings['company.name'] : 'Empresa';
     return [
       { name: companyName, logo: GalleryVerticalEnd, description: 'Operativa de reparto', current: true },
     ];
-  }, [settings, loading]);
+  }, [companyName]);
 
   return (
     <FieldRouteProtection>
@@ -114,7 +112,7 @@ export default function FieldLayoutClient({ children }) {
           navigationItems={navigationItems}
           navigationManagersItems={navigationManagersItems}
           apps={apps}
-          loading={loading}
+          loading={false}
         >
           {children}
         </FieldContentGate>
