@@ -32,6 +32,32 @@ import { notify } from '@/lib/notifications';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { orderCreateSchema } from './schemas/orderCreateSchema';
 
+function getRelatedId(source, ...candidates) {
+    for (const candidate of candidates) {
+        if (candidate == null) continue;
+
+        if (typeof candidate === 'object' && 'id' in candidate && candidate.id != null) {
+            return String(candidate.id);
+        }
+
+        if ((typeof candidate === 'string' || typeof candidate === 'number') && candidate !== '') {
+            return String(candidate);
+        }
+    }
+
+    return '';
+}
+
+function getTextValue(...candidates) {
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.length > 0) {
+            return candidate;
+        }
+    }
+
+    return '';
+}
+
 const CreateOrderForm = ({ onCreate, onClose }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
     const { taxOptions, loading: taxLoading } = useTaxOptions();
@@ -42,7 +68,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
     // porque el servicio lo obtiene con getSession().
     // const token = session?.user?.accessToken;
 
-    const { defaultValues, formGroups, loading: formConfigLoading, handleGetCustomer } = useOrderCreateFormConfig(); // Asumiendo que handleGetCustomer no hace llamadas directas a fetchWithTenant aquí
+    const { defaultValues, formGroups, loading: formConfigLoading } = useOrderCreateFormConfig();
     const loading = formConfigLoading || productsLoading;
 
     // Ref para rastrear si el formulario ya fue inicializado
@@ -83,18 +109,18 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         // Por la forma en que lo tienes ahora, parece que 'getCustomer' no necesita el token directamente.
         getCustomer(selectedCustomerId, session?.user?.accessToken) // Pasa el token si getCustomer lo espera
             .then((customer) => {
-                setValue('salesperson', customer.salesperson?.id?.toString() || '');
-                setValue('fieldOperator', customer.fieldOperator?.id?.toString() || customer.fieldOperatorId?.toString() || '');
-                setValue('payment', customer.paymentTerm?.id?.toString() || '');
-                setValue('incoterm', customer.incoterm?.id?.toString() || '');
-                setValue('billingAddress', customer.billingAddress || '');
-                setValue('shippingAddress', customer.shippingAddress || '');
-                setValue('transportationNotes', customer.transportationNotes || '');
-                setValue('productionNotes', customer.productionNotes || '');
-                setValue('accountingNotes', customer.accountingNotes || '');
-                setValue('transport', customer.transport?.id?.toString() || '');
+                setValue('salesperson', getRelatedId(customer, customer.salesperson, customer.salespersonId, customer.salesperson_id));
+                setValue('fieldOperator', getRelatedId(customer, customer.fieldOperator, customer.fieldOperatorId, customer.field_operator_id));
+                setValue('payment', getRelatedId(customer, customer.paymentTerm, customer.paymentTermId, customer.payment_term_id));
+                setValue('incoterm', getRelatedId(customer, customer.incoterm, customer.incotermId, customer.incoterm_id));
+                setValue('billingAddress', getTextValue(customer.billingAddress, customer.billing_address));
+                setValue('shippingAddress', getTextValue(customer.shippingAddress, customer.shipping_address));
+                setValue('transportationNotes', getTextValue(customer.transportationNotes, customer.transportation_notes));
+                setValue('productionNotes', getTextValue(customer.productionNotes, customer.production_notes));
+                setValue('accountingNotes', getTextValue(customer.accountingNotes, customer.accounting_notes));
+                setValue('transport', getRelatedId(customer, customer.transport, customer.transportId, customer.transport_id));
                 setValue('emails', customer.emails || []);
-                setValue('ccEmails', customer.ccEmails || []);
+                setValue('ccEmails', customer.ccEmails || customer.cc_emails || []);
             })
             .catch((err) => {
                 console.error('Error al cargar datos del cliente:', err);
