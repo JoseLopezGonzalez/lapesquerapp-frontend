@@ -25,6 +25,8 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { isoToDateTimeLocal, datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
 import { transformStoresPayload } from '@/lib/entityFormTransforms';
+import { customerService } from '@/services/domain/customers/customerService';
+import { splitCustomerPayload } from '@/lib/entity/customerAssignment';
 
 export function mapApiDataToFormValues(fields, data) {
     const result = {};
@@ -83,7 +85,15 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
     const {
         register, handleSubmit, control, watch, reset, setError,
         formState: { errors, isSubmitting },
-    } = useForm({ mode: "onChange" });
+    } = useForm({
+        mode: "onChange",
+        defaultValues: fields.reduce((acc, field) => {
+            if (field.defaultValue !== undefined) {
+                acc[field.name] = field.defaultValue;
+            }
+            return acc;
+        }, {}),
+    });
 
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState({});
@@ -182,6 +192,8 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
 
     const onSubmit = async (data) => {
+        let entitySaved = false;
+
         try {
             // Convertir fechas a string YYYY-MM-DD si son Date
             const processedData = { ...data };
@@ -253,7 +265,16 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                 return finalData;
             })();
 
-            await entityService.update(id, finalPayload);
+            const isCustomersEndpoint = endpoint === "customers";
+            const { entityPayload, assignmentPayload } = isCustomersEndpoint
+                ? splitCustomerPayload(finalPayload)
+                : { entityPayload: finalPayload, assignmentPayload: null };
+
+            await entityService.update(id, entityPayload);
+            entitySaved = true;
+            if (isCustomersEndpoint) {
+                await customerService.updateAssignment(id, assignmentPayload);
+            }
             notify.success({
               title: 'Cambios guardados',
               description: successMessage,
@@ -273,6 +294,11 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
             } else if (err instanceof Error) {
                 // Priorizar userMessage sobre message para mostrar errores en formato natural
                 userMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || userMessage;
+            }
+            if (endpoint === "customers" && entitySaved) {
+                userMessage = "Los datos generales del cliente se guardaron, pero no se pudo actualizar la asignación operativa.";
+            } else if (endpoint === "customers" && userMessage === (errorMessage || "Error inesperado al guardar.")) {
+                userMessage = "No se pudieron completar todos los cambios del cliente o su asignación operativa.";
             }
             notify.error({ title: 'Error al guardar', description: userMessage });
             console.error("Submission error:", err);
@@ -312,6 +338,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
                         name={field.name}
                         control={control}
                         rules={field.validation}
+                        defaultValue={field.defaultValue ?? ""}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                 <SelectTrigger loading={selectLoading}>

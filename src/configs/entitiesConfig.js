@@ -2159,6 +2159,28 @@ export const configs = {
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
+        name: "field_operator_id",
+        path: "fieldOperator.id",
+        label: "Repartidor",
+        type: "Autocomplete",
+        endpoint: "field-operators/options",
+        placeholder: "Selecciona el repartidor",
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "operational_status",
+        path: "operationalStatus",
+        label: "Estado operativo",
+        type: "select",
+        placeholder: "Selecciona el estado operativo",
+        defaultValue: "normal",
+        options: [
+          { value: "normal", label: "Normal" },
+          { value: "alta_operativa", label: "Alta operativa" },
+        ],
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
         name: "country_id",
         path: "country.id",
         label: "País",

@@ -37,6 +37,7 @@ import { roleService } from './roles/roleService';
 import { sessionService } from './sessions/sessionService';
 import { userService } from './users/userService';
 import { externalUserService } from './external-users/externalUserService';
+import { fieldOperatorAdminService } from './field-operators/fieldOperatorService';
 
 /**
  * Mapa de nombres de entidades a servicios de dominio
@@ -73,6 +74,7 @@ const entityServiceMap = {
     'sessions': sessionService,
     'users': userService,
     'external-users': externalUserService,
+    'field-operators': fieldOperatorAdminService,
 };
 
 /**

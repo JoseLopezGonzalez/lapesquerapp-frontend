@@ -20,6 +20,7 @@ import QuickInteractionModal from './QuickInteractionModal';
 import { formatCurrency, formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
 import StatusPill from './StatusPill';
 import Loader from '@/components/Utilities/Loader';
+import CustomerAssignmentPanel from '@/components/Admin/Customers/CustomerAssignmentPanel';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -84,6 +85,7 @@ function CustomerDetail({ customerId, embedded = false }) {
         <Tabs defaultValue="data" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
           <TabsList>
             <TabsTrigger value="data">Datos</TabsTrigger>
+            <TabsTrigger value="assignment">Asignación</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
             <TabsTrigger value="interactions">Interacciones</TabsTrigger>
             <TabsTrigger value="offers">Ofertas</TabsTrigger>
@@ -104,6 +106,10 @@ function CustomerDetail({ customerId, embedded = false }) {
               <p className="text-sm text-muted-foreground mb-1">Dirección de envío</p>
               <p>{customer.shippingAddress || customer.shipping_address || 'Sin dirección registrada'}</p>
             </div>
+          </TabsContent>
+
+          <TabsContent value="assignment" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-y-auto">
+            <CustomerAssignmentPanel customerId={customerId} />
           </TabsContent>
 
           <TabsContent value="orders" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">

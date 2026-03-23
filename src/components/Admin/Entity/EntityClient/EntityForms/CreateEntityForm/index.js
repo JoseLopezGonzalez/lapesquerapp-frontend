@@ -1,7 +1,7 @@
 // components/CreateEntityClient.jsx
 "use client";
 
-import { useForm, Controller } from "react-hook-form";import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useForm, Controller } from "react-hook-form";import { useEffect, useState, useCallback, useMemo } from "react"; // Added useCallback
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,8 @@ import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { datetimeLocalToIsoWithZone } from '@/helpers/production/dateFormatters';
 import { transformStoresPayload } from '@/lib/entityFormTransforms';
+import { customerService } from '@/services/domain/customers/customerService';
+import { splitCustomerPayload } from '@/lib/entity/customerAssignment';
 
 
 function prepareValidations(fields) {
@@ -53,8 +55,15 @@ function prepareValidations(fields) {
 export default function CreateEntityForm({ config, onSuccess, onCancel }) {
     const { title, endpoint, successMessage, errorMessage } = config.createForm;
     // Los campos pueden estar en config.fields o en config.createForm.fields
-    const fields = config.createForm?.fields || config.fields || [];
+    const fields = useMemo(() => config.createForm?.fields || config.fields || [], [config.createForm?.fields, config.fields]);
     const router = useRouter();
+
+    const defaultValues = fields.reduce((acc, field) => {
+        if (field.defaultValue !== undefined) {
+            acc[field.name] = field.defaultValue;
+        }
+        return acc;
+    }, {});
 
     const {
         register,
@@ -64,7 +73,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
         reset,
         setError,
         formState: { errors, isSubmitting },
-    } = useForm({ mode: "onChange" });
+    } = useForm({ mode: "onChange", defaultValues });
 
     const [loadedOptions, setLoadedOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState({});
@@ -197,6 +206,11 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 return finalData;
             })();
 
+            const isCustomersEndpoint = endpoint === "customers";
+            const { entityPayload, assignmentPayload } = isCustomersEndpoint
+                ? splitCustomerPayload(finalPayload)
+                : { entityPayload: finalPayload, assignmentPayload: null };
+
             const entityService = getEntityService(endpoint);
             if (!entityService) {
                 notify.error({
@@ -206,9 +220,15 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                 return;
             }
 
+            let createdId = null;
+
             try {
-                const createdEntity = await entityService.create(finalPayload);
-                const createdId = createdEntity?.id || createdEntity?.data?.id || null;
+                const createdEntity = await entityService.create(entityPayload);
+                createdId = createdEntity?.id || createdEntity?.data?.id || null;
+
+                if (isCustomersEndpoint && createdId) {
+                    await customerService.updateAssignment(createdId, assignmentPayload);
+                }
 
                 notify.success({
                   title: 'Entidad creada',
@@ -237,6 +257,11 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                     }
                 } else if (createError instanceof Error) {
                     userErrorMessage = createError.userMessage || createError.message || userErrorMessage;
+                }
+                if (isCustomersEndpoint && createdId) {
+                    userErrorMessage = "El cliente se creó, pero no se pudo guardar su asignación operativa. Revisa el cliente recién creado e inténtalo de nuevo.";
+                } else if (isCustomersEndpoint && userErrorMessage === (errorMessage || "Error al crear la entidad")) {
+                    userErrorMessage = "No se pudo completar el alta del cliente o su asignación operativa.";
                 }
                 notify.error({ title: 'Error al crear entidad', description: userErrorMessage });
             }
@@ -290,6 +315,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
                         name={field.name}
                         control={control}
                         rules={field.validation}
+                        defaultValue={field.defaultValue ?? ""}
                         render={({ field: { onChange, value, onBlur } }) => (
                             <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                                 <SelectTrigger>
