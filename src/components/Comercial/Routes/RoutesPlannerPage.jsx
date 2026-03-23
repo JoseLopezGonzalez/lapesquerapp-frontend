@@ -585,6 +585,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
         templateDraft.stops.length
     );
   }, [routeDraft, tab, templateDraft]);
+  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops);
   const routeMetrics = useMemo(() => {
     const coordinatesCount = currentDraft.stops.filter((stop) => stop?.lat != null && stop?.lng != null).length;
     const distanceMeters = routeGeometry?.properties?.distance ?? null;
@@ -613,7 +614,6 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
       consumptionLabel: `${String(MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM).replace('.', ',')} l/100 km`,
     };
   }, [dieselAverage.value, routeMetrics.distanceKm]);
-  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops);
 
   useEffect(() => {
     setDetailMode(Boolean(routeId || templateId));
