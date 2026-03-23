@@ -635,7 +635,11 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     [customersData]
   );
   const prospectOptions = useMemo(
-    () => (prospectsData ?? []).map((prospect) => ({ value: String(prospect.id), label: prospect.name })),
+    () =>
+      (prospectsData ?? []).map((prospect) => ({
+        value: String(prospect.id),
+        label: prospect.companyName ?? prospect.name ?? `Prospecto ${prospect.id}`,
+      })),
     [prospectsData]
   );
   const currentDraft = tab === 'routes' ? routeDraft : templateDraft;

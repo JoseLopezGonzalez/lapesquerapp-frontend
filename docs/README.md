@@ -18,6 +18,14 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 16 
 
 ## 📚 Documentación Principal
 
+### Circuito Activo de Auditoría e Implementación
+
+- **[prompts/frontend-circuit/00-guia-circuito-frontend.md](./prompts/frontend-circuit/00-guia-circuito-frontend.md)** - Guía operativa del circuito activo
+- **[prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md)** - Fuente principal de verdad para bloques, puntuaciones y estado
+- **[prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md](./prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md)** - Anexo operativo para CORS, cookies, auth flow y cross-origin
+
+Los prompts y auditorías movidos a `antiguos/` pasan a ser referencia histórica y no deben usarse como circuito principal.
+
 ### Fundamentos
 
 1. **[00-overview-introduction.md](./00-overview-introduction.md)** - Visión general, stack tecnológico, convenciones
@@ -59,6 +67,11 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 16 
    - Optimizaciones implementadas
    - Propuestas de refactorización
 
+### Histórico del Circuito Anterior
+
+- `docs/prompts/antiguos/frontend-circuito-v1/` - prompts legacy del circuito anterior
+- `docs/audits/antiguos/frontend-circuito-v1/` - auditoría global y evolution log previos
+
 ---
 
 ## 📖 Documentación Técnica
@@ -95,4 +108,3 @@ _(Docs específicos: ver subcarpetas analisis/, API-references/, etc.)_
 - [Arquitectura](./01-architecture-app-router.md) - Estructura del proyecto
 - [Observaciones Críticas](./15-observaciones-criticas.md) - Problemas identificados
 - [Producción](./14-produccion-en-construccion.md) - Módulo en desarrollo
-
