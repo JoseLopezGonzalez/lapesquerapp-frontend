@@ -48,9 +48,10 @@ export default function QuickInteractionModal({
   const [occurredAt, setOccurredAt] = useState(new Date());
   const [summary, setSummary] = useState('');
   const [result, setResult] = useState('pending');
-  const [nextActionNote, setNextActionNote] = useState(defaultNextActionNote);
-  const [nextActionAt, setNextActionAt] = useState(defaultNextActionDate ? new Date(defaultNextActionDate) : null);
+  const [nextActionNote, setNextActionNote] = useState(isCompleteMode ? '' : defaultNextActionNote);
+  const [nextActionAt, setNextActionAt] = useState(isCompleteMode ? null : (defaultNextActionDate ? new Date(defaultNextActionDate) : null));
   const [noNextAction, setNoNextAction] = useState(isCompleteMode);
+  const [scheduleNextAction, setScheduleNextAction] = useState(false);
   const wasOpenRef = useRef(false);
 
   useEffect(() => {
@@ -62,9 +63,10 @@ export default function QuickInteractionModal({
     setOccurredAt(new Date());
     setSummary('');
     setResult('pending');
-    setNextActionNote(defaultNextActionNote ?? '');
-    setNextActionAt(defaultNextActionDate ? new Date(defaultNextActionDate) : null);
+    setNextActionNote(isCompleteMode ? '' : (defaultNextActionNote ?? ''));
+    setNextActionAt(isCompleteMode ? null : (defaultNextActionDate ? new Date(defaultNextActionDate) : null));
     setNoNextAction(isCompleteMode);
+    setScheduleNextAction(false);
   }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode]);
 
   const getErrorText = (error) => {
@@ -75,6 +77,14 @@ export default function QuickInteractionModal({
     const baseMessage = String(error?.message || '').toLowerCase();
     if (baseMessage.includes('agendaactionid')) {
       return 'No se pudo cerrar la tarea porque falta la referencia de agenda. Recarga la agenda e inténtalo de nuevo.';
+    }
+
+    if (baseMessage.includes('target')) {
+      return 'La acción pendiente no corresponde con el prospecto o cliente seleccionado. Recarga la agenda e inténtalo de nuevo.';
+    }
+
+    if (baseMessage.includes('not pending') || baseMessage.includes('status')) {
+      return 'La acción ya no está pendiente. Actualiza la agenda antes de volver a intentarlo.';
     }
 
     if (baseMessage.includes('pending') || baseMessage.includes('agenda') || baseMessage.includes('next action')) {
@@ -100,6 +110,13 @@ export default function QuickInteractionModal({
       return;
     }
 
+    if (((isCompleteMode && scheduleNextAction) || (!isCompleteMode && !noNextAction)) && !nextActionAt) {
+      notify.error({ title: 'Selecciona una fecha para la próxima acción' });
+      return;
+    }
+
+    const shouldSendNextAction = isCompleteMode ? scheduleNextAction : !noNextAction;
+
     const payload = {
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
@@ -108,8 +125,8 @@ export default function QuickInteractionModal({
       occurredAt: occurredAt.toISOString(),
       summary: summary.trim(),
       result,
-      nextActionNote: !isCompleteMode && !noNextAction ? nextActionNote.trim() || null : null,
-      nextActionAt: !isCompleteMode && !noNextAction && nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
+      nextActionNote: shouldSendNextAction ? nextActionNote.trim() || null : null,
+      nextActionAt: shouldSendNextAction && nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
     };
 
     try {
@@ -129,7 +146,7 @@ export default function QuickInteractionModal({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {isCompleteMode
-              ? 'Cierra la tarea pendiente registrando la interacción que la resuelve.'
+              ? 'Cierra la tarea pendiente registrando la interacción que la resuelve y, si hace falta, deja la siguiente acción programada.'
               : 'Registra seguimiento comercial y, si hace falta, deja la siguiente acción programada.'}
           </DialogDescription>
         </DialogHeader>
@@ -177,24 +194,41 @@ export default function QuickInteractionModal({
             <ToggleGroup value={result} onChange={setResult} options={interactionResultOptions} />
           </div>
 
-          {!isCompleteMode && result !== 'not_interested' && (
+          {((!isCompleteMode) || (isCompleteMode && result !== 'not_interested')) && (
             <>
-              <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Checkbox
-                  checked={noNextAction}
-                  onCheckedChange={(checked) => {
-                    const value = Boolean(checked);
-                    setNoNextAction(value);
-                    if (value) {
-                      setNextActionAt(null);
-                      setNextActionNote('');
-                    }
-                  }}
-                />
-                Sin próxima acción
-              </label>
+              {isCompleteMode ? (
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Checkbox
+                    checked={scheduleNextAction}
+                    onCheckedChange={(checked) => {
+                      const value = Boolean(checked);
+                      setScheduleNextAction(value);
+                      if (!value) {
+                        setNextActionAt(null);
+                        setNextActionNote('');
+                      }
+                    }}
+                  />
+                  Programar siguiente acción
+                </label>
+              ) : (
+                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Checkbox
+                    checked={noNextAction}
+                    onCheckedChange={(checked) => {
+                      const value = Boolean(checked);
+                      setNoNextAction(value);
+                      if (value) {
+                        setNextActionAt(null);
+                        setNextActionNote('');
+                      }
+                    }}
+                  />
+                  Sin próxima acción
+                </label>
+              )}
 
-              {!noNextAction && (
+              {((isCompleteMode && scheduleNextAction) || (!isCompleteMode && !noNextAction)) && (
                 <div className="grid gap-4 rounded-xl border bg-muted/10 p-4">
                   <div className="grid gap-2">
                     <Label>Fecha próxima acción</Label>

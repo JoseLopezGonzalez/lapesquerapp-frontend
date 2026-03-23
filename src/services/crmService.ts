@@ -5,6 +5,7 @@ import type {
   AgendaAction,
   AgendaSummaryData,
   CommercialInteraction,
+  CommercialInteractionCreateResponse,
   CommercialInteractionPayload,
   CrmDashboardData,
   CrmPaginatedResponse,
@@ -162,7 +163,7 @@ export const crmService = {
     return getJson<CrmPaginatedResponse<CommercialInteraction>>('commercial-interactions', params);
   },
   createCommercialInteraction(payload: CommercialInteractionPayload) {
-    return sendJson<CrmWriteResponse<CommercialInteraction>>('commercial-interactions', 'POST', payload);
+    return sendJson<CommercialInteractionCreateResponse>('commercial-interactions', 'POST', payload);
   },
   getCommercialInteraction(id: number | string) {
     return getJson<{ data: CommercialInteraction }>(`commercial-interactions/${id}`);

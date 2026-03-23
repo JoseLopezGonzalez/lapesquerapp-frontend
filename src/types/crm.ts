@@ -57,11 +57,24 @@ export interface AgendaTarget {
 
 export interface AgendaAction {
   agendaActionId: number | string;
+  previousActionId?: number | string | null;
   scheduledAt: string;
   description?: string | null;
   status: AgendaStatus;
   target: AgendaTarget;
   label: string;
+}
+
+export type CommercialInteractionAgendaMode = 'created' | 'completed' | 'completed_and_created';
+
+export interface CommercialInteractionAgendaResult {
+  mode: CommercialInteractionAgendaMode;
+  completedAction?: AgendaAction | null;
+  createdAction?: AgendaAction | null;
+}
+
+export interface CommercialInteractionCreateResponse extends CrmWriteResponse<CommercialInteraction> {
+  agenda?: CommercialInteractionAgendaResult | null;
 }
 
 export interface AgendaSummaryData {
