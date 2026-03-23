@@ -8,4 +8,4 @@ Versión histórica:
 
 Fuente activa del circuito actual:
 
-- `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+- `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`

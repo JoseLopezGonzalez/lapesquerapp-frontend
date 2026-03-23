@@ -20,9 +20,11 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 16 
 
 ### Circuito Activo de Auditoría e Implementación
 
-- **[prompts/frontend-circuit/00-guia-circuito-frontend.md](./prompts/frontend-circuit/00-guia-circuito-frontend.md)** - Guía operativa del circuito activo
-- **[prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md)** - Fuente principal de verdad para bloques, puntuaciones y estado
-- **[prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md](./prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md)** - Anexo operativo para CORS, cookies, auth flow y cross-origin
+- **[prompts/12-prompt-auditoria-principal-frontend.md](./prompts/12-prompt-auditoria-principal-frontend.md)** - Prompt maestro de auditoría
+- **[prompts/13-prompt-implementacion-mejoras-por-bloques-frontend.md](./prompts/13-prompt-implementacion-mejoras-por-bloques-frontend.md)** - Prompt maestro de implementación por bloques
+- **[prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md](./prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md)** - Guía operativa del circuito activo
+- **[prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md)** - Fuente principal de verdad para bloques, puntuaciones y estado
+- **[prompts/16-network-cors-auth-cross-origin-frontend.md](./prompts/16-network-cors-auth-cross-origin-frontend.md)** - Anexo operativo para CORS, cookies, auth flow y cross-origin
 
 Los prompts y auditorías movidos a `antiguos/` pasan a ser referencia histórica y no deben usarse como circuito principal.
 

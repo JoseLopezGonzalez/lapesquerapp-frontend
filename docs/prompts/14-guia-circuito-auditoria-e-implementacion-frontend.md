@@ -6,23 +6,23 @@ Definir un circuito único, legible y repetible para auditar y mejorar el fronte
 
 La fuente de verdad del circuito es:
 
-- `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+- `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
 
 ## Qué forma parte del circuito
 
 El circuito activo del frontend se apoya en estos documentos:
 
-1. `00-guia-circuito-frontend.md`
-2. `01-prompt-maestro-auditoria-frontend.md`
-3. `02-prompt-maestro-implementacion-frontend-por-bloques.md`
-4. `03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
-5. `04-network-cors-auth-cross-origin-frontend.md`
+1. `12-prompt-auditoria-principal-frontend.md`
+2. `13-prompt-implementacion-mejoras-por-bloques-frontend.md`
+3. `14-guia-circuito-auditoria-e-implementacion-frontend.md`
+4. `15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+5. `16-network-cors-auth-cross-origin-frontend.md`
 
 Todo lo anterior es circuito activo. Los prompts y auditorías movidos a `antiguos/` o `audits/antiguos/` pasan a ser referencia histórica.
 
 ## Reglas fijas
 
-- La fuente principal de verdad es `03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`.
+- La fuente principal de verdad es `15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`.
 - Ningún scoreboard auxiliar sustituye a esa fuente.
 - Toda auditoría debe leer esa fuente antes de evaluar el frontend.
 - Toda implementación por bloque debe partir de esa fuente y escribir de vuelta en ella.
@@ -38,7 +38,7 @@ Todo lo anterior es circuito activo. Los prompts y auditorías movidos a `antigu
 
 Usar:
 
-- `01-prompt-maestro-auditoria-frontend.md`
+- `12-prompt-auditoria-principal-frontend.md`
 
 Objetivo:
 
@@ -50,7 +50,7 @@ Objetivo:
 
 Usar:
 
-- `02-prompt-maestro-implementacion-frontend-por-bloques.md`
+- `13-prompt-implementacion-mejoras-por-bloques-frontend.md`
 
 Objetivo:
 
@@ -63,7 +63,7 @@ Objetivo:
 
 Usar además:
 
-- `04-network-cors-auth-cross-origin-frontend.md`
+- `16-network-cors-auth-cross-origin-frontend.md`
 
 Casos típicos:
 

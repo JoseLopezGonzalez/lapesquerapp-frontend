@@ -8,7 +8,7 @@ Tu misión es auditar este frontend de forma útil para ejecución real, no gene
 
 Antes de empezar debes leer y usar como documento rector:
 
-- `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+- `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
 
 Si detectas contradicciones con auditorías, logs o scoreboards antiguos, la fuente central manda. Los documentos antiguos solo se usan como referencia histórica.
 
@@ -47,7 +47,7 @@ Evalúa siempre con foco en el frontend real del repositorio:
    - bloque funcional concreto
 4. No conviertas la auditoría en revisión archivo por archivo salvo que sea necesario para justificar un riesgo sistémico.
 5. Si un problema es de network/auth cross-origin, cruza el análisis con:
-   - `docs/prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md`
+   - `docs/prompts/16-network-cors-auth-cross-origin-frontend.md`
 6. No propongas una taxonomía distinta a la de la fuente central salvo que el repo haya cambiado de forma clara; si propones cambio, justifícalo.
 
 ## Restricciones
@@ -105,6 +105,6 @@ Proponer el siguiente bloque o sub-bloque a trabajar y explicar por qué.
 
 Tu auditoría debe dejar claro qué habría que escribir de vuelta en:
 
-- `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+- `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
 
 Si no se puede actualizar algo con confianza, indícalo como provisional, no lo cierres.

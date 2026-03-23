@@ -985,19 +985,21 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     }
   };
 
-  const addStopToCurrentDraft = (stop) => {
+  const addStopToCurrentDraft = async (stop) => {
+    const [enrichedStop] = await enrichStopsWithCoordinates([stop]);
+
     if (tab === 'routes') {
       setRouteDraft((current) => ({
         ...current,
         stopsEdited: true,
-        stops: normalizeStops([...current.stops, stop]),
+        stops: normalizeStops([...current.stops, enrichedStop]),
       }));
       return;
     }
 
     setTemplateDraft((current) => ({
       ...current,
-      stops: normalizeStops([...current.stops, stop]),
+      stops: normalizeStops([...current.stops, enrichedStop]),
     }));
   };
 
@@ -1465,16 +1467,17 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
         customerOptions={customerOptions}
         prospectOptions={prospectOptions}
         mode="edit"
-        onSave={(stop) => {
+        onSave={async (stop) => {
+          const [enrichedStop] = await enrichStopsWithCoordinates([stop]);
           if (tab === 'routes') {
             markRouteStopsEdited((current) => ({
               ...current,
-              stops: current.stops.map((item) => (item.id === stop.id ? stop : item)),
+              stops: current.stops.map((item) => (item.id === enrichedStop.id ? enrichedStop : item)),
             }));
           } else {
             setTemplateDraft((current) => ({
               ...current,
-              stops: current.stops.map((item) => (item.id === stop.id ? stop : item)),
+              stops: current.stops.map((item) => (item.id === enrichedStop.id ? enrichedStop : item)),
             }));
           }
           setEditingStop(null);
@@ -1615,8 +1618,8 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
         customerOptions={customerOptions}
         prospectOptions={prospectOptions}
         mode="create"
-        onSave={(stop) => {
-          addStopToCurrentDraft(stop);
+        onSave={async (stop) => {
+          await addStopToCurrentDraft(stop);
           setCreatingStop(null);
         }}
       />

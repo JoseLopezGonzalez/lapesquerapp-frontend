@@ -90,7 +90,7 @@ Se usa para:
 - `referencias_clave`:
   - `src/lib/fetchWithTenant.js`
   - `src/lib/utils/getCurrentTenant.ts`
-  - `docs/prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md`
+  - `docs/prompts/16-network-cors-auth-cross-origin-frontend.md`
 
 ### 4. Admin core y CRUD compartido
 

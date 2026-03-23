@@ -6,11 +6,11 @@
 
 | Archivo | Descripción |
 |---|---|
-| [prompts/frontend-circuit/00-guia-circuito-frontend.md](./prompts/frontend-circuit/00-guia-circuito-frontend.md) | Guía del circuito activo de auditoría e implementación |
-| [prompts/frontend-circuit/01-prompt-maestro-auditoria-frontend.md](./prompts/frontend-circuit/01-prompt-maestro-auditoria-frontend.md) | Prompt maestro de auditoría |
-| [prompts/frontend-circuit/02-prompt-maestro-implementacion-frontend-por-bloques.md](./prompts/frontend-circuit/02-prompt-maestro-implementacion-frontend-por-bloques.md) | Prompt maestro de implementación por bloques |
-| [prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md) | Fuente principal de verdad para bloques y puntuaciones |
-| [prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md](./prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md) | Documento integrado de network/CORS/auth/cross-origin |
+| [prompts/12-prompt-auditoria-principal-frontend.md](./prompts/12-prompt-auditoria-principal-frontend.md) | Prompt maestro de auditoría |
+| [prompts/13-prompt-implementacion-mejoras-por-bloques-frontend.md](./prompts/13-prompt-implementacion-mejoras-por-bloques-frontend.md) | Prompt maestro de implementación por bloques |
+| [prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md](./prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md) | Guía del circuito activo de auditoría e implementación |
+| [prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md) | Fuente principal de verdad para bloques y puntuaciones |
+| [prompts/16-network-cors-auth-cross-origin-frontend.md](./prompts/16-network-cors-auth-cross-origin-frontend.md) | Documento integrado de network/CORS/auth/cross-origin |
 
 **Regla:** esta estructura sustituye al circuito anterior como referencia operativa principal.
 
@@ -51,7 +51,6 @@
 - **migraciones-expo/** — Guías Expo
 - **mobile-app/** — Planes y análisis mobile
 - **prompts/** — Prompts de trabajo
-- **prompts/frontend-circuit/** — Circuito activo de auditoría e implementación del frontend
 - **prompts/antiguos/frontend-circuito-v1/** — Prompts históricos archivados del circuito anterior
 - **refactor/** — Análisis de refactor
 - **troubleshooting/** — notas operativas y redirecciones a documentos activos

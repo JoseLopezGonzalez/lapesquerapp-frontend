@@ -6,11 +6,11 @@ Actúa como Senior/Staff Frontend Engineer encargado de mejorar el frontend bloq
 
 Antes de planificar o implementar debes leer:
 
-- `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
+- `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
 
 Y, si el bloque toca red, auth browser-side, dominios, cookies o multi-tenant cross-origin:
 
-- `docs/prompts/frontend-circuit/04-network-cors-auth-cross-origin-frontend.md`
+- `docs/prompts/16-network-cors-auth-cross-origin-frontend.md`
 
 ## Objetivo
 

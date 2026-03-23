@@ -1,7 +1,7 @@
 # CORE CONSOLIDATION PLAN — ERP SaaS (Next.js + Laravel)
 
 > Estado documental: histórico/global. No usar este documento como fuente principal de verdad del frontend para bloques o puntuaciones.
-> La referencia activa del frontend está en `docs/prompts/frontend-circuit/03-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`.
+> La referencia activa del frontend está en `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`.
 
 **Objetivo:**  ** **Consolidar el Core existente del ERP para declararlo estable (v1.0), eliminando inconsistencias, deuda técnica y riesgos, garantizando:
 
