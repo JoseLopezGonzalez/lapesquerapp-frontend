@@ -328,14 +328,14 @@ export function useProspectMutations() {
           isPrimary: Boolean(payload.isPrimary),
         };
 
-        const currentContacts = previousContacts?.data ?? [];
-        const nextContacts = tempContact.isPrimary
-          ? currentContacts.map((contact) => ({ ...contact, isPrimary: false })).concat(tempContact)
-          : currentContacts.concat(tempContact);
+        const currentContacts: ProspectContact[] = previousContacts?.data ?? [];
+        const nextContacts: ProspectContact[] = tempContact.isPrimary
+          ? [...currentContacts.map((contact) => ({ ...contact, isPrimary: false })), tempContact]
+          : [...currentContacts, tempContact];
 
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
-          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts),
+          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts) ?? undefined,
         });
         patchProspectsListsPrimaryContact(prospectId, nextContacts);
 
@@ -357,16 +357,19 @@ export function useProspectMutations() {
         const createdContact = response?.data;
         if (!createdContact) return;
 
-        const currentContacts = queryClient.getQueryData<ProspectContactsCache>(contactsKey)?.data ?? [];
-        const contactsWithoutTemp = currentContacts.filter((contact) => !String(contact.id).startsWith('tmp-'));
-        const nextContacts = createdContact.isPrimary
-          ? contactsWithoutTemp.map((contact) => ({ ...contact, isPrimary: false })).concat(createdContact)
-          : contactsWithoutTemp.concat(createdContact);
+        const currentContacts: ProspectContact[] =
+          queryClient.getQueryData<ProspectContactsCache>(contactsKey)?.data ?? [];
+        const contactsWithoutTemp: ProspectContact[] = currentContacts.filter(
+          (contact) => !String(contact.id).startsWith('tmp-')
+        );
+        const nextContacts: ProspectContact[] = createdContact.isPrimary
+          ? [...contactsWithoutTemp.map((contact) => ({ ...contact, isPrimary: false })), createdContact]
+          : [...contactsWithoutTemp, createdContact];
 
         const currentDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
-          data: patchProspectPrimaryContact(currentDetail?.data, nextContacts),
+          data: patchProspectPrimaryContact(currentDetail?.data, nextContacts) ?? undefined,
         });
         patchProspectsListsPrimaryContact(prospectId, nextContacts);
       },
@@ -419,7 +422,7 @@ export function useProspectMutations() {
 
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
-          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts),
+          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts) ?? undefined,
         });
         patchProspectsListsPrimaryContact(prospectId, nextContacts);
 
@@ -455,7 +458,7 @@ export function useProspectMutations() {
         const currentDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
-          data: patchProspectPrimaryContact(currentDetail?.data, nextContacts),
+          data: patchProspectPrimaryContact(currentDetail?.data, nextContacts) ?? undefined,
         });
         patchProspectsListsPrimaryContact(prospectId, nextContacts);
       },
@@ -489,7 +492,7 @@ export function useProspectMutations() {
 
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
-          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts),
+          data: patchProspectPrimaryContact(previousDetail?.data, nextContacts) ?? undefined,
         });
         patchProspectsListsPrimaryContact(prospectId, nextContacts);
 

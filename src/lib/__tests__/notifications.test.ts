@@ -55,7 +55,8 @@ describe("notify", () => {
         success: expect.any(Function),
       })
     );
-    const config = toastMock.promise.mock.calls[0]?.[1] as { success?: (data: { count: number }) => string } | undefined;
+    const promiseCalls = (toastMock.promise as unknown as { mock: { calls: unknown[][] } }).mock.calls;
+    const config = promiseCalls[0]?.[1] as { success?: (data: { count: number }) => string } | undefined;
     expect(config?.success?.({ count: 2 })).toBe("Guardado");
   });
 
@@ -177,7 +178,8 @@ describe("notify", () => {
         error: expect.any(Function),
       })
     );
-    const config = toastMock.promise.mock.calls.at(-1)?.[1] as { error?: (err: Error) => string } | undefined;
+    const promiseCalls = (toastMock.promise as unknown as { mock: { calls: unknown[][] } }).mock.calls;
+    const config = promiseCalls.at(-1)?.[1] as { error?: (err: Error) => string } | undefined;
     expect(config?.error?.(error)).toBe("Error al procesar");
   });
 });
